@@ -1,0 +1,13 @@
+query LogOnPage {
+    currentSession {
+        ...AuthSessionFields
+    }
+    publicWebPage {
+        findOne(webPageKey: SIGN_IN) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

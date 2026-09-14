@@ -1,0 +1,51 @@
+export type OutboundEmailProvider = 'resend' | 'console';
+export type OutboundEmailPurpose =
+    | 'GIFT_CARD_PURCHASED'
+    | 'AUTH_EMAIL_OTP'
+    | 'EMAIL_ADDRESS_UPDATE_CONFIRM'
+    | 'CALL_SLOT_BOOKING_REQUEST'
+    | 'CALL_SLOT_BOOKING_CONFIRM'
+    | 'CALL_SLOT_BOOKING_DECLINE'
+    | 'CALL_SLOT_BOOKING_CANCEL'
+    | 'CALL_SLOT_BOOKING_REMINDER'
+    | 'BOOKING_REQUEST_COOK_NOTIFY'
+    | 'BOOKING_REQUEST_CREATED'
+    | 'BOOKING_REQUEST_UPDATED'
+    | 'BOOKING_REQUEST_CANCELED'
+    | 'BOOKING_REQUEST_OFFER_CREATED'
+    | 'BOOKING_REQUEST_OFFER_MENU_UPDATED'
+    | 'BOOKING_REQUEST_OFFER_ACCEPTED'
+    | 'BOOKING_REQUEST_OFFER_NOT_CHOSEN'
+    | 'BOOKING_REQUEST_OFFER_DECLINED'
+    | 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED'
+    | 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT'
+    | 'TESTIMONIAL_MEMORY_NUDGE_CUSTOMER'
+    | 'TESTIMONIAL_MEMORY_NUDGE_COOK'
+    | 'TESTIMONIAL_REMINDER_MORNING_CUSTOMER'
+    | 'TESTIMONIAL_REMINDER_MORNING_COOK'
+    | 'TESTIMONIAL_REMINDER_EVENING_CUSTOMER'
+    | 'TESTIMONIAL_REMINDER_EVENING_COOK'
+    | 'SUPPORT_REQUEST_CREATED'
+    | 'SUPPORT_REQUEST_MESSAGE_FROM_ADMIN'
+    | 'SUPPORT_REQUEST_RESOLVED'
+    | 'BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_CUSTOMER'
+    | 'BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_COOK'
+    | 'COOK_APPROVED_BY_ADMIN';
+export type OutboundEmailRelatedEntityType =
+    'GIFT_CARD' | 'COOK_CALL_SLOT_BOOKING' | 'BOOKING_REQUEST_OFFER' | 'BOOKING_REQUEST' | 'SUPPORT_REQUEST' | 'COOK';
+
+/** One Resend email quota window (daily or monthly) from `usage.get()`. */
+type EmailUsageQuota = {
+    used: number;
+    /** Null when the plan has no cap for this window (paid daily). */
+    limit: number | null;
+    sent: number;
+    received: number;
+    resetsAt: Date;
+};
+
+/** Live Resend account email quota. */
+export type EmailUsage = {
+    monthly: EmailUsageQuota;
+    daily: EmailUsageQuota;
+};

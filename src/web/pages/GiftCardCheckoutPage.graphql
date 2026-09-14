@@ -1,0 +1,88 @@
+query GiftCardCheckoutPage {
+    currentSession {
+        sessionId
+        user {
+            userId
+            emailAddress
+            firstName
+            lastName
+            ...PublicHeaderUser
+        }
+        giftCard {
+            giftCardId
+            buyerEmail
+            occasion
+            recipientName
+            message
+            originalBalanceCents
+            balanceCents
+            redeemCode
+            paymentStatus
+            payment {
+                clientSecret
+                publishableKey
+            }
+            invoiceAddress {
+                companyName
+                firstName
+                lastName
+                country
+                city
+                postalCode
+                line1
+                line2
+            }
+            expiresAt
+            createdAt
+        }
+    }
+}
+
+subscription GiftCardCheckoutSessionUpdates {
+    sessionUpdates {
+        sessionId
+        user {
+            userId
+            emailAddress
+            firstName
+            lastName
+            ...PublicHeaderUser
+        }
+        giftCard {
+            giftCardId
+            buyerEmail
+            occasion
+            recipientName
+            message
+            originalBalanceCents
+            balanceCents
+            redeemCode
+            paymentStatus
+            payment {
+                clientSecret
+                publishableKey
+            }
+            invoiceAddress {
+                companyName
+                firstName
+                lastName
+                country
+                city
+                postalCode
+                line1
+                line2
+            }
+            expiresAt
+            createdAt
+        }
+    }
+}
+
+mutation GiftCardCheckoutPay($input: GiftCardPay!) {
+    user {
+        giftCardPay(input: $input) {
+            success
+            referenceId
+        }
+    }
+}

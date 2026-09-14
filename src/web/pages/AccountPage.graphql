@@ -1,0 +1,182 @@
+# Account settings — signed-in only (route loader redirects). Own-user
+# `sessions` / `passkeys` plus session `authEmailOtp` for email change.
+# User fields: seed-and-subscribe via `userUpdates`. Session OTP: via `sessionUpdates`.
+# See `docs/features/account.md` and `docs/architecture/state-synchronization.md`.
+
+fragment AccountPageUser on User {
+    userId
+    emailAddress
+    firstName
+    lastName
+    preferredCommunication
+    locale
+    timeZone
+    profilePicture {
+        fileUploadId
+        url
+    }
+    cook {
+        cookId
+    }
+    admin {
+        adminId
+    }
+    sessions {
+        sessionId
+        createdAt
+        lastInteractionAt
+        userAgent
+        isCurrent
+    }
+    passkeys {
+        authPasskeyId
+        deviceType
+        backedUp
+        createdAt
+    }
+    timeBasedOneTimePassword {
+        authTimeBasedOneTimePasswordId
+        confirmedAt
+        recoveryCodesRemaining
+        createdAt
+    }
+}
+
+fragment AccountPageSession on Session {
+    sessionId
+    authEmailOtp {
+        authEmailOtpId
+        emailAddress
+        expiresAt
+        verifiedAt
+        createdAt
+    }
+    user {
+        ...AccountPageUser
+    }
+}
+
+query AccountPage {
+    currentSession {
+        ...AccountPageSession
+    }
+}
+
+subscription AccountPageUserUpdates {
+    userUpdates {
+        ...AccountPageUser
+    }
+}
+
+subscription AccountPageSessionUpdates {
+    sessionUpdates {
+        ...AccountPageSession
+    }
+}
+
+mutation AccountUserUpdate($user: UserUpdate!) {
+    user {
+        userUpdate(user: $user) {
+            success
+        }
+    }
+}
+
+mutation AccountEmailAddressUpdateOtpRequest($emailAddress: EmailAddress!, $locale: Locale!) {
+    user {
+        emailAddressUpdateOtpRequest(emailAddress: $emailAddress, locale: $locale) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AccountEmailAddressUpdateOtpVerify($code: String!) {
+    user {
+        emailAddressUpdateOtpVerify(code: $code) {
+            success
+        }
+    }
+}
+
+mutation AccountAuthEmailOtpDelete($authEmailOtpId: ID!) {
+    authEmailOtpDelete(authEmailOtpId: $authEmailOtpId) {
+        success
+    }
+}
+
+mutation AccountAuthPasskeyRegisterOptions {
+    user {
+        authPasskeyRegisterOptions
+    }
+}
+
+mutation AccountAuthPasskeyRegisterVerify($response: JSON!) {
+    user {
+        authPasskeyRegisterVerify(response: $response) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AccountAuthPasskeyDelete($authPasskeyId: ID!) {
+    user {
+        authPasskeyDelete(authPasskeyId: $authPasskeyId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AccountTerminateSessions($sessionIds: [ID!]!) {
+    user {
+        terminateSessions(sessionIds: $sessionIds) {
+            success
+        }
+    }
+}
+
+mutation AccountUserAnonymize {
+    user {
+        userAnonymize {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AccountAuthTotpEnrollStart {
+    user {
+        authTotpEnrollStart {
+            otpauthUrl
+            secret
+        }
+    }
+}
+
+mutation AccountAuthTotpEnrollConfirm($code: String!) {
+    user {
+        authTotpEnrollConfirm(code: $code) {
+            recoveryCodes
+        }
+    }
+}
+
+mutation AccountAuthTotpEnrollCancel {
+    user {
+        authTotpEnrollCancel {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AccountAuthTotpDisable($code: String!) {
+    user {
+        authTotpDisable(code: $code) {
+            success
+            referenceId
+        }
+    }
+}

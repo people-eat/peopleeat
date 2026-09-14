@@ -1,0 +1,129 @@
+# Admin legal document management — history + draft for privacy / terms / imprint.
+# Seed-and-subscribe via `adminUpdates`. See docs/features/admin-legal.md.
+
+fragment AdminLegalDocumentPageAdmin on Admin {
+    adminId
+    legalPrivacyPolicies {
+        privacyPolicyId
+        bodyDe
+        changeSummaryDe
+        createdAt
+        updatedAt
+        publishedAt
+    }
+    legalTermsAndConditions {
+        termsAndConditionsId
+        bodyDe
+        changeSummaryDe
+        createdAt
+        updatedAt
+        publishedAt
+    }
+    legalImprints {
+        imprintId
+        bodyDe
+        changeSummaryDe
+        createdAt
+        updatedAt
+        publishedAt
+    }
+}
+
+query AdminLegalDocumentPage {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                ...AdminLegalDocumentPageAdmin
+            }
+        }
+    }
+}
+
+subscription AdminLegalDocumentPageUpdates {
+    adminUpdates {
+        ...AdminLegalDocumentPageAdmin
+    }
+}
+
+mutation AdminLegalPrivacyPolicyDraftCreate {
+    admin {
+        legalPrivacyPolicyDraftCreate {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminLegalPrivacyPolicyDraftUpdate($input: AdminLegalDocumentDraftInput!) {
+    admin {
+        legalPrivacyPolicyDraftUpdate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminLegalPrivacyPolicyPublish($privacyPolicyId: ID!) {
+    admin {
+        legalPrivacyPolicyPublish(privacyPolicyId: $privacyPolicyId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminLegalTermsAndConditionsDraftCreate {
+    admin {
+        legalTermsAndConditionsDraftCreate {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminLegalTermsAndConditionsDraftUpdate($input: AdminLegalDocumentDraftInput!) {
+    admin {
+        legalTermsAndConditionsDraftUpdate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminLegalTermsAndConditionsPublish($termsAndConditionsId: ID!) {
+    admin {
+        legalTermsAndConditionsPublish(termsAndConditionsId: $termsAndConditionsId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminLegalImprintDraftCreate {
+    admin {
+        legalImprintDraftCreate {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminLegalImprintDraftUpdate($input: AdminLegalDocumentDraftInput!) {
+    admin {
+        legalImprintDraftUpdate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminLegalImprintPublish($imprintId: ID!) {
+    admin {
+        legalImprintPublish(imprintId: $imprintId) {
+            success
+            referenceId
+        }
+    }
+}

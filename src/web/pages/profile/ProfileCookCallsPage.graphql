@@ -1,0 +1,147 @@
+# Call scheduling + availability windows. See docs/features/cook-call-availability.md.
+
+fragment ProfileCookCallsSlotBooking on CookCallSlotBooking {
+    cookCallSlotBookingId
+    bookingRequestOfferId
+    startAt
+    endAt
+    status
+    initiator
+    customerMessage
+    cookMessage
+    customer {
+        display
+    }
+}
+
+fragment ProfileCookCallsCook on Cook {
+    cookId
+    callSchedulingEnabled
+    callDurationMinutes
+    callAvailabilityRules {
+        cookCallAvailabilityRuleId
+        dayOfWeek
+        startMinuteOfDay
+        endMinuteOfDay
+    }
+    callAvailabilityExceptions(from: $exceptionsFrom, to: $exceptionsTo) {
+        cookCallAvailabilityExceptionId
+        date
+        type
+        startMinuteOfDay
+        endMinuteOfDay
+    }
+    callSlotBookings {
+        ...ProfileCookCallsSlotBooking
+    }
+}
+
+fragment ProfileCookCallsUser on User {
+    userId
+    cook {
+        ...ProfileCookCallsCook
+    }
+}
+
+query ProfileCookCallsPage($exceptionsFrom: Date!, $exceptionsTo: Date!) {
+    currentSession {
+        sessionId
+        user {
+            ...ProfileCookCallsUser
+        }
+    }
+}
+
+subscription ProfileCookCallsPageUpdates($exceptionsFrom: Date!, $exceptionsTo: Date!) {
+    userUpdates {
+        ...ProfileCookCallsUser
+    }
+}
+
+mutation ProfileCookCallsCookUpdate($input: CookUpdate!) {
+    user {
+        cook {
+            update(input: $input) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookCallsRuleCreate($rule: CookCallAvailabilityRuleCreate!) {
+    user {
+        cook {
+            callAvailabilityRuleCreate(rule: $rule) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookCallsRuleDelete($cookCallAvailabilityRuleId: ID!) {
+    user {
+        cook {
+            callAvailabilityRuleDelete(cookCallAvailabilityRuleId: $cookCallAvailabilityRuleId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookCallsExceptionCreate($exception: CookCallAvailabilityExceptionCreate!) {
+    user {
+        cook {
+            callAvailabilityExceptionCreate(exception: $exception) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookCallsExceptionDelete($cookCallAvailabilityExceptionId: ID!) {
+    user {
+        cook {
+            callAvailabilityExceptionDelete(cookCallAvailabilityExceptionId: $cookCallAvailabilityExceptionId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookCallsCallSlotConfirm($cookCallSlotBookingId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferCallSlotConfirm(cookCallSlotBookingId: $cookCallSlotBookingId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookCallsCallSlotDecline($cookCallSlotBookingId: ID!, $reason: String) {
+    user {
+        cook {
+            bookingRequestOfferCallSlotDecline(cookCallSlotBookingId: $cookCallSlotBookingId, reason: $reason) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookCallsCallSlotCancel($cookCallSlotBookingId: ID!, $reason: String) {
+    user {
+        cook {
+            bookingRequestOfferCallSlotCancel(cookCallSlotBookingId: $cookCallSlotBookingId, reason: $reason) {
+                success
+                referenceId
+            }
+        }
+    }
+}

@@ -1,0 +1,23 @@
+# Admin promo-code list. Search / page / sort live in the URL;
+# `Admin.promoCodes` / `promoCodesCounts` share `AdminPromoCodeCriterion`.
+
+query AdminPromoCodesPage($criterion: AdminPromoCodeCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                promoCodes(criterion: $criterion) {
+                    promoCodeId
+                    redeemCode
+                    amountCents
+                    minimumTotalAmountCustomerCents
+                    expiresAt
+                    createdAt
+                }
+                promoCodesCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

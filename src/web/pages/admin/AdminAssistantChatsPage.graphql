@@ -1,0 +1,29 @@
+# Admin assistant chats list. Search / surface / page live in the URL;
+# `Admin.assistantChats` / `Admin.assistantChatsCounts` share the same
+# `AdminAssistantChatCriterion`. See `docs/features/admin-assistant-chats.md`.
+
+query AdminAssistantChatsPage($criterion: AdminAssistantChatCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                assistantChats(criterion: $criterion) {
+                    chatId
+                    userId
+                    user {
+                        userId
+                        firstName
+                        lastName
+                    }
+                    surface
+                    title
+                    lastModifiedAt
+                    deletedAt
+                }
+                assistantChatsCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

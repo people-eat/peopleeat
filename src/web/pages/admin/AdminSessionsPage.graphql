@@ -1,0 +1,31 @@
+# Admin sessions list. Search / page live in the URL; `Admin.sessions` /
+# `Admin.sessionCounts` share the same `AdminSessionCriterion` (searchText + kinds).
+# See `docs/features/admin-sessions.md`.
+
+query AdminSessionsPage($criterion: AdminSessionCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                sessions(criterion: $criterion) {
+                    sessionId
+                    userId
+                    user {
+                        userId
+                        firstName
+                        lastName
+                    }
+                    lastInteractionAt
+                    wasTerminatedAt
+                    connectionActive
+                    userAgent
+                    isBot
+                    createdAt
+                }
+                sessionCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

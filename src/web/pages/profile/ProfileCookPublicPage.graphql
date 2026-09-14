@@ -1,0 +1,73 @@
+# Cook public profile preview. Saved state only — see docs/features/cook-profile.md.
+
+fragment ProfileCookPublicPageCook on Cook {
+    cookId
+    isVisible
+    isApprovedByAdmin
+    biography
+    biographySummary
+    logo {
+        url
+    }
+    cuisineStyle
+    cookingPhilosophy
+    rating {
+        averageRating
+        reviewCount
+    }
+    minimumPriceAmount
+    maximumPriceAmount
+    minimumParticipants
+    maximumParticipants
+    callSchedulingEnabled
+    exactTravelOriginAddress {
+        city
+    }
+    meals {
+        mealId
+        title
+        description
+        imageUrl
+        publishedAt
+    }
+}
+
+fragment ProfileCookPublicPageUser on User {
+    userId
+    firstName
+    profilePicture {
+        url
+    }
+    admin {
+        adminId
+    }
+    cook {
+        ...ProfileCookPublicPageCook
+    }
+}
+
+query ProfileCookPublicPage {
+    currentSession {
+        sessionId
+        user {
+            ...ProfileCookPublicPageUser
+        }
+    }
+}
+
+subscription ProfileCookPublicPageUpdates {
+    userUpdates {
+        ...ProfileCookPublicPageUser
+    }
+}
+
+mutation ProfileCookPublicCookUpdate($input: CookUpdate!) {
+    user {
+        cook {
+            update(input: $input) {
+                success
+                referenceId
+            }
+        }
+    }
+}

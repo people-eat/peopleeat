@@ -1,0 +1,30 @@
+# Entry for the offer-chat review pipeline. Loads the oldest pending offer
+# (and count) so the page can redirect into the review surface or show empty.
+
+fragment AdminOfferChatReviewsPageAdmin on Admin {
+    adminId
+    pendingOfferChatReviews: bookingRequestOffers(criterion: $pendingOfferChatReviews) {
+        bookingRequestOfferId
+        bookingRequestId
+        adminChatReviewPendingCount
+    }
+    pendingOfferChatReviewsCounts: bookingRequestOffersCounts(criteria: [$pendingOfferChatReviews])
+}
+
+query AdminOfferChatReviewsPage($pendingOfferChatReviews: AdminBookingRequestOfferCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                ...AdminOfferChatReviewsPageAdmin
+            }
+        }
+    }
+}
+
+subscription AdminOfferChatReviewsPageUpdates($pendingOfferChatReviews: AdminBookingRequestOfferCriterion!) {
+    adminUpdates {
+        ...AdminOfferChatReviewsPageAdmin
+    }
+}

@@ -1,0 +1,223 @@
+import { and, eq } from 'drizzle-orm';
+
+import { giftCards } from '../db/schema';
+import type { GiftCardInvoiceAddress } from '../domain/giftCard';
+import type { ServerRuntime } from '../domain/ServerRuntime';
+import { GiftCardPayForCustomerEmail, giftCardPayForCustomerEmailSubject } from '../email/templates/GiftCardPayForCustomerEmail';
+import { environmentVariables } from '../env/environmentVariablesCreate';
+import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationGiftCardPayArgs } from '../graphql/generated';
+import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { giftCardPreparedExpire } from '../jobs/handlers/giftCardPreparedExpire';
+import { createServerToken } from '../utils/serverToken';
+import { fileUploadCreate } from './fileUploadCreate';
+
+const RECEIPT_FILENAME = 'peopleeat-gift-card-receipt.pdf';
+const VOUCHER_FILENAME = 'peopleeat-gift-card.pdf';
+const PDF_MEDIA_TYPE = 'application/pdf';
+
+type PdfCaptureResult = { fileUploadId: string; content: Buffer };
+
+async function cancelCleanupJob(serverRuntime: ServerRuntime, cleanupJobId: string | null | undefined): Promise<void> {
+    if (!cleanupJobId) return;
+    try {
+        await serverRuntime.jobs.cancel(giftCardPreparedExpire.name, cleanupJobId);
+    } catch (error) {
+        serverRuntime.log.error(error, null);
+    }
+}
+
+async function giftCardReceiptPdfCreate(
+    giftCardId: string,
+    buyerUserId: string,
+    serverRuntime: ServerRuntime,
+): Promise<PdfCaptureResult | null> {
+    try {
+        const token = createServerToken(giftCardId);
+        const url = `${environmentVariables.webPageUrl}/server/gift-cards/${giftCardId}/receipt?token=${encodeURIComponent(token)}`;
+        const content = await serverRuntime.browser.capturePdf({
+            url,
+            waitForSelector: '[data-receipt-ready]',
+        });
+        const fileUpload = await fileUploadCreate(serverRuntime.db, {
+            userId: buyerUserId,
+            filename: RECEIPT_FILENAME,
+            mediaType: PDF_MEDIA_TYPE,
+            bytes: content,
+        });
+        await serverRuntime.db
+            .update(giftCards)
+            .set({ invoiceFileUploadId: fileUpload.fileUploadId })
+            .where(eq(giftCards.giftCardId, giftCardId));
+        return { fileUploadId: fileUpload.fileUploadId, content };
+    } catch (error) {
+        // Payment already succeeded — never fail the pay mutation for PDF issues.
+        serverRuntime.log.error(error, null);
+        return null;
+    }
+}
+
+async function giftCardVoucherPdfCreate(
+    giftCardId: string,
+    buyerUserId: string,
+    serverRuntime: ServerRuntime,
+): Promise<PdfCaptureResult | null> {
+    try {
+        const token = createServerToken(giftCardId);
+        const url = `${environmentVariables.webPageUrl}/server/gift-cards/${giftCardId}/voucher?token=${encodeURIComponent(token)}`;
+        const content = await serverRuntime.browser.capturePdf({
+            url,
+            waitForSelector: '[data-voucher-ready]',
+        });
+        const fileUpload = await fileUploadCreate(serverRuntime.db, {
+            userId: buyerUserId,
+            filename: VOUCHER_FILENAME,
+            mediaType: PDF_MEDIA_TYPE,
+            bytes: content,
+        });
+        await serverRuntime.db
+            .update(giftCards)
+            .set({ voucherFileUploadId: fileUpload.fileUploadId })
+            .where(eq(giftCards.giftCardId, giftCardId));
+        return { fileUploadId: fileUpload.fileUploadId, content };
+    } catch (error) {
+        serverRuntime.log.error(error, null);
+        return null;
+    }
+}
+
+export async function giftCardPay(
+    { userId }: GqlSUserMutation,
+    args: GqlSUserMutationGiftCardPayArgs,
+    requestingSession: GqlSSession,
+    serverRuntime: ServerRuntime,
+): Promise<GqlSMutationResult> {
+    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+
+    const input = args.input;
+    try {
+        const [row] = await serverRuntime.db
+            .select()
+            .from(giftCards)
+            .where(
+                and(
+                    eq(giftCards.giftCardId, input.giftCardId),
+                    eq(giftCards.sessionId, requestingSession.sessionId),
+                    eq(giftCards.buyerUserId, userId),
+                ),
+            )
+            .limit(1);
+
+        if (!row) {
+            return { success: false };
+        }
+
+        if (row.paymentStatus === 'PAYED') {
+            return { success: true, referenceId: row.giftCardId };
+        }
+
+        const succeeded = await serverRuntime.stripe.paymentIntentSucceededCheck(row.paymentIntentId);
+        if (!succeeded) {
+            return { success: false };
+        }
+
+        // Phase 1 — Payload construction
+        const invoiceAddress: GiftCardInvoiceAddress = {
+            companyName: input.invoiceAddress.companyName || null,
+            firstName: input.invoiceAddress.firstName,
+            lastName: input.invoiceAddress.lastName,
+            country: input.invoiceAddress.country,
+            city: input.invoiceAddress.city,
+            postalCode: input.invoiceAddress.postalCode,
+            line1: input.invoiceAddress.line1,
+            line2: input.invoiceAddress.line2,
+        };
+
+        await serverRuntime.stripe.customerUpdate({
+            userId,
+            emailAddress: row.buyerEmail,
+            firstName: invoiceAddress.firstName,
+            lastName: invoiceAddress.lastName,
+            address: {
+                country: invoiceAddress.country,
+                city: invoiceAddress.city,
+                postCode: invoiceAddress.postalCode,
+                line1: invoiceAddress.line1,
+                line2: invoiceAddress.line2 || undefined,
+            },
+        });
+
+        // Phase 2 — Transactional execution
+        await serverRuntime.db
+            .update(giftCards)
+            .set({
+                paymentStatus: 'PAYED',
+                invoiceAddress,
+                cleanupJobId: null,
+            })
+            .where(eq(giftCards.giftCardId, row.giftCardId));
+
+        await cancelCleanupJob(serverRuntime, row.cleanupJobId);
+
+        const [receipt, voucher] = await Promise.all([
+            giftCardReceiptPdfCreate(row.giftCardId, userId, serverRuntime),
+            giftCardVoucherPdfCreate(row.giftCardId, userId, serverRuntime),
+        ]);
+
+        const locale = row.locale;
+        const attachments = [
+            voucher
+                ? {
+                      filename: VOUCHER_FILENAME,
+                      content: voucher.content,
+                      mediaType: PDF_MEDIA_TYPE,
+                      fileUploadId: voucher.fileUploadId,
+                  }
+                : null,
+            receipt
+                ? {
+                      filename: RECEIPT_FILENAME,
+                      content: receipt.content,
+                      mediaType: PDF_MEDIA_TYPE,
+                      fileUploadId: receipt.fileUploadId,
+                  }
+                : null,
+        ].filter((attachment): attachment is NonNullable<typeof attachment> => attachment != null);
+
+        await serverRuntime.email.send({
+            to: row.buyerEmail,
+            subject: giftCardPayForCustomerEmailSubject(locale),
+            react: GiftCardPayForCustomerEmail({
+                redeemCode: row.redeemCode,
+                balanceCents: row.balanceCents,
+                expiresAt: row.expiresAt,
+                recipientName: row.recipientName,
+                message: row.message,
+                locale,
+                webPageUrl: environmentVariables.webPageUrl,
+                buyerFirstName: invoiceAddress.firstName,
+            }),
+            purpose: 'GIFT_CARD_PURCHASED',
+            locale,
+            relatedEntity: { type: 'GIFT_CARD', id: row.giftCardId },
+            userId,
+            attachments: attachments.length > 0 ? attachments : undefined,
+        });
+
+        await serverRuntime.publish.sessionUpdates({ sessionId: requestingSession.sessionId });
+        await serverRuntime.publish.userUpdates({ userId });
+        await serverRuntime.publish.adminUpdates();
+
+        const { slackNotifyGiftCardPaid } = await import('../slack/slackNotifyAdjacent');
+        await slackNotifyGiftCardPaid(serverRuntime, {
+            giftCardId: row.giftCardId,
+            amountCents: row.balanceCents,
+            buyerEmail: row.buyerEmail,
+            recipientEmail: row.recipientName,
+        });
+
+        return { success: true, referenceId: row.giftCardId };
+    } catch (error) {
+        serverRuntime.log.error(error, requestingSession);
+        throw error;
+    }
+}

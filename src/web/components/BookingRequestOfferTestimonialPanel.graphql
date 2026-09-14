@@ -1,0 +1,19 @@
+mutation UserBookingRequestOfferTestimonialCreate($input: UserBookingRequestOfferTestimonialCreate!) {
+    user {
+        bookingRequestOfferTestimonialCreate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation CookBookingRequestOfferTestimonialCreate($input: CookBookingRequestOfferTestimonialCreate!) {
+    user {
+        cook {
+            bookingRequestOfferTestimonialCreate(input: $input) {
+                success
+                referenceId
+            }
+        }
+    }
+}

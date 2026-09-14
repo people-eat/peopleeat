@@ -1,0 +1,164 @@
+import type { Locale } from '../../shared/locale';
+import type { BookingRequest, BookingRequestOffer, CookCallSlotBooking } from '../db/schema';
+import { bookingRequestOfferStatusDerive } from '../domain/bookingRequest';
+import { bookingRequestOfferCostBreakdownBuild } from '../domain/bookingRequestOfferCostBreakdown';
+import { environmentVariables } from '../env/environmentVariablesCreate';
+import type {
+    GqlSBookingRequestOfferConfiguredMenu,
+    GqlSBookingRequestOfferPayment,
+    GqlSBookingRequestOfferPaymentDataType,
+    GqlSBookingRequestOfferPaymentStatus,
+    GqlSBookingRequestOfferStatus,
+    GqlSCookCallSlotBooking,
+    GqlSCostBreakdown,
+} from '../graphql/generated';
+import { toGqlBookingRequestOfferConfiguredMenu } from './toGqlBookingRequestOfferConfiguredMenu';
+import { toGqlCookCallSlotBooking } from './toGqlCookCallSlotBooking';
+import { toGqlCostBreakdown } from './toGqlCostBreakdown';
+
+export type BookingRequestOfferFieldsInput = {
+    offer: BookingRequestOffer;
+    bookingRequest: Pick<BookingRequest, 'dateTime' | 'expiresAt' | 'canceledAt'>;
+    hasAcceptedAlternative: boolean;
+    locale: Locale;
+    participantCount?: number | null;
+    promoCode?: { redeemCode: string; amountCents: number } | null;
+    giftCard?: { redeemCode: string; balanceCents: number } | null;
+    callBookings?: CookCallSlotBooking[];
+    now?: Date;
+};
+
+export type BookingRequestOfferFields = {
+    bookingRequestOfferId: string;
+    bookingRequestId: string;
+    cookId: string;
+    status: GqlSBookingRequestOfferStatus;
+    paymentStatus: GqlSBookingRequestOfferPaymentStatus;
+    userAccepted: boolean | null;
+    cookAccepted: boolean | null;
+    userDeclinationReason: string | null;
+    cookDeclinationReason: string | null;
+    userUnreadNotificationCount: number;
+    cookUnreadNotificationCount: number;
+    isPriceAutoAdjusted: boolean | null;
+    userRequestedMenuAdjustments: boolean | null;
+    travelDistanceKm: number | null;
+    menuPriceCents: number;
+    travelExpensesCents: number;
+    paymentProviderFeeCents: number;
+    platformFeePercentCook: number;
+    platformFeePercentCustomer: number;
+    platformFeeCentsCook: number;
+    platformFeeCentsCustomer: number;
+    payoutCentsCook: number;
+    totalWithoutDiscountsCentsCustomer: number;
+    totalCentsCustomer: number | null;
+    costBreakdown: GqlSCostBreakdown;
+    configuredMenu: GqlSBookingRequestOfferConfiguredMenu | null;
+    payment: GqlSBookingRequestOfferPayment | null;
+    plannedPaymentPullDateTime: Date | null;
+    paymentDateTime: Date | null;
+    plannedPayoutDateTime: Date | null;
+    payoutDateTime: Date | null;
+    createdAt: Date;
+    callBookings: GqlSCookCallSlotBooking[];
+};
+
+function bookingRequestOfferPaymentDataTypeDerive(
+    paymentData: BookingRequestOffer['paymentData'],
+): GqlSBookingRequestOfferPaymentDataType | null {
+    if (!paymentData || !('clientSecret' in paymentData)) {
+        return null;
+    }
+    if ('paymentIntentId' in paymentData && paymentData.paymentIntentId) {
+        return 'PAYMENT_INTENT';
+    }
+    if ('setupIntentId' in paymentData && paymentData.setupIntentId) {
+        return 'SETUP_INTENT';
+    }
+    return null;
+}
+
+export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsInput): BookingRequestOfferFields {
+    const { offer, bookingRequest, hasAcceptedAlternative, locale, participantCount, promoCode, giftCard, callBookings = [], now } = input;
+
+    const status = bookingRequestOfferStatusDerive({
+        userAccepted: offer.userAccepted ?? null,
+        cookAccepted: offer.cookAccepted ?? null,
+        userRequestedMenuAdjustments: offer.userRequestedMenuAdjustments ?? null,
+        paymentStatus: offer.paymentStatus,
+        paymentDataPresent: Boolean(offer.paymentData),
+        bookingRequestCanceledAt: bookingRequest.canceledAt,
+        bookingRequestExpiresAt: bookingRequest.expiresAt,
+        bookingRequestDateTime: bookingRequest.dateTime,
+        hasAcceptedAlternative,
+        now,
+    });
+
+    const costBreakdown = bookingRequestOfferCostBreakdownBuild({
+        locale,
+        menuPriceCents: offer.menuPriceCents,
+        travelExpensesCents: offer.travelExpensesCents,
+        platformFeeCentsCustomer: offer.platformFeeCentsCustomer,
+        paymentProviderFeeCents: offer.paymentProviderFeeCents,
+        totalWithoutDiscountsCentsCustomer: offer.totalWithoutDiscountsCentsCustomer,
+        totalCentsCustomer: offer.totalCentsCustomer,
+        participantCount,
+        promoCode,
+        giftCard,
+    });
+
+    const paymentType = bookingRequestOfferPaymentDataTypeDerive(offer.paymentData);
+    const clientSecret = offer.paymentData && 'clientSecret' in offer.paymentData ? offer.paymentData.clientSecret : null;
+    const paymentEligible = clientSecret != null && paymentType != null && offer.paymentStatus === 'EMPTY';
+    const publishableKey = environmentVariables.stripePublishableKey;
+    if (paymentEligible && !publishableKey) {
+        // Accept prepared Stripe SI/PI, but Elements cannot mount without the publishable key.
+        console.error(
+            `bookingRequestOfferFieldsBuild: STRIPE_PUBLISHABLE_KEY missing; withholding payment client data for offer ${offer.bookingRequestOfferId}`,
+        );
+    }
+
+    return {
+        bookingRequestOfferId: offer.bookingRequestOfferId,
+        bookingRequestId: offer.bookingRequestId,
+        cookId: offer.cookId,
+        status,
+        paymentStatus: offer.paymentStatus,
+        userAccepted: offer.userAccepted ?? null,
+        cookAccepted: offer.cookAccepted ?? null,
+        userDeclinationReason: offer.userDeclinationReason ?? null,
+        cookDeclinationReason: offer.cookDeclinationReason ?? null,
+        userUnreadNotificationCount: offer.userUnreadNotificationCount,
+        cookUnreadNotificationCount: offer.cookUnreadNotificationCount,
+        isPriceAutoAdjusted: offer.isPriceAutoAdjusted ?? null,
+        userRequestedMenuAdjustments: offer.userRequestedMenuAdjustments ?? null,
+        travelDistanceKm: offer.travelDistanceKm ?? null,
+        menuPriceCents: offer.menuPriceCents,
+        travelExpensesCents: offer.travelExpensesCents,
+        paymentProviderFeeCents: offer.paymentProviderFeeCents,
+        platformFeePercentCook: offer.platformFeePercentCook,
+        platformFeePercentCustomer: offer.platformFeePercentCustomer,
+        platformFeeCentsCook: offer.platformFeeCentsCook,
+        platformFeeCentsCustomer: offer.platformFeeCentsCustomer,
+        payoutCentsCook: offer.payoutCentsCook,
+        totalWithoutDiscountsCentsCustomer: offer.totalWithoutDiscountsCentsCustomer,
+        totalCentsCustomer: offer.totalCentsCustomer ?? null,
+        costBreakdown: toGqlCostBreakdown(costBreakdown),
+        configuredMenu: offer.configuredMenu ? toGqlBookingRequestOfferConfiguredMenu(offer.configuredMenu) : null,
+        payment:
+            paymentEligible && publishableKey
+                ? {
+                      clientSecret,
+                      publishableKey,
+                      type: paymentType,
+                  }
+                : null,
+        plannedPaymentPullDateTime: offer.plannedPaymentPullDateTime ?? null,
+        paymentDateTime: offer.paymentDateTime ?? null,
+        plannedPayoutDateTime: offer.plannedPayoutDateTime ?? null,
+        payoutDateTime: offer.payoutDateTime ?? null,
+        createdAt: offer.createdAt,
+        callBookings: callBookings.map((booking) => toGqlCookCallSlotBooking(booking)),
+    };
+}

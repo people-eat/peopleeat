@@ -1,0 +1,35 @@
+query PublicLegalDocuments($webPageKey: WebPageKey!) {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicLegal {
+        privacyPolicy {
+            privacyPolicyId
+            bodyDe
+            changeSummaryDe
+            publishedAt
+        }
+        termsAndConditions {
+            termsAndConditionsId
+            bodyDe
+            changeSummaryDe
+            publishedAt
+        }
+        imprint {
+            imprintId
+            bodyDe
+            changeSummaryDe
+            publishedAt
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: $webPageKey) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

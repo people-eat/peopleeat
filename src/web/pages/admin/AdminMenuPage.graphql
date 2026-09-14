@@ -1,0 +1,86 @@
+# Admin menu detail. Loaded by `/admin/menus/$menuId`.
+# Live via `adminUpdates`. See docs/architecture/state-synchronization.md.
+
+fragment AdminMenuPageMealOption on AdminCookMeal {
+    mealId
+    title
+    description
+    imageFileUploadId
+    imageUrl
+    publishedAt
+    deletedAt
+}
+
+fragment AdminMenuPageMenu on AdminCookMenu {
+    menuId
+    cookId
+    cookName
+    title
+    description
+    courseCount
+    courseMealOptionImages
+    copyOfMenuId
+    bookingRequestOfferId
+    publishedAt
+    deletedAt
+    createdAt
+    updatedAt
+    courses {
+        courseId
+        title
+        mealSelectionLimit
+        mealOptions {
+            ...AdminMenuPageMealOption
+        }
+    }
+}
+
+fragment AdminMenuPageAdmin on Admin {
+    adminId
+    cookMenu(menuId: $menuId) {
+        ...AdminMenuPageMenu
+    }
+}
+
+query AdminMenuPage($menuId: ID!) {
+    currentSession {
+        user {
+            admin {
+                ...AdminMenuPageAdmin
+            }
+        }
+    }
+}
+
+subscription AdminMenuPageUpdates($menuId: ID!) {
+    adminUpdates {
+        ...AdminMenuPageAdmin
+    }
+}
+
+mutation AdminMenuUpdate($menuId: ID!, $menu: CookMenuUpdate!) {
+    admin {
+        cookMenuUpdate(menuId: $menuId, menu: $menu) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminMenuDelete($menuId: ID!) {
+    admin {
+        cookMenuDelete(menuId: $menuId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminMenuCopy($menuId: ID!) {
+    admin {
+        cookMenuCopy(menuId: $menuId) {
+            success
+            referenceId
+        }
+    }
+}

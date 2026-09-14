@@ -1,0 +1,40 @@
+# Customer support hub — list + create. See docs/features/support-requests.md.
+
+fragment ProfileCustomerSupportRequestsPageUser on User {
+    userId
+    supportRequests {
+        supportRequestId
+        subject
+        status
+        userUnreadNotificationCount
+        createdAt
+        resolvedAt
+        bookingRequest {
+            bookingRequestId
+            occasion
+            dateTime
+        }
+    }
+    bookingRequests {
+        bookingRequestId
+        occasion
+        dateTime
+        supportRequest {
+            supportRequestId
+        }
+    }
+}
+
+query ProfileCustomerSupportRequestsPage {
+    currentSession {
+        user {
+            ...ProfileCustomerSupportRequestsPageUser
+        }
+    }
+}
+
+subscription ProfileCustomerSupportRequestsPageUpdates {
+    userUpdates {
+        ...ProfileCustomerSupportRequestsPageUser
+    }
+}

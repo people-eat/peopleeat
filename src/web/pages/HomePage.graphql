@@ -1,0 +1,26 @@
+query HomePage {
+    currentSession {
+        sessionId
+        user {
+            emailAddress
+            firstName
+            lastName
+            ...PublicHeaderUser
+        }
+    }
+    publicCity {
+        findMany {
+            pathName
+            nameDe
+            nameEn
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: LANDING) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

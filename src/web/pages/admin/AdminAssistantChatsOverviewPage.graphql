@@ -1,0 +1,25 @@
+# Admin assistant chats overview — surface distribution + creation time series.
+# See docs/features/admin-assistant-chats.md.
+# `assistantChatsCounts` order matches `ADMIN_ASSISTANT_CHAT_COUNT_CRITERIA`
+# in AdminAssistantChatsOverviewPage.tsx.
+
+query AdminAssistantChatsOverviewPage(
+    $criteria: [AdminAssistantChatCriterion!]!
+    $range: DateTimeRange!
+    $granularity: AdminTimeBucketGranularity! = day
+) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                assistantChatsCounts(criteria: $criteria)
+                assistantChatCreations(range: $range, granularity: $granularity) {
+                    bucketStart
+                    count
+                }
+            }
+        }
+    }
+}

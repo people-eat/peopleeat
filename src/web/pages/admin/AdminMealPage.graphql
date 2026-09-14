@@ -1,0 +1,74 @@
+# Admin meal detail / edit. Loaded by `/admin/meals/$mealId` and `…/edit`.
+# Live via `adminUpdates`. See docs/architecture/state-synchronization.md.
+
+fragment AdminMealPageMeal on AdminCookMeal {
+    mealId
+    cookId
+    cookName
+    title
+    description
+    imageFileUploadId
+    imageUrl
+    publishedAt
+    deletedAt
+    createdAt
+    updatedAt
+    relationships {
+        deletionBlockedByRelationships
+        menus {
+            menuId
+            menuTitle
+            courseTitle
+            blocksDeletion
+        }
+        offers {
+            bookingRequestOfferId
+            bookingRequestUserName
+            bookingRequestDateTime
+            menuTitle
+            courseTitle
+            blocksDeletion
+        }
+    }
+}
+
+fragment AdminMealPageAdmin on Admin {
+    adminId
+    cookMeal(mealId: $mealId) {
+        ...AdminMealPageMeal
+    }
+}
+
+query AdminMealPage($mealId: ID!) {
+    currentSession {
+        user {
+            admin {
+                ...AdminMealPageAdmin
+            }
+        }
+    }
+}
+
+subscription AdminMealPageUpdates($mealId: ID!) {
+    adminUpdates {
+        ...AdminMealPageAdmin
+    }
+}
+
+mutation AdminMealUpdate($mealId: ID!, $meal: CookMealUpdate!) {
+    admin {
+        cookMealUpdate(mealId: $mealId, meal: $meal) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminMealDelete($mealId: ID!) {
+    admin {
+        cookMealDelete(mealId: $mealId) {
+            success
+            referenceId
+        }
+    }
+}

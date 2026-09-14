@@ -1,0 +1,60 @@
+# Admin booking-request list. Search / publication / lifecycle status / page /
+# sort / view live in the URL; `Admin.bookingRequests` / `bookingRequestsCounts`
+# share `AdminBookingRequestCriterion`.
+
+query AdminBookingRequestsPage($criterion: AdminBookingRequestCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                bookingRequests(criterion: $criterion) {
+                    bookingRequestId
+                    status
+                    occasion
+                    dateTime
+                    publicationStatus
+                    createdAt
+                    exactEventAddress {
+                        city
+                        displayText
+                    }
+                    participants {
+                        type
+                    }
+                    offers {
+                        bookingRequestOfferId
+                        status
+                        createdAt
+                        userUnreadNotificationCount
+                        cookUnreadNotificationCount
+                        cook {
+                            cookId
+                            user {
+                                userId
+                                firstName
+                                lastName
+                            }
+                        }
+                    }
+                    customer {
+                        userId
+                        firstName
+                        lastName
+                        emailAddress
+                    }
+                    cook {
+                        cookId
+                        user {
+                            userId
+                            firstName
+                            lastName
+                        }
+                    }
+                }
+                bookingRequestsCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

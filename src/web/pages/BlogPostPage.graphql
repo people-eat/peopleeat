@@ -1,0 +1,12 @@
+query PublicBlogPostPage($pathName: String!) {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicBlogPost {
+        findOneByPathName(pathName: $pathName) {
+            ...PublicBlogPostFields
+        }
+    }
+}

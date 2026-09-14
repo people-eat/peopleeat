@@ -1,0 +1,12 @@
+query PublicPartnerPage($pathName: String!) {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicPartner {
+        findOneByPathName(pathName: $pathName) {
+            ...PublicPartnerFields
+        }
+    }
+}

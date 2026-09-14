@@ -1,0 +1,24 @@
+# Admin sessions overview hub — kind distribution + creation time series.
+# See docs/features/admin-sessions.md.
+# `sessionCounts` order matches `ADMIN_SESSION_COUNT_CRITERIA` in AdminSessionsOverviewPage.tsx.
+
+query AdminSessionsOverviewPage(
+    $criteria: [AdminSessionCriterion!]!
+    $range: DateTimeRange!
+    $granularity: AdminTimeBucketGranularity! = day
+) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                sessionCounts(criteria: $criteria)
+                sessionCreations(range: $range, granularity: $granularity) {
+                    bucketStart
+                    count
+                }
+            }
+        }
+    }
+}

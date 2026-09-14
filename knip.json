@@ -1,0 +1,36 @@
+{
+    "$schema": "https://unpkg.com/knip@6/schema.json",
+    "tags": ["-lintignore"],
+    "ignore": [
+        "src/server/graphql/extensions.ts",
+        "src/server/graphql/PubSubPostgres.ts",
+        "src/server/graphql/server.ts",
+        "src/server/jobs/index.ts",
+        "src/server/jobs/types.ts",
+        "src/web/components/base/**/*.tsx",
+        "src/web/hooks/useVisualViewport.ts",
+        "src/web/hooks/useHotkeys.ts",
+        "src/server/agents/agentBookingRequestCreate.ts",
+        ".storybook/vite.config.ts",
+        "scripts/fixGraphqlZodLazyNesting.mjs",
+        "scripts/migrateFromPeopleEat/**"
+    ],
+    "ignoreDependencies": [
+        "@tanstack/react-devtools",
+        "@tanstack/react-router-devtools",
+        "@tanstack/react-router-ssr-query",
+        "@tanstack/router-plugin",
+        "graphql-subscriptions",
+        "@graphql-codegen/client-preset",
+        "graphql-codegen-typescript-validation-schema",
+        "@graphql-codegen/typescript-validation-schema",
+        "vaul"
+    ],
+    "playwright": {
+        "config": ["playwright.config.ts"]
+    },
+    "ignoreIssues": {
+        "src/shared/index.ts": ["exports", "types"],
+        "src/server/agents/agentScaffolding.ts": ["exports", "types"]
+    }
+}

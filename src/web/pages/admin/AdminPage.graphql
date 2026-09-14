@@ -1,0 +1,25 @@
+# Admin gate probe — nullable `User.admin` so public and admin routes can ask
+# "is the current user an admin?" without catching a GraphQL error. Sidebar
+# badge counts live on `AdminSidebarNavBadges` (see AdminSidebar.graphql).
+# See `docs/architecture/authorization-admin.md`.
+
+query AdminPage {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                ...AdminSidebarNavBadges
+            }
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: ADMINISTRATION) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

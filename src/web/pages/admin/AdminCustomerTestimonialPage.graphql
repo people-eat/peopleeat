@@ -1,0 +1,84 @@
+# Admin customer-testimonial detail. Loaded by
+# `/admin/testimonials/customer/$customerTestimonialId`.
+
+fragment AdminCustomerTestimonialDetail on AdminCustomerTestimonial {
+    customerTestimonialId
+    userId
+    bookingRequestOfferId
+    authorName
+    displayAuthorName
+    location
+    displayLocation
+    occasion
+    displayOccasion
+    body
+    imageUrls
+    rating
+    publicationStatus
+    publishedAt
+    createdAt
+    user {
+        userId
+        firstName
+        lastName
+        emailAddress
+    }
+}
+
+query AdminCustomerTestimonialPage($customerTestimonialId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                customerTestimonial(customerTestimonialId: $customerTestimonialId) {
+                    ...AdminCustomerTestimonialDetail
+                }
+            }
+        }
+    }
+}
+
+subscription AdminCustomerTestimonialPageUpdates($customerTestimonialId: ID!) {
+    adminUpdates {
+        adminId
+        customerTestimonial(customerTestimonialId: $customerTestimonialId) {
+            ...AdminCustomerTestimonialDetail
+        }
+    }
+}
+
+mutation AdminCustomerTestimonialDetailUpdate($customerTestimonialId: ID!, $input: AdminCustomerTestimonialUpdate!) {
+    admin {
+        customerTestimonialUpdate(customerTestimonialId: $customerTestimonialId, input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCustomerTestimonialDetailDelete($customerTestimonialId: ID!) {
+    admin {
+        customerTestimonialDelete(customerTestimonialId: $customerTestimonialId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCustomerTestimonialDetailPublish($customerTestimonialId: ID!, $publicationStatus: TestimonialPublicationStatus!) {
+    admin {
+        customerTestimonialPublish(customerTestimonialId: $customerTestimonialId, publicationStatus: $publicationStatus) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCustomerTestimonialDetailImageUpdate($customerTestimonialId: ID!, $imageFileUploadIds: [ID!]!) {
+    admin {
+        customerTestimonialImageUpdate(customerTestimonialId: $customerTestimonialId, imageFileUploadIds: $imageFileUploadIds) {
+            success
+            referenceId
+        }
+    }
+}

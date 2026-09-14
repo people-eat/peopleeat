@@ -1,0 +1,46 @@
+# Admin fixed-route SEO detail. Seed-and-subscribe on `adminUpdates`.
+# Ghost keys return shared defaults with persisted=false until first save.
+# See docs/features/admin-web-pages.md.
+
+query AdminWebPagePage($webPageKey: WebPageKey!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                webPage(webPageKey: $webPageKey) {
+                    webPageKey
+                    titleDe
+                    titleEn
+                    descriptionDe
+                    descriptionEn
+                    persisted
+                    updatedAt
+                }
+            }
+        }
+    }
+}
+
+mutation AdminWebPageUpdate($webPageKey: WebPageKey!, $input: AdminWebPageUpdate!) {
+    admin {
+        webPageUpdate(webPageKey: $webPageKey, input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+subscription AdminWebPagePageUpdates($webPageKey: WebPageKey!) {
+    adminUpdates {
+        adminId
+        webPage(webPageKey: $webPageKey) {
+            webPageKey
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+            persisted
+            updatedAt
+        }
+    }
+}

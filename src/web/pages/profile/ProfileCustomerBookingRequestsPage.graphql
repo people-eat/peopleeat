@@ -1,0 +1,56 @@
+# Customer booking-request list. Loaded by `/profile/booking-requests`.
+# Seed-and-subscribe via `userUpdates`. See docs/architecture/state-synchronization.md.
+# Detail view is not built yet — cards are display-only.
+
+fragment ProfileCustomerBookingRequestsPageUser on User {
+    userId
+    bookingRequests {
+        bookingRequestId
+        status
+        occasion
+        dateTime
+        exactEventAddress {
+            displayText
+            city
+        }
+        participants {
+            bookingRequestParticipantId
+            type
+        }
+        offers {
+            bookingRequestOfferId
+            userUnreadNotificationCount
+            testimonialMissing
+            cook {
+                cookId
+                user {
+                    display
+                    profilePicture {
+                        url
+                    }
+                }
+            }
+            callBookings {
+                cookCallSlotBookingId
+                startAt
+                endAt
+                status
+                initiator
+            }
+        }
+    }
+}
+
+query ProfileCustomerBookingRequestsPage {
+    currentSession {
+        user {
+            ...ProfileCustomerBookingRequestsPageUser
+        }
+    }
+}
+
+subscription ProfileCustomerBookingRequestsPageUpdates {
+    userUpdates {
+        ...ProfileCustomerBookingRequestsPageUser
+    }
+}

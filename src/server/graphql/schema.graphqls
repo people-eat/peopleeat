@@ -1,0 +1,4826 @@
+scalar DateTime
+scalar Date
+# Untyped JSON payload — used only where the GraphQL schema is itself a union
+# of values that the UI surfaces verbatim (e.g. tool call arguments rendered
+# in a debug/inspect dialog). See docs/architecture/chat.md.
+scalar JSON
+# Contact / geo format gates from graphql-scalars (parse + serialize). See
+# docs/architecture/api-layer.md. Commands still own normalize/uniqueness
+# (e.g. emailNormalize, phone uniqueness).
+scalar EmailAddress
+scalar PhoneNumber
+scalar Latitude
+scalar Longitude
+# IANA time zone (e.g. Europe/Berlin). Validated by graphql-scalars
+# TimeZoneResolver. See docs/architecture/i18n.md.
+scalar TimeZone
+
+enum Locale {
+    de
+    en
+}
+
+enum ChatMessageDeliveryStatus {
+    SENT
+    DELIVERED
+    READ
+    FAILED
+}
+
+type ChatMessageUser {
+    chatMessageId: ID!
+    # Lean public identity — no email / last name / phone. See `PublicUser`.
+    author: PublicUser!
+    # Viewer-relative: true when this message was authored by the requesting
+    # user (assistant chats) or by the viewer's party on an offer thread
+    # (customer / cook / admin). Stamped at map time — `PublicUser` has no id.
+    isOwn: Boolean!
+    # Wire-only affordance (not persisted). Always `false` today; reserved so
+    # admin / inspector surfaces can opt into an in-bubble copy control later
+    # without a schema migration. See docs/architecture/chat.md.
+    showCopyButton: Boolean!
+    # Wire-only affordance (not persisted). When true, long user bodies clamp
+    # to two lines with an expand chevron — useful on assistant transcripts
+    # where the human's pastes are secondary to the model reply. Stamped
+    # `true` by assistant chat mappers and `false` by offer/support mappers.
+    # See docs/architecture/chat.md.
+    collapseLongBody: Boolean!
+    body: String!
+    # Files the user attached to this message, in send-order. Empty list when
+    # the message was a plain-text send. The bytes are not exposed inline —
+    # `FileUpload.url` points at `/api/file-uploads/:id` which streams them
+    # back behind the same session cookie that authorized the upload.
+    attachments: [FileUpload!]!
+    # Optional delivery ticks for outbound WhatsApp (and future carriers).
+    # Null on assistant / offer / support messages.
+    deliveryStatus: ChatMessageDeliveryStatus
+    createdAt: DateTime!
+}
+
+# A persisted user-uploaded file. Consumer-agnostic — chat surfaces these
+# today as message attachments via the `ChatMessageUser.attachments` field,
+# but the same shape is reused by other surfaces (e.g. assistant-side
+# outputs, avatars, document uploads).
+type FileUpload {
+    fileUploadId: ID!
+    filename: String!
+    # IANA media type — drives both the in-bubble preview (image vs file
+    # chip) and the LLM-side `FilePart` `mediaType` in
+    # `toModelMessages`.
+    mediaType: String!
+    # Size in bytes. Mirrors what the upload route persisted; clamped at the
+    # route, not validated again here.
+    size: Int!
+    # Server-rooted URL to stream the bytes back. Today: `/api/file-uploads/:id`.
+    url: String!
+}
+
+# Offer-domain timeline row projected from `BookingRequestOfferEvents`
+# (everything except `*_MESSAGE_SIMPLE`, which become `ChatMessageUser`).
+# `chatMessageId` is the event UUID. `payload` matches the domain JSONB for
+# `type`. See docs/architecture/booking.md and docs/architecture/chat.md.
+enum ChatMessageBookingRequestOfferEventType {
+    COOK_CREATED
+    COOK_UPDATED_SUGGESTED_MENU
+    USER_REQUESTED_MENU_CHANGES
+    USER_CONFIGURED_MENU
+    COOK_ACCEPTED
+    COOK_DECLINED
+    USER_ACCEPTED
+    USER_DECLINED
+    USER_CANCELLED
+    ADMIN_HANDED_OVER_CLOSED
+    ADMIN_HANDED_OVER_TO_COOK
+    USER_PARTICIPANTS_UPDATED
+    USER_RESTRICTIONS_UPDATED
+    USER_DATE_UPDATED
+    USER_TIME_UPDATED
+    USER_PREFERENCES_UPDATED
+    USER_LOCATION_UPDATED
+    COOK_CHANGED_PRICE
+    SYSTEM_CHANGED_PRICE
+    USER_CALL_SLOT_REQUESTED
+    COOK_CALL_SLOT_REQUESTED
+    COOK_CALL_SLOT_CONFIRMED
+    USER_CALL_SLOT_CONFIRMED
+    COOK_CALL_SLOT_DECLINED
+    USER_CALL_SLOT_DECLINED
+    USER_CALL_SLOT_CANCELLED
+    COOK_CALL_SLOT_CANCELLED
+}
+
+type ChatMessageBookingRequestOfferEvent {
+    chatMessageId: ID!
+    type: ChatMessageBookingRequestOfferEventType!
+    payload: JSON!
+    createdAt: DateTime!
+}
+
+# Human offer/support transcript rows. Not members of the assistant parts model.
+union HumanChatMessage = ChatMessageUser | ChatMessageBookingRequestOfferEvent
+
+# --- Assistant chat (durable turn + parts) ------------------------------------
+#
+# See docs/architecture/chat.md. Bodies are JSONB parts; GraphQL strips
+# `stepStart`. Tool slot typing for `promptUserForInput` lives in Zod + UI only.
+
+enum ChatTurnStatus {
+    QUEUED
+    RUNNING
+    AWAITING_INPUT
+    COMPLETE
+    FAILED
+    CANCELLED
+}
+
+enum ChatMessageRole {
+    USER
+    ASSISTANT
+}
+
+enum ChatMessageStatus {
+    PENDING
+    STREAMING
+    COMPLETE
+    FAILED
+    CANCELLED
+}
+
+enum ChatMessagePartState {
+    STREAMING
+    DONE
+}
+
+enum ChatToolState {
+    INPUT_STREAMING
+    INPUT_AVAILABLE
+    APPROVAL_REQUESTED
+    APPROVAL_RESPONDED
+    OUTPUT_AVAILABLE
+    OUTPUT_ERROR
+    OUTPUT_DENIED
+}
+
+enum ChatToolApprovalStatus {
+    REQUESTED
+    APPROVED
+    DENIED
+}
+
+type ChatTurnUsage {
+    inputTokens: Int
+    outputTokens: Int
+    totalTokens: Int
+    reasoningTokens: Int
+    cachedInputTokens: Int
+}
+
+type ChatTurnFailure {
+    code: String!
+}
+
+type ChatTurnDebug {
+    agentName: String
+    modelId: String
+    finishReason: String
+    usage: ChatTurnUsage
+}
+
+type ChatTurn {
+    chatTurnId: ID!
+    sequence: Int!
+    status: ChatTurnStatus!
+    revision: Int!
+    locale: Locale
+    userMessage: ChatMessage!
+    assistantMessage: ChatMessage!
+    failure: ChatTurnFailure
+    debug: ChatTurnDebug
+    createdAt: DateTime!
+    startedAt: DateTime
+    completedAt: DateTime
+    lastModifiedAt: DateTime!
+}
+
+type ChatMessage {
+    chatMessageId: ID!
+    chatTurnId: ID!
+    role: ChatMessageRole!
+    status: ChatMessageStatus!
+    revision: Int!
+    parts: [ChatMessagePart!]!
+    # User-role attachments only; empty for assistant messages.
+    attachments: [FileUpload!]!
+    createdAt: DateTime!
+    lastModifiedAt: DateTime!
+}
+
+type ChatMessageTextPart {
+    partId: ID!
+    state: ChatMessagePartState!
+    text: String!
+}
+
+type ChatMessageReasoningPart {
+    partId: ID!
+    state: ChatMessagePartState!
+    text: String!
+}
+
+type ChatToolApproval {
+    approvalId: ID!
+    status: ChatToolApprovalStatus!
+    descriptor: JSON
+    reason: String
+}
+
+type ChatToolDebug {
+    input: JSON
+    output: JSON
+    errorText: String
+}
+
+type ChatMessageToolPart {
+    partId: ID!
+    toolCallId: ID!
+    toolName: String!
+    title: String
+    state: ChatToolState!
+    providerExecuted: Boolean!
+    preliminary: Boolean!
+    approval: ChatToolApproval
+    # Gated: CHAT_DEBUG_ENABLED or any admin session (own rail + inspecting). Always persisted in JSONB.
+    debug: ChatToolDebug
+}
+
+type ChatMessageSourceUrlPart {
+    partId: ID!
+    sourceId: ID!
+    url: String!
+    title: String
+}
+
+type ChatMessageSourceDocumentPart {
+    partId: ID!
+    sourceId: ID!
+    mediaType: String!
+    title: String!
+    filename: String
+}
+
+type ChatMessageFilePart {
+    partId: ID!
+    mediaType: String!
+    filename: String
+    url: String!
+}
+
+type ChatMessageDataPart {
+    partId: ID!
+    dataType: String!
+    data: JSON!
+}
+
+union ChatMessagePart =
+    | ChatMessageTextPart
+    | ChatMessageReasoningPart
+    | ChatMessageToolPart
+    | ChatMessageSourceUrlPart
+    | ChatMessageSourceDocumentPart
+    | ChatMessageFilePart
+    | ChatMessageDataPart
+
+type Chat {
+    chatId: ID!
+    # Owning user. Null only for legacy pre-ownership rows (unreachable via
+    # User.assistantChat(s) / Admin.assistantChat(s) after backfill filters).
+    userId: ID
+    # Which assistant rail this chat belongs to. Null only on legacy rows.
+    surface: ChatSurface
+    title: String!
+    lastModifiedAt: DateTime!
+    # Sequence-ordered turns. Loaded only when selected (list queries omit it).
+    turns: [ChatTurn!]!
+}
+
+# Soft-delete is owner-facing only; `Chat` never exposes `deletedAt` (filtered out).
+
+type ChatTurnSnapshot {
+    turns: [ChatTurn!]!
+}
+
+type ChatTurnUpserted {
+    turn: ChatTurn!
+}
+
+union ChatTurnUpdate = ChatTurnSnapshot | ChatTurnUpserted
+
+# Which product surface owns an assistant chat. Booking-request stays out until
+# that surface ships. See docs/features/assistant-sidebar.md.
+enum ChatSurface {
+    admin
+    customer
+    cook
+}
+
+enum UserPreferredCommunication {
+    SMS
+    WHATS_APP
+    CALL
+    E_MAIL
+}
+
+# Account lifecycle. `ANONYMIZED` after delete/admin anonymize — email null, no login.
+# `BANNED` may still sign in but marketplace writes are blocked; see docs/features/account.md.
+enum UserStatus {
+    ACTIVE
+    BANNED
+    ANONYMIZED
+}
+
+# Self-serve registration after email OTP verify (new email). Name is always
+# required. Phone, birthDate, and preferredCommunication are optional on the
+# schema so lightweight surfaces (gift-card purchase) can omit them; other UIs
+# still collect and send them. Optional `cook` inserts a `Cooks` row in the
+# same transaction (chef sign-up). See docs/features/sign-in.md.
+input UserCreate {
+    firstName: String!
+    lastName: String!
+    phoneNumber: PhoneNumber
+    birthDate: Date
+    preferredCommunication: UserPreferredCommunication
+    # UI locale at registration — stamped on `Users.locale` for emails/jobs.
+    locale: Locale!
+    # Browser IANA zone at registration — stamped on `Users.timeZone`.
+    timeZone: TimeZone!
+    cook: CookCreate
+}
+
+# Patch. At least one field required. `profilePictureFileUploadId: null`
+# clears the picture. Upload bytes via POST /api/file-uploads first, then
+# pass the id here. See docs/features/profile-pictures.md.
+input UserUpdate {
+    firstName: String
+    lastName: String
+    phoneNumber: PhoneNumber
+    birthDate: Date
+    preferredCommunication: UserPreferredCommunication
+    locale: Locale
+    timeZone: TimeZone
+    profilePictureFileUploadId: ID
+}
+
+type User {
+    userId: ID!
+    # ACTIVE | BANNED | ANONYMIZED. Session-owned; drives the private profile
+    # restriction banner. Admin ban/unban: `AdminMutation.userStatusUpdate`.
+    # See docs/features/account.md.
+    status: UserStatus!
+    # Null when the account has been anonymized (`Users.status = ANONYMIZED`).
+    # Active users always have an address. See docs/features/account.md.
+    emailAddress: EmailAddress
+    firstName: String!
+    lastName: String!
+    phoneNumber: PhoneNumber
+    birthDate: Date
+    preferredCommunication: UserPreferredCommunication
+    # Profile language — drives mismatch gate + outbound transactional email.
+    # See docs/architecture/i18n.md.
+    locale: Locale!
+    # IANA zone for date/time display. See docs/architecture/i18n.md.
+    timeZone: TimeZone!
+    # Current profile picture. Bytes live in FileUploads; this field resolves
+    # the linked upload (url → /api/file-uploads/:id). Public GET when this FK
+    # points at the upload. See docs/features/profile-pictures.md.
+    profilePicture: FileUpload
+    # Admin read namespace — non-null only for the session's own admin user
+    # (row in `Admins` with `adminId` = `Users.userId`). Null for anonymous
+    # sessions, non-admin logged-in users, and any future cross-user lookups.
+    # Lets public surfaces ask "is the current user an admin?" with a single
+    # nullable field check instead of catching a `guardAdmin` exception.
+    # Mutations still live on `Mutation.admin`. See
+    # `docs/architecture/authorization-admin.md`.
+    admin: Admin
+    # Cook membership probe — non-null only for the session's own cook user
+    # (row in `Cooks` with `cookId` = `Users.userId`). Same nullable pattern as
+    # `User.admin`; see `docs/architecture/authorization-admin.md`. Profile
+    # switches cook vs customer UI on this field.
+    cook: Cook
+    # Own-user only. Active sessions (`wasTerminatedAt` null) for account
+    # settings. Null/empty when the parent is not the requesting user — nullable
+    # so identity-only `User` selections (chat authors, etc.) stay lightweight.
+    sessions: [UserSession!]
+    # Own-user only. Registered passkeys for account settings. Null/empty when
+    # the parent is not the requesting user. Never exposes credential material.
+    passkeys: [AuthPasskey!]
+    # Own-user only. TOTP authenticator when enrolled (pending or confirmed).
+    # Null when the parent is not the requesting user or none exists.
+    timeBasedOneTimePassword: AuthTimeBasedOneTimePassword
+    # Own-user acceptance timestamps (null until accept / admin-created).
+    lastAcceptedPrivacyPolicy: DateTime
+    lastAcceptedTerms: DateTime
+    # Own-user only. Computed pending legal docs vs lastAccepted*. Null when
+    # the parent is not the requesting user.
+    legalAcceptance: UserLegalAcceptance
+    # Own-user booking requests. Null when the parent is not the requesting
+    # user (identity-only `User` selections). Empty until create/list commands.
+    bookingRequests: [UserBookingRequest!]
+    bookingRequest(bookingRequestId: ID!): UserBookingRequest
+    # Own-user previous event venues from booking requests. Null when the parent
+    # is not the requesting user. Empty when none. Newest first, deduped, capped.
+    # Lean alternative to hydrating `bookingRequests` for form quick-select.
+    previousEventAddresses: [CookTravelOriginAddress!]
+
+    # Own-user support cases (general + booking-linked). Null when the parent
+    # is not the requesting user. Newest first.
+    supportRequests: [UserSupportRequest!]
+    supportRequest(supportRequestId: ID!): UserSupportRequest
+    # Own-user assistant chats. Null when the parent is not the requesting
+    # user. List is lazy — sidebars only query when "All chats" opens.
+    # See docs/features/assistant-sidebar.md.
+    assistantChats(criterion: UserAssistantChatCriterion!): [Chat!]
+    assistantChat(chatId: ID!): Chat
+    # Own-user gift-card purchases (`buyerUserId`). Null when the parent is
+    # not the requesting user. Newest first. See docs/features/gift-card-purchase.md.
+    giftCards: [UserGiftCard!]
+}
+
+# Filter + pagination for `User.assistantChats`. Optional `surface` scopes to
+# one rail (admin / customer / cook). Optional `searchText` matches title
+# (case-insensitive contains). Default sort `lastModifiedAt` desc.
+input UserAssistantChatCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    surface: ChatSurface
+    searchText: String
+}
+
+# Safe session summary for account settings (not the request `Session` type).
+type UserSession {
+    sessionId: ID!
+    createdAt: DateTime!
+    lastInteractionAt: DateTime!
+    userAgent: String
+    isCurrent: Boolean!
+}
+
+# Safe passkey summary — never `publicKey` / `credentialId`.
+type AuthPasskey {
+    authPasskeyId: ID!
+    deviceType: String
+    backedUp: Boolean!
+    createdAt: DateTime!
+}
+
+# Safe TOTP summary for account settings — never the secret or recovery plaintext.
+type AuthTimeBasedOneTimePassword {
+    authTimeBasedOneTimePasswordId: ID!
+    confirmedAt: DateTime
+    recoveryCodesRemaining: Int!
+    createdAt: DateTime!
+}
+
+# Returned once from enroll start — secret material for QR / manual entry.
+type AuthTotpEnrollStartResult {
+    otpauthUrl: String!
+    secret: String!
+}
+
+# Returned once from enroll confirm — store recovery codes offline.
+type AuthTotpEnrollConfirmResult {
+    recoveryCodes: [String!]!
+}
+
+# Presence of a pending second-factor challenge after primary auth.
+type AuthTotpChallenge {
+    expiresAt: DateTime!
+}
+
+# Cook read namespace — resolved only when `User.cook` is non-null (session's
+# own user has a `Cooks` row). `cookId` (= `Users.userId`) is the identity /
+# presence probe; domain child fields hang beside it. Same 1:1 membership
+# pattern as `Admin`. Soft-deleted meals / menus (`deletedAt`) are never
+# returned here — see `AdminCookMeal` / `AdminCookMenu` for admin views.
+
+# Where a cook meal is used (inventory menus vs offer-copied menus) and whether
+# soft-delete would leave a course with zero meal options. See cook-meals.md.
+type CookMealRelationshipMenu {
+    menuId: ID!
+    menuTitle: String!
+    courseTitle: String!
+    blocksDeletion: Boolean!
+}
+
+type CookMealRelationshipBookingRequestOffer {
+    bookingRequestOfferId: ID!
+    bookingRequestUserName: String!
+    bookingRequestDateTime: DateTime!
+    menuTitle: String!
+    courseTitle: String!
+    blocksDeletion: Boolean!
+}
+
+type CookMealRelationships {
+    menus: [CookMealRelationshipMenu!]!
+    offers: [CookMealRelationshipBookingRequestOffer!]!
+    deletionBlockedByRelationships: Boolean!
+}
+
+type CookMeal {
+    mealId: ID!
+    title: String!
+    description: String!
+    imageFileUploadId: ID
+    imageUrl: String
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    relationships: CookMealRelationships!
+}
+
+# One course on a cook menu. Soft-deleted meals are omitted from `mealOptions`.
+type CookMenuCourse {
+    courseId: ID!
+    title: String!
+    mealSelectionLimit: Int
+    mealOptions: [CookMeal!]!
+}
+
+# Booking-request context for an offer-scoped `CookMenu` copy. Null on library
+# (inventory) menus. `status` drives whether the cook may still edit the copy.
+type CookMenuOfferContext {
+    bookingRequestOfferId: ID!
+    bookingRequestDateTime: DateTime!
+    customerFirstName: String!
+    status: BookingRequestOfferStatus!
+}
+
+# Cook-owned menu. Soft-deleted menus never appear here — see `AdminCookMenu`.
+# `copyOfMenuId` is set on offer-scoped copies (points at the inventory source).
+# `bookingRequestOfferId` / `offerContext` are set only on offer-scoped copies.
+# `courseMealOptionImages` — public image URLs of non-deleted meal options that
+# have a photo, ordered by course index then option index, deduped by URL.
+type CookMenu {
+    menuId: ID!
+    title: String!
+    description: String!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    copyOfMenuId: ID
+    bookingRequestOfferId: ID
+    offerContext: CookMenuOfferContext
+    # Living inventory template this offer copy was made from (`copyOfMenuId`).
+    # Null on library menus, when unlinked, or when the template was deleted.
+    templateMenu: CookMenu
+    courses: [CookMenuCourse!]!
+    courseMealOptionImages: [String!]!
+}
+
+type CookTravelOriginAddress {
+    displayText: String!
+    latitude: Latitude!
+    longitude: Longitude!
+    addressLine1: String!
+    addressLine2: String!
+    city: String!
+    postCode: String!
+    state: String!
+    country: String!
+}
+
+enum CookStripeStatus {
+    EMPTY
+    PREPARED
+    COMPLETED
+    ACTIVE_WAS_RESET
+}
+
+enum CookStripeOnboardingKind {
+    ONBOARDING_URL
+    ALREADY_COMPLETE
+    NOT_APPROVED
+}
+
+type CookStripeOnboardingResult {
+    kind: CookStripeOnboardingKind!
+    # Present when `kind` is `ONBOARDING_URL` — absolute Stripe Account Link.
+    url: String
+}
+
+type CookStripeDashboardResult {
+    # Absolute Express dashboard login URL, or null when the wallet is inactive.
+    url: String
+}
+
+# Cook-facing buckets for Stripe Account `requirements.*` keys — never expose raw keys.
+enum CookStripeRequirementCategory {
+    IDENTITY_VERIFICATION
+    BANK_ACCOUNT
+    TERMS_OF_SERVICE
+    BUSINESS_DETAILS
+    PERSONAL_DETAILS
+    OTHER
+}
+
+enum CookStripeDisabledReason {
+    PAST_DUE
+    PENDING_VERIFICATION
+    REJECTED
+    LISTED
+    OTHER
+}
+
+# Live `accounts.retrieve` snapshot for the wallet page. Null when no Connect
+# account or Stripe retrieve fails. Not on userUpdates (would hit Stripe every push).
+type CookStripeAccountDetails {
+    detailsSubmitted: Boolean!
+    chargesEnabled: Boolean!
+    payoutsEnabled: Boolean!
+    disabledReason: CookStripeDisabledReason
+    currentlyDue: [CookStripeRequirementCategory!]!
+    pastDue: [CookStripeRequirementCategory!]!
+    pendingVerification: [CookStripeRequirementCategory!]!
+}
+
+enum CookStripeBalanceTransactionKind {
+    PAYMENT
+    PAYOUT
+    TRANSFER
+    FEE
+    ADJUSTMENT
+    OTHER
+}
+
+enum CookStripeBalanceTransactionStatus {
+    AVAILABLE
+    PENDING
+}
+
+# Live Connect balance + recent balance transactions for `/profile/wallet`.
+# Null when no Connect account or Stripe retrieve fails. Not on userUpdates.
+type CookStripeWallet {
+    availableCents: Int!
+    pendingCents: Int!
+    transactions: [CookStripeBalanceTransaction!]!
+}
+
+type CookStripeBalanceTransaction {
+    balanceTransactionId: ID!
+    kind: CookStripeBalanceTransactionKind!
+    status: CookStripeBalanceTransactionStatus!
+    # Net Connect balance change in EUR cents (credits positive, debits negative).
+    netCents: Int!
+    createdAt: DateTime!
+    availableOn: DateTime!
+    description: String
+}
+
+type LocationSuggestion {
+    displayText: String!
+    latitude: Latitude!
+    longitude: Longitude!
+    structuredAddress: CookTravelOriginAddress
+}
+
+type Cook {
+    cookId: ID!
+    isVisible: Boolean!
+    isApprovedByAdmin: Boolean!
+    canCreateOffers: Boolean!
+    stripeStatus: CookStripeStatus!
+    # Live Stripe requirements for `/profile/wallet`. Null without an account id.
+    stripeAccountDetails: CookStripeAccountDetails
+    # Live Connect balance + recent transactions for `/profile/wallet`. Null without an account id.
+    stripeWallet: CookStripeWallet
+    # Optional public display name; when set, `PublicCook.user.display` prefers it over firstName.
+    stageName: String
+    # Full address for the cook; public surfaces should only expose `city` (and
+    # optionally city-level coords derived from it) — see cook-profile.md.
+    exactTravelOriginAddress: CookTravelOriginAddress
+    biography: String!
+    biographySummary: String!
+    # True while a pending cook-biography-summary-generate job exists for this
+    # cook (created|retry|active). Derived from pg-boss via payload cookId — not a Cooks column.
+    biographySummaryGenerating: Boolean!
+    # Landscape brand mark for the public chef About section. Null → marketing benefits fallback.
+    logo: FileUpload
+    cuisineStyle: String
+    cookingPhilosophy: String
+    # Same aggregate as `PublicCook.rating` — published customer reviews on completed offers.
+    # Used for cook self-preview of listing cards; `reviewCount: 0` when none.
+    rating: PublicCookRating!
+    travelExpensesAmount: Int!
+    maximumTravelDistance: Int
+    minimumPriceAmount: Int
+    maximumPriceAmount: Int
+    minimumParticipants: Int
+    maximumParticipants: Int
+    callSchedulingEnabled: Boolean!
+    callDurationMinutes: Int!
+    callAvailabilityRules: [CookCallAvailabilityRule!]!
+    # Date-ranged exceptions (typically today → +90 days on the cook calls page).
+    callAvailabilityExceptions(from: Date!, to: Date!): [CookCallAvailabilityException!]!
+    # Derived free slots in [from, to). Cap ~60 days. Europe/Berlin wall clock.
+    callSlots(from: DateTime!, to: DateTime!): [CookCallSlot!]!
+    # Discovery-call bookings across offers. Omit criterion (or empty statuses
+    # without from/to) → PENDING+CONFIRMED with endAt >= now. See
+    # CookCallSlotBookingCriterion.
+    callSlotBookings(criterion: CookCallSlotBookingCriterion): [CookCallSlotBooking!]!
+    meals: [CookMeal!]!
+    meal(mealId: ID!): CookMeal
+    # One count per criterion, same order. Soft-deleted never counted. Empty
+    # criteria / oversized batches throw. See CookMealCriterion.
+    mealsCounts(criteria: [CookMealCriterion!]!): [Int!]!
+    # Library (inventory) menus only — `bookingRequestOfferId` null. Offer pickers
+    # depend on this. See `offerMenus` for per-offer copies.
+    menus: [CookMenu!]!
+    # Offer-scoped menu copies for this cook (non-deleted). See cook-menus.md.
+    offerMenus: [CookMenu!]!
+    # Library or offer-scoped menu owned by the cook (non-deleted).
+    menu(menuId: ID!): CookMenu
+    # One count per criterion, same order. Soft-deleted never counted. Empty
+    # criteria / oversized batches throw. See CookMenuCriterion.
+    menusCounts(criteria: [CookMenuCriterion!]!): [Int!]!
+    # Open booking-request pool (travel radius / notified). See booking-offers.md.
+    bookingRequests(criterion: CookBookingRequestFindManyCriterion): [CookBookingRequest!]!
+    bookingRequest(bookingRequestId: ID!): CookBookingRequest
+    # Deep-link lookup for pool detail/create. Reasons only when the cook is
+    # pool-eligible (auto-approved + in radius, or admin-approved + notified).
+    # Every denial collapses to CookBookingRequestNotFound (no existence oracle).
+    # See booking-offers.md.
+    bookingRequestLookup(bookingRequestId: ID!): CookBookingRequestLookupResult!
+    # Cook offer inbox. Omit criterion / bucket = all offers (sidebar unread).
+    # See booking-offers.md.
+    bookingRequestOffers(criterion: CookBookingRequestOfferFindManyCriterion): [CookBookingRequestOffer!]!
+    bookingRequestOffer(bookingRequestOfferId: ID!): CookBookingRequestOffer
+    lastModifiedAt: DateTime!
+}
+
+# Result of `Cook.bookingRequestLookup` — stale email deep-links and live
+# unavailability. Available carries the full request; other members expose no
+# request PII. OfferAlreadyExists is the only member with an offer id.
+union CookBookingRequestLookupResult =
+    | CookBookingRequestAvailable
+    | CookBookingRequestCanceled
+    | CookBookingRequestTaken
+    | CookBookingRequestExpired
+    | CookBookingRequestOfferAlreadyExists
+    | CookBookingRequestNotFound
+
+type CookBookingRequestAvailable {
+    bookingRequest: CookBookingRequest!
+}
+
+# Marker-only members use `_` (always null) because GraphQL object types need a field.
+type CookBookingRequestCanceled {
+    _: Boolean
+}
+
+type CookBookingRequestTaken {
+    _: Boolean
+}
+
+type CookBookingRequestExpired {
+    _: Boolean
+}
+
+type CookBookingRequestOfferAlreadyExists {
+    bookingRequestOfferId: ID!
+}
+
+type CookBookingRequestNotFound {
+    _: Boolean
+}
+
+# Filter for `Cook.mealsCounts`. Optional `searchText` matches title
+# (case-insensitive contains). Soft-deleted meals are never counted.
+input CookMealCriterion {
+    searchText: String
+}
+
+# Filter for `Cook.menusCounts`. Same shape as `CookMealCriterion`.
+input CookMenuCriterion {
+    searchText: String
+}
+
+# Filter for `Cook.callSlotBookings`. Omit / empty `statuses` → PENDING +
+# CONFIRMED. When statuses are default and both `from` / `to` are omitted,
+# also require `endAt >= now` (upcoming). `from` / `to` bound `startAt`
+# (inclusive / exclusive).
+input CookCallSlotBookingCriterion {
+    statuses: [CookCallSlotBookingStatus!]
+    from: DateTime
+    to: DateTime
+}
+
+# Recurring weekly discovery-call window. `dayOfWeek` is JS getDay() (0 = Sun … 6 = Sat).
+# Minutes are inclusive start / exclusive end after midnight (0…1440).
+type CookCallAvailabilityRule {
+    cookCallAvailabilityRuleId: ID!
+    dayOfWeek: Int!
+    startMinuteOfDay: Int!
+    endMinuteOfDay: Int!
+}
+
+enum CookCallAvailabilityExceptionType {
+    BLOCK
+    OPEN
+}
+
+# Per-date override. Null start/end = whole day. BLOCK removes; OPEN adds.
+type CookCallAvailabilityException {
+    cookCallAvailabilityExceptionId: ID!
+    date: Date!
+    type: CookCallAvailabilityExceptionType!
+    startMinuteOfDay: Int
+    endMinuteOfDay: Int
+}
+
+input CookCallAvailabilityRuleCreate {
+    dayOfWeek: Int!
+    startMinuteOfDay: Int!
+    endMinuteOfDay: Int!
+}
+
+input CookCallAvailabilityExceptionCreate {
+    date: Date!
+    type: CookCallAvailabilityExceptionType!
+    startMinuteOfDay: Int
+    endMinuteOfDay: Int
+}
+
+# Required travel fields for create paths (`UserCreate.cook`,
+# `AdminUserCreate.cook`, `UserMutation.cookCreate`). Biography / cuisine /
+# philosophy are optional at create (filled later on chef profile). When set,
+# `cuisineStyle` / `cookingPhilosophy` must be catalog values from
+# `src/shared/cookProfile.ts`. `exactTravelOriginAddress` is the selected Places
+# `displayText`; the server resolves and stores the structured payload.
+input CookCreate {
+    exactTravelOriginAddress: String!
+    biography: String
+    cuisineStyle: String
+    cookingPhilosophy: String
+    travelExpensesAmount: Int!
+    maximumTravelDistance: Int!
+}
+
+# Patch for cook profile / travel / call settings. At least one field required.
+# `exactTravelOriginAddress` is the selected Places `displayText` (full address);
+# the server resolves it via Places and stores the structured payload.
+# `cuisineStyle` / `cookingPhilosophy` must be values from the shared catalogs
+# in `src/shared/cookProfile.ts` (or null to clear).
+input CookUpdate {
+    isVisible: Boolean
+    # Optional public display name. Null / blank clears.
+    stageName: String
+    biography: String
+    # Admin-only. Ignored on `CookMutation.update` (cooks cannot edit the summary;
+    # it is AI-generated on cook biography save). Applied by `AdminMutation.cookUpdate`.
+    biographySummary: String
+    # Landscape brand mark. Null clears. Replaces and deletes the previous upload when set.
+    logoFileUploadId: ID
+    cuisineStyle: String
+    cookingPhilosophy: String
+    exactTravelOriginAddress: String
+    travelExpensesAmount: Int
+    maximumTravelDistance: Int
+    minimumPriceAmount: Int
+    maximumPriceAmount: Int
+    minimumParticipants: Int
+    maximumParticipants: Int
+    callSchedulingEnabled: Boolean
+    callDurationMinutes: Int
+}
+
+# Create payload for cook meals (assistant tools + future forms). When omitted
+# on `mealCreate`, the command still inserts a draft with a placeholder title.
+input CookMealCreate {
+    title: String!
+    description: String
+}
+
+# Patch for cook meal edits. At least one field required. `imageFileUploadId: null`
+# clears the image; `publishedAt: null` unpublishes. Soft-delete is a separate
+# `mealDelete` mutation — `deletedAt` is never on this input or on `CookMeal`.
+input CookMealUpdate {
+    title: String
+    description: String
+    imageFileUploadId: ID
+    publishedAt: DateTime
+}
+
+# Course payload for menu create/update. `mealIds` order is the option order.
+# `mealSelectionLimit` null = single-select; only valid when ≥2 options and 2…N.
+input CookMenuCourseInput {
+    title: String!
+    mealIds: [ID!]!
+    mealSelectionLimit: Int
+}
+
+# Patch for cook menu edits. At least one field required. When `courses` is set,
+# the full course tree is replaced. Soft-delete is a separate `menuDelete`.
+input CookMenuUpdate {
+    title: String
+    description: String
+    publishedAt: DateTime
+    courses: [CookMenuCourseInput!]
+}
+
+# AI menu suggestion — course with resolved meal ids (existing and newly
+# inserted drafts). See `menuSuggestionFromText` / `menuTitleDescriptionSuggest`.
+type CookMenuCourseSuggestion {
+    title: String!
+    mealIds: [ID!]!
+}
+
+type CookMenuSuggestion {
+    title: String!
+    description: String!
+    courses: [CookMenuCourseSuggestion!]!
+}
+
+# Cook write namespace — gated by `guardCookMutation` (session user has a `Cooks`
+# row). Stamps `cookId` (= `Users.userId`) onto the parent in TypeScript only
+# (see `extensions.ts`) for downstream commands.
+type CookMutation {
+    update(input: CookUpdate!): MutationResult!
+    stripeOnboardingStart(returnUrl: String!, refreshUrl: String!): CookStripeOnboardingResult!
+    stripeStatusSync: MutationResult!
+    stripeDashboardUrlCreate: CookStripeDashboardResult!
+    # Creates a meal. Omit `meal` for a draft placeholder title; pass
+    # `CookMealCreate` to set title/description. Returns `mealId` as `referenceId`.
+    mealCreate(meal: CookMealCreate): MutationResult!
+    mealUpdate(mealId: ID!, meal: CookMealUpdate!): MutationResult!
+    # Soft-delete — stamps `deletedAt`. Row stays for admin inspection.
+    mealDelete(mealId: ID!): MutationResult!
+    # Creates a draft menu (placeholder title, three empty default courses).
+    # Returns `menuId` as `referenceId`.
+    menuCreate: MutationResult!
+    # Library menus: title / description / courses / publishedAt.
+    # Offer-scoped copies: title / description / courses while the offer is still
+    # negotiable; `publishedAt` is rejected. Soft-delete stays inventory-only.
+    menuUpdate(menuId: ID!, menu: CookMenuUpdate!): MutationResult!
+    # Soft-delete — stamps `deletedAt`. Row stays for admin inspection.
+    # Inventory menus only.
+    menuDelete(menuId: ID!): MutationResult!
+    # Deep-copies courses + meal options into a new draft. Returns new `menuId`.
+    # Inventory source only.
+    menuCopy(menuId: ID!): MutationResult!
+    # Overwrite the inventory template (`copyOfMenuId`) with this offer-scoped
+    # copy's title, description, and courses. Returns the template `menuId`.
+    menuSyncToTemplate(menuId: ID!): MutationResult!
+    # AI: derive a structured menu from free text. Inserts NEW_MEAL drafts;
+    # returns title / empty description / courses with mealIds.
+    menuSuggestionFromText(text: String!): CookMenuSuggestion!
+    # AI: assemble a menu from the cook's meal inventory (optional free-text
+    # brief). Inserts NEW_MEAL drafts; returns title / description / courses
+    # with mealIds. Own AiGenerations kind — see ai-generations.md.
+    menuSuggestionFromInventory(brief: String): CookMenuSuggestion!
+    # AI: suggest SEO title + first-person description from current fields +
+    # courses. Returns empty `courses`.
+    menuTitleDescriptionSuggest(currentTitle: String, currentDescription: String, courses: [CookMenuCourseInput!]!): CookMenuSuggestion!
+    # AI: draft or improve a first-person biography. Returns suggestion only;
+    # client shows a side-by-side review; Accept fills the form; Save via
+    # `update` queues biography-summary regeneration.
+    biographySuggest(currentBiography: String!): String!
+    # Weekly call windows — max 3 per cook. Returns rule id as `referenceId`.
+    callAvailabilityRuleCreate(rule: CookCallAvailabilityRuleCreate!): MutationResult!
+    callAvailabilityRuleDelete(cookCallAvailabilityRuleId: ID!): MutationResult!
+    # Per-date BLOCK/OPEN exceptions. Returns exception id as `referenceId`.
+    callAvailabilityExceptionCreate(exception: CookCallAvailabilityExceptionCreate!): MutationResult!
+    callAvailabilityExceptionDelete(cookCallAvailabilityExceptionId: ID!): MutationResult!
+    # Booking-request pool / offers — see docs/features/booking.md.
+    bookingRequestOpen(bookingRequestId: ID!): MutationResult!
+    # Re-run AI menu evaluation + inventory menu generation for a pool request
+    # (gated by AI_MENU_EVALUATION). Sets menuEvaluationLoading until the job finishes.
+    bookingRequestMenuEvaluationRefresh(bookingRequestId: ID!): MutationResult!
+    # Materialize the stored AI-generated menu recommendation into a draft
+    # inventory menu. Returns new menuId as referenceId.
+    bookingRequestGeneratedMenuApply(bookingRequestId: ID!): MutationResult!
+    bookingRequestDecline(bookingRequestId: ID!, reason: String!): MutationResult!
+    bookingRequestOfferCreate(input: BookingRequestOfferCreate!): MutationResult!
+    # Re-accept after customer material changes reset cookAccepted.
+    bookingRequestOfferAccept(bookingRequestOfferId: ID!): MutationResult!
+    bookingRequestOfferDecline(bookingRequestOfferId: ID!, reason: String!): MutationResult!
+    bookingRequestOfferPriceUpdate(input: BookingRequestOfferPriceUpdate!): MutationResult!
+    bookingRequestOfferSuggestedMenusUpdate(input: BookingRequestOfferSuggestedMenusUpdate!): MutationResult!
+    # Append a free-text negotiation message (`COOK_MESSAGE_SIMPLE` event).
+    # `referenceId` is the new `bookingRequestOfferEventId`.
+    bookingRequestOfferChatMessageCreate(bookingRequestOfferId: ID!, message: String!, fileUploadIds: [ID!]): MutationResult!
+    # Clears `cookUnreadNotificationCount` on this cook's offer (call when opening chat).
+    bookingRequestOfferUnreadNotificationCountReset(bookingRequestOfferId: ID!): MutationResult!
+    # Call-slot booking — cook proposes any free time (overlap-checked).
+    bookingRequestOfferCallSlotRequest(bookingRequestOfferId: ID!, startAt: DateTime!, cookMessage: String): MutationResult!
+    bookingRequestOfferCallSlotConfirm(cookCallSlotBookingId: ID!): MutationResult!
+    bookingRequestOfferCallSlotDecline(cookCallSlotBookingId: ID!, reason: String): MutationResult!
+    bookingRequestOfferCallSlotCancel(cookCallSlotBookingId: ID!, reason: String): MutationResult!
+    # Ad-hoc / join-window LiveKit call.
+    bookingRequestOfferCallCreate(bookingRequestOfferId: ID!): BookingRequestOfferCallTokenResult!
+    bookingRequestOfferCallJoin(bookingRequestOfferId: ID!): BookingRequestOfferCallTokenResult!
+    bookingRequestOfferCallLeave(bookingRequestOfferCallRoomParticipantId: ID!): MutationResult!
+    # Cook's own testimonial about the platform experience for a completed
+    # offer. Low `rating` (<= 3) defaults to `PENDING_REVIEW` instead of
+    # auto-publishing. Returns `cookTestimonialId` as `referenceId`.
+    bookingRequestOfferTestimonialCreate(input: CookBookingRequestOfferTestimonialCreate!): MutationResult!
+}
+
+# --- Booking requests / offers -------------------------------------------------
+# Role-scoped types (User / Cook / Admin) + shared enums / participants / costs.
+# Offer timeline is `BookingRequestOfferEvents` in DB; GraphQL projects it onto
+# `messages: [HumanChatMessage!]!` (`ChatMessageUser` + `ChatMessageBookingRequestOfferEvent`).
+# See docs/architecture/booking.md and docs/features/booking.md.
+
+enum BookingRequestStatus {
+    WAITING_FOR_OFFERS
+    OFFERS_WAITING_FOR_REVIEW
+    DEPOSIT_PAYMENT_PENDING
+    PAYMENT_PULL_PENDING
+    EVENT_PENDING
+    COMPLETED
+    EXPIRED
+    CANCELED
+}
+
+enum BookingRequestPriceClassType {
+    LOW
+    MEDIUM
+    HIGH
+}
+
+enum BookingRequestPublicationStatus {
+    PUBLICATION_BLOCKED_BY_ADMIN_REVIEW
+    PUBLICATION_AUTO_APPROVED
+    PUBLICATION_APPROVED_BY_ADMIN
+}
+
+enum BookingRequestParticipantType {
+    ADULT
+    DISCOUNTED
+}
+
+enum BookingRequestOfferStatus {
+    USER_NEEDS_TO_ACCEPT
+    COOK_NEEDS_TO_ACCEPT
+    USER_REQUESTED_MENU_CHANGES
+    USER_DECLINED
+    COOK_DECLINED
+    USER_CHOOSE_DIFFERENT_OFFER
+    USER_NEEDS_DEPOSIT_PAYMENT
+    PAYMENT_PULL_PENDING
+    EVENT_PENDING
+    COMPLETED
+    EXPIRED
+    CANCELED
+}
+
+enum BookingRequestOfferPaymentStatus {
+    EMPTY
+    SETUP
+    PAYED
+    TRANSFERRED
+    FAILED
+    PAYED_OUT_OF_SYSTEM
+}
+
+enum BookingRequestOfferPaymentDataType {
+    SETUP_INTENT
+    PAYMENT_INTENT
+}
+
+enum CookCallSlotBookingStatus {
+    PENDING
+    CONFIRMED
+    CANCELED
+    COMPLETED
+    DECLINED
+}
+
+enum CookCallSlotBookingActor {
+    CUSTOMER
+    COOK
+}
+
+type CostLineItem {
+    title: String!
+    # Integer cents. Discounts are negative.
+    amountCents: Int!
+    subLineItems: [CostLineItem!]
+}
+
+type CostBreakdown {
+    lineItems: [CostLineItem!]!
+    total: CostLineItem
+    totalPerPerson: CostLineItem
+    totalBeforeDiscount: CostLineItem
+}
+
+type BookingRequestParticipant {
+    bookingRequestParticipantId: ID!
+    type: BookingRequestParticipantType!
+    name: String!
+    restrictions: [String!]!
+    createdAt: DateTime!
+}
+
+type BookingRequestOfferConfiguredMenuMeal {
+    mealTitle: String!
+    mealDescription: String!
+    mealImageUrl: String
+}
+
+type BookingRequestOfferConfiguredMenuCourse {
+    title: String!
+    meals: [BookingRequestOfferConfiguredMenuMeal!]!
+}
+
+type BookingRequestOfferConfiguredMenu {
+    menuId: ID
+    title: String!
+    description: String!
+    courses: [BookingRequestOfferConfiguredMenuCourse!]!
+}
+
+type BookingRequestOfferPayment {
+    clientSecret: String!
+    publishableKey: String!
+    type: BookingRequestOfferPaymentDataType!
+}
+
+type CookCallSlotBookingCustomer {
+    display: String!
+}
+
+type CookCallSlotBooking {
+    cookCallSlotBookingId: ID!
+    cookId: ID!
+    userId: ID!
+    bookingRequestOfferId: ID!
+    startAt: DateTime!
+    endAt: DateTime!
+    status: CookCallSlotBookingStatus!
+    initiator: CookCallSlotBookingActor!
+    customerMessage: String
+    cookMessage: String
+    declineReason: String
+    canceledBy: CookCallSlotBookingActor
+    canceledReason: String
+    # LiveKit room created during this slot's join window (nullable).
+    videoCallRoomId: ID
+    customer: CookCallSlotBookingCustomer!
+    createdAt: DateTime!
+    lastModifiedAt: DateTime!
+}
+
+# Derived free discovery-call slot (not persisted).
+type CookCallSlot {
+    startAt: DateTime!
+    endAt: DateTime!
+}
+
+enum BookingRequestOfferCallRoomStatus {
+    ACTIVE
+    ENDED
+}
+
+enum BookingRequestOfferCallRecordingStatus {
+    PENDING
+    EGRESS_COMPLETE
+    TRANSCRIBING
+    COMPLETED
+    FAILED
+}
+
+type BookingRequestOfferCallTranscriptSegment {
+    startedAtMs: Int!
+    endedAtMs: Int!
+    text: String!
+    speakerLabel: String
+}
+
+# Admin-only call audio + transcript (see docs/features/call-recordings.md).
+type BookingRequestOfferCallRecording {
+    bookingRequestOfferCallRecordingId: ID!
+    bookingRequestOfferCallRoomId: ID!
+    status: BookingRequestOfferCallRecordingStatus!
+    mediaType: String
+    byteSize: Int
+    transcriptText: String
+    transcriptSegments: [BookingRequestOfferCallTranscriptSegment!]
+    # Same-origin admin audio stream (`/api/admin/call-recordings/:id/audio`).
+    audioUrl: String
+    errorMessage: String
+    createdAt: DateTime!
+    completedAt: DateTime
+}
+
+type BookingRequestOfferCallRoom {
+    bookingRequestOfferCallRoomId: ID!
+    bookingRequestOfferId: ID!
+    livekitRoomName: String!
+    status: BookingRequestOfferCallRoomStatus!
+    createdByUserId: ID!
+    startedAt: DateTime!
+    endedAt: DateTime
+}
+
+# JWT + URL returned by call create/join mutations.
+type BookingRequestOfferCallTokenResult {
+    token: String!
+    url: String!
+    bookingRequestOfferCallRoomParticipantId: ID!
+}
+
+# Admin calls hub row — live room and/or slot traffic (including declines/cancels).
+type AdminCallListItem {
+    kind: AdminCallListItemKind!
+    bookingRequestId: ID!
+    bookingRequestOfferId: ID!
+    cookId: ID!
+    customerUserId: ID!
+    cookDisplayName: String!
+    customerDisplayName: String!
+    occasion: String!
+    # Present when kind is LIVE or RECENT_ROOM.
+    callRoom: BookingRequestOfferCallRoom
+    # Present when kind is a slot status (PENDING / UPCOMING / RECENT_SLOT / DECLINED / CANCELED).
+    callSlotBooking: CookCallSlotBooking
+}
+
+enum AdminCallListItemKind {
+    LIVE
+    PENDING
+    UPCOMING
+    RECENT_ROOM
+    RECENT_SLOT
+    DECLINED
+    CANCELED
+}
+
+# Sortable columns for `Admin.callTraffic`. Default when omitted: `occurredAt` DESC.
+# `occurredAt` = room `startedAt` or slot `startAt`; `createdAt` = room `startedAt` or slot `createdAt`.
+enum AdminCallTrafficSortField {
+    occurredAt
+    createdAt
+}
+
+# Filter + pagination for `Admin.callTraffic` / `callTrafficCounts`. Optional
+# `searchText` matches occasion, cook/customer first name / last name / email
+# (case-insensitive contains). `kinds` omit or empty = all kinds. `initiators`
+# only applies to slot kinds (rooms ignored when set). Optional `cookIds` /
+# `userIds` (`IN`; omit or empty = no filter). Optional `range` filters by
+# occurredAt (room startedAt / slot startAt). `skip` / `take` / `sort*` ignored
+# by `callTrafficCounts`.
+input AdminCallTrafficCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    kinds: [AdminCallListItemKind!]
+    initiators: [CookCallSlotBookingActor!]
+    cookIds: [ID!]
+    userIds: [ID!]
+    range: DateTimeRange
+    sortField: AdminCallTrafficSortField
+    sortDirection: SortDirection
+}
+
+# Per-cook call engagement for the overview leaderboard.
+type AdminCallCookStat {
+    cookId: ID!
+    displayName: String!
+    roomCount: Int!
+    completedSlotCount: Int!
+    declinedCount: Int!
+    canceledCount: Int!
+    pendingAwaitingCookCount: Int!
+}
+
+enum AdminCallCookStatSortField {
+    roomCount
+    completedSlotCount
+    declinedCount
+    pendingAwaitingCookCount
+}
+
+# Public identity for cross-user booking surfaces (customer sees cook; cook sees customer).
+# `display` is first name, except nested under `PublicCook` where a non-empty
+# `stageName` wins. No email / last name / phone.
+type PublicUser {
+    display: String!
+    createdAt: DateTime!
+    profilePicture: FileUpload
+}
+
+# Lean public cook profile — no street address, no Stripe. Nested on customer offers
+# and under `Query.publicCook` for the public chefs listing / detail pages.
+# See docs/features/public-chefs.md.
+type PublicCook {
+    cookId: ID!
+    user: PublicUser!
+    # True when `/chefs/$cookId` would resolve (visibility + admin approval). Nested on offers for link gating; listing still filters server-side.
+    hasPublicProfile: Boolean!
+    # Optional public display name; when set, `user.display` prefers it over firstName.
+    stageName: String
+    biography: String!
+    biographySummary: String!
+    # Landscape brand mark for the About section. Null → marketing benefits fallback.
+    logo: FileUpload
+    cuisineStyle: String
+    cookingPhilosophy: String
+    # City from travel origin only — never the full street address.
+    city: String
+    minimumPriceAmount: Int
+    maximumPriceAmount: Int
+    minimumParticipants: Int
+    maximumParticipants: Int
+    callSchedulingEnabled: Boolean!
+    callDurationMinutes: Int!
+    # Derived free slots in [from, to). Cap ~60 days. Europe/Berlin wall clock.
+    callSlots(from: DateTime!, to: DateTime!): [CookCallSlot!]!
+    # Published, non-deleted inventory meals only.
+    meals: [PublicCookMeal!]!
+    # Published customer reviews tied to a completed offer with this cook.
+    testimonials: [CustomerTestimonial!]!
+    # Aggregate rating built from `testimonials`. `reviewCount: 0` when none.
+    rating: PublicCookRating!
+}
+
+type PublicCookMeal {
+    mealId: ID!
+    title: String!
+    description: String!
+    imageUrl: String
+    publishedAt: DateTime
+}
+
+type PublicCookMenuCourse {
+    courseId: ID!
+    title: String!
+    mealSelectionLimit: Int
+    mealOptions: [PublicCookMeal!]!
+}
+
+type PublicCookMenu {
+    menuId: ID!
+    title: String!
+    description: String!
+    publishedAt: DateTime
+    courses: [PublicCookMenuCourse!]!
+    courseMealOptionImages: [String!]!
+}
+
+# --- Testimonials --------------------------------------------------------------
+#
+# Published rows only publicly ("PENDING_REVIEW" is admin-only). See
+# docs/architecture/testimonials.md.
+
+enum TestimonialPublicationStatus {
+    PUBLISHED
+    PENDING_REVIEW
+}
+
+# Discriminates which catalog a curated `CityTestimonials` / `PartnerTestimonials`
+# / `OccasionTestimonials` junction row points at.
+enum TestimonialType {
+    COOK
+    CUSTOMER
+}
+
+# Customer-authored testimonial. Optionally tied to the completed offer it was
+# written about (`bookingRequestOfferTestimonialCreate`) — when tied, it also
+# counts toward that offer's cook's public rating (`PublicCook.rating` /
+# `PublicCook.testimonials`).
+type CustomerTestimonial {
+    customerTestimonialId: ID!
+    authorName: String!
+    location: String
+    occasion: String
+    body: String!
+    imageUrls: [String!]!
+    rating: Int
+    publishedAt: DateTime
+    createdAt: DateTime!
+}
+
+# Cook-authored testimonial about the platform experience (marketing quotes —
+# e.g. `SectionChefTestimonials` / "become a chef" pages).
+type CookTestimonial {
+    cookTestimonialId: ID!
+    authorName: String!
+    location: String
+    occasion: String
+    body: String
+    imageUrls: [String!]!
+    rating: Int
+    publishedAt: DateTime
+    createdAt: DateTime!
+}
+
+union Testimonial = CustomerTestimonial | CookTestimonial
+
+# Aggregate customer-review rating for a cook, built from published
+# `CustomerTestimonial`s tied to one of that cook's completed offers.
+type PublicCookRating {
+    averageRating: Float
+    reviewCount: Int!
+}
+
+# Curated, ordered testimonial on a public city page.
+type CityTestimonial {
+    index: Int!
+    testimonial: Testimonial!
+}
+
+# Curated, ordered testimonial on a public partner page.
+type PartnerTestimonial {
+    index: Int!
+    testimonial: Testimonial!
+}
+
+# Curated, ordered testimonial on a public occasion page.
+type OccasionTestimonial {
+    index: Int!
+    testimonial: Testimonial!
+}
+
+# Empty/whitespace-only `authorName` / `location` / `occasion` fall back to the
+# offer (customer/cook display name, event city, occasion) at read time — see
+# `testimonialOfferFallbacksLoad.ts`.
+input UserBookingRequestOfferTestimonialCreate {
+    bookingRequestOfferId: ID!
+    authorName: String
+    location: String
+    occasion: String
+    body: String!
+    rating: Int
+    imageFileUploadIds: [ID!]
+}
+
+# Follow-up survey required when `rating < 5` — see `publicationStatusFromRating.ts`
+# and `cookBookingRequestOfferTestimonialCreate.ts`.
+input CookTestimonialLowRatingAnswersInput {
+    whatWentWrong: String
+    wouldRecommend: Boolean
+    additionalFeedback: String
+}
+
+input CookBookingRequestOfferTestimonialCreate {
+    bookingRequestOfferId: ID!
+    authorName: String
+    location: String
+    occasion: String
+    body: String
+    rating: Int
+    imageFileUploadIds: [ID!]
+    # Required when `rating` is present and `< 5`.
+    lowRatingAnswers: CookTestimonialLowRatingAnswersInput
+}
+
+# Shared money / status fields for role-scoped offer types.
+# Customer offer — cook + public suggested menus.
+type UserBookingRequestOffer {
+    bookingRequestOfferId: ID!
+    bookingRequestId: ID!
+    cookId: ID!
+    status: BookingRequestOfferStatus!
+    paymentStatus: BookingRequestOfferPaymentStatus!
+    userAccepted: Boolean
+    cookAccepted: Boolean
+    userDeclinationReason: String
+    cookDeclinationReason: String
+    userUnreadNotificationCount: Int!
+    isPriceAutoAdjusted: Boolean
+    userRequestedMenuAdjustments: Boolean
+    travelDistanceKm: Float
+    menuPriceCents: Int!
+    travelExpensesCents: Int!
+    paymentProviderFeeCents: Int!
+    platformFeePercentCook: Int!
+    platformFeePercentCustomer: Int!
+    platformFeeCentsCook: Int!
+    platformFeeCentsCustomer: Int!
+    payoutCentsCook: Int!
+    totalWithoutDiscountsCentsCustomer: Int!
+    totalCentsCustomer: Int
+    costBreakdown: CostBreakdown!
+    configuredMenu: BookingRequestOfferConfiguredMenu
+    payment: BookingRequestOfferPayment
+    plannedPaymentPullDateTime: DateTime
+    paymentDateTime: DateTime
+    plannedPayoutDateTime: DateTime
+    payoutDateTime: DateTime
+    createdAt: DateTime!
+    cook: PublicCook!
+    suggestedMenus: [PublicCookMenu!]!
+    callBookings: [CookCallSlotBooking!]!
+    # Active LiveKit room for this offer, if any.
+    activeCallRoom: BookingRequestOfferCallRoom
+    # Negotiation transcript projected from `BookingRequestOfferEvents`.
+    # Lazy field resolver — do not request on list cards.
+    messages: [HumanChatMessage!]!
+    # This customer's own review of the cook for this offer, if submitted.
+    customerTestimonial: CustomerTestimonial
+    # True once the offer is eligible for a review and none has been submitted
+    # yet — drives a "leave a review" prompt on the offer page.
+    testimonialMissing: Boolean!
+}
+
+# Lean request context on cook offer inbox rows — no nested `offers` (avoids recursion).
+# `exactEventAddress` reveals street fields only after this offer is dual-accepted;
+# otherwise post code / city / country (street lines empty). See booking-offers.md.
+# `invoiceAddress` is returned only after dual-accept (null until the customer
+# completes checkout). Cooks need it to invoice the host.
+type CookBookingRequestOfferContext {
+    bookingRequestId: ID!
+    status: BookingRequestStatus!
+    occasion: String!
+    dateTime: DateTime!
+    exactEventAddress: CookTravelOriginAddress!
+    priceClassType: BookingRequestPriceClassType
+    # Soft guidance (travel-adjusted at 0 km here; offer UI may recompute with stored travel).
+    suggestedOfferAmountCents: Int!
+    minOfferAmountCents: Int
+    maxOfferAmountCents: Int
+    minOfferAmountHardCents: Int
+    # Resolved for the cook: adjustedMessage ?? originalMessage (trimmed).
+    message: String!
+    preferences: [String!]!
+    # Billing address from checkout — null until paid / dual-accept gate.
+    invoiceAddress: InvoiceAddress
+    expiresAt: DateTime
+    canceledAt: DateTime
+    participants: [BookingRequestParticipant!]!
+    user: PublicUser!
+}
+
+# Cook offer inbox — suggested menus are cook-owned `CookMenu` copies.
+type CookBookingRequestOffer {
+    bookingRequestOfferId: ID!
+    bookingRequestId: ID!
+    cookId: ID!
+    status: BookingRequestOfferStatus!
+    paymentStatus: BookingRequestOfferPaymentStatus!
+    userAccepted: Boolean
+    cookAccepted: Boolean
+    userDeclinationReason: String
+    cookDeclinationReason: String
+    cookUnreadNotificationCount: Int!
+    isPriceAutoAdjusted: Boolean
+    userRequestedMenuAdjustments: Boolean
+    travelDistanceKm: Float
+    menuPriceCents: Int!
+    travelExpensesCents: Int!
+    paymentProviderFeeCents: Int!
+    platformFeePercentCook: Int!
+    platformFeePercentCustomer: Int!
+    platformFeeCentsCook: Int!
+    platformFeeCentsCustomer: Int!
+    payoutCentsCook: Int!
+    totalWithoutDiscountsCentsCustomer: Int!
+    totalCentsCustomer: Int
+    costBreakdown: CostBreakdown!
+    configuredMenu: BookingRequestOfferConfiguredMenu
+    payment: BookingRequestOfferPayment
+    plannedPaymentPullDateTime: DateTime
+    paymentDateTime: DateTime
+    plannedPayoutDateTime: DateTime
+    payoutDateTime: DateTime
+    createdAt: DateTime!
+    suggestedMenus: [CookMenu!]!
+    callBookings: [CookCallSlotBooking!]!
+    activeCallRoom: BookingRequestOfferCallRoom
+    bookingRequest: CookBookingRequestOfferContext!
+    # Negotiation transcript projected from `BookingRequestOfferEvents`.
+    # Lazy field resolver — do not request on list cards.
+    messages: [HumanChatMessage!]!
+    # This cook's own testimonial about the platform for this offer, if submitted.
+    cookTestimonial: CookTestimonial
+    # True once the offer is eligible for a review and none has been submitted
+    # yet — drives a "leave a review" prompt on the offer page.
+    testimonialMissing: Boolean!
+}
+
+# Admin offer — cook nested as AdminCook.
+type AdminBookingRequestOffer {
+    bookingRequestOfferId: ID!
+    bookingRequestId: ID!
+    cookId: ID!
+    status: BookingRequestOfferStatus!
+    paymentStatus: BookingRequestOfferPaymentStatus!
+    userAccepted: Boolean
+    cookAccepted: Boolean
+    userDeclinationReason: String
+    cookDeclinationReason: String
+    userUnreadNotificationCount: Int!
+    cookUnreadNotificationCount: Int!
+    # Peer offer-chat messages awaiting admin review acknowledge (post-hoc).
+    adminChatReviewPendingCount: Int!
+    # Last time an admin acknowledged the offer-chat review queue for this offer.
+    adminChatReviewedAt: DateTime
+    isPriceAutoAdjusted: Boolean
+    userRequestedMenuAdjustments: Boolean
+    travelDistanceKm: Float
+    menuPriceCents: Int!
+    travelExpensesCents: Int!
+    paymentProviderFeeCents: Int!
+    platformFeePercentCook: Int!
+    platformFeePercentCustomer: Int!
+    platformFeeCentsCook: Int!
+    platformFeeCentsCustomer: Int!
+    payoutCentsCook: Int!
+    totalWithoutDiscountsCentsCustomer: Int!
+    totalCentsCustomer: Int
+    costBreakdown: CostBreakdown!
+    configuredMenu: BookingRequestOfferConfiguredMenu
+    payment: BookingRequestOfferPayment
+    plannedPaymentPullDateTime: DateTime
+    paymentDateTime: DateTime
+    plannedPayoutDateTime: DateTime
+    payoutDateTime: DateTime
+    # True when the cook can receive a Stripe bank payout (account present, active, payouts enabled).
+    cookPayoutReady: Boolean!
+    # Present when `cookPayoutReady` is false — drives admin copy (no raw Stripe errors).
+    cookPayoutBlockedReason: AdminCookPayoutBlockedReason
+    # Stripe Dashboard deep links from `paymentData` (null when the matching id is absent).
+    stripePaymentIntentUrl: String
+    stripeSetupIntentUrl: String
+    createdAt: DateTime!
+    cook: AdminCook!
+    suggestedMenus: [CookMenu!]!
+    callBookings: [CookCallSlotBooking!]!
+    activeCallRoom: BookingRequestOfferCallRoom
+    # Admin-only: audio recordings + transcripts for rooms on this offer.
+    callRecordings: [BookingRequestOfferCallRecording!]!
+    # Negotiation transcript projected from `BookingRequestOfferEvents`.
+    # Lazy field resolver — do not request on list cards.
+    messages: [HumanChatMessage!]!
+    # Lazy — parent booking request (offer-chat review context). Prefer selecting
+    # only the fields needed; avoid on dense offer list cards.
+    bookingRequest: AdminBookingRequest!
+    customerTestimonial: AdminCustomerTestimonial
+    cookTestimonial: AdminCookTestimonial
+    # Lazy — pending pg-boss jobs for this offer (pull, reminders, chat notify, …).
+    # Do not request on list cards.
+    queuedJobs: [AdminQueuedJob!]!
+}
+
+# Pending pg-boss job state (created | retry | active). Completed / cancelled /
+# failed are omitted from admin `queuedJobs` lookups.
+enum AdminQueuedJobState {
+    CREATED
+    RETRY
+    ACTIVE
+}
+
+# Live snapshot of a pending pg-boss job (admin booking ops + global jobs list).
+# Deep-link ids are derived from the payload; the global `Admin.queuedJobs` list
+# may also resolve offer / slot / room rows to a booking request id.
+type AdminQueuedJob {
+    jobId: ID!
+    # pg-boss queue name (e.g. booking-request-offer-pull-payment).
+    name: String!
+    state: AdminQueuedJobState!
+    startAfter: DateTime!
+    createdOn: DateTime!
+    # Job payload (kind, audience, cookCallSlotBookingId, …).
+    data: JSON!
+    bookingRequestId: ID
+    bookingRequestOfferId: ID
+    giftCardId: ID
+    supportRequestId: ID
+    userId: ID
+    cookId: ID
+    chatId: ID
+}
+
+# Why an admin cannot release a Stripe bank payout for a PAYED offer yet.
+enum AdminCookPayoutBlockedReason {
+    MISSING_STRIPE_ACCOUNT
+    STRIPE_ACCOUNT_INACTIVE
+    STRIPE_PAYOUTS_DISABLED
+}
+
+# Applied promo snapshot on a customer booking request (from `BookingRequests.promoCodeId`).
+type UserBookingRequestPromoCode {
+    promoCodeId: ID!
+    redeemCode: String!
+    amountCents: Int!
+}
+
+# Applied gift-card snapshot on a customer booking request (from `BookingRequests.giftCardId`).
+type UserBookingRequestGiftCard {
+    giftCardId: ID!
+    redeemCode: String!
+    balanceCents: Int!
+}
+
+# Per-offer travel fee preview when the customer considers a new venue on edit.
+type UserBookingRequestOfferTravelImpact {
+    bookingRequestOfferId: ID!
+    cookDisplay: String!
+    travelDistanceKmBefore: Float!
+    travelDistanceKmAfter: Float!
+    travelExpensesCentsBefore: Int!
+    travelExpensesCentsAfter: Int!
+}
+
+type UserBookingRequest {
+    bookingRequestId: ID!
+    userId: ID!
+    status: BookingRequestStatus!
+    occasion: String!
+    dateTime: DateTime!
+    exactEventAddress: CookTravelOriginAddress!
+    priceClassType: BookingRequestPriceClassType
+    originalMessage: String!
+    adjustedMessage: String
+    # publicationStatus is admin-only (AdminBookingRequest). Exposing it to customers is a planned feature.
+    preferences: [String!]!
+    invoiceAddress: InvoiceAddress
+    expiresAt: DateTime
+    canceledAt: DateTime
+    cancellationReason: String
+    createdAt: DateTime!
+    participants: [BookingRequestParticipant!]!
+    offers: [UserBookingRequestOffer!]!
+    # Currently applied promo / gift card (mutually exclusive). Null when none.
+    promoCode: UserBookingRequestPromoCode
+    giftCard: UserBookingRequestGiftCard
+    # Driving-distance travel preview for a proposed venue (edit form). Empty when
+    # there are no offers or a cook lacks travel origin. Uses Routes API with
+    # haversine fallback.
+    travelImpact(exactEventAddress: UserBookingRequestExactEventAddressInput!): [UserBookingRequestOfferTravelImpact!]!
+    # At most one support case per booking request. Null when none opened yet.
+    supportRequest: UserSupportRequest
+}
+
+enum SupportRequestStatus {
+    OPEN
+    RESOLVED
+}
+
+# Lean booking summary on support cards (customer + admin).
+type SupportRequestBookingRequestSummary {
+    bookingRequestId: ID!
+    occasion: String!
+    dateTime: DateTime!
+}
+
+type UserSupportRequest {
+    supportRequestId: ID!
+    subject: String!
+    status: SupportRequestStatus!
+    userUnreadNotificationCount: Int!
+    createdAt: DateTime!
+    resolvedAt: DateTime
+    bookingRequest: SupportRequestBookingRequestSummary
+    # Projected onto `HumanChatMessage` (text-only `ChatMessageUser` rows).
+    messages: [HumanChatMessage!]!
+}
+
+type AdminSupportRequest {
+    supportRequestId: ID!
+    userId: ID!
+    subject: String!
+    status: SupportRequestStatus!
+    adminUnreadNotificationCount: Int!
+    createdAt: DateTime!
+    resolvedAt: DateTime
+    bookingRequest: SupportRequestBookingRequestSummary
+    customer: AdminUser!
+    messages: [HumanChatMessage!]!
+}
+
+# Filter + pagination for `Admin.supportRequests` / `supportRequestsCounts`.
+# Optional `statuses` (`IN`); omit or empty = no status filter. Optional
+# `hasAdminUnread` keeps rows with `adminUnreadNotificationCount > 0`. Optional
+# `searchText` matches subject / supportRequestId / userId. `skip` / `take`
+# ignored by counts.
+input AdminSupportRequestCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    statuses: [SupportRequestStatus!]
+    hasAdminUnread: Boolean
+}
+
+# Concierge WhatsApp inbox. One conversation per phone. Messages project onto
+# `HumanChatMessage` (text-only `ChatMessageUser` rows). See docs/features/whatsapp.md.
+type AdminWhatsAppConversation {
+    whatsAppConversationId: ID!
+    phoneNumber: PhoneNumber!
+    displayName: String
+    userId: ID
+    lastMessageAt: DateTime!
+    # Latest transcript body for inbox rows (empty when media-only / missing).
+    lastMessagePreview: String!
+    adminUnreadCount: Int!
+    customerServiceWindowExpiresAt: DateTime
+    createdAt: DateTime!
+    customer: AdminUser
+    messages: [HumanChatMessage!]!
+}
+
+input AdminWhatsAppConversationCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    hasAdminUnread: Boolean
+    userId: ID
+}
+
+# Pool / open-request surface. `exactEventAddress` never includes street fields
+# (post code / city / country only) — exact venue unlocks on the cook's dual-accepted offer.
+type CookBookingRequest {
+    bookingRequestId: ID!
+    userId: ID!
+    status: BookingRequestStatus!
+    occasion: String!
+    dateTime: DateTime!
+    exactEventAddress: CookTravelOriginAddress!
+    priceClassType: BookingRequestPriceClassType
+    # Soft price-class guidance (cents per person). Soft min/max are UX-only;
+    # hard min is a promo customer-total floor. See bookingRequestOfferPriceGuidance.
+    suggestedOfferAmountCents: Int!
+    minOfferAmountCents: Int
+    maxOfferAmountCents: Int
+    minOfferAmountHardCents: Int
+    # Resolved for the cook: adjustedMessage ?? originalMessage (trimmed).
+    message: String!
+    preferences: [String!]!
+    invoiceAddress: InvoiceAddress
+    expiresAt: DateTime
+    canceledAt: DateTime
+    cancellationReason: String
+    createdAt: DateTime!
+    participants: [BookingRequestParticipant!]!
+    offers: [CookBookingRequestOffer!]!
+    # Customer identity for the cook pool / detail surfaces.
+    user: PublicUser!
+    estimatedTravelDistanceKm: Float
+    estimatedTravelExpensesCents: Int
+    # Approximate cook payout at the soft suggested price per person (paid
+    # participants, travel estimate, cook platform fee). Pool-detail UX.
+    estimatedCookPayoutCents: Int!
+    cookPoolDetails: BookingRequestCookPoolDetails
+}
+
+type AdminBookingRequestCookInTravelRadius {
+    cook: AdminCook!
+    estimatedTravelDistanceKm: Float!
+    # Round-trip travel estimate (distance × cook rate × 2).
+    estimatedTravelExpensesCents: Int!
+    # Soft suggested menu price total (per-person suggestion × paid participants).
+    suggestedMenuPriceCents: Int!
+    notifiedAt: DateTime
+}
+
+# Pre-create cook picker for `/admin/booking-requests/create` (no request row yet).
+type AdminCookInTravelRadiusPreview {
+    cook: AdminCook!
+    estimatedTravelDistanceKm: Float!
+}
+
+type AdminBookingRequest {
+    bookingRequestId: ID!
+    userId: ID!
+    status: BookingRequestStatus!
+    occasion: String!
+    dateTime: DateTime!
+    exactEventAddress: CookTravelOriginAddress!
+    priceClassType: BookingRequestPriceClassType
+    # Soft price-class guidance (cents per person). Travel adjustment uses 0 km
+    # here; admin offer UI recomputes with the selected cook's travel estimate.
+    suggestedOfferAmountCents: Int!
+    minOfferAmountCents: Int
+    maxOfferAmountCents: Int
+    minOfferAmountHardCents: Int
+    originalMessage: String!
+    adjustedMessage: String
+    publicationStatus: BookingRequestPublicationStatus!
+    preferences: [String!]!
+    invoiceAddress: InvoiceAddress
+    expiresAt: DateTime
+    canceledAt: DateTime
+    cancellationReason: String
+    createdAt: DateTime!
+    participants: [BookingRequestParticipant!]!
+    offers: [AdminBookingRequestOffer!]!
+    customer: AdminUser!
+    # Dual-accepted cook when one exists; null otherwise.
+    cook: AdminCook
+    # Currently applied promo / gift card (mutually exclusive). Null when none.
+    promoCode: UserBookingRequestPromoCode
+    giftCard: UserBookingRequestGiftCard
+    # Cooks who can create offers and cover the venue (publication approve picker).
+    cooksInTravelRadius: [AdminBookingRequestCookInTravelRadius!]!
+    # Lazy — pending pg-boss jobs across all offers on this request.
+    # Do not request on list cards.
+    queuedJobs: [AdminQueuedJob!]!
+}
+
+# Per-menu AI fit score on a cook↔request pool row. Recommendations only —
+# unsuitable menus stay selectable. See docs/features/ai-menu-evaluation.md.
+type BookingRequestCookMenuEvaluationMenu {
+    menuId: ID!
+    evaluationSummary: String!
+    isSuitable: Boolean!
+}
+
+enum CookMenuSuggestionMealOptionType {
+    EXISTING_MEAL
+    NEW_MEAL
+}
+
+# Draft meal option inside `generatedMenu` (not yet inserted as NEW_MEAL).
+type BookingRequestCookMenuEvaluationGeneratedMealOption {
+    type: CookMenuSuggestionMealOptionType!
+    mealId: ID
+    title: String
+    description: String
+}
+
+type BookingRequestCookMenuEvaluationGeneratedCourse {
+    title: String!
+    mealOptions: [BookingRequestCookMenuEvaluationGeneratedMealOption!]!
+}
+
+type BookingRequestCookMenuEvaluationGeneratedMenu {
+    title: String!
+    description: String!
+    courses: [BookingRequestCookMenuEvaluationGeneratedCourse!]!
+}
+
+type BookingRequestCookMenuEvaluation {
+    evaluationSummary: String!
+    menus: [BookingRequestCookMenuEvaluationMenu!]!
+    generatedMenu: BookingRequestCookMenuEvaluationGeneratedMenu
+}
+
+type BookingRequestCookPoolDetails {
+    declinedAt: DateTime
+    declinationReason: String
+    notifiedAt: DateTime
+    firstOpenedAt: DateTime
+    menuEvaluationLoading: Boolean!
+    menuEvaluation: BookingRequestCookMenuEvaluation
+}
+
+input CookBookingRequestFindManyCriterion {
+    onlyDeclined: Boolean
+}
+
+# Cook offer inbox tabs. Bucket is derived from offer status (not stored).
+# Omit / null = no filter (all offers). See booking-offers.md.
+enum CookBookingRequestOfferListBucket {
+    ACTIVE
+    COMPLETED
+    ARCHIVED
+}
+
+input CookBookingRequestOfferFindManyCriterion {
+    bucket: CookBookingRequestOfferListBucket
+}
+
+input BookingRequestOfferCreate {
+    bookingRequestId: ID!
+    # Optional — empty list is allowed (price-only offers).
+    suggestedMenuIds: [ID!]!
+    menuPriceCents: Int!
+    # Optional cook note seeded as COOK_MESSAGE_SIMPLE after COOK_CREATED. Phone numbers rejected.
+    message: String
+}
+
+input BookingRequestOfferPriceUpdate {
+    bookingRequestOfferId: ID!
+    menuPriceCents: Int!
+}
+
+input BookingRequestOfferSuggestedMenusUpdate {
+    bookingRequestOfferId: ID!
+    # Inventory menu ids to copy onto the offer (empty = price-only).
+    suggestedMenuIds: [ID!]!
+}
+
+# Course meal picks for `bookingRequestOfferConfiguredMenuCreate`.
+input BookingRequestOfferConfiguredMenuCourseSelectionInput {
+    courseId: ID!
+    mealIds: [ID!]!
+}
+
+# Admin replace payload for an existing offer configured-menu snapshot.
+# Does not include `menuId` — the command preserves the stored value.
+input BookingRequestOfferConfiguredMenuMealInput {
+    mealTitle: String!
+    mealDescription: String!
+    mealImageUrl: String
+}
+
+input BookingRequestOfferConfiguredMenuCourseInput {
+    title: String!
+    meals: [BookingRequestOfferConfiguredMenuMealInput!]!
+}
+
+input BookingRequestOfferConfiguredMenuInput {
+    title: String!
+    description: String!
+    courses: [BookingRequestOfferConfiguredMenuCourseInput!]!
+}
+
+# Aggregated booking requests for one occasion (overview ranking).
+type AdminBookingRequestOccasionStat {
+    occasion: String!
+    count: Int!
+    totalParticipants: Int!
+}
+
+# Aggregated booking-request creations for one calendar month (overview ranking).
+type AdminBookingRequestCreationMonthStat {
+    # First instant of the month (`date_trunc('month', createdAt)`).
+    monthStart: DateTime!
+    count: Int!
+    totalParticipants: Int!
+}
+
+# All-time offer economics for the booking-requests overview.
+type AdminBookingRequestOfferEconomics {
+    # Mean offers per request (requests with zero offers included). 0 when no requests.
+    averageOffersPerRequest: Float!
+    # Mean `menuPriceCents` across all offers. 0 when none.
+    averageMenuPriceCents: Int!
+    # Mean customer total on paid offers (`PAYED` / `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM`).
+    # Uses `totalCentsCustomer`, falling back to `totalWithoutDiscountsCentsCustomer`.
+    averagePaidCustomerTotalCents: Int!
+    # Mean platform fee (`platformFeeCentsCook` + `platformFeeCentsCustomer`) on paid offers.
+    averagePaidPlatformRevenueCents: Int!
+}
+
+# Per-cook offer volume / dual-accept conversions (overview leaderboard).
+type AdminBookingRequestCookOfferStat {
+    cookId: ID!
+    displayName: String!
+    offerCount: Int!
+    # Dual-accepted offers (`userAccepted` and `cookAccepted` both true).
+    conversionCount: Int!
+}
+
+enum AdminBookingRequestCookOfferStatSortField {
+    offerCount
+    conversionCount
+}
+
+# Sortable columns for `Admin.bookingRequests`. Default when omitted: `createdAt` DESC.
+enum AdminBookingRequestSortField {
+    createdAt
+    dateTime
+    occasion
+}
+
+# Filter + pagination for `Admin.bookingRequests` / `bookingRequestsCounts`.
+# Optional `searchText` matches occasion, original message, event city /
+# display text, or customer email / name (case-insensitive contains). Optional
+# `userIds` scopes to those customers (`IN`); omit or empty = no user filter
+# (user-detail tab passes one id; list multi-select can pass many). Optional
+# `publicationStatuses` scopes to those values (`IN`); omit or empty = no
+# publication filter (overview queue passes blocked-for-review). Optional
+# `statuses` scopes to derived lifecycle values (`IN`); omit or empty = no
+# status filter. SQL mirrors `bookingRequestStatusDerive` (canceledAt, expiry,
+# offer count, dual-accepted payment status, event date vs now). Optional
+# `createdAtFrom` / `createdAtTo` bound `BookingRequests.createdAt` (`>=` /
+# `<=`); omit either end for an open bound (admin assistant “past X days”
+# sets `createdAtFrom`). Optional `sortField` / `sortDirection` drive server
+# `ORDER BY` (default `createdAt` DESC). `skip` / `take` / `sort*` are ignored
+# by `bookingRequestsCounts`.
+input AdminBookingRequestCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    userIds: [ID!]
+    publicationStatuses: [BookingRequestPublicationStatus!]
+    statuses: [BookingRequestStatus!]
+    # Filter to requests that currently apply this promo (`BookingRequests.promoCodeId`).
+    promoCodeId: ID
+    createdAtFrom: DateTime
+    createdAtTo: DateTime
+    sortField: AdminBookingRequestSortField
+    sortDirection: SortDirection
+}
+
+# Filter + pagination for `Admin.bookingRequestOffers` / `bookingRequestOffersCounts`.
+# Optional `cookIds` scopes to those cooks (`IN`); omit or empty = no cook filter
+# (user-detail offers tab passes one id; list multi-select can pass many). Optional
+# `searchText` matches cookId / bookingRequestId text. Optional `paymentStatuses`
+# (`IN`); omit or empty = no payment-status filter. Optional
+# `plannedPayoutDateTimeTo` keeps offers whose `plannedPayoutDateTime` is set and
+# `<=` that instant (due-payout queue). Optional `hasAdminChatReviewPending` keeps
+# offers with `adminChatReviewPendingCount > 0` (offer-chat review pipeline).
+# `skip` / `take` ignored by counts.
+input AdminBookingRequestOfferCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    cookIds: [ID!]
+    paymentStatuses: [BookingRequestOfferPaymentStatus!]
+    plannedPayoutDateTimeTo: DateTime
+    hasAdminChatReviewPending: Boolean
+}
+
+# Result of acknowledging an offer-chat review item. `nextOfferId` is the next
+# oldest pending offer in the pipeline (null when the queue is clear).
+type AdminBookingRequestOfferChatReviewAcknowledgeResult {
+    acknowledgedOfferId: ID!
+    nextOfferId: ID
+}
+
+type AuthEmailOtp {
+    authEmailOtpId: ID!
+    emailAddress: EmailAddress!
+    expiresAt: DateTime!
+    # Null while awaiting the code; set after verify for a new email (registration ticket).
+    verifiedAt: DateTime
+    createdAt: DateTime!
+}
+
+enum GiftCardPaymentStatus {
+    PREPARED
+    PAYED
+}
+
+enum GiftCardPurchaseErrorCode {
+    RECAPTCHA_FAILED
+}
+
+type InvoiceAddress {
+    companyName: String
+    firstName: String!
+    lastName: String!
+    country: String!
+    city: String!
+    postalCode: String!
+    line1: String!
+    line2: String!
+}
+
+input InvoiceAddressInput {
+    # Required for Zod validation-schema typing (optional String → z.nullish() breaks Properties<> under Zod v4).
+    # Clients send "" when the buyer has no company.
+    companyName: String!
+    firstName: String!
+    lastName: String!
+    country: String!
+    city: String!
+    postalCode: String!
+    line1: String!
+    line2: String!
+}
+
+type GiftCardPayment {
+    clientSecret: String!
+    publishableKey: String!
+}
+
+type GiftCard {
+    giftCardId: ID!
+    buyerEmail: EmailAddress!
+    occasion: String!
+    recipientName: String!
+    message: String!
+    originalBalanceCents: Int!
+    balanceCents: Int!
+    # Only populated once `paymentStatus` is `PAYED`.
+    redeemCode: String
+    paymentStatus: GiftCardPaymentStatus!
+    # Only populated while `PREPARED` (Stripe Elements needs these).
+    payment: GiftCardPayment
+    invoiceAddress: InvoiceAddress
+    expiresAt: DateTime!
+    createdAt: DateTime!
+}
+
+# Own-user gift-card purchase row for profile history. Includes PDF download
+# metadata when capture succeeded at pay time.
+type UserGiftCard {
+    giftCardId: ID!
+    buyerEmail: EmailAddress!
+    occasion: String!
+    recipientName: String!
+    message: String!
+    originalBalanceCents: Int!
+    balanceCents: Int!
+    # Only populated once `paymentStatus` is `PAYED`.
+    redeemCode: String
+    paymentStatus: GiftCardPaymentStatus!
+    invoiceAddress: InvoiceAddress
+    invoiceFileUploadId: ID
+    invoiceFileUpload: FileUpload
+    voucherFileUploadId: ID
+    voucherFileUpload: FileUpload
+    expiresAt: DateTime!
+    createdAt: DateTime!
+}
+
+type GiftCardPurchaseError {
+    code: GiftCardPurchaseErrorCode!
+}
+
+input GiftCardCreate {
+    balanceCents: Int!
+    occasion: String!
+    recipientName: String!
+    message: String!
+    # Buyer UI locale — persisted on the gift-card row and used for the redeem email.
+    locale: Locale!
+    recaptchaToken: String!
+}
+
+input GiftCardPay {
+    giftCardId: ID!
+    invoiceAddress: InvoiceAddressInput!
+}
+
+# Per-session marketing-cookie consent. Null on Session means undecided (show
+# the banner). See docs/features/cookie-consent.md.
+type SessionCookieSetting {
+    googleAnalytics: Boolean!
+    clarity: Boolean!
+}
+
+# Public discount preview for a redeem code (global promo or paid gift card).
+# Booking-scoped (churn) promo codes are excluded — they are not redeemable by
+# new customers / public form previews.
+type SessionDiscount {
+    redeemCode: String!
+    name: String!
+    amountCents: Int!
+}
+
+type Session {
+    sessionId: ID!
+    user: User
+    authEmailOtp: AuthEmailOtp
+    # Non-null while primary auth succeeded but TOTP/recovery is still required.
+    authTotpChallenge: AuthTotpChallenge
+    giftCard: GiftCard
+    giftCardPurchaseError: GiftCardPurchaseError
+    # Null until the visitor accepts all or mandatory-only cookies.
+    cookieSetting: SessionCookieSetting
+    # Enabled feature toggles (missing / disabled rows omitted). See
+    # docs/features/admin-feature-toggles.md.
+    activeFeatureToggleKeys: [FeatureToggleKey!]!
+    # Google Places text search for address autocomplete. Empty `searchText`
+    # returns []. Requires `GOOGLE_PLACES_API_KEY` on the server. When
+    # `onlyFullAddresses` is true, only hits with a structured street address
+    # are returned. Places failures are logged and yield [].
+    locationSuggestions(searchText: String!, onlyFullAddresses: Boolean! = true): [LocationSuggestion!]!
+    # Lookup a global promo or paid gift card by redeem code. Null when unknown,
+    # expired, empty balance, or booking-request-scoped.
+    discount(redeemCode: String!): SessionDiscount
+}
+
+type MutationResult {
+    success: Boolean!
+    referenceId: ID
+}
+
+type ChatMessageCreateResult {
+    chatId: ID!
+    chatTurnId: ID!
+}
+
+# User write namespace — gated by `guardUserMutation`. Stamps `userId` onto the
+# parent in TypeScript only (see `extensions.ts`) for downstream commands.
+input UserBookingRequestParticipantCreate {
+    type: BookingRequestParticipantType!
+    name: String!
+    restrictions: [String!]!
+}
+
+# Structured venue for customer create. Same fields as cook travel origin; separate
+# input name avoids ZodLazy circular typing with `CookTravelOriginAddress`.
+input UserBookingRequestExactEventAddressInput {
+    displayText: String!
+    latitude: Latitude!
+    longitude: Longitude!
+    addressLine1: String!
+    addressLine2: String!
+    city: String!
+    postCode: String!
+    state: String!
+    country: String!
+}
+
+input UserBookingRequestCreate {
+    occasion: String!
+    dateTime: DateTime!
+    exactEventAddress: UserBookingRequestExactEventAddressInput!
+    originalMessage: String!
+    preferences: [String!]!
+    participants: [UserBookingRequestParticipantCreate!]!
+    priceClassType: BookingRequestPriceClassType!
+    # Optional promo / gift-card code applied on create (invalid code fails create).
+    redeemCode: String
+}
+
+type UserMutation {
+    userUpdate(user: UserUpdate!): MutationResult!
+    # Self-serve account deletion: anonymizes the signed-in user (scrubs PII,
+    # nulls email, revokes auth, hides cook profile, keeps relational history).
+    # Customer-facing copy is "delete account". See docs/features/account.md.
+    userAnonymize: MutationResult!
+    terminateSessions(sessionIds: [ID!]!): MutationResult!
+    # Stamps lastAcceptedPrivacyPolicy + lastAcceptedTerms to now(). Always
+    # allowed while acceptance is pending (hard-gate exception).
+    userLegalAccept: MutationResult!
+    authPasskeyRegisterOptions: JSON!
+    authPasskeyRegisterVerify(response: JSON!): MutationResult!
+    authPasskeyDelete(authPasskeyId: ID!): MutationResult!
+    # Start TOTP enrollment — returns otpauth URL + secret for QR / manual entry.
+    # Replaces any unconfirmed row. See docs/architecture/authentication.md.
+    authTotpEnrollStart: AuthTotpEnrollStartResult!
+    # Confirm enrollment with a valid authenticator code; returns recovery codes once.
+    authTotpEnrollConfirm(code: String!): AuthTotpEnrollConfirmResult!
+    # Discard a pending (unconfirmed) TOTP enrollment.
+    authTotpEnrollCancel: MutationResult!
+    # Disable confirmed TOTP — requires a valid authenticator code (not recovery).
+    authTotpDisable(code: String!): MutationResult!
+    # Start an email change: OTP to the new address (reuses `AuthEmailOtps`).
+    # Pending state is `Session.authEmailOtp`. See docs/features/account.md.
+    emailAddressUpdateOtpRequest(emailAddress: EmailAddress!, locale: Locale!): MutationResult!
+    # Verify the OTP and update `Users.emailAddress`.
+    emailAddressUpdateOtpVerify(code: String!): MutationResult!
+    # Creates a customer booking request + radius cook notifies.
+    bookingRequestCreate(input: UserBookingRequestCreate!): MutationResult!
+    # Apply or clear a promo / gift-card redeem code on an owned booking request.
+    # Pass `redeemCode` null/empty to clear. Returns redeem code as `referenceId` on apply.
+    bookingRequestDiscountUpdate(bookingRequestId: ID!, redeemCode: String): MutationResult!
+    # Idempotent: create (or return) a €50 / 30-day promo scoped to this booking
+    # request. `referenceId` is the redeem code.
+    bookingRequestChurnPromoCodeCreate(bookingRequestId: ID!): MutationResult!
+    # Cancel an owned booking request (sets `canceledAt` + reason).
+    bookingRequestCancel(bookingRequestId: ID!, reason: String!): MutationResult!
+    # Customer asks for a callback (churn win-back). Logs + publishes adminUpdates;
+    # Slack parity deferred.
+    bookingRequestRequestRecall(bookingRequestId: ID!): MutationResult!
+    # Partial update while WAITING_FOR_OFFERS / OFFERS_WAITING_FOR_REVIEW.
+    # Omit a scalar to leave it unchanged. `participants` always sent (material
+    # changes reset cookAccepted). Optional `exactEventAddress` patches venue
+    # (resets cookAccepted + recalculates travel fees on open offers).
+    bookingRequestUpdate(
+        bookingRequestId: ID!
+        occasion: String
+        dateTime: DateTime
+        preferences: [String!]
+        participants: [UserBookingRequestParticipantCreate!]!
+        exactEventAddress: UserBookingRequestExactEventAddressInput
+    ): MutationResult!
+    # Dual-accept an offer and prepare Stripe (SetupIntent / PaymentIntent / €0 transfer).
+    bookingRequestOfferAccept(bookingRequestOfferId: ID!): MutationResult!
+    # After Elements confirms SI/PI — advances paymentStatus and stores invoice address.
+    bookingRequestOfferPaymentStatusUpdate(bookingRequestOfferId: ID!, invoiceAddress: InvoiceAddressInput!): MutationResult!
+    bookingRequestOfferDecline(bookingRequestOfferId: ID!, reason: String!): MutationResult!
+    bookingRequestOfferConfiguredMenuCreate(
+        bookingRequestOfferId: ID!
+        # Offer-scoped menu copy id (from `suggestedMenus`).
+        menuId: ID!
+        courseSelections: [BookingRequestOfferConfiguredMenuCourseSelectionInput!]!
+    ): MutationResult!
+    # Append a free-text negotiation message (`USER_MESSAGE_SIMPLE` event).
+    # `referenceId` is the new `bookingRequestOfferEventId`.
+    bookingRequestOfferChatMessageCreate(bookingRequestOfferId: ID!, message: String!, fileUploadIds: [ID!]): MutationResult!
+    # Clears `userUnreadNotificationCount` on an owned offer (call when opening chat).
+    bookingRequestOfferUnreadNotificationCountReset(bookingRequestOfferId: ID!): MutationResult!
+    # Call-slot booking — customer proposes a derived free slot.
+    bookingRequestOfferCallSlotRequest(bookingRequestOfferId: ID!, startAt: DateTime!, customerMessage: String): MutationResult!
+    bookingRequestOfferCallSlotConfirm(cookCallSlotBookingId: ID!): MutationResult!
+    bookingRequestOfferCallSlotDecline(cookCallSlotBookingId: ID!, reason: String): MutationResult!
+    bookingRequestOfferCallSlotCancel(cookCallSlotBookingId: ID!, reason: String): MutationResult!
+    # Ad-hoc / join-window LiveKit call.
+    bookingRequestOfferCallCreate(bookingRequestOfferId: ID!): BookingRequestOfferCallTokenResult!
+    bookingRequestOfferCallJoin(bookingRequestOfferId: ID!): BookingRequestOfferCallTokenResult!
+    bookingRequestOfferCallLeave(bookingRequestOfferCallRoomParticipantId: ID!): MutationResult!
+    # Opens a support case (optional booking link). `referenceId` is the new
+    # `supportRequestId`. At most one case per booking request.
+    supportRequestCreate(subject: String!, messageBody: String!, bookingRequestId: ID, fileUploadIds: [ID!]): MutationResult!
+    # Append a customer reply. Reopens `RESOLVED` → `OPEN`. `referenceId` is the
+    # new `supportRequestMessageId`.
+    supportRequestMessageCreate(supportRequestId: ID!, message: String!, fileUploadIds: [ID!]): MutationResult!
+    # Clears `userUnreadNotificationCount` when opening the support chat.
+    supportRequestUnreadNotificationCountReset(supportRequestId: ID!): MutationResult!
+    # Customer's own review of the cook for a completed offer. Low `rating`
+    # (<= 3) defaults to `PENDING_REVIEW` instead of auto-publishing. Returns
+    # `customerTestimonialId` as `referenceId`.
+    bookingRequestOfferTestimonialCreate(input: UserBookingRequestOfferTestimonialCreate!): MutationResult!
+    # Inserts Cooks membership for the signed-in user (existing customers → chefs).
+    cookCreate(input: CookCreate!): MutationResult!
+    chatMessageCreate(
+        chatId: ID
+        message: String!
+        fileUploadIds: [ID!]
+        # Client-allocated idempotency key. Retries with the same id return
+        # the existing turn instead of creating a duplicate.
+        clientRequestId: ID!
+        # Required when creating a new chat (`chatId` null). Ignored when
+        # continuing an existing chat — the row's stamped surface wins.
+        surface: ChatSurface!
+        assistantOptions: ChatAssistantOptions!
+    ): ChatMessageCreateResult
+    # Continue a turn paused on `promptUserForInput` (tool result = answers JSON).
+    chatInputCollectionRespond(
+        chatTurnId: ID!
+        toolCallId: ID!
+        # Opaque answers JSON matching the tool's slot schema (Zod + UI).
+        answers: JSON!
+        clientRequestId: ID!
+        assistantOptions: ChatAssistantOptions!
+    ): ChatMessageCreateResult
+    chatToolApprovalRespond(
+        chatTurnId: ID!
+        approvalId: String!
+        approved: Boolean!
+        reason: String
+        clientRequestId: ID!
+        assistantOptions: ChatAssistantOptions!
+    ): ChatMessageCreateResult
+    # Soft-delete an owned assistant chat. Hidden from owner lists; admin inspect
+    # still sees it (`deletedAt`). `referenceId` is the `chatId`.
+    chatDelete(chatId: ID!): MutationResult!
+    # Owner rename. Non-empty title locks the auto-titler. Max 60 chars after trim.
+    # `referenceId` is the `chatId`.
+    chatTitleUpdate(chatId: ID!, title: String!): MutationResult!
+    # Creates / upserts a session-owned PREPARED gift card + Stripe PaymentIntent.
+    # Buyer email comes from the signed-in user. See docs/features/gift-card-purchase.md.
+    giftCardCreate(input: GiftCardCreate!): MutationResult!
+    # After Elements confirms the PaymentIntent — flips to PAYED, PDFs, email.
+    giftCardPay(input: GiftCardPay!): MutationResult!
+    # Cook-only write namespace. Throws when the session user is not a cook.
+    cook: CookMutation!
+}
+
+# --- Chat assistant options --------------------------------------------------
+
+input ChatAssistantOptions {
+    requireToolCallApprovals: Boolean!
+}
+
+type Query {
+    currentSession: Session!
+    # Public latest-published legal documents (null when none published yet).
+    publicLegal: PublicLegal!
+    # Public content pages (published only).
+    publicCity: PublicCityQuery!
+    publicPartner: PublicPartnerQuery!
+    publicOccasion: PublicOccasionQuery!
+    publicBlogPost: PublicBlogPostQuery!
+    # Visible, admin-approved cooks for the public chefs listing / detail pages.
+    publicCook: PublicCookQuery!
+    # Fixed-route SEO titles/descriptions (admin-editable WebPages rows).
+    publicWebPage: PublicWebPageQuery!
+}
+
+type Mutation {
+    authEmailOtpRequest(email: EmailAddress!, locale: Locale!): MutationResult!
+    authEmailOtpVerify(email: EmailAddress!, code: String!): MutationResult!
+    authEmailOtpDelete(authEmailOtpId: ID!): MutationResult!
+    # After OTP verify for a new email (`AuthEmailOtp.verifiedAt` set). Creates
+    # the Users row from the verified OTP email + profile input, then binds
+    # session. Optional `input.cook` creates cook membership in the same write.
+    userCreate(input: UserCreate!): MutationResult!
+    authPasskeyAuthenticateOptions: JSON!
+    authPasskeyAuthenticateVerify(response: JSON!): MutationResult!
+    # Complete TOTP second factor after primary auth left `pendingTotpUserId`.
+    # Accepts a 6-digit TOTP or an unused recovery code.
+    authTotpVerify(code: String!): MutationResult!
+    # Dismiss a pending TOTP challenge (clears pendingTotpUserId).
+    authTotpChallengeDelete: MutationResult!
+    # Cookie consent — upserts CookieSettings (GA + Clarity both true). Safe to
+    # call again from the footer settings editor. See docs/features/cookie-consent.md.
+    sessionCookieSettingAcceptAll: MutationResult!
+    # Cookie consent — upserts CookieSettings (GA + Clarity both false).
+    sessionCookieSettingAcceptMandatory: MutationResult!
+    # Marketing newsletter subscribe (footer). Idempotent on email. See docs/features/newsletter.md.
+    sessionNewsletterSubscriptionCreate(emailAddress: EmailAddress!, locale: Locale!): MutationResult!
+    # First-party product analytics — pageview for the current session.
+    # Soft-succeeds when the session is terminated. See docs/architecture/session-events.md.
+    sessionWebPageVisitCreate(input: SessionWebPageVisitCreateInput!): MutationResult!
+    # First-party product analytics — structured interaction (e.g. booking form step).
+    sessionWebPageInteractionCreate(input: SessionWebPageInteractionCreateInput!): MutationResult!
+    user: UserMutation!
+    # Admin-only mutations, gated by `guardAdminMutation`.
+    admin: AdminMutation!
+}
+
+input SessionWebPageVisitCreateInput {
+    webPageKey: WebPageKey!
+    path: String
+    cityId: ID
+    cookId: ID
+    blogPostId: ID
+    partnerId: ID
+    occasionId: ID
+    bookingRequestId: ID
+}
+
+input SessionWebPageInteractionCreateInput {
+    webPageKey: WebPageKey!
+    area: String!
+    # Required for cook offer funnel (`cook_booking_request_offer`) steps.
+    bookingRequestId: ID
+    # JSON interaction payload. Funnels use
+    # `{ type: "step_entered"|"step_completed", step: "…" }`.
+    interaction: JSON!
+}
+
+# Admin-only user row for operator lists and detail. Privileged fields stay on
+# this access-path type rather than widening the public `User` surface.
+type AdminUser {
+    userId: ID!
+    # Null when the account has been anonymized. See docs/features/account.md.
+    emailAddress: EmailAddress
+    # Prior addresses archived on email-change verify. Never on public `User`.
+    # Cleared on anonymization.
+    previousEmailAddresses: [EmailAddress!]!
+    firstName: String!
+    lastName: String!
+    # ACTIVE | BANNED | ANONYMIZED. Admin-only; not on public `User`.
+    status: UserStatus!
+    phoneNumber: PhoneNumber
+    birthDate: Date
+    preferredCommunication: UserPreferredCommunication
+    # Profile language — same as public `User.locale`.
+    locale: Locale!
+    # IANA zone — same as public `User.timeZone`.
+    timeZone: TimeZone!
+    # Current profile picture. Same bytes as public `User.profilePicture`.
+    profilePicture: FileUpload
+    # Operator-only free-text note. Never exposed on the public `User` type.
+    adminNote: String!
+    # Membership labels for this row. A user can carry more than one
+    # (`admin` + `customer`, or `admin` + `cook`). See `AdminUserType`.
+    types: [AdminUserType!]!
+    createdAt: DateTime!
+    # Present when the user has a `Cooks` row; null otherwise.
+    cook: AdminCook
+    # Persisted per-user feature toggle overrides (force on/off). Absent keys
+    # fall back to the global `FeatureToggles` default. See
+    # docs/features/admin-feature-toggles.md.
+    featureToggleOverrides: [AdminFeatureToggleUserOverride!]!
+}
+
+# Admin view of a cook profile — includes Stripe account id for support.
+# See docs/features/cook-profile.md.
+type AdminCook {
+    cookId: ID!
+    # Owning user row (`cookId` = `Users.userId`).
+    user: AdminUser!
+    isVisible: Boolean!
+    isApprovedByAdmin: Boolean!
+    canCreateOffers: Boolean!
+    stripeStatus: CookStripeStatus!
+    stripeAccountId: String
+    stripeAccountActive: Boolean!
+    stripeAccountActiveWasReset: Boolean!
+    exactTravelOriginAddress: CookTravelOriginAddress
+    biography: String!
+    biographySummary: String!
+    # True while a pending cook-biography-summary-generate job exists for this
+    # cook (created|retry|active). Derived from pg-boss via payload cookId — not a Cooks column.
+    biographySummaryGenerating: Boolean!
+    cuisineStyle: String
+    cookingPhilosophy: String
+    travelExpensesAmount: Int!
+    maximumTravelDistance: Int
+    minimumPriceAmount: Int
+    maximumPriceAmount: Int
+    minimumParticipants: Int
+    maximumParticipants: Int
+    callSchedulingEnabled: Boolean!
+    callDurationMinutes: Int!
+    # Optional public display name; when set, public surfaces prefer it over firstName.
+    stageName: String
+    createdAt: DateTime!
+    lastModifiedAt: DateTime!
+}
+
+# --- Testimonials (admin) -------------------------------------------------------
+#
+# See docs/architecture/testimonials.md.
+
+type AdminCustomerTestimonial {
+    customerTestimonialId: ID!
+    userId: ID!
+    user: AdminUser!
+    bookingRequestOfferId: ID
+    authorName: String
+    # Effective value shown by the editor when `authorName` is empty — falls
+    # back to the customer's display name via `testimonialOfferFallbacksLoad`.
+    displayAuthorName: String!
+    location: String
+    displayLocation: String
+    occasion: String
+    displayOccasion: String
+    body: String!
+    imageUrls: [String!]!
+    rating: Int
+    publicationStatus: TestimonialPublicationStatus!
+    publishedAt: DateTime
+    createdAt: DateTime!
+}
+
+type CookTestimonialLowRatingAnswers {
+    whatWentWrong: String
+    wouldRecommend: Boolean
+    additionalFeedback: String
+}
+
+type AdminCookTestimonial {
+    cookTestimonialId: ID!
+    userId: ID!
+    cookId: ID!
+    cook: AdminCook!
+    bookingRequestOfferId: ID
+    authorName: String
+    # Effective value shown by the editor when `authorName` is empty — falls
+    # back to the cook's display name via `testimonialOfferFallbacksLoad`.
+    displayAuthorName: String!
+    location: String
+    displayLocation: String
+    occasion: String
+    displayOccasion: String
+    body: String
+    imageUrls: [String!]!
+    rating: Int
+    # Follow-up survey captured when `rating <= 3` — see `publicationStatusFromRating.ts`.
+    lowRatingAnswers: CookTestimonialLowRatingAnswers
+    publicationStatus: TestimonialPublicationStatus!
+    publishedAt: DateTime
+    createdAt: DateTime!
+}
+
+union AdminTestimonial = AdminCustomerTestimonial | AdminCookTestimonial
+
+# Curated, ordered testimonial on the city editor.
+type AdminCityTestimonial {
+    index: Int!
+    testimonial: AdminTestimonial!
+}
+
+# Curated, ordered testimonial on the partner editor.
+type AdminPartnerTestimonial {
+    index: Int!
+    testimonial: AdminTestimonial!
+}
+
+# Curated, ordered testimonial on the occasion editor.
+type AdminOccasionTestimonial {
+    index: Int!
+    testimonial: AdminTestimonial!
+}
+
+input AdminCustomerTestimonialCreate {
+    userId: ID!
+    bookingRequestOfferId: ID
+    authorName: String
+    location: String
+    occasion: String
+    body: String!
+    rating: Int
+    imageFileUploadIds: [ID!]
+}
+
+input AdminCustomerTestimonialUpdate {
+    authorName: String
+    location: String
+    occasion: String
+    body: String
+    rating: Int
+}
+
+input AdminCookTestimonialCreate {
+    cookId: ID!
+    bookingRequestOfferId: ID
+    authorName: String
+    location: String
+    occasion: String
+    body: String
+    rating: Int
+    imageFileUploadIds: [ID!]
+}
+
+input AdminCookTestimonialUpdate {
+    authorName: String
+    location: String
+    occasion: String
+    body: String
+    rating: Int
+}
+
+# Ordered curation entry for `cityTestimonialsUpdate` / `partnerTestimonialsUpdate`
+# / `occasionTestimonialsUpdate`.
+input TestimonialJunctionEntryInput {
+    testimonialType: TestimonialType!
+    testimonialId: ID!
+}
+
+# Admin view of a cook meal — includes soft-deleted rows (`deletedAt`). Cook
+# GraphQL (`CookMeal`) never exposes `deletedAt`. See docs/features/cook-meals.md.
+type AdminCookMeal {
+    mealId: ID!
+    cookId: ID!
+    cookName: String!
+    title: String!
+    description: String!
+    imageFileUploadId: ID
+    imageUrl: String
+    publishedAt: DateTime
+    deletedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    # Same usage / delete-gate shape as `CookMeal.relationships` (field resolver).
+    relationships: CookMealRelationships!
+}
+
+# One course on an admin cook menu. Soft-deleted meals are omitted from `mealOptions`.
+type AdminCookMenuCourse {
+    courseId: ID!
+    title: String!
+    mealSelectionLimit: Int
+    mealOptions: [AdminCookMeal!]!
+}
+
+enum AdminCookMealSortField {
+    title
+    createdAt
+    publishedAt
+    deletedAt
+}
+
+# Lifecycle lens for admin meal / menu lists. Omit = all rows (respecting
+# `includeDeleted`). `PUBLISHED` / `DRAFT` are non-deleted only; `DELETED`
+# requires `deletedAt`.
+enum AdminCookInventoryStatus {
+    PUBLISHED
+    DRAFT
+    DELETED
+}
+
+# Image / public-catalog lens for `Admin.cookMeals`. Omit = no image filter.
+# `ON_PUBLIC_PAGE` / `NOT_ON_PUBLIC_PAGE` imply non-deleted + published.
+enum AdminCookMealImageFilter {
+    WITH_IMAGE
+    WITHOUT_IMAGE
+    ON_PUBLIC_PAGE
+    NOT_ON_PUBLIC_PAGE
+}
+
+# Filter + pagination for `Admin.cookMeals` / `cookMealsCounts`. Optional
+# `cookIds` scopes to those cooks (`IN`); omit or empty = no cook filter
+# (user-detail tab passes one id; list multi-select can pass many).
+# `includeDeleted` defaults true so soft-deleted inventory stays visible; ignored
+# when `status` is set (`PUBLISHED`/`DRAFT` exclude deleted; `DELETED` requires it).
+# `searchText` matches title, description, or cook name (case-insensitive contains).
+# `imageFilter` ANDs with other filters. `skip` / `take` / `sort*` ignored by
+# `cookMealsCounts`.
+input AdminCookMealCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    cookIds: [ID!]
+    searchText: String
+    includeDeleted: Boolean! = true
+    status: AdminCookInventoryStatus
+    imageFilter: AdminCookMealImageFilter
+    sortField: AdminCookMealSortField
+    sortDirection: SortDirection
+}
+
+# Admin view of a cook menu — includes soft-deleted rows (`deletedAt`). Cook
+# GraphQL (`CookMenu`) never exposes `deletedAt`. See docs/features/cook-menus.md.
+# `courseMealOptionImages` — same semantics as `CookMenu.courseMealOptionImages`.
+# `courses` is hydrated on findOne; list queries return an empty array.
+# List queries are inventory-only (`bookingRequestOfferId` null). FindOne also
+# returns offer-scoped copies (for deep-links from admin offer pages).
+type AdminCookMenu {
+    menuId: ID!
+    cookId: ID!
+    cookName: String!
+    title: String!
+    description: String!
+    courseCount: Int!
+    courseMealOptionImages: [String!]!
+    courses: [AdminCookMenuCourse!]!
+    copyOfMenuId: ID
+    bookingRequestOfferId: ID
+    publishedAt: DateTime
+    deletedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+enum AdminCookMenuSortField {
+    title
+    createdAt
+    publishedAt
+    deletedAt
+}
+
+# Filter + pagination for `Admin.cookMenus` / `cookMenusCounts`. Same shape as
+# `AdminCookMealCriterion` (no `missingPublicImage`). Inventory only (offer copies
+# excluded). `skip` / `take` / `sort*` ignored by `cookMenusCounts`.
+input AdminCookMenuCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    cookIds: [ID!]
+    searchText: String
+    includeDeleted: Boolean! = true
+    status: AdminCookInventoryStatus
+    sortField: AdminCookMenuSortField
+    sortDirection: SortDirection
+}
+
+# Membership / surface labels used to filter `Admin.users`. A user can match
+# more than one: `admin` = `Admins` row, `cook` = `Cooks` row, `customer` =
+# no `Cooks` row (same split as the public profile surface).
+enum AdminUserType {
+    customer
+    cook
+    admin
+}
+
+# Shared ascending / descending for admin list `sortDirection` fields.
+enum SortDirection {
+    ASC
+    DESC
+}
+
+# Sortable columns for `Admin.users`. Default when omitted: `createdAt` DESC.
+enum AdminUserSortField {
+    firstName
+    lastName
+    emailAddress
+    createdAt
+}
+
+# Filter + pagination for `Admin.users` / `Admin.userCounts`. Optional
+# `searchText` matches firstName, lastName, or emailAddress (case-insensitive
+# contains). `types` is
+# required — pass every type to leave membership unfiltered; an empty list
+# matches nothing. `skip` / `take` / `sort*` are ignored by `userCounts`.
+# Optional `sortField` / `sortDirection` drive server `ORDER BY` (default
+# `createdAt` DESC).
+input AdminUserCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    types: [AdminUserType!]!
+    # When set, requires a `Cooks` row with this approval flag (typically used
+    # with `types: [cook]` to list unapproved cooks).
+    isApprovedByAdmin: Boolean
+    # When set, only users with this account status.
+    status: UserStatus
+    sortField: AdminUserSortField
+    sortDirection: SortDirection
+}
+
+# Inclusive DateTime bounds used by admin time-series charts (and reusable
+# elsewhere). Callers must send both ends; the server normalizes them to the
+# chosen granularity and zero-fills every bucket in between.
+input DateTimeRange {
+    startDateTime: DateTime!
+    endDateTime: DateTime!
+}
+
+# Bucket size for admin overview time series. Maps to Postgres `date_trunc`.
+enum AdminTimeBucketGranularity {
+    day
+    week
+    month
+}
+
+# One zero-filled time-series point. `bucketStart` is the period boundary for
+# the requested `AdminTimeBucketGranularity`.
+type AdminTimeBucket {
+    bucketStart: DateTime!
+    count: Int!
+}
+
+# Manual account creation from `/admin/users/create`. Leaves legal acceptance
+# timestamps null so the public gate fires on first sign-in. Optional `cook`
+# inserts a `Cooks` row with required profile/travel fields; `asAdmin` inserts
+# an `Admins` row; customer is implied when `cook` is omitted. See
+# docs/features/admin-users.md.
+input AdminUserCreate {
+    emailAddress: EmailAddress!
+    firstName: String!
+    lastName: String!
+    phoneNumber: PhoneNumber!
+    birthDate: Date!
+    preferredCommunication: UserPreferredCommunication!
+    # Defaults to `de` when omitted. See docs/architecture/i18n.md.
+    locale: Locale
+    # Defaults to `Europe/Berlin` when omitted. See docs/architecture/i18n.md.
+    timeZone: TimeZone
+    asAdmin: Boolean! = false
+    cook: CookCreate
+}
+
+# Admin-only session row for operator lists and detail. Privileged / attribution
+# fields stay on this access-path type rather than widening request `Session`
+# or account `UserSession`. See `docs/features/admin-sessions.md`.
+type AdminSession {
+    sessionId: ID!
+    userId: ID
+    # Resolved account for `userId` when present; null for anonymous sessions
+    # or when the user row is gone. Prefer this over raw `userId` in admin UI.
+    user: AdminUser
+    lastInteractionAt: DateTime!
+    wasTerminatedAt: DateTime
+    connectionActive: Boolean!
+    userAgent: String
+    ipHash: String
+    referrer: String
+    landingPath: String
+    isBot: Boolean!
+    createdAt: DateTime!
+}
+
+# Humanized first-party analytics event for admin timelines.
+type AdminSessionEvent {
+    sessionEventId: ID!
+    sessionId: ID!
+    type: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    createdAt: DateTime!
+    # Optional admin-relative path for deep-linking (e.g. booking request).
+    link: String
+}
+
+input AdminSessionEventCriterion {
+    sessionIds: [ID!]
+    userIds: [ID!]
+    types: [String!]
+    skip: Int! = 0
+    take: Int! = 50
+}
+
+type AdminAnalyticsSankeyNode {
+    id: String!
+    labelDe: String!
+    labelEn: String!
+}
+
+type AdminAnalyticsSankeyLink {
+    source: String!
+    target: String!
+    value: Int!
+}
+
+# Per-step funnel reach vs pass for human non-cook/non-admin sessions.
+# `enteredCount` / `completedCount` are distinct sessions. `created` has no
+# `step_entered` (completedCount comes from BOOKING_REQUEST_CREATED).
+type AdminAnalyticsFunnelStepStats {
+    id: String!
+    labelDe: String!
+    labelEn: String!
+    enteredCount: Int!
+    completedCount: Int!
+}
+
+type AdminAnalyticsBookingRequestFormFlow {
+    nodes: [AdminAnalyticsSankeyNode!]!
+    links: [AdminAnalyticsSankeyLink!]!
+    steps: [AdminAnalyticsFunnelStepStats!]!
+    # Distinct sessions with at least one step_completed or BOOKING_REQUEST_CREATED.
+    sessionsWithCompletion: Int!
+    # Distinct sessions with BOOKING_REQUEST_CREATED in range.
+    bookingRequestsCreated: Int!
+}
+
+# Cook × booking-request offer funnel for cooks notified in range.
+# Early/terminal steps from BookingRequestCooks + Offers; create-UI mid-steps
+# from session interactions. See docs/features/admin-analytics.md.
+type AdminAnalyticsCookBookingRequestOfferFlow {
+    nodes: [AdminAnalyticsSankeyNode!]!
+    links: [AdminAnalyticsSankeyLink!]!
+    steps: [AdminAnalyticsFunnelStepStats!]!
+    notifiedCount: Int!
+    openedCount: Int!
+    declinedCount: Int!
+    offersCreatedCount: Int!
+}
+
+# Admin view of an owned assistant chat. Legacy rows without `userId` /
+# `surface` are excluded from list/detail. See
+# docs/features/admin-assistant-chats.md.
+type AdminAssistantChat {
+    chatId: ID!
+    userId: ID!
+    # Owning account. Prefer this over raw `userId` in admin UI.
+    user: AdminUser!
+    surface: ChatSurface!
+    title: String!
+    lastModifiedAt: DateTime!
+    createdAt: DateTime!
+    # Set when the owner soft-deleted the chat. Admin inspect still lists these.
+    deletedAt: DateTime
+    # Sequence-ordered turns. Loaded only when selected (list queries omit it).
+    turns: [ChatTurn!]!
+}
+
+# Filter + pagination for `Admin.assistantChats` / `assistantChatsCounts`.
+# Optional `searchText` matches title, chatId text, or owner email / name
+# (case-insensitive contains). Optional `userIds` scopes to those owners
+# (`IN`); omit or empty = no user filter (user-detail tab passes one id; list
+# multi-select can pass many). Optional `surface` scopes to one rail; omit =
+# all surfaces. Default sort `lastModifiedAt` DESC. `skip` / `take` are ignored
+# by `assistantChatsCounts`.
+input AdminAssistantChatCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    userIds: [ID!]
+    surface: ChatSurface
+}
+
+# Bot vs human labels used to filter `Admin.sessions`. Maps to `Sessions.isBot`.
+enum AdminSessionKind {
+    human
+    bot
+}
+
+# Sortable columns for `Admin.sessions`. Default when omitted: `createdAt` DESC
+# (not a list column — URL omits sort until the operator picks one).
+enum AdminSessionSortField {
+    user
+    userAgent
+    lastInteractionAt
+    createdAt
+}
+
+# Filter + pagination for `Admin.sessions` / `Admin.sessionCounts`. Optional
+# `searchText` matches sessionId, userId, userAgent, landingPath, referrer, or
+# ipHash (case-insensitive contains). `kinds` is required — pass every kind to
+# leave bot/human unfiltered; an empty list matches nothing. Optional `userIds`
+# scopes to those accounts (`IN`); omit or empty = no user filter (user-detail
+# tab passes one id; list multi-select can pass many). `skip` / `take` / `sort*`
+# are ignored by `sessionCounts`. Optional `sortField` / `sortDirection` drive
+# server `ORDER BY` (default `createdAt` DESC).
+input AdminSessionCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    kinds: [AdminSessionKind!]!
+    userIds: [ID!]
+    sortField: AdminSessionSortField
+    sortDirection: SortDirection
+}
+
+# Admin read namespace — resolved only when `User.admin` is non-null (session's
+# own user has an `Admins` row). `adminId` (= `Users.userId`) is the identity /
+# presence probe public pages select to decide whether to surface an admin
+# entry point. Domain child fields never re-check membership because they
+# cannot be reached without that parent. See
+# `docs/architecture/authorization-admin.md`.
+type Admin {
+    adminId: ID!
+    # Registered accounts for the admin users list. Sorted by criterion (default
+    # newest first). See `AdminUserCriterion`.
+    users(criterion: AdminUserCriterion!): [AdminUser!]!
+    # One count per criterion, same order. List pages pass a single criterion;
+    # the overview passes several (e.g. all types, then each type). `skip` /
+    # `take` / `sort*` ignored. Empty criteria rejected; max 20.
+    userCounts(criteria: [AdminUserCriterion!]!): [Int!]!
+    # Registration time series for the overview chart. Buckets are zero-filled
+    # across `range` at the given `granularity` (default `day`). Span capped at
+    # 366 days.
+    userRegistrations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Single-user detail. Null when the id is unknown.
+    user(userId: ID!): AdminUser
+    # Cook meals (draft + published + soft-deleted). See `AdminCookMealCriterion`.
+    cookMeals(criterion: AdminCookMealCriterion!): [AdminCookMeal!]!
+    # One count per criterion, same order. List pages pass a single criterion.
+    # `skip` / `take` / `sort*` ignored. Empty criteria rejected; max 20.
+    cookMealsCounts(criteria: [AdminCookMealCriterion!]!): [Int!]!
+    # Single meal (including soft-deleted). Null when the id is unknown.
+    cookMeal(mealId: ID!): AdminCookMeal
+    # Cook menus (draft + published + soft-deleted). See `AdminCookMenuCriterion`.
+    cookMenus(criterion: AdminCookMenuCriterion!): [AdminCookMenu!]!
+    # One count per criterion, same order. List pages pass a single criterion.
+    # `skip` / `take` / `sort*` ignored. Empty criteria rejected; max 20.
+    cookMenusCounts(criteria: [AdminCookMenuCriterion!]!): [Int!]!
+    # Single menu (including soft-deleted). Inventory and offer-scoped copies both
+    # resolve so admin offer pages can deep-link; list queries stay inventory-only.
+    cookMenu(menuId: ID!): AdminCookMenu
+    # Browser / visitor sessions for the admin sessions list. Sorted by criterion
+    # (default newest first). See `AdminSessionCriterion`.
+    sessions(criterion: AdminSessionCriterion!): [AdminSession!]!
+    # One count per criterion, same order. List pages pass a single criterion;
+    # the overview passes several (e.g. all kinds, then each kind). `skip` /
+    # `take` / `sort*` ignored. Empty criteria rejected; max 20.
+    sessionCounts(criteria: [AdminSessionCriterion!]!): [Int!]!
+    # Session-creation time series for the overview chart. Buckets are
+    # zero-filled across `range` at the given `granularity` (default `day`).
+    # Span capped at 366 days.
+    sessionCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Single-session detail. Null when the id is unknown.
+    session(sessionId: ID!): AdminSession
+    # First-party session events across sessions/users. Sorted newest first.
+    # See `AdminSessionEventCriterion` and docs/architecture/session-events.md.
+    sessionEvents(criterion: AdminSessionEventCriterion!): [AdminSessionEvent!]!
+    # Booking-request form funnel (Sankey transitions + per-step entered/completed
+    # counts + KPIs) for human non-cook/non-admin sessions in `range`. See
+    # docs/features/admin-analytics.md.
+    bookingRequestFormFlow(range: DateTimeRange!): AdminAnalyticsBookingRequestFormFlow!
+    # Cook × booking-request offer funnel for cooks notified in `range`.
+    cookBookingRequestOfferFlow(range: DateTimeRange!): AdminAnalyticsCookBookingRequestOfferFlow!
+    # WEB_PAGE_VISITED time series for a fixed WebPageKey. Same bucket rules as
+    # other admin creations queries.
+    sessionEventWebPageVisitCreations(
+        webPageKey: WebPageKey!
+        range: DateTimeRange!
+        granularity: AdminTimeBucketGranularity! = day
+    ): [AdminTimeBucket!]!
+    # Assistant chats (any surface, any owner). Sorted by criterion (default
+    # `lastModifiedAt` desc). See `AdminAssistantChatCriterion` and
+    # docs/features/admin-assistant-chats.md.
+    assistantChats(criterion: AdminAssistantChatCriterion!): [AdminAssistantChat!]!
+    # One count per criterion, same order. List pages pass a single criterion;
+    # the overview passes several (e.g. all, then each surface). `skip` / `take`
+    # ignored. Empty criteria rejected; max 20.
+    assistantChatsCounts(criteria: [AdminAssistantChatCriterion!]!): [Int!]!
+    # Creation time series for the overview chart. Buckets are zero-filled
+    # across `range` at the given `granularity` (default `day`). Span capped at
+    # 366 days.
+    assistantChatCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Single assistant-chat detail. Null when the id is unknown or the row is
+    # missing ownership (`userId` / `surface`).
+    assistantChat(chatId: ID!): AdminAssistantChat
+    # Single log row. Null when the id is unknown.
+    log(logId: ID!): AdminLog
+    # Persistent log rows. Sorted by criterion (default newest first). See
+    # `AdminLogCriterion`.
+    logs(criterion: AdminLogCriterion!): [AdminLog!]!
+    # One count per criterion, same order. List pages pass a single criterion;
+    # the overview passes several (e.g. all levels, then each level). `skip` /
+    # `take` / `sort*` ignored. Empty criteria rejected; max 20.
+    logCounts(criteria: [AdminLogCriterion!]!): [Int!]!
+    # Log-creation time series for the overview chart. Buckets are zero-filled
+    # across `range` at the given `granularity` (default `day`). Span capped at
+    # 366 days.
+    logCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Single one-shot AI generation. Null when the id is unknown.
+    aiGeneration(aiGenerationId: ID!): AdminAiGeneration
+    # One-shot LLM call ledger. Sorted by criterion (default newest first). See
+    # `AdminAiGenerationCriterion` and docs/features/admin-ai-generations.md.
+    aiGenerations(criterion: AdminAiGenerationCriterion!): [AdminAiGeneration!]!
+    # One count per criterion, same order. List pages pass a single criterion;
+    # the overview passes several (e.g. all kinds, then each kind). `skip` /
+    # `take` / `sort*` ignored. Empty criteria rejected; max 20.
+    aiGenerationCounts(criteria: [AdminAiGenerationCriterion!]!): [Int!]!
+    # Creation time series for the overview chart. Buckets are zero-filled
+    # across `range` at the given `granularity` (default `day`). Span capped at
+    # 366 days.
+    aiGenerationCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Version history (draft + published), newest first.
+    legalPrivacyPolicies: [AdminLegalPrivacyPolicy!]!
+    legalTermsAndConditions: [AdminLegalTermsAndConditions!]!
+    legalImprints: [AdminLegalImprint!]!
+
+    # Gift-card purchases (read-only). Sorted by criterion (default newest first).
+    # See `AdminGiftCardCriterion`.
+    giftCards(criterion: AdminGiftCardCriterion!): [AdminGiftCard!]!
+    # One count per criterion, same order. List pages pass a single criterion;
+    # overviews can pass several (e.g. all statuses, then each status). `skip` /
+    # `take` / `sort*` ignored. Empty criteria rejected; max 20.
+    giftCardsCounts(criteria: [AdminGiftCardCriterion!]!): [Int!]!
+    # Paid purchase time series for the overview chart (`paymentStatus = PAYED`).
+    # Buckets are zero-filled across `range` at the given `granularity` (default
+    # `day`). Span capped at 366 days.
+    giftCardCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Top occasions among paid purchases, by count (then occasion). Omit `range` for
+    # all-time (overview default; independent of the chart picker). Default take is 3.
+    giftCardOccasionStats(range: DateTimeRange, take: Int! = 3): [AdminGiftCardOccasionStat!]!
+    # Top calendar months among paid purchases, by count (then month). Omit `range`
+    # for all-time (overview default; independent of the chart picker). Default take is 3.
+    giftCardSalesMonthStats(range: DateTimeRange, take: Int! = 3): [AdminGiftCardSalesMonthStat!]!
+    # Average `originalBalanceCents` among paid purchases (all-time). 0 when none paid.
+    giftCardPaidPurchaseAverageCents: Int!
+    # Single gift-card detail. Null when the id is unknown.
+    giftCard(giftCardId: ID!): AdminGiftCard
+
+    # Booking requests. Sorted by criterion (default newest first).
+    # See `AdminBookingRequestCriterion`.
+    bookingRequests(criterion: AdminBookingRequestCriterion!): [AdminBookingRequest!]!
+    # One count per criterion, same order. List pages pass a single criterion;
+    # the overview passes several (e.g. all, then each publication status).
+    # `skip` / `take` / `sort*` ignored. Empty criteria rejected; max 20.
+    bookingRequestsCounts(criteria: [AdminBookingRequestCriterion!]!): [Int!]!
+    # Creation time series for the overview chart. Buckets are zero-filled
+    # across `range` at the given `granularity` (default `day`). Span capped at
+    # 366 days.
+    bookingRequestCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Top occasions among requests, by count (then occasion). Omit `range` for
+    # all-time (overview default; independent of the chart picker). Default take is 3.
+    bookingRequestOccasionStats(range: DateTimeRange, take: Int! = 3): [AdminBookingRequestOccasionStat!]!
+    # Top calendar months among request creations, by count (then month). Omit
+    # `range` for all-time (overview default). Default take is 3.
+    bookingRequestCreationMonthStats(range: DateTimeRange, take: Int! = 3): [AdminBookingRequestCreationMonthStat!]!
+    # Average participant count per request (all-time). 0 when none.
+    bookingRequestAverageParticipants: Int!
+    # Offer funnel economics (all-time): offers per request, menu price, paid
+    # customer totals, and platform fee revenue on paid offers.
+    bookingRequestOfferEconomics: AdminBookingRequestOfferEconomics!
+    # Top cooks by offer volume or dual-accept conversions (all-time).
+    bookingRequestCookOfferStats(
+        take: Int! = 3
+        sortBy: AdminBookingRequestCookOfferStatSortField! = offerCount
+    ): [AdminBookingRequestCookOfferStat!]!
+    # Single booking-request detail. Null when the id is unknown.
+    bookingRequest(bookingRequestId: ID!): AdminBookingRequest
+    # Offer-capable cooks whose travel radius covers the point (admin create picker).
+    # Optional `excludeUserId` drops that user (usually the customer). Sorted by distance.
+    cooksInTravelRadius(latitude: Latitude!, longitude: Longitude!, excludeUserId: ID): [AdminCookInTravelRadiusPreview!]!
+    # Booking-request offers. Sorted newest first unless `plannedPayoutDateTimeTo`
+    # is set (then earliest planned payout first — due-payout queue).
+    bookingRequestOffers(criterion: AdminBookingRequestOfferCriterion!): [AdminBookingRequestOffer!]!
+    # One count per criterion, same order. `skip` / `take` ignored. Empty
+    # criteria rejected; max 20.
+    bookingRequestOffersCounts(criteria: [AdminBookingRequestOfferCriterion!]!): [Int!]!
+    bookingRequestOffer(bookingRequestOfferId: ID!): AdminBookingRequestOffer
+
+    # Support cases (customer ↔ admin). Sorted by criterion (default newest
+    # first). See `AdminSupportRequestCriterion` and
+    # docs/features/support-requests.md.
+    supportRequests(criterion: AdminSupportRequestCriterion!): [AdminSupportRequest!]!
+    # One count per criterion, same order. List pages pass a single criterion;
+    # the overview passes several (e.g. open, then hasAdminUnread). `skip` /
+    # `take` ignored. Empty criteria rejected; max 20.
+    supportRequestsCounts(criteria: [AdminSupportRequestCriterion!]!): [Int!]!
+    # Single support-request detail. Null when the id is unknown.
+    supportRequest(supportRequestId: ID!): AdminSupportRequest
+
+    # WhatsApp Concierge inbox. Sorted unread-first then newest message.
+    whatsAppConversations(criterion: AdminWhatsAppConversationCriterion!): [AdminWhatsAppConversation!]!
+    whatsAppConversationsCounts(criteria: [AdminWhatsAppConversationCriterion!]!): [Int!]!
+    whatsAppConversation(whatsAppConversationId: ID!): AdminWhatsAppConversation
+    # Sum of `adminUnreadCount` across conversations (sidebar badge).
+    whatsAppConversationsAdminUnreadCount: Int!
+
+    # Attention board: LIVE / PENDING / UPCOMING / RECENT (48h) discovery calls.
+    # Refreshed via `adminUpdates`. See `adminCallsFindMany`.
+    calls: [AdminCallListItem!]!
+    # Full call traffic (slots + rooms, including declines/cancels). Sorted by
+    # criterion (default `occurredAt` DESC). See `AdminCallTrafficCriterion`.
+    callTraffic(criterion: AdminCallTrafficCriterion!): [AdminCallListItem!]!
+    # One count per criterion, same order. List pages pass a single criterion;
+    # the overview passes several (e.g. live, pending, declined in range).
+    # `skip` / `take` / `sort*` ignored. Empty criteria rejected; max 20.
+    callTrafficCounts(criteria: [AdminCallTrafficCriterion!]!): [Int!]!
+    # Slot-request creation time series for the overview chart. Buckets are
+    # zero-filled across `range` at the given `granularity` (default `day`).
+    # Span capped at 366 days.
+    callSlotCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # LiveKit room start time series (uses `startedAt`). Same bucket rules.
+    callRoomCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Top cooks by call activity in `range` (rooms by startedAt; slot outcomes
+    # by lastModifiedAt; pending awaiting cook is current, not range-scoped).
+    callCookStats(range: DateTimeRange!, sortBy: AdminCallCookStatSortField! = roomCount, take: Int! = 10): [AdminCallCookStat!]!
+
+    # Promo codes (admin catalog). Sorted by criterion (default newest first).
+    # See `AdminPromoCodeCriterion`.
+    promoCodes(criterion: AdminPromoCodeCriterion!): [AdminPromoCode!]!
+    # One count per criterion, same order. List pages pass a single criterion.
+    # `skip` / `take` / `sort*` ignored. Empty criteria rejected; max 20.
+    promoCodesCounts(criteria: [AdminPromoCodeCriterion!]!): [Int!]!
+    # Single promo-code detail. Null when the id is unknown.
+    promoCode(promoCodeId: ID!): AdminPromoCode
+
+    # Outbound transactional emails (read-only). Sorted by criterion (default
+    # newest first). See `AdminOutboundEmailCriterion`.
+    outboundEmails(criterion: AdminOutboundEmailCriterion!): [AdminOutboundEmail!]!
+    # One count per criterion, same order. List pages pass a single criterion;
+    # overviews can pass several (e.g. all purposes, then each lifecycle). `skip` /
+    # `take` / `sort*` ignored. Empty criteria rejected; max 20.
+    outboundEmailsCounts(criteria: [AdminOutboundEmailCriterion!]!): [Int!]!
+    # Creation time series for outbound emails (`OutboundEmails.createdAt`).
+    # Same bucket rules as other admin creations queries.
+    outboundEmailCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Single outbound email detail. Null when the id is unknown.
+    outboundEmail(outboundEmailId: ID!): AdminOutboundEmail
+    # Live Resend account email quota (monthly + daily). Null when
+    # `EMAIL_TRANSPORT` is `console` or the Resend usage API call fails.
+    resendUsage: AdminResendUsage
+
+    # Content pages — cities, partners, occasions, blog posts (drafts + published).
+    cities: [AdminCity!]!
+    city(cityId: ID!): AdminCity
+    partners: [AdminPartner!]!
+    partner(partnerId: ID!): AdminPartner
+    occasions: [AdminOccasion!]!
+    occasion(occasionId: ID!): AdminOccasion
+    blogPosts: [AdminBlogPost!]!
+    blogPost(blogPostId: ID!): AdminBlogPost
+
+    # Fixed-route SEO (WebPages). Always one entry per `WebPageKey` (ghost
+    # rows when no DB entry, filled from shared defaults). See
+    # docs/features/admin-web-pages.md.
+    webPages: [AdminWebPage!]!
+    webPage(webPageKey: WebPageKey!): AdminWebPage!
+
+    # Fixed-key feature toggles. Always one entry per `FeatureToggleKey` (ghost
+    # rows when no DB entry). See docs/features/admin-feature-toggles.md.
+    featureToggles: [AdminFeatureToggle!]!
+
+    # Testimonial catalogs (draft + published). See docs/architecture/testimonials.md.
+    customerTestimonials: [AdminCustomerTestimonial!]!
+    customerTestimonial(customerTestimonialId: ID!): AdminCustomerTestimonial
+    cookTestimonials: [AdminCookTestimonial!]!
+    cookTestimonial(cookTestimonialId: ID!): AdminCookTestimonial
+
+    # Shared Garage/S3 object store browse. Capability-optional: when
+    # OBJECT_STORAGE_S3_* is incomplete, `configured` is false and `objects` is
+    # empty. Paginated via S3 continuation tokens — see
+    # `AdminObjectStorageObjectCriterion` and docs/architecture/file-storage.md /
+    # docs/features/admin-file-store.md.
+    objectStorageObjects(criterion: AdminObjectStorageObjectCriterion!): AdminObjectStorageObjectPage!
+
+    # All pending (created | retry) pg-boss jobs across queued definitions,
+    # sorted by `startAfter` ascending. Live from the runner — not a static
+    # catalog. Recurring crons have no per-fire row until they enqueue.
+    # See docs/features/admin-jobs.md.
+    queuedJobs: [AdminQueuedJob!]!
+}
+
+type AdminObjectStorageObject {
+    key: String!
+    size: Int!
+    lastModified: DateTime
+    etag: String
+}
+
+type AdminObjectStorageObjectPage {
+    configured: Boolean!
+    bucket: String
+    objects: [AdminObjectStorageObject!]!
+    nextContinuationToken: String
+    isTruncated: Boolean!
+}
+
+# Filter + pagination for `Admin.objectStorageObjects`. Optional `prefix` is
+# passed to S3 `ListObjectsV2` (consumers own key prefixes). Optional
+# `continuationToken` resumes the previous page. `take` caps MaxKeys
+# (default 25, max 100).
+input AdminObjectStorageObjectCriterion {
+    prefix: String
+    continuationToken: String
+    take: Int
+}
+
+type AdminGiftCard {
+    giftCardId: ID!
+    buyerEmail: EmailAddress!
+    buyerUserId: ID
+    occasion: String!
+    recipientName: String!
+    message: String!
+    originalBalanceCents: Int!
+    balanceCents: Int!
+    redeemCode: String!
+    paymentStatus: GiftCardPaymentStatus!
+    invoiceAddress: InvoiceAddress
+    # Persisted purchase-receipt PDF id (null when capture soft-failed). Prefer
+    # `invoiceFileUpload` for download metadata.
+    invoiceFileUploadId: ID
+    # Purchase-receipt PDF generated at pay time (null when capture soft-failed).
+    invoiceFileUpload: FileUpload
+    # Persisted printable voucher PDF id (null when capture soft-failed).
+    voucherFileUploadId: ID
+    # Printable / sharable gift-card voucher (null when capture soft-failed).
+    voucherFileUpload: FileUpload
+    expiresAt: DateTime!
+    createdAt: DateTime!
+}
+
+# Aggregated paid gift-card purchases for one occasion (overview ranking).
+type AdminGiftCardOccasionStat {
+    occasion: String!
+    count: Int!
+    totalOriginalBalanceCents: Int!
+}
+
+# Aggregated paid gift-card purchases for one calendar month (overview ranking).
+type AdminGiftCardSalesMonthStat {
+    # First instant of the month (`date_trunc('month', createdAt)`).
+    monthStart: DateTime!
+    count: Int!
+    totalOriginalBalanceCents: Int!
+}
+
+# Sortable columns for `Admin.giftCards`. Default when omitted: `createdAt` DESC.
+enum AdminGiftCardSortField {
+    createdAt
+    originalBalanceCents
+    buyerEmail
+}
+
+# Filter + pagination for `Admin.giftCards` / `giftCardsCounts`. Optional
+# `searchText` matches buyer email, recipient name, or redeem code
+# (case-insensitive contains). `paymentStatuses` is required — pass every
+# status to leave payment unfiltered; an empty list matches nothing. Optional
+# `sortField` / `sortDirection` drive server `ORDER BY` (default `createdAt`
+# DESC). `skip` / `take` / `sort*` are ignored by `giftCardsCounts`.
+input AdminGiftCardCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    paymentStatuses: [GiftCardPaymentStatus!]!
+    sortField: AdminGiftCardSortField
+    sortDirection: SortDirection
+}
+
+# Admin promo-code catalog row. Fixed-amount discount; redemption is separate.
+type AdminPromoCode {
+    promoCodeId: ID!
+    redeemCode: String!
+    amountCents: Int!
+    minimumTotalAmountCustomerCents: Int
+    # Set when this code is booking-request-scoped (churn). Null for global codes.
+    scopedBookingRequestId: ID
+    expiresAt: DateTime!
+    createdAt: DateTime!
+    # Requests that currently apply this promo (`BookingRequests.promoCodeId`).
+    bookingRequests: [AdminBookingRequest!]!
+}
+
+# Sortable columns for `Admin.promoCodes`. Default when omitted: `createdAt` DESC.
+enum AdminPromoCodeSortField {
+    createdAt
+    expiresAt
+    amountCents
+    redeemCode
+}
+
+# Filter + pagination for `Admin.promoCodes` / `promoCodesCounts`. Optional
+# `searchText` matches redeem code (case-insensitive contains). Optional
+# `sortField` / `sortDirection` drive server `ORDER BY` (default `createdAt`
+# DESC). `skip` / `take` / `sort*` are ignored by `promoCodesCounts`.
+input AdminPromoCodeCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    sortField: AdminPromoCodeSortField
+    sortDirection: SortDirection
+}
+
+input AdminPromoCodeCreate {
+    redeemCode: String!
+    amountCents: Int!
+    minimumTotalAmountCustomerCents: Int
+    expiresAt: DateTime!
+}
+
+# Updates mutable promo-code fields. Redeem code / amount stay immutable after
+# create (changing them after distribution is unsafe). `expiresAt` may be in the
+# past to expire a code immediately.
+input AdminPromoCodeUpdate {
+    promoCodeId: ID!
+    expiresAt: DateTime!
+}
+
+enum AdminOutboundEmailPurpose {
+    GIFT_CARD_PURCHASED
+    AUTH_EMAIL_OTP
+    EMAIL_ADDRESS_UPDATE_CONFIRM
+    CALL_SLOT_BOOKING_REQUEST
+    CALL_SLOT_BOOKING_CONFIRM
+    CALL_SLOT_BOOKING_DECLINE
+    CALL_SLOT_BOOKING_CANCEL
+    CALL_SLOT_BOOKING_REMINDER
+    BOOKING_REQUEST_COOK_NOTIFY
+    BOOKING_REQUEST_CREATED
+    BOOKING_REQUEST_UPDATED
+    BOOKING_REQUEST_CANCELED
+    BOOKING_REQUEST_OFFER_CREATED
+    BOOKING_REQUEST_OFFER_MENU_UPDATED
+    BOOKING_REQUEST_OFFER_ACCEPTED
+    BOOKING_REQUEST_OFFER_NOT_CHOSEN
+    BOOKING_REQUEST_OFFER_DECLINED
+    BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED
+    BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT
+    TESTIMONIAL_MEMORY_NUDGE_CUSTOMER
+    TESTIMONIAL_MEMORY_NUDGE_COOK
+    TESTIMONIAL_REMINDER_MORNING_CUSTOMER
+    TESTIMONIAL_REMINDER_MORNING_COOK
+    TESTIMONIAL_REMINDER_EVENING_CUSTOMER
+    TESTIMONIAL_REMINDER_EVENING_COOK
+    SUPPORT_REQUEST_CREATED
+    SUPPORT_REQUEST_MESSAGE_FROM_ADMIN
+    SUPPORT_REQUEST_RESOLVED
+    BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_CUSTOMER
+    BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_COOK
+    COOK_APPROVED_BY_ADMIN
+}
+
+enum AdminOutboundEmailRelatedEntityType {
+    GIFT_CARD
+    COOK_CALL_SLOT_BOOKING
+    BOOKING_REQUEST_OFFER
+    BOOKING_REQUEST
+    SUPPORT_REQUEST
+    COOK
+}
+
+enum AdminOutboundEmailProvider {
+    resend
+    console
+}
+
+# Admin-only view of a tracked outbound email send attempt. Lifecycle timestamps
+# are first-write-wins from Resend webhooks (or local console transport).
+type AdminOutboundEmail {
+    outboundEmailId: ID!
+    provider: AdminOutboundEmailProvider!
+    providerMessageId: String
+    purpose: AdminOutboundEmailPurpose!
+    relatedEntityType: AdminOutboundEmailRelatedEntityType
+    relatedEntityId: ID
+    userId: ID
+    user: AdminUser
+    toEmail: String!
+    fromEmail: String
+    subject: String!
+    locale: String!
+    failureReason: String
+    # Files attached at send time (e.g. gift-card purchase receipt PDF).
+    attachments: [FileUpload!]!
+    createdAt: DateTime!
+    sentAt: DateTime
+    failedAt: DateTime
+    deliveredAt: DateTime
+    deliveryDelayedAt: DateTime
+    openedAt: DateTime
+    clickedAt: DateTime
+    bouncedAt: DateTime
+    complainedAt: DateTime
+}
+
+# Sortable columns for `Admin.outboundEmails`. Default when omitted: `createdAt`
+# DESC.
+enum AdminOutboundEmailSortField {
+    createdAt
+    toEmail
+    subject
+}
+
+# Lifecycle facets for outbound-email counts / list filters. Overview passes one
+# status per criterion; multiple values OR together.
+enum AdminOutboundEmailLifecycleStatus {
+    FAILED
+    OPENED
+    BOUNCED
+    PENDING
+    SENT
+}
+
+# Live Resend email sending quota window (daily or monthly).
+type AdminResendEmailQuota {
+    used: Int!
+    # Null when the plan has no cap for this window (paid daily).
+    limit: Int
+    sent: Int!
+    received: Int!
+    resetsAt: DateTime!
+}
+
+type AdminResendUsage {
+    monthly: AdminResendEmailQuota!
+    daily: AdminResendEmailQuota!
+}
+
+# Filter + pagination for `Admin.outboundEmails` / `outboundEmailsCounts`.
+# Optional `searchText` matches `toEmail` or `subject` (case-insensitive
+# contains). `purposes` is required — pass every purpose to leave purpose
+# unfiltered; an empty list matches nothing. Optional `userIds` scopes to those
+# owners (`IN`); omit or empty = no user filter (user-detail tab passes one id;
+# list multi-select can pass many). Optional `relatedEntityType`+`relatedEntityId`
+# narrow attribution. Optional `lifecycleStatuses` filters by derived lifecycle
+# (omit = no lifecycle filter; empty list matches nothing). Optional `sortField` /
+# `sortDirection` drive server `ORDER BY` (default `createdAt` DESC). `skip` /
+# `take` / `sort*` are ignored by `outboundEmailsCounts`.
+input AdminOutboundEmailCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    purposes: [AdminOutboundEmailPurpose!]!
+    userIds: [ID!]
+    relatedEntityType: AdminOutboundEmailRelatedEntityType
+    relatedEntityId: ID
+    lifecycleStatuses: [AdminOutboundEmailLifecycleStatus!]
+    sortField: AdminOutboundEmailSortField
+    sortDirection: SortDirection
+}
+
+# Severity levels stored on `Logs.level` (see docs/architecture/logging.md).
+enum AdminLogLevel {
+    error
+    warn
+    info
+    debug
+}
+
+# Admin-only view of a persistent log row. Written by `ServerRuntime.log`;
+# never mutated from GraphQL.
+type AdminLog {
+    logId: ID!
+    sessionId: ID
+    # Resolved session for `sessionId` when present; null when anonymous or the
+    # session row is gone. Prefer `session.user` over raw `sessionId` in admin UI.
+    session: AdminSession
+    level: AdminLogLevel!
+    message: String!
+    context: JSON
+    createdAt: DateTime!
+}
+
+# Sortable columns for `Admin.logs`. Default when omitted: `createdAt` DESC.
+enum AdminLogSortField {
+    createdAt
+    message
+}
+
+# Filter + pagination for `Admin.logs` / `Admin.logCounts`. Optional
+# `searchText` matches `message` (case-insensitive contains). `levels` is
+# required — pass every level to leave severity unfiltered; an empty list
+# matches nothing. Optional `sortField` / `sortDirection` drive server
+# `ORDER BY` (default `createdAt` DESC). `skip` / `take` / `sort*` are
+# ignored by `logCounts`.
+input AdminLogCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    levels: [AdminLogLevel!]!
+    sortField: AdminLogSortField
+    sortDirection: SortDirection
+}
+
+# One-shot LLM call kinds stored on `AiGenerations.kind` (see
+# docs/architecture/ai-generations.md). Chat multi-turn generations are not
+# included — those live on chat message variant rows.
+enum AdminAiGenerationKind {
+    COOK_MENU_SUGGESTION_FROM_TEXT
+    COOK_MENU_SUGGESTION_FROM_INVENTORY
+    COOK_MENU_TITLE_DESCRIPTION
+    CHAT_TITLE
+    BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT
+    COOK_BIOGRAPHY_SUGGESTION
+    COOK_BIOGRAPHY_SUMMARY
+    BOOKING_REQUEST_COOK_MENU_EVALUATION
+}
+
+# Admin-only view of a one-shot LLM call. Written by `ServerRuntime.aiGenerations`;
+# never mutated from GraphQL.
+type AdminAiGeneration {
+    aiGenerationId: ID!
+    kind: AdminAiGenerationKind!
+    userId: ID
+    # Resolved user for `userId` when present; null when unset or the user row
+    # is gone. Prefer `user` over raw `userId` in admin UI.
+    user: AdminUser
+    sessionId: ID
+    session: AdminSession
+    modelId: String
+    system: String!
+    prompt: String!
+    output: String!
+    inputTokens: Int
+    outputTokens: Int
+    totalTokens: Int
+    reasoningTokens: Int
+    cachedInputTokens: Int
+    createdAt: DateTime!
+}
+
+# Sortable columns for `Admin.aiGenerations`. Default when omitted: `createdAt` DESC.
+enum AdminAiGenerationSortField {
+    createdAt
+    kind
+    modelId
+    totalTokens
+}
+
+# Filter + pagination for `Admin.aiGenerations` / `Admin.aiGenerationCounts`.
+# Optional `searchText` matches `system` / `prompt` / `output` (case-insensitive
+# contains). `kinds` is required — pass every kind to leave unfiltered; an empty
+# list matches nothing. Optional `sortField` / `sortDirection` drive server
+# `ORDER BY` (default `createdAt` DESC). `skip` / `take` / `sort*` are ignored
+# by `aiGenerationCounts`.
+input AdminAiGenerationCriterion {
+    skip: Int! = 0
+    take: Int! = 25
+    searchText: String
+    kinds: [AdminAiGenerationKind!]!
+    sortField: AdminAiGenerationSortField
+    sortDirection: SortDirection
+}
+
+# Admin write namespace — gated by `guardAdminMutation`, which stamps `adminId`
+# (= `Users.userId`) onto the parent in TypeScript only (see `extensions.ts`)
+# for downstream commands.
+type AdminMutation {
+    # Creates a user row (and optional cook / admin membership). Returns the new
+    # `userId` as `referenceId`. See `AdminUserCreate`.
+    userCreate(input: AdminUserCreate!): MutationResult!
+    # Updates `Users.adminNote` for the given user. Returns `userId` as `referenceId`.
+    userAdminNoteUpdate(userId: ID!, adminNote: String!): MutationResult!
+    # Patch account fields for any user (same shape as `UserUpdate`). Profile
+    # picture uploads must be owned by the admin session user and are reassigned
+    # to the target. Returns `userId` as `referenceId`.
+    userUpdate(userId: ID!, user: UserUpdate!): MutationResult!
+    # Direct email change (no OTP). Archives the previous address. Returns
+    # `userId` as `referenceId`.
+    userEmailAddressUpdate(userId: ID!, emailAddress: EmailAddress!): MutationResult!
+    # Anonymize any user (same scrub as self-serve delete). Returns `userId` as
+    # `referenceId`. See docs/features/account.md.
+    userAnonymize(userId: ID!): MutationResult!
+    # Ban or unban (`ACTIVE` ↔ `BANNED` only). Rejects `ANONYMIZED` and any
+    # transition involving an anonymized row. On ban, open cook offers are
+    # auto-declined. Sessions stay bound so the profile restriction banner can
+    # appear live. Returns `userId` as `referenceId`. See docs/features/admin-users.md.
+    userStatusUpdate(userId: ID!, status: UserStatus!): MutationResult!
+    # Rebind the admin's current cookie session to `userId` (impersonation).
+    # Target must be ACTIVE. Skips TOTP. Client should navigate to `/profile`.
+    # Returns `userId` as `referenceId`. See docs/features/admin-users.md.
+    sessionUserBind(userId: ID!): MutationResult!
+    # End any sessions by id (sets `wasTerminatedAt`). Used from the admin user
+    # sessions tab. See docs/features/admin-sessions.md.
+    terminateSessions(sessionIds: [ID!]!): MutationResult!
+    cookApprovalUpdate(cookId: ID!, isApprovedByAdmin: Boolean!): MutationResult!
+    # Patch cook profile fields for any cook (same shape as `CookUpdate`).
+    # Returns `cookId` as `referenceId`. Does not auto-regenerate biographySummary.
+    cookUpdate(cookId: ID!, input: CookUpdate!): MutationResult!
+    # AI: generate or expand a cook's first-person biography. Returns suggestion only.
+    cookBiographySuggest(cookId: ID!, currentBiography: String!): String!
+    # AI: generate a third-person biography summary from the given biography text.
+    # Returns suggestion only; admin applies into the form then saves via `cookUpdate`.
+    cookBiographySummarySuggest(cookId: ID!, biography: String!): String!
+    # Create a draft meal on a cook's inventory. Returns `mealId` as `referenceId`.
+    cookMealCreate(cookId: ID!, meal: CookMealCreate): MutationResult!
+    # Patch a cook meal (any cook). Image uploads must be owned by the admin and
+    # are reassigned to the meal's cook. Returns `mealId` as `referenceId`.
+    cookMealUpdate(mealId: ID!, meal: CookMealUpdate!): MutationResult!
+    # Soft-delete a cook meal. Same sole-option gate as cook `mealDelete`.
+    cookMealDelete(mealId: ID!): MutationResult!
+    # Create a draft menu (3 empty courses) on a cook's inventory. Returns
+    # `menuId` as `referenceId`.
+    cookMenuCreate(cookId: ID!): MutationResult!
+    # Patch a cook menu. Inventory: title / description / courses / publishedAt.
+    # Offer-scoped copies: title / description / courses (`publishedAt` rejected).
+    # Returns `menuId` as `referenceId`.
+    cookMenuUpdate(menuId: ID!, menu: CookMenuUpdate!): MutationResult!
+    # Soft-delete an inventory menu. Returns `menuId` as `referenceId`.
+    cookMenuDelete(menuId: ID!): MutationResult!
+    # Deep-copy an inventory menu to a new draft. Returns new `menuId`.
+    cookMenuCopy(menuId: ID!): MutationResult!
+    legalPrivacyPolicyDraftCreate: MutationResult!
+    legalPrivacyPolicyDraftUpdate(input: AdminLegalDocumentDraftInput!): MutationResult!
+    legalPrivacyPolicyPublish(privacyPolicyId: ID!): MutationResult!
+    legalTermsAndConditionsDraftCreate: MutationResult!
+    legalTermsAndConditionsDraftUpdate(input: AdminLegalDocumentDraftInput!): MutationResult!
+    legalTermsAndConditionsPublish(termsAndConditionsId: ID!): MutationResult!
+    legalImprintDraftCreate: MutationResult!
+    legalImprintDraftUpdate(input: AdminLegalDocumentDraftInput!): MutationResult!
+    legalImprintPublish(imprintId: ID!): MutationResult!
+    cityUpsert(input: CityUpsert!): MutationResult!
+    cityDelete(cityId: ID!): MutationResult!
+    # Full-list replace of curated city cooks (ordered). Empty clears assignment
+    # so the public city page falls back to travel-radius discovery.
+    cityCooksUpdate(cityId: ID!, cookIds: [ID!]!): MutationResult!
+    partnerUpsert(input: PartnerUpsert!): MutationResult!
+    partnerDelete(partnerId: ID!): MutationResult!
+    # Full-list replace of curated partner cooks (ordered). Empty clears
+    # assignment so the public partner page shows no cooks section.
+    partnerCooksUpdate(partnerId: ID!, cookIds: [ID!]!): MutationResult!
+    occasionUpsert(input: OccasionUpsert!): MutationResult!
+    occasionDelete(occasionId: ID!): MutationResult!
+    # Full-list replace of curated occasion cooks (ordered). Empty clears
+    # assignment so the public occasion page shows no cooks section.
+    occasionCooksUpdate(occasionId: ID!, cookIds: [ID!]!): MutationResult!
+    # Testimonials — admin-created rows are always PUBLISHED. See
+    # docs/architecture/testimonials.md.
+    customerTestimonialCreate(input: AdminCustomerTestimonialCreate!): MutationResult!
+    customerTestimonialUpdate(customerTestimonialId: ID!, input: AdminCustomerTestimonialUpdate!): MutationResult!
+    customerTestimonialDelete(customerTestimonialId: ID!): MutationResult!
+    customerTestimonialImageUpdate(customerTestimonialId: ID!, imageFileUploadIds: [ID!]!): MutationResult!
+    customerTestimonialPublish(customerTestimonialId: ID!, publicationStatus: TestimonialPublicationStatus!): MutationResult!
+    cookTestimonialCreate(input: AdminCookTestimonialCreate!): MutationResult!
+    cookTestimonialUpdate(cookTestimonialId: ID!, input: AdminCookTestimonialUpdate!): MutationResult!
+    cookTestimonialDelete(cookTestimonialId: ID!): MutationResult!
+    cookTestimonialImageUpdate(cookTestimonialId: ID!, imageFileUploadIds: [ID!]!): MutationResult!
+    cookTestimonialPublish(cookTestimonialId: ID!, publicationStatus: TestimonialPublicationStatus!): MutationResult!
+    # Full-list replace of curated city/partner/occasion testimonials (ordered).
+    # Empty clears the assignment so the public page shows no testimonials section.
+    cityTestimonialsUpdate(cityId: ID!, entries: [TestimonialJunctionEntryInput!]!): MutationResult!
+    partnerTestimonialsUpdate(partnerId: ID!, entries: [TestimonialJunctionEntryInput!]!): MutationResult!
+    occasionTestimonialsUpdate(occasionId: ID!, entries: [TestimonialJunctionEntryInput!]!): MutationResult!
+    blogPostUpsert(input: BlogPostUpsert!): MutationResult!
+    blogPostDelete(blogPostId: ID!): MutationResult!
+    # Creates or updates fixed-route SEO title/description. Missing rows are
+    # created on first write. Returns `webPageKey` as `referenceId`.
+    webPageUpdate(webPageKey: WebPageKey!, input: AdminWebPageUpdate!): MutationResult!
+    # Creates or updates a feature toggle. Missing rows are created on first
+    # write. Returns `featureToggleKey` as `referenceId`.
+    featureToggleUpdate(featureToggleKey: FeatureToggleKey!, enabled: Boolean!): MutationResult!
+    # Force a feature toggle on or off for one user. Returns `userId` as
+    # `referenceId`. See docs/features/admin-feature-toggles.md.
+    featureToggleUserOverrideUpsert(userId: ID!, featureToggleKey: FeatureToggleKey!, enabled: Boolean!): MutationResult!
+    # Clear a per-user override so the global default applies again. Returns
+    # `userId` as `referenceId`.
+    featureToggleUserOverrideDelete(userId: ID!, featureToggleKey: FeatureToggleKey!): MutationResult!
+    # Creates a promo code. Returns the new `promoCodeId` as `referenceId`.
+    promoCodeCreate(input: AdminPromoCodeCreate!): MutationResult!
+    # Updates a promo code's expiration. Returns `promoCodeId` as `referenceId`.
+    promoCodeUpdate(input: AdminPromoCodeUpdate!): MutationResult!
+    # Creates a booking request on behalf of an existing customer. Returns the
+    # new `bookingRequestId` as `referenceId`. Same publication / cook-notify
+    # rules as customer create. See `AdminBookingRequestCreate`.
+    bookingRequestCreate(input: AdminBookingRequestCreate!): MutationResult!
+    # Partial admin ops update. Omit a scalar to leave it unchanged. Nullable
+    # `adjustedMessage` clears when null / blank. `dateTime` recomputes
+    # `expiresAt` unless `expiresAt` is also provided. Does not reset cook
+    # acceptance or append offer-timeline events. Returns `bookingRequestId`.
+    bookingRequestUpdate(bookingRequestId: ID!, input: AdminBookingRequestUpdate!): MutationResult!
+    # Creates an offer on behalf of a cook with a full manual fee breakdown
+    # (ops override — not cook auto-calc). Dual-accepted inserts land as
+    # `PAYED_OUT_OF_SYSTEM`. Seeds offer chat like cook create. Returns
+    # `bookingRequestOfferId` as `referenceId`.
+    bookingRequestOfferCreate(input: AdminBookingRequestOfferCreate!): MutationResult!
+    # Partial admin ops update of accept flags / fees / payment timestamps.
+    # Dual-accept while `paymentStatus` is still `EMPTY` flips to
+    # `PAYED_OUT_OF_SYSTEM`. Returns `bookingRequestOfferId`.
+    bookingRequestOfferUpdate(bookingRequestOfferId: ID!, input: AdminBookingRequestOfferUpdate!): MutationResult!
+    # Replaces an existing offer configured-menu JSON snapshot (title,
+    # description, courses/meals). Requires a configured menu already present;
+    # preserves stored `menuId`. Returns `bookingRequestOfferId`.
+    bookingRequestOfferConfiguredMenuUpdate(
+        bookingRequestOfferId: ID!
+        configuredMenu: BookingRequestOfferConfiguredMenuInput!
+    ): MutationResult!
+    # Approves a large-group request blocked for admin review. Optional `cookIds`
+    # limits who gets a `BookingRequestCooks` notify stamp; omit / empty =
+    # all cooks in travel radius that can create offers. Returns `bookingRequestId`.
+    bookingRequestPublicationApprove(bookingRequestId: ID!, cookIds: [ID!]): MutationResult!
+    # Notifies (or re-notifies) selected cooks about an already-published request.
+    # Stamps / refreshes outreach via `bookingRequestCooksNotify` (first `notifiedAt`
+    # kept on conflict). `cookIds` must be non-empty; only cooks who can create
+    # offers for the venue are notified. Returns `bookingRequestId`.
+    bookingRequestCooksNotify(bookingRequestId: ID!, cookIds: [ID!]!): MutationResult!
+    # Releases a due PAYED offer's Connect balance to the cook's bank via Stripe
+    # payout. Requires cook payout readiness. Sets `TRANSFERRED` + `payoutDateTime`.
+    # Idempotent when already transferred / out-of-system / `payoutDateTime` set.
+    # Returns `bookingRequestOfferId` as `referenceId`.
+    bookingRequestOfferPayoutRelease(bookingRequestOfferId: ID!): MutationResult!
+    # Marks a due PAYED offer as paid outside Stripe (wire / cash / goodwill).
+    # Sets `PAYED_OUT_OF_SYSTEM` + `payoutDateTime`. No Stripe call. Idempotent
+    # when already transferred / out-of-system / `payoutDateTime` set.
+    # Returns `bookingRequestOfferId` as `referenceId`.
+    bookingRequestOfferPayoutMarkOutOfSystem(bookingRequestOfferId: ID!): MutationResult!
+    # Append a free-text negotiation message (`ADMIN_MESSAGE_SIMPLE` event).
+    # `referenceId` is the new `bookingRequestOfferEventId`.
+    bookingRequestOfferChatMessageCreate(bookingRequestOfferId: ID!, message: String!, fileUploadIds: [ID!]): MutationResult!
+    # Replace the text body of a `*_MESSAGE_SIMPLE` offer-chat event (customer /
+    # cook / admin). Attachments are unchanged. Empty body is allowed only when
+    # the event already has attachments. Phone numbers rejected. Allowed even
+    # when chat send is closed (ops / moderation). `referenceId` is the event id.
+    bookingRequestOfferChatMessageUpdate(bookingRequestOfferEventId: ID!, message: String!): MutationResult!
+    # Clears `adminChatReviewPendingCount` and sets `adminChatReviewedAt` for the
+    # offer-chat review pipeline. Returns the acknowledged id plus the next
+    # pending offer (oldest-first) when any remain. See
+    # docs/features/admin-offer-chat-review.md.
+    bookingRequestOfferChatReviewAcknowledge(bookingRequestOfferId: ID!): AdminBookingRequestOfferChatReviewAcknowledgeResult!
+    # Admin can start / join / leave LiveKit rooms on any offer.
+    bookingRequestOfferCallCreate(bookingRequestOfferId: ID!): BookingRequestOfferCallTokenResult!
+    bookingRequestOfferCallJoin(bookingRequestOfferId: ID!): BookingRequestOfferCallTokenResult!
+    bookingRequestOfferCallLeave(bookingRequestOfferCallRoomParticipantId: ID!): MutationResult!
+    # Cancel a pre-accept booking request (same statuses and customer/cook emails
+    # as `UserMutation.bookingRequestCancel`). Returns `bookingRequestId`.
+    bookingRequestCancel(bookingRequestId: ID!, reason: String!): MutationResult!
+    # Apply or clear a promo / gift-card redeem code on any booking request
+    # (same rules as `UserMutation.bookingRequestDiscountUpdate`). Pass
+    # `redeemCode` null/empty to clear. Returns redeem code as `referenceId` on
+    # apply; `bookingRequestId` on clear.
+    bookingRequestDiscountUpdate(bookingRequestId: ID!, redeemCode: String): MutationResult!
+    # Concierge handover: close a dual-accepted offer and create/upgrade a dual-
+    # accepted offer for another cook. Never mutates `cookId` in place. Returns
+    # the new (or upgraded) `bookingRequestOfferId` as `referenceId`.
+    bookingRequestOfferHandover(input: AdminBookingRequestOfferHandover!): MutationResult!
+    # Admin reply on a support case. `referenceId` is the new message id.
+    supportRequestMessageCreate(supportRequestId: ID!, message: String!, fileUploadIds: [ID!]): MutationResult!
+    # Clears `adminUnreadNotificationCount` when opening the support chat.
+    supportRequestUnreadNotificationCountReset(supportRequestId: ID!): MutationResult!
+    # Marks a support case resolved. Returns `supportRequestId` as `referenceId`.
+    supportRequestResolve(supportRequestId: ID!): MutationResult!
+    # Cancel a pending pg-boss queued job by queue `name` + `jobId`. Only known
+    # queued definitions from `jobDefinitions` are allowed. Returns `jobId`.
+    # See docs/features/admin-jobs.md.
+    queuedJobCancel(jobId: ID!, name: String!): MutationResult!
+    # Concierge free-form reply inside the Meta 24h customer-service window.
+    # `referenceId` is the new WhatsApp message id.
+    whatsAppMessageCreate(whatsAppConversationId: ID!, message: String!): MutationResult!
+    # Clears `adminUnreadCount` when opening the WhatsApp chat.
+    whatsAppConversationUnreadCountReset(whatsAppConversationId: ID!): MutationResult!
+}
+
+# Admin create for an existing customer. Same fields as customer create plus
+# `userId` for the owning customer account. Address input is duplicated (not
+# `UserBookingRequestExactEventAddressInput`) to avoid ZodLazy circular typing
+# in generated Zod schemas — define the address input before the create input.
+input AdminBookingRequestExactEventAddressInput {
+    displayText: String!
+    latitude: Latitude!
+    longitude: Longitude!
+    addressLine1: String!
+    addressLine2: String!
+    city: String!
+    postCode: String!
+    state: String!
+    country: String!
+}
+
+input AdminBookingRequestCreate {
+    userId: ID!
+    occasion: String!
+    dateTime: DateTime!
+    exactEventAddress: AdminBookingRequestExactEventAddressInput!
+    originalMessage: String!
+    preferences: [String!]!
+    participants: [UserBookingRequestParticipantCreate!]!
+    # Cooks to notify on create (UI selection). Intersected with offer-capable
+    # cooks in travel radius; empty = publish without notifying anyone.
+    cookIds: [ID!]!
+}
+
+# Admin ops partial update. Omit a field to leave it unchanged. Pass
+# `adjustedMessage: null` (or blank) to clear the admin-adjusted cook-facing
+# message. Venue uses the same address input as admin create.
+# Optional `participants` replaces the full guest list (same as customer update):
+# resets cook acceptance and emits offer timeline events when the list changes.
+input AdminBookingRequestUpdate {
+    occasion: String
+    dateTime: DateTime
+    originalMessage: String
+    adjustedMessage: String
+    priceClassType: BookingRequestPriceClassType
+    expiresAt: DateTime
+    createdAt: DateTime
+    exactEventAddress: AdminBookingRequestExactEventAddressInput
+    participants: [UserBookingRequestParticipantCreate!]
+}
+
+# Admin-created offer with a full manual fee breakdown (cents). Dual accept
+# flags optional (null = pending). `notifyCustomer` bumps customer unread +
+# SSE only — no outbound email yet.
+# Admin offer create — only formula inputs. Fees / payout / customer total are
+# always derived via `bookingRequestOfferPriceCalculate` on the server.
+input AdminBookingRequestOfferCreate {
+    bookingRequestId: ID!
+    cookId: ID!
+    userAccepted: Boolean
+    cookAccepted: Boolean
+    menuPriceCents: Int!
+    travelExpensesCents: Int!
+    travelDistanceKm: Float
+    createdAt: DateTime
+    paymentDateTime: DateTime
+    plannedPayoutDateTime: DateTime
+    payoutDateTime: DateTime
+    notifyCustomer: Boolean!
+    # Optional cook note seeded as COOK_MESSAGE_SIMPLE after COOK_CREATED. Phone numbers rejected.
+    message: String
+}
+
+# Admin ops partial offer update. Fee columns are never accepted — changing
+# menuPriceCents and/or travelExpensesCents recalculates the full fee snapshot.
+input AdminBookingRequestOfferUpdate {
+    userAccepted: Boolean
+    cookAccepted: Boolean
+    menuPriceCents: Int
+    travelExpensesCents: Int
+    travelDistanceKm: Float
+    paymentDateTime: DateTime
+    plannedPayoutDateTime: DateTime
+    payoutDateTime: DateTime
+}
+
+# Concierge handover — close source dual-accepted offer, open/upgrade target.
+# Copy flags default to true in the UI when source has data; omitted price
+# fields fall back to the source offer when `copyPrice` is true.
+input AdminBookingRequestOfferHandover {
+    bookingRequestOfferId: ID!
+    cookId: ID!
+    copyPrice: Boolean!
+    copyConfiguredMenu: Boolean!
+    copyScheduleTimestamps: Boolean!
+    # Hard-copies USER/COOK/ADMIN_MESSAGE_SIMPLE events (+ attachments) onto the
+    # new offer. Prior cook messages carry provenance so they do not appear as
+    # the new cook. See docs/features/admin-booking-requests.md.
+    copyChatMessages: Boolean!
+    # Required when source paymentStatus is PAYED_OUT_OF_SYSTEM.
+    confirmOutOfSystemMoneyHandled: Boolean
+    menuPriceCents: Int
+    travelExpensesCents: Int
+    travelDistanceKm: Float
+    paymentDateTime: DateTime
+    plannedPaymentPullDateTime: DateTime
+    plannedPayoutDateTime: DateTime
+}
+
+# --- Legal documents ---------------------------------------------------------
+#
+# Versioned German legal texts (privacy / terms / imprint). Admin types keep
+# `publishedAt` optional (drafts); public / acceptance types require it because
+# only published rows are returned. `*De` columns leave room for future locales
+# without a rename. See docs/features/admin-legal.md.
+
+type AdminLegalPrivacyPolicy {
+    privacyPolicyId: ID!
+    bodyDe: String!
+    changeSummaryDe: String!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    publishedAt: DateTime
+}
+
+type AdminLegalTermsAndConditions {
+    termsAndConditionsId: ID!
+    bodyDe: String!
+    changeSummaryDe: String!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    publishedAt: DateTime
+}
+
+type AdminLegalImprint {
+    imprintId: ID!
+    bodyDe: String!
+    changeSummaryDe: String!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    publishedAt: DateTime
+}
+
+type PublicLegalPrivacyPolicy {
+    privacyPolicyId: ID!
+    bodyDe: String!
+    changeSummaryDe: String!
+    publishedAt: DateTime!
+}
+
+type PublicLegalTermsAndConditions {
+    termsAndConditionsId: ID!
+    bodyDe: String!
+    changeSummaryDe: String!
+    publishedAt: DateTime!
+}
+
+type PublicLegalImprint {
+    imprintId: ID!
+    bodyDe: String!
+    changeSummaryDe: String!
+    publishedAt: DateTime!
+}
+
+type PublicLegal {
+    privacyPolicy: PublicLegalPrivacyPolicy
+    termsAndConditions: PublicLegalTermsAndConditions
+    imprint: PublicLegalImprint
+}
+
+type UserLegalAcceptance {
+    required: Boolean!
+    pendingPrivacyPolicy: PublicLegalPrivacyPolicy
+    pendingTermsAndConditions: PublicLegalTermsAndConditions
+}
+
+input AdminLegalDocumentDraftInput {
+    bodyDe: String!
+    changeSummaryDe: String!
+}
+
+# --- Chat live updates -------------------------------------------------------
+#
+# Chat-scoped snapshot subscriptions for durable turn streaming. Auth is chat
+# ownership (not generationId-as-capability). The wire NOTIFY carries ids +
+# revision; the resolver reloads the turn aggregate. See
+# docs/architecture/chat.md and docs/architecture/state-synchronization.md.
+
+type Subscription {
+    userUpdates: User!
+    sessionUpdates: Session!
+    # Shared admin catalog (legal texts, …). Gated by `guardAdminSubscription`;
+    # all connected admin UIs share one `admin-updates` channel. See
+    # `docs/architecture/state-synchronization.md`.
+    adminUpdates: Admin!
+    chatTurnUpdates(chatId: ID!): ChatTurnUpdate!
+}
+
+# --- Content pages (cities / partners / occasions / blog) ---------------------
+#
+# Shared bilingual section model for SEO landing pages and articles. See
+# docs/architecture/content-sections.md. `publishedAt` null = draft; public
+# reads require `publishedAt <= now()`. Empty EN fields fall back to DE at render.
+
+enum ContentListStyle {
+    BULLET
+    NUMBERED
+}
+
+enum ContentSectionKind {
+    content
+    image
+    quote
+    list
+    cta
+    qa
+}
+
+type ContentSectionContent {
+    sectionId: ID!
+    titleDe: String
+    titleEn: String
+    subtitleDe: String
+    subtitleEn: String
+    bodyDe: String!
+    bodyEn: String!
+    imageFileUploadId: ID
+    imageUrl: String
+    imageFirst: Boolean
+}
+
+type ContentSectionImage {
+    sectionId: ID!
+    imageFileUploadId: ID!
+    imageUrl: String!
+}
+
+type ContentSectionQuote {
+    sectionId: ID!
+    quoteDe: String!
+    quoteEn: String!
+    attributionDe: String
+    attributionEn: String
+}
+
+type ContentSectionList {
+    sectionId: ID!
+    titleDe: String
+    titleEn: String
+    style: ContentListStyle!
+    itemsDe: [String!]!
+    itemsEn: [String!]!
+}
+
+type ContentSectionCta {
+    sectionId: ID!
+    headlineDe: String!
+    headlineEn: String!
+    bodyDe: String
+    bodyEn: String
+    buttonLabelDe: String!
+    buttonLabelEn: String!
+    href: String!
+}
+
+type ContentSectionQaEntry {
+    entryId: ID!
+    questionDe: String!
+    questionEn: String!
+    answerDe: String!
+    answerEn: String!
+}
+
+type ContentSectionQa {
+    sectionId: ID!
+    titleDe: String
+    titleEn: String
+    entries: [ContentSectionQaEntry!]!
+}
+
+union ContentSection =
+    | ContentSectionContent
+    | ContentSectionImage
+    | ContentSectionQuote
+    | ContentSectionList
+    | ContentSectionCta
+    | ContentSectionQa
+
+# Flat write input — validated and narrowed server-side with Zod
+# (`contentSectionsSchema`). Exactly the fields for `kind` must be set.
+input ContentSectionQaEntryInput {
+    entryId: ID!
+    questionDe: String!
+    questionEn: String
+    answerDe: String!
+    answerEn: String
+}
+
+input ContentSectionInput {
+    sectionId: ID!
+    kind: ContentSectionKind!
+    titleDe: String
+    titleEn: String
+    subtitleDe: String
+    subtitleEn: String
+    bodyDe: String
+    bodyEn: String
+    imageFileUploadId: ID
+    imageFirst: Boolean
+    quoteDe: String
+    quoteEn: String
+    attributionDe: String
+    attributionEn: String
+    style: ContentListStyle
+    itemsDe: [String!]
+    itemsEn: [String!]
+    headlineDe: String
+    headlineEn: String
+    buttonLabelDe: String
+    buttonLabelEn: String
+    href: String
+    entries: [ContentSectionQaEntryInput!]
+}
+
+# Assigned cook on an admin city editor. Includes cooks that would not appear
+# publicly so admins can see and clean up banned / hidden / unapproved rows.
+type AdminCityCook {
+    position: Int!
+    cook: AdminCook!
+    # Same gate as `/chefs` and `PublicCity.featuredCooks`.
+    isPubliclyListed: Boolean!
+}
+
+type AdminPartnerCook {
+    position: Int!
+    cook: AdminCook!
+    isPubliclyListed: Boolean!
+}
+
+type AdminOccasionCook {
+    position: Int!
+    cook: AdminCook!
+    isPubliclyListed: Boolean!
+}
+
+type AdminCity {
+    cityId: ID!
+    pathName: String!
+    previousPathNames: [String!]!
+    nameDe: String!
+    nameEn: String!
+    latitude: Latitude!
+    longitude: Longitude!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    heroImageUrl: String
+    # Fixed first-section slot (ChefForAnyOccasion) above free sections.
+    firstSectionHeadlineDe: String!
+    firstSectionHeadlineEn: String!
+    firstSectionBodyDe: String!
+    firstSectionBodyEn: String!
+    firstSectionImageFileUploadId: ID
+    firstSectionImageUrl: String
+    sections: [ContentSection!]!
+    cooks: [AdminCityCook!]!
+    # Candidate pool for assignment (visible + approved + travel radius).
+    cooksInTravelRadius: [AdminCook!]!
+    # Curated, ordered testimonials for the editor. Empty until assigned.
+    testimonials: [AdminCityTestimonial!]!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type PublicCity {
+    cityId: ID!
+    pathName: String!
+    previousPathNames: [String!]!
+    nameDe: String!
+    nameEn: String!
+    latitude: Latitude!
+    longitude: Longitude!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    heroImageUrl: String
+    # Fixed first-section slot (ChefForAnyOccasion) above free sections.
+    firstSectionHeadlineDe: String!
+    firstSectionHeadlineEn: String!
+    firstSectionBodyDe: String!
+    firstSectionBodyEn: String!
+    firstSectionImageFileUploadId: ID
+    firstSectionImageUrl: String
+    sections: [ContentSection!]!
+    # Curated order when assigned; else travel-radius fallback at city center.
+    featuredCooks: [PublicCook!]!
+    # Curated, ordered testimonials. Empty when none are assigned.
+    testimonials: [CityTestimonial!]!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type AdminPartner {
+    partnerId: ID!
+    pathName: String!
+    previousPathNames: [String!]!
+    name: String!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    heroImageUrl: String
+    # Fixed first-section slot (ChefForAnyOccasion) above free sections.
+    firstSectionHeadlineDe: String!
+    firstSectionHeadlineEn: String!
+    firstSectionBodyDe: String!
+    firstSectionBodyEn: String!
+    firstSectionImageFileUploadId: ID
+    firstSectionImageUrl: String
+    # Optional primary CTA href override. Null keeps the booking-request form.
+    firstSectionCtaUrl: String
+    # Assigned promo code id. Null when none. Assignment rejects scoped codes.
+    promoCodeId: ID
+    # Resolved promo for editor preview. Null when none / expired / scoped.
+    promo: PartnerPromo
+    sections: [ContentSection!]!
+    cooks: [AdminPartnerCook!]!
+    # Curated, ordered testimonials for the editor. Empty until assigned.
+    testimonials: [AdminPartnerTestimonial!]!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type PublicPartner {
+    partnerId: ID!
+    pathName: String!
+    previousPathNames: [String!]!
+    name: String!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    heroImageUrl: String
+    firstSectionHeadlineDe: String!
+    firstSectionHeadlineEn: String!
+    firstSectionBodyDe: String!
+    firstSectionBodyEn: String!
+    firstSectionImageFileUploadId: ID
+    firstSectionImageUrl: String
+    # Optional primary CTA href override. Null keeps the booking-request form.
+    firstSectionCtaUrl: String
+    # Promo shown on the CTA card. Null when none / expired / scoped.
+    promo: PartnerPromo
+    sections: [ContentSection!]!
+    featuredCooks: [PublicCook!]!
+    # Curated, ordered testimonials. Empty when none are assigned.
+    testimonials: [PartnerTestimonial!]!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+# Public view of a promo assigned to a partner. Only returned when the code
+# exists, is not booking-request-scoped, and has not expired.
+type PartnerPromo {
+    redeemCode: String!
+    amountCents: Int!
+}
+
+# Fixed three-format showcase on occasion pages (below ChefForAnyOccasion CTA).
+type OccasionFormatsCard {
+    imageFileUploadId: ID
+    imageUrl: String
+    titleDe: String!
+    titleEn: String!
+    bodyDe: String!
+    bodyEn: String!
+    fact1De: String!
+    fact1En: String!
+    fact2De: String!
+    fact2En: String!
+    fact3De: String!
+    fact3En: String!
+}
+
+type OccasionFormatsSection {
+    titleDe: String!
+    titleEn: String!
+    subtitleDe: String!
+    subtitleEn: String!
+    cards: [OccasionFormatsCard!]!
+}
+
+input OccasionFormatsCardInput {
+    imageFileUploadId: ID
+    titleDe: String!
+    titleEn: String!
+    bodyDe: String!
+    bodyEn: String!
+    fact1De: String!
+    fact1En: String!
+    fact2De: String!
+    fact2En: String!
+    fact3De: String!
+    fact3En: String!
+}
+
+input OccasionFormatsSectionInput {
+    titleDe: String!
+    titleEn: String!
+    subtitleDe: String!
+    subtitleEn: String!
+    cards: [OccasionFormatsCardInput!]!
+}
+
+type AdminOccasion {
+    occasionId: ID!
+    pathName: String!
+    previousPathNames: [String!]!
+    name: String!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    heroImageUrl: String
+    # Fixed first-section slot (ChefForAnyOccasion) above free sections.
+    firstSectionHeadlineDe: String!
+    firstSectionHeadlineEn: String!
+    firstSectionBodyDe: String!
+    firstSectionBodyEn: String!
+    firstSectionImageFileUploadId: ID
+    firstSectionImageUrl: String
+    # Fixed three-format showcase below the CTA (typed jsonb chrome).
+    formatsSection: OccasionFormatsSection!
+    # Assigned promo code id. Null when none. Assignment rejects scoped codes.
+    promoCodeId: ID
+    # Resolved promo for editor preview. Null when none / expired / scoped.
+    promo: OccasionPromo
+    sections: [ContentSection!]!
+    cooks: [AdminOccasionCook!]!
+    # Curated, ordered testimonials for the editor. Empty until assigned.
+    testimonials: [AdminOccasionTestimonial!]!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type PublicOccasion {
+    occasionId: ID!
+    pathName: String!
+    previousPathNames: [String!]!
+    name: String!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    heroImageUrl: String
+    firstSectionHeadlineDe: String!
+    firstSectionHeadlineEn: String!
+    firstSectionBodyDe: String!
+    firstSectionBodyEn: String!
+    firstSectionImageFileUploadId: ID
+    firstSectionImageUrl: String
+    # Fixed three-format showcase below the CTA (typed jsonb chrome).
+    formatsSection: OccasionFormatsSection!
+    # Promo shown on the CTA card. Null when none / expired / scoped.
+    promo: OccasionPromo
+    sections: [ContentSection!]!
+    # Curated order only. Occasions are not geo pages, so there is no
+    # travel-radius fallback: an empty assignment hides the section.
+    featuredCooks: [PublicCook!]!
+    # Curated, ordered testimonials. Empty when none are assigned.
+    testimonials: [OccasionTestimonial!]!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+# Public view of a promo assigned to an occasion. Only returned when the code
+# exists, is not booking-request-scoped, and has not expired.
+type OccasionPromo {
+    redeemCode: String!
+    amountCents: Int!
+}
+
+type AdminBlogPost {
+    blogPostId: ID!
+    pathName: String!
+    previousPathNames: [String!]!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    heroImageUrl: String
+    sections: [ContentSection!]!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type PublicBlogPost {
+    blogPostId: ID!
+    pathName: String!
+    previousPathNames: [String!]!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    heroImageUrl: String
+    sections: [ContentSection!]!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+input CityUpsert {
+    cityId: ID
+    pathName: String!
+    nameDe: String!
+    nameEn: String!
+    latitude: Latitude!
+    longitude: Longitude!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    firstSectionHeadlineDe: String!
+    firstSectionHeadlineEn: String!
+    firstSectionBodyDe: String!
+    firstSectionBodyEn: String!
+    firstSectionImageFileUploadId: ID
+    sections: [ContentSectionInput!]!
+    publishedAt: DateTime
+}
+
+input PartnerUpsert {
+    partnerId: ID
+    pathName: String!
+    name: String!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    firstSectionHeadlineDe: String!
+    firstSectionHeadlineEn: String!
+    firstSectionBodyDe: String!
+    firstSectionBodyEn: String!
+    firstSectionImageFileUploadId: ID
+    # Absolute http(s) URL or site-relative path. Null / empty clears to default.
+    firstSectionCtaUrl: String
+    # Set to a promoCodeId to assign, or null to clear.
+    promoCodeId: ID
+    sections: [ContentSectionInput!]!
+    publishedAt: DateTime
+}
+
+input OccasionUpsert {
+    occasionId: ID
+    pathName: String!
+    name: String!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    firstSectionHeadlineDe: String!
+    firstSectionHeadlineEn: String!
+    firstSectionBodyDe: String!
+    firstSectionBodyEn: String!
+    firstSectionImageFileUploadId: ID
+    formatsSection: OccasionFormatsSectionInput!
+    # Set to a promoCodeId to assign, or null to clear.
+    promoCodeId: ID
+    sections: [ContentSectionInput!]!
+    publishedAt: DateTime
+}
+
+input BlogPostUpsert {
+    blogPostId: ID
+    pathName: String!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    headlineDe: String!
+    headlineEn: String!
+    subHeadlineDe: String!
+    subHeadlineEn: String!
+    heroImageFileUploadId: ID
+    sections: [ContentSectionInput!]!
+    publishedAt: DateTime
+}
+
+type PublicCityQuery {
+    findOneByPathName(pathName: String!): PublicCity
+    findMany: [PublicCity!]!
+}
+
+type PublicPartnerQuery {
+    findOneByPathName(pathName: String!): PublicPartner
+    findMany: [PublicPartner!]!
+}
+
+type PublicOccasionQuery {
+    findOneByPathName(pathName: String!): PublicOccasion
+    findMany: [PublicOccasion!]!
+}
+
+type PublicBlogPostQuery {
+    findOneByPathName(pathName: String!): PublicBlogPost
+    findMany: [PublicBlogPost!]!
+}
+
+# Shared lat/long pair. Output + input keep parallel names (`GeoCoordinates` /
+# `GeoCoordinatesInput`) — GraphQL forbids reusing one name across kinds.
+type GeoCoordinates {
+    latitude: Latitude!
+    longitude: Longitude!
+}
+
+input GeoCoordinatesInput {
+    latitude: Latitude!
+    longitude: Longitude!
+}
+
+# Public chefs listing / detail — `isVisible && isApprovedByAdmin` only.
+# Detail is keyed by `cookId` for now; slug URLs are planned (see public-chefs.md).
+# `findMany` lists cooks with ≥1 published meal; optional `searchText` and
+# `geoCoordinates` (travel-radius filter — for city pages later).
+
+input PublicCookFindManyCriterion {
+    searchText: String
+    # When set, keep cooks whose travel origin reaches this point
+    # (`maximumTravelDistance` vs haversine; null max distance = unlimited).
+    geoCoordinates: GeoCoordinatesInput
+}
+
+type PublicCookQuery {
+    findOne(cookId: ID!): PublicCook
+    findMany(criterion: PublicCookFindManyCriterion): [PublicCook!]!
+}
+
+# --- Fixed-route SEO (WebPages) -----------------------------------------------
+#
+# Admin-editable bilingual title/description for fixed marketing and chrome
+# routes. Missing DB rows use shared defaults (ghost). First admin write
+# upserts. Dynamic city/partner/occasion/blog detail SEO stays on those entity
+# tables. See docs/features/admin-web-pages.md.
+
+enum WebPageKey {
+    LANDING
+    CITIES
+    PARTNERS
+    OCCASIONS
+    CHEFS
+    BLOG_POSTS
+    ABOUT_US
+    GIFT_CARD
+    HOW_TO_BECOME_A_CHEF
+    BOOKING_REQUEST
+    BOOKING_REQUEST_FORM
+    BOOKING_REQUEST_CHAT
+    CHEF_SIGN_UP
+    IMPRINT
+    TERMS_AND_CONDITIONS
+    PRIVACY_POLICY
+    SIGN_IN
+    PROFILE
+    ADMINISTRATION
+}
+
+type AdminWebPage {
+    webPageKey: WebPageKey!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    # False when no DB row exists yet (ghost; fields from shared defaults).
+    persisted: Boolean!
+    # Null when not persisted.
+    updatedAt: DateTime
+}
+
+type PublicWebPage {
+    webPageKey: WebPageKey!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+}
+
+input AdminWebPageUpdate {
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+}
+
+type PublicWebPageQuery {
+    findOne(webPageKey: WebPageKey!): PublicWebPage!
+}
+
+# --- Feature toggles ----------------------------------------------------------
+#
+# Fixed-key on/off switches. Missing DB rows are disabled (ghost). See
+# docs/features/admin-feature-toggles.md.
+
+enum FeatureToggleKey {
+    AI_MENU_EVALUATION
+    COOK_BIOGRAPHY_AI_WRITE
+    COOK_WALLET_STRIPE_BALANCE
+    BOOKING_REQUEST_RESTRICTIONS
+    ASSISTANT_CUSTOMER
+    ASSISTANT_COOK
+    PUBLICATION_MEALS
+    PUBLICATION_MENUS
+    WHATSAPP_ENGLISH_TEMPLATES
+    WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION
+}
+
+type AdminFeatureToggle {
+    featureToggleKey: FeatureToggleKey!
+    # False when the row is missing (`persisted: false`).
+    enabled: Boolean!
+    # False when no DB row exists yet (ghost).
+    persisted: Boolean!
+    # Null when not persisted.
+    updatedAt: DateTime
+    # Persisted per-user overrides for this key.
+    userOverrides: [AdminFeatureToggleUserOverride!]!
+}
+
+# Persisted per-user override of a global feature toggle.
+type AdminFeatureToggleUserOverride {
+    userId: ID!
+    featureToggleKey: FeatureToggleKey!
+    # Force on (`true`) or force off (`false`) for this user.
+    enabled: Boolean!
+    updatedAt: DateTime!
+    user: AdminUser!
+}

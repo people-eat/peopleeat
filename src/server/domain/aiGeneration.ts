@@ -1,0 +1,22 @@
+/** One-shot LLM call kinds persisted on `AiGenerations.kind`. Chat multi-turn
+ * generations stay on message variant rows — see `docs/architecture/ai-generations.md`. */
+export type AiGenerationKind =
+    | 'COOK_MENU_SUGGESTION_FROM_TEXT'
+    | 'COOK_MENU_SUGGESTION_FROM_INVENTORY'
+    | 'COOK_MENU_TITLE_DESCRIPTION'
+    | 'CHAT_TITLE'
+    | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT'
+    | 'COOK_BIOGRAPHY_SUGGESTION'
+    | 'COOK_BIOGRAPHY_SUMMARY'
+    | 'BOOKING_REQUEST_COOK_MENU_EVALUATION';
+
+export const AI_GENERATION_KINDS: readonly AiGenerationKind[] = [
+    'COOK_MENU_SUGGESTION_FROM_TEXT',
+    'COOK_MENU_SUGGESTION_FROM_INVENTORY',
+    'COOK_MENU_TITLE_DESCRIPTION',
+    'CHAT_TITLE',
+    'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT',
+    'COOK_BIOGRAPHY_SUGGESTION',
+    'COOK_BIOGRAPHY_SUMMARY',
+    'BOOKING_REQUEST_COOK_MENU_EVALUATION',
+] as const;

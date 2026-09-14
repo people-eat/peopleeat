@@ -1,0 +1,25 @@
+# Admin AI generations overview — kind distribution + creation time series.
+# See docs/features/admin-ai-generations.md.
+# `aiGenerationCounts` order matches `ADMIN_AI_GENERATION_COUNT_CRITERIA` in
+# AdminAiGenerationsOverviewPage.tsx.
+
+query AdminAiGenerationsOverviewPage(
+    $criteria: [AdminAiGenerationCriterion!]!
+    $range: DateTimeRange!
+    $granularity: AdminTimeBucketGranularity! = day
+) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                aiGenerationCounts(criteria: $criteria)
+                aiGenerationCreations(range: $range, granularity: $granularity) {
+                    bucketStart
+                    count
+                }
+            }
+        }
+    }
+}

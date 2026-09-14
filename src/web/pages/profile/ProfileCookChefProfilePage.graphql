@@ -1,0 +1,66 @@
+# Chef profile (identity, biography, profile picture). See docs/features/cook-profile.md
+# and docs/features/profile-pictures.md.
+
+fragment ProfileCookChefProfileCook on Cook {
+    cookId
+    biography
+    biographySummary
+    biographySummaryGenerating
+    cuisineStyle
+    cookingPhilosophy
+}
+
+fragment ProfileCookChefProfileUser on User {
+    userId
+    firstName
+    lastName
+    profilePicture {
+        fileUploadId
+        url
+    }
+    cook {
+        ...ProfileCookChefProfileCook
+    }
+}
+
+query ProfileCookChefProfilePage {
+    currentSession {
+        sessionId
+        user {
+            ...ProfileCookChefProfileUser
+        }
+    }
+}
+
+subscription ProfileCookChefProfilePageUpdates {
+    userUpdates {
+        ...ProfileCookChefProfileUser
+    }
+}
+
+mutation ProfileCookUpdate($input: CookUpdate!) {
+    user {
+        cook {
+            update(input: $input) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBiographySuggest($currentBiography: String!) {
+    user {
+        cook {
+            biographySuggest(currentBiography: $currentBiography)
+        }
+    }
+}
+
+mutation ProfileCookChefProfileUserUpdate($user: UserUpdate!) {
+    user {
+        userUpdate(user: $user) {
+            success
+        }
+    }
+}

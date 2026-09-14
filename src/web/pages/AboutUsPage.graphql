@@ -1,0 +1,15 @@
+query AboutUsPage {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: ABOUT_US) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

@@ -1,0 +1,325 @@
+# API Layer
+
+## Context
+
+The application needs a type-safe API layer serving queries, mutations and real-time subscriptions, with shared types between server and  
+client. Route loaders must also access the API during SSR with full session/cookie continuity.
+
+## Decision
+
+SDL-first GraphQL schema with Apollo Server (server), URQL (client), and GraphQL Code Generator for type safety.
+
+### Schema
+
+The schema is defined in `src/server/graphql/schema.graphqls` as a single SDL file. This is the single source of truth — all generated types
+derive from it.
+
+### Custom scalars (graphql-scalars)
+
+Wired in `resolversCreate()` via the `*Resolver` exports. They validate on both **parse** (inputs) and **serialize** (outputs). Commands
+still own normalize / uniqueness / domain rules (e.g. `emailNormalize`, `phoneNumberAssert`, phone uniqueness); GraphQL scalars are a first
+format gate only.
+
+| Scalar         | Role                                  | Codegen TS / Zod                                 |
+| -------------- | ------------------------------------- | ------------------------------------------------ |
+| `Date`         | Calendar date (ISO date string)       | `string` / `z.string()`                          |
+| `DateTime`     | Instant; server parses to `Date`      | server `Date` / `z.date()`; client wire `string` |
+| `JSON`         | Untyped payload (e.g. tool-call args) | `unknown` / `z.unknown()`                        |
+| `EmailAddress` | Contact email format (WHATWG-ish)     | `string` / `z.email()`                           |
+| `PhoneNumber`  | Contact phone (loose GraphQL gate)    | `string` / `z.string()`                          |
+| `Latitude`     | Decimal degrees ∈ [-90, 90] (8 dp)    | `number` / `z.number().min(-90).max(90)`         |
+| `Longitude`    | Decimal degrees ∈ [-180, 180] (8 dp)  | `number` / `z.number().min(-180).max(180)`       |
+
+Maps live in `codegen.ts` (`scalars` + server `scalarSchemas`). Client `.graphql` operation variables that take these types must declare the
+scalar name (e.g. `$email: EmailAddress!`), not `String!` / `Float!`.
+
+### Server (Apollo Server v5)
+
+Apollo Server is set up in `src/server/graphql/server.ts` with two execution paths:
+
+- `executeGraphQLQuery()` — for queries and mutations (via Apollo's `executeOperation`)
+- `executeGraphQLSubscription()` — for subscriptions (via GraphQL's `subscribe()` directly, bypassing Apollo since Apollo Server does not
+  handle subscriptions natively)
+
+Startup is lazy: `executeGraphQLQuery()` awaits `ensureServerStarted()`, which calls `graphqlServer.start()` and `ensureJobsStarted()` once.
+Concurrent callers share a single in-flight promise so Apollo's "start only once" rule is not violated under parallel cold-start requests.
+
+The schema is built with `@graphql-tools/schema` (`makeExecutableSchema`) combining the SDL and resolvers from `resolversCreate()`. The SDL
+file is imported with Vite's `?raw` suffix (`import schemaSource from './schema.graphqls?raw'`) so its contents are inlined into the server
+bundle — runtime `readFileSync` against a relative path would fail in the production Docker image, which only copies `.output/`.
+
+### Client (URQL)
+
+URQL is configured in `src/web/graphql/client.ts` with:
+
+- **POST-only fetch**: all operations use POST (custom fetch converts any GET-style requests)
+- **SSE subscription exchange**: subscriptions connect to `/api/stream` via `graphql-sse`
+- `**cache-first` request policy\*\*: reduces redundant network requests
+
+### Code Generation
+
+`npm run graphql:generate` runs `@graphql-codegen/cli` with the config in `codegen.ts`:
+
+| Output                            | Prefix   | Plugins                                                                    |
+| --------------------------------- | -------- | -------------------------------------------------------------------------- |
+| `src/server/graphql/generated.ts` | `GqlS`\* | `typescript`, `typescript-resolvers`, `typescript-validation-schema` (Zod) |
+| `src/web/graphql/generated.ts`    | `GqlC*`  | `typescript`, `typescript-operations`, `typed-document-node`               |
+
+Server types include resolver type definitions and Zod validation schemas (`GqlS<Input>Schema()` factories and `GqlS<Enum>Schema`). Those
+generated Zod schemas are the **default agent-tool `inputSchema`** — see
+[agent-delegation.md — Tool input schemas](./agent-delegation.md#tool-input-schemas) (`DateTime` / `z.date()` is the documented exception).
+Client types include operation types and `TypedDocumentNode` for type-safe URQL hooks.
+
+The client output uses one extra config flag, `importSchemaTypesFrom: 'src/web/graphql/generated'`, that is load-bearing. Without it, the
+`typescript` plugin emits each input type and enum once, and `typescript-operations` re-emits any of them referenced by an operation's
+variables — TypeScript then fails the build with TS2300 duplicate-identifier errors. The flag tells `typescript-operations` to skip
+re-emission and reference those types through the `Schema` namespace alias instead. Pointing it at the file's own path turns that into a
+type-only self-import (`import type * as Schema from './generated'`), which TypeScript accepts because type-only imports erase. This keeps
+the entire client surface in a single file with the `GqlC` prefix preserved and operations authored in `.graphql` files.
+
+### Union, interface, and mutation-parent stamps
+
+Union and interface members are discriminated by an explicit `gqlTypeName` field that exists **only in TypeScript** — it is added via module
+augmentation in `src/server/graphql/extensions.ts` and is not part of `schema.graphqls`, so it never crosses the wire.
+
+The same file stamps **mutation namespace parent identity** that guards attach for downstream commands:
+
+| Parent              | Extension field | Stamped by           |
+| ------------------- | --------------- | -------------------- |
+| `GqlSUserMutation`  | `userId`        | `guardUserMutation`  |
+| `GqlSCookMutation`  | `cookId`        | `guardCookMutation`  |
+| `GqlSAdminMutation` | `adminId`       | `guardAdminMutation` |
+| `GqlSSession`       | `userId?`       | session upsert       |
+
+These ids are required at compile time on the server parent object but are absent from the SDL, so clients cannot select them and they are
+stripped on serialization. Prefer this over exposing unused `userId` / `cookId` / `adminId` fields on write namespaces. Read-side presence
+probes (`Admin.adminId`, `Cook.cookId`) stay in the SDL because clients intentionally select them.
+
+```typescript
+import './generated';
+
+declare module './generated' {
+  export interface GqlSChatMessageUser {
+    gqlTypeName: 'ChatMessageUser';
+  }
+  export interface GqlSChatMessageTextPart {
+    gqlTypeName: 'ChatMessageTextPart';
+  }
+  // …one per union/interface member
+
+  export interface GqlSUserMutation {
+    userId: string;
+  }
+  export interface GqlSCookMutation {
+    cookId: string;
+  }
+  export interface GqlSAdminMutation {
+    adminId: string;
+  }
+}
+```
+
+The resolver wiring then plugs the field straight into `__resolveType`:
+
+```typescript
+ChatMessage: {
+    __resolveType(obj: GqlSChatMessage) {
+        return obj.gqlTypeName;
+    },
+},
+```
+
+Why this pattern:
+
+- **The discriminator / parent stamp is enforced at compile time.** Every command/mapper/query that produces a union member must set
+  `gqlTypeName` — the type system fails the build otherwise. Mutation commands that need the actor id take `{ cookId }: GqlSCookMutation`
+  (etc.) the same way.
+- **Nothing leaks to the client.** Because the field isn't in the SDL, GraphQL strips it during serialization. The wire payload only carries
+  `__typename` (which Apollo derives from the resolver's return).
+- **No central switch to maintain.** A typical `__resolveType` walks the object's shape (`if ('approvalId' in obj)`) and grows brittle as
+  variants are added. Reading an explicit field is O(1) and impossible to forget.
+- **No DB tag column required.** Persistence can use whatever shape it wants; the discriminator is a server-side concern attached at the
+  mapper layer.
+
+### API Routes
+
+- `POST /api/graphql` — handles queries and mutations (`src/routes/api/graphql.ts`)
+- `POST /api/stream` — handles subscriptions via SSE (`src/routes/api/stream.ts`)
+- `POST /api/file-uploads` — multipart upload (`src/routes/api/file-uploads.ts`)
+- `GET  /api/file-uploads/:fileUploadId` — streams the file's bytes (`src/routes/api/file-uploads_.$fileUploadId.ts` — the trailing
+  underscore is required so TanStack's file-router does not group the GET route as a nested layout under `/api/file-uploads`)
+
+Both GraphQL routes upsert the session and pass it as Apollo context. The file-upload routes upsert the session via the same cookie path.
+
+### Dev-only `Sec-Fetch-Dest` strip
+
+Nitro's vite dev middleware (`node_modules/nitro/dist/_build/vite.dev.mjs`) classifies an incoming request as a static asset whenever
+`Sec-Fetch-Dest` is anything other than `document` / `iframe` / `frame`, and routes it through Vite's static pipeline before Nitro's handler
+ever runs. Browsers send `Sec-Fetch-Dest: image` for `<img src=…>`, so a same-origin `<img src="/api/file-uploads/<id>">` would be diverted
+into Vite's asset pipeline and answered with the generic `Cannot GET …` HTML 404 — even though the route is wired correctly and the same URL
+works in a new tab (which sends `Sec-Fetch-Dest: document`).
+
+`vite.config.ts` mounts a `serve`-only plugin (`apiSecFetchDestStrip`) that deletes `Sec-Fetch-Dest` from any request whose path starts with
+`/api/`, so those requests fall through to Nitro and reach the route handler. Production builds do not use Vite's middleware — Nitro owns
+routing outright there — so the patch is dev-only and ships nothing.
+
+## SSR Data Loading
+
+TanStack Start route loaders run on both server (SSR) and client (navigation). The GraphQL layer needs to be accessible from loaders with
+full session continuity — cookies must flow from the incoming request to the GraphQL endpoint, and any `Set-Cookie` responses must propagate
+back to the browser.
+
+### Usage
+
+```ts
+import { createFileRoute } from '@tanstack/react-router';
+import { HomePageDocument } from '../web/graphql/generated';
+import { routeLoaderGraphqlClient } from '../web/graphql/routeLoaderGraphqlClient';
+import { HomePage } from '../web/pages/HomePage';
+
+export const Route = createFileRoute('/')({
+  loader: routeLoaderGraphqlClient(HomePageDocument),
+  component() {
+    // loaderData is fully typed as GqlCHomePageQuery — pass it into the page
+    return <HomePage loaderData={Route.useLoaderData()} />;
+  },
+});
+```
+
+For queries with variables:
+
+```ts
+loader: ({ params }) => routeLoaderGraphqlClient(SomeDocument)(params),
+```
+
+### Filter state in the URL
+
+Filter state — what the user is _looking at_ — belongs in the URL, not in `useState`. The loader sees it through `loaderDeps`, so SSR
+returns the correct filtered payload on first paint, and reloads / shared links / back button all preserve the view.
+
+```ts
+const fooSearchSchema = z.object({
+  category: z.enum(['a', 'b']).optional(), // absent === "all"
+  includeDismissed: z.boolean().optional(), // absent === false
+});
+
+export const Route = createFileRoute('/.../foo')({
+  validateSearch: fooSearchSchema,
+  loaderDeps: ({ search }) => ({
+    category: search.category ?? null,
+    includeDismissed: search.includeDismissed ?? false,
+  }),
+  loader: ({ deps }) =>
+    routeLoaderGraphqlClient(FooDocument, {
+      category: deps.category,
+      includeDismissed: deps.includeDismissed,
+    })(),
+  component: FooPage,
+});
+```
+
+In the component:
+
+- Read state via `Route.useSearch()` instead of `useState`.
+- Filter toggles are `<Link search={prev => ({...prev, …})} replace>`. Top-of-page sub-view switchers use `Tabs` + `TabsList variant="line"`
+  (with `TabsTrigger asChild` + `<Link>` when the active tab lives in the URL) — do not call section tabs "chips". Horizontal `TabsList`
+  overflow scrolls **horizontally only** (with an edge fade); callers do not wrap the list themselves.
+- After a mutation, call `router.invalidate()` (from `useRouter()`) — the loader re-runs with the current URL state.
+- One canonical URL per state: the default value drops the key entirely (`category=all` → no `?category=` at all).
+
+Ephemeral local state (which row is expanded, which form is being edited) stays in `useState`. Filter state — the lens — goes in the URL.
+Admin list **column sort** is part of that lens (`sort` + `dir` query params → GraphQL `sortField` / `sortDirection` on the list criterion),
+not ephemeral table state: the server orders the full filtered set before `skip` / `take`, so shared links and pagination stay consistent.
+
+#### When to keep `useQuery`
+
+The loader pattern is the default for file-route data. Reach for `useQuery` only when the surface needs reactive updates the loader can't
+model — live subscriptions, polling, cache-shared lists driven by client-only state. Mutations don't justify `useQuery`:
+`router.invalidate()` re-runs the loader and keeps the SSR-first invariant intact.
+
+### Isomorphic Execution
+
+| Environment | Execution path                                 | Why                                                                |
+| ----------- | ---------------------------------------------- | ------------------------------------------------------------------ |
+| Server      | `fetch('/api/graphql')` with forwarded headers | Session middleware runs, Set-Cookie propagates to the SSR response |
+| Client      | `urqlClientSimple.query()`                     | Browser has cookies, avoids unnecessary RPC hop                    |
+
+Uses `createIsomorphicFn()` from TanStack Start to split execution by environment.
+
+### Session & Cookie Handover
+
+During SSR, the original client request's cookies are forwarded to the internal GraphQL fetch. Any `Set-Cookie` headers returned by the
+GraphQL endpoint (e.g., new session creation) are propagated back to the SSR response using `response.headers.getSetCookie()` (iterates each
+cookie individually to avoid corruption from comma-joining).
+
+The SSR hop must target an **HTTPS** origin when the site is served behind a TLS-terminating proxy (Coolify/Traefik). Building the GraphQL
+URL from `request.url` is unsafe here: srvx ≥0.11.22 ignores `X-Forwarded-Proto` unless `trustProxy` is enabled, so `request.url` becomes
+`http://…` inside the container. Node `fetch` then follows Traefik's HTTP→HTTPS `307`, and the `Cookie` header is dropped on that
+cross-scheme redirect — every document load mints a new session. `routeLoaderGraphqlClient` therefore builds the origin with
+`getRequestProtocol()` + `getRequestHost()` (h3 still honours `X-Forwarded-*` by default).
+
+### Header Forwarding
+
+The server path forwards an explicit allowlist of client headers to the internal GraphQL request:
+
+- `cookie` — session authentication
+- `user-agent` — analytics, bot detection
+- `accept-language` — i18n
+- `x-forwarded-for`, `x-real-ip` — rate limiting, geo
+- `origin`, `referer` — CSRF, analytics
+
+Headers like `host`, `content-length`, and `connection` are intentionally excluded to avoid breaking the internal fetch.
+
+### Print Caching
+
+`print(document)` serializes the AST to a query string. Since route documents are static module-level constants, a
+`WeakMap<DocumentNode, string>` cache ensures `print()` runs once per document for the lifetime of the process.
+
+### Type Safety Chain
+
+```
+.graphql file
+  → npm run graphql:generate
+    → TypedDocumentNode<GqlCFooQuery, GqlCFooQueryVariables>
+      → routeLoaderGraphqlClient(FooDocument) returns () => Promise<GqlCFooQuery>
+        → Route.useLoaderData() infers GqlCFooQuery
+```
+
+### Error Handling
+
+1. Non-2xx HTTP status — parses JSON body when possible and throws with the first GraphQL `errors[].message`, otherwise throws with the
+   status
+2. GraphQL `errors` array — throws with first error message
+3. Missing `data` field — throws explicit error
+
+## Alternatives Considered
+
+- **Code-first schema (e.g., Pothos, Nexus)**: Better colocation with resolvers but adds a build step and hides the schema shape
+- **tRPC**: No schema file at all but loses the GraphQL ecosystem (subscriptions, tooling, introspection)
+- **Relay client**: More opinionated pagination and caching but heavier setup; URQL is lighter and sufficient
+- **Direct resolver calls in loaders** (SSR): Avoids the HTTP round-trip but couples the SSR layer to resolver internals, requires
+  replicating session/auth logic, and prevents splitting the GraphQL server into its own service later
+- `**createServerFn` (server-only)\*\* (SSR): Simpler but forces client-side navigation through TanStack's RPC layer instead of fetching
+  GraphQL directly, adding an unnecessary hop
+
+## Consequences
+
+- Schema changes require running `npm run graphql:generate` before types are updated
+- Two separate generated files (server/client) with distinct prefixes prevent accidental cross-imports
+- Apollo Server does not natively support subscriptions, so the subscription path uses `graphql`'s `subscribe()` directly
+- Every SSR page load makes an internal HTTP request to itself — negligible latency (localhost) but worth knowing for debugging
+- The header forwarding allowlist must be maintained if new headers become relevant to resolvers
+- `urqlClientSimple` has no cache exchange — each client-side navigation re-fetches. This is intentional (fresh data) but means two routes
+  sharing a query will double-fetch
+
+## Key Files
+
+- `src/server/graphql/schema.graphqls` — SDL schema (source of truth)
+- `src/server/graphql/resolversCreate.ts` — resolver wiring
+- `src/server/graphql/extensions.ts` — union/interface `__resolveType`
+- `src/server/graphql/server.ts` — Apollo Server setup and execution helpers
+- `src/server/graphql/generated.ts` — generated server types (do not edit)
+- `src/web/graphql/generated.ts` — generated client types (do not edit)
+- `src/web/graphql/client.ts` — URQL client configuration
+- `src/web/graphql/routeLoaderGraphqlClient.ts` — isomorphic SSR/client GraphQL loader
+- `codegen.ts` — code generation configuration

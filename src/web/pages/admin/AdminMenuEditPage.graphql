@@ -1,0 +1,83 @@
+# Admin menu edit. Loaded by `/admin/menus/$menuId/edit`.
+# Live via `adminUpdates`. See docs/architecture/state-synchronization.md.
+
+fragment AdminMenuEditPageMealOption on AdminCookMeal {
+    mealId
+    title
+    description
+    imageFileUploadId
+    imageUrl
+    publishedAt
+    deletedAt
+}
+
+fragment AdminMenuEditPageMenu on AdminCookMenu {
+    menuId
+    cookId
+    cookName
+    title
+    description
+    courseCount
+    courseMealOptionImages
+    bookingRequestOfferId
+    publishedAt
+    deletedAt
+    createdAt
+    updatedAt
+    courses {
+        courseId
+        title
+        mealSelectionLimit
+        mealOptions {
+            ...AdminMenuEditPageMealOption
+        }
+    }
+}
+
+fragment AdminMenuEditPageAdmin on Admin {
+    adminId
+    cookMenu(menuId: $menuId) {
+        ...AdminMenuEditPageMenu
+    }
+    cookMeals(criterion: { cookIds: [$cookId], includeDeleted: false, take: 500 }) {
+        ...AdminMenuEditPageMealOption
+        cookId
+        cookName
+        createdAt
+        updatedAt
+    }
+}
+
+query AdminMenuEditPage($menuId: ID!, $cookId: ID!) {
+    currentSession {
+        user {
+            admin {
+                ...AdminMenuEditPageAdmin
+            }
+        }
+    }
+}
+
+subscription AdminMenuEditPageUpdates($menuId: ID!, $cookId: ID!) {
+    adminUpdates {
+        ...AdminMenuEditPageAdmin
+    }
+}
+
+mutation AdminMenuEditMealCreate($cookId: ID!, $meal: CookMealCreate) {
+    admin {
+        cookMealCreate(cookId: $cookId, meal: $meal) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminMenuEditMealUpdate($mealId: ID!, $meal: CookMealUpdate!) {
+    admin {
+        cookMealUpdate(mealId: $mealId, meal: $meal) {
+            success
+            referenceId
+        }
+    }
+}

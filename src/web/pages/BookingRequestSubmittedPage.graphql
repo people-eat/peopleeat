@@ -1,0 +1,13 @@
+# Ownership check for `/booking-request/$bookingRequestId/submitted`.
+
+query BookingRequestSubmittedPage($bookingRequestId: ID!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            bookingRequest(bookingRequestId: $bookingRequestId) {
+                bookingRequestId
+            }
+        }
+    }
+}

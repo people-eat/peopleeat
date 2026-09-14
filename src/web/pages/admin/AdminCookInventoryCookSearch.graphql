@@ -1,0 +1,31 @@
+# Cook typeahead for admin meals / menus inventory filters.
+
+query AdminCookInventoryCookSearch($criterion: AdminUserCriterion!) {
+    currentSession {
+        user {
+            admin {
+                users(criterion: $criterion) {
+                    userId
+                    firstName
+                    lastName
+                    emailAddress
+                }
+            }
+        }
+    }
+}
+
+query AdminCookInventoryCookPrefill($userId: ID!) {
+    currentSession {
+        user {
+            admin {
+                user(userId: $userId) {
+                    userId
+                    firstName
+                    lastName
+                    emailAddress
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,43 @@
+# Admin calls traffic list. Filters live in the URL; `Admin.callTraffic` /
+# `Admin.callTrafficCounts` share `AdminCallTrafficCriterion`.
+
+query AdminCallsPage($criterion: AdminCallTrafficCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                callTraffic(criterion: $criterion) {
+                    kind
+                    bookingRequestId
+                    bookingRequestOfferId
+                    cookId
+                    customerUserId
+                    cookDisplayName
+                    customerDisplayName
+                    occasion
+                    callRoom {
+                        bookingRequestOfferCallRoomId
+                        startedAt
+                        endedAt
+                        status
+                    }
+                    callSlotBooking {
+                        cookCallSlotBookingId
+                        startAt
+                        endAt
+                        status
+                        initiator
+                        declineReason
+                        canceledBy
+                        canceledReason
+                        createdAt
+                        videoCallRoomId
+                    }
+                }
+                callTrafficCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

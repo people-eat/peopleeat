@@ -1,0 +1,44 @@
+query ChefPage($cookId: ID!) {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicCook {
+        findOne(cookId: $cookId) {
+            cookId
+            biography
+            biographySummary
+            logo {
+                url
+            }
+            cuisineStyle
+            cookingPhilosophy
+            city
+            minimumPriceAmount
+            maximumPriceAmount
+            minimumParticipants
+            maximumParticipants
+            callSchedulingEnabled
+            user {
+                display
+                profilePicture {
+                    url
+                }
+            }
+            meals {
+                mealId
+                title
+                description
+                imageUrl
+            }
+            testimonials {
+                ...CustomerTestimonialCardFields
+            }
+            rating {
+                averageRating
+                reviewCount
+            }
+        }
+    }
+}

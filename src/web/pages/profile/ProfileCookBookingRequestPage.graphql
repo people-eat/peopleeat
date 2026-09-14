@@ -1,0 +1,107 @@
+# Cook booking-request pool detail. Loaded by `/profile/booking-request-pool/$bookingRequestId`.
+# Seed-and-subscribe via `userUpdates`. See docs/architecture/state-synchronization.md.
+
+fragment ProfileCookBookingRequestPageUser on User {
+    userId
+    cook {
+        cookId
+        canCreateOffers
+        stripeStatus
+        exactTravelOriginAddress {
+            displayText
+        }
+        openBookingRequests: bookingRequests(criterion: { onlyDeclined: false }) {
+            bookingRequestId
+        }
+        bookingRequestLookup(bookingRequestId: $bookingRequestId) {
+            __typename
+            ... on CookBookingRequestAvailable {
+                bookingRequest {
+                    bookingRequestId
+                    occasion
+                    dateTime
+                    message
+                    preferences
+                    exactEventAddress {
+                        city
+                        postCode
+                        country
+                    }
+                    participants {
+                        bookingRequestParticipantId
+                        type
+                        name
+                        restrictions
+                    }
+                    estimatedTravelDistanceKm
+                    estimatedTravelExpensesCents
+                    estimatedCookPayoutCents
+                    cookPoolDetails {
+                        declinedAt
+                        declinationReason
+                        notifiedAt
+                        firstOpenedAt
+                        menuEvaluationLoading
+                    }
+                    user {
+                        display
+                        profilePicture {
+                            url
+                        }
+                    }
+                }
+            }
+            ... on CookBookingRequestCanceled {
+                _
+            }
+            ... on CookBookingRequestTaken {
+                _
+            }
+            ... on CookBookingRequestExpired {
+                _
+            }
+            ... on CookBookingRequestOfferAlreadyExists {
+                bookingRequestOfferId
+            }
+            ... on CookBookingRequestNotFound {
+                _
+            }
+        }
+    }
+}
+
+query ProfileCookBookingRequestPage($bookingRequestId: ID!) {
+    currentSession {
+        user {
+            ...ProfileCookBookingRequestPageUser
+        }
+    }
+}
+
+subscription ProfileCookBookingRequestPageUpdates($bookingRequestId: ID!) {
+    userUpdates {
+        ...ProfileCookBookingRequestPageUser
+    }
+}
+
+mutation ProfileCookBookingRequestPoolOpen($bookingRequestId: ID!) {
+    user {
+        cook {
+            bookingRequestOpen(bookingRequestId: $bookingRequestId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestPoolDecline($bookingRequestId: ID!, $reason: String!) {
+    user {
+        cook {
+            bookingRequestDecline(bookingRequestId: $bookingRequestId, reason: $reason) {
+                success
+                referenceId
+            }
+        }
+    }
+}

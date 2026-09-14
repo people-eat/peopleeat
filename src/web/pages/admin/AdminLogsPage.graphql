@@ -1,0 +1,32 @@
+# Admin logs list. Search / level / page live in the URL; `Admin.logs` /
+# `Admin.logCounts` share the same `AdminLogCriterion` (searchText + levels).
+# See `docs/features/admin-logs.md`.
+
+query AdminLogsPage($criterion: AdminLogCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                logs(criterion: $criterion) {
+                    logId
+                    sessionId
+                    session {
+                        sessionId
+                        user {
+                            userId
+                            firstName
+                            lastName
+                            emailAddress
+                        }
+                    }
+                    level
+                    message
+                    createdAt
+                }
+                logCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

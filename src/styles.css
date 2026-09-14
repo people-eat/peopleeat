@@ -1,0 +1,351 @@
+@import './fonts.css';
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@import 'tw-animate-css';
+
+/* shadcn shared utilities — brings in `no-scrollbar`, `scroll-fade-x` /
+   `scroll-fade-b` (edge masks on scroll containers) and the `shimmer`
+   sweep used for streaming status text. Pure CSS, scoped to `@utility`
+   classes, adopted opt-in via className.
+
+   Safari < 26 and Firefox release lack `animation-timeline: scroll()`, so
+   shadcn's fallback pins a static fade on every edge. That washes out
+   breadcrumbs / tabs even with no overflow (see docs/styles/theme.md).
+   Override below zeros the fallback; Chrome keeps scroll-aware fades. */
+@import 'shadcn/tailwind.css';
+
+@supports not (animation-timeline: scroll()) {
+    /* Match bare utilities and variant-prefixed ones (e.g. TabsList's
+       `group-data-[orientation=horizontal]/tabs:scroll-fade-x`). */
+    [class*='scroll-fade']:not([class*='scroll-fade-none']) {
+        --scroll-fade-t: 0px;
+        --scroll-fade-b: 0px;
+        --scroll-fade-s: 0px;
+        --scroll-fade-e: 0px;
+    }
+}
+
+/* Docs are not UI source — exclude them from Tailwind's scanner so
+   markdown edits do not rebuild CSS / trigger Vite HMR. Theme docs
+   mention utility class names (`bg-primary`, …) that would otherwise
+   register as sources. */
+@source not "../docs";
+
+/* Pick up Streamdown's utility classes — see streamdown's README. */
+@source "../node_modules/streamdown/dist/*.js";
+
+/* peopleeat is light-only. The dark variant stays registered so existing
+   `dark:` utility classes in shadcn primitives are harmless no-ops. */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+    /* Brand palette — see docs/styles/theme.md
+       text #040316 · background #fffdf9 · primary #404040 · secondary #ffffff · accent #ff8a05 */
+    --background: oklch(0.994 0.006 84.6);
+    --foreground: oklch(0.118 0.046 280.7);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.118 0.046 280.7);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.118 0.046 280.7);
+    --primary: oklch(0.371 0 0);
+    --primary-foreground: oklch(1 0 0);
+    --secondary: oklch(1 0 0);
+    --secondary-foreground: oklch(0.118 0.046 280.7);
+    --muted: oklch(0.927 0.011 76.6);
+    --muted-foreground: oklch(0.519 0.03 299.8);
+    --accent: oklch(0.747 0.18 57.1);
+    --accent-foreground: oklch(0.118 0.046 280.7);
+    --destructive: oklch(0.549 0.174 30.5);
+    --destructive-foreground: oklch(1 0 0);
+    /* Status messaging — see docs/styles/status-messaging.md.
+       Warning reuses brand accent (attention = orange). */
+    --success: oklch(0.52 0.11 155);
+    --success-foreground: oklch(0.99 0.01 155);
+    --info: oklch(0.52 0.1 250);
+    --info-foreground: oklch(0.99 0.01 250);
+    --warning: var(--accent);
+    --warning-foreground: var(--accent-foreground);
+    --border: oklch(0.888 0.014 74.4);
+    --input: oklch(0.888 0.014 74.4);
+    --ring: oklch(0.747 0.18 57.1);
+    --chart-1: oklch(0.747 0.18 57.1);
+    --chart-2: oklch(0.371 0 0);
+    --chart-3: oklch(0.65 0.12 55);
+    --chart-4: oklch(0.52 0.08 70);
+    --chart-5: oklch(0.82 0.1 75);
+    --radius: 0.625rem;
+    --sidebar: oklch(1 0 0);
+    --sidebar-foreground: oklch(0.118 0.046 280.7);
+    --sidebar-primary: oklch(0.371 0 0);
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: oklch(0.927 0.011 76.6);
+    --sidebar-accent-foreground: oklch(0.118 0.046 280.7);
+    --sidebar-border: oklch(0.888 0.014 74.4);
+    --sidebar-ring: oklch(0.747 0.18 57.1);
+
+    /* Chat surface tokens — one source of truth for every chat transcript's
+       padding, column width, and gap. Every chat surface reads these through
+       the shared transcript shell, so a change here re-flows all of them at
+       once. */
+    --chat-viewport-px-mobile: 1rem;
+    --chat-viewport-px-desktop: 1.5rem;
+    --chat-column-max: 48rem;
+    --chat-row-gap: 1rem;
+    --chat-group-gap: 2rem;
+    --chat-edge-threshold: 64px;
+    /* Composer container bottom padding — at least 1rem, and at least the
+       iOS home-indicator inset when `viewport-fit=cover` is set. Surfaces
+       park the composer with `pb-[var(--chat-composer-pb)]`. */
+    --chat-composer-pb: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+@theme inline {
+    /* Body (`font-sans`) and title (`font-serif`) stay separate tokens so a
+       display face can be swapped in later without touching call sites. Both
+       currently resolve to DM Sans. */
+    --font-sans:
+        'DM Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-serif:
+        'DM Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-info: var(--info);
+    --color-info-foreground: var(--info-foreground);
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    /* Tailwind v4 ships `max-w-{sm…7xl}` out of the box (`7xl` = 80rem).
+       Dense, list-heavy pages need one step beyond that, so the container
+       scale is extended with an 8xl token at 96rem (1536px) — used as
+       `max-w-8xl`. */
+    --container-8xl: 96rem;
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    /*
+     * Always reserve the vertical scrollbar lane on the viewport. Without this,
+     * Chrome shifts the whole page left/right when overflow content appears
+     * (tab switches) or disappears (dialog scroll-lock).
+     *
+     * `both-edges` mirrors the reserve on the opposite inline edge so centered
+     * layouts stay optically balanced (stable alone looks like extra right
+     * padding). Overlay-scrollbar OSes skip the gutter entirely.
+     *
+     * Full-height layouts where an inner element owns the page scrollport opt
+     * out via `.workspace-no-document-scroll` — the document never scrolls
+     * there, so the idle gutters would sit as empty strips.
+     */
+    /*
+     * Thin classic scrollbars everywhere. Chat already used `scrollbar-thin`;
+     * offer tab panels and shell panes were still on the platform default, so
+     * Safari showed a thicker indicator outside the transcript. The property
+     * is not inherited — set it on every element so nested scrollports match.
+     * Overlay-scrollbar OSes ignore this.
+     */
+    * {
+        scrollbar-width: thin;
+    }
+    /* `html` must carry the page canvas too — macOS / iOS rubber-band
+     * overscroll paints the document root, not `body`, so an unset `html`
+     * flashes white past the content edges. */
+    html {
+        scrollbar-gutter: stable both-edges;
+        color-scheme: light;
+        @apply bg-background;
+    }
+    html.workspace-no-document-scroll {
+        scrollbar-gutter: auto;
+    }
+    /*
+     * Radix Select / Dialog use react-remove-scroll, which sets
+     * `data-scroll-locked` and injects `margin-right` / `padding-right` equal
+     * to the measured scrollbar width. With a stable document gutter above,
+     * that lane is already reserved — the injected offset is a second strip
+     * and the page jumps left (e.g. TimePicker hour/minute Select). Zero the
+     * compensation; keep scroll-lock event blocking as-is.
+     */
+    html body[data-scroll-locked] {
+        --removed-body-scroll-bar-size: 0 !important;
+        margin-right: 0 !important;
+        padding-right: 0 !important;
+    }
+    body {
+        @apply bg-background font-sans text-foreground selection:bg-accent/25 selection:text-foreground;
+    }
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-serif;
+    }
+}
+
+/* Nested scroll containers (chat transcripts, workspace inset panes) reserve
+ * the classic-scrollbar lane so opening a dropdown or growing content cannot
+ * nudge content sideways. Public pages keep the document gutter on `html`;
+ * workspace routes opt out via `.workspace-no-document-scroll` and use this
+ * utility on the inset scroller instead. */
+@utility scrollbar-gutter-stable {
+    scrollbar-gutter: stable;
+}
+
+/*
+ * Workspace inset scrollers are `display: flex; flex-direction: column`.
+ * Chromium ignores `padding-bottom` on that pattern, so bottom inset comes
+ * from an `::after` flex item instead.
+ *
+ * Nested-scroll owners (`[data-pinned-footer-layout]`, `[data-workspace-fill]`)
+ * opt out of the spacer and force the shell to `overflow: hidden` so their
+ * breakout (`w-[calc(100%+2rem)] -mx-4`) is not flanked by an idle
+ * `scrollbar-gutter: stable` lane.
+ */
+@utility workspace-inset-scroll {
+    &::after {
+        content: '';
+        display: block;
+        flex-shrink: 0;
+        height: 1rem;
+    }
+
+    &:has(> [data-pinned-footer-layout]),
+    &:has(> [data-workspace-fill]) {
+        overflow: hidden;
+        scrollbar-gutter: auto;
+
+        &::after {
+            display: none;
+        }
+    }
+}
+
+@keyframes nav-progress-grow {
+    0% {
+        transform: scaleX(0);
+    }
+    100% {
+        transform: scaleX(0.9);
+    }
+}
+
+/* Landing customer-testimonials dual-column marquee (predecessor parity).
+ * Three stacked copies → -33.33% loops seamlessly. */
+@keyframes testimonial-scroll {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        transform: translateY(-33.33%);
+    }
+}
+
+@utility animate-testimonial-scroll {
+    animation: testimonial-scroll 100s linear infinite;
+}
+
+@utility animate-testimonial-scroll-delayed {
+    animation: testimonial-scroll 100s linear infinite;
+    animation-delay: -15s;
+}
+
+/* Assistant header trigger — one-shot accent shimmer along the real border
+ * perimeter on mount (SVG stroke-dashoffset in AssistantTriggerButton). Uses
+ * pathLength=100 so dashoffset −100 is exactly one lap at constant arc-length
+ * speed. A single round-capped dash travels; the SVG fades out at the end.
+ * Answers “Is this the smart AI entry?” then settles to the static accent pill.
+ * Duration (~1.8s) is a documented exception in docs/styles/motion.md. */
+@keyframes assistant-trigger-orbit {
+    from {
+        stroke-dashoffset: 0;
+    }
+    to {
+        stroke-dashoffset: -100;
+    }
+}
+
+@keyframes assistant-trigger-orbit-fade {
+    0%,
+    85% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.assistant-trigger-orbit-stroke {
+    animation: assistant-trigger-orbit 1.8s linear 1 forwards;
+}
+
+.assistant-trigger-orbit {
+    animation: assistant-trigger-orbit-fade 1.8s linear 1 forwards;
+}
+
+/* Decorative AutoplayVideo: hide Safari's native play overlay when autoplay is
+ * blocked (e.g. mute property race, Low Power Mode). First frame stays as a still.
+ * See src/web/components/AutoplayVideo.tsx and docs/features/landing.md. */
+.autoplay-video::-webkit-media-controls {
+    display: none !important;
+}
+
+.autoplay-video::-webkit-media-controls-start-playback-button {
+    display: none !important;
+    -webkit-appearance: none;
+}
+
+/* Honour the user's OS-level reduce-motion preference for the nav progress bar
+ * (applied via Tailwind's arbitrary `animate-[nav-progress-grow_…]` utility —
+ * substring match). Testimonial marquee uses `motion-reduce:animate-none` on
+ * the animated nodes instead. Assistant trigger orbit is skipped in JS via
+ * usePrefersReducedMotion (no SVG mounted). */
+@media (prefers-reduced-motion: reduce) {
+    [class*='nav-progress-grow'] {
+        animation: none;
+    }
+
+    .assistant-trigger-orbit,
+    .assistant-trigger-orbit-stroke {
+        animation: none;
+        opacity: 0;
+    }
+}

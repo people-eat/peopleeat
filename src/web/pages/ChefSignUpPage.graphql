@@ -1,0 +1,22 @@
+query ChefSignUpPage {
+    currentSession {
+        ...AuthSessionFields
+    }
+    publicWebPage {
+        findOne(webPageKey: CHEF_SIGN_UP) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}
+
+mutation ChefSignUpCookCreate($input: CookCreate!) {
+    user {
+        cookCreate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}

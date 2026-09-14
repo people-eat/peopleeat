@@ -1,0 +1,25 @@
+query PublicCitiesPage {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicCity {
+        findMany {
+            pathName
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+            heroImageUrl
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: CITIES) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

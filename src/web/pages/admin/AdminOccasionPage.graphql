@@ -1,0 +1,94 @@
+query AdminOccasionPage($occasionId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                occasion(occasionId: $occasionId) {
+                    ...AdminOccasionFields
+                }
+                customerTestimonials {
+                    ...AdminCustomerTestimonialCardFields
+                }
+                cookTestimonials {
+                    ...AdminCookTestimonialCardFields
+                }
+            }
+        }
+    }
+}
+
+mutation AdminOccasionUpsert($input: OccasionUpsert!) {
+    admin {
+        occasionUpsert(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminOccasionCooksUpdate($occasionId: ID!, $cookIds: [ID!]!) {
+    admin {
+        occasionCooksUpdate(occasionId: $occasionId, cookIds: $cookIds) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminOccasionTestimonialsUpdate($occasionId: ID!, $entries: [TestimonialJunctionEntryInput!]!) {
+    admin {
+        occasionTestimonialsUpdate(occasionId: $occasionId, entries: $entries) {
+            success
+            referenceId
+        }
+    }
+}
+
+query AdminOccasionPageCookSearch($criterion: AdminUserCriterion!) {
+    currentSession {
+        user {
+            admin {
+                users(criterion: $criterion) {
+                    userId
+                    firstName
+                    lastName
+                    status
+                    cook {
+                        cookId
+                        isVisible
+                        isApprovedByAdmin
+                        cuisineStyle
+                        exactTravelOriginAddress {
+                            city
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+query AdminOccasionPagePromoCodes($criterion: AdminPromoCodeCriterion!) {
+    currentSession {
+        user {
+            admin {
+                promoCodes(criterion: $criterion) {
+                    promoCodeId
+                    redeemCode
+                    amountCents
+                    expiresAt
+                    scopedBookingRequestId
+                }
+            }
+        }
+    }
+}
+
+subscription AdminOccasionPageUpdates($occasionId: ID!) {
+    adminUpdates {
+        adminId
+        occasion(occasionId: $occasionId) {
+            ...AdminOccasionFields
+        }
+    }
+}

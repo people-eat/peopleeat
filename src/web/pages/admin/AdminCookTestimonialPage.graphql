@@ -1,0 +1,93 @@
+# Admin cook-testimonial detail. Loaded by
+# `/admin/testimonials/cook/$cookTestimonialId`.
+
+fragment AdminCookTestimonialDetail on AdminCookTestimonial {
+    cookTestimonialId
+    userId
+    cookId
+    bookingRequestOfferId
+    authorName
+    displayAuthorName
+    location
+    displayLocation
+    occasion
+    displayOccasion
+    body
+    imageUrls
+    rating
+    lowRatingAnswers {
+        whatWentWrong
+        wouldRecommend
+        additionalFeedback
+    }
+    publicationStatus
+    publishedAt
+    createdAt
+    cook {
+        cookId
+        user {
+            userId
+            firstName
+            lastName
+            emailAddress
+        }
+    }
+}
+
+query AdminCookTestimonialPage($cookTestimonialId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                cookTestimonial(cookTestimonialId: $cookTestimonialId) {
+                    ...AdminCookTestimonialDetail
+                }
+            }
+        }
+    }
+}
+
+subscription AdminCookTestimonialPageUpdates($cookTestimonialId: ID!) {
+    adminUpdates {
+        adminId
+        cookTestimonial(cookTestimonialId: $cookTestimonialId) {
+            ...AdminCookTestimonialDetail
+        }
+    }
+}
+
+mutation AdminCookTestimonialDetailUpdate($cookTestimonialId: ID!, $input: AdminCookTestimonialUpdate!) {
+    admin {
+        cookTestimonialUpdate(cookTestimonialId: $cookTestimonialId, input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCookTestimonialDetailDelete($cookTestimonialId: ID!) {
+    admin {
+        cookTestimonialDelete(cookTestimonialId: $cookTestimonialId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCookTestimonialDetailPublish($cookTestimonialId: ID!, $publicationStatus: TestimonialPublicationStatus!) {
+    admin {
+        cookTestimonialPublish(cookTestimonialId: $cookTestimonialId, publicationStatus: $publicationStatus) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCookTestimonialDetailImageUpdate($cookTestimonialId: ID!, $imageFileUploadIds: [ID!]!) {
+    admin {
+        cookTestimonialImageUpdate(cookTestimonialId: $cookTestimonialId, imageFileUploadIds: $imageFileUploadIds) {
+            success
+            referenceId
+        }
+    }
+}

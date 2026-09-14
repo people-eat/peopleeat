@@ -1,0 +1,66 @@
+# Cook menus list. Loaded by `/profile/menus`.
+# Seed-and-subscribe via `userUpdates`. See docs/architecture/state-synchronization.md.
+
+fragment ProfileCookMenusPageUser on User {
+    userId
+    cook {
+        cookId
+        menus {
+            menuId
+            title
+            description
+            publishedAt
+            createdAt
+            updatedAt
+            courseMealOptionImages
+            courses {
+                courseId
+            }
+        }
+        offerMenus {
+            menuId
+            title
+            description
+            publishedAt
+            createdAt
+            updatedAt
+            copyOfMenuId
+            bookingRequestOfferId
+            courseMealOptionImages
+            courses {
+                courseId
+            }
+            offerContext {
+                bookingRequestOfferId
+                bookingRequestDateTime
+                customerFirstName
+                status
+            }
+        }
+    }
+}
+
+query ProfileCookMenusPage {
+    currentSession {
+        user {
+            ...ProfileCookMenusPageUser
+        }
+    }
+}
+
+subscription ProfileCookMenusPageUpdates {
+    userUpdates {
+        ...ProfileCookMenusPageUser
+    }
+}
+
+mutation ProfileMenuCreate {
+    user {
+        cook {
+            menuCreate {
+                success
+                referenceId
+            }
+        }
+    }
+}

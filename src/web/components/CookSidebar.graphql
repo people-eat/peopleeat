@@ -1,0 +1,28 @@
+# Lean cook-nav badge counts + wallet attention. Seeded from ProfilePage; live via userUpdates.
+# Pool badge = open requests to review. Offers badge = unread across all offers.
+
+fragment CookSidebarNavBadges on Cook {
+    cookId
+    isApprovedByAdmin
+    stripeStatus
+    openBookingRequests: bookingRequests(criterion: { onlyDeclined: false }) {
+        bookingRequestId
+    }
+    bookingRequestOffers {
+        bookingRequestOfferId
+        cookUnreadNotificationCount
+    }
+}
+
+fragment CookSidebarNavBadgesUser on User {
+    userId
+    cook {
+        ...CookSidebarNavBadges
+    }
+}
+
+subscription CookSidebarNavBadgesUpdates {
+    userUpdates {
+        ...CookSidebarNavBadgesUser
+    }
+}

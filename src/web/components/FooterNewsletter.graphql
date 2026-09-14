@@ -1,0 +1,6 @@
+mutation FooterNewsletterSubscriptionCreate($emailAddress: EmailAddress!, $locale: Locale!) {
+    sessionNewsletterSubscriptionCreate(emailAddress: $emailAddress, locale: $locale) {
+        success
+        referenceId
+    }
+}

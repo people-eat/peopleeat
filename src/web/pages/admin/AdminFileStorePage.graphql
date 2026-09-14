@@ -1,0 +1,26 @@
+# Admin file-store object browse. Prefix / continuation cursor live in the URL;
+# `Admin.objectStorageObjects` uses S3 `ListObjectsV2` pagination.
+
+query AdminFileStorePage($criterion: AdminObjectStorageObjectCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                objectStorageObjects(criterion: $criterion) {
+                    configured
+                    bucket
+                    isTruncated
+                    nextContinuationToken
+                    objects {
+                        key
+                        size
+                        lastModified
+                        etag
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,50 @@
+# Cook booking-request pool list. Loaded by `/profile/booking-request-pool`.
+# Seed-and-subscribe via `userUpdates`. See docs/architecture/state-synchronization.md.
+
+fragment ProfileCookBookingRequestPoolCard on CookBookingRequest {
+    bookingRequestId
+    occasion
+    dateTime
+    estimatedCookPayoutCents
+    exactEventAddress {
+        displayText
+        city
+    }
+    participants {
+        bookingRequestParticipantId
+        type
+    }
+    cookPoolDetails {
+        declinedAt
+        declinationReason
+        notifiedAt
+        firstOpenedAt
+    }
+}
+
+fragment ProfileCookBookingRequestPoolPageUser on User {
+    userId
+    cook {
+        cookId
+        openBookingRequests: bookingRequests(criterion: { onlyDeclined: false }) {
+            ...ProfileCookBookingRequestPoolCard
+        }
+        declinedBookingRequests: bookingRequests(criterion: { onlyDeclined: true }) {
+            ...ProfileCookBookingRequestPoolCard
+        }
+    }
+}
+
+query ProfileCookBookingRequestPoolPage {
+    currentSession {
+        user {
+            ...ProfileCookBookingRequestPoolPageUser
+        }
+    }
+}
+
+subscription ProfileCookBookingRequestPoolPageUpdates {
+    userUpdates {
+        ...ProfileCookBookingRequestPoolPageUser
+    }
+}

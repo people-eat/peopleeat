@@ -1,0 +1,12 @@
+query PublicOccasionPage($pathName: String!) {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicOccasion {
+        findOneByPathName(pathName: $pathName) {
+            ...PublicOccasionFields
+        }
+    }
+}

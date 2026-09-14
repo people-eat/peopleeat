@@ -1,0 +1,32 @@
+# Admin assistant chat detail. Loaded by `/admin/assistant-chats/$chatId`.
+# See `docs/features/admin-assistant-chats.md`.
+
+query AdminAssistantChatPage($chatId: ID!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                assistantChat(chatId: $chatId) {
+                    chatId
+                    userId
+                    user {
+                        userId
+                        firstName
+                        lastName
+                        emailAddress
+                    }
+                    surface
+                    title
+                    lastModifiedAt
+                    createdAt
+                    deletedAt
+                    turns {
+                        ...ChatTurnFields
+                    }
+                }
+            }
+        }
+    }
+}

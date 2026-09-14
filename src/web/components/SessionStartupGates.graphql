@@ -1,0 +1,66 @@
+# Single bootstrap probe for exclusive root startup surfaces (locale → legal → cookie).
+# See docs/features/session-startup-gates.md.
+
+query SessionStartupGates {
+    currentSession {
+        sessionId
+        cookieSetting {
+            googleAnalytics
+            clarity
+        }
+        user {
+            userId
+            locale
+            timeZone
+            legalAcceptance {
+                required
+                pendingPrivacyPolicy {
+                    privacyPolicyId
+                    changeSummaryDe
+                    publishedAt
+                }
+                pendingTermsAndConditions {
+                    termsAndConditionsId
+                    changeSummaryDe
+                    publishedAt
+                }
+            }
+        }
+    }
+}
+
+mutation SessionStartupGatesLocaleUserUpdate($user: UserUpdate!) {
+    user {
+        userUpdate(user: $user) {
+            success
+        }
+    }
+}
+
+mutation SessionStartupGatesLegalAccept {
+    user {
+        userLegalAccept {
+            success
+        }
+    }
+}
+
+mutation SessionStartupGatesLegalSignOut($sessionIds: [ID!]!) {
+    user {
+        terminateSessions(sessionIds: $sessionIds) {
+            success
+        }
+    }
+}
+
+mutation SessionStartupGatesCookieAcceptAll {
+    sessionCookieSettingAcceptAll {
+        success
+    }
+}
+
+mutation SessionStartupGatesCookieAcceptMandatory {
+    sessionCookieSettingAcceptMandatory {
+        success
+    }
+}

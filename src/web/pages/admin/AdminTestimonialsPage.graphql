@@ -1,0 +1,130 @@
+# Admin testimonials list — customer + cook catalogs combined.
+
+fragment AdminTestimonialsListCustomer on AdminCustomerTestimonial {
+    customerTestimonialId
+    userId
+    bookingRequestOfferId
+    authorName
+    displayAuthorName
+    location
+    displayLocation
+    occasion
+    displayOccasion
+    body
+    rating
+    publicationStatus
+    publishedAt
+    createdAt
+    user {
+        userId
+        firstName
+        lastName
+    }
+}
+
+fragment AdminTestimonialsListCook on AdminCookTestimonial {
+    cookTestimonialId
+    cookId
+    userId
+    bookingRequestOfferId
+    authorName
+    displayAuthorName
+    location
+    displayLocation
+    occasion
+    displayOccasion
+    body
+    rating
+    publicationStatus
+    publishedAt
+    createdAt
+    cook {
+        cookId
+        user {
+            userId
+            firstName
+            lastName
+        }
+    }
+}
+
+query AdminTestimonialsPage {
+    currentSession {
+        user {
+            admin {
+                adminId
+                customerTestimonials {
+                    ...AdminTestimonialsListCustomer
+                }
+                cookTestimonials {
+                    ...AdminTestimonialsListCook
+                }
+            }
+        }
+    }
+}
+
+subscription AdminTestimonialsPageUpdates {
+    adminUpdates {
+        customerTestimonials {
+            ...AdminTestimonialsListCustomer
+        }
+        cookTestimonials {
+            ...AdminTestimonialsListCook
+        }
+    }
+}
+
+mutation AdminCustomerTestimonialPublish($customerTestimonialId: ID!, $publicationStatus: TestimonialPublicationStatus!) {
+    admin {
+        customerTestimonialPublish(customerTestimonialId: $customerTestimonialId, publicationStatus: $publicationStatus) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCookTestimonialPublish($cookTestimonialId: ID!, $publicationStatus: TestimonialPublicationStatus!) {
+    admin {
+        cookTestimonialPublish(cookTestimonialId: $cookTestimonialId, publicationStatus: $publicationStatus) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCustomerTestimonialDelete($customerTestimonialId: ID!) {
+    admin {
+        customerTestimonialDelete(customerTestimonialId: $customerTestimonialId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCookTestimonialDelete($cookTestimonialId: ID!) {
+    admin {
+        cookTestimonialDelete(cookTestimonialId: $cookTestimonialId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCustomerTestimonialCreate($input: AdminCustomerTestimonialCreate!) {
+    admin {
+        customerTestimonialCreate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCookTestimonialCreate($input: AdminCookTestimonialCreate!) {
+    admin {
+        cookTestimonialCreate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}

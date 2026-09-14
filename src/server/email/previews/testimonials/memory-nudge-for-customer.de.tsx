@@ -1,0 +1,16 @@
+import { BookingRequestOfferTestimonialReminderForCustomerEmail } from '../../templates/BookingRequestOfferTestimonialReminderForCustomerEmail';
+import { emailPreviewFixtures } from '../emailPreviewUtils';
+
+export default function BookingRequestOfferTestimonialReminderMemoryNudgeForCustomerDePreview() {
+    const { recipientFirstName, webPageUrl } = emailPreviewFixtures;
+    return (
+        <BookingRequestOfferTestimonialReminderForCustomerEmail
+            kind="MEMORY_NUDGE"
+            locale="de"
+            webPageUrl={webPageUrl}
+            recipientFirstName={recipientFirstName}
+            counterpartyFirstName="Ben"
+            primaryUrl={`${webPageUrl}/profile/booking-requests/1/offers/1`}
+        />
+    );
+}

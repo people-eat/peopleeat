@@ -1,0 +1,42 @@
+# Admin session detail. Loaded by `/admin/sessions/$sessionId`.
+# See `docs/features/admin-sessions.md`.
+
+query AdminSessionPage($sessionId: ID!, $eventsCriterion: AdminSessionEventCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                session(sessionId: $sessionId) {
+                    sessionId
+                    userId
+                    user {
+                        userId
+                        firstName
+                        lastName
+                        emailAddress
+                    }
+                    lastInteractionAt
+                    wasTerminatedAt
+                    connectionActive
+                    userAgent
+                    ipHash
+                    referrer
+                    landingPath
+                    isBot
+                    createdAt
+                }
+                sessionEvents(criterion: $eventsCriterion) {
+                    sessionEventId
+                    sessionId
+                    type
+                    descriptionDe
+                    descriptionEn
+                    createdAt
+                    link
+                }
+            }
+        }
+    }
+}

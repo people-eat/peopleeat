@@ -1,0 +1,14 @@
+# Lean admin-nav badge counts. Seeded from AdminPage; live via adminUpdates.
+
+fragment AdminSidebarNavBadges on Admin {
+    adminId
+    unreadSupportRequestsCounts: supportRequestsCounts(criteria: [{ hasAdminUnread: true }])
+    pendingOfferChatReviewsCounts: bookingRequestOffersCounts(criteria: [{ hasAdminChatReviewPending: true }])
+    whatsAppConversationsAdminUnreadCount
+}
+
+subscription AdminSidebarNavBadgesUpdates {
+    adminUpdates {
+        ...AdminSidebarNavBadges
+    }
+}

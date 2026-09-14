@@ -1,0 +1,10 @@
+query BookingRequestChatPage {
+    publicWebPage {
+        findOne(webPageKey: BOOKING_REQUEST_CHAT) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

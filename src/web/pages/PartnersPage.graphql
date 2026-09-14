@@ -1,0 +1,25 @@
+query PublicPartnersPage {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicPartner {
+        findMany {
+            pathName
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+            heroImageUrl
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: PARTNERS) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

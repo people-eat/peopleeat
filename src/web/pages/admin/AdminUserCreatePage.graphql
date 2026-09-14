@@ -1,0 +1,10 @@
+# Manual admin user create. See docs/features/admin-users.md.
+
+mutation AdminUserCreate($input: AdminUserCreate!) {
+    admin {
+        userCreate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}

@@ -1,0 +1,66 @@
+# Admin WhatsApp conversation detail. See docs/features/whatsapp.md.
+
+fragment AdminWhatsAppChatDetailFields on AdminWhatsAppConversation {
+    whatsAppConversationId
+    phoneNumber
+    displayName
+    userId
+    lastMessageAt
+    adminUnreadCount
+    customerServiceWindowExpiresAt
+    createdAt
+    customer {
+        userId
+        firstName
+        lastName
+        profilePicture {
+            fileUploadId
+            url
+        }
+    }
+    messages {
+        ...HumanChatMessageFields
+    }
+}
+
+fragment AdminWhatsAppChatPageAdmin on Admin {
+    adminId
+    whatsAppConversation(whatsAppConversationId: $whatsAppConversationId) {
+        ...AdminWhatsAppChatDetailFields
+    }
+}
+
+query AdminWhatsAppChatPage($whatsAppConversationId: ID!) {
+    currentSession {
+        user {
+            userId
+            admin {
+                ...AdminWhatsAppChatPageAdmin
+            }
+        }
+    }
+}
+
+subscription AdminWhatsAppChatPageUpdates($whatsAppConversationId: ID!) {
+    adminUpdates {
+        ...AdminWhatsAppChatPageAdmin
+    }
+}
+
+mutation AdminWhatsAppMessageCreate($whatsAppConversationId: ID!, $message: String!) {
+    admin {
+        whatsAppMessageCreate(whatsAppConversationId: $whatsAppConversationId, message: $message) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminWhatsAppConversationUnreadCountReset($whatsAppConversationId: ID!) {
+    admin {
+        whatsAppConversationUnreadCountReset(whatsAppConversationId: $whatsAppConversationId) {
+            success
+            referenceId
+        }
+    }
+}

@@ -1,0 +1,20 @@
+# Admin logs overview hub — level distribution + creation time series.
+# See docs/features/admin-logs.md.
+# `logCounts` order matches `ADMIN_LOG_COUNT_CRITERIA` in AdminLogsOverviewPage.tsx.
+
+query AdminLogsOverviewPage($criteria: [AdminLogCriterion!]!, $range: DateTimeRange!, $granularity: AdminTimeBucketGranularity! = day) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                logCounts(criteria: $criteria)
+                logCreations(range: $range, granularity: $granularity) {
+                    bucketStart
+                    count
+                }
+            }
+        }
+    }
+}

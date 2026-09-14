@@ -1,0 +1,17 @@
+query PublicCityPage($pathName: String!) {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicCity {
+        findOneByPathName(pathName: $pathName) {
+            ...PublicCityFields
+        }
+        findMany {
+            pathName
+            nameDe
+            nameEn
+        }
+    }
+}

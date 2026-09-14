@@ -1,0 +1,37 @@
+# Admin calls overview hub — attention board + distribution + slot creations + cook stats.
+# `callTrafficCounts` order matches `ADMIN_CALL_TRAFFIC_COUNT_CRITERIA` in
+# AdminCallsOverviewPage.tsx.
+
+query AdminCallsOverviewPage(
+    $criteria: [AdminCallTrafficCriterion!]!
+    $range: DateTimeRange!
+    $granularity: AdminTimeBucketGranularity! = day
+    $cookStatsTake: Int! = 10
+) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                calls {
+                    ...AdminCallsAttentionCall
+                }
+                callTrafficCounts(criteria: $criteria)
+                callSlotCreations(range: $range, granularity: $granularity) {
+                    bucketStart
+                    count
+                }
+                callCookStats(range: $range, sortBy: roomCount, take: $cookStatsTake) {
+                    cookId
+                    displayName
+                    roomCount
+                    completedSlotCount
+                    declinedCount
+                    canceledCount
+                    pendingAwaitingCookCount
+                }
+            }
+        }
+    }
+}

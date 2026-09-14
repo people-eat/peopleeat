@@ -1,0 +1,121 @@
+# Admin landing overview — action queues for cooks awaiting approval,
+# booking requests blocked for admin publication review, due cook payouts,
+# open support requests, and pending offer-chat reviews. See
+# docs/features/admin-shell.md and docs/features/admin-offer-chat-review.md.
+
+fragment AdminOverviewPageAdmin on Admin {
+    adminId
+    pendingCooks: users(criterion: $pendingCooks) {
+        userId
+        firstName
+        lastName
+        emailAddress
+        createdAt
+    }
+    pendingCooksCounts: userCounts(criteria: [$pendingCooks])
+    blockedBookingRequests: bookingRequests(criterion: $blockedBookingRequests) {
+        bookingRequestId
+        occasion
+        dateTime
+        createdAt
+        exactEventAddress {
+            city
+            displayText
+        }
+        participants {
+            type
+        }
+        customer {
+            userId
+            firstName
+            lastName
+            emailAddress
+        }
+    }
+    blockedBookingRequestsCounts: bookingRequestsCounts(criteria: [$blockedBookingRequests])
+    duePayoutOffers: bookingRequestOffers(criterion: $duePayoutOffers) {
+        bookingRequestOfferId
+        bookingRequestId
+        payoutCentsCook
+        paymentStatus
+        plannedPayoutDateTime
+        cookPayoutReady
+        cookPayoutBlockedReason
+        cook {
+            cookId
+            user {
+                userId
+                firstName
+                lastName
+                emailAddress
+            }
+        }
+    }
+    duePayoutOffersCounts: bookingRequestOffersCounts(criteria: [$duePayoutOffers])
+    openSupportRequests: supportRequests(criterion: $openSupportRequests) {
+        supportRequestId
+        subject
+        status
+        adminUnreadNotificationCount
+        createdAt
+        customer {
+            userId
+            firstName
+            lastName
+        }
+    }
+    openSupportRequestsCounts: supportRequestsCounts(criteria: [$openSupportRequests])
+    pendingOfferChatReviews: bookingRequestOffers(criterion: $pendingOfferChatReviews) {
+        bookingRequestOfferId
+        bookingRequestId
+        adminChatReviewPendingCount
+        cook {
+            cookId
+            user {
+                userId
+                firstName
+                lastName
+            }
+        }
+        bookingRequest {
+            bookingRequestId
+            occasion
+            customer {
+                userId
+                firstName
+                lastName
+            }
+        }
+    }
+    pendingOfferChatReviewsCounts: bookingRequestOffersCounts(criteria: [$pendingOfferChatReviews])
+}
+
+query AdminOverviewPage(
+    $pendingCooks: AdminUserCriterion!
+    $blockedBookingRequests: AdminBookingRequestCriterion!
+    $duePayoutOffers: AdminBookingRequestOfferCriterion!
+    $openSupportRequests: AdminSupportRequestCriterion!
+    $pendingOfferChatReviews: AdminBookingRequestOfferCriterion!
+) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                ...AdminOverviewPageAdmin
+            }
+        }
+    }
+}
+
+subscription AdminOverviewPageUpdates(
+    $pendingCooks: AdminUserCriterion!
+    $blockedBookingRequests: AdminBookingRequestCriterion!
+    $duePayoutOffers: AdminBookingRequestOfferCriterion!
+    $openSupportRequests: AdminSupportRequestCriterion!
+    $pendingOfferChatReviews: AdminBookingRequestOfferCriterion!
+) {
+    adminUpdates {
+        ...AdminOverviewPageAdmin
+    }
+}

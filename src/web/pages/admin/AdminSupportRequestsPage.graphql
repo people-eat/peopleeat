@@ -1,0 +1,41 @@
+# Admin support-request list. See docs/features/support-requests.md.
+
+fragment AdminSupportRequestsPageAdmin on Admin {
+    adminId
+    supportRequests(criterion: $criterion) {
+        supportRequestId
+        subject
+        status
+        adminUnreadNotificationCount
+        createdAt
+        resolvedAt
+        bookingRequest {
+            bookingRequestId
+            occasion
+            dateTime
+        }
+        customer {
+            userId
+            firstName
+            lastName
+        }
+    }
+    supportRequestsCounts(criteria: [$countsCriterion])
+}
+
+query AdminSupportRequestsPage($criterion: AdminSupportRequestCriterion!, $countsCriterion: AdminSupportRequestCriterion!) {
+    currentSession {
+        user {
+            userId
+            admin {
+                ...AdminSupportRequestsPageAdmin
+            }
+        }
+    }
+}
+
+subscription AdminSupportRequestsPageUpdates($criterion: AdminSupportRequestCriterion!, $countsCriterion: AdminSupportRequestCriterion!) {
+    adminUpdates {
+        ...AdminSupportRequestsPageAdmin
+    }
+}

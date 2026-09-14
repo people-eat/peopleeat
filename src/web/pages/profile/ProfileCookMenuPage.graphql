@@ -1,0 +1,121 @@
+# Cook menu detail. Loaded by `/profile/menus/$menuId`.
+# Seed-and-subscribe via `userUpdates`. See docs/architecture/state-synchronization.md.
+
+fragment ProfileCookMenuPageMenuFields on CookMenu {
+    menuId
+    title
+    description
+    publishedAt
+    createdAt
+    updatedAt
+    copyOfMenuId
+    bookingRequestOfferId
+    offerContext {
+        bookingRequestOfferId
+        bookingRequestDateTime
+        customerFirstName
+        status
+    }
+    courses {
+        courseId
+        title
+        mealSelectionLimit
+        mealOptions {
+            mealId
+            title
+            description
+            imageUrl
+            publishedAt
+        }
+    }
+}
+
+fragment ProfileCookMenuPageUser on User {
+    userId
+    cook {
+        cookId
+        meals {
+            mealId
+            title
+            description
+            imageFileUploadId
+            imageUrl
+            publishedAt
+        }
+        menu(menuId: $menuId) {
+            ...ProfileCookMenuPageMenuFields
+            templateMenu {
+                menuId
+                title
+                description
+                courses {
+                    courseId
+                    title
+                    mealSelectionLimit
+                    mealOptions {
+                        mealId
+                        title
+                    }
+                }
+            }
+        }
+    }
+}
+
+query ProfileCookMenuPage($menuId: ID!) {
+    currentSession {
+        user {
+            ...ProfileCookMenuPageUser
+        }
+    }
+}
+
+subscription ProfileCookMenuPageUpdates($menuId: ID!) {
+    userUpdates {
+        ...ProfileCookMenuPageUser
+    }
+}
+
+mutation ProfileMenuUpdate($menuId: ID!, $menu: CookMenuUpdate!) {
+    user {
+        cook {
+            menuUpdate(menuId: $menuId, menu: $menu) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileMenuDelete($menuId: ID!) {
+    user {
+        cook {
+            menuDelete(menuId: $menuId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileMenuCopy($menuId: ID!) {
+    user {
+        cook {
+            menuCopy(menuId: $menuId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileMenuSyncToTemplate($menuId: ID!) {
+    user {
+        cook {
+            menuSyncToTemplate(menuId: $menuId) {
+                success
+                referenceId
+            }
+        }
+    }
+}

@@ -1,0 +1,297 @@
+# Assistant chat operations — durable turn + parts model.
+# See docs/architecture/chat.md and docs/features/assistant-sidebar.md.
+
+fragment ChatMessagePartFields on ChatMessagePart {
+    __typename
+    ... on ChatMessageTextPart {
+        partId
+        partState: state
+        text
+    }
+    ... on ChatMessageReasoningPart {
+        partId
+        partState: state
+        text
+    }
+    ... on ChatMessageToolPart {
+        partId
+        toolCallId
+        toolName
+        toolTitle: title
+        toolState: state
+        providerExecuted
+        preliminary
+        approval {
+            approvalId
+            status
+            descriptor
+            reason
+        }
+        debug {
+            input
+            output
+            errorText
+        }
+    }
+    ... on ChatMessageSourceUrlPart {
+        partId
+        sourceId
+        url
+        sourceTitle: title
+    }
+    ... on ChatMessageSourceDocumentPart {
+        partId
+        sourceId
+        mediaType
+        documentTitle: title
+        filename
+    }
+    ... on ChatMessageFilePart {
+        partId
+        mediaType
+        filename
+        url
+    }
+    ... on ChatMessageDataPart {
+        partId
+        dataType
+        data
+    }
+}
+
+fragment ChatMessageAssistantFields on ChatMessage {
+    chatMessageId
+    chatTurnId
+    role
+    status
+    revision
+    createdAt
+    lastModifiedAt
+    parts {
+        ...ChatMessagePartFields
+    }
+    attachments {
+        fileUploadId
+        filename
+        mediaType
+        size
+        url
+    }
+}
+
+fragment ChatTurnFields on ChatTurn {
+    chatTurnId
+    sequence
+    status
+    revision
+    locale
+    createdAt
+    startedAt
+    completedAt
+    lastModifiedAt
+    failure {
+        code
+    }
+    debug {
+        agentName
+        modelId
+        finishReason
+        usage {
+            inputTokens
+            outputTokens
+            totalTokens
+            reasoningTokens
+            cachedInputTokens
+        }
+    }
+    userMessage {
+        ...ChatMessageAssistantFields
+    }
+    assistantMessage {
+        ...ChatMessageAssistantFields
+    }
+}
+
+# Human offer/support transcript (separate from assistant parts model).
+fragment HumanChatMessageFields on HumanChatMessage {
+    __typename
+    ... on ChatMessageUser {
+        chatMessageId
+        body
+        createdAt
+        isOwn
+        showCopyButton
+        collapseLongBody
+        deliveryStatus
+        author {
+            display
+            createdAt
+            profilePicture {
+                fileUploadId
+                filename
+                mediaType
+                size
+                url
+            }
+        }
+        attachments {
+            fileUploadId
+            filename
+            mediaType
+            size
+            url
+        }
+    }
+    ... on ChatMessageBookingRequestOfferEvent {
+        chatMessageId
+        type
+        payload
+        createdAt
+    }
+}
+
+query ChatPage($chatId: ID!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            emailAddress
+            firstName
+            lastName
+            assistantChat(chatId: $chatId) {
+                chatId
+                userId
+                surface
+                title
+                lastModifiedAt
+                turns {
+                    ...ChatTurnFields
+                }
+            }
+        }
+    }
+}
+
+mutation ChatMessageCreate(
+    $chatId: ID
+    $message: String!
+    $fileUploadIds: [ID!]
+    $clientRequestId: ID!
+    $surface: ChatSurface!
+    $requireToolCallApprovals: Boolean!
+) {
+    user {
+        chatMessageCreate(
+            chatId: $chatId
+            message: $message
+            fileUploadIds: $fileUploadIds
+            clientRequestId: $clientRequestId
+            surface: $surface
+            assistantOptions: { requireToolCallApprovals: $requireToolCallApprovals }
+        ) {
+            chatId
+            chatTurnId
+        }
+    }
+}
+
+mutation ChatInputCollectionRespond(
+    $chatTurnId: ID!
+    $toolCallId: ID!
+    $answers: JSON!
+    $clientRequestId: ID!
+    $requireToolCallApprovals: Boolean!
+) {
+    user {
+        chatInputCollectionRespond(
+            chatTurnId: $chatTurnId
+            toolCallId: $toolCallId
+            answers: $answers
+            clientRequestId: $clientRequestId
+            assistantOptions: { requireToolCallApprovals: $requireToolCallApprovals }
+        ) {
+            chatId
+            chatTurnId
+        }
+    }
+}
+
+mutation ChatToolApprovalRespond(
+    $chatTurnId: ID!
+    $approvalId: String!
+    $approved: Boolean!
+    $reason: String
+    $clientRequestId: ID!
+    $requireToolCallApprovals: Boolean!
+) {
+    user {
+        chatToolApprovalRespond(
+            chatTurnId: $chatTurnId
+            approvalId: $approvalId
+            approved: $approved
+            reason: $reason
+            clientRequestId: $clientRequestId
+            assistantOptions: { requireToolCallApprovals: $requireToolCallApprovals }
+        ) {
+            chatId
+            chatTurnId
+        }
+    }
+}
+
+mutation ChatDelete($chatId: ID!) {
+    user {
+        chatDelete(chatId: $chatId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ChatTitleUpdate($chatId: ID!, $title: String!) {
+    user {
+        chatTitleUpdate(chatId: $chatId, title: $title) {
+            success
+            referenceId
+        }
+    }
+}
+
+# Lightweight ping so the sidebar can refetch title/list after titler / rename / delete.
+subscription AssistantSidebarUserUpdatesPing {
+    userUpdates {
+        userId
+    }
+}
+
+subscription ChatTurnUpdates($chatId: ID!) {
+    chatTurnUpdates(chatId: $chatId) {
+        __typename
+        ... on ChatTurnSnapshot {
+            turns {
+                ...ChatTurnFields
+            }
+        }
+        ... on ChatTurnUpserted {
+            turn {
+                ...ChatTurnFields
+            }
+        }
+    }
+}
+
+query UserAssistantChats($criterion: UserAssistantChatCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            assistantChats(criterion: $criterion) {
+                chatId
+                userId
+                surface
+                title
+                lastModifiedAt
+            }
+        }
+    }
+}

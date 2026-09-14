@@ -1,0 +1,68 @@
+# Cook offer inbox. Loaded by `/profile/booking-request-offers`.
+# Three bucket aliases mirror Active / Completed / Archive tabs.
+
+fragment ProfileCookBookingRequestOfferCard on CookBookingRequestOffer {
+    bookingRequestOfferId
+    status
+    cookAccepted
+    userAccepted
+    cookUnreadNotificationCount
+    menuPriceCents
+    totalWithoutDiscountsCentsCustomer
+    payoutCentsCook
+    createdAt
+    callBookings {
+        cookCallSlotBookingId
+        startAt
+        endAt
+        status
+        initiator
+    }
+    bookingRequest {
+        bookingRequestId
+        status
+        occasion
+        dateTime
+        exactEventAddress {
+            displayText
+            city
+        }
+        participants {
+            bookingRequestParticipantId
+            type
+        }
+        user {
+            display
+        }
+    }
+}
+
+fragment ProfileCookBookingRequestOffersPageUser on User {
+    userId
+    cook {
+        cookId
+        activeOffers: bookingRequestOffers(criterion: { bucket: ACTIVE }) {
+            ...ProfileCookBookingRequestOfferCard
+        }
+        completedOffers: bookingRequestOffers(criterion: { bucket: COMPLETED }) {
+            ...ProfileCookBookingRequestOfferCard
+        }
+        archivedOffers: bookingRequestOffers(criterion: { bucket: ARCHIVED }) {
+            ...ProfileCookBookingRequestOfferCard
+        }
+    }
+}
+
+query ProfileCookBookingRequestOffersPage {
+    currentSession {
+        user {
+            ...ProfileCookBookingRequestOffersPageUser
+        }
+    }
+}
+
+subscription ProfileCookBookingRequestOffersPageUpdates {
+    userUpdates {
+        ...ProfileCookBookingRequestOffersPageUser
+    }
+}

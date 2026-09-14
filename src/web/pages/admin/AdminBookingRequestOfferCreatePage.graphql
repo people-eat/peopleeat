@@ -1,0 +1,57 @@
+# Admin manual offer create. Loaded by `/admin/booking-requests/$bookingRequestId/offers/create`.
+
+fragment AdminBookingRequestOfferCreatePageRequest on AdminBookingRequest {
+    bookingRequestId
+    occasion
+    dateTime
+    canceledAt
+    priceClassType
+    suggestedOfferAmountCents
+    minOfferAmountCents
+    maxOfferAmountCents
+    minOfferAmountHardCents
+    participants {
+        bookingRequestParticipantId
+        type
+    }
+    cooksInTravelRadius {
+        estimatedTravelDistanceKm
+        notifiedAt
+        cook {
+            cookId
+            cuisineStyle
+            travelExpensesAmount
+            exactTravelOriginAddress {
+                city
+            }
+            user {
+                userId
+                firstName
+                lastName
+                emailAddress
+            }
+        }
+    }
+}
+
+query AdminBookingRequestOfferCreatePage($bookingRequestId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                bookingRequest(bookingRequestId: $bookingRequestId) {
+                    ...AdminBookingRequestOfferCreatePageRequest
+                }
+            }
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferCreate($input: AdminBookingRequestOfferCreate!) {
+    admin {
+        bookingRequestOfferCreate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}

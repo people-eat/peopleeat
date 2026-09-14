@@ -1,0 +1,151 @@
+# Cook offer create from pool. Loaded by `/profile/booking-request-pool/$bookingRequestId/create`.
+
+fragment ProfileCookBookingRequestOfferCreatePageUser on User {
+    userId
+    cook {
+        cookId
+        canCreateOffers
+        stripeStatus
+        exactTravelOriginAddress {
+            displayText
+        }
+        meals {
+            mealId
+            title
+            description
+            imageUrl
+        }
+        menus {
+            menuId
+            title
+            description
+            courseMealOptionImages
+            courses {
+                courseId
+                title
+                mealOptions {
+                    mealId
+                }
+            }
+        }
+        openBookingRequests: bookingRequests(criterion: { onlyDeclined: false }) {
+            bookingRequestId
+        }
+        bookingRequestLookup(bookingRequestId: $bookingRequestId) {
+            __typename
+            ... on CookBookingRequestAvailable {
+                bookingRequest {
+                    bookingRequestId
+                    occasion
+                    dateTime
+                    preferences
+                    priceClassType
+                    suggestedOfferAmountCents
+                    minOfferAmountCents
+                    maxOfferAmountCents
+                    minOfferAmountHardCents
+                    exactEventAddress {
+                        displayText
+                        city
+                    }
+                    participants {
+                        bookingRequestParticipantId
+                        type
+                        name
+                        restrictions
+                    }
+                    estimatedTravelDistanceKm
+                    estimatedTravelExpensesCents
+                    cookPoolDetails {
+                        declinedAt
+                        firstOpenedAt
+                        menuEvaluationLoading
+                        menuEvaluation {
+                            evaluationSummary
+                            menus {
+                                menuId
+                                evaluationSummary
+                                isSuitable
+                            }
+                            generatedMenu {
+                                title
+                                description
+                                courses {
+                                    title
+                                    mealOptions {
+                                        type
+                                        mealId
+                                        title
+                                        description
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            ... on CookBookingRequestCanceled {
+                _
+            }
+            ... on CookBookingRequestTaken {
+                _
+            }
+            ... on CookBookingRequestExpired {
+                _
+            }
+            ... on CookBookingRequestOfferAlreadyExists {
+                bookingRequestOfferId
+            }
+            ... on CookBookingRequestNotFound {
+                _
+            }
+        }
+    }
+}
+
+query ProfileCookBookingRequestOfferCreatePage($bookingRequestId: ID!) {
+    currentSession {
+        user {
+            ...ProfileCookBookingRequestOfferCreatePageUser
+        }
+    }
+}
+
+subscription ProfileCookBookingRequestOfferCreatePageUpdates($bookingRequestId: ID!) {
+    userUpdates {
+        ...ProfileCookBookingRequestOfferCreatePageUser
+    }
+}
+
+mutation ProfileCookBookingRequestOfferCreatePageCreate($input: BookingRequestOfferCreate!) {
+    user {
+        cook {
+            bookingRequestOfferCreate(input: $input) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferCreatePageMenuEvaluationRefresh($bookingRequestId: ID!) {
+    user {
+        cook {
+            bookingRequestMenuEvaluationRefresh(bookingRequestId: $bookingRequestId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferCreatePageGeneratedMenuApply($bookingRequestId: ID!) {
+    user {
+        cook {
+            bookingRequestGeneratedMenuApply(bookingRequestId: $bookingRequestId) {
+                success
+                referenceId
+            }
+        }
+    }
+}

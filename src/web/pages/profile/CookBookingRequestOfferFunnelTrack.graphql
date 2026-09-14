@@ -1,0 +1,6 @@
+mutation CookBookingRequestOfferFunnelTrack($input: SessionWebPageInteractionCreateInput!) {
+    sessionWebPageInteractionCreate(input: $input) {
+        success
+        referenceId
+    }
+}

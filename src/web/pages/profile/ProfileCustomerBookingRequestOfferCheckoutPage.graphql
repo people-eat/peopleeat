@@ -1,0 +1,86 @@
+# Customer offer checkout under a booking request.
+# Loaded by `/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/checkout`.
+
+fragment ProfileCustomerBookingRequestOfferCheckoutPageUser on User {
+    userId
+    emailAddress
+    firstName
+    lastName
+    bookingRequest(bookingRequestId: $bookingRequestId) {
+        bookingRequestId
+        occasion
+        exactEventAddress {
+            addressLine1
+            addressLine2
+            city
+            postCode
+            country
+        }
+        invoiceAddress {
+            companyName
+            firstName
+            lastName
+            country
+            city
+            postalCode
+            line1
+            line2
+        }
+        offers {
+            bookingRequestOfferId
+            status
+            configuredMenu {
+                title
+                courses {
+                    title
+                }
+            }
+            cook {
+                cookId
+                hasPublicProfile
+                city
+                cuisineStyle
+                cookingPhilosophy
+                user {
+                    display
+                    profilePicture {
+                        url
+                    }
+                }
+            }
+            costBreakdown {
+                lineItems {
+                    title
+                    amountCents
+                }
+                total {
+                    title
+                    amountCents
+                }
+                totalBeforeDiscount {
+                    title
+                    amountCents
+                }
+            }
+            payment {
+                clientSecret
+                publishableKey
+                type
+            }
+        }
+    }
+}
+
+query ProfileCustomerBookingRequestOfferCheckoutPage($bookingRequestId: ID!) {
+    currentSession {
+        user {
+            ...ProfileCustomerBookingRequestOfferCheckoutPageUser
+        }
+    }
+}
+
+subscription ProfileCustomerBookingRequestOfferCheckoutPageUpdates($bookingRequestId: ID!) {
+    userUpdates {
+        ...ProfileCustomerBookingRequestOfferCheckoutPageUser
+    }
+}

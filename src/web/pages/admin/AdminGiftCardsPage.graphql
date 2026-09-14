@@ -1,0 +1,25 @@
+# Admin gift-card purchases. Search / payment status / page live in the URL;
+# `Admin.giftCards` / `giftCardsCounts` share `AdminGiftCardCriterion`.
+
+query AdminGiftCardsPage($criterion: AdminGiftCardCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                giftCards(criterion: $criterion) {
+                    giftCardId
+                    buyerEmail
+                    occasion
+                    recipientName
+                    originalBalanceCents
+                    redeemCode
+                    paymentStatus
+                    createdAt
+                }
+                giftCardsCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

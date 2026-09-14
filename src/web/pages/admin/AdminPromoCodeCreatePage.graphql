@@ -1,0 +1,10 @@
+# Manual admin promo-code create. See docs/features/admin-promo-codes.md.
+
+mutation AdminPromoCodeCreate($input: AdminPromoCodeCreate!) {
+    admin {
+        promoCodeCreate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}

@@ -1,0 +1,93 @@
+name: Storybook
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/web/components/**'
+      - '.storybook/**'
+      - 'Dockerfile.storybook'
+      - 'Dockerfile.storybook.dockerignore'
+      - 'docker/storybook/**'
+  workflow_dispatch:
+
+concurrency:
+  group: storybook-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}/storybook
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+        with:
+          driver: docker-container
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha
+            type=raw,value=latest
+
+      - name: Build and push image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.storybook
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=storybook
+          cache-to: type=gha,mode=max,scope=storybook
+
+      - name: Set image tag on Coolify
+        env:
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+          APP_UUID: ${{ secrets.COOLIFY_APPLICATION_UUID_STORYBOOK }}
+          TAG: ${{ steps.meta.outputs.version }}
+        run: |
+          set -e
+          BODY=$(jq -n --arg tag "$TAG" '{docker_registry_image_tag:$tag}')
+          RESP=$(curl -sS -w "\n%{http_code}" -X PATCH \
+            -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$BODY" \
+            "${COOLIFY_URL%/}/api/v1/applications/${APP_UUID}")
+          BODY_JSON=$(echo "$RESP" | head -n -1); CODE=$(echo "$RESP" | tail -n1)
+          echo "PATCH HTTP $CODE"; echo "$BODY_JSON"; test "$CODE" = "200"
+
+      - name: Restart application
+        env:
+          COOLIFY_URL: ${{ secrets.COOLIFY_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
+          APP_UUID: ${{ secrets.COOLIFY_APPLICATION_UUID_STORYBOOK }}
+        run: |
+          set -e
+          RESP=$(curl -sS -w "\n%{http_code}" -X POST \
+            -H "Authorization: Bearer ${COOLIFY_TOKEN}" \
+            "${COOLIFY_URL%/}/api/v1/applications/${APP_UUID}/restart")
+          BODY=$(echo "$RESP" | head -n -1); CODE=$(echo "$RESP" | tail -n1)
+          echo "RESTART HTTP $CODE"; echo "$BODY"; test "$CODE" = "200"

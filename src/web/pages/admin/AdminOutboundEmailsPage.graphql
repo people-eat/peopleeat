@@ -1,0 +1,25 @@
+# Admin outbound emails. Search / purpose / page live in the URL;
+# `Admin.outboundEmails` / `outboundEmailsCounts` share `AdminOutboundEmailCriterion`.
+
+query AdminOutboundEmailsPage($criterion: AdminOutboundEmailCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                outboundEmails(criterion: $criterion) {
+                    outboundEmailId
+                    purpose
+                    toEmail
+                    subject
+                    createdAt
+                    sentAt
+                    failedAt
+                    openedAt
+                }
+                outboundEmailsCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

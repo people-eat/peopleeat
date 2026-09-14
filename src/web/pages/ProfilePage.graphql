@@ -1,0 +1,118 @@
+# Profile gate — unsigned sessions redirect in the route loader. Nullable
+# `User.cook` picks cook vs customer UI (same presence-probe pattern as
+# `User.admin`). Cook status fields drive cook overview; `bookingRequests`
+# drive customer Attention / Next dinner. Sidebar badge counts live on
+# `CookSidebarNavBadges` (see CookSidebar.graphql) and `CustomerSidebarNavBadges`
+# (see CustomerSidebar.graphql). Seed-and-subscribe via `userUpdates`.
+# See docs/architecture/state-synchronization.md, `docs/features/profile.md`,
+# `docs/features/cook-profile.md`, and `docs/features/customer-shell.md`.
+
+fragment ProfilePageCookStatus on Cook {
+    cookId
+    isApprovedByAdmin
+    stripeStatus
+    biography
+    cuisineStyle
+    cookingPhilosophy
+    exactTravelOriginAddress {
+        displayText
+        city
+    }
+    mealsCounts(criteria: [{}])
+    menusCounts(criteria: [{}])
+    upcomingCallSlotBookings: callSlotBookings(criterion: { from: $upcomingCallsFrom, to: $upcomingCallsTo }) {
+        cookCallSlotBookingId
+        startAt
+        status
+        bookingRequestOfferId
+        customer {
+            display
+        }
+    }
+    ...CookSidebarNavBadges
+}
+
+fragment ProfilePageUser on User {
+    userId
+    status
+    firstName
+    lastName
+    profilePicture {
+        url
+    }
+    cook {
+        ...ProfilePageCookStatus
+    }
+    admin {
+        adminId
+    }
+    bookingRequests {
+        bookingRequestId
+        status
+        occasion
+        dateTime
+        exactEventAddress {
+            displayText
+            city
+        }
+        participants {
+            bookingRequestParticipantId
+            type
+        }
+        offers {
+            bookingRequestOfferId
+            status
+            userUnreadNotificationCount
+            testimonialMissing
+            cook {
+                cookId
+                user {
+                    display
+                    profilePicture {
+                        url
+                    }
+                }
+            }
+            callBookings {
+                cookCallSlotBookingId
+                startAt
+                endAt
+                status
+                initiator
+            }
+        }
+    }
+    ...CustomerSidebarNavBadges
+}
+
+query ProfilePage($upcomingCallsFrom: DateTime!, $upcomingCallsTo: DateTime!) {
+    currentSession {
+        sessionId
+        activeFeatureToggleKeys
+        user {
+            ...ProfilePageUser
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: PROFILE) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}
+
+subscription ProfilePageUpdates($upcomingCallsFrom: DateTime!, $upcomingCallsTo: DateTime!) {
+    userUpdates {
+        ...ProfilePageUser
+    }
+}
+
+# Lean status probe for the shell restriction banner (seeded from ProfilePage).
+subscription ProfileBanStatusUpdates {
+    userUpdates {
+        userId
+        status
+    }
+}

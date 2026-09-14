@@ -1,0 +1,38 @@
+query AdminBlogPostsPage {
+    currentSession {
+        user {
+            admin {
+                adminId
+                blogPosts {
+                    blogPostId
+                    pathName
+                    titleDe
+                    publishedAt
+                    updatedAt
+                }
+            }
+        }
+    }
+}
+
+mutation AdminBlogPostDelete($blogPostId: ID!) {
+    admin {
+        blogPostDelete(blogPostId: $blogPostId) {
+            success
+            referenceId
+        }
+    }
+}
+
+subscription AdminBlogPostsPageUpdates {
+    adminUpdates {
+        adminId
+        blogPosts {
+            blogPostId
+            pathName
+            titleDe
+            publishedAt
+            updatedAt
+        }
+    }
+}

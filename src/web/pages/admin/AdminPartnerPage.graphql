@@ -1,0 +1,94 @@
+query AdminPartnerPage($partnerId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                partner(partnerId: $partnerId) {
+                    ...AdminPartnerFields
+                }
+                customerTestimonials {
+                    ...AdminCustomerTestimonialCardFields
+                }
+                cookTestimonials {
+                    ...AdminCookTestimonialCardFields
+                }
+            }
+        }
+    }
+}
+
+mutation AdminPartnerUpsert($input: PartnerUpsert!) {
+    admin {
+        partnerUpsert(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminPartnerCooksUpdate($partnerId: ID!, $cookIds: [ID!]!) {
+    admin {
+        partnerCooksUpdate(partnerId: $partnerId, cookIds: $cookIds) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminPartnerTestimonialsUpdate($partnerId: ID!, $entries: [TestimonialJunctionEntryInput!]!) {
+    admin {
+        partnerTestimonialsUpdate(partnerId: $partnerId, entries: $entries) {
+            success
+            referenceId
+        }
+    }
+}
+
+query AdminPartnerPageCookSearch($criterion: AdminUserCriterion!) {
+    currentSession {
+        user {
+            admin {
+                users(criterion: $criterion) {
+                    userId
+                    firstName
+                    lastName
+                    status
+                    cook {
+                        cookId
+                        isVisible
+                        isApprovedByAdmin
+                        cuisineStyle
+                        exactTravelOriginAddress {
+                            city
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+query AdminPartnerPagePromoCodes($criterion: AdminPromoCodeCriterion!) {
+    currentSession {
+        user {
+            admin {
+                promoCodes(criterion: $criterion) {
+                    promoCodeId
+                    redeemCode
+                    amountCents
+                    expiresAt
+                    scopedBookingRequestId
+                }
+            }
+        }
+    }
+}
+
+subscription AdminPartnerPageUpdates($partnerId: ID!) {
+    adminUpdates {
+        adminId
+        partner(partnerId: $partnerId) {
+            ...AdminPartnerFields
+        }
+    }
+}

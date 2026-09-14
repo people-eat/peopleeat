@@ -1,0 +1,15 @@
+# Shared support-request create mutation used by list + booking-request support tab.
+
+mutation ProfileSupportRequestCreate($subject: String!, $messageBody: String!, $bookingRequestId: ID, $fileUploadIds: [ID!]) {
+    user {
+        supportRequestCreate(
+            subject: $subject
+            messageBody: $messageBody
+            bookingRequestId: $bookingRequestId
+            fileUploadIds: $fileUploadIds
+        ) {
+            success
+            referenceId
+        }
+    }
+}

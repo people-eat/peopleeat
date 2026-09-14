@@ -1,0 +1,15 @@
+query BookingRequestPage {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: BOOKING_REQUEST) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

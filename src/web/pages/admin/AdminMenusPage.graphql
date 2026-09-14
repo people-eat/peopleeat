@@ -1,0 +1,27 @@
+# Admin cook menus (all cooks, including soft-deleted). Search / page in URL.
+
+query AdminMenusPage($criterion: AdminCookMenuCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                cookMenus(criterion: $criterion) {
+                    menuId
+                    cookId
+                    cookName
+                    title
+                    description
+                    courseCount
+                    courseMealOptionImages
+                    publishedAt
+                    deletedAt
+                    createdAt
+                    updatedAt
+                }
+                cookMenusCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

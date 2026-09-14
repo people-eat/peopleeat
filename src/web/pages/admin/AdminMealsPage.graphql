@@ -1,0 +1,26 @@
+# Admin cook meals (all cooks, including soft-deleted). Filters / page in URL.
+
+query AdminMealsPage($criterion: AdminCookMealCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                cookMeals(criterion: $criterion) {
+                    mealId
+                    cookId
+                    cookName
+                    title
+                    description
+                    imageUrl
+                    publishedAt
+                    deletedAt
+                    createdAt
+                    updatedAt
+                }
+                cookMealsCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

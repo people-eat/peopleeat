@@ -1,0 +1,43 @@
+# Cook meals list. Loaded by `/profile/meals`.
+# Seed-and-subscribe via `userUpdates`. See docs/architecture/state-synchronization.md.
+
+fragment ProfileCookMealsPageUser on User {
+    userId
+    cook {
+        cookId
+        meals {
+            mealId
+            title
+            description
+            imageUrl
+            publishedAt
+            createdAt
+            updatedAt
+        }
+    }
+}
+
+query ProfileCookMealsPage {
+    currentSession {
+        user {
+            ...ProfileCookMealsPageUser
+        }
+    }
+}
+
+subscription ProfileCookMealsPageUpdates {
+    userUpdates {
+        ...ProfileCookMealsPageUser
+    }
+}
+
+mutation ProfileMealCreate {
+    user {
+        cook {
+            mealCreate {
+                success
+                referenceId
+            }
+        }
+    }
+}

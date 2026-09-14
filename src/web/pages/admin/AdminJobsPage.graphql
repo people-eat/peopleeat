@@ -1,0 +1,38 @@
+# Global pending pg-boss jobs (created | retry), sorted by startAfter.
+# See docs/features/admin-jobs.md.
+
+query AdminJobsPage {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                queuedJobs {
+                    jobId
+                    name
+                    state
+                    startAfter
+                    createdOn
+                    data
+                    bookingRequestId
+                    bookingRequestOfferId
+                    giftCardId
+                    supportRequestId
+                    userId
+                    cookId
+                    chatId
+                }
+            }
+        }
+    }
+}
+
+mutation AdminQueuedJobCancel($jobId: ID!, $name: String!) {
+    admin {
+        queuedJobCancel(jobId: $jobId, name: $name) {
+            success
+            referenceId
+        }
+    }
+}

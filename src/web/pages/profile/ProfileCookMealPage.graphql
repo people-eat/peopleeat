@@ -1,0 +1,72 @@
+# Cook meal detail. Loaded by `/profile/meals/$mealId`.
+# Seed-and-subscribe via `userUpdates`. See docs/architecture/state-synchronization.md.
+
+fragment ProfileCookMealPageUser on User {
+    userId
+    cook {
+        cookId
+        meal(mealId: $mealId) {
+            mealId
+            title
+            description
+            imageFileUploadId
+            imageUrl
+            publishedAt
+            createdAt
+            updatedAt
+            relationships {
+                deletionBlockedByRelationships
+                menus {
+                    menuId
+                    menuTitle
+                    courseTitle
+                    blocksDeletion
+                }
+                offers {
+                    bookingRequestOfferId
+                    bookingRequestUserName
+                    bookingRequestDateTime
+                    menuTitle
+                    courseTitle
+                    blocksDeletion
+                }
+            }
+        }
+    }
+}
+
+query ProfileCookMealPage($mealId: ID!) {
+    currentSession {
+        user {
+            ...ProfileCookMealPageUser
+        }
+    }
+}
+
+subscription ProfileCookMealPageUpdates($mealId: ID!) {
+    userUpdates {
+        ...ProfileCookMealPageUser
+    }
+}
+
+mutation ProfileMealUpdate($mealId: ID!, $meal: CookMealUpdate!) {
+    user {
+        cook {
+            mealUpdate(mealId: $mealId, meal: $meal) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileMealDelete($mealId: ID!) {
+    user {
+        cook {
+            mealDelete(mealId: $mealId) {
+                success
+                referenceId
+            }
+        }
+    }
+}

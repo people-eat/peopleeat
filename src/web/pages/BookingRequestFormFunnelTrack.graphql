@@ -1,0 +1,6 @@
+mutation BookingRequestFormFunnelTrack($input: SessionWebPageInteractionCreateInput!) {
+    sessionWebPageInteractionCreate(input: $input) {
+        success
+        referenceId
+    }
+}

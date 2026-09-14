@@ -1,0 +1,103 @@
+fragment AuthSessionFields on Session {
+    sessionId
+    activeFeatureToggleKeys
+    user {
+        userId
+        emailAddress
+        firstName
+        lastName
+        phoneNumber
+        birthDate
+        preferredCommunication
+        admin {
+            adminId
+        }
+        cook {
+            cookId
+        }
+    }
+    authEmailOtp {
+        authEmailOtpId
+        emailAddress
+        expiresAt
+        verifiedAt
+        createdAt
+    }
+    authTotpChallenge {
+        expiresAt
+    }
+}
+
+mutation AuthTotpVerify($code: String!) {
+    authTotpVerify(code: $code) {
+        success
+        referenceId
+    }
+}
+
+mutation AuthTotpChallengeDelete {
+    authTotpChallengeDelete {
+        success
+        referenceId
+    }
+}
+
+subscription AuthSessionUpdates {
+    sessionUpdates {
+        ...AuthSessionFields
+    }
+}
+
+mutation AuthEmailOtpRequest($email: EmailAddress!, $locale: Locale!) {
+    authEmailOtpRequest(email: $email, locale: $locale) {
+        success
+        referenceId
+    }
+}
+
+mutation AuthEmailOtpVerify($email: EmailAddress!, $code: String!) {
+    authEmailOtpVerify(email: $email, code: $code) {
+        success
+        referenceId
+    }
+}
+
+mutation AuthEmailOtpDelete($authEmailOtpId: ID!) {
+    authEmailOtpDelete(authEmailOtpId: $authEmailOtpId) {
+        success
+        referenceId
+    }
+}
+
+mutation AuthUserCreate($input: UserCreate!) {
+    userCreate(input: $input) {
+        success
+        referenceId
+    }
+}
+
+mutation AuthPasskeyAuthenticateOptions {
+    authPasskeyAuthenticateOptions
+}
+
+mutation AuthPasskeyAuthenticateVerify($response: JSON!) {
+    authPasskeyAuthenticateVerify(response: $response) {
+        success
+        referenceId
+    }
+}
+
+mutation AuthPasskeyRegisterOptions {
+    user {
+        authPasskeyRegisterOptions
+    }
+}
+
+mutation AuthPasskeyRegisterVerify($response: JSON!) {
+    user {
+        authPasskeyRegisterVerify(response: $response) {
+            success
+            referenceId
+        }
+    }
+}

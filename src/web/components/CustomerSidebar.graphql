@@ -1,0 +1,15 @@
+# Lean customer-nav badge counts. Seeded from ProfilePage; live via userUpdates.
+
+fragment CustomerSidebarNavBadges on User {
+    userId
+    supportRequests {
+        supportRequestId
+        userUnreadNotificationCount
+    }
+}
+
+subscription CustomerSidebarNavBadgesUpdates {
+    userUpdates {
+        ...CustomerSidebarNavBadges
+    }
+}

@@ -1,0 +1,20 @@
+query ChefsPage($criterion: PublicCookFindManyCriterion) {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicCook {
+        findMany(criterion: $criterion) {
+            ...PublicCookCardFields
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: CHEFS) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

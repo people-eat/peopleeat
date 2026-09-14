@@ -1,0 +1,58 @@
+# Admin booking-requests overview hub — publication distribution, creation time
+# series, all-time rankings, offer economics, and cook offer/conversion leaders.
+# See docs/features/admin-booking-requests.md.
+# `bookingRequestsCounts` order matches `ADMIN_BOOKING_REQUEST_COUNT_CRITERIA` in
+# AdminBookingRequestsOverviewPage.tsx.
+
+query AdminBookingRequestsOverviewPage(
+    $criteria: [AdminBookingRequestCriterion!]!
+    $range: DateTimeRange!
+    $granularity: AdminTimeBucketGranularity! = day
+    $occasionStatsTake: Int! = 3
+    $creationMonthStatsTake: Int! = 3
+    $cookOfferStatsTake: Int! = 3
+) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                bookingRequestsCounts(criteria: $criteria)
+                bookingRequestCreations(range: $range, granularity: $granularity) {
+                    bucketStart
+                    count
+                }
+                bookingRequestOccasionStats(take: $occasionStatsTake) {
+                    occasion
+                    count
+                    totalParticipants
+                }
+                bookingRequestCreationMonthStats(take: $creationMonthStatsTake) {
+                    monthStart
+                    count
+                    totalParticipants
+                }
+                bookingRequestAverageParticipants
+                bookingRequestOfferEconomics {
+                    averageOffersPerRequest
+                    averageMenuPriceCents
+                    averagePaidCustomerTotalCents
+                    averagePaidPlatformRevenueCents
+                }
+                cooksByOffers: bookingRequestCookOfferStats(take: $cookOfferStatsTake, sortBy: offerCount) {
+                    cookId
+                    displayName
+                    offerCount
+                    conversionCount
+                }
+                cooksByConversions: bookingRequestCookOfferStats(take: $cookOfferStatsTake, sortBy: conversionCount) {
+                    cookId
+                    displayName
+                    offerCount
+                    conversionCount
+                }
+            }
+        }
+    }
+}

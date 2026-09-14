@@ -1,0 +1,6 @@
+mutation SessionWebPageVisitTrackerCreate($input: SessionWebPageVisitCreateInput!) {
+    sessionWebPageVisitCreate(input: $input) {
+        success
+        referenceId
+    }
+}

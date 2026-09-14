@@ -1,0 +1,39 @@
+# Admin gift-cards overview hub — payment distribution, paid purchases over time,
+# top occasions, top sales months, and average paid purchase value.
+# Chart uses `$range` (picker). Rankings and average are all-time (no range).
+# `giftCardsCounts` order matches `ADMIN_GIFT_CARD_COUNT_CRITERIA` in
+# AdminGiftCardsOverviewPage.tsx.
+
+query AdminGiftCardsOverviewPage(
+    $criteria: [AdminGiftCardCriterion!]!
+    $range: DateTimeRange!
+    $granularity: AdminTimeBucketGranularity! = day
+    $occasionStatsTake: Int! = 3
+    $salesMonthStatsTake: Int! = 3
+) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                giftCardsCounts(criteria: $criteria)
+                giftCardCreations(range: $range, granularity: $granularity) {
+                    bucketStart
+                    count
+                }
+                giftCardOccasionStats(take: $occasionStatsTake) {
+                    occasion
+                    count
+                    totalOriginalBalanceCents
+                }
+                giftCardSalesMonthStats(take: $salesMonthStatsTake) {
+                    monthStart
+                    count
+                    totalOriginalBalanceCents
+                }
+                giftCardPaidPurchaseAverageCents
+            }
+        }
+    }
+}

@@ -1,0 +1,60 @@
+# Admin configured-menu edit. Loaded by
+# `/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu`.
+
+fragment AdminBookingRequestOfferConfiguredMenuEditPageOffer on AdminBookingRequestOffer {
+    bookingRequestOfferId
+    bookingRequestId
+    configuredMenu {
+        menuId
+        title
+        description
+        courses {
+            title
+            meals {
+                mealTitle
+                mealDescription
+                mealImageUrl
+            }
+        }
+    }
+    cook {
+        cookId
+        user {
+            firstName
+            lastName
+        }
+    }
+}
+
+fragment AdminBookingRequestOfferConfiguredMenuEditPageRequest on AdminBookingRequest {
+    bookingRequestId
+    occasion
+}
+
+query AdminBookingRequestOfferConfiguredMenuEditPage($bookingRequestId: ID!, $bookingRequestOfferId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                bookingRequest(bookingRequestId: $bookingRequestId) {
+                    ...AdminBookingRequestOfferConfiguredMenuEditPageRequest
+                }
+                bookingRequestOffer(bookingRequestOfferId: $bookingRequestOfferId) {
+                    ...AdminBookingRequestOfferConfiguredMenuEditPageOffer
+                }
+            }
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferConfiguredMenuUpdate(
+    $bookingRequestOfferId: ID!
+    $configuredMenu: BookingRequestOfferConfiguredMenuInput!
+) {
+    admin {
+        bookingRequestOfferConfiguredMenuUpdate(bookingRequestOfferId: $bookingRequestOfferId, configuredMenu: $configuredMenu) {
+            success
+            referenceId
+        }
+    }
+}

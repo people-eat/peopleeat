@@ -1,0 +1,21 @@
+mutation CookMealEditorMealCreate {
+    user {
+        cook {
+            mealCreate {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation CookMealEditorMealUpdate($mealId: ID!, $meal: CookMealUpdate!) {
+    user {
+        cook {
+            mealUpdate(mealId: $mealId, meal: $meal) {
+                success
+                referenceId
+            }
+        }
+    }
+}

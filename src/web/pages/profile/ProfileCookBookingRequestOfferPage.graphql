@@ -1,0 +1,313 @@
+# Cook offer detail. Loaded by `/profile/booking-request-offers/$bookingRequestOfferId`.
+
+fragment ProfileCookBookingRequestOfferPageUser on User {
+    userId
+    cook {
+        cookId
+        callSchedulingEnabled
+        callDurationMinutes
+        meals {
+            mealId
+            title
+            description
+            imageUrl
+        }
+        menus {
+            menuId
+            title
+            description
+            courses {
+                courseId
+            }
+        }
+        bookingRequestOffer(bookingRequestOfferId: $bookingRequestOfferId) {
+            bookingRequestOfferId
+            status
+            cookAccepted
+            userAccepted
+            cookUnreadNotificationCount
+            cookDeclinationReason
+            userDeclinationReason
+            menuPriceCents
+            travelDistanceKm
+            travelExpensesCents
+            totalWithoutDiscountsCentsCustomer
+            payoutCentsCook
+            isPriceAutoAdjusted
+            configuredMenu {
+                title
+                description
+                courses {
+                    title
+                    meals {
+                        mealTitle
+                        mealDescription
+                        mealImageUrl
+                    }
+                }
+            }
+            suggestedMenus {
+                menuId
+                title
+                description
+                copyOfMenuId
+                courseMealOptionImages
+                courses {
+                    courseId
+                }
+            }
+            cookTestimonial {
+                cookTestimonialId
+                body
+                rating
+            }
+            testimonialMissing
+            costBreakdown {
+                total {
+                    title
+                    amountCents
+                }
+            }
+            callBookings {
+                cookCallSlotBookingId
+                cookId
+                userId
+                bookingRequestOfferId
+                startAt
+                endAt
+                status
+                initiator
+                customerMessage
+                cookMessage
+                declineReason
+                canceledBy
+                canceledReason
+                videoCallRoomId
+                createdAt
+                lastModifiedAt
+            }
+            activeCallRoom {
+                bookingRequestOfferCallRoomId
+                bookingRequestOfferId
+                livekitRoomName
+                status
+                createdByUserId
+                startedAt
+                endedAt
+            }
+            bookingRequest {
+                bookingRequestId
+                status
+                occasion
+                dateTime
+                preferences
+                priceClassType
+                suggestedOfferAmountCents
+                minOfferAmountCents
+                maxOfferAmountCents
+                minOfferAmountHardCents
+                exactEventAddress {
+                    displayText
+                    addressLine1
+                    addressLine2
+                    city
+                    postCode
+                    state
+                    country
+                }
+                invoiceAddress {
+                    companyName
+                    firstName
+                    lastName
+                    country
+                    city
+                    postalCode
+                    line1
+                    line2
+                }
+                participants {
+                    bookingRequestParticipantId
+                    type
+                    name
+                    restrictions
+                }
+                user {
+                    display
+                    profilePicture {
+                        url
+                    }
+                }
+            }
+            messages {
+                ...HumanChatMessageFields
+            }
+        }
+    }
+}
+
+query ProfileCookBookingRequestOfferPage($bookingRequestOfferId: ID!) {
+    currentSession {
+        user {
+            ...ProfileCookBookingRequestOfferPageUser
+        }
+    }
+}
+
+subscription ProfileCookBookingRequestOfferPageUpdates($bookingRequestOfferId: ID!) {
+    userUpdates {
+        ...ProfileCookBookingRequestOfferPageUser
+    }
+}
+
+mutation ProfileCookBookingRequestOfferAccept($bookingRequestOfferId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferAccept(bookingRequestOfferId: $bookingRequestOfferId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferDecline($bookingRequestOfferId: ID!, $reason: String!) {
+    user {
+        cook {
+            bookingRequestOfferDecline(bookingRequestOfferId: $bookingRequestOfferId, reason: $reason) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferPriceUpdate($input: BookingRequestOfferPriceUpdate!) {
+    user {
+        cook {
+            bookingRequestOfferPriceUpdate(input: $input) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferSuggestedMenusUpdate($input: BookingRequestOfferSuggestedMenusUpdate!) {
+    user {
+        cook {
+            bookingRequestOfferSuggestedMenusUpdate(input: $input) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferChatMessageCreate($bookingRequestOfferId: ID!, $message: String!, $fileUploadIds: [ID!]) {
+    user {
+        cook {
+            bookingRequestOfferChatMessageCreate(
+                bookingRequestOfferId: $bookingRequestOfferId
+                message: $message
+                fileUploadIds: $fileUploadIds
+            ) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferUnreadNotificationCountReset($bookingRequestOfferId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferUnreadNotificationCountReset(bookingRequestOfferId: $bookingRequestOfferId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferCallSlotRequest($bookingRequestOfferId: ID!, $startAt: DateTime!, $cookMessage: String) {
+    user {
+        cook {
+            bookingRequestOfferCallSlotRequest(
+                bookingRequestOfferId: $bookingRequestOfferId
+                startAt: $startAt
+                cookMessage: $cookMessage
+            ) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferCallSlotConfirm($cookCallSlotBookingId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferCallSlotConfirm(cookCallSlotBookingId: $cookCallSlotBookingId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferCallSlotDecline($cookCallSlotBookingId: ID!, $reason: String) {
+    user {
+        cook {
+            bookingRequestOfferCallSlotDecline(cookCallSlotBookingId: $cookCallSlotBookingId, reason: $reason) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferCallSlotCancel($cookCallSlotBookingId: ID!, $reason: String) {
+    user {
+        cook {
+            bookingRequestOfferCallSlotCancel(cookCallSlotBookingId: $cookCallSlotBookingId, reason: $reason) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferCallCreate($bookingRequestOfferId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferCallCreate(bookingRequestOfferId: $bookingRequestOfferId) {
+                token
+                url
+                bookingRequestOfferCallRoomParticipantId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferCallJoin($bookingRequestOfferId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferCallJoin(bookingRequestOfferId: $bookingRequestOfferId) {
+                token
+                url
+                bookingRequestOfferCallRoomParticipantId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferCallLeave($bookingRequestOfferCallRoomParticipantId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferCallLeave(bookingRequestOfferCallRoomParticipantId: $bookingRequestOfferCallRoomParticipantId) {
+                success
+                referenceId
+            }
+        }
+    }
+}

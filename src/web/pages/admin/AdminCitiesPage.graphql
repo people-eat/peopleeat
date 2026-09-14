@@ -1,0 +1,55 @@
+query AdminCitiesPage {
+    currentSession {
+        user {
+            admin {
+                adminId
+                cities {
+                    cityId
+                    pathName
+                    nameDe
+                    nameEn
+                    titleDe
+                    publishedAt
+                    updatedAt
+                }
+            }
+        }
+    }
+}
+
+mutation AdminCityDelete($cityId: ID!) {
+    admin {
+        cityDelete(cityId: $cityId) {
+            success
+            referenceId
+        }
+    }
+}
+
+query AdminCitiesPageLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = false) {
+    currentSession {
+        locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
+            displayText
+            latitude
+            longitude
+            structuredAddress {
+                city
+            }
+        }
+    }
+}
+
+subscription AdminCitiesPageUpdates {
+    adminUpdates {
+        adminId
+        cities {
+            cityId
+            pathName
+            nameDe
+            nameEn
+            titleDe
+            publishedAt
+            updatedAt
+        }
+    }
+}

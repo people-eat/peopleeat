@@ -1,0 +1,123 @@
+import { Link } from '@tanstack/react-router';
+
+import { Button } from '../components/base/button';
+import { StatusAlert } from '../components/base/status-alert';
+import type { GqlCProfilePageCookStatusFragment } from '../graphql/generated';
+import { useLocale } from '../hooks/useLocale';
+import { useTimeZone } from '../hooks/useTimeZone';
+import type { CookOverviewAttentionItem, CookOverviewGettingStartedStep } from './profilePageCookOverview';
+import { profilePageCookOverview } from './profilePageCookOverview';
+
+function AttentionAction({ item }: { item: CookOverviewAttentionItem }) {
+    if (item.actionLabel == null) return null;
+    if (item.key === 'wallet-reset' && item.href != null) {
+        return (
+            <Button asChild size="sm">
+                <Link to={item.href}>{item.actionLabel}</Link>
+            </Button>
+        );
+    }
+    if ((item.key === 'upcoming-call' || item.key === 'unread-offers') && item.params != null) {
+        return (
+            <Button asChild size="sm">
+                <Link
+                    to="/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId"
+                    params={{ bookingRequestOfferId: item.params.bookingRequestOfferId }}
+                    search={item.params.search}
+                >
+                    {item.actionLabel}
+                </Link>
+            </Button>
+        );
+    }
+    return null;
+}
+
+function GettingStartedAction({ step }: { step: CookOverviewGettingStartedStep }) {
+    return (
+        <Button asChild variant="outline" size="sm" className="sm:shrink-0">
+            <Link to={step.href}>{step.actionLabel}</Link>
+        </Button>
+    );
+}
+
+export function ProfilePageCook({
+    name,
+    profilePictureUrl,
+    cook,
+}: {
+    name: string;
+    profilePictureUrl: string | null;
+    cook: GqlCProfilePageCookStatusFragment;
+}) {
+    const locale = useLocale();
+    const timeZone = useTimeZone();
+    const overview = profilePageCookOverview(cook, locale, timeZone, { hasProfilePicture: profilePictureUrl != null });
+
+    return (
+        <main id="main-content" className="mx-auto grid min-h-0 w-full max-w-3xl flex-1 content-start gap-8">
+            <div className="grid gap-2">
+                <h1 className="font-serif text-2xl/tight text-foreground">{{ de: `Hallo ${name},`, en: `Hello ${name},` }[locale]}</h1>
+                <p className="text-muted-foreground">
+                    {{ de: 'Hier siehst du, was als Nächstes ansteht.', en: 'Here is what to do next.' }[locale]}
+                </p>
+            </div>
+
+            {overview.attention.length > 0 ? (
+                <section className="grid gap-3" aria-labelledby="cook-overview-attention">
+                    <h2 id="cook-overview-attention" className="text-sm font-medium text-foreground">
+                        {{ de: 'Aufmerksamkeit', en: 'Attention' }[locale]}
+                    </h2>
+                    <div className="grid gap-3">
+                        {overview.attention.map((item) => {
+                            const action = <AttentionAction item={item} />;
+                            return (
+                                <StatusAlert
+                                    key={item.key}
+                                    tone={item.tone}
+                                    title={item.title}
+                                    action={item.actionLabel != null ? action : undefined}
+                                >
+                                    {item.body}
+                                </StatusAlert>
+                            );
+                        })}
+                    </div>
+                </section>
+            ) : null}
+
+            {overview.gettingStarted.length > 0 ? (
+                <section className="grid gap-3" aria-labelledby="cook-overview-getting-started">
+                    <h2 id="cook-overview-getting-started" className="text-sm font-medium text-foreground">
+                        {{ de: 'Erste Schritte', en: 'Getting started' }[locale]}
+                    </h2>
+                    <ul className="grid gap-3">
+                        {overview.gettingStarted.map((step) => (
+                            <li
+                                key={step.key}
+                                className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4 sm:flex-row sm:items-start sm:justify-between"
+                            >
+                                <div className="grid gap-1">
+                                    <p className="font-medium text-foreground">{step.title}</p>
+                                    <p className="text-sm text-muted-foreground">{step.body}</p>
+                                </div>
+                                <GettingStartedAction step={step} />
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            ) : null}
+
+            {overview.allClear ? (
+                <StatusAlert tone="info" title={{ de: 'Alles erledigt', en: "You're all set" }[locale]}>
+                    {
+                        {
+                            de: 'Dein Profil ist eingerichtet. Nutze die Seitenleiste für Anfragen und Angebote.',
+                            en: 'Your profile is set up. Use the sidebar for requests and offers.',
+                        }[locale]
+                    }
+                </StatusAlert>
+            ) : null}
+        </main>
+    );
+}

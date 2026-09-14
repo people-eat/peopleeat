@@ -1,0 +1,95 @@
+# Admin support-request detail + chat. See docs/features/support-requests.md.
+
+fragment AdminSupportRequestDetailFields on AdminSupportRequest {
+    supportRequestId
+    subject
+    status
+    adminUnreadNotificationCount
+    createdAt
+    resolvedAt
+    bookingRequest {
+        bookingRequestId
+        occasion
+        dateTime
+    }
+    customer {
+        userId
+        firstName
+        lastName
+    }
+    messages {
+        ... on ChatMessageUser {
+            __typename
+            chatMessageId
+            body
+            isOwn
+            showCopyButton
+            collapseLongBody
+            createdAt
+            author {
+                display
+                createdAt
+                profilePicture {
+                    url
+                }
+            }
+            attachments {
+                fileUploadId
+                filename
+                mediaType
+                size
+                url
+            }
+        }
+    }
+}
+
+query AdminSupportRequestPage($supportRequestId: ID!) {
+    currentSession {
+        user {
+            userId
+            admin {
+                adminId
+                supportRequest(supportRequestId: $supportRequestId) {
+                    ...AdminSupportRequestDetailFields
+                }
+            }
+        }
+    }
+}
+
+subscription AdminSupportRequestPageUpdates($supportRequestId: ID!) {
+    adminUpdates {
+        adminId
+        supportRequest(supportRequestId: $supportRequestId) {
+            ...AdminSupportRequestDetailFields
+        }
+    }
+}
+
+mutation AdminSupportRequestMessageCreate($supportRequestId: ID!, $message: String!, $fileUploadIds: [ID!]) {
+    admin {
+        supportRequestMessageCreate(supportRequestId: $supportRequestId, message: $message, fileUploadIds: $fileUploadIds) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminSupportRequestUnreadNotificationCountReset($supportRequestId: ID!) {
+    admin {
+        supportRequestUnreadNotificationCountReset(supportRequestId: $supportRequestId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminSupportRequestResolve($supportRequestId: ID!) {
+    admin {
+        supportRequestResolve(supportRequestId: $supportRequestId) {
+            success
+            referenceId
+        }
+    }
+}

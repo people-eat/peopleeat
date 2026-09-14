@@ -1,0 +1,75 @@
+# Admin analytics overview. Loaded by `/admin/analytics`.
+# See `docs/features/admin-analytics.md`.
+
+query AdminAnalyticsPage(
+    $range: DateTimeRange!
+    $granularity: AdminTimeBucketGranularity! = day
+    $formVisitWebPageKey: WebPageKey!
+    $landingVisitWebPageKey: WebPageKey!
+) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                bookingRequestFormFlow(range: $range) {
+                    nodes {
+                        id
+                        labelDe
+                        labelEn
+                    }
+                    links {
+                        source
+                        target
+                        value
+                    }
+                    steps {
+                        id
+                        labelDe
+                        labelEn
+                        enteredCount
+                        completedCount
+                    }
+                    sessionsWithCompletion
+                    bookingRequestsCreated
+                }
+                cookBookingRequestOfferFlow(range: $range) {
+                    nodes {
+                        id
+                        labelDe
+                        labelEn
+                    }
+                    links {
+                        source
+                        target
+                        value
+                    }
+                    steps {
+                        id
+                        labelDe
+                        labelEn
+                        enteredCount
+                        completedCount
+                    }
+                    notifiedCount
+                    openedCount
+                    declinedCount
+                    offersCreatedCount
+                }
+                formVisits: sessionEventWebPageVisitCreations(webPageKey: $formVisitWebPageKey, range: $range, granularity: $granularity) {
+                    bucketStart
+                    count
+                }
+                landingVisits: sessionEventWebPageVisitCreations(
+                    webPageKey: $landingVisitWebPageKey
+                    range: $range
+                    granularity: $granularity
+                ) {
+                    bucketStart
+                    count
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,63 @@
+# Admin gift-card detail. Loaded by `/admin/gift-cards/$giftCardId`.
+# Related outbound emails use `AdminOutboundEmailCriterion` with
+# `relatedEntityType=GIFT_CARD` + `relatedEntityId`.
+
+query AdminGiftCardPage($giftCardId: ID!, $emailsCriterion: AdminOutboundEmailCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                giftCard(giftCardId: $giftCardId) {
+                    giftCardId
+                    buyerEmail
+                    buyerUserId
+                    occasion
+                    recipientName
+                    message
+                    originalBalanceCents
+                    balanceCents
+                    redeemCode
+                    paymentStatus
+                    invoiceAddress {
+                        companyName
+                        firstName
+                        lastName
+                        country
+                        city
+                        postalCode
+                        line1
+                        line2
+                    }
+                    invoiceFileUpload {
+                        fileUploadId
+                        filename
+                        mediaType
+                        size
+                        url
+                    }
+                    voucherFileUpload {
+                        fileUploadId
+                        filename
+                        mediaType
+                        size
+                        url
+                    }
+                    expiresAt
+                    createdAt
+                }
+                outboundEmails(criterion: $emailsCriterion) {
+                    outboundEmailId
+                    purpose
+                    toEmail
+                    subject
+                    createdAt
+                    sentAt
+                    failedAt
+                    openedAt
+                }
+            }
+        }
+    }
+}

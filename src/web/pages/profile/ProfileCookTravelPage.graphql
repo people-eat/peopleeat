@@ -1,0 +1,72 @@
+# Travel (origin, distance, expenses). See docs/features/cook-profile.md.
+
+fragment ProfileTravelCook on Cook {
+    cookId
+    exactTravelOriginAddress {
+        displayText
+        latitude
+        longitude
+        addressLine1
+        addressLine2
+        city
+        postCode
+        state
+        country
+    }
+    travelExpensesAmount
+    maximumTravelDistance
+}
+
+fragment ProfileTravelUser on User {
+    userId
+    cook {
+        ...ProfileTravelCook
+    }
+}
+
+query ProfileCookTravelPage {
+    currentSession {
+        sessionId
+        user {
+            ...ProfileTravelUser
+        }
+    }
+}
+
+subscription ProfileCookTravelPageUpdates {
+    userUpdates {
+        ...ProfileTravelUser
+    }
+}
+
+mutation ProfileTravelCookUpdate($input: CookUpdate!) {
+    user {
+        cook {
+            update(input: $input) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+query ProfileTravelLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = true) {
+    currentSession {
+        locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
+            displayText
+            latitude
+            longitude
+            structuredAddress {
+                displayText
+                latitude
+                longitude
+                addressLine1
+                addressLine2
+                city
+                postCode
+                state
+                country
+            }
+        }
+    }
+}

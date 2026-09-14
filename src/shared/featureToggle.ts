@@ -1,0 +1,22 @@
+/**
+ * Canonical feature-toggle keys. Mirrored by GraphQL `FeatureToggleKey`.
+ * Missing DB rows are treated as disabled. See docs/features/admin-feature-toggles.md.
+ */
+export const featureToggleKeys = [
+    'AI_MENU_EVALUATION',
+    'COOK_BIOGRAPHY_AI_WRITE',
+    'COOK_WALLET_STRIPE_BALANCE',
+    'BOOKING_REQUEST_RESTRICTIONS',
+    'ASSISTANT_CUSTOMER',
+    'ASSISTANT_COOK',
+    'PUBLICATION_MEALS',
+    'PUBLICATION_MENUS',
+    'WHATSAPP_ENGLISH_TEMPLATES',
+    'WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION',
+] as const;
+
+export type FeatureToggleKey = (typeof featureToggleKeys)[number];
+
+export function featureToggleIsActive(activeKeys: readonly FeatureToggleKey[], key: FeatureToggleKey): boolean {
+    return activeKeys.includes(key);
+}

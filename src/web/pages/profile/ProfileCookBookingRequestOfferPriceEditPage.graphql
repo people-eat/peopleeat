@@ -1,0 +1,42 @@
+# Cook offer price edit. Loaded by `/profile/booking-request-offers/$bookingRequestOfferId/edit-price`.
+
+fragment ProfileCookBookingRequestOfferPriceEditPageUser on User {
+    userId
+    cook {
+        cookId
+        bookingRequestOffer(bookingRequestOfferId: $bookingRequestOfferId) {
+            bookingRequestOfferId
+            status
+            menuPriceCents
+            travelExpensesCents
+            bookingRequest {
+                bookingRequestId
+                suggestedOfferAmountCents
+                minOfferAmountCents
+                maxOfferAmountCents
+                minOfferAmountHardCents
+                participants {
+                    bookingRequestParticipantId
+                    type
+                }
+                user {
+                    display
+                }
+            }
+        }
+    }
+}
+
+query ProfileCookBookingRequestOfferPriceEditPage($bookingRequestOfferId: ID!) {
+    currentSession {
+        user {
+            ...ProfileCookBookingRequestOfferPriceEditPageUser
+        }
+    }
+}
+
+subscription ProfileCookBookingRequestOfferPriceEditPageUpdates($bookingRequestOfferId: ID!) {
+    userUpdates {
+        ...ProfileCookBookingRequestOfferPriceEditPageUser
+    }
+}

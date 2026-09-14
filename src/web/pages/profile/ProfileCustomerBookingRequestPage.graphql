@@ -1,0 +1,168 @@
+# Guest booking-request detail. Loaded by `/profile/booking-requests/$bookingRequestId`.
+
+fragment ProfileCustomerBookingRequestPageUser on User {
+    userId
+    firstName
+    profilePicture {
+        url
+    }
+    bookingRequest(bookingRequestId: $bookingRequestId) {
+        bookingRequestId
+        status
+        occasion
+        dateTime
+        priceClassType
+        exactEventAddress {
+            displayText
+            city
+            latitude
+            longitude
+            addressLine1
+            addressLine2
+            postCode
+            state
+            country
+        }
+        originalMessage
+        preferences
+        canceledAt
+        cancellationReason
+        createdAt
+        participants {
+            bookingRequestParticipantId
+            type
+            name
+            restrictions
+        }
+        offers {
+            bookingRequestOfferId
+            status
+            userUnreadNotificationCount
+            testimonialMissing
+            totalWithoutDiscountsCentsCustomer
+            totalCentsCustomer
+            configuredMenu {
+                title
+            }
+            cook {
+                cookId
+                city
+                cuisineStyle
+                cookingPhilosophy
+                user {
+                    display
+                    profilePicture {
+                        url
+                    }
+                }
+            }
+            suggestedMenus {
+                menuId
+                title
+            }
+            callBookings {
+                cookCallSlotBookingId
+                startAt
+                endAt
+                status
+                initiator
+            }
+        }
+        promoCode {
+            promoCodeId
+            redeemCode
+            amountCents
+        }
+        giftCard {
+            giftCardId
+            redeemCode
+            balanceCents
+        }
+        supportRequest {
+            supportRequestId
+            subject
+            status
+            userUnreadNotificationCount
+            createdAt
+            resolvedAt
+            bookingRequest {
+                bookingRequestId
+                occasion
+                dateTime
+            }
+        }
+    }
+}
+
+query ProfileCustomerBookingRequestPage($bookingRequestId: ID!) {
+    currentSession {
+        user {
+            ...ProfileCustomerBookingRequestPageUser
+        }
+    }
+}
+
+subscription ProfileCustomerBookingRequestPageUpdates($bookingRequestId: ID!) {
+    userUpdates {
+        ...ProfileCustomerBookingRequestPageUser
+    }
+}
+
+mutation ProfileBookingRequestChurnPromoCodeCreate($bookingRequestId: ID!) {
+    user {
+        bookingRequestChurnPromoCodeCreate(bookingRequestId: $bookingRequestId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileBookingRequestDiscountUpdate($bookingRequestId: ID!, $redeemCode: String) {
+    user {
+        bookingRequestDiscountUpdate(bookingRequestId: $bookingRequestId, redeemCode: $redeemCode) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileBookingRequestRequestRecall($bookingRequestId: ID!) {
+    user {
+        bookingRequestRequestRecall(bookingRequestId: $bookingRequestId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileBookingRequestCancel($bookingRequestId: ID!, $reason: String!) {
+    user {
+        bookingRequestCancel(bookingRequestId: $bookingRequestId, reason: $reason) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileBookingRequestUpdate(
+    $bookingRequestId: ID!
+    $occasion: String
+    $dateTime: DateTime
+    $preferences: [String!]
+    $participants: [UserBookingRequestParticipantCreate!]!
+    $exactEventAddress: UserBookingRequestExactEventAddressInput
+) {
+    user {
+        bookingRequestUpdate(
+            bookingRequestId: $bookingRequestId
+            occasion: $occasion
+            dateTime: $dateTime
+            preferences: $preferences
+            participants: $participants
+            exactEventAddress: $exactEventAddress
+        ) {
+            success
+            referenceId
+        }
+    }
+}

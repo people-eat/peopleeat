@@ -1,0 +1,74 @@
+query AdminCityPage($cityId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                city(cityId: $cityId) {
+                    ...AdminCityFields
+                }
+                customerTestimonials {
+                    ...AdminCustomerTestimonialCardFields
+                }
+                cookTestimonials {
+                    ...AdminCookTestimonialCardFields
+                }
+            }
+        }
+    }
+    publicCity {
+        findMany {
+            pathName
+            nameDe
+            nameEn
+        }
+    }
+}
+
+mutation AdminCityUpsert($input: CityUpsert!) {
+    admin {
+        cityUpsert(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCityCooksUpdate($cityId: ID!, $cookIds: [ID!]!) {
+    admin {
+        cityCooksUpdate(cityId: $cityId, cookIds: $cookIds) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCityTestimonialsUpdate($cityId: ID!, $entries: [TestimonialJunctionEntryInput!]!) {
+    admin {
+        cityTestimonialsUpdate(cityId: $cityId, entries: $entries) {
+            success
+            referenceId
+        }
+    }
+}
+
+query AdminCityPageLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = false) {
+    currentSession {
+        locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
+            displayText
+            latitude
+            longitude
+            structuredAddress {
+                city
+            }
+        }
+    }
+}
+
+subscription AdminCityPageUpdates($cityId: ID!) {
+    adminUpdates {
+        adminId
+        city(cityId: $cityId) {
+            ...AdminCityFields
+        }
+    }
+}

@@ -1,0 +1,30 @@
+query AdminBlogPostPage($blogPostId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                blogPost(blogPostId: $blogPostId) {
+                    ...AdminBlogPostFields
+                }
+            }
+        }
+    }
+}
+
+mutation AdminBlogPostUpsert($input: BlogPostUpsert!) {
+    admin {
+        blogPostUpsert(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+subscription AdminBlogPostPageUpdates($blogPostId: ID!) {
+    adminUpdates {
+        adminId
+        blogPost(blogPostId: $blogPostId) {
+            ...AdminBlogPostFields
+        }
+    }
+}

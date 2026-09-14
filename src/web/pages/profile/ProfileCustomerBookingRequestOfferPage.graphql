@@ -1,0 +1,324 @@
+# Customer offer detail under a booking request.
+# Loaded by `/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId`.
+
+fragment ProfileCustomerBookingRequestOfferPageUser on User {
+    userId
+    emailAddress
+    firstName
+    lastName
+    bookingRequest(bookingRequestId: $bookingRequestId) {
+        bookingRequestId
+        occasion
+        dateTime
+        exactEventAddress {
+            addressLine1
+            addressLine2
+            city
+            postCode
+            country
+        }
+        invoiceAddress {
+            companyName
+            firstName
+            lastName
+            country
+            city
+            postalCode
+            line1
+            line2
+        }
+        promoCode {
+            promoCodeId
+            redeemCode
+            amountCents
+        }
+        giftCard {
+            giftCardId
+            redeemCode
+            balanceCents
+        }
+        supportRequest {
+            supportRequestId
+            subject
+            status
+            userUnreadNotificationCount
+            createdAt
+            resolvedAt
+            bookingRequest {
+                bookingRequestId
+                occasion
+                dateTime
+            }
+        }
+        offers {
+            bookingRequestOfferId
+            status
+            userAccepted
+            cookAccepted
+            userUnreadNotificationCount
+            menuPriceCents
+            travelExpensesCents
+            configuredMenu {
+                menuId
+                title
+                description
+                courses {
+                    title
+                    meals {
+                        mealTitle
+                        mealDescription
+                        mealImageUrl
+                    }
+                }
+            }
+            cook {
+                cookId
+                hasPublicProfile
+                biography
+                biographySummary
+                city
+                cuisineStyle
+                cookingPhilosophy
+                callSchedulingEnabled
+                callDurationMinutes
+                callSlots(from: $callSlotsFrom, to: $callSlotsTo) {
+                    startAt
+                    endAt
+                }
+                user {
+                    display
+                    profilePicture {
+                        url
+                    }
+                }
+            }
+            customerTestimonial {
+                customerTestimonialId
+                body
+                rating
+            }
+            testimonialMissing
+            callBookings {
+                cookCallSlotBookingId
+                cookId
+                userId
+                bookingRequestOfferId
+                startAt
+                endAt
+                status
+                initiator
+                customerMessage
+                cookMessage
+                declineReason
+                canceledBy
+                canceledReason
+                videoCallRoomId
+                createdAt
+                lastModifiedAt
+            }
+            activeCallRoom {
+                bookingRequestOfferCallRoomId
+                bookingRequestOfferId
+                livekitRoomName
+                status
+                createdByUserId
+                startedAt
+                endedAt
+            }
+            suggestedMenus {
+                menuId
+                title
+                description
+                courseMealOptionImages
+                courses {
+                    courseId
+                    title
+                    mealSelectionLimit
+                    mealOptions {
+                        mealId
+                        title
+                        description
+                        imageUrl
+                    }
+                }
+            }
+            costBreakdown {
+                lineItems {
+                    title
+                    amountCents
+                }
+                total {
+                    title
+                    amountCents
+                }
+                totalBeforeDiscount {
+                    title
+                    amountCents
+                }
+                totalPerPerson {
+                    title
+                    amountCents
+                }
+            }
+            paymentStatus
+            payment {
+                clientSecret
+                publishableKey
+                type
+            }
+            plannedPaymentPullDateTime
+            messages {
+                ...HumanChatMessageFields
+            }
+        }
+    }
+}
+
+query ProfileCustomerBookingRequestOfferPage($bookingRequestId: ID!, $callSlotsFrom: DateTime!, $callSlotsTo: DateTime!) {
+    currentSession {
+        user {
+            ...ProfileCustomerBookingRequestOfferPageUser
+        }
+    }
+}
+
+subscription ProfileCustomerBookingRequestOfferPageUpdates($bookingRequestId: ID!, $callSlotsFrom: DateTime!, $callSlotsTo: DateTime!) {
+    userUpdates {
+        ...ProfileCustomerBookingRequestOfferPageUser
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferAccept($bookingRequestOfferId: ID!) {
+    user {
+        bookingRequestOfferAccept(bookingRequestOfferId: $bookingRequestOfferId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferPaymentStatusUpdate($bookingRequestOfferId: ID!, $invoiceAddress: InvoiceAddressInput!) {
+    user {
+        bookingRequestOfferPaymentStatusUpdate(bookingRequestOfferId: $bookingRequestOfferId, invoiceAddress: $invoiceAddress) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferDecline($bookingRequestOfferId: ID!, $reason: String!) {
+    user {
+        bookingRequestOfferDecline(bookingRequestOfferId: $bookingRequestOfferId, reason: $reason) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferConfiguredMenuCreate(
+    $bookingRequestOfferId: ID!
+    $menuId: ID!
+    $courseSelections: [BookingRequestOfferConfiguredMenuCourseSelectionInput!]!
+) {
+    user {
+        bookingRequestOfferConfiguredMenuCreate(
+            bookingRequestOfferId: $bookingRequestOfferId
+            menuId: $menuId
+            courseSelections: $courseSelections
+        ) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferChatMessageCreate($bookingRequestOfferId: ID!, $message: String!, $fileUploadIds: [ID!]) {
+    user {
+        bookingRequestOfferChatMessageCreate(
+            bookingRequestOfferId: $bookingRequestOfferId
+            message: $message
+            fileUploadIds: $fileUploadIds
+        ) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferUnreadNotificationCountReset($bookingRequestOfferId: ID!) {
+    user {
+        bookingRequestOfferUnreadNotificationCountReset(bookingRequestOfferId: $bookingRequestOfferId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferCallSlotRequest($bookingRequestOfferId: ID!, $startAt: DateTime!, $customerMessage: String) {
+    user {
+        bookingRequestOfferCallSlotRequest(
+            bookingRequestOfferId: $bookingRequestOfferId
+            startAt: $startAt
+            customerMessage: $customerMessage
+        ) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferCallSlotConfirm($cookCallSlotBookingId: ID!) {
+    user {
+        bookingRequestOfferCallSlotConfirm(cookCallSlotBookingId: $cookCallSlotBookingId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferCallSlotDecline($cookCallSlotBookingId: ID!, $reason: String) {
+    user {
+        bookingRequestOfferCallSlotDecline(cookCallSlotBookingId: $cookCallSlotBookingId, reason: $reason) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferCallSlotCancel($cookCallSlotBookingId: ID!, $reason: String) {
+    user {
+        bookingRequestOfferCallSlotCancel(cookCallSlotBookingId: $cookCallSlotBookingId, reason: $reason) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferCallCreate($bookingRequestOfferId: ID!) {
+    user {
+        bookingRequestOfferCallCreate(bookingRequestOfferId: $bookingRequestOfferId) {
+            token
+            url
+            bookingRequestOfferCallRoomParticipantId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferCallJoin($bookingRequestOfferId: ID!) {
+    user {
+        bookingRequestOfferCallJoin(bookingRequestOfferId: $bookingRequestOfferId) {
+            token
+            url
+            bookingRequestOfferCallRoomParticipantId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferCallLeave($bookingRequestOfferCallRoomParticipantId: ID!) {
+    user {
+        bookingRequestOfferCallLeave(bookingRequestOfferCallRoomParticipantId: $bookingRequestOfferCallRoomParticipantId) {
+            success
+            referenceId
+        }
+    }
+}

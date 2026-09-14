@@ -1,0 +1,111 @@
+# Wallet / Stripe Connect. Return/refresh land here with search params.
+# See docs/features/cook-profile.md.
+
+fragment ProfileWalletCook on Cook {
+    cookId
+    isApprovedByAdmin
+    stripeStatus
+    canCreateOffers
+}
+
+fragment ProfileWalletStripeAccountDetails on CookStripeAccountDetails {
+    detailsSubmitted
+    chargesEnabled
+    payoutsEnabled
+    disabledReason
+    currentlyDue
+    pastDue
+    pendingVerification
+}
+
+fragment ProfileWalletStripeWallet on CookStripeWallet {
+    availableCents
+    pendingCents
+    transactions {
+        balanceTransactionId
+        kind
+        status
+        netCents
+        createdAt
+        availableOn
+        description
+    }
+}
+
+fragment ProfileWalletUser on User {
+    userId
+    cook {
+        ...ProfileWalletCook
+    }
+}
+
+query ProfileCookWalletPage {
+    currentSession {
+        sessionId
+        user {
+            ...ProfileWalletUser
+            cook {
+                stripeAccountDetails {
+                    ...ProfileWalletStripeAccountDetails
+                }
+                stripeWallet {
+                    ...ProfileWalletStripeWallet
+                }
+            }
+        }
+    }
+}
+
+# Live Stripe snapshots only — refetch after sync without putting Stripe on userUpdates.
+query ProfileCookWalletStripeDetails {
+    currentSession {
+        user {
+            cook {
+                stripeAccountDetails {
+                    ...ProfileWalletStripeAccountDetails
+                }
+                stripeWallet {
+                    ...ProfileWalletStripeWallet
+                }
+            }
+        }
+    }
+}
+
+subscription ProfileCookWalletPageUpdates {
+    userUpdates {
+        ...ProfileWalletUser
+    }
+}
+
+mutation ProfileCookStripeOnboardingStart($returnUrl: String!, $refreshUrl: String!) {
+    user {
+        cook {
+            stripeOnboardingStart(returnUrl: $returnUrl, refreshUrl: $refreshUrl) {
+                kind
+                url
+            }
+        }
+    }
+}
+
+mutation ProfileCookStripeStatusSync {
+    user {
+        cook {
+            stripeStatusSync {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookStripeDashboardUrlCreate {
+    user {
+        cook {
+            stripeDashboardUrlCreate {
+                url
+            }
+        }
+    }
+}

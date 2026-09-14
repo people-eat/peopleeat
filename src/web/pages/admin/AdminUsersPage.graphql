@@ -1,0 +1,25 @@
+# Admin users list. Search / type / status / page live in the URL; `Admin.users` /
+# `Admin.userCounts` share the same `AdminUserCriterion`.
+# See `docs/features/admin-users.md`.
+
+query AdminUsersPage($criterion: AdminUserCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                users(criterion: $criterion) {
+                    userId
+                    emailAddress
+                    firstName
+                    lastName
+                    status
+                    types
+                    createdAt
+                }
+                userCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

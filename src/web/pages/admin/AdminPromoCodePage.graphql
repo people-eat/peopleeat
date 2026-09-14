@@ -1,0 +1,44 @@
+# Admin promo-code detail. Loaded by `/admin/promo-codes/$promoCodeId`.
+# See `docs/features/admin-promo-codes.md`. URL `tab` selects the section
+# (`general` / `expiration` / `usage`); booking-request redemptions load only for
+# `tab=usage` via `@include` (loaderDeps on `tab`).
+
+query AdminPromoCodePage($promoCodeId: ID!, $includeUsage: Boolean!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                promoCode(promoCodeId: $promoCodeId) {
+                    promoCodeId
+                    redeemCode
+                    amountCents
+                    minimumTotalAmountCustomerCents
+                    scopedBookingRequestId
+                    expiresAt
+                    createdAt
+                    bookingRequests @include(if: $includeUsage) {
+                        bookingRequestId
+                        dateTime
+                        createdAt
+                        customer {
+                            userId
+                            firstName
+                            lastName
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+mutation AdminPromoCodeUpdate($input: AdminPromoCodeUpdate!) {
+    admin {
+        promoCodeUpdate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}

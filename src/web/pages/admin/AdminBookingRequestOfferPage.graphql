@@ -1,0 +1,322 @@
+# Admin offer detail under a booking request.
+# Loaded by `/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId`.
+
+fragment AdminBookingRequestOfferPageOffer on AdminBookingRequestOffer {
+    bookingRequestOfferId
+    bookingRequestId
+    status
+    paymentStatus
+    userAccepted
+    cookAccepted
+    userDeclinationReason
+    cookDeclinationReason
+    userUnreadNotificationCount
+    cookUnreadNotificationCount
+    menuPriceCents
+    travelExpensesCents
+    travelDistanceKm
+    paymentProviderFeeCents
+    platformFeePercentCook
+    platformFeePercentCustomer
+    platformFeeCentsCook
+    platformFeeCentsCustomer
+    payoutCentsCook
+    totalWithoutDiscountsCentsCustomer
+    totalCentsCustomer
+    isPriceAutoAdjusted
+    plannedPaymentPullDateTime
+    paymentDateTime
+    plannedPayoutDateTime
+    payoutDateTime
+    cookPayoutReady
+    cookPayoutBlockedReason
+    stripePaymentIntentUrl
+    stripeSetupIntentUrl
+    createdAt
+    configuredMenu {
+        menuId
+        title
+        description
+        courses {
+            title
+            meals {
+                mealTitle
+                mealDescription
+                mealImageUrl
+            }
+        }
+    }
+    suggestedMenus {
+        menuId
+        title
+        description
+        courseMealOptionImages
+        courses {
+            courseId
+        }
+    }
+    costBreakdown {
+        lineItems {
+            title
+            amountCents
+        }
+        total {
+            title
+            amountCents
+        }
+        totalBeforeDiscount {
+            title
+            amountCents
+        }
+        totalPerPerson {
+            title
+            amountCents
+        }
+    }
+    cook {
+        cookId
+        cuisineStyle
+        callSchedulingEnabled
+        callDurationMinutes
+        exactTravelOriginAddress {
+            city
+        }
+        user {
+            userId
+            firstName
+            lastName
+            emailAddress
+            profilePicture {
+                url
+            }
+        }
+    }
+    callBookings {
+        cookCallSlotBookingId
+        cookId
+        userId
+        bookingRequestOfferId
+        startAt
+        endAt
+        status
+        initiator
+        customerMessage
+        cookMessage
+        declineReason
+        canceledBy
+        canceledReason
+        videoCallRoomId
+        createdAt
+        lastModifiedAt
+    }
+    activeCallRoom {
+        bookingRequestOfferCallRoomId
+        bookingRequestOfferId
+        livekitRoomName
+        status
+        createdByUserId
+        startedAt
+        endedAt
+    }
+    callRecordings {
+        bookingRequestOfferCallRecordingId
+        bookingRequestOfferCallRoomId
+        status
+        mediaType
+        byteSize
+        transcriptText
+        transcriptSegments {
+            startedAtMs
+            endedAtMs
+            text
+            speakerLabel
+        }
+        audioUrl
+        errorMessage
+        createdAt
+        completedAt
+    }
+    queuedJobs {
+        jobId
+        name
+        state
+        startAfter
+        createdOn
+        data
+    }
+    messages {
+        ...HumanChatMessageFields
+    }
+    customerTestimonial {
+        customerTestimonialId
+        authorName
+        displayAuthorName
+        location
+        displayLocation
+        occasion
+        displayOccasion
+        body
+        imageUrls
+        rating
+        publicationStatus
+        publishedAt
+        createdAt
+    }
+    cookTestimonial {
+        cookTestimonialId
+        authorName
+        displayAuthorName
+        location
+        displayLocation
+        occasion
+        displayOccasion
+        body
+        imageUrls
+        rating
+        lowRatingAnswers {
+            whatWentWrong
+            wouldRecommend
+            additionalFeedback
+        }
+        publicationStatus
+        publishedAt
+        createdAt
+    }
+}
+
+fragment AdminBookingRequestOfferPageRequest on AdminBookingRequest {
+    bookingRequestId
+    occasion
+    dateTime
+    participants {
+        type
+    }
+    customer {
+        userId
+        firstName
+        lastName
+        emailAddress
+        profilePicture {
+            url
+        }
+    }
+    cooksInTravelRadius {
+        estimatedTravelDistanceKm
+        cook {
+            cookId
+            exactTravelOriginAddress {
+                city
+            }
+            user {
+                userId
+                firstName
+                lastName
+            }
+        }
+    }
+}
+
+query AdminBookingRequestOfferPage($bookingRequestId: ID!, $bookingRequestOfferId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                bookingRequest(bookingRequestId: $bookingRequestId) {
+                    ...AdminBookingRequestOfferPageRequest
+                }
+                bookingRequestOffer(bookingRequestOfferId: $bookingRequestOfferId) {
+                    ...AdminBookingRequestOfferPageOffer
+                }
+            }
+        }
+    }
+}
+
+subscription AdminBookingRequestOfferPageUpdates($bookingRequestId: ID!, $bookingRequestOfferId: ID!) {
+    adminUpdates {
+        bookingRequest(bookingRequestId: $bookingRequestId) {
+            ...AdminBookingRequestOfferPageRequest
+        }
+        bookingRequestOffer(bookingRequestOfferId: $bookingRequestOfferId) {
+            ...AdminBookingRequestOfferPageOffer
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferChatMessageCreate($bookingRequestOfferId: ID!, $message: String!, $fileUploadIds: [ID!]) {
+    admin {
+        bookingRequestOfferChatMessageCreate(
+            bookingRequestOfferId: $bookingRequestOfferId
+            message: $message
+            fileUploadIds: $fileUploadIds
+        ) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferChatMessageUpdate($bookingRequestOfferEventId: ID!, $message: String!) {
+    admin {
+        bookingRequestOfferChatMessageUpdate(bookingRequestOfferEventId: $bookingRequestOfferEventId, message: $message) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferCallCreate($bookingRequestOfferId: ID!) {
+    admin {
+        bookingRequestOfferCallCreate(bookingRequestOfferId: $bookingRequestOfferId) {
+            token
+            url
+            bookingRequestOfferCallRoomParticipantId
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferCallJoin($bookingRequestOfferId: ID!) {
+    admin {
+        bookingRequestOfferCallJoin(bookingRequestOfferId: $bookingRequestOfferId) {
+            token
+            url
+            bookingRequestOfferCallRoomParticipantId
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferCallLeave($bookingRequestOfferCallRoomParticipantId: ID!) {
+    admin {
+        bookingRequestOfferCallLeave(bookingRequestOfferCallRoomParticipantId: $bookingRequestOfferCallRoomParticipantId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferPayoutRelease($bookingRequestOfferId: ID!) {
+    admin {
+        bookingRequestOfferPayoutRelease(bookingRequestOfferId: $bookingRequestOfferId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferPayoutMarkOutOfSystem($bookingRequestOfferId: ID!) {
+    admin {
+        bookingRequestOfferPayoutMarkOutOfSystem(bookingRequestOfferId: $bookingRequestOfferId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferHandover($input: AdminBookingRequestOfferHandover!) {
+    admin {
+        bookingRequestOfferHandover(input: $input) {
+            success
+            referenceId
+        }
+    }
+}

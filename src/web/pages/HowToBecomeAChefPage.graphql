@@ -1,0 +1,15 @@
+query HowToBecomeAChefPage {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: HOW_TO_BECOME_A_CHEF) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

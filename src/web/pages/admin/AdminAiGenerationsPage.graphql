@@ -1,0 +1,29 @@
+# Admin AI generations list. Search / kind / page live in the URL.
+# See docs/features/admin-ai-generations.md.
+
+query AdminAiGenerationsPage($criterion: AdminAiGenerationCriterion!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                aiGenerations(criterion: $criterion) {
+                    aiGenerationId
+                    kind
+                    userId
+                    user {
+                        userId
+                        firstName
+                        lastName
+                        emailAddress
+                    }
+                    modelId
+                    totalTokens
+                    createdAt
+                }
+                aiGenerationCounts(criteria: [$criterion])
+            }
+        }
+    }
+}

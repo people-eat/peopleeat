@@ -1,0 +1,16 @@
+# Resolves `bookingRequestId` for a known `bookingRequestOfferId` so testimonial
+# surfaces (which only carry the offer id) can link to the two-id offer route.
+
+query AdminTestimonialOfferLink($bookingRequestOfferId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                bookingRequestOffer(bookingRequestOfferId: $bookingRequestOfferId) {
+                    bookingRequestOfferId
+                    bookingRequestId
+                }
+            }
+        }
+    }
+}

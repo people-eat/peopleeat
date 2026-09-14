@@ -1,0 +1,516 @@
+fragment ContentSectionFields on ContentSection {
+    __typename
+    ... on ContentSectionContent {
+        sectionId
+        titleDe
+        titleEn
+        subtitleDe
+        subtitleEn
+        contentBodyDe: bodyDe
+        contentBodyEn: bodyEn
+        contentImageFileUploadId: imageFileUploadId
+        contentImageUrl: imageUrl
+        imageFirst
+    }
+    ... on ContentSectionImage {
+        sectionId
+        imageImageFileUploadId: imageFileUploadId
+        imageImageUrl: imageUrl
+    }
+    ... on ContentSectionQuote {
+        sectionId
+        quoteDe
+        quoteEn
+        attributionDe
+        attributionEn
+    }
+    ... on ContentSectionList {
+        sectionId
+        titleDe
+        titleEn
+        style
+        itemsDe
+        itemsEn
+    }
+    ... on ContentSectionCta {
+        sectionId
+        headlineDe
+        headlineEn
+        ctaBodyDe: bodyDe
+        ctaBodyEn: bodyEn
+        buttonLabelDe
+        buttonLabelEn
+        href
+    }
+    ... on ContentSectionQa {
+        sectionId
+        titleDe
+        titleEn
+        entries {
+            entryId
+            questionDe
+            questionEn
+            answerDe
+            answerEn
+        }
+    }
+}
+
+fragment PublicCookCardFields on PublicCook {
+    cookId
+    cuisineStyle
+    cookingPhilosophy
+    city
+    rating {
+        averageRating
+        reviewCount
+    }
+    user {
+        display
+        profilePicture {
+            url
+        }
+    }
+}
+
+fragment CustomerTestimonialCardFields on CustomerTestimonial {
+    customerTestimonialId
+    authorName
+    location
+    occasion
+    body
+    imageUrls
+    rating
+    publishedAt
+    createdAt
+}
+
+fragment CookTestimonialCardFields on CookTestimonial {
+    cookTestimonialId
+    authorName
+    location
+    occasion
+    body
+    imageUrls
+    rating
+    publishedAt
+    createdAt
+}
+
+# Public curated testimonial (`CityTestimonial` / `PartnerTestimonial` / `OccasionTestimonial.testimonial`).
+#
+# `body` is aliased on the cook branch (`String` — cook reviews may omit body) because GraphQL's field-merging rule flags
+# `String!` vs `String` for the same response name even across mutually exclusive union members. Inlined rather than
+# spreading `CookTestimonialCardFields` so the alias doesn't leak into that fragment's other (non-union) usages.
+fragment TestimonialCardFields on Testimonial {
+    __typename
+    ... on CustomerTestimonial {
+        ...CustomerTestimonialCardFields
+    }
+    ... on CookTestimonial {
+        cookTestimonialId
+        authorName
+        location
+        occasion
+        cookBody: body
+        imageUrls
+        rating
+        publishedAt
+        createdAt
+    }
+}
+
+fragment AdminCustomerTestimonialCardFields on AdminCustomerTestimonial {
+    customerTestimonialId
+    displayAuthorName
+    displayLocation
+    displayOccasion
+    body
+    rating
+    publicationStatus
+}
+
+fragment AdminCookTestimonialCardFields on AdminCookTestimonial {
+    cookTestimonialId
+    displayAuthorName
+    displayLocation
+    displayOccasion
+    body
+    rating
+    publicationStatus
+}
+
+# Admin curated testimonial (`AdminCityTestimonial` / `AdminPartnerTestimonial` / `AdminOccasionTestimonial.testimonial`).
+# See `TestimonialCardFields` above for why the cook branch is inlined with an aliased `body`.
+fragment AdminTestimonialCardFields on AdminTestimonial {
+    __typename
+    ... on AdminCustomerTestimonial {
+        ...AdminCustomerTestimonialCardFields
+    }
+    ... on AdminCookTestimonial {
+        cookTestimonialId
+        displayAuthorName
+        displayLocation
+        displayOccasion
+        cookBody: body
+        rating
+        publicationStatus
+    }
+}
+
+fragment AdminCookCardFields on AdminCook {
+    cookId
+    isVisible
+    isApprovedByAdmin
+    cuisineStyle
+    cookingPhilosophy
+    exactTravelOriginAddress {
+        city
+    }
+    user {
+        userId
+        firstName
+        lastName
+        status
+    }
+}
+
+fragment AdminCityFields on AdminCity {
+    cityId
+    pathName
+    previousPathNames
+    nameDe
+    nameEn
+    latitude
+    longitude
+    titleDe
+    titleEn
+    descriptionDe
+    descriptionEn
+    headlineDe
+    headlineEn
+    subHeadlineDe
+    subHeadlineEn
+    heroImageFileUploadId
+    heroImageUrl
+    firstSectionHeadlineDe
+    firstSectionHeadlineEn
+    firstSectionBodyDe
+    firstSectionBodyEn
+    firstSectionImageFileUploadId
+    firstSectionImageUrl
+    sections {
+        ...ContentSectionFields
+    }
+    cooks {
+        position
+        isPubliclyListed
+        cook {
+            ...AdminCookCardFields
+        }
+    }
+    cooksInTravelRadius {
+        ...AdminCookCardFields
+    }
+    testimonials {
+        index
+        testimonial {
+            ...AdminTestimonialCardFields
+        }
+    }
+    publishedAt
+    createdAt
+    updatedAt
+}
+
+fragment PublicCityFields on PublicCity {
+    cityId
+    pathName
+    previousPathNames
+    nameDe
+    nameEn
+    latitude
+    longitude
+    titleDe
+    titleEn
+    descriptionDe
+    descriptionEn
+    headlineDe
+    headlineEn
+    subHeadlineDe
+    subHeadlineEn
+    heroImageFileUploadId
+    heroImageUrl
+    firstSectionHeadlineDe
+    firstSectionHeadlineEn
+    firstSectionBodyDe
+    firstSectionBodyEn
+    firstSectionImageFileUploadId
+    firstSectionImageUrl
+    sections {
+        ...ContentSectionFields
+    }
+    featuredCooks {
+        ...PublicCookCardFields
+    }
+    testimonials {
+        index
+        testimonial {
+            ...TestimonialCardFields
+        }
+    }
+    publishedAt
+    createdAt
+    updatedAt
+}
+
+fragment AdminPartnerFields on AdminPartner {
+    partnerId
+    pathName
+    previousPathNames
+    name
+    titleDe
+    titleEn
+    descriptionDe
+    descriptionEn
+    headlineDe
+    headlineEn
+    subHeadlineDe
+    subHeadlineEn
+    heroImageFileUploadId
+    heroImageUrl
+    firstSectionHeadlineDe
+    firstSectionHeadlineEn
+    firstSectionBodyDe
+    firstSectionBodyEn
+    firstSectionImageFileUploadId
+    firstSectionImageUrl
+    firstSectionCtaUrl
+    promoCodeId
+    promo {
+        redeemCode
+        amountCents
+    }
+    sections {
+        ...ContentSectionFields
+    }
+    cooks {
+        position
+        isPubliclyListed
+        cook {
+            ...AdminCookCardFields
+        }
+    }
+    testimonials {
+        index
+        testimonial {
+            ...AdminTestimonialCardFields
+        }
+    }
+    publishedAt
+    createdAt
+    updatedAt
+}
+
+fragment PublicPartnerFields on PublicPartner {
+    partnerId
+    pathName
+    previousPathNames
+    name
+    titleDe
+    titleEn
+    descriptionDe
+    descriptionEn
+    headlineDe
+    headlineEn
+    subHeadlineDe
+    subHeadlineEn
+    heroImageFileUploadId
+    heroImageUrl
+    firstSectionHeadlineDe
+    firstSectionHeadlineEn
+    firstSectionBodyDe
+    firstSectionBodyEn
+    firstSectionImageFileUploadId
+    firstSectionImageUrl
+    firstSectionCtaUrl
+    promo {
+        redeemCode
+        amountCents
+    }
+    sections {
+        ...ContentSectionFields
+    }
+    featuredCooks {
+        ...PublicCookCardFields
+    }
+    testimonials {
+        index
+        testimonial {
+            ...TestimonialCardFields
+        }
+    }
+    publishedAt
+    createdAt
+    updatedAt
+}
+
+fragment OccasionFormatsSectionFields on OccasionFormatsSection {
+    titleDe
+    titleEn
+    subtitleDe
+    subtitleEn
+    cards {
+        imageFileUploadId
+        imageUrl
+        titleDe
+        titleEn
+        bodyDe
+        bodyEn
+        fact1De
+        fact1En
+        fact2De
+        fact2En
+        fact3De
+        fact3En
+    }
+}
+
+fragment AdminOccasionFields on AdminOccasion {
+    occasionId
+    pathName
+    previousPathNames
+    name
+    titleDe
+    titleEn
+    descriptionDe
+    descriptionEn
+    headlineDe
+    headlineEn
+    subHeadlineDe
+    subHeadlineEn
+    heroImageFileUploadId
+    heroImageUrl
+    firstSectionHeadlineDe
+    firstSectionHeadlineEn
+    firstSectionBodyDe
+    firstSectionBodyEn
+    firstSectionImageFileUploadId
+    firstSectionImageUrl
+    formatsSection {
+        ...OccasionFormatsSectionFields
+    }
+    promoCodeId
+    promo {
+        redeemCode
+        amountCents
+    }
+    sections {
+        ...ContentSectionFields
+    }
+    cooks {
+        position
+        isPubliclyListed
+        cook {
+            ...AdminCookCardFields
+        }
+    }
+    testimonials {
+        index
+        testimonial {
+            ...AdminTestimonialCardFields
+        }
+    }
+    publishedAt
+    createdAt
+    updatedAt
+}
+
+fragment PublicOccasionFields on PublicOccasion {
+    occasionId
+    pathName
+    previousPathNames
+    name
+    titleDe
+    titleEn
+    descriptionDe
+    descriptionEn
+    headlineDe
+    headlineEn
+    subHeadlineDe
+    subHeadlineEn
+    heroImageFileUploadId
+    heroImageUrl
+    firstSectionHeadlineDe
+    firstSectionHeadlineEn
+    firstSectionBodyDe
+    firstSectionBodyEn
+    firstSectionImageFileUploadId
+    firstSectionImageUrl
+    formatsSection {
+        ...OccasionFormatsSectionFields
+    }
+    promo {
+        redeemCode
+        amountCents
+    }
+    sections {
+        ...ContentSectionFields
+    }
+    featuredCooks {
+        ...PublicCookCardFields
+    }
+    testimonials {
+        index
+        testimonial {
+            ...TestimonialCardFields
+        }
+    }
+    publishedAt
+    createdAt
+    updatedAt
+}
+
+fragment AdminBlogPostFields on AdminBlogPost {
+    blogPostId
+    pathName
+    previousPathNames
+    titleDe
+    titleEn
+    descriptionDe
+    descriptionEn
+    headlineDe
+    headlineEn
+    subHeadlineDe
+    subHeadlineEn
+    heroImageFileUploadId
+    heroImageUrl
+    sections {
+        ...ContentSectionFields
+    }
+    publishedAt
+    createdAt
+    updatedAt
+}
+
+fragment PublicBlogPostFields on PublicBlogPost {
+    blogPostId
+    pathName
+    previousPathNames
+    titleDe
+    titleEn
+    descriptionDe
+    descriptionEn
+    headlineDe
+    headlineEn
+    subHeadlineDe
+    subHeadlineEn
+    heroImageFileUploadId
+    heroImageUrl
+    sections {
+        ...ContentSectionFields
+    }
+    publishedAt
+    createdAt
+    updatedAt
+}

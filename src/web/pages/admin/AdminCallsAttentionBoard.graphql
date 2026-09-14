@@ -1,0 +1,47 @@
+# Admin calls attention board — LIVE / PENDING / UPCOMING / RECENT via Admin.calls.
+# Seed + adminUpdates subscription on the overview.
+
+fragment AdminCallsAttentionCall on AdminCallListItem {
+    kind
+    bookingRequestId
+    bookingRequestOfferId
+    cookId
+    customerUserId
+    cookDisplayName
+    customerDisplayName
+    occasion
+    callRoom {
+        bookingRequestOfferCallRoomId
+        bookingRequestOfferId
+        livekitRoomName
+        status
+        createdByUserId
+        startedAt
+        endedAt
+    }
+    callSlotBooking {
+        cookCallSlotBookingId
+        startAt
+        endAt
+        status
+        initiator
+        videoCallRoomId
+        createdAt
+        declineReason
+        canceledBy
+        canceledReason
+    }
+}
+
+fragment AdminCallsAttentionAdmin on Admin {
+    adminId
+    calls {
+        ...AdminCallsAttentionCall
+    }
+}
+
+subscription AdminCallsAttentionUpdates {
+    adminUpdates {
+        ...AdminCallsAttentionAdmin
+    }
+}

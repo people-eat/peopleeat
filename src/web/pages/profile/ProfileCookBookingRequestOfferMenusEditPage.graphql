@@ -1,0 +1,55 @@
+# Cook offer menus edit. Loaded by `/profile/booking-request-offers/$bookingRequestOfferId/edit-menus`.
+
+fragment ProfileCookBookingRequestOfferMenusEditPageUser on User {
+    userId
+    cook {
+        cookId
+        meals {
+            mealId
+            title
+            description
+            imageUrl
+        }
+        menus {
+            menuId
+            title
+            description
+            courseMealOptionImages
+            courses {
+                courseId
+                title
+                mealOptions {
+                    mealId
+                }
+            }
+        }
+        bookingRequestOffer(bookingRequestOfferId: $bookingRequestOfferId) {
+            bookingRequestOfferId
+            status
+            suggestedMenus {
+                menuId
+                copyOfMenuId
+            }
+            bookingRequest {
+                bookingRequestId
+                user {
+                    display
+                }
+            }
+        }
+    }
+}
+
+query ProfileCookBookingRequestOfferMenusEditPage($bookingRequestOfferId: ID!) {
+    currentSession {
+        user {
+            ...ProfileCookBookingRequestOfferMenusEditPageUser
+        }
+    }
+}
+
+subscription ProfileCookBookingRequestOfferMenusEditPageUpdates($bookingRequestOfferId: ID!) {
+    userUpdates {
+        ...ProfileCookBookingRequestOfferMenusEditPageUser
+    }
+}

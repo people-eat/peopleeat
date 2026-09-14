@@ -1,0 +1,87 @@
+# Manual admin booking-request create. See docs/features/admin-booking-requests.md.
+# Optional `userId` search prefills the customer via `AdminBookingRequestCreatePrefillUser`.
+
+mutation AdminBookingRequestCreate($input: AdminBookingRequestCreate!) {
+    admin {
+        bookingRequestCreate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+query AdminBookingRequestCreatePrefillUser($userId: ID!) {
+    currentSession {
+        user {
+            admin {
+                user(userId: $userId) {
+                    userId
+                    firstName
+                    lastName
+                    emailAddress
+                }
+            }
+        }
+    }
+}
+
+query AdminBookingRequestCreateCustomerSearch($criterion: AdminUserCriterion!) {
+    currentSession {
+        user {
+            admin {
+                users(criterion: $criterion) {
+                    userId
+                    firstName
+                    lastName
+                    emailAddress
+                }
+            }
+        }
+    }
+}
+
+query AdminBookingRequestCreateLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = true) {
+    currentSession {
+        locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
+            displayText
+            latitude
+            longitude
+            structuredAddress {
+                displayText
+                latitude
+                longitude
+                addressLine1
+                addressLine2
+                city
+                postCode
+                state
+                country
+            }
+        }
+    }
+}
+
+query AdminBookingRequestCreateCooksInTravelRadius($latitude: Latitude!, $longitude: Longitude!, $excludeUserId: ID) {
+    currentSession {
+        user {
+            admin {
+                cooksInTravelRadius(latitude: $latitude, longitude: $longitude, excludeUserId: $excludeUserId) {
+                    estimatedTravelDistanceKm
+                    cook {
+                        cookId
+                        cuisineStyle
+                        exactTravelOriginAddress {
+                            city
+                        }
+                        user {
+                            userId
+                            firstName
+                            lastName
+                            emailAddress
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

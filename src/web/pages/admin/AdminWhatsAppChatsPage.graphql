@@ -1,0 +1,46 @@
+# Admin WhatsApp conversation list. See docs/features/whatsapp.md.
+
+fragment AdminWhatsAppChatsPageAdmin on Admin {
+    adminId
+    whatsAppConversations(criterion: $criterion) {
+        whatsAppConversationId
+        phoneNumber
+        displayName
+        userId
+        lastMessageAt
+        lastMessagePreview
+        adminUnreadCount
+        customerServiceWindowExpiresAt
+        createdAt
+        customer {
+            userId
+            firstName
+            lastName
+            profilePicture {
+                fileUploadId
+                url
+            }
+        }
+    }
+    whatsAppConversationsCounts(criteria: [$countsCriterion])
+}
+
+query AdminWhatsAppChatsPage($criterion: AdminWhatsAppConversationCriterion!, $countsCriterion: AdminWhatsAppConversationCriterion!) {
+    currentSession {
+        user {
+            userId
+            admin {
+                ...AdminWhatsAppChatsPageAdmin
+            }
+        }
+    }
+}
+
+subscription AdminWhatsAppChatsPageUpdates(
+    $criterion: AdminWhatsAppConversationCriterion!
+    $countsCriterion: AdminWhatsAppConversationCriterion!
+) {
+    adminUpdates {
+        ...AdminWhatsAppChatsPageAdmin
+    }
+}

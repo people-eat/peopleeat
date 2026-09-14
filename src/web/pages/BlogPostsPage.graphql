@@ -1,0 +1,25 @@
+query PublicBlogPostsPage {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicBlogPost {
+        findMany {
+            pathName
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+            heroImageUrl
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: BLOG_POSTS) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

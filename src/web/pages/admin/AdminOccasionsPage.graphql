@@ -1,0 +1,48 @@
+query AdminOccasionsPage {
+    currentSession {
+        user {
+            admin {
+                adminId
+                occasions {
+                    occasionId
+                    pathName
+                    name
+                    titleDe
+                    titleEn
+                    headlineDe
+                    headlineEn
+                    heroImageUrl
+                    publishedAt
+                    updatedAt
+                }
+            }
+        }
+    }
+}
+
+mutation AdminOccasionDelete($occasionId: ID!) {
+    admin {
+        occasionDelete(occasionId: $occasionId) {
+            success
+            referenceId
+        }
+    }
+}
+
+subscription AdminOccasionsPageUpdates {
+    adminUpdates {
+        adminId
+        occasions {
+            occasionId
+            pathName
+            name
+            titleDe
+            titleEn
+            headlineDe
+            headlineEn
+            heroImageUrl
+            publishedAt
+            updatedAt
+        }
+    }
+}

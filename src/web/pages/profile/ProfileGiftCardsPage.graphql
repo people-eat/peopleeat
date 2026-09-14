@@ -1,0 +1,58 @@
+# Gift cards list. Seed-and-subscribe via `userUpdates`.
+# See docs/architecture/state-synchronization.md.
+
+fragment ProfileGiftCardsPageUser on User {
+    userId
+    giftCards {
+        giftCardId
+        buyerEmail
+        occasion
+        recipientName
+        message
+        originalBalanceCents
+        balanceCents
+        redeemCode
+        paymentStatus
+        invoiceFileUpload {
+            fileUploadId
+            filename
+            mediaType
+            size
+            url
+        }
+        voucherFileUpload {
+            fileUploadId
+            filename
+            mediaType
+            size
+            url
+        }
+        expiresAt
+        createdAt
+    }
+}
+
+query ProfileGiftCardsPage {
+    currentSession {
+        sessionId
+        user {
+            ...ProfileGiftCardsPageUser
+            firstName
+            lastName
+            emailAddress
+            admin {
+                adminId
+            }
+            cook {
+                cookId
+            }
+            ...PublicHeaderUser
+        }
+    }
+}
+
+subscription ProfileGiftCardsPageUpdates {
+    userUpdates {
+        ...ProfileGiftCardsPageUser
+    }
+}

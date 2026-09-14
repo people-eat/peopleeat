@@ -1,0 +1,91 @@
+# Focused offer-chat review surface — full transcript + acknowledge → next.
+
+fragment AdminOfferChatReviewPageOffer on AdminBookingRequestOffer {
+    bookingRequestOfferId
+    bookingRequestId
+    status
+    adminChatReviewPendingCount
+    adminChatReviewedAt
+    cook {
+        cookId
+        user {
+            userId
+            firstName
+            lastName
+            profilePicture {
+                url
+            }
+        }
+    }
+    bookingRequest {
+        bookingRequestId
+        occasion
+        dateTime
+        customer {
+            userId
+            firstName
+            lastName
+            emailAddress
+            profilePicture {
+                url
+            }
+        }
+    }
+    messages {
+        ...HumanChatMessageFields
+    }
+}
+
+query AdminOfferChatReviewPage($bookingRequestOfferId: ID!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                bookingRequestOffer(bookingRequestOfferId: $bookingRequestOfferId) {
+                    ...AdminOfferChatReviewPageOffer
+                }
+            }
+        }
+    }
+}
+
+subscription AdminOfferChatReviewPageUpdates($bookingRequestOfferId: ID!) {
+    adminUpdates {
+        bookingRequestOffer(bookingRequestOfferId: $bookingRequestOfferId) {
+            ...AdminOfferChatReviewPageOffer
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferChatReviewAcknowledge($bookingRequestOfferId: ID!) {
+    admin {
+        bookingRequestOfferChatReviewAcknowledge(bookingRequestOfferId: $bookingRequestOfferId) {
+            acknowledgedOfferId
+            nextOfferId
+        }
+    }
+}
+
+mutation AdminOfferChatReviewChatMessageCreate($bookingRequestOfferId: ID!, $message: String!, $fileUploadIds: [ID!]) {
+    admin {
+        bookingRequestOfferChatMessageCreate(
+            bookingRequestOfferId: $bookingRequestOfferId
+            message: $message
+            fileUploadIds: $fileUploadIds
+        ) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminOfferChatReviewChatMessageUpdate($bookingRequestOfferEventId: ID!, $message: String!) {
+    admin {
+        bookingRequestOfferChatMessageUpdate(bookingRequestOfferEventId: $bookingRequestOfferEventId, message: $message) {
+            success
+            referenceId
+        }
+    }
+}

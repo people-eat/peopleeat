@@ -1,0 +1,85 @@
+# Admin fixed-key feature toggles + per-user overrides. Seed-and-subscribe on `adminUpdates`.
+# See docs/features/admin-feature-toggles.md.
+
+fragment AdminFeatureToggleFields on AdminFeatureToggle {
+    featureToggleKey
+    enabled
+    persisted
+    updatedAt
+    userOverrides {
+        userId
+        featureToggleKey
+        enabled
+        updatedAt
+        user {
+            userId
+            firstName
+            lastName
+            emailAddress
+        }
+    }
+}
+
+query AdminFeatureTogglesPage {
+    currentSession {
+        user {
+            admin {
+                adminId
+                featureToggles {
+                    ...AdminFeatureToggleFields
+                }
+            }
+        }
+    }
+}
+
+subscription AdminFeatureTogglesPageUpdates {
+    adminUpdates {
+        adminId
+        featureToggles {
+            ...AdminFeatureToggleFields
+        }
+    }
+}
+
+mutation AdminFeatureToggleUpdate($featureToggleKey: FeatureToggleKey!, $enabled: Boolean!) {
+    admin {
+        featureToggleUpdate(featureToggleKey: $featureToggleKey, enabled: $enabled) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminFeatureToggleUserOverrideUpsert($userId: ID!, $featureToggleKey: FeatureToggleKey!, $enabled: Boolean!) {
+    admin {
+        featureToggleUserOverrideUpsert(userId: $userId, featureToggleKey: $featureToggleKey, enabled: $enabled) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminFeatureToggleUserOverrideDelete($userId: ID!, $featureToggleKey: FeatureToggleKey!) {
+    admin {
+        featureToggleUserOverrideDelete(userId: $userId, featureToggleKey: $featureToggleKey) {
+            success
+            referenceId
+        }
+    }
+}
+
+query AdminFeatureTogglesUserSearch($criterion: AdminUserCriterion!) {
+    currentSession {
+        user {
+            admin {
+                users(criterion: $criterion) {
+                    userId
+                    firstName
+                    lastName
+                    emailAddress
+                }
+            }
+        }
+    }
+}

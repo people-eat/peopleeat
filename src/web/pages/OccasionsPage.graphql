@@ -1,0 +1,25 @@
+query PublicOccasionsPage {
+    currentSession {
+        user {
+            ...PublicHeaderUser
+        }
+    }
+    publicOccasion {
+        findMany {
+            pathName
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+            heroImageUrl
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: OCCASIONS) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}

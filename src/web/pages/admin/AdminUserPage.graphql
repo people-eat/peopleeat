@@ -1,0 +1,401 @@
+# Admin user detail. Loaded by `/admin/users/$userId`.
+# See `docs/features/admin-users.md`. URL `tab` selects the section (customer + optional cook tabs);
+# emails / whatsapp / sessions / meals / menus / booking-requests / offers / assistant-chats load only
+# for their tab via `@include` (loaderDeps on `tab`). Assistant chats use `Admin.assistantChats` with
+# `userIds: [userId]` — see `docs/features/admin-assistant-chats.md`.
+
+fragment AdminUserCook on AdminCook {
+    cookId
+    isVisible
+    isApprovedByAdmin
+    canCreateOffers
+    stripeStatus
+    stripeAccountId
+    stripeAccountActive
+    stripeAccountActiveWasReset
+    exactTravelOriginAddress {
+        displayText
+        latitude
+        longitude
+        addressLine1
+        addressLine2
+        city
+        postCode
+        state
+        country
+    }
+    biography
+    biographySummary
+    biographySummaryGenerating
+    cuisineStyle
+    cookingPhilosophy
+    travelExpensesAmount
+    maximumTravelDistance
+    minimumPriceAmount
+    maximumPriceAmount
+    minimumParticipants
+    maximumParticipants
+    callSchedulingEnabled
+    callDurationMinutes
+    createdAt
+}
+
+query AdminUserPage(
+    $userId: ID!
+    $includeFeatureToggles: Boolean!
+    $includeEmails: Boolean!
+    $includeWhatsApp: Boolean!
+    $includeSessions: Boolean!
+    $includeSessionEvents: Boolean!
+    $includeMeals: Boolean!
+    $includeMenus: Boolean!
+    $includeBookingRequests: Boolean!
+    $includeOffers: Boolean!
+    $includeAssistantChats: Boolean!
+    $emailsCriterion: AdminOutboundEmailCriterion!
+    $whatsAppCriterion: AdminWhatsAppConversationCriterion!
+    $sessionsCriterion: AdminSessionCriterion!
+    $sessionEventsCriterion: AdminSessionEventCriterion!
+    $mealsCriterion: AdminCookMealCriterion!
+    $menusCriterion: AdminCookMenuCriterion!
+    $bookingRequestsCriterion: AdminBookingRequestCriterion!
+    $bookingRequestOffersCriterion: AdminBookingRequestOfferCriterion!
+    $assistantChatsCriterion: AdminAssistantChatCriterion!
+) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                featureToggles @include(if: $includeFeatureToggles) {
+                    featureToggleKey
+                    enabled
+                    persisted
+                    updatedAt
+                }
+                user(userId: $userId) {
+                    userId
+                    emailAddress
+                    previousEmailAddresses
+                    firstName
+                    lastName
+                    status
+                    phoneNumber
+                    birthDate
+                    preferredCommunication
+                    locale
+                    timeZone
+                    profilePicture {
+                        fileUploadId
+                        url
+                    }
+                    adminNote
+                    types
+                    createdAt
+                    featureToggleOverrides @include(if: $includeFeatureToggles) {
+                        userId
+                        featureToggleKey
+                        enabled
+                        updatedAt
+                    }
+                    cook {
+                        ...AdminUserCook
+                    }
+                }
+                outboundEmails(criterion: $emailsCriterion) @include(if: $includeEmails) {
+                    outboundEmailId
+                    purpose
+                    toEmail
+                    subject
+                    createdAt
+                    sentAt
+                    failedAt
+                    openedAt
+                }
+                whatsAppConversations(criterion: $whatsAppCriterion) @include(if: $includeWhatsApp) {
+                    whatsAppConversationId
+                    phoneNumber
+                    lastMessageAt
+                    adminUnreadCount
+                    customerServiceWindowExpiresAt
+                }
+                sessions(criterion: $sessionsCriterion) @include(if: $includeSessions) {
+                    sessionId
+                    lastInteractionAt
+                    wasTerminatedAt
+                    connectionActive
+                    userAgent
+                    isBot
+                    createdAt
+                }
+                sessionEvents(criterion: $sessionEventsCriterion) @include(if: $includeSessionEvents) {
+                    sessionEventId
+                    sessionId
+                    type
+                    descriptionDe
+                    descriptionEn
+                    createdAt
+                    link
+                }
+                cookMeals(criterion: $mealsCriterion) @include(if: $includeMeals) {
+                    mealId
+                    cookId
+                    cookName
+                    title
+                    description
+                    imageUrl
+                    publishedAt
+                    deletedAt
+                    createdAt
+                    updatedAt
+                }
+                cookMenus(criterion: $menusCriterion) @include(if: $includeMenus) {
+                    menuId
+                    cookId
+                    cookName
+                    title
+                    description
+                    courseCount
+                    courseMealOptionImages
+                    publishedAt
+                    deletedAt
+                    createdAt
+                    updatedAt
+                }
+                bookingRequests(criterion: $bookingRequestsCriterion) @include(if: $includeBookingRequests) {
+                    bookingRequestId
+                    status
+                    occasion
+                    dateTime
+                    publicationStatus
+                    createdAt
+                    exactEventAddress {
+                        city
+                        displayText
+                    }
+                    participants {
+                        type
+                    }
+                    offers {
+                        bookingRequestOfferId
+                        status
+                        createdAt
+                        userUnreadNotificationCount
+                        cookUnreadNotificationCount
+                        cook {
+                            cookId
+                            user {
+                                userId
+                                firstName
+                                lastName
+                            }
+                        }
+                    }
+                    customer {
+                        userId
+                        firstName
+                        lastName
+                        emailAddress
+                    }
+                }
+                bookingRequestOffers(criterion: $bookingRequestOffersCriterion) @include(if: $includeOffers) {
+                    bookingRequestOfferId
+                    bookingRequestId
+                    status
+                    userUnreadNotificationCount
+                    cookUnreadNotificationCount
+                    totalWithoutDiscountsCentsCustomer
+                    totalCentsCustomer
+                    configuredMenu {
+                        title
+                    }
+                    suggestedMenus {
+                        menuId
+                        title
+                    }
+                    callBookings {
+                        cookCallSlotBookingId
+                        startAt
+                        endAt
+                        status
+                        initiator
+                    }
+                    cook {
+                        cookId
+                        cuisineStyle
+                        cookingPhilosophy
+                        exactTravelOriginAddress {
+                            city
+                        }
+                        user {
+                            userId
+                            firstName
+                            lastName
+                            profilePicture {
+                                url
+                            }
+                        }
+                    }
+                }
+                assistantChats(criterion: $assistantChatsCriterion) @include(if: $includeAssistantChats) {
+                    chatId
+                    userId
+                    surface
+                    title
+                    lastModifiedAt
+                    deletedAt
+                }
+            }
+        }
+    }
+}
+
+query AdminUserLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = true) {
+    currentSession {
+        locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
+            displayText
+            latitude
+            longitude
+            structuredAddress {
+                displayText
+                latitude
+                longitude
+                addressLine1
+                addressLine2
+                city
+                postCode
+                state
+                country
+            }
+        }
+    }
+}
+
+mutation AdminCookApprovalUpdate($cookId: ID!, $isApprovedByAdmin: Boolean!) {
+    admin {
+        cookApprovalUpdate(cookId: $cookId, isApprovedByAdmin: $isApprovedByAdmin) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserAdminNoteUpdate($userId: ID!, $adminNote: String!) {
+    admin {
+        userAdminNoteUpdate(userId: $userId, adminNote: $adminNote) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserAnonymize($userId: ID!) {
+    admin {
+        userAnonymize(userId: $userId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserStatusUpdate($userId: ID!, $status: UserStatus!) {
+    admin {
+        userStatusUpdate(userId: $userId, status: $status) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserTerminateSessions($sessionIds: [ID!]!) {
+    admin {
+        terminateSessions(sessionIds: $sessionIds) {
+            success
+        }
+    }
+}
+
+mutation AdminUserSessionUserBind($userId: ID!) {
+    admin {
+        sessionUserBind(userId: $userId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserUpdate($userId: ID!, $user: UserUpdate!) {
+    admin {
+        userUpdate(userId: $userId, user: $user) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserEmailAddressUpdate($userId: ID!, $emailAddress: EmailAddress!) {
+    admin {
+        userEmailAddressUpdate(userId: $userId, emailAddress: $emailAddress) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserCookUpdate($cookId: ID!, $input: CookUpdate!) {
+    admin {
+        cookUpdate(cookId: $cookId, input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserCookBiographySuggest($cookId: ID!, $currentBiography: String!) {
+    admin {
+        cookBiographySuggest(cookId: $cookId, currentBiography: $currentBiography)
+    }
+}
+
+mutation AdminUserCookBiographySummarySuggest($cookId: ID!, $biography: String!) {
+    admin {
+        cookBiographySummarySuggest(cookId: $cookId, biography: $biography)
+    }
+}
+
+mutation AdminUserCookMealCreate($cookId: ID!, $meal: CookMealCreate) {
+    admin {
+        cookMealCreate(cookId: $cookId, meal: $meal) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserCookMenuCreate($cookId: ID!) {
+    admin {
+        cookMenuCreate(cookId: $cookId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserFeatureToggleUserOverrideUpsert($userId: ID!, $featureToggleKey: FeatureToggleKey!, $enabled: Boolean!) {
+    admin {
+        featureToggleUserOverrideUpsert(userId: $userId, featureToggleKey: $featureToggleKey, enabled: $enabled) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserFeatureToggleUserOverrideDelete($userId: ID!, $featureToggleKey: FeatureToggleKey!) {
+    admin {
+        featureToggleUserOverrideDelete(userId: $userId, featureToggleKey: $featureToggleKey) {
+            success
+            referenceId
+        }
+    }
+}

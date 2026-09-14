@@ -1,0 +1,9 @@
+# Minimal user fields for public Header chrome (session icons + booking CTA).
+fragment PublicHeaderUser on User {
+    admin {
+        adminId
+    }
+    cook {
+        cookId
+    }
+}

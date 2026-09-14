@@ -1,0 +1,41 @@
+# Admin outbound emails overview — Resend quota + lifecycle distribution +
+# creation time series. See docs/features/admin-outbound-emails.md.
+# `outboundEmailsCounts` order matches `ADMIN_OUTBOUND_EMAIL_COUNT_CRITERIA` in
+# AdminOutboundEmailsOverviewPage.tsx.
+
+query AdminOutboundEmailsOverviewPage(
+    $criteria: [AdminOutboundEmailCriterion!]!
+    $range: DateTimeRange!
+    $granularity: AdminTimeBucketGranularity! = day
+) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                resendUsage {
+                    monthly {
+                        used
+                        limit
+                        sent
+                        received
+                        resetsAt
+                    }
+                    daily {
+                        used
+                        limit
+                        sent
+                        received
+                        resetsAt
+                    }
+                }
+                outboundEmailsCounts(criteria: $criteria)
+                outboundEmailCreations(range: $range, granularity: $granularity) {
+                    bucketStart
+                    count
+                }
+            }
+        }
+    }
+}

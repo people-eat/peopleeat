@@ -1,0 +1,113 @@
+query GiftCardPage {
+    currentSession {
+        sessionId
+        ...AuthSessionFields
+        user {
+            userId
+            emailAddress
+            firstName
+            lastName
+            ...PublicHeaderUser
+        }
+        giftCard {
+            giftCardId
+            buyerEmail
+            occasion
+            recipientName
+            message
+            originalBalanceCents
+            balanceCents
+            redeemCode
+            paymentStatus
+            payment {
+                clientSecret
+                publishableKey
+            }
+            invoiceAddress {
+                companyName
+                firstName
+                lastName
+                country
+                city
+                postalCode
+                line1
+                line2
+            }
+            expiresAt
+            createdAt
+        }
+        giftCardPurchaseError {
+            code
+        }
+    }
+    publicWebPage {
+        findOne(webPageKey: GIFT_CARD) {
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+        }
+    }
+}
+
+subscription GiftCardSessionUpdates {
+    sessionUpdates {
+        sessionId
+        ...AuthSessionFields
+        user {
+            userId
+            emailAddress
+            firstName
+            lastName
+            ...PublicHeaderUser
+        }
+        giftCard {
+            giftCardId
+            buyerEmail
+            occasion
+            recipientName
+            message
+            originalBalanceCents
+            balanceCents
+            redeemCode
+            paymentStatus
+            payment {
+                clientSecret
+                publishableKey
+            }
+            invoiceAddress {
+                companyName
+                firstName
+                lastName
+                country
+                city
+                postalCode
+                line1
+                line2
+            }
+            expiresAt
+            createdAt
+        }
+        giftCardPurchaseError {
+            code
+        }
+    }
+}
+
+mutation GiftCardCreate($input: GiftCardCreate!) {
+    user {
+        giftCardCreate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation GiftCardPay($input: GiftCardPay!) {
+    user {
+        giftCardPay(input: $input) {
+            success
+            referenceId
+        }
+    }
+}

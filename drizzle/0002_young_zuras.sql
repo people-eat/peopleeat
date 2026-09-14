@@ -1,0 +1,1 @@
+ALTER TABLE "Partners" ADD COLUMN "firstSectionCtaUrl" varchar;

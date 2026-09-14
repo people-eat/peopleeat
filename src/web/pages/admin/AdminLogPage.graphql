@@ -1,0 +1,32 @@
+# Admin log detail. Loaded by `/admin/logs/$logId`.
+# See `docs/features/admin-logs.md`.
+
+query AdminLogPage($logId: ID!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                log(logId: $logId) {
+                    logId
+                    sessionId
+                    session {
+                        sessionId
+                        userId
+                        user {
+                            userId
+                            firstName
+                            lastName
+                            emailAddress
+                        }
+                    }
+                    level
+                    message
+                    context
+                    createdAt
+                }
+            }
+        }
+    }
+}

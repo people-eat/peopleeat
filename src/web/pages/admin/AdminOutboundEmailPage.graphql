@@ -1,0 +1,49 @@
+# Admin outbound email detail. Loaded by `/admin/outbound-emails/$outboundEmailId`.
+
+query AdminOutboundEmailPage($outboundEmailId: ID!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                outboundEmail(outboundEmailId: $outboundEmailId) {
+                    outboundEmailId
+                    provider
+                    providerMessageId
+                    purpose
+                    relatedEntityType
+                    relatedEntityId
+                    userId
+                    user {
+                        userId
+                        firstName
+                        lastName
+                        emailAddress
+                    }
+                    toEmail
+                    fromEmail
+                    subject
+                    locale
+                    failureReason
+                    attachments {
+                        fileUploadId
+                        filename
+                        mediaType
+                        size
+                        url
+                    }
+                    createdAt
+                    sentAt
+                    failedAt
+                    deliveredAt
+                    deliveryDelayedAt
+                    openedAt
+                    clickedAt
+                    bouncedAt
+                    complainedAt
+                }
+            }
+        }
+    }
+}

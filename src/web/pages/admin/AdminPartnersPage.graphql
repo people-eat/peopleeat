@@ -1,0 +1,48 @@
+query AdminPartnersPage {
+    currentSession {
+        user {
+            admin {
+                adminId
+                partners {
+                    partnerId
+                    pathName
+                    name
+                    titleDe
+                    titleEn
+                    headlineDe
+                    headlineEn
+                    heroImageUrl
+                    publishedAt
+                    updatedAt
+                }
+            }
+        }
+    }
+}
+
+mutation AdminPartnerDelete($partnerId: ID!) {
+    admin {
+        partnerDelete(partnerId: $partnerId) {
+            success
+            referenceId
+        }
+    }
+}
+
+subscription AdminPartnersPageUpdates {
+    adminUpdates {
+        adminId
+        partners {
+            partnerId
+            pathName
+            name
+            titleDe
+            titleEn
+            headlineDe
+            headlineEn
+            heroImageUrl
+            publishedAt
+            updatedAt
+        }
+    }
+}

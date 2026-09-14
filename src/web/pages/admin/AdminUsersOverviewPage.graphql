@@ -1,0 +1,20 @@
+# Admin users overview hub — membership distribution + registration time series.
+# See docs/features/admin-users.md.
+# `userCounts` order matches `ADMIN_USER_COUNT_CRITERIA` in AdminUsersOverviewPage.tsx.
+
+query AdminUsersOverviewPage($criteria: [AdminUserCriterion!]!, $range: DateTimeRange!, $granularity: AdminTimeBucketGranularity! = day) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                userCounts(criteria: $criteria)
+                userRegistrations(range: $range, granularity: $granularity) {
+                    bucketStart
+                    count
+                }
+            }
+        }
+    }
+}

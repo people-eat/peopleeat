@@ -1,0 +1,198 @@
+# Admin booking-request detail. Loaded by `/admin/booking-requests/$bookingRequestId`.
+# Offer chat lives on the dedicated offer page — do not request `messages` on list cards.
+
+fragment AdminBookingRequestPageRequest on AdminBookingRequest {
+    bookingRequestId
+    status
+    occasion
+    dateTime
+    publicationStatus
+    priceClassType
+    originalMessage
+    adjustedMessage
+    preferences
+    expiresAt
+    canceledAt
+    cancellationReason
+    createdAt
+    exactEventAddress {
+        displayText
+        city
+        postCode
+        addressLine1
+        addressLine2
+        state
+        country
+    }
+    invoiceAddress {
+        companyName
+        firstName
+        lastName
+        country
+        city
+        postalCode
+        line1
+        line2
+    }
+    participants {
+        bookingRequestParticipantId
+        type
+        name
+        restrictions
+    }
+    customer {
+        userId
+        firstName
+        lastName
+        emailAddress
+    }
+    cook {
+        cookId
+        user {
+            userId
+            firstName
+            lastName
+            emailAddress
+        }
+    }
+    promoCode {
+        promoCodeId
+        redeemCode
+        amountCents
+    }
+    giftCard {
+        giftCardId
+        redeemCode
+        balanceCents
+    }
+    cooksInTravelRadius {
+        estimatedTravelDistanceKm
+        estimatedTravelExpensesCents
+        suggestedMenuPriceCents
+        notifiedAt
+        cook {
+            cookId
+            cuisineStyle
+            cookingPhilosophy
+            exactTravelOriginAddress {
+                city
+            }
+            user {
+                userId
+                firstName
+                lastName
+                emailAddress
+                profilePicture {
+                    url
+                }
+            }
+        }
+    }
+    queuedJobs {
+        jobId
+        name
+        state
+        startAfter
+        createdOn
+        data
+    }
+    offers {
+        bookingRequestOfferId
+        status
+        userAccepted
+        cookAccepted
+        userUnreadNotificationCount
+        cookUnreadNotificationCount
+        totalWithoutDiscountsCentsCustomer
+        totalCentsCustomer
+        configuredMenu {
+            title
+        }
+        suggestedMenus {
+            menuId
+            title
+        }
+        callBookings {
+            cookCallSlotBookingId
+            startAt
+            endAt
+            status
+            initiator
+        }
+        cook {
+            cookId
+            cuisineStyle
+            cookingPhilosophy
+            exactTravelOriginAddress {
+                city
+            }
+            user {
+                userId
+                firstName
+                lastName
+                profilePicture {
+                    url
+                }
+            }
+        }
+    }
+}
+
+query AdminBookingRequestPage($bookingRequestId: ID!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                bookingRequest(bookingRequestId: $bookingRequestId) {
+                    ...AdminBookingRequestPageRequest
+                }
+            }
+        }
+    }
+}
+
+subscription AdminBookingRequestPageUpdates($bookingRequestId: ID!) {
+    adminUpdates {
+        bookingRequest(bookingRequestId: $bookingRequestId) {
+            ...AdminBookingRequestPageRequest
+        }
+    }
+}
+
+mutation AdminBookingRequestPublicationApprove($bookingRequestId: ID!, $cookIds: [ID!]) {
+    admin {
+        bookingRequestPublicationApprove(bookingRequestId: $bookingRequestId, cookIds: $cookIds) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestCooksNotify($bookingRequestId: ID!, $cookIds: [ID!]!) {
+    admin {
+        bookingRequestCooksNotify(bookingRequestId: $bookingRequestId, cookIds: $cookIds) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestCancel($bookingRequestId: ID!, $reason: String!) {
+    admin {
+        bookingRequestCancel(bookingRequestId: $bookingRequestId, reason: $reason) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestDiscountUpdate($bookingRequestId: ID!, $redeemCode: String) {
+    admin {
+        bookingRequestDiscountUpdate(bookingRequestId: $bookingRequestId, redeemCode: $redeemCode) {
+            success
+            referenceId
+        }
+    }
+}

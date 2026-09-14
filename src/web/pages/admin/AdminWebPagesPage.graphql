@@ -1,0 +1,37 @@
+# Admin fixed-route SEO list. Seed-and-subscribe on `adminUpdates`.
+# Always one entry per WebPageKey (ghosts when not persisted).
+# See docs/features/admin-web-pages.md.
+
+query AdminWebPagesPage {
+    currentSession {
+        user {
+            admin {
+                adminId
+                webPages {
+                    webPageKey
+                    titleDe
+                    titleEn
+                    descriptionDe
+                    descriptionEn
+                    persisted
+                    updatedAt
+                }
+            }
+        }
+    }
+}
+
+subscription AdminWebPagesPageUpdates {
+    adminUpdates {
+        adminId
+        webPages {
+            webPageKey
+            titleDe
+            titleEn
+            descriptionDe
+            descriptionEn
+            persisted
+            updatedAt
+        }
+    }
+}

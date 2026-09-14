@@ -1,0 +1,903 @@
+import { Link, useNavigate, useRouter } from '@tanstack/react-router';
+import type { LucideIcon } from 'lucide-react';
+import {
+    AppWindowIcon,
+    BotMessageSquareIcon,
+    ChefHatIcon,
+    FileInputIcon,
+    FileTextIcon,
+    HandPlatterIcon,
+    LayersIcon,
+    MailsIcon,
+    MessageSquareIcon,
+    NotebookPenIcon,
+    ToggleRightIcon,
+    UserIcon,
+    UtensilsIcon,
+} from 'lucide-react';
+import { useState } from 'react';
+import type { ReactNode } from 'react';
+import { toast } from 'sonner';
+import { useMutation } from 'urql';
+
+import { formatDate, userDisplayName } from '../../../shared';
+import { AdminBookingRequestListCard } from '../../components/AdminBookingRequestListCard';
+import { AdminBookingRequestOfferCard } from '../../components/AdminBookingRequestOfferCard';
+import { AdminPageChrome } from '../../components/AdminPageChrome';
+import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
+import { AdminSessionEventTimeline } from '../../components/AdminSessionEventTimeline';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '../../components/base/alert-dialog';
+import { Badge } from '../../components/base/badge';
+import { Button } from '../../components/base/button';
+import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
+import { Textarea } from '../../components/base/textarea';
+import { CookMealCard } from '../../components/CookMealCard';
+import { CookMenuCard } from '../../components/CookMenuCard';
+import type { GqlCAdminOutboundEmailPurpose, GqlCAdminSessionKind, GqlCAdminUserPageQuery } from '../../graphql/generated';
+import {
+    AdminUserAdminNoteUpdateDocument,
+    AdminUserCookMealCreateDocument,
+    AdminUserCookMenuCreateDocument,
+    AdminUserTerminateSessionsDocument,
+} from '../../graphql/generated';
+import { useLocale } from '../../hooks/useLocale';
+import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
+import { adminAssistantChatTitle, adminChatSurfaceLabel } from './adminAssistantChats';
+import { adminOutboundEmailPurposeLabel } from './adminOutboundEmailsColumns';
+import { AdminUserCookProfileSection } from './AdminUserCookProfileSection';
+import { AdminUserFeatureTogglesSection } from './AdminUserFeatureTogglesSection';
+import { AdminUserGeneralSection } from './AdminUserGeneralSection';
+
+export const adminUserPageTitle = { de: 'Benutzer', en: 'User' } as const;
+export const adminUserPageDescription = {
+    de: 'Kontodetails eines registrierten Nutzers.',
+    en: 'Account details for a registered user.',
+} as const;
+
+const CUSTOMER_TABS = [
+    'general',
+    'feature-toggles',
+    'session-events',
+    'sessions',
+    'booking-requests',
+    'notes',
+    'whatsapp',
+    'emails',
+    'assistant-chats',
+] as const;
+
+const COOK_TABS = ['cook-profile', 'meals', 'menus', 'offers'] as const;
+
+type AdminUserCustomerTab = (typeof CUSTOMER_TABS)[number];
+type AdminUserCookTab = (typeof COOK_TABS)[number];
+export type AdminUserTab = AdminUserCustomerTab | AdminUserCookTab;
+
+export type AdminUserSearch = {
+    tab?: AdminUserTab;
+};
+
+const ALL_TABS: readonly AdminUserTab[] = [...CUSTOMER_TABS, ...COOK_TABS];
+
+function isAdminUserTab(value: unknown): value is AdminUserTab {
+    return typeof value === 'string' && (ALL_TABS as readonly string[]).includes(value);
+}
+
+export function parseAdminUserSearch(search: Record<string, unknown>): AdminUserSearch {
+    const tab = isAdminUserTab(search.tab) ? search.tab : undefined;
+    return { tab };
+}
+
+const ADMIN_USER_EMAIL_PURPOSES: GqlCAdminOutboundEmailPurpose[] = [
+    'GIFT_CARD_PURCHASED',
+    'AUTH_EMAIL_OTP',
+    'EMAIL_ADDRESS_UPDATE_CONFIRM',
+];
+const ADMIN_USER_SESSION_KINDS: GqlCAdminSessionKind[] = ['human', 'bot'];
+
+export function adminUserPageVariables(userId: string, search: AdminUserSearch) {
+    const tab = search.tab ?? 'general';
+    return {
+        userId,
+        includeFeatureToggles: tab === 'feature-toggles',
+        includeEmails: tab === 'emails',
+        includeWhatsApp: tab === 'whatsapp',
+        includeSessions: tab === 'sessions',
+        includeSessionEvents: tab === 'session-events',
+        includeMeals: tab === 'meals',
+        includeMenus: tab === 'menus',
+        includeBookingRequests: tab === 'booking-requests',
+        includeOffers: tab === 'offers',
+        includeAssistantChats: tab === 'assistant-chats',
+        sessionEventsCriterion: {
+            userIds: [userId],
+            skip: 0,
+            take: 100,
+        },
+        emailsCriterion: {
+            skip: 0,
+            take: 100,
+            purposes: ADMIN_USER_EMAIL_PURPOSES,
+            userIds: [userId],
+        },
+        whatsAppCriterion: {
+            skip: 0,
+            take: 100,
+            userId,
+        },
+        sessionsCriterion: {
+            skip: 0,
+            take: 100,
+            kinds: ADMIN_USER_SESSION_KINDS,
+            userIds: [userId],
+        },
+        mealsCriterion: {
+            skip: 0,
+            take: 100,
+            cookIds: [userId],
+            includeDeleted: true,
+        },
+        menusCriterion: {
+            skip: 0,
+            take: 100,
+            cookIds: [userId],
+            includeDeleted: true,
+        },
+        bookingRequestsCriterion: {
+            skip: 0,
+            take: 100,
+            userIds: [userId],
+        },
+        bookingRequestOffersCriterion: {
+            skip: 0,
+            take: 100,
+            cookIds: [userId],
+        },
+        assistantChatsCriterion: {
+            skip: 0,
+            take: 100,
+            userIds: [userId],
+        },
+    };
+}
+
+type AdminUserRow = NonNullable<NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['user']>;
+
+type AdminUserOutboundEmail = NonNullable<
+    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['outboundEmails']
+>[number];
+
+type AdminUserWhatsAppConversation = NonNullable<
+    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['whatsAppConversations']
+>[number];
+
+type AdminUserSession = NonNullable<
+    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['sessions']
+>[number];
+
+type AdminUserMeal = NonNullable<NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['cookMeals']>[number];
+
+type AdminUserMenu = NonNullable<NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['cookMenus']>[number];
+
+type AdminUserBookingRequest = NonNullable<
+    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['bookingRequests']
+>[number];
+
+type AdminUserBookingRequestOffer = NonNullable<
+    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['bookingRequestOffers']
+>[number];
+
+type AdminUserAssistantChatListItem = NonNullable<
+    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['assistantChats']
+>[number];
+
+type AdminUserTabDef = {
+    id: AdminUserTab;
+    label: Record<Locale, string>;
+    Icon: LucideIcon;
+    cookOnly?: boolean;
+};
+
+const ADMIN_USER_TABS: readonly AdminUserTabDef[] = [
+    { id: 'general', label: { de: 'Allgemeines', en: 'General' }, Icon: UserIcon },
+    { id: 'feature-toggles', label: { de: 'Feature Toggles', en: 'Feature toggles' }, Icon: ToggleRightIcon },
+    { id: 'session-events', label: { de: 'Sitzungsereignisse', en: 'Session events' }, Icon: LayersIcon },
+    { id: 'sessions', label: { de: 'Sitzungen', en: 'Sessions' }, Icon: AppWindowIcon },
+    { id: 'booking-requests', label: { de: 'Buchungsanfragen', en: 'Booking requests' }, Icon: FileInputIcon },
+    { id: 'notes', label: { de: 'Notizen', en: 'Notes' }, Icon: NotebookPenIcon },
+    { id: 'whatsapp', label: { de: 'WhatsApp', en: 'WhatsApp' }, Icon: MessageSquareIcon },
+    { id: 'emails', label: { de: 'E-Mails', en: 'Emails' }, Icon: MailsIcon },
+    { id: 'assistant-chats', label: { de: 'Assistent-Chats', en: 'Assistant chats' }, Icon: BotMessageSquareIcon },
+    { id: 'cook-profile', label: { de: 'Kochprofil', en: 'Cook profile' }, Icon: ChefHatIcon, cookOnly: true },
+    { id: 'meals', label: { de: 'Gerichte', en: 'Meals' }, Icon: UtensilsIcon, cookOnly: true },
+    { id: 'menus', label: { de: 'Menüs', en: 'Menus' }, Icon: HandPlatterIcon, cookOnly: true },
+    { id: 'offers', label: { de: 'Angebote', en: 'Offers' }, Icon: FileTextIcon, cookOnly: true },
+];
+
+function resolveAdminUserTab(tab: AdminUserTab | undefined, isCook: boolean): AdminUserTab {
+    if (!tab || tab === 'general') return 'general';
+    const def = ADMIN_USER_TABS.find((entry) => entry.id === tab);
+    if (!def) return 'general';
+    if (def.cookOnly && !isCook) return 'general';
+    return tab;
+}
+
+export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPageQuery; search: AdminUserSearch; userId: string }) {
+    const locale = useLocale();
+    const router = useRouter();
+    const [, terminateSessions] = useMutation(AdminUserTerminateSessionsDocument);
+    const [terminateBusy, setTerminateBusy] = useState(false);
+    const admin = data.currentSession.user?.admin;
+    const user = admin?.user ?? null;
+    const featureToggles = admin?.featureToggles ?? [];
+    const outboundEmails = admin?.outboundEmails ?? [];
+    const whatsAppConversations = admin?.whatsAppConversations ?? [];
+    const sessions = admin?.sessions ?? [];
+    const sessionEvents = admin?.sessionEvents ?? [];
+    const meals = admin?.cookMeals ?? [];
+    const menus = admin?.cookMenus ?? [];
+    const bookingRequests = admin?.bookingRequests ?? [];
+    const bookingRequestOffers = admin?.bookingRequestOffers ?? [];
+    const assistantChats = admin?.assistantChats ?? [];
+    const isCook = user?.types.includes('cook') ?? false;
+    const tab = resolveAdminUserTab(search.tab, isCook);
+    const visibleTabs = ADMIN_USER_TABS.filter((entry) => !entry.cookOnly || isCook);
+    const activeSessionIds = sessions.filter((session) => session.wasTerminatedAt == null).map((session) => session.sessionId);
+
+    async function onTerminateAllActiveSessions() {
+        if (activeSessionIds.length === 0) return;
+        setTerminateBusy(true);
+        try {
+            const result = await terminateSessions({ sessionIds: activeSessionIds });
+            if (result.error || !result.data?.admin.terminateSessions.success) {
+                toast.error({ de: 'Sitzungen konnten nicht beendet werden.', en: 'Could not end the sessions.' }[locale]);
+                return;
+            }
+            toast.success({ de: 'Sitzungen beendet.', en: 'Sessions ended.' }[locale]);
+            await router.invalidate();
+        } finally {
+            setTerminateBusy(false);
+        }
+    }
+
+    const footer = adminUserTabFooter({
+        tab,
+        userId,
+        cookId: user?.cook?.cookId,
+        locale,
+        activeSessionIds,
+        terminateBusy,
+        onTerminateAllActiveSessions,
+    });
+
+    return (
+        <AdminPageChrome
+            crumbs={[
+                { label: { de: 'Benutzer', en: 'Users' }[locale], to: '/{-$locale}/admin/users' },
+                { label: user ? userDisplayName(user) : adminUserPageTitle[locale] },
+            ]}
+            contentClassName="min-h-0 overflow-hidden gap-0"
+        >
+            {user ? (
+                <AdminPinnedFooterLayout footer={footer} contentClassName="grid w-full content-start gap-6">
+                    <Tabs value={tab}>
+                        <TabsList variant="line" aria-label={{ de: 'Benutzerbereiche', en: 'User sections' }[locale]}>
+                            {visibleTabs.map(({ id, label, Icon }) => (
+                                <TabsTrigger key={id} value={id} asChild>
+                                    <Link
+                                        to="/{-$locale}/admin/users/$userId"
+                                        params={{ userId }}
+                                        search={{ tab: id === 'general' ? undefined : id }}
+                                        replace
+                                    >
+                                        <Icon aria-hidden />
+                                        {label[locale]}
+                                    </Link>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </Tabs>
+
+                    <AdminUserTabPanel
+                        tab={tab}
+                        user={user}
+                        featureToggles={featureToggles}
+                        emails={outboundEmails}
+                        whatsAppConversations={whatsAppConversations}
+                        sessions={sessions}
+                        sessionEvents={sessionEvents}
+                        meals={meals}
+                        menus={menus}
+                        bookingRequests={bookingRequests}
+                        bookingRequestOffers={bookingRequestOffers}
+                        assistantChats={assistantChats}
+                    />
+                </AdminPinnedFooterLayout>
+            ) : (
+                <main id="main-content" className="grid w-full content-start gap-6 px-4 pb-6">
+                    <p className="text-sm text-muted-foreground">{{ de: 'Nutzer nicht gefunden.', en: 'User not found.' }[locale]}</p>
+                </main>
+            )}
+        </AdminPageChrome>
+    );
+}
+
+function AdminUserCreateMealFooter({ cookId, locale }: { cookId: string; locale: Locale }) {
+    const navigate = useNavigate();
+    const [, createMeal] = useMutation(AdminUserCookMealCreateDocument);
+    const [busy, setBusy] = useState(false);
+
+    async function onCreate() {
+        setBusy(true);
+        try {
+            const result = await createMeal({ cookId });
+            const mealId = result.data?.admin.cookMealCreate.referenceId;
+            if (result.error || !result.data?.admin.cookMealCreate.success || mealId == null) {
+                toast.error({ de: 'Gericht konnte nicht angelegt werden.', en: 'Could not create meal.' }[locale]);
+                return;
+            }
+            toast.success({ de: 'Entwurf-Gericht angelegt.', en: 'Draft meal created.' }[locale]);
+            await navigate({ to: '/{-$locale}/admin/meals/$mealId/edit', params: { mealId } });
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    return (
+        <Button type="button" disabled={busy} onClick={() => void onCreate()}>
+            {{ de: 'Gericht anlegen', en: 'Create meal' }[locale]}
+        </Button>
+    );
+}
+
+function AdminUserCreateMenuFooter({ cookId, locale }: { cookId: string; locale: Locale }) {
+    const navigate = useNavigate();
+    const [, createMenu] = useMutation(AdminUserCookMenuCreateDocument);
+    const [busy, setBusy] = useState(false);
+
+    async function onCreate() {
+        setBusy(true);
+        try {
+            const result = await createMenu({ cookId });
+            const menuId = result.data?.admin.cookMenuCreate.referenceId;
+            if (result.error || !result.data?.admin.cookMenuCreate.success || menuId == null) {
+                toast.error({ de: 'Menü konnte nicht angelegt werden.', en: 'Could not create menu.' }[locale]);
+                return;
+            }
+            toast.success({ de: 'Entwurf-Menü angelegt.', en: 'Draft menu created.' }[locale]);
+            await navigate({ to: '/{-$locale}/admin/menus/$menuId/edit', params: { menuId } });
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    return (
+        <Button type="button" disabled={busy} onClick={() => void onCreate()}>
+            {{ de: 'Menü anlegen', en: 'Create menu' }[locale]}
+        </Button>
+    );
+}
+
+function adminUserTabFooter({
+    tab,
+    userId,
+    cookId,
+    locale,
+    activeSessionIds,
+    terminateBusy,
+    onTerminateAllActiveSessions,
+}: {
+    tab: AdminUserTab;
+    userId: string;
+    cookId: string | undefined;
+    locale: Locale;
+    activeSessionIds: string[];
+    terminateBusy: boolean;
+    onTerminateAllActiveSessions: () => void;
+}): ReactNode | undefined {
+    switch (tab) {
+        case 'sessions':
+            if (activeSessionIds.length === 0) return undefined;
+            return (
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button type="button" variant="destructive" disabled={terminateBusy}>
+                            {{ de: 'Alle aktiven Sitzungen beenden', en: 'Terminate all active sessions' }[locale]}
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>
+                                {{ de: 'Alle aktiven Sitzungen beenden?', en: 'Terminate all active sessions?' }[locale]}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {
+                                    {
+                                        de: 'Der Nutzer wird auf allen Geräten und Browsern abgemeldet und muss sich erneut anmelden.',
+                                        en: 'The user will be signed out on all devices and browsers and will need to sign in again.',
+                                    }[locale]
+                                }
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={terminateBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                            <AlertDialogAction
+                                variant="destructive"
+                                disabled={terminateBusy}
+                                onClick={() => void onTerminateAllActiveSessions()}
+                            >
+                                {{ de: 'Alle beenden', en: 'Terminate all' }[locale]}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            );
+        case 'booking-requests':
+            return (
+                <Button type="button" asChild>
+                    <Link to="/{-$locale}/admin/booking-requests/create" search={{ userId }}>
+                        {{ de: 'Buchungsanfrage anlegen', en: 'Create booking request' }[locale]}
+                    </Link>
+                </Button>
+            );
+        case 'meals':
+            return cookId ? <AdminUserCreateMealFooter cookId={cookId} locale={locale} /> : undefined;
+        case 'menus':
+            return cookId ? <AdminUserCreateMenuFooter cookId={cookId} locale={locale} /> : undefined;
+        default:
+            return undefined;
+    }
+}
+
+type AdminUserSessionEvent = NonNullable<
+    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['sessionEvents']
+>[number];
+
+function AdminUserTabPanel({
+    tab,
+    user,
+    featureToggles,
+    emails,
+    whatsAppConversations,
+    sessions,
+    sessionEvents,
+    meals,
+    menus,
+    bookingRequests,
+    bookingRequestOffers,
+    assistantChats,
+}: {
+    tab: AdminUserTab;
+    user: AdminUserRow;
+    featureToggles: NonNullable<NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['featureToggles']>;
+    emails: AdminUserOutboundEmail[];
+    whatsAppConversations: AdminUserWhatsAppConversation[];
+    sessions: AdminUserSession[];
+    sessionEvents: AdminUserSessionEvent[];
+    meals: AdminUserMeal[];
+    menus: AdminUserMenu[];
+    bookingRequests: AdminUserBookingRequest[];
+    bookingRequestOffers: AdminUserBookingRequestOffer[];
+    assistantChats: AdminUserAssistantChatListItem[];
+}) {
+    switch (tab) {
+        case 'general':
+            return <AdminUserGeneralSection user={user} />;
+        case 'feature-toggles':
+            return <AdminUserFeatureTogglesSection user={user} globalFeatureToggles={featureToggles} />;
+        case 'notes':
+            return <AdminUserNotesSection user={user} />;
+        case 'cook-profile':
+            return <AdminUserCookProfileSection user={user} />;
+        case 'emails':
+            return <AdminUserEmailsSection emails={emails} />;
+        case 'whatsapp':
+            return <AdminUserWhatsAppSection conversations={whatsAppConversations} />;
+        case 'sessions':
+            return <AdminUserSessionsSection sessions={sessions} />;
+        case 'session-events':
+            return <AdminUserSessionEventsSection events={sessionEvents} />;
+        case 'meals':
+            return <AdminUserMealsSection meals={meals} />;
+        case 'menus':
+            return <AdminUserMenusSection menus={menus} />;
+        case 'booking-requests':
+            return <AdminUserBookingRequestsSection bookingRequests={bookingRequests} />;
+        case 'offers':
+            return <AdminUserBookingRequestOffersSection offers={bookingRequestOffers} />;
+        case 'assistant-chats':
+            return <AdminUserAssistantChatsSection chats={assistantChats} />;
+    }
+}
+
+function AdminUserSessionEventsSection({ events }: { events: AdminUserSessionEvent[] }) {
+    const locale = useLocale();
+    return (
+        <AdminSessionEventTimeline
+            events={events}
+            showSessionLink
+            emptyLabel={{ de: 'Keine Sitzungsereignisse für diesen Nutzer.', en: 'No session events for this user.' }[locale]}
+        />
+    );
+}
+
+function AdminUserMealsSection({ meals }: { meals: AdminUserMeal[] }) {
+    const locale = useLocale();
+    const timeZone = useTimeZone();
+
+    if (meals.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">
+                {{ de: 'Keine Gerichte für diesen Koch.', en: 'No meals for this cook.' }[locale]}
+            </p>
+        );
+    }
+
+    return (
+        <ul className="grid gap-4">
+            {meals.map((meal) => (
+                <li key={meal.mealId}>
+                    <CookMealCard
+                        meal={meal}
+                        to="/{-$locale}/admin/meals/$mealId"
+                        params={{ mealId: meal.mealId }}
+                        meta={<span className="tabular-nums">{formatDate(meal.createdAt, { locale, timeZone, dateStyle: 'medium' })}</span>}
+                    />
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+function AdminUserMenusSection({ menus }: { menus: AdminUserMenu[] }) {
+    const locale = useLocale();
+    const timeZone = useTimeZone();
+
+    if (menus.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">{{ de: 'Keine Menüs für diesen Koch.', en: 'No menus for this cook.' }[locale]}</p>
+        );
+    }
+
+    return (
+        <ul className="grid gap-4">
+            {menus.map((menu) => (
+                <li key={menu.menuId}>
+                    <CookMenuCard
+                        menu={menu}
+                        to="/{-$locale}/admin/menus/$menuId"
+                        params={{ menuId: menu.menuId }}
+                        meta={<span className="tabular-nums">{formatDate(menu.createdAt, { locale, timeZone, dateStyle: 'medium' })}</span>}
+                    />
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+function AdminUserBookingRequestsSection({ bookingRequests }: { bookingRequests: AdminUserBookingRequest[] }) {
+    const locale = useLocale();
+
+    if (bookingRequests.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">
+                {{ de: 'Keine Buchungsanfragen für diesen Nutzer.', en: 'No booking requests for this user.' }[locale]}
+            </p>
+        );
+    }
+
+    return (
+        <ul className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {bookingRequests.map((request) => (
+                <li key={request.bookingRequestId} className="min-h-0">
+                    <AdminBookingRequestListCard request={request} />
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+function AdminUserBookingRequestOffersSection({ offers }: { offers: AdminUserBookingRequestOffer[] }) {
+    const locale = useLocale();
+
+    if (offers.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">
+                {{ de: 'Keine Angebote für diesen Koch.', en: 'No offers for this cook.' }[locale]}
+            </p>
+        );
+    }
+
+    return (
+        <ul className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {offers.map((offer) => (
+                <li key={offer.bookingRequestOfferId} className="min-h-0">
+                    <AdminBookingRequestOfferCard bookingRequestId={offer.bookingRequestId} offer={offer} />
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+function AdminUserNotesSection({ user }: { user: AdminUserRow }) {
+    const locale = useLocale();
+    const [, noteUpdate] = useMutation(AdminUserAdminNoteUpdateDocument);
+    const [adminNote, setAdminNote] = useState(user.adminNote);
+    const [savedNote, setSavedNote] = useState(user.adminNote);
+    const [busy, setBusy] = useState(false);
+    const dirty = adminNote !== savedNote;
+
+    async function onSave() {
+        setBusy(true);
+        try {
+            const result = await noteUpdate({ userId: user.userId, adminNote });
+            if (result.error || !result.data?.admin.userAdminNoteUpdate.success) {
+                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                return;
+            }
+            setSavedNote(adminNote.trim());
+            setAdminNote(adminNote.trim());
+            toast.success({ de: 'Notiz gespeichert.', en: 'Note saved.' }[locale]);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    return (
+        <div className="grid max-w-2xl gap-4">
+            <div className="grid gap-1.5">
+                <label htmlFor="admin-user-note" className="text-sm font-medium">
+                    {{ de: 'Interne Notiz', en: 'Internal note' }[locale]}
+                </label>
+                <p className="text-sm text-muted-foreground">
+                    {
+                        {
+                            de: 'Nur für Admins sichtbar. Wird nicht an den Nutzer gesendet.',
+                            en: 'Visible to admins only. Never sent to the user.',
+                        }[locale]
+                    }
+                </p>
+                <Textarea
+                    id="admin-user-note"
+                    rows={8}
+                    value={adminNote}
+                    onChange={(event) => setAdminNote(event.target.value)}
+                    placeholder={{ de: 'Notiz hinzufügen…', en: 'Add a note…' }[locale]}
+                />
+            </div>
+            <div>
+                <Button type="button" disabled={busy || !dirty} onClick={() => void onSave()}>
+                    {{ de: 'Speichern', en: 'Save' }[locale]}
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+function AdminUserEmailsSection({ emails }: { emails: AdminUserOutboundEmail[] }) {
+    const locale = useLocale();
+    const timeZone = useTimeZone();
+
+    if (emails.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">
+                {{ de: 'Keine E-Mails für diesen Nutzer.', en: 'No emails for this user.' }[locale]}
+            </p>
+        );
+    }
+
+    return (
+        <ul className="grid gap-3">
+            {emails.map((email) => (
+                <li key={email.outboundEmailId} className="grid gap-1 border-b border-border/60 pb-3 last:border-b-0">
+                    <Link
+                        to="/{-$locale}/admin/outbound-emails/$outboundEmailId"
+                        params={{ outboundEmailId: email.outboundEmailId }}
+                        className="font-medium text-foreground hover:underline"
+                    >
+                        {email.subject || email.outboundEmailId}
+                    </Link>
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                        <Badge variant="secondary">{adminOutboundEmailPurposeLabel(email.purpose, locale)}</Badge>
+                        <span>{email.toEmail}</span>
+                        <span className="tabular-nums">{formatDate(email.createdAt, { locale, timeZone, dateStyle: 'medium' })}</span>
+                    </div>
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+function AdminUserWhatsAppSection({ conversations }: { conversations: AdminUserWhatsAppConversation[] }) {
+    const locale = useLocale();
+    const timeZone = useTimeZone();
+
+    if (conversations.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">
+                {{ de: 'Keine WhatsApp-Chats für diesen Nutzer.', en: 'No WhatsApp chats for this user.' }[locale]}
+            </p>
+        );
+    }
+
+    return (
+        <ul className="grid gap-3">
+            {conversations.map((conversation) => (
+                <li key={conversation.whatsAppConversationId} className="grid gap-1 border-b border-border/60 pb-3 last:border-b-0">
+                    <Link
+                        to="/{-$locale}/admin/whats-app-chats/$whatsAppConversationId"
+                        params={{ whatsAppConversationId: conversation.whatsAppConversationId }}
+                        className="font-medium text-foreground hover:underline"
+                    >
+                        {conversation.phoneNumber}
+                    </Link>
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                        {conversation.adminUnreadCount > 0 ? (
+                            <Badge variant="secondary">
+                                {conversation.adminUnreadCount} {{ de: 'ungelesen', en: 'unread' }[locale]}
+                            </Badge>
+                        ) : null}
+                        <span className="tabular-nums">
+                            {formatDate(conversation.lastMessageAt, { locale, timeZone, dateStyle: 'medium' })}
+                        </span>
+                    </div>
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+function AdminUserAssistantChatsSection({ chats }: { chats: AdminUserAssistantChatListItem[] }) {
+    const locale = useLocale();
+    const timeZone = useTimeZone();
+
+    if (chats.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">
+                {{ de: 'Keine Assistent-Chats für diesen Nutzer.', en: 'No assistant chats for this user.' }[locale]}
+            </p>
+        );
+    }
+
+    return (
+        <ul className="grid gap-3">
+            {chats.map((row) => (
+                <li key={row.chatId} className="grid gap-1 border-b border-border/60 pb-3 last:border-b-0">
+                    <Link
+                        to="/{-$locale}/admin/assistant-chats/$chatId"
+                        params={{ chatId: row.chatId }}
+                        className="font-medium text-foreground hover:underline"
+                    >
+                        {adminAssistantChatTitle(row.title, locale)}
+                    </Link>
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                        <Badge variant="secondary">{adminChatSurfaceLabel(row.surface, locale)}</Badge>
+                        {row.deletedAt ? <Badge variant="outline">{{ de: 'Gelöscht', en: 'Deleted' }[locale]}</Badge> : null}
+                        <span className="tabular-nums">{formatDate(row.lastModifiedAt, { locale, timeZone, dateStyle: 'medium' })}</span>
+                    </div>
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+function AdminUserSessionsSection({ sessions }: { sessions: AdminUserSession[] }) {
+    const locale = useLocale();
+    const timeZone = useTimeZone();
+    const router = useRouter();
+    const [, terminateSessions] = useMutation(AdminUserTerminateSessionsDocument);
+    const [busy, setBusy] = useState(false);
+    const noUserAgent = { de: 'Kein User-Agent', en: 'No user agent' }[locale];
+    const botLabel = { de: 'Bot', en: 'Bot' }[locale];
+    const activeLabel = { de: 'Aktiv', en: 'Active' }[locale];
+    const terminatedLabel = { de: 'Beendet', en: 'Terminated' }[locale];
+    const detailsLabel = { de: 'Details', en: 'Details' }[locale];
+
+    async function onTerminateSession(sessionId: string) {
+        setBusy(true);
+        try {
+            const result = await terminateSessions({ sessionIds: [sessionId] });
+            if (result.error || !result.data?.admin.terminateSessions.success) {
+                toast.error({ de: 'Sitzung konnte nicht beendet werden.', en: 'Could not end the session.' }[locale]);
+                return;
+            }
+            toast.success({ de: 'Sitzung beendet.', en: 'Session ended.' }[locale]);
+            await router.invalidate();
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    if (sessions.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">
+                {{ de: 'Keine Sitzungen für diesen Nutzer.', en: 'No sessions for this user.' }[locale]}
+            </p>
+        );
+    }
+
+    return (
+        <ul className="divide-y divide-border overflow-hidden rounded-xl border">
+            {sessions.map((session) => {
+                const badges: string[] = [];
+                if (session.isBot) badges.push(botLabel);
+                if (session.connectionActive) badges.push(activeLabel);
+                if (session.wasTerminatedAt) badges.push(terminatedLabel);
+                const canTerminate = session.wasTerminatedAt == null;
+
+                return (
+                    <li key={session.sessionId} className="flex items-center justify-between gap-4 px-4 py-3">
+                        <div className="grid min-w-0 gap-0.5">
+                            <p className="truncate text-sm font-medium text-foreground">{session.userAgent ?? noUserAgent}</p>
+                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                {badges.map((label) => (
+                                    <Badge key={label} variant="secondary">
+                                        {label}
+                                    </Badge>
+                                ))}
+                                <span className="tabular-nums">
+                                    {formatDate(session.lastInteractionAt, { locale, timeZone, dateStyle: 'medium' })}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                            <Button type="button" variant="ghost" size="sm" asChild>
+                                <Link to="/{-$locale}/admin/sessions/$sessionId" params={{ sessionId: session.sessionId }}>
+                                    {detailsLabel}
+                                </Link>
+                            </Button>
+                            {canTerminate ? (
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button type="button" variant="outline" size="sm" disabled={busy}>
+                                            {{ de: 'Beenden', en: 'Revoke' }[locale]}
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>
+                                                {{ de: 'Sitzung beenden?', en: 'Terminate this session?' }[locale]}
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                {
+                                                    {
+                                                        de: 'Der Nutzer wird auf diesem Gerät abgemeldet und muss sich erneut anmelden, um fortzufahren.',
+                                                        en: 'The user will be signed out on this device and will need to sign in again to continue.',
+                                                    }[locale]
+                                                }
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel disabled={busy}>
+                                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                            </AlertDialogCancel>
+                                            <AlertDialogAction
+                                                variant="destructive"
+                                                disabled={busy}
+                                                onClick={() => void onTerminateSession(session.sessionId)}
+                                            >
+                                                {{ de: 'Beenden', en: 'Revoke' }[locale]}
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            ) : (
+                                <span className="text-xs text-muted-foreground">{terminatedLabel}</span>
+                            )}
+                        </div>
+                    </li>
+                );
+            })}
+        </ul>
+    );
+}

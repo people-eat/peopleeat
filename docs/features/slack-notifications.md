@@ -1,0 +1,92 @@
+# Slack ops notifications
+
+Internal Slack posts keep ops aware of marketplace, support, sign-up, and gift-card events without blocking product writes.
+
+## Behavior
+
+Ops receives structured Slack messages (German copy — internal surface):
+
+- **Booking timeline** — one root message per booking request (channel by party size), then thread replies for lifecycle events
+- **Sign-ups** — customer and cook registration
+- **Support** — one root message per ticket, then thread replies for customer/admin messages and resolve
+- **Gift cards** — successful purchases
+- **Digests / alerts** — weekday booking report; 24h / 48h no-offer aging as a thread reply on the booking request; payment failures /
+  payouts as booking-thread replies (channel-broadcast when urgency/visibility matters); **daily admin action-item report** (08:00
+  Europe/Berlin, mirrors `/admin` queues) on the ops-alerts channel; **Resend quota at-risk alert** (00:00 and 19:00 Europe/Berlin, only
+  when monthly or free-tier daily quota is at risk) on the same channel
+- **WhatsApp Concierge** — inbound customer messages on `SLACK_CHANNEL_WHATSAPP_MESSAGES`; known reaction quick-replies also reply on the
+  booking-request Slack thread
+
+Failed Slack posts never roll back domain writes.
+
+## Decisions
+
+### Alternatives considered
+
+| Option                                                           | Notes                                                                            |
+| ---------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Heavy bot framework with mandatory CTAs and emoji-first builders | Rejected — noisy, hard to maintain, duplicated message shapes                    |
+| Incoming webhooks only                                           | Rejected — weak threading / reaction flexibility                                 |
+| Outbound Web API + Block Kit builders                            | **Chosen** — shared message template; boot-required when `SLACK_TRANSPORT=slack` |
+
+### Chosen
+
+Outbound-only Slack client: root message on create (persist thread refs on the booking or support row), thread replies for later events,
+Block Kit layout (header → fields → optional body → context → optional admin button).
+
+## Ideas
+
+- Weekly platform brief (sign-ups, bookings created, payments) reusing `adminActionItemsSnapshot` helpers plus activity metrics.
+
+## Implementation
+
+### Env
+
+| Variable                                | Role                                                                                                              |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `SLACK_TRANSPORT`                       | `slack` (default) or `console` (local/dev: log posts to the terminal)                                             |
+| `SLACK_BOT_TOKEN`                       | Bot token; required when `SLACK_TRANSPORT=slack`                                                                  |
+| `SLACK_CHANNEL_BOOKING_REQUESTS`        | Default booking roots / threads                                                                                   |
+| `SLACK_CHANNEL_CASH_COWS`               | ≥12 guests (same threshold as publication review)                                                                 |
+| `SLACK_CHANNEL_SIGN_UPS`                | Customer / cook sign-ups                                                                                          |
+| `SLACK_CHANNEL_SUPPORT_REQUESTS`        | Support tickets                                                                                                   |
+| `SLACK_CHANNEL_GIFT_CARD_PURCHASES`     | Gift-card paid                                                                                                    |
+| `SLACK_CHANNEL_BOOKING_REQUEST_REPORTS` | Weekday digest                                                                                                    |
+| `SLACK_CHANNEL_OPS_ALERTS`              | Daily admin action-item report (pending cooks, publication, …); Resend quota alerts; other non-booking ops alerts |
+| `SLACK_CHANNEL_WHATSAPP_MESSAGES`       | Inbound Concierge WhatsApp messages                                                                               |
+
+When `SLACK_TRANSPORT=slack`, the bot token and every channel id are required at boot. When `console`, those credentials are omitted and
+`postMessage` prints to the server terminal (same idea as `EMAIL_TRANSPORT=console`).
+
+Root refs: `BookingRequests.references` / `SupportRequests.references` as `{ slackTs, slackChannelId }`.
+
+### Module layout
+
+| Path                                               | Role                                    |
+| -------------------------------------------------- | --------------------------------------- |
+| `src/server/slack/slackCreate.ts`                  | WebClient wrapper                       |
+| `src/server/slack/slackBlocks.ts`                  | Block Kit template                      |
+| `src/server/slack/bookingRequestSlack.ts`          | Booking root post + thread reply        |
+| `src/server/slack/supportRequestSlack.ts`          | Support root post + thread reply        |
+| `src/server/slack/slackNotifyBooking.ts`           | Booking lifecycle helpers               |
+| `src/server/slack/slackNotifyAdjacent.ts`          | Sign-up / support / gift card           |
+| `src/server/slack/whatsappSlack.ts`                | Concierge WhatsApp inbound + reactions  |
+| `src/server/slack/slackNotifyCallSlot.ts`          | Call-slot events                        |
+| `src/server/slack/adminActionItemsSnapshot.ts`     | Admin-home action queue snapshot        |
+| `src/server/slack/adminActionItemsSlackMessage.ts` | German Block Kit for daily admin report |
+| `src/server/slack/resendUsageSlackMessage.ts`      | German Block Kit for Resend quota alert |
+
+### Jobs
+
+- `booking-request-no-offers-notify` — queued per request at create (24h / 48h); cancelled when first offer arrives
+- `booking-request-offer-event-tomorrow-notify` — queued per paid offer; fires 08:00 Europe/Berlin day before event
+- `booking-request-slack-digest` — weekday open-request digest (recurring)
+- `admin-action-items-slack-daily` — every day ≈08:00 Europe/Berlin, admin-home queues to ops-alerts (DST-safe via UTC `0 6,7 * * *` +
+  Berlin hour gate)
+- `resend-usage-slack-alert` — every day ≈00:00 and 19:00 Europe/Berlin, posts only when Resend monthly (or free-tier daily) quota is at
+  risk (DST-safe via UTC `0 17,18,22,23 * * *` + Berlin hour gate); see [admin-outbound-emails.md](./admin-outbound-emails.md)
+
+### Out of scope
+
+Slack interactive actions, DM bot, message edits/reactions, historical thread migration. WhatsApp is a separate channel — see
+[whatsapp.md](./whatsapp.md).

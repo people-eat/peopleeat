@@ -1,0 +1,39 @@
+# Admin AI generation detail. Loaded by `/admin/ai-generations/$aiGenerationId`.
+# See docs/features/admin-ai-generations.md.
+
+query AdminAiGenerationPage($aiGenerationId: ID!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                aiGeneration(aiGenerationId: $aiGenerationId) {
+                    aiGenerationId
+                    kind
+                    userId
+                    user {
+                        userId
+                        firstName
+                        lastName
+                        emailAddress
+                    }
+                    sessionId
+                    session {
+                        sessionId
+                    }
+                    modelId
+                    system
+                    prompt
+                    output
+                    inputTokens
+                    outputTokens
+                    totalTokens
+                    reasoningTokens
+                    cachedInputTokens
+                    createdAt
+                }
+            }
+        }
+    }
+}
