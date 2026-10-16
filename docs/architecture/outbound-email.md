@@ -18,9 +18,11 @@ and retries must not erase history.
 3. **`serverRuntime.email.send`** inserts the row first, optionally inserts `OutboundEmailAttachments` join rows when callers pass
    `attachments` with `fileUploadId`, calls Resend (or console) with binary attachments, then stamps `providerMessageId` + `sentAt` or
    `failedAt` / `failureReason`. Returns `{ outboundEmailId }`. The Resend `from` value is `SITE_NAME <RESEND_FROM_EMAIL>` (e.g.
-   `peopleeat <peopleeat@mail.people-eat.com>`) unless `RESEND_FROM_EMAIL` already includes a display name.
-   **`serverRuntime.email.usageGet`** returns live Resend monthly/daily quota (`EmailUsage`) or `null` when `EMAIL_TRANSPORT=console`;
-   throws when the Resend usage API fails. Admin overview and the quota Slack alert call this instead of importing Resend directly.
+   `peopleeat <peopleeat@mail.people-eat.com>`) unless `RESEND_FROM_EMAIL` already includes a display name. Before each Resend API call,
+   `resendSendRateLimit.acquire()` paces starts under the default **10 req/s** team limit (cap 8/s with headroom) so bulk paths like
+   `bookingRequestCooksNotify` (`Promise.all` over radius cooks) do not 429. **`serverRuntime.email.usageGet`** returns live Resend
+   monthly/daily quota (`EmailUsage`) or `null` when `EMAIL_TRANSPORT=console`; throws when the Resend usage API fails. Admin overview and
+   the quota Slack alert call this instead of importing Resend directly.
 4. **Resend webhooks** at `/api/webhooks/resend` verify Svix signatures with `RESEND_WEBHOOK_SECRET`, then `outboundEmailProviderEventApply`
    first-write-wins lifecycle timestamps (`sentAt`, `deliveredAt`, `deliveryDelayedAt`, `openedAt`, `clickedAt`, `bouncedAt`,
    `complainedAt`, `failedAt`).
@@ -43,6 +45,8 @@ and retries must not erase history.
 - Retries are multiple rows sharing the same related entity — admin lists show all attempts.
 - Console transport still persists rows (no `providerMessageId`) so local admin UI works.
 - When `EMAIL_TRANSPORT=resend`, `RESEND_API_KEY` / `RESEND_FROM_EMAIL` / `RESEND_WEBHOOK_SECRET` are required at boot.
+- Parallel fan-out senders (cook radius notify, etc.) rely on `resendSendRateLimit` rather than per-call-site throttling; raising Resend's
+  team limit in the dashboard does not remove the in-process cap until `RESEND_SEND_MAX_PER_SECOND` is raised.
 - Pre-account outbound rows become visible on the user emails tab only after signup backfill (or if `userId` was known at send).
 - Marketing audience continuity lives in Klaviyo profile sync, not OutboundEmails — see
   [features/klaviyo-profile-sync.md](../features/klaviyo-profile-sync.md).

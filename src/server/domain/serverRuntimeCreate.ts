@@ -17,6 +17,7 @@ import { aiGenerationsCreate } from '../utils/aiGenerationsCreate';
 import { browserCapture, browserCapturePdf } from '../utils/browserCapture';
 import { emailFromHeader } from '../utils/emailFromHeader';
 import { loggerCreate } from '../utils/loggerCreate';
+import { resendSendRateLimit } from '../utils/resendSendRateLimit';
 import { whatsappTemplateOutboundSend, whatsappTextOutboundSend } from '../utils/whatsappOutboundSend';
 import { whatsappCreate } from '../whatsapp/whatsappCreate';
 import type { ServerRuntime } from './ServerRuntime';
@@ -145,6 +146,8 @@ export function serverRuntimeCreate(): ServerRuntime {
                     if (!resendApiKey || !fromEmail) {
                         throw new Error('serverRuntime.email.send: Resend credentials missing for resend transport');
                     }
+                    // Stay under Resend's default 10 req/s team limit (bulk cook notify, etc.).
+                    await resendSendRateLimit.acquire();
                     const { Resend } = await import('resend');
                     const resend = new Resend(resendApiKey);
                     const result = await resend.emails.send({

@@ -20,8 +20,10 @@ export type BookingRequestCooksNotifyContext = {
 
 /**
  * Stamp cook↔request affinity, push live updates, and email cooks about a new
- * (or newly approved) booking request in their travel radius. Email failures are
- * logged and do not undo the notify stamp / SSE.
+ * (or newly approved) booking request in their travel radius. Email sends run
+ * in parallel; Resend pacing lives in `serverRuntime.email.send`
+ * (`resendSendRateLimit`). Email failures are logged and do not undo the notify
+ * stamp / SSE.
  */
 export async function bookingRequestCooksNotify(
     serverRuntime: ServerRuntime,
