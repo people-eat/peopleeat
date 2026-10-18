@@ -10,8 +10,8 @@ import { AdminListPaginationBar } from '../../components/AdminListPaginationBar'
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/base/avatar';
-import { Badge } from '../../components/base/badge';
 import { Input } from '../../components/base/input';
+import { NotificationBadge } from '../../components/base/notification-badge';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import type { GqlCAdminWhatsAppChatsPageAdminFragment, GqlCAdminWhatsAppChatsPageQuery } from '../../graphql/generated';
 import { AdminWhatsAppChatsPageUpdatesDocument } from '../../graphql/generated';
@@ -234,8 +234,8 @@ export function AdminWhatsAppChatsPage({ data, search }: { data: GqlCAdminWhatsA
                                                 <AvatarFallback className="text-base">{initialsFromName(title)}</AvatarFallback>
                                             </Avatar>
                                         </span>
-                                        <span className="grid min-w-0 flex-1 content-center gap-0.5 p-3">
-                                            <span className="flex items-baseline justify-between gap-2">
+                                        <span className="flex min-w-0 flex-1 items-stretch gap-2 p-3">
+                                            <span className="grid min-w-0 flex-1 content-center gap-0.5">
                                                 <span
                                                     className={cn(
                                                         'min-w-0 truncate text-sm',
@@ -244,19 +244,29 @@ export function AdminWhatsAppChatsPage({ data, search }: { data: GqlCAdminWhatsA
                                                 >
                                                     {title}
                                                 </span>
-                                                <span className="flex shrink-0 items-center gap-1.5">
-                                                    <span
-                                                        className={cn(
-                                                            'text-xs',
-                                                            unread ? 'font-medium text-foreground' : 'text-muted-foreground',
-                                                        )}
-                                                    >
-                                                        {formatInboxListTimestamp(conversation.lastMessageAt, { locale, timeZone })}
-                                                    </span>
-                                                    {unread ? <Badge variant="secondary">{conversation.adminUnreadCount}</Badge> : null}
-                                                </span>
+                                                <span className="line-clamp-2 min-h-10 text-sm/5 text-muted-foreground">{preview}</span>
                                             </span>
-                                            <span className="line-clamp-2 min-h-10 text-sm/5 text-muted-foreground">{preview}</span>
+                                            <span className="flex shrink-0 flex-col items-end gap-1.5 pt-0.5">
+                                                <span
+                                                    className={cn(
+                                                        'text-xs tabular-nums',
+                                                        unread ? 'font-medium text-foreground' : 'text-muted-foreground',
+                                                    )}
+                                                >
+                                                    {formatInboxListTimestamp(conversation.lastMessageAt, { locale, timeZone })}
+                                                </span>
+                                                <NotificationBadge
+                                                    count={conversation.adminUnreadCount}
+                                                    label={
+                                                        {
+                                                            de: `${conversation.adminUnreadCount} ungelesene Nachrichten`,
+                                                            en: `${conversation.adminUnreadCount} unread messages`,
+                                                        }[locale]
+                                                    }
+                                                    placement="inline"
+                                                    className="size-5 bg-green-500 text-[11px] shadow-none"
+                                                />
+                                            </span>
                                         </span>
                                     </Link>
                                 </li>

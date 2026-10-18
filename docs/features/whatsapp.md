@@ -19,10 +19,13 @@ threads in the admin inbox, including media and quick-reply reactions.
 ### Admin
 
 - `/admin/whats-app-chats` — unread-first card grid (shared admin link-card chrome): profile picture (peopleeat user when matched, else
-  initials), name/phone + messenger-style relative time, two-line last-message preview; search (phone / WA display name / user), pinned
-  bottom pagination (`page` / `pageSize`), live updates, sidebar unread badge.
+  initials), name/phone + two-line last-message preview, right column with messenger-style relative time above a green unread
+  `NotificationBadge`; search (phone / WA display name / user), pinned bottom pagination (`page` / `pageSize`), live updates, sidebar unread
+  badge.
 - `/admin/whats-app-chats/<id>` — human transcript with attachments + delivery ticks; free-form reply only inside the Meta 24h
-  customer-service window; mark read on open (admin unread + Meta blue-tick).
+  customer-service window; mark read on open (admin unread + Meta blue-tick). Nested transcript owns the pane scroll under
+  `AdminPinnedFooterLayout` `contentScroll={false}` (chrome breakout; header keeps `px-4`, chat wrapper does not, so the
+  scrollbar sits on the pane edge).
 - User detail **WhatsApp** tab lists that user’s conversations.
 - Inbound Slack mirror on `SLACK_CHANNEL_WHATSAPP_MESSAGES`; known reaction quick-replies also post on the booking Slack thread.
 

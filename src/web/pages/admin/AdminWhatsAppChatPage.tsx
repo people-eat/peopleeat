@@ -5,6 +5,7 @@ import { pipe, subscribe } from 'wonka';
 
 import { userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
+import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { WhatsAppConversationChat } from '../../components/WhatsAppConversationChat';
 import type { GqlCAdminWhatsAppChatDetailFieldsFragment, GqlCAdminWhatsAppChatPageQuery } from '../../graphql/generated';
 import {
@@ -80,27 +81,29 @@ export function AdminWhatsAppChatPage({
             crumbs={[{ label: adminWhatsAppChatsPageTitle[locale], to: '/{-$locale}/admin/whats-app-chats' }, { label: peerDisplay }]}
             contentClassName="min-h-0 overflow-hidden gap-0 pb-0"
         >
-            <main id="main-content" data-workspace-fill="" className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 overflow-hidden">
-                <div className="flex shrink-0 flex-wrap items-start justify-between gap-3">
-                    <div className="grid gap-1">
-                        <h1 className="font-serif text-2xl/tight text-foreground">{peerDisplay}</h1>
-                        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-                            <span>{conversation.phoneNumber}</span>
-                            {conversation.customer ? (
-                                <Link
-                                    to="/{-$locale}/admin/users/$userId"
-                                    params={{ userId: conversation.customer.userId }}
-                                    className="underline-offset-4 hover:underline"
-                                >
-                                    {{ de: 'Nutzer öffnen', en: 'Open user' }[locale]}
-                                </Link>
-                            ) : null}
+            <AdminPinnedFooterLayout contentScroll={false} contentClassName="flex w-full min-w-0 flex-col pb-0">
+                <div className="grid shrink-0 gap-2 px-4 pb-1">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="grid min-w-0 gap-1">
+                            <h1 className="font-serif text-2xl/tight text-foreground">{peerDisplay}</h1>
+                            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+                                <span>{conversation.phoneNumber}</span>
+                                {conversation.customer ? (
+                                    <Link
+                                        to="/{-$locale}/admin/users/$userId"
+                                        params={{ userId: conversation.customer.userId }}
+                                        className="underline-offset-4 hover:underline"
+                                    >
+                                        {{ de: 'Nutzer öffnen', en: 'Open user' }[locale]}
+                                    </Link>
+                                ) : null}
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <WhatsAppConversationChat
-                    className="min-h-0 flex-1 overflow-hidden border-t pt-4"
+                    className="min-h-0 min-w-0 flex-1 overflow-hidden border-t pt-4"
                     messages={conversation.messages}
                     canSend={windowOpen}
                     peerDisplay={peerDisplay}
@@ -109,7 +112,7 @@ export function AdminWhatsAppChatPage({
                         return Boolean(result.data?.admin.whatsAppMessageCreate.success);
                     }}
                 />
-            </main>
+            </AdminPinnedFooterLayout>
         </AdminPageChrome>
     );
 }

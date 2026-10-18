@@ -180,7 +180,7 @@ export function AdminOfferChatReviewPage({
                 </div>
 
                 <BookingRequestOfferChat
-                    className="min-h-0 min-w-0 flex-1 px-4"
+                    className="min-h-0 min-w-0 flex-1"
                     messages={offer.messages}
                     canSend={canSend}
                     externalComposer
