@@ -19,7 +19,8 @@ customer-service window, and every send must be auditable.
    `WhatsAppConversations` (unique phone; Meta / migrated inbox often omit leading `+` while `Users.phoneNumber` is E.164 with `+`, so admin
    joins and user lookups match on digits; optional `userId` / `displayName`, `adminUnreadCount`, `customerServiceWindowExpiresAt`);
    `WhatsAppMessages` (inbound/outbound transcript with `messageKind`, delivery stamps, FK to outbound audit); `WhatsAppMessageAttachments`
-   → `FileUploads`.
+   → `FileUploads`; `WhatsAppMessageReactions` (current emoji per party on a transcript message; Meta `type: reaction`, not a transcript
+   row; null `emoji` tombstone when cleared).
 5. **Webhook** — `GET`/`POST` `/api/webhooks/whatsapp` (Meta challenge + optional `X-Hub-Signature-256`). Signature verification is gated by
    feature toggle `WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION` (missing/off skips the check; enable once Meta app secret is confirmed). A wrong
    `WHATSAPP_APP_SECRET` with the toggle on rejects every Meta POST with `400` and no transcript/status updates — the route logs
@@ -28,7 +29,8 @@ customer-service window, and every send must be auditable.
    body + signature) to `https://demo.people-eat.com/api/webhooks/whatsapp` for test mirroring (Meta allows only one callback URL per app).
    Inbound upserts conversation/message (conflict-safe on phone), downloads media into `FileUploads`, opens a 24h session window,
    Slack-notifies `SLACK_CHANNEL_WHATSAPP_MESSAGES`, and routes known reaction quick-replies onto the booking Slack thread when possible.
-   Statuses stamp audit + linked transcript delivery columns.
+   Emoji reactions upsert `WhatsAppMessageReactions` on the target `providerMessageId`, bump unread + 24h window, and skip Slack. Statuses
+   stamp audit + linked transcript delivery columns.
 6. **Admin free-form reply** — only while `customerServiceWindowExpiresAt` is in the future (`CONCIERGE_SESSION_REPLY`). Opening a chat
    clears admin unread and calls Meta `markMessageAsRead` for the latest inbound. Outside the window, lifecycle templates still send; ops
    cannot free-type. Admin composer is text-only (no outbound media attach).

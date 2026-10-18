@@ -40,6 +40,7 @@ export function toGqlSupportRequestMessages(input: {
             body: message.body,
             attachments: attachments.map(toGqlFileUpload),
             deliveryStatus: null,
+            reactions: [],
             createdAt: message.createdAt,
         };
     });

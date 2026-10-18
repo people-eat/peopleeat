@@ -61,6 +61,7 @@ export function ChatMessage({ message, chatTurnId, onApprovalRespond, onPromptUs
                     collapseLongBody: true,
                     author: { display: 'You', createdAt: message.createdAt, profilePicture: null },
                     attachments: message.attachments,
+                    reactions: [],
                 }}
                 showAuthorName={false}
                 showAuthorAvatar={false}

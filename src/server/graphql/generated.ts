@@ -2435,6 +2435,12 @@ export type GqlSChatMessagePart =
 
 export type GqlSChatMessagePartState = 'DONE' | 'STREAMING';
 
+export interface GqlSChatMessageReaction {
+    __typename?: 'ChatMessageReaction';
+    emoji: Scalars['String']['output'];
+    isOwn: Scalars['Boolean']['output'];
+}
+
 export interface GqlSChatMessageReasoningPart {
     __typename?: 'ChatMessageReasoningPart';
     partId: Scalars['ID']['output'];
@@ -2493,6 +2499,7 @@ export interface GqlSChatMessageUser {
     createdAt: Scalars['DateTime']['output'];
     deliveryStatus?: Maybe<GqlSChatMessageDeliveryStatus>;
     isOwn: Scalars['Boolean']['output'];
+    reactions: Array<GqlSChatMessageReaction>;
     showCopyButton: Scalars['Boolean']['output'];
 }
 
@@ -5121,6 +5128,7 @@ export type GqlSResolversTypes = ResolversObject<{
     ChatMessageFilePart: ResolverTypeWrapper<GqlSChatMessageFilePart>;
     ChatMessagePart: ResolverTypeWrapper<GqlSResolversUnionTypes<GqlSResolversTypes>['ChatMessagePart']>;
     ChatMessagePartState: GqlSChatMessagePartState;
+    ChatMessageReaction: ResolverTypeWrapper<GqlSChatMessageReaction>;
     ChatMessageReasoningPart: ResolverTypeWrapper<GqlSChatMessageReasoningPart>;
     ChatMessageRole: GqlSChatMessageRole;
     ChatMessageSourceDocumentPart: ResolverTypeWrapper<GqlSChatMessageSourceDocumentPart>;
@@ -5630,6 +5638,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     ChatMessageDataPart: GqlSChatMessageDataPart;
     ChatMessageFilePart: GqlSChatMessageFilePart;
     ChatMessagePart: GqlSResolversUnionTypes<GqlSResolversParentTypes>['ChatMessagePart'];
+    ChatMessageReaction: GqlSChatMessageReaction;
     ChatMessageReasoningPart: GqlSChatMessageReasoningPart;
     ChatMessageSourceDocumentPart: GqlSChatMessageSourceDocumentPart;
     ChatMessageSourceUrlPart: GqlSChatMessageSourceUrlPart;
@@ -7989,6 +7998,14 @@ export type GqlSChatMessagePartResolvers<
     >;
 }>;
 
+export type GqlSChatMessageReactionResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['ChatMessageReaction'] = GqlSResolversParentTypes['ChatMessageReaction'],
+> = ResolversObject<{
+    emoji?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    isOwn?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
 export type GqlSChatMessageReasoningPartResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['ChatMessageReasoningPart'] = GqlSResolversParentTypes['ChatMessageReasoningPart'],
@@ -8061,6 +8078,7 @@ export type GqlSChatMessageUserResolvers<
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     deliveryStatus?: Resolver<Maybe<GqlSResolversTypes['ChatMessageDeliveryStatus']>, ParentType, ContextType>;
     isOwn?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    reactions?: Resolver<Array<GqlSResolversTypes['ChatMessageReaction']>, ParentType, ContextType>;
     showCopyButton?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -10258,6 +10276,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     ChatMessageDataPart?: GqlSChatMessageDataPartResolvers<ContextType>;
     ChatMessageFilePart?: GqlSChatMessageFilePartResolvers<ContextType>;
     ChatMessagePart?: GqlSChatMessagePartResolvers<ContextType>;
+    ChatMessageReaction?: GqlSChatMessageReactionResolvers<ContextType>;
     ChatMessageReasoningPart?: GqlSChatMessageReasoningPartResolvers<ContextType>;
     ChatMessageSourceDocumentPart?: GqlSChatMessageSourceDocumentPartResolvers<ContextType>;
     ChatMessageSourceUrlPart?: GqlSChatMessageSourceUrlPartResolvers<ContextType>;

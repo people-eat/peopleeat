@@ -123,6 +123,10 @@ fragment HumanChatMessageFields on HumanChatMessage {
         showCopyButton
         collapseLongBody
         deliveryStatus
+        reactions {
+            emoji
+            isOwn
+        }
         author {
             display
             createdAt

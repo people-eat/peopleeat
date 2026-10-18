@@ -192,11 +192,30 @@ export function ChatMessageUserView({
         </>
     );
 
+    const reactionBadges =
+        message.reactions.length > 0 ? (
+            <div
+                className={cn('z-10 -mt-2 flex flex-wrap gap-0.5', isOwn ? 'mr-1 justify-end' : 'ml-8 justify-start')}
+                aria-label={{ de: 'Reaktionen', en: 'Reactions' }[locale]}
+            >
+                {message.reactions.map((reaction) => (
+                    <span
+                        key={`${reaction.emoji}-${reaction.isOwn ? 'own' : 'peer'}`}
+                        className="inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-border/80 bg-background px-1.5 text-sm leading-none shadow-sm"
+                        title={reaction.isOwn ? { de: 'Deine Reaktion', en: 'Your reaction' }[locale] : undefined}
+                    >
+                        {reaction.emoji}
+                    </span>
+                ))}
+            </div>
+        ) : null;
+
     if (isOwn) {
         return (
             <MessageRow side={side}>
                 <div className="group/msg flex w-full max-w-full flex-col items-end">
                     <Bubble tone={tone}>{bubbleInner}</Bubble>
+                    {reactionBadges}
                     {preview}
                     {editDialog}
                 </div>
@@ -228,6 +247,7 @@ export function ChatMessageUserView({
                         {bubbleInner}
                     </Bubble>
                 </div>
+                {reactionBadges}
                 {preview}
                 {editDialog}
             </div>

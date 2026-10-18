@@ -64,6 +64,7 @@ function toGqlOfferChatMessageUser(event: BookingRequestOfferEvent, input: ToGql
         body: payload.messageBody,
         attachments: attachments.map(toGqlFileUpload),
         deliveryStatus: null,
+        reactions: [],
         createdAt: createdAtForMessageSimple(event, payload),
     };
 }

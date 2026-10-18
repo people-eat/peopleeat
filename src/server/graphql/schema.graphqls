@@ -27,6 +27,13 @@ enum ChatMessageDeliveryStatus {
     FAILED
 }
 
+type ChatMessageReaction {
+    emoji: String!
+    # Viewer-relative: true when the reaction was applied by the viewer's party
+    # (same convention as `ChatMessageUser.isOwn`).
+    isOwn: Boolean!
+}
+
 type ChatMessageUser {
     chatMessageId: ID!
     # Lean public identity — no email / last name / phone. See `PublicUser`.
@@ -54,6 +61,9 @@ type ChatMessageUser {
     # Optional delivery ticks for outbound WhatsApp (and future carriers).
     # Null on assistant / offer / support messages.
     deliveryStatus: ChatMessageDeliveryStatus
+    # Emoji reactions on this message (WhatsApp Concierge today; empty elsewhere).
+    # Not separate transcript rows — overlays on the target bubble.
+    reactions: [ChatMessageReaction!]!
     createdAt: DateTime!
 }
 

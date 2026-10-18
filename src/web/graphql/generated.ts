@@ -2438,6 +2438,12 @@ export type GqlCChatMessagePart =
 
 export type GqlCChatMessagePartState = 'DONE' | 'STREAMING';
 
+export interface GqlCChatMessageReaction {
+    __typename?: 'ChatMessageReaction';
+    emoji: Scalars['String']['output'];
+    isOwn: Scalars['Boolean']['output'];
+}
+
 export interface GqlCChatMessageReasoningPart {
     __typename?: 'ChatMessageReasoningPart';
     partId: Scalars['ID']['output'];
@@ -2496,6 +2502,7 @@ export interface GqlCChatMessageUser {
     createdAt: Scalars['DateTime']['output'];
     deliveryStatus?: Maybe<GqlCChatMessageDeliveryStatus>;
     isOwn: Scalars['Boolean']['output'];
+    reactions: Array<GqlCChatMessageReaction>;
     showCopyButton: Scalars['Boolean']['output'];
 }
 
@@ -4977,6 +4984,7 @@ type GqlCHumanChatMessageFields_ChatMessageUser_Fragment = {
     showCopyButton: boolean;
     collapseLongBody: boolean;
     deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+    reactions: Array<{ emoji: string; isOwn: boolean }>;
     author: {
         display: string;
         createdAt: string;
@@ -9405,6 +9413,7 @@ export type GqlCAdminBookingRequestOfferPageOfferFragment = {
               showCopyButton: boolean;
               collapseLongBody: boolean;
               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+              reactions: Array<{ emoji: string; isOwn: boolean }>;
               author: {
                   display: string;
                   createdAt: string;
@@ -9631,6 +9640,7 @@ export type GqlCAdminBookingRequestOfferPageQuery = {
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                              reactions: Array<{ emoji: string; isOwn: boolean }>;
                               author: {
                                   display: string;
                                   createdAt: string;
@@ -9847,6 +9857,7 @@ export type GqlCAdminBookingRequestOfferPageUpdatesSubscription = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                      reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
                           createdAt: string;
@@ -12807,6 +12818,7 @@ export type GqlCAdminOfferChatReviewPageOfferFragment = {
               showCopyButton: boolean;
               collapseLongBody: boolean;
               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+              reactions: Array<{ emoji: string; isOwn: boolean }>;
               author: {
                   display: string;
                   createdAt: string;
@@ -12867,6 +12879,7 @@ export type GqlCAdminOfferChatReviewPageQuery = {
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                              reactions: Array<{ emoji: string; isOwn: boolean }>;
                               author: {
                                   display: string;
                                   createdAt: string;
@@ -12929,6 +12942,7 @@ export type GqlCAdminOfferChatReviewPageUpdatesSubscription = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                      reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
                           createdAt: string;
@@ -14752,6 +14766,7 @@ export type GqlCAdminWhatsAppChatDetailFieldsFragment = {
               showCopyButton: boolean;
               collapseLongBody: boolean;
               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+              reactions: Array<{ emoji: string; isOwn: boolean }>;
               author: {
                   display: string;
                   createdAt: string;
@@ -14796,6 +14811,7 @@ export type GqlCAdminWhatsAppChatPageAdminFragment = {
                   showCopyButton: boolean;
                   collapseLongBody: boolean;
                   deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                  reactions: Array<{ emoji: string; isOwn: boolean }>;
                   author: {
                       display: string;
                       createdAt: string;
@@ -14849,6 +14865,7 @@ export type GqlCAdminWhatsAppChatPageQuery = {
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                              reactions: Array<{ emoji: string; isOwn: boolean }>;
                               author: {
                                   display: string;
                                   createdAt: string;
@@ -14908,6 +14925,7 @@ export type GqlCAdminWhatsAppChatPageUpdatesSubscription = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                      reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
                           createdAt: string;
@@ -15476,6 +15494,7 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                      reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
                           createdAt: string;
@@ -15617,6 +15636,7 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                              reactions: Array<{ emoji: string; isOwn: boolean }>;
                               author: {
                                   display: string;
                                   createdAt: string;
@@ -15765,6 +15785,7 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                           showCopyButton: boolean;
                           collapseLongBody: boolean;
                           deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                          reactions: Array<{ emoji: string; isOwn: boolean }>;
                           author: {
                               display: string;
                               createdAt: string;
@@ -18080,6 +18101,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                      reactions: Array<{ emoji: string; isOwn: boolean }>;
                       author: {
                           display: string;
                           createdAt: string;
@@ -18228,6 +18250,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                              reactions: Array<{ emoji: string; isOwn: boolean }>;
                               author: {
                                   display: string;
                                   createdAt: string;
@@ -18383,6 +18406,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
                           showCopyButton: boolean;
                           collapseLongBody: boolean;
                           deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                          reactions: Array<{ emoji: string; isOwn: boolean }>;
                           author: {
                               display: string;
                               createdAt: string;
@@ -23715,6 +23739,17 @@ export const HumanChatMessageFieldsFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -24140,6 +24175,17 @@ export const AdminBookingRequestOfferPageOfferFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
@@ -25594,6 +25640,17 @@ export const AdminOfferChatReviewPageOfferFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -26414,6 +26471,17 @@ export const AdminWhatsAppChatDetailFieldsFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -26522,6 +26590,17 @@ export const AdminWhatsAppChatPageAdminFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
@@ -27582,6 +27661,17 @@ export const ProfileCookBookingRequestOfferPageUserFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
@@ -30150,6 +30240,17 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
@@ -42569,6 +42670,17 @@ export const AdminBookingRequestOfferPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -43141,6 +43253,17 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
@@ -53292,6 +53415,17 @@ export const AdminOfferChatReviewPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -53503,6 +53637,17 @@ export const AdminOfferChatReviewPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
@@ -61161,6 +61306,17 @@ export const AdminWhatsAppChatPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -61343,6 +61499,17 @@ export const AdminWhatsAppChatPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
@@ -63332,6 +63499,17 @@ export const ProfileCookBookingRequestOfferPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -63762,6 +63940,17 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
@@ -70978,6 +71167,17 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -71513,6 +71713,17 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'author' },

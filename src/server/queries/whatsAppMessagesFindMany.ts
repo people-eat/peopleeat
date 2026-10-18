@@ -1,6 +1,14 @@
 import { asc, eq, inArray } from 'drizzle-orm';
 
-import { fileUploads, users, whatsAppConversations, whatsAppMessageAttachments, whatsAppMessages } from '../db/schema';
+import {
+    fileUploads,
+    users,
+    whatsAppConversations,
+    whatsAppMessageAttachments,
+    whatsAppMessageReactions,
+    whatsAppMessages,
+} from '../db/schema';
+import type { WhatsAppMessageReaction } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { whatsappPhoneNumberUserMatchValues } from '../domain/whatsapp';
 import type { GqlSHumanChatMessage, GqlSPublicUser } from '../graphql/generated';
@@ -29,6 +37,7 @@ export async function whatsAppMessagesFindMany(
 
     const messageIds = messageRows.map((row) => row.whatsAppMessageId);
     const attachmentsByMessageId = new Map<string, Array<{ fileUploadId: string; filename: string; mediaType: string; size: number }>>();
+    const reactionsByMessageId = new Map<string, WhatsAppMessageReaction[]>();
 
     if (messageIds.length > 0) {
         const attachmentRows = await serverRuntime.db
@@ -55,6 +64,18 @@ export async function whatsAppMessagesFindMany(
             });
             attachmentsByMessageId.set(row.whatsAppMessageId, list);
         }
+
+        const reactionRows = await serverRuntime.db
+            .select()
+            .from(whatsAppMessageReactions)
+            .where(inArray(whatsAppMessageReactions.whatsAppMessageId, messageIds))
+            .orderBy(asc(whatsAppMessageReactions.createdAt));
+
+        for (const row of reactionRows) {
+            const list = reactionsByMessageId.get(row.whatsAppMessageId) ?? [];
+            list.push(row);
+            reactionsByMessageId.set(row.whatsAppMessageId, list);
+        }
     }
 
     let customer: GqlSPublicUser = {
@@ -78,5 +99,5 @@ export async function whatsAppMessagesFindMany(
         customer = byId.get(matchedUserId) ?? customer;
     }
 
-    return toGqlWhatsAppMessages({ messages: messageRows, customer, attachmentsByMessageId });
+    return toGqlWhatsAppMessages({ messages: messageRows, customer, attachmentsByMessageId, reactionsByMessageId });
 }

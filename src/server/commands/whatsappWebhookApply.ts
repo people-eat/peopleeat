@@ -8,6 +8,7 @@ import {
     users,
     whatsAppConversations,
     whatsAppMessageAttachments,
+    whatsAppMessageReactions,
     whatsAppMessages,
 } from '../db/schema';
 import type { OutboundWhatsAppMessageCreate } from '../db/schema';
@@ -52,6 +53,7 @@ type MetaInboundMessage = {
         button_reply?: { id?: string; title?: string };
         list_reply?: { id?: string; title?: string };
     };
+    reaction?: { message_id?: string; emoji?: string };
 };
 
 type MetaContact = {
@@ -209,6 +211,10 @@ function lifecycleColumnForStatus(status: string): 'sentAt' | 'deliveredAt' | 'r
 }
 
 async function inboundApply(message: MetaInboundMessage, contactName: string | null, serverRuntime: ServerRuntime): Promise<boolean> {
+    if (message.type === 'reaction') {
+        return inboundReactionApply(message, serverRuntime);
+    }
+
     const providerMessageId = message.id?.trim();
     const fromRaw = message.from?.trim();
     if (!providerMessageId || !fromRaw) {
@@ -317,6 +323,80 @@ async function inboundApply(message: MetaInboundMessage, contactName: string | n
             messagePreview,
         });
     }
+
+    return true;
+}
+
+/**
+ * Meta `type: reaction` — apply/clear an emoji on the target transcript message.
+ * Not a transcript row; does not Slack-notify (unread badge + live update only).
+ */
+async function inboundReactionApply(message: MetaInboundMessage, serverRuntime: ServerRuntime): Promise<boolean> {
+    const providerMessageId = message.id?.trim();
+    const targetProviderMessageId = message.reaction?.message_id?.trim();
+    const fromRaw = message.from?.trim();
+    if (!providerMessageId || !targetProviderMessageId || !fromRaw) {
+        return false;
+    }
+
+    const [already] = await serverRuntime.db
+        .select({ whatsAppMessageReactionId: whatsAppMessageReactions.whatsAppMessageReactionId })
+        .from(whatsAppMessageReactions)
+        .where(eq(whatsAppMessageReactions.providerMessageId, providerMessageId))
+        .limit(1);
+    if (already) {
+        return false;
+    }
+
+    const [target] = await serverRuntime.db
+        .select({
+            whatsAppMessageId: whatsAppMessages.whatsAppMessageId,
+            whatsAppConversationId: whatsAppMessages.whatsAppConversationId,
+        })
+        .from(whatsAppMessages)
+        .where(eq(whatsAppMessages.providerMessageId, targetProviderMessageId))
+        .limit(1);
+    if (!target) {
+        serverRuntime.log.info(`whatsappWebhookApply: skipping reaction; target providerMessageId=${targetProviderMessageId} not found`);
+        return false;
+    }
+
+    if (!whatsappPhoneNumberNormalize(fromRaw.startsWith('+') ? fromRaw : `+${fromRaw}`)) {
+        serverRuntime.log.info(`whatsappWebhookApply: skipping reaction with non-E.164 from=${fromRaw}`);
+        return false;
+    }
+
+    const createdAt = message.timestamp ? new Date(Number(message.timestamp) * 1000) : new Date();
+    const emoji = message.reaction?.emoji?.trim() || null;
+    const windowExpiresAt = new Date(createdAt.getTime() + WHATSAPP_CUSTOMER_SERVICE_WINDOW_MS);
+
+    await serverRuntime.db
+        .insert(whatsAppMessageReactions)
+        .values({
+            whatsAppMessageReactionId: idCreate(),
+            whatsAppMessageId: target.whatsAppMessageId,
+            direction: 'INBOUND',
+            emoji,
+            providerMessageId,
+            createdAt,
+        })
+        .onConflictDoUpdate({
+            target: [whatsAppMessageReactions.whatsAppMessageId, whatsAppMessageReactions.direction],
+            set: {
+                emoji,
+                providerMessageId,
+                createdAt,
+            },
+        });
+
+    await serverRuntime.db
+        .update(whatsAppConversations)
+        .set({
+            lastMessageAt: createdAt,
+            adminUnreadCount: sql`${whatsAppConversations.adminUnreadCount} + 1`,
+            customerServiceWindowExpiresAt: windowExpiresAt,
+        })
+        .where(eq(whatsAppConversations.whatsAppConversationId, target.whatsAppConversationId));
 
     return true;
 }

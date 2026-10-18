@@ -2351,6 +2351,34 @@ export const whatsAppMessageAttachments = pgTable(
 export type WhatsAppMessageAttachment = typeof whatsAppMessageAttachments.$inferSelect;
 export type WhatsAppMessageAttachmentCreate = typeof whatsAppMessageAttachments.$inferInsert;
 
+/** Current emoji reaction per party on a transcript message (Meta `type: reaction`). */
+export const whatsAppMessageReactions = pgTable(
+    'WhatsAppMessageReactions',
+    {
+        whatsAppMessageReactionId: nanoId().primaryKey(),
+        whatsAppMessageId: nanoId().notNull(),
+        direction: varchar().$type<WhatsAppMessageDirection>().notNull(),
+        /** Null when the party cleared their reaction (tombstone for webhook idempotency). */
+        emoji: varchar(),
+        providerMessageId: varchar().notNull(),
+        createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.whatsAppMessageId],
+            foreignColumns: [whatsAppMessages.whatsAppMessageId],
+        })
+            .onUpdate('cascade')
+            .onDelete('cascade'),
+        uniqueIndex('WhatsAppMessageReactions_message_direction_uidx').on(table.whatsAppMessageId, table.direction),
+        uniqueIndex('WhatsAppMessageReactions_providerMessageId_uidx').on(table.providerMessageId),
+        index('WhatsAppMessageReactions_messageId_idx').on(table.whatsAppMessageId),
+    ],
+);
+
+export type WhatsAppMessageReaction = typeof whatsAppMessageReactions.$inferSelect;
+export type WhatsAppMessageReactionCreate = typeof whatsAppMessageReactions.$inferInsert;
+
 /** Marketing newsletter consent rows (footer / profile / go-live import). See docs/features/newsletter.md. */
 export const newsletterSubscriptions = pgTable(
     'NewsletterSubscriptions',

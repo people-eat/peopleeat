@@ -81,8 +81,8 @@ union HumanChatMessage = ChatMessageUser | ChatMessageBookingRequestOfferEvent
 Offer free-text and support messages project to `ChatMessageUser`. Offer timeline events project to `ChatMessageBookingRequestOfferEvent`.
 Domain fields keep `messages: [HumanChatMessage!]!` — not `ChatTurn`.
 
-`ChatMessageUser` carries `author`, `isOwn`, wire-only `showCopyButton` / `collapseLongBody`, and `attachments`. Attachments still use the
-shared [`FileUploads`](./file-storage.md) store.
+`ChatMessageUser` carries `author`, `isOwn`, wire-only `showCopyButton` / `collapseLongBody`, `attachments`, and `reactions` (emoji
+overlays; WhatsApp Concierge today, empty elsewhere). Attachments still use the shared [`FileUploads`](./file-storage.md) store.
 
 ### Mutations (assistant)
 
