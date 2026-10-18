@@ -7,7 +7,9 @@ Discovery calls on an offer can be audio-recorded for quality and support; only 
 When a LiveKit discovery call starts on an open offer:
 
 1. If object storage is configured, the app starts **audio-only** room recording to the shared Garage (S3-compatible) bucket.
-2. Participants see a bilingual notice that the call is recorded for quality and support (admin-only access).
+2. Participants should see a bilingual notice that the call is recorded for quality and support (admin-only access). **Temporarily hidden**
+   on the offer Call tab (`BookingRequestOfferCallTab`); keep the commented banner and re-show it before relying on recording in
+   production-facing flows.
 3. When the room ends, a background job waits for recording to finish, downloads the audio, and runs speech-to-text into structured segments
    stored for admin review.
 4. Admins play audio and read the transcript on the offer **Call** tab. Audio streams through an admin-authenticated API route.
@@ -35,6 +37,7 @@ recording.
 
 ## Ideas
 
+- Re-enable the Call tab recording-notice banner (commented in `BookingRequestOfferCallTab`) once we want participants notified again.
 - AI summary from transcript text (admin action or job).
 - Customer/cook transcript access.
 - Stronger speaker diarization.

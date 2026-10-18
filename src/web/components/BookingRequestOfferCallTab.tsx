@@ -199,6 +199,7 @@ export function BookingRequestOfferCallTab({
     return (
         <div className="grid max-w-xl gap-8">
             <div className="grid gap-4">
+                {/* Temporarily hidden — re-enable when we want the recording notice again (see docs/features/call-recordings.md).
                 <StatusAlert tone="info" title={{ de: 'Hinweis zur Aufnahme', en: 'Recording notice' }[locale]}>
                     {
                         {
@@ -207,6 +208,7 @@ export function BookingRequestOfferCallTab({
                         }[locale]
                     }
                 </StatusAlert>
+                */}
                 {hasLiveRoom ? (
                     <StatusAlert
                         tone="info"

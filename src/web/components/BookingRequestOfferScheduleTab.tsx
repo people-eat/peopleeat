@@ -81,7 +81,7 @@ function formatCallTime(value: string | Date, locale: Locale, timeZone: string):
     return formatTime(value, { locale, timeZone });
 }
 
-function defaultCookStart(): Date {
+function defaultProposeStart(): Date {
     const result = new Date();
     result.setMinutes(result.getMinutes() + 60, 0, 0);
     return result;
@@ -172,7 +172,7 @@ export function BookingRequestOfferScheduleTab({
     const [busy, setBusy] = useState(false);
     const [selectedSlotStartAt, setSelectedSlotStartAt] = useState<string | null>(null);
     const [message, setMessage] = useState('');
-    const [cookStart, setCookStart] = useState(() => defaultCookStart());
+    const [proposeStart, setProposeStart] = useState(() => defaultProposeStart());
     const [decliningId, setDecliningId] = useState<string | null>(null);
     const [declineReason, setDeclineReason] = useState('');
     const [cancelingId, setCancelingId] = useState<string | null>(null);
@@ -350,9 +350,10 @@ export function BookingRequestOfferScheduleTab({
         );
     }
 
-    const cookStartDate = cookStart;
-    const cookEndDate = new Date(cookStartDate.getTime() + callDurationMinutes * MS_PER_MINUTE);
-    const cookStartInPast = Number.isNaN(cookStartDate.getTime()) || cookStartDate.getTime() <= Date.now();
+    const proposeStartDate = proposeStart;
+    const proposeEndDate = new Date(proposeStartDate.getTime() + callDurationMinutes * MS_PER_MINUTE);
+    const proposeStartInPast = Number.isNaN(proposeStartDate.getTime()) || proposeStartDate.getTime() <= Date.now();
+    const canPropose = !hasConfirmed && !readOnly && (role === 'user' || role === 'cook');
 
     return (
         <div className="grid max-w-xl gap-6">
@@ -473,16 +474,21 @@ export function BookingRequestOfferScheduleTab({
                 </Card>
             ) : null}
 
-            {!hasConfirmed && !readOnly && role === 'cook' ? (
+            {canPropose ? (
                 <Card className={bookingOfferCallCardClassName}>
                     <CardHeader className={bookingOfferCallCardSectionClassName}>
                         <CardTitle>{{ de: 'Termin vorschlagen', en: 'Suggest a time' }[locale]}</CardTitle>
                         <CardDescription>
                             {
-                                {
-                                    de: `Schlage dem Kunden einen ${callDurationMinutes}-Minuten-Termin vor.`,
-                                    en: `Propose a ${callDurationMinutes}-minute call to the customer.`,
-                                }[locale]
+                                (role === 'user'
+                                    ? {
+                                          de: `Schlage dem Koch einen ${callDurationMinutes}-Minuten-Termin vor, auch außerhalb der gelisteten Zeiten.`,
+                                          en: `Propose a ${callDurationMinutes}-minute call to the chef, including times outside the listed slots.`,
+                                      }
+                                    : {
+                                          de: `Schlage dem Kunden einen ${callDurationMinutes}-Minuten-Termin vor.`,
+                                          en: `Propose a ${callDurationMinutes}-minute call to the customer.`,
+                                      })[locale]
                             }
                         </CardDescription>
                     </CardHeader>
@@ -490,8 +496,8 @@ export function BookingRequestOfferScheduleTab({
                         <label className="grid gap-1.5 text-sm">
                             <span className="font-medium">{{ de: 'Beginn', en: 'Start' }[locale]}</span>
                             <DateTimePicker
-                                value={cookStart}
-                                onValueChange={setCookStart}
+                                value={proposeStart}
+                                onValueChange={setProposeStart}
                                 placeholder={{ de: 'Datum und Uhrzeit wählen', en: 'Pick date and time' }[locale]}
                                 timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
                                 locale={DATE_FNS_LOCALE[locale]}
@@ -499,7 +505,7 @@ export function BookingRequestOfferScheduleTab({
                                 disabled={busy}
                             />
                         </label>
-                        {cookStartInPast ? (
+                        {proposeStartInPast ? (
                             <p className="text-sm text-destructive">
                                 {
                                     {
@@ -512,21 +518,25 @@ export function BookingRequestOfferScheduleTab({
                             <p className="text-sm text-muted-foreground">
                                 {
                                     {
-                                        de: `Endet um ${formatCallTime(cookEndDate, locale, timeZone)} Uhr`,
-                                        en: `Ends at ${formatCallTime(cookEndDate, locale, timeZone)}`,
+                                        de: `Endet um ${formatCallTime(proposeEndDate, locale, timeZone)} Uhr`,
+                                        en: `Ends at ${formatCallTime(proposeEndDate, locale, timeZone)}`,
                                     }[locale]
                                 }
                             </p>
                         )}
                         <label className="grid gap-1.5 text-sm">
                             <span className="font-medium">
-                                {{ de: 'Nachricht an den Kunden (optional)', en: 'Message to the customer (optional)' }[locale]}
+                                {
+                                    (role === 'user'
+                                        ? { de: 'Nachricht an den Koch (optional)', en: 'Message to the chef (optional)' }
+                                        : { de: 'Nachricht an den Kunden (optional)', en: 'Message to the customer (optional)' })[locale]
+                                }
                             </span>
                             <Textarea value={message} onChange={(event) => setMessage(event.target.value.slice(0, 500))} rows={3} />
                         </label>
                     </CardContent>
                     <CardFooter className={cn('justify-end', bookingOfferCallCardSectionClassName)}>
-                        <Button type="button" disabled={busy || cookStartInPast} onClick={() => void submitRequest(cookStartDate)}>
+                        <Button type="button" disabled={busy || proposeStartInPast} onClick={() => void submitRequest(proposeStartDate)}>
                             {{ de: 'Vorschlag senden', en: 'Send suggestion' }[locale]}
                         </Button>
                     </CardFooter>

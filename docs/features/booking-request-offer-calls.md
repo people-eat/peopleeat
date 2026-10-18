@@ -7,9 +7,11 @@ Discovery video calls and scheduled slots on an open offer — ad-hoc LiveKit ro
 On an open offer (customer, cook, or admin offer page), a single **Call** tab covers live join/start and appointment scheduling:
 
 1. **Schedule** — When the cook has call scheduling enabled, or the offer already has call bookings, either party proposes a discovery call;
-   the other confirms or declines; either can cancel. The customer picks from derived free slots over the next 14 days (including remaining
-   times today; past times are omitted); the cook may propose any free time. (Customer/admin hide the schedule section until scheduling is
-   enabled or bookings exist; cooks always see it, including the enable-hours prompt when scheduling is off.)
+   the other confirms or declines; either can cancel. The customer can pick from derived free slots over the next 14 days (including
+   remaining times today; past times are omitted) **or** propose any free time (same DateTimePicker path as the cook). Either party’s
+   request only rejects calendar overlaps with the cook’s other PENDING/CONFIRMED bookings, not “must match a derived slot.” (Customer/admin
+   hide the schedule section until scheduling is enabled or bookings exist; cooks always see it, including the enable-hours prompt when
+   scheduling is off.)
 2. **Ad-hoc call** — Either party (or admin) starts a live room on the offer; the peer sees a live banner and can join. Start/join lives at
    the top of the Call tab.
 3. **Scheduled join** — For a confirmed slot, join is available from 60 minutes before start through 15 minutes after end (same top CTA).
@@ -70,7 +72,8 @@ empty and delete room; recurring sweep for stale active rooms (~90s threshold). 
 - Call: `user|cook|admin` create / join / leave
 - Slots: `user|cook` request / confirm / decline / cancel
 - Confirm cancels sibling pending rows and emits matching cancelled offer events
-- Customer and cook request paths reject when the offer already has a confirmed slot
+- Customer and cook request paths reject when the offer already has a confirmed slot; both accept any future `startAt` (duration from cook
+  settings) subject to `cookCallSlotCalendarOverlapAssert`
 
 ### Hydration
 

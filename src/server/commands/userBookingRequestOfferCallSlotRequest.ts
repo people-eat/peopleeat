@@ -15,10 +15,6 @@ import { bookingRequestOfferCallSlotRequestEmailSend } from '../utils/bookingReq
 import { bookingRequestOfferCallSlotsCompleteSchedule } from '../utils/bookingRequestOfferCallSlotsCompleteSchedule';
 import { bookingRequestOfferCallWritableAssert } from '../utils/bookingRequestOfferCallWritableAssert';
 import { cookCallSlotCalendarOverlapAssert } from '../utils/cookCallSlotCalendarOverlapAssert';
-import { cookCallSlotsFindMany } from '../utils/cookCallSlotsFindMany';
-
-const SLOT_MATCH_TOLERANCE_MS = 1000;
-const SLOT_LOOKUP_PAD_MS = 24 * 60 * 60_000;
 
 export async function userBookingRequestOfferCallSlotRequest(
     { userId }: GqlSUserMutation,
@@ -29,9 +25,12 @@ export async function userBookingRequestOfferCallSlotRequest(
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
 
     const { bookingRequestOfferId } = args;
-    const requestedStartAt = new Date(args.startAt);
-    if (Number.isNaN(requestedStartAt.getTime())) {
+    const startAt = new Date(args.startAt);
+    if (Number.isNaN(startAt.getTime())) {
         throw new Error('userBookingRequestOfferCallSlotRequest: invalid startAt');
+    }
+    if (startAt.getTime() <= Date.now()) {
+        throw new Error('userBookingRequestOfferCallSlotRequest: startAt must be in the future');
     }
 
     const customerMessage = args.customerMessage?.trim() || undefined;
@@ -44,6 +43,7 @@ export async function userBookingRequestOfferCallSlotRequest(
                 offer: bookingRequestOffers,
                 bookingRequest: bookingRequests,
                 callSchedulingEnabled: cooks.callSchedulingEnabled,
+                callDurationMinutes: cooks.callDurationMinutes,
             })
             .from(bookingRequestOffers)
             .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestOffers.bookingRequestId))
@@ -71,18 +71,7 @@ export async function userBookingRequestOfferCallSlotRequest(
             throw new Error('userBookingRequestOfferCallSlotRequest: offer already has a CONFIRMED call slot');
         }
 
-        const slots = await cookCallSlotsFindMany(serverRuntime.db, {
-            cookId: row.offer.cookId,
-            from: new Date(requestedStartAt.getTime() - SLOT_LOOKUP_PAD_MS),
-            to: new Date(requestedStartAt.getTime() + SLOT_LOOKUP_PAD_MS),
-        });
-        const matched = slots.find((slot) => Math.abs(slot.startAt.getTime() - requestedStartAt.getTime()) < SLOT_MATCH_TOLERANCE_MS);
-        if (!matched) {
-            throw new Error('userBookingRequestOfferCallSlotRequest: startAt is not a free derived slot');
-        }
-
-        const startAt = matched.startAt;
-        const endAt = matched.endAt;
+        const endAt = new Date(startAt.getTime() + row.callDurationMinutes * 60_000);
 
         await cookCallSlotCalendarOverlapAssert(serverRuntime.db, {
             cookId: row.offer.cookId,
@@ -142,7 +131,7 @@ export async function userBookingRequestOfferCallSlotRequest(
             bookingRequestOfferId,
             action: 'requested',
             actor: 'customer',
-            startAt: matched.startAt,
+            startAt,
         });
 
         return { success: true, referenceId: cookCallSlotBookingId };
