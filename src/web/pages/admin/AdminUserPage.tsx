@@ -15,7 +15,7 @@ import {
     UserIcon,
     UtensilsIcon,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
@@ -237,6 +237,10 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
     const router = useRouter();
     const [, terminateSessions] = useMutation(AdminUserTerminateSessionsDocument);
     const [terminateBusy, setTerminateBusy] = useState(false);
+    const [generalFooter, setGeneralFooter] = useState<ReactNode>();
+    const onGeneralFooterChange = useCallback((footer: ReactNode | undefined) => {
+        setGeneralFooter(footer);
+    }, []);
     const admin = data.currentSession.user?.admin;
     const user = admin?.user ?? null;
     const featureToggles = admin?.featureToggles ?? [];
@@ -270,15 +274,22 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
         }
     }
 
-    const footer = adminUserTabFooter({
-        tab,
-        userId,
-        cookId: user?.cook?.cookId,
-        locale,
-        activeSessionIds,
-        terminateBusy,
-        onTerminateAllActiveSessions,
-    });
+    useEffect(() => {
+        if (tab !== 'general') setGeneralFooter(undefined);
+    }, [tab]);
+
+    const footer =
+        tab === 'general'
+            ? generalFooter
+            : adminUserTabFooter({
+                  tab,
+                  userId,
+                  cookId: user?.cook?.cookId,
+                  locale,
+                  activeSessionIds,
+                  terminateBusy,
+                  onTerminateAllActiveSessions,
+              });
 
     return (
         <AdminPageChrome
@@ -321,6 +332,7 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
                         bookingRequests={bookingRequests}
                         bookingRequestOffers={bookingRequestOffers}
                         assistantChats={assistantChats}
+                        onGeneralFooterChange={onGeneralFooterChange}
                     />
                 </AdminPinnedFooterLayout>
             ) : (
@@ -476,6 +488,7 @@ function AdminUserTabPanel({
     bookingRequests,
     bookingRequestOffers,
     assistantChats,
+    onGeneralFooterChange,
 }: {
     tab: AdminUserTab;
     user: AdminUserRow;
@@ -489,10 +502,11 @@ function AdminUserTabPanel({
     bookingRequests: AdminUserBookingRequest[];
     bookingRequestOffers: AdminUserBookingRequestOffer[];
     assistantChats: AdminUserAssistantChatListItem[];
+    onGeneralFooterChange: (footer: ReactNode | undefined) => void;
 }) {
     switch (tab) {
         case 'general':
-            return <AdminUserGeneralSection user={user} />;
+            return <AdminUserGeneralSection user={user} onFooterChange={onGeneralFooterChange} />;
         case 'feature-toggles':
             return <AdminUserFeatureTogglesSection user={user} globalFeatureToggles={featureToggles} />;
         case 'notes':

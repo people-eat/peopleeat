@@ -33,14 +33,18 @@ Tabs via URL: **general**, **notes** (editable operator note), **sessions** (lis
 the user’s sessions). Lazy-loaded tab data where noted in implementation. Tab actions use `AdminPinnedFooterLayout` so more tabs can grow
 footers over time.
 
-**General** edits first/last name, email (direct, no OTP), phone, birth date, preferred communication, time zone, and profile picture
-(`AdminMutation.userUpdate` / `userEmailAddressUpdate`). Shows account status (`ACTIVE` / `BANNED` / `ANONYMIZED`) with **Ban** / **Unban**
-(`AdminMutation.userStatusUpdate`, `ACTIVE` ↔ `BANNED` only). Ban keeps sessions bound so the private profile restriction banner can appear
-live; open cook offers are auto-declined; public cook listing already excludes non-`ACTIVE`. **Sign in as user** rebinds the admin cookie
-session to that ACTIVE account (`AdminMutation.sessionUserBind`), sets the locale cookie to that user’s `Users.locale`, and navigates to
-`/profile` (or `/en/profile`) in that locale so the locale-mismatch gate does not open on the way in (exit = re-auth as admin). Danger-zone
-**Anonymize** (`AdminMutation.userAnonymize`). Already-anonymized users cannot be edited, banned, or impersonated. Same scrub as self-serve
-delete — see [account.md](./account.md).
+**General** defaults to a read-only detail on a full-width two-column desktop layout: sticky identity aside (avatar, name, status, types,
+registered, user id) plus a fluid main column that fills the remaining width (no `max-w-*`). View mode lays contact fields in a responsive
+grid (2 cols from `sm`, 3 from `xl`); danger zone sits full-width under a divider. **Edit** / **Cancel** / **Save** and a quieter **Sign in
+as** live in the pinned footer. **Edit** switches the main column into a multi-column form for first/last name, email (direct, no OTP),
+phone, birth date, preferred communication, time zone, and profile picture (`AdminMutation.userUpdate` / `userEmailAddressUpdate`);
+**Cancel** or successful **Save** returns to view. Account status (`ACTIVE` / `BANNED` / `ANONYMIZED`) with **Ban** / **Unban**
+(`AdminMutation.userStatusUpdate`, `ACTIVE` ↔ `BANNED` only) stays on the identity aside in both modes. Ban keeps sessions bound so the
+private profile restriction banner can appear live; open cook offers are auto-declined; public cook listing already excludes non-`ACTIVE`.
+**Sign in as** rebinds the admin cookie session to that ACTIVE account (`AdminMutation.sessionUserBind`), sets the locale cookie to that
+user’s `Users.locale`, and navigates to `/profile` (or `/en/profile`) in that locale so the locale-mismatch gate does not open on the way in
+(exit = re-auth as admin). Danger-zone **Anonymize** (`AdminMutation.userAnonymize`) is view-only (hidden while editing). Already-anonymized
+users cannot be edited, banned, or impersonated. Same scrub as self-serve delete — see [account.md](./account.md).
 
 **Cook profile** toggles admin approval and public visibility (both behind confirm dialogs), and patches biography, biography summary,
 cuisine/philosophy catalogs, and travel fields via `AdminMutation.cookUpdate` (legal acceptance asserted on the admin, not the cook). Admin
