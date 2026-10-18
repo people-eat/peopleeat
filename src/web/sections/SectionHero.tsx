@@ -16,6 +16,7 @@ export function SectionHero({
     subheadline,
     media,
     noMediaLabel,
+    imageOverlay = true,
     className,
 }: {
     headline?: ReactNode;
@@ -23,6 +24,8 @@ export function SectionHero({
     media?: SectionHeroMedia | null;
     /** Shown with an icon when `media` is missing (e.g. admin preview). */
     noMediaLabel?: string;
+    /** Dark scrim over media for white headline contrast. Partners may turn off. */
+    imageOverlay?: boolean;
     className?: string;
 }) {
     const hasHeadline = Boolean(headline);
@@ -40,7 +43,7 @@ export function SectionHero({
                 </AutoplayVideo>
             ) : null}
             {media?.type === 'image' ? <img src={media.src} alt={media.alt} className="absolute inset-0 size-full object-cover" /> : null}
-            {hasMedia ? <div className="absolute inset-0 bg-black/40" /> : null}
+            {hasMedia && imageOverlay ? <div className="absolute inset-0 bg-black/40" /> : null}
             {!hasMedia && noMediaLabel ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-muted-foreground">
                     <ImageOffIcon className="size-12" aria-hidden />

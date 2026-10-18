@@ -6,6 +6,7 @@ import { pipe, subscribe } from 'wonka';
 import { fileUploadPublicUrl, formatCurrency, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/base/card';
+import { Checkbox } from '../../components/base/checkbox';
 import { Input } from '../../components/base/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import { Textarea } from '../../components/base/textarea';
@@ -45,6 +46,9 @@ type PartnerEditorValues = ContentPageEditorValues & {
     firstSectionBodyEn: string;
     firstSectionImageFileUploadId: string | null;
     firstSectionCtaUrl: string;
+    heroImageOverlay: boolean;
+    firstSectionImageOverlay: boolean;
+    howItWorksAlternativeMedia: boolean;
     promoCodeId: string | null;
 };
 
@@ -75,6 +79,9 @@ function valuesFromPartner(partner: PartnerRow): PartnerEditorValues {
         firstSectionBodyEn: partner.firstSectionBodyEn,
         firstSectionImageFileUploadId: partner.firstSectionImageFileUploadId ?? null,
         firstSectionCtaUrl: partner.firstSectionCtaUrl ?? '',
+        heroImageOverlay: partner.heroImageOverlay,
+        firstSectionImageOverlay: partner.firstSectionImageOverlay,
+        howItWorksAlternativeMedia: partner.howItWorksAlternativeMedia,
         promoCodeId: partner.promoCodeId ?? null,
         sections: contentSectionsFromGql(partner.sections),
         publishedAt: partner.publishedAt,
@@ -267,6 +274,11 @@ export function AdminPartnerPage({
                 tab={tab}
                 user={data.currentSession.user}
                 featuredCooks={previewCooks}
+                heroImageOverlay={values.heroImageOverlay}
+                howItWorks
+                howItWorksHideCta
+                howItWorksAlternativeMedia={values.howItWorksAlternativeMedia}
+                knownFrom
                 chefForAnyOccasion={{
                     displayName: values.name.trim() || { de: 'Partner', en: 'Partner' }[locale],
                     headlineDe: values.firstSectionHeadlineDe,
@@ -276,7 +288,30 @@ export function AdminPartnerPage({
                     imageUrl: values.firstSectionImageFileUploadId ? fileUploadPublicUrl(values.firstSectionImageFileUploadId) : null,
                     ctaUrl: values.firstSectionCtaUrl.trim() || null,
                     promo: previewPromo,
+                    imageOverlay: values.firstSectionImageOverlay,
                 }}
+                heroExtraFields={
+                    <label className="flex items-start gap-2 text-sm">
+                        <Checkbox
+                            checked={values.heroImageOverlay}
+                            onCheckedChange={(checked) => patchPartnerValues({ heroImageOverlay: checked === true })}
+                            className="mt-0.5"
+                        />
+                        <span className="flex flex-col gap-0.5">
+                            <span className="font-medium">
+                                {{ de: 'Dunkles Overlay auf Hero-Bild', en: 'Dark overlay on hero image' }[locale]}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                                {
+                                    {
+                                        de: 'Für bessere Lesbarkeit der Überschrift. Ausschalten, wenn das Foto bereits dunkel genug ist.',
+                                        en: 'Improves headline contrast. Turn off when the photo is already dark enough.',
+                                    }[locale]
+                                }
+                            </span>
+                        </span>
+                    </label>
+                }
                 identityFields={
                     <Card className="gap-4 py-4" data-content-editor-anchor="top">
                         <CardHeader className="px-4">
@@ -349,6 +384,26 @@ export function AdminPartnerPage({
                                         }[locale]
                                     }
                                 />
+                                <label className="flex items-start gap-2 text-sm">
+                                    <Checkbox
+                                        checked={values.firstSectionImageOverlay}
+                                        onCheckedChange={(checked) => patchPartnerValues({ firstSectionImageOverlay: checked === true })}
+                                        className="mt-0.5"
+                                    />
+                                    <span className="flex flex-col gap-0.5">
+                                        <span className="font-medium">
+                                            {{ de: 'Dunkles Overlay auf CTA-Bild', en: 'Dark overlay on CTA image' }[locale]}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {
+                                                {
+                                                    de: 'Verlauf über dem Abschnittsbild für weiße Texte. Ausschalten, wenn nicht nötig.',
+                                                    en: 'Gradient over the section image for white text. Turn off when not needed.',
+                                                }[locale]
+                                            }
+                                        </span>
+                                    </span>
+                                </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
                                     <span className="font-medium">{{ de: 'CTA-Link', en: 'CTA link' }[locale]}</span>
                                     <Input
@@ -412,6 +467,42 @@ export function AdminPartnerPage({
                                             })}
                                         </SelectContent>
                                     </Select>
+                                </label>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="gap-4 py-4" data-content-editor-anchor="how-it-works">
+                            <CardHeader className="px-4">
+                                <CardTitle>{{ de: 'So funktioniert es', en: 'How it works' }[locale]}</CardTitle>
+                                <CardDescription>
+                                    {
+                                        {
+                                            de: 'Der Abschnitt erscheint auf der Partnerseite unter den Bewertungen.',
+                                            en: 'This section appears on the partner page below testimonials.',
+                                        }[locale]
+                                    }
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex flex-col gap-3 px-4">
+                                <label className="flex items-start gap-2 text-sm">
+                                    <Checkbox
+                                        checked={values.howItWorksAlternativeMedia}
+                                        onCheckedChange={(checked) => patchPartnerValues({ howItWorksAlternativeMedia: checked === true })}
+                                        className="mt-0.5"
+                                    />
+                                    <span className="flex flex-col gap-0.5">
+                                        <span className="font-medium">
+                                            {{ de: 'Alternative Medien verwenden', en: 'Use alternative media' }[locale]}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {
+                                                {
+                                                    de: 'Andere Videos und Bilder für Partner mit speziellem Bildmaterial (z. B. Ferienhäuser).',
+                                                    en: 'Different videos and images for partners with special footage (e.g. holiday homes).',
+                                                }[locale]
+                                            }
+                                        </span>
+                                    </span>
                                 </label>
                             </CardContent>
                         </Card>
@@ -519,6 +610,9 @@ export function AdminPartnerPage({
                                 firstSectionBodyEn: current.firstSectionBodyEn,
                                 firstSectionImageFileUploadId: current.firstSectionImageFileUploadId,
                                 firstSectionCtaUrl: current.firstSectionCtaUrl.trim() || null,
+                                heroImageOverlay: current.heroImageOverlay,
+                                firstSectionImageOverlay: current.firstSectionImageOverlay,
+                                howItWorksAlternativeMedia: current.howItWorksAlternativeMedia,
                                 promoCodeId: current.promoCodeId,
                                 sections: contentSectionsToInput(current.sections),
                                 // `next.publishedAt` may be newer than valuesRef when publish/schedule runs.

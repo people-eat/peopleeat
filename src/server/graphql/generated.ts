@@ -1803,11 +1803,14 @@ export interface GqlSAdminPartner {
     firstSectionHeadlineDe: Scalars['String']['output'];
     firstSectionHeadlineEn: Scalars['String']['output'];
     firstSectionImageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    firstSectionImageOverlay: Scalars['Boolean']['output'];
     firstSectionImageUrl?: Maybe<Scalars['String']['output']>;
     headlineDe: Scalars['String']['output'];
     headlineEn: Scalars['String']['output'];
     heroImageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    heroImageOverlay: Scalars['Boolean']['output'];
     heroImageUrl?: Maybe<Scalars['String']['output']>;
+    howItWorksAlternativeMedia: Scalars['Boolean']['output'];
     name: Scalars['String']['output'];
     partnerId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
@@ -3792,9 +3795,12 @@ export type GqlSPartnerUpsert = {
     firstSectionHeadlineDe: Scalars['String']['input'];
     firstSectionHeadlineEn: Scalars['String']['input'];
     firstSectionImageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    firstSectionImageOverlay: Scalars['Boolean']['input'];
     headlineDe: Scalars['String']['input'];
     headlineEn: Scalars['String']['input'];
     heroImageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    heroImageOverlay: Scalars['Boolean']['input'];
+    howItWorksAlternativeMedia: Scalars['Boolean']['input'];
     name: Scalars['String']['input'];
     partnerId?: InputMaybe<Scalars['ID']['input']>;
     pathName: Scalars['String']['input'];
@@ -4047,11 +4053,14 @@ export interface GqlSPublicPartner {
     firstSectionHeadlineDe: Scalars['String']['output'];
     firstSectionHeadlineEn: Scalars['String']['output'];
     firstSectionImageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    firstSectionImageOverlay: Scalars['Boolean']['output'];
     firstSectionImageUrl?: Maybe<Scalars['String']['output']>;
     headlineDe: Scalars['String']['output'];
     headlineEn: Scalars['String']['output'];
     heroImageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    heroImageOverlay: Scalars['Boolean']['output'];
     heroImageUrl?: Maybe<Scalars['String']['output']>;
+    howItWorksAlternativeMedia: Scalars['Boolean']['output'];
     name: Scalars['String']['output'];
     partnerId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
@@ -7469,11 +7478,14 @@ export type GqlSAdminPartnerResolvers<
     firstSectionHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionImageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    firstSectionImageOverlay?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     firstSectionImageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     headlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     headlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     heroImageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    heroImageOverlay?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     heroImageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    howItWorksAlternativeMedia?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     partnerId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -9527,11 +9539,14 @@ export type GqlSPublicPartnerResolvers<
     firstSectionHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionImageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    firstSectionImageOverlay?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     firstSectionImageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     headlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     headlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     heroImageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    heroImageOverlay?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     heroImageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    howItWorksAlternativeMedia?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     partnerId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -11821,9 +11836,12 @@ export function GqlSPartnerUpsertSchema(): z.ZodObject<Properties<GqlSPartnerUps
         firstSectionHeadlineDe: z.string(),
         firstSectionHeadlineEn: z.string(),
         firstSectionImageFileUploadId: z.string().nullish(),
+        firstSectionImageOverlay: z.boolean(),
         headlineDe: z.string(),
         headlineEn: z.string(),
         heroImageFileUploadId: z.string().nullish(),
+        heroImageOverlay: z.boolean(),
+        howItWorksAlternativeMedia: z.boolean(),
         name: z.string(),
         partnerId: z.string().nullish(),
         pathName: z.string(),

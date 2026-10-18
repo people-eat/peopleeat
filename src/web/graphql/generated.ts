@@ -1806,11 +1806,14 @@ export interface GqlCAdminPartner {
     firstSectionHeadlineDe: Scalars['String']['output'];
     firstSectionHeadlineEn: Scalars['String']['output'];
     firstSectionImageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    firstSectionImageOverlay: Scalars['Boolean']['output'];
     firstSectionImageUrl?: Maybe<Scalars['String']['output']>;
     headlineDe: Scalars['String']['output'];
     headlineEn: Scalars['String']['output'];
     heroImageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    heroImageOverlay: Scalars['Boolean']['output'];
     heroImageUrl?: Maybe<Scalars['String']['output']>;
+    howItWorksAlternativeMedia: Scalars['Boolean']['output'];
     name: Scalars['String']['output'];
     partnerId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
@@ -3795,9 +3798,12 @@ export type GqlCPartnerUpsert = {
     firstSectionHeadlineDe: Scalars['String']['input'];
     firstSectionHeadlineEn: Scalars['String']['input'];
     firstSectionImageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    firstSectionImageOverlay: Scalars['Boolean']['input'];
     headlineDe: Scalars['String']['input'];
     headlineEn: Scalars['String']['input'];
     heroImageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    heroImageOverlay: Scalars['Boolean']['input'];
+    howItWorksAlternativeMedia: Scalars['Boolean']['input'];
     name: Scalars['String']['input'];
     partnerId?: InputMaybe<Scalars['ID']['input']>;
     pathName: Scalars['String']['input'];
@@ -4050,11 +4056,14 @@ export interface GqlCPublicPartner {
     firstSectionHeadlineDe: Scalars['String']['output'];
     firstSectionHeadlineEn: Scalars['String']['output'];
     firstSectionImageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    firstSectionImageOverlay: Scalars['Boolean']['output'];
     firstSectionImageUrl?: Maybe<Scalars['String']['output']>;
     headlineDe: Scalars['String']['output'];
     headlineEn: Scalars['String']['output'];
     heroImageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    heroImageOverlay: Scalars['Boolean']['output'];
     heroImageUrl?: Maybe<Scalars['String']['output']>;
+    howItWorksAlternativeMedia: Scalars['Boolean']['output'];
     name: Scalars['String']['output'];
     partnerId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
@@ -5982,6 +5991,9 @@ export type GqlCAdminPartnerFieldsFragment = {
     firstSectionImageFileUploadId: string | null;
     firstSectionImageUrl: string | null;
     firstSectionCtaUrl: string | null;
+    heroImageOverlay: boolean;
+    firstSectionImageOverlay: boolean;
+    howItWorksAlternativeMedia: boolean;
     promoCodeId: string | null;
     publishedAt: string | null;
     createdAt: string;
@@ -6099,6 +6111,9 @@ export type GqlCPublicPartnerFieldsFragment = {
     firstSectionImageFileUploadId: string | null;
     firstSectionImageUrl: string | null;
     firstSectionCtaUrl: string | null;
+    heroImageOverlay: boolean;
+    firstSectionImageOverlay: boolean;
+    howItWorksAlternativeMedia: boolean;
     publishedAt: string | null;
     createdAt: string;
     updatedAt: string;
@@ -8018,6 +8033,9 @@ export type GqlCPublicPartnerPageQuery = {
             firstSectionImageFileUploadId: string | null;
             firstSectionImageUrl: string | null;
             firstSectionCtaUrl: string | null;
+            heroImageOverlay: boolean;
+            firstSectionImageOverlay: boolean;
+            howItWorksAlternativeMedia: boolean;
             publishedAt: string | null;
             createdAt: string;
             updatedAt: string;
@@ -13303,6 +13321,9 @@ export type GqlCAdminPartnerPageQuery = {
                     firstSectionImageFileUploadId: string | null;
                     firstSectionImageUrl: string | null;
                     firstSectionCtaUrl: string | null;
+                    heroImageOverlay: boolean;
+                    firstSectionImageOverlay: boolean;
+                    howItWorksAlternativeMedia: boolean;
                     promoCodeId: string | null;
                     publishedAt: string | null;
                     createdAt: string;
@@ -13523,6 +13544,9 @@ export type GqlCAdminPartnerPageUpdatesSubscription = {
             firstSectionImageFileUploadId: string | null;
             firstSectionImageUrl: string | null;
             firstSectionCtaUrl: string | null;
+            heroImageOverlay: boolean;
+            firstSectionImageOverlay: boolean;
+            howItWorksAlternativeMedia: boolean;
             promoCodeId: string | null;
             publishedAt: string | null;
             createdAt: string;
@@ -20788,6 +20812,9 @@ export const AdminPartnerFieldsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionCtaUrl' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'promoCodeId' } },
                     {
                         kind: 'Field',
@@ -21101,6 +21128,9 @@ export const PublicPartnerFieldsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionCtaUrl' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'promo' },
@@ -38202,6 +38232,9 @@ export const PublicPartnerPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionCtaUrl' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'promo' },
@@ -55605,6 +55638,9 @@ export const AdminPartnerPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionCtaUrl' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'promoCodeId' } },
                     {
                         kind: 'Field',
@@ -56339,6 +56375,9 @@ export const AdminPartnerPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionCtaUrl' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'promoCodeId' } },
                     {
                         kind: 'Field',

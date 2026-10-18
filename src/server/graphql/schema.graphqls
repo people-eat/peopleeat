@@ -4364,6 +4364,11 @@ type AdminPartner {
     firstSectionImageUrl: String
     # Optional primary CTA href override. Null keeps the booking-request form.
     firstSectionCtaUrl: String
+    # Dark scrim on hero / first-section CTA image. Default true.
+    heroImageOverlay: Boolean!
+    firstSectionImageOverlay: Boolean!
+    # HowItWorks alternative media variant. Default false.
+    howItWorksAlternativeMedia: Boolean!
     # Assigned promo code id. Null when none. Assignment rejects scoped codes.
     promoCodeId: ID
     # Resolved promo for editor preview. Null when none / expired / scoped.
@@ -4400,6 +4405,9 @@ type PublicPartner {
     firstSectionImageUrl: String
     # Optional primary CTA href override. Null keeps the booking-request form.
     firstSectionCtaUrl: String
+    heroImageOverlay: Boolean!
+    firstSectionImageOverlay: Boolean!
+    howItWorksAlternativeMedia: Boolean!
     # Promo shown on the CTA card. Null when none / expired / scoped.
     promo: PartnerPromo
     sections: [ContentSection!]!
@@ -4629,6 +4637,9 @@ input PartnerUpsert {
     firstSectionImageFileUploadId: ID
     # Absolute http(s) URL or site-relative path. Null / empty clears to default.
     firstSectionCtaUrl: String
+    heroImageOverlay: Boolean!
+    firstSectionImageOverlay: Boolean!
+    howItWorksAlternativeMedia: Boolean!
     # Set to a promoCodeId to assign, or null to clear.
     promoCodeId: ID
     sections: [ContentSectionInput!]!

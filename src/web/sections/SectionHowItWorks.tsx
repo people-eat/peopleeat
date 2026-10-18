@@ -12,7 +12,10 @@ type Step =
     | { id: number; title: string; description: string; image: string; alternativeText: string }
     | { id: number; title: string; description: string; video: string; alternativeText: string };
 
-export function SectionHowItWorks({ hideCta = false }: { hideCta?: boolean } = {}) {
+export function SectionHowItWorks({
+    hideCta = false,
+    useAlternativeMedia = false,
+}: { hideCta?: boolean; useAlternativeMedia?: boolean } = {}) {
     const locale = useLocale();
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -30,7 +33,9 @@ export function SectionHowItWorks({ hideCta = false }: { hideCta?: boolean } = {
                 de: 'Die Zutaten für das abgestimmte Menü werden sorgfältig ausgewählt und bei regionalen Händlern eingekauft.',
                 en: 'The ingredients for the coordinated menu are carefully selected and purchased from regional suppliers.',
             }[locale],
-            video: '/home/how-it-works-section/ingredient-purchase.mp4',
+            video: useAlternativeMedia
+                ? '/home/how-it-works-section/ingredient-purchase.alternative.mp4'
+                : '/home/how-it-works-section/ingredient-purchase.mp4',
             alternativeText: {
                 de: 'Ein Privatkoch wählt frische Zutaten auf dem Markt aus.',
                 en: 'A private chef selects fresh ingredients at the market.',
@@ -56,7 +61,9 @@ export function SectionHowItWorks({ hideCta = false }: { hideCta?: boolean } = {
                 de: 'Genieße das Menü, lass dich Gang für Gang kulinarisch verwöhnen und kreiere unvergessliche Momente.',
                 en: 'Enjoy the menu, let yourself be pampered with culinary delights course after course, and create unforgettable moments.',
             }[locale],
-            video: '/home/how-it-works-section/enjoying-dinner.mp4',
+            ...(useAlternativeMedia
+                ? { image: '/home/how-it-works-section/enjoying-dinner.alternative.jpg' }
+                : { video: '/home/how-it-works-section/enjoying-dinner.mp4' }),
             alternativeText: {
                 de: 'Familie sitzt am dekorierten Tisch und genießt ein Menü vom Privatkoch zu Hause.',
                 en: 'A family sits at a decorated table and enjoys a private chef menu at home.',
@@ -77,7 +84,10 @@ export function SectionHowItWorks({ hideCta = false }: { hideCta?: boolean } = {
         },
     ];
 
-    const headline = { de: 'Deine Experience in vier Schritten', en: 'Your experience in 4 steps' }[locale];
+    const headline = {
+        de: useAlternativeMedia ? 'Dein Erlebnis in vier Schritten' : 'Deine Experience in vier Schritten',
+        en: 'Your experience in 4 steps',
+    }[locale];
     const subheadline = { de: 'Ohne dass du in der Küche stehen musst', en: 'Without having to stand in the kitchen' }[locale];
     const ctaHeadline = {
         de: (

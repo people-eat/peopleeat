@@ -9,7 +9,7 @@ Visitors see sections in order (generous vertical spacing between blocks):
 1. **Hero** — full-viewport dinner video, bilingual headline, sticky header over media
 2. **Experience selection** — three experience cards (casual, signature, gift) with CTAs to booking form or gift card
 3. **Comparison** — at-home private chef vs restaurant, CTA to booking form
-4. **How it works** — four steps and WhatsApp CTA (reusable section; can hide CTA elsewhere)
+4. **How it works** — four steps and WhatsApp CTA (reusable section; can hide CTA and use alternative media on partner pages)
 5. **Shared experiences** — full-bleed quote over lifestyle photography
 6. **Customer testimonials** — dual-column vertical marquee of static marketing quotes (not database-driven)
 7. **Known from** — press and partner logo band
@@ -39,8 +39,6 @@ motion; typography, colors, and buttons follow project conventions. Marquee paus
 
 ## Next steps
 
-- Add **How it works** and **Known from** bands to city and partner detail pages (sections already exist on the home page) — see
-  [cities.md](./cities.md), [partners.md](./partners.md).
 - Optional later: database-backed home testimonials; marketing quotes stay static for now.
 
 ## Implementation
@@ -51,5 +49,5 @@ motion; typography, colors, and buttons follow project conventions. Marquee paus
 | Route / SEO  | `src/routes/{-$locale}/index.tsx` — `seoMeta` via `publicWebPage` + FAQ JSON-LD                                                                                                                                                       |
 | Sections     | `SectionHero`, `SectionExperienceSelection`, `SectionComparison`, `SectionHowItWorks`, `SectionSharedExperiences`, `SectionCustomerTestimonials`, `SectionKnownFrom`, `SectionQuestionsAndAnswers`, `SectionSupport`, `SectionCities` |
 | Shared media | `AutoplayVideo.tsx`, `usePrefersReducedMotion.ts`                                                                                                                                                                                     |
-| Assets       | `public/home/*`, `public/shared/known-from-section/`, hero `public/assets/dinner.mp4`                                                                                                                                                 |
+| Assets       | `public/home/*` (incl. HowItWorks `*.alternative.*` for partner pages), `public/shared/known-from-section/`, hero `public/assets/dinner.mp4`                                                                                          |
 | Motion CSS   | `src/styles.css` — `animate-testimonial-scroll` / `-delayed`                                                                                                                                                                          |

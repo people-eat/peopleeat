@@ -6,19 +6,23 @@ Admins publish bilingual partnership landing pages with optional promo spotlight
 
 Public visitors open `/partners` and `/partners/$pathName`. Drafts stay unpublished until an admin sets a publish time.
 
-After the hero, the page may show:
+Public partner detail section order:
 
-1. **Chef for any occasion** — bilingual headline and body, optional image, and a CTA card (primary button, WhatsApp, Google). The primary
+1. **Hero** — bilingual headline/subheadline. Admins can turn off the dark image overlay when the photo already reads dark enough
+   (`heroImageOverlay`, default on).
+2. **Chef for any occasion** — bilingual headline and body, optional image, and a CTA card (primary button, WhatsApp, Google). The primary
    button defaults to the booking request form; admins may set an optional custom CTA URL (absolute `http(s)` or site-relative path). When a
    global promo is assigned and still valid, the card shows a gift banner with redeem code and amount. Expired or booking-scoped codes show
-   no banner.
-2. **Featured cooks** from a curated assignment. Empty assignment hides the section (partners are not geo pages — no travel-radius
-   fallback).
+   no banner. Admins can turn off the CTA image gradient (`firstSectionImageOverlay`, default on).
+3. **Featured cooks** from a curated assignment. Empty assignment hides the section (partners are not geo pages, no travel-radius fallback).
+4. **Testimonials** — curated and ordered; empty selection hides the block — [testimonials.md](./testimonials.md).
+5. **How it works** — same chrome as the landing page, CTA hidden. Admins may enable alternative media (`howItWorksAlternativeMedia`) for
+   partner-specific footage (step 1 video + step 3 still, DE headline tweak).
+6. **Dynamic content sections** — free-form shared section stack.
+7. **Known from** — press logos (same as landing).
 
 Assigned cooks who fail the public listing gate drop off the public page but stay in admin. Banned cooks get a **banned-specific** warning
 in the featured-cook editor; other unlisted reasons keep the generic warning.
-
-Curated **testimonials** follow the same pattern as cities — [testimonials.md](./testimonials.md).
 
 By default the primary CTA and the sticky header booking button both link to the booking request form without encoding a full address in the
 URL. An optional `firstSectionCtaUrl` overrides both (WhatsApp / Google stay fixed). Display-only promo on the card; redeem codes are not
@@ -35,11 +39,11 @@ passed as query params today unless the custom URL includes them.
 
 ### Chosen
 
-Shared content-section stack. Partner-specific: single display name, curated cooks, fixed first-section slot, optional promo link.
+Shared content-section stack. Partner-specific: single display name, curated cooks, fixed first-section slot, optional promo link, image
+overlay toggles, How it works alternative media, and landing chrome (How it works / Known from).
 
 ## Next steps
 
-- **How it works** and **Known from** on partner detail — [landing.md](./landing.md).
 - **Partner deep-link on booking form** — CTAs may open the form with a short partner id so default venue resolves from the partner record
   (see [booking-request-create.md](./booking-request-create.md)).
 
@@ -73,18 +77,22 @@ Direction: self-serve builder on the public partners surface, admins remain sole
 - Tables / GraphQL / CQRS: `Partners`, `PartnerCooks`, admin upsert/delete, `publicPartner`, `partnerCooksUpdate`,
   `partnerTestimonialsUpdate`
 - Partner columns: first-section bilingual copy and image, optional `firstSectionCtaUrl` (http(s) or site-relative; empty clears to default
-  booking form), optional `promoCodeId` (FK; rejects missing and booking-request-scoped codes)
+  booking form), optional `promoCodeId` (FK; rejects missing and booking-request-scoped codes), `heroImageOverlay` /
+  `firstSectionImageOverlay` (default true), `howItWorksAlternativeMedia` (default false)
 - Public/admin promo preview via `partnerPromoFindOne` — null when unassigned, scoped, or expired
 - UI: `SectionChefForAnyOccasion` + `SectionChefCta` after hero (always mounted when the partner slot is passed; empty headline/body and
   missing CTA image use muted italic / `ImageOffIcon` placeholders like content sections; `ctaUrl` / `firstSectionCtaUrl` overrides the
-  primary button and `Header` booking CTA via `ContentPageView` → `bookingRequestCtaUrl`); admin cards for first section (incl. CTA link)
-  and promo select
-- Admin editor order: SEO → partner name → hero → first section → promo → cooks → testimonials → configurable sections
+  primary button and `Header` booking CTA via `ContentPageView` → `bookingRequestCtaUrl`); admin cards for first section (incl. CTA link and
+  overlay toggle), How it works alternative media, and promo select
+- Admin editor order: SEO → partner name → hero (incl. overlay) → first section → promo → How it works → cooks → testimonials → configurable
+  sections
 - Admin: `/admin/partners` (shared admin list cards: name, path, draft/published badge, updated; debounced client search),
   `/admin/partners/$partnerId` (cook search inside the choose-chefs dialog + listing warnings; cook/testimonial saves and in-flight image
   uploads mark the page dirty so the partner subscription does not reset unsaved form fields; hero/first-section image updates merge via
   functional setState so a completing upload cannot clobber newer edits)
-- Public: list + detail; sitemap `/sitemap-partners.xml`
+- Public: list + detail via `ContentPageView` (hero overlay, ChefForAnyOccasion, featured cooks, testimonials, HowItWorks with `hideCta` /
+  alternative media, sections, KnownFrom); sitemap `/sitemap-partners.xml`
+- Alternative HowItWorks assets: `public/home/how-it-works-section/*.alternative.*`
 - Draft flag: unified `publishedAt` (null = draft)
 - Separate admin vs public GraphQL shapes (same pattern as other content pages)
 

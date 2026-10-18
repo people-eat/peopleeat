@@ -21,6 +21,7 @@ export function SectionChefForAnyOccasion({
     imageUrl,
     ctaUrl,
     promo,
+    imageOverlay = true,
     className,
 }: {
     locale: Locale;
@@ -34,6 +35,8 @@ export function SectionChefForAnyOccasion({
     /** Partner-only override for the primary CTA; omit for the booking form. */
     ctaUrl?: string | null;
     promo?: SectionChefForAnyOccasionPromo | null;
+    /** Bottom gradient on the CTA image. Partners may turn off. */
+    imageOverlay?: boolean;
     className?: string;
 }) {
     const headline = contentLocaleText(headlineDe, headlineEn, locale).trim();
@@ -61,6 +64,7 @@ export function SectionChefForAnyOccasion({
                     displayName={displayName}
                     imageUrl={imageUrl}
                     ctaUrl={ctaUrl}
+                    imageOverlay={imageOverlay}
                     noImageLabel={{ de: 'Kein Bild', en: 'No image' }[locale]}
                     banner={
                         promo && formattedAmount ? (

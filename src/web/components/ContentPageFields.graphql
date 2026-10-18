@@ -286,6 +286,9 @@ fragment AdminPartnerFields on AdminPartner {
     firstSectionImageFileUploadId
     firstSectionImageUrl
     firstSectionCtaUrl
+    heroImageOverlay
+    firstSectionImageOverlay
+    howItWorksAlternativeMedia
     promoCodeId
     promo {
         redeemCode
@@ -334,6 +337,9 @@ fragment PublicPartnerFields on PublicPartner {
     firstSectionImageFileUploadId
     firstSectionImageUrl
     firstSectionCtaUrl
+    heroImageOverlay
+    firstSectionImageOverlay
+    howItWorksAlternativeMedia
     promo {
         redeemCode
         amountCents

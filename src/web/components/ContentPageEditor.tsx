@@ -124,8 +124,12 @@ export function ContentPageEditor({
     chefForAnyOccasion,
     formatsSection,
     heroImageFallbackUrl,
+    heroImageOverlay,
+    heroExtraFields,
     heroVariant = 'fullBleed',
     howItWorks,
+    howItWorksHideCta,
+    howItWorksAlternativeMedia,
     cities,
     knownFrom,
 }: {
@@ -148,9 +152,14 @@ export function ContentPageEditor({
     chefForAnyOccasion?: ContentPageViewModel['chefForAnyOccasion'];
     formatsSection?: ContentPageViewModel['formatsSection'];
     heroImageFallbackUrl?: ContentPageViewModel['heroImageFallbackUrl'];
+    heroImageOverlay?: ContentPageViewModel['heroImageOverlay'];
+    /** Partner-only controls under the hero image (e.g. overlay toggle). */
+    heroExtraFields?: React.ReactNode;
     /** `article` = blog title / lead / rounded image preview (still edits the shared Hero fields). */
     heroVariant?: ContentPageViewModel['heroVariant'];
     howItWorks?: ContentPageViewModel['howItWorks'];
+    howItWorksHideCta?: ContentPageViewModel['howItWorksHideCta'];
+    howItWorksAlternativeMedia?: ContentPageViewModel['howItWorksAlternativeMedia'];
     cities?: ContentPageViewModel['cities'];
     knownFrom?: ContentPageViewModel['knownFrom'];
 }) {
@@ -252,6 +261,7 @@ export function ContentPageEditor({
                 subHeadlineEn: values.subHeadlineEn,
                 heroImageUrl: values.heroImageFileUploadId ? fileUploadPublicUrl(values.heroImageFileUploadId) : null,
                 heroImageFallbackUrl,
+                heroImageOverlay,
                 heroVariant,
                 sections: values.sections,
                 featuredCooks,
@@ -259,6 +269,8 @@ export function ContentPageEditor({
                 formatsSection,
                 formatsSectionForceShow: Boolean(formatsSection),
                 howItWorks,
+                howItWorksHideCta,
+                howItWorksAlternativeMedia,
                 cities,
                 knownFrom,
             }}
@@ -451,6 +463,7 @@ export function ContentPageEditor({
                                     onUploadStart={() => patch({})}
                                     onChange={(heroImageFileUploadId) => patch({ heroImageFileUploadId })}
                                 />
+                                {heroExtraFields}
                             </CardContent>
                         </Card>
 

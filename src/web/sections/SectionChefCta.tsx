@@ -16,6 +16,7 @@ export function SectionChefCta({
     noImageLabel,
     ctaUrl,
     banner,
+    imageOverlay = true,
     className,
 }: {
     locale: Locale;
@@ -27,6 +28,8 @@ export function SectionChefCta({
     /** When set, overrides the default booking-request form link. */
     ctaUrl?: string | null;
     banner?: ReactNode;
+    /** Bottom gradient scrim for white text on the CTA image. Partners may turn off. */
+    imageOverlay?: boolean;
     className?: string;
 }) {
     const hasImage = Boolean(imageUrl);
@@ -43,7 +46,9 @@ export function SectionChefCta({
                         <p className="text-sm font-medium">{noImageLabel}</p>
                     </div>
                 ) : null}
-                {hasImage ? <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" /> : null}
+                {hasImage && imageOverlay ? (
+                    <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+                ) : null}
                 <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 p-6">
                     <h3 className={cn('font-serif text-2xl/tight font-light @md:text-3xl', hasImage ? 'text-white' : 'text-foreground')}>
                         {displayName}

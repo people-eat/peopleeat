@@ -1190,6 +1190,12 @@ export const partners = pgTable(
         // Optional promo shown on the public partner CTA card. Null means
         // no banner. On delete of the promo code the assignment is cleared.
         promoCodeId: nanoId(),
+        // Dark scrim on hero / first-section CTA image. Admins turn off when
+        // the photo already reads dark enough. See docs/features/partners.md.
+        heroImageOverlay: boolean().notNull().default(true),
+        firstSectionImageOverlay: boolean().notNull().default(true),
+        // HowItWorks alternative assets (holiday-home style). See partners.md.
+        howItWorksAlternativeMedia: boolean().notNull().default(false),
     },
     (table) => [
         uniqueIndex('Partners_pathName_uidx').on(table.pathName),

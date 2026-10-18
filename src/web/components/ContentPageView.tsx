@@ -30,6 +30,8 @@ export type ContentPageViewModel = {
     heroImageUrl: string | null | undefined;
     /** Used when `heroImageUrl` is missing (city pages ship a stock fallback). */
     heroImageFallbackUrl?: string;
+    /** Dark scrim on full-bleed hero. Default true; partners may turn off. */
+    heroImageOverlay?: boolean;
     /** `fullBleed` = `SectionHero` (default); `article` = blog title / lead / rounded image. */
     heroVariant?: ContentPageHeroVariant;
     sections: ContentSection[];
@@ -48,16 +50,22 @@ export type ContentPageViewModel = {
         /** Partner-only CTA override for first-section + header; omit / null keeps the booking form. */
         ctaUrl?: string | null;
         promo?: SectionChefForAnyOccasionPromo | null;
+        /** Bottom gradient on the CTA image. Default true; partners may turn off. */
+        imageOverlay?: boolean;
     };
     /** Occasion three-format showcase below the CTA. Hidden when empty on public pages. */
     formatsSection?: SectionOccasionFormatsModel;
     /** Admin preview keeps the formats slot visible with placeholders. */
     formatsSectionForceShow?: boolean;
-    /** City detail chrome after testimonials (also on the landing page). */
+    /** City / partner detail chrome after testimonials (also on the landing page). */
     howItWorks?: boolean;
+    /** Hide HowItWorks WhatsApp CTA (partner pages). */
+    howItWorksHideCta?: boolean;
+    /** Partner HowItWorks alternative assets. */
+    howItWorksAlternativeMedia?: boolean;
     /** City list below dynamic sections. Hidden when empty / omitted. */
     cities?: ReadonlyArray<SectionCitiesCity>;
-    /** Press logos after the cities list (city detail + landing). */
+    /** Press logos after the cities list (city detail + landing + partners). */
     knownFrom?: boolean;
 };
 
@@ -106,6 +114,7 @@ export function ContentPageView({
                             subheadline={subheadline || undefined}
                             media={fullBleedMedia}
                             noMediaLabel={noMediaLabel}
+                            imageOverlay={page.heroImageOverlay}
                         />
                     )}
                 </div>
@@ -121,6 +130,7 @@ export function ContentPageView({
                             imageUrl={page.chefForAnyOccasion.imageUrl}
                             ctaUrl={page.chefForAnyOccasion.ctaUrl}
                             promo={page.chefForAnyOccasion.promo}
+                            imageOverlay={page.chefForAnyOccasion.imageOverlay}
                         />
                     </div>
                 ) : null}
@@ -145,7 +155,7 @@ export function ContentPageView({
                 ) : null}
                 {page.howItWorks ? (
                     <div data-content-preview-anchor="how-it-works">
-                        <SectionHowItWorks />
+                        <SectionHowItWorks hideCta={page.howItWorksHideCta} useAlternativeMedia={page.howItWorksAlternativeMedia} />
                     </div>
                 ) : null}
                 <ContentSectionsRenderer sections={page.sections} locale={locale} />

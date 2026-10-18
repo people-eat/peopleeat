@@ -17,6 +17,7 @@ export function PartnerPage({ data }: { data: GqlCPublicPartnerPageQuery }) {
                 subHeadlineDe: partner.subHeadlineDe,
                 subHeadlineEn: partner.subHeadlineEn,
                 heroImageUrl: partner.heroImageUrl,
+                heroImageOverlay: partner.heroImageOverlay,
                 sections: contentSectionsFromGql(partner.sections),
                 featuredCooks: partner.featuredCooks,
                 testimonials: partner.testimonials,
@@ -29,7 +30,12 @@ export function PartnerPage({ data }: { data: GqlCPublicPartnerPageQuery }) {
                     imageUrl: partner.firstSectionImageUrl,
                     ctaUrl: partner.firstSectionCtaUrl,
                     promo: partner.promo,
+                    imageOverlay: partner.firstSectionImageOverlay,
                 },
+                howItWorks: true,
+                howItWorksHideCta: true,
+                howItWorksAlternativeMedia: partner.howItWorksAlternativeMedia,
+                knownFrom: true,
             }}
         />
     );

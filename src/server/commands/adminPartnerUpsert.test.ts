@@ -25,6 +25,9 @@ function partnerInput(overrides: Partial<GqlSPartnerUpsert> = {}): GqlSPartnerUp
         firstSectionHeadlineEn: '',
         firstSectionBodyDe: '',
         firstSectionBodyEn: '',
+        heroImageOverlay: true,
+        firstSectionImageOverlay: true,
+        howItWorksAlternativeMedia: false,
         sections: [],
         ...overrides,
     };

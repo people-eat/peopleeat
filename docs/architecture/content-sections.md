@@ -80,6 +80,6 @@ separate section stack per entity.
   the partner and occasion cook pickers use server-side search inside the choose-chefs dialog (cities filter travel-radius candidates
   locally). Home HowItWorks / KnownFrom / promo bands are shipped on `/` (see [`landing.md`](../features/landing.md)); city detail pages
   also mount HowItWorks, SectionCities, and KnownFrom (plus a fixed first-section CTA and stock hero/CTA image fallbacks — see
-  [`cities.md`](../features/cities.md)). Partner HowItWorks / KnownFrom chrome remain deferred, and occasion pages stay without them by
-  design (see [`occasions.md`](../features/occasions.md)).
+  [`cities.md`](../features/cities.md)). Partner detail pages mount HowItWorks (CTA hidden; optional alternative media) and KnownFrom (see
+  [`partners.md`](../features/partners.md)). Occasion pages stay without them by design (see [`occasions.md`](../features/occasions.md)).
 - Public images need the widened file-upload GET rule documented in [`file-storage.md`](./file-storage.md).
