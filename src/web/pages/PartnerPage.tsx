@@ -11,6 +11,7 @@ export function PartnerPage({ data }: { data: GqlCPublicPartnerPageQuery }) {
         <ContentPageView
             locale={locale}
             user={data.currentSession.user}
+            showBookingRequestCta={false}
             page={{
                 headlineDe: partner.headlineDe,
                 headlineEn: partner.headlineEn,

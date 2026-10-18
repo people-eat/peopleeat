@@ -34,10 +34,21 @@ function headerIsOverMedia(): boolean {
     return false;
 }
 
-export function Header({ user, overMedia = false, locale: localeProp }: { user: PublicHeaderUser; overMedia?: boolean; locale?: Locale }) {
+export function Header({
+    user,
+    overMedia = false,
+    locale: localeProp,
+    showBookingRequestCta: showBookingRequestCtaProp,
+}: {
+    user: PublicHeaderUser;
+    overMedia?: boolean;
+    locale?: Locale;
+    /** Defaults to true for non-cooks; partner pages pass false. */
+    showBookingRequestCta?: boolean;
+}) {
     const routeLocale = useLocale();
     const locale = localeProp ?? routeLocale;
-    const showBookingRequestCta = !user?.cook;
+    const showBookingRequestCta = showBookingRequestCtaProp ?? !user?.cook;
     // Prefer inverted on first paint when the page opens over hero media; scroll
     // sync below corrects against every `[data-over-media]` region.
     const [invertLogo, setInvertLogo] = useState(overMedia);

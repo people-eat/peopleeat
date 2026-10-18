@@ -4,7 +4,8 @@ Admins publish bilingual partnership landing pages with optional promo spotlight
 
 ## Behavior
 
-Public visitors open `/partners` and `/partners/$pathName`. Drafts stay unpublished until an admin sets a publish time.
+Public visitors open `/partners` and `/partners/$pathName`. Drafts stay unpublished until an admin sets a publish time. The sticky header
+hides the booking-request CTA on both list and detail (partner CTAs live in the first-section card instead).
 
 After the hero, the page may show:
 
@@ -83,7 +84,7 @@ Direction: self-serve builder on the public partners surface, admins remain sole
   `/admin/partners/$partnerId` (cook search inside the choose-chefs dialog + listing warnings; cook/testimonial saves and in-flight image
   uploads mark the page dirty so the partner subscription does not reset unsaved form fields; hero/first-section image updates merge via
   functional setState so a completing upload cannot clobber newer edits)
-- Public: list + detail; sitemap `/sitemap-partners.xml`
+- Public: list + detail (`Header` / `ContentPageView` with `showBookingRequestCta={false}`); sitemap `/sitemap-partners.xml`
 - Draft flag: unified `publishedAt` (null = draft)
 - Separate admin vs public GraphQL shapes (same pattern as other content pages)
 

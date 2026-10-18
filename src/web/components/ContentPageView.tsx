@@ -66,11 +66,14 @@ export function ContentPageView({
     locale,
     onLocaleChange,
     user,
+    showBookingRequestCta,
 }: {
     page: ContentPageViewModel;
     locale: Locale;
     onLocaleChange?: (locale: Locale) => void;
     user: PublicHeaderUser;
+    /** Forwarded to `Header`; partner pages pass false. */
+    showBookingRequestCta?: boolean;
 }) {
     const heroVariant = page.heroVariant ?? 'fullBleed';
     const headline = contentLocaleText(page.headlineDe, page.headlineEn, locale).trim();
@@ -84,7 +87,7 @@ export function ContentPageView({
         // Wrapper owns `@container` so Header / Footer / SectionHero / sections
         // query this pane’s width (admin split preview), not the viewport.
         <div className="@container w-full min-w-0" data-content-preview-anchor="top">
-            <Header user={user} overMedia={Boolean(fullBleedMedia)} locale={locale} />
+            <Header user={user} overMedia={Boolean(fullBleedMedia)} locale={locale} showBookingRequestCta={showBookingRequestCta} />
             <main id="main-content">
                 <div data-content-preview-anchor="hero">
                     {heroVariant === 'article' ? (
