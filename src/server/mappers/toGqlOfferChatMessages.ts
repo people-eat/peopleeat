@@ -1,6 +1,11 @@
-import type { BookingRequestOfferEvent, FileUpload } from '../db/schema';
-import type { BookingRequestOfferEventType } from '../domain/bookingRequest';
-import type { GqlSChatMessageBookingRequestOfferEventType, GqlSHumanChatMessage, GqlSPublicUser } from '../graphql/generated';
+import type { BookingRequestOfferEvent, BookingRequestOfferEventReaction, FileUpload } from '../db/schema';
+import type { BookingRequestOfferChatReactorRole, BookingRequestOfferEventType } from '../domain/bookingRequest';
+import type {
+    GqlSChatMessageBookingRequestOfferEventType,
+    GqlSChatMessageReaction,
+    GqlSHumanChatMessage,
+    GqlSPublicUser,
+} from '../graphql/generated';
 import { toGqlFileUpload } from './toGqlFileUpload';
 
 export type OfferChatViewerRole = 'user' | 'cook' | 'admin';
@@ -12,6 +17,7 @@ export type ToGqlOfferChatMessagesInput = {
     viewerRole: OfferChatViewerRole;
     /** Send-ordered FileUploads keyed by MESSAGE_SIMPLE event id. */
     attachmentsByEventId?: ReadonlyMap<string, ReadonlyArray<FileUpload>>;
+    reactionsByEventId?: ReadonlyMap<string, ReadonlyArray<BookingRequestOfferEventReaction>>;
 };
 
 const MESSAGE_SIMPLE_TYPES = new Set<BookingRequestOfferEventType>(['USER_MESSAGE_SIMPLE', 'COOK_MESSAGE_SIMPLE', 'ADMIN_MESSAGE_SIMPLE']);
@@ -50,6 +56,30 @@ function toGqlOfferChatMessage(event: BookingRequestOfferEvent, input: ToGqlOffe
     };
 }
 
+function reactorRoleIsOwn(reactorRole: BookingRequestOfferChatReactorRole, viewerRole: OfferChatViewerRole): boolean {
+    switch (reactorRole) {
+        case 'USER':
+            return viewerRole === 'user';
+        case 'COOK':
+            return viewerRole === 'cook';
+        case 'ADMIN':
+            return viewerRole === 'admin';
+    }
+}
+
+function reactionsResolve(
+    rows: ReadonlyArray<BookingRequestOfferEventReaction> | undefined,
+    viewerRole: OfferChatViewerRole,
+): GqlSChatMessageReaction[] {
+    if (!rows?.length) return [];
+    return rows
+        .filter((row): row is BookingRequestOfferEventReaction & { emoji: string } => Boolean(row.emoji?.trim()))
+        .map((row) => ({
+            emoji: row.emoji.trim(),
+            isOwn: reactorRoleIsOwn(row.reactorRole, viewerRole),
+        }));
+}
+
 function toGqlOfferChatMessageUser(event: BookingRequestOfferEvent, input: ToGqlOfferChatMessagesInput): GqlSHumanChatMessage {
     const payload = event.payload as MessageSimplePayload;
     const { author, isOwn } = authorAndIsOwnForMessageSimple(event.type, payload, input);
@@ -64,7 +94,7 @@ function toGqlOfferChatMessageUser(event: BookingRequestOfferEvent, input: ToGql
         body: payload.messageBody,
         attachments: attachments.map(toGqlFileUpload),
         deliveryStatus: null,
-        reactions: [],
+        reactions: reactionsResolve(input.reactionsByEventId?.get(event.bookingRequestOfferEventId), input.viewerRole),
         createdAt: createdAtForMessageSimple(event, payload),
     };
 }

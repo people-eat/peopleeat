@@ -1208,6 +1208,7 @@ export interface GqlSAdminMutation {
     bookingRequestOfferCallJoin: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlSMutationResult;
     bookingRequestOfferChatMessageCreate: GqlSMutationResult;
+    bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
     bookingRequestOfferChatMessageUpdate: GqlSMutationResult;
     bookingRequestOfferChatReviewAcknowledge: GqlSAdminBookingRequestOfferChatReviewAcknowledgeResult;
     bookingRequestOfferConfiguredMenuUpdate: GqlSMutationResult;
@@ -1326,6 +1327,11 @@ export type GqlSAdminMutationBookingRequestOfferChatMessageCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     message: Scalars['String']['input'];
+};
+
+export type GqlSAdminMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
+    emoji: Scalars['String']['input'];
 };
 
 export type GqlSAdminMutationBookingRequestOfferChatMessageUpdateArgs = {
@@ -3198,6 +3204,7 @@ export interface GqlSCookMutation {
     bookingRequestOfferCallSlotDecline: GqlSMutationResult;
     bookingRequestOfferCallSlotRequest: GqlSMutationResult;
     bookingRequestOfferChatMessageCreate: GqlSMutationResult;
+    bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
     bookingRequestOfferCreate: GqlSMutationResult;
     bookingRequestOfferDecline: GqlSMutationResult;
     bookingRequestOfferPriceUpdate: GqlSMutationResult;
@@ -3283,6 +3290,11 @@ export type GqlSCookMutationBookingRequestOfferChatMessageCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     message: Scalars['String']['input'];
+};
+
+export type GqlSCookMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
+    emoji: Scalars['String']['input'];
 };
 
 export type GqlSCookMutationBookingRequestOfferCreateArgs = {
@@ -3531,6 +3543,7 @@ export type GqlSFeatureToggleKey =
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
+    | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_WALLET_STRIPE_BALANCE'
@@ -4472,6 +4485,7 @@ export interface GqlSUserMutation {
     bookingRequestOfferCallSlotDecline: GqlSMutationResult;
     bookingRequestOfferCallSlotRequest: GqlSMutationResult;
     bookingRequestOfferChatMessageCreate: GqlSMutationResult;
+    bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
     bookingRequestOfferConfiguredMenuCreate: GqlSMutationResult;
     bookingRequestOfferDecline: GqlSMutationResult;
     bookingRequestOfferPaymentStatusUpdate: GqlSMutationResult;
@@ -4573,6 +4587,11 @@ export type GqlSUserMutationBookingRequestOfferChatMessageCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     message: Scalars['String']['input'];
+};
+
+export type GqlSUserMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
+    emoji: Scalars['String']['input'];
 };
 
 export type GqlSUserMutationBookingRequestOfferConfiguredMenuCreateArgs = {
@@ -6958,6 +6977,12 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationBookingRequestOfferChatMessageCreateArgs, 'bookingRequestOfferId' | 'message'>
     >;
+    bookingRequestOfferChatMessageReactionUpsert?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationBookingRequestOfferChatMessageReactionUpsertArgs, 'bookingRequestOfferEventId' | 'emoji'>
+    >;
     bookingRequestOfferChatMessageUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -8793,6 +8818,12 @@ export type GqlSCookMutationResolvers<
         ContextType,
         RequireFields<GqlSCookMutationBookingRequestOfferChatMessageCreateArgs, 'bookingRequestOfferId' | 'message'>
     >;
+    bookingRequestOfferChatMessageReactionUpsert?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationBookingRequestOfferChatMessageReactionUpsertArgs, 'bookingRequestOfferEventId' | 'emoji'>
+    >;
     bookingRequestOfferCreate?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -10031,6 +10062,12 @@ export type GqlSUserMutationResolvers<
         ContextType,
         RequireFields<GqlSUserMutationBookingRequestOfferChatMessageCreateArgs, 'bookingRequestOfferId' | 'message'>
     >;
+    bookingRequestOfferChatMessageReactionUpsert?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserMutationBookingRequestOfferChatMessageReactionUpsertArgs, 'bookingRequestOfferEventId' | 'emoji'>
+    >;
     bookingRequestOfferConfiguredMenuCreate?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -10968,6 +11005,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
+    | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_WALLET_STRIPE_BALANCE'
@@ -10978,6 +11016,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
+    | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_WALLET_STRIPE_BALANCE'
@@ -10989,6 +11028,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'AI_MENU_EVALUATION',
     'ASSISTANT_COOK',
     'ASSISTANT_CUSTOMER',
+    'BOOKING_REQUEST_OFFER_CHAT_REACTIONS',
     'BOOKING_REQUEST_RESTRICTIONS',
     'COOK_BIOGRAPHY_AI_WRITE',
     'COOK_WALLET_STRIPE_BALANCE',

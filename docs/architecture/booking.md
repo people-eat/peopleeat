@@ -60,7 +60,8 @@ Partial unique index `BookingRequestOffers_oneAccepted_uidx` on `bookingRequestI
 
 GraphQL **does** project the timeline onto the shared `ChatMessage` wire union:
 
-- `*_MESSAGE_SIMPLE` → `ChatMessageUser` (`author: PublicUser`, `isOwn` by viewer role)
+- `*_MESSAGE_SIMPLE` → `ChatMessageUser` (`author: PublicUser`, `isOwn` by viewer role; optional `reactions` from
+  `BookingRequestOfferEventReactions` when present)
 - All other event types → `ChatMessageBookingRequestOfferEvent` (`type` + `payload: JSON`)
 
 Exposed as lazy `messages: [ChatMessage!]!` on `UserBookingRequestOffer` / `CookBookingRequestOffer` / `AdminBookingRequestOffer`. Sends go

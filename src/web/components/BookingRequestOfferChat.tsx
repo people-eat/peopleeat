@@ -5,6 +5,7 @@ import { containsPhoneNumber } from '../../shared';
 import { groupMessagesByDate, peerUserMessageStreak } from '../chat/chatTranscript';
 import { useComposerFileAttachments } from '../chat/useComposerFileAttachments';
 import type { GqlCHumanChatMessageFieldsFragment } from '../graphql/generated';
+import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 import { Avatar, AvatarFallback, AvatarGroup, AvatarImage } from './base/avatar';
@@ -67,6 +68,7 @@ export function BookingRequestOfferChat({
     canSend,
     onSend,
     onEditMessage,
+    onReactMessage,
     peers,
     viewerRole,
     className,
@@ -78,6 +80,8 @@ export function BookingRequestOfferChat({
     onSend: (message: string, fileUploadIds: string[]) => Promise<boolean>;
     /** Admin-only: edit a `*_MESSAGE_SIMPLE` body by chat message id. */
     onEditMessage?: (chatMessageId: string, message: string) => Promise<boolean>;
+    /** When set and `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` is on, peer bubbles get a reaction picker. */
+    onReactMessage?: (chatMessageId: string, emoji: string) => Promise<boolean>;
     peers: ReadonlyArray<BookingRequestOfferChatPeer>;
     viewerRole: BookingRequestOfferChatViewerRole;
     className?: string;
@@ -89,6 +93,7 @@ export function BookingRequestOfferChat({
     composerHost?: Element | null;
 }) {
     const locale = useLocale();
+    const reactionsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_CHAT_REACTIONS');
     const [draft, setDraft] = useState('');
     const [busy, setBusy] = useState(false);
     const { attachments, onAttachmentsAdd, onAttachmentRemove, clearAttachments, restoreAttachments, uploadedFileUploadIds, hasUploaded } =
@@ -204,6 +209,11 @@ export function BookingRequestOfferChat({
                                         showAuthorName={streak.showName}
                                         showAuthorAvatar={streak.showAvatar}
                                         onEditUserMessage={onEditMessage}
+                                        onReactUserMessage={
+                                            reactionsEnabled && onReactMessage
+                                                ? (chatMessageId, emoji) => onReactMessage(chatMessageId, emoji)
+                                                : undefined
+                                        }
                                     />
                                 </MessageScrollerItem>
                             );

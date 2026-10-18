@@ -1018,6 +1018,10 @@ type CookMutation {
     # Append a free-text negotiation message (`COOK_MESSAGE_SIMPLE` event).
     # `referenceId` is the new `bookingRequestOfferEventId`.
     bookingRequestOfferChatMessageCreate(bookingRequestOfferId: ID!, message: String!, fileUploadIds: [ID!]): MutationResult!
+    # Apply or clear an emoji reaction on a `*_MESSAGE_SIMPLE` event. Empty `emoji`
+    # clears. Gated by `BOOKING_REQUEST_OFFER_CHAT_REACTIONS`. No unread / email.
+    # `referenceId` is the target event id.
+    bookingRequestOfferChatMessageReactionUpsert(bookingRequestOfferEventId: ID!, emoji: String!): MutationResult!
     # Clears `cookUnreadNotificationCount` on this cook's offer (call when opening chat).
     bookingRequestOfferUnreadNotificationCountReset(bookingRequestOfferId: ID!): MutationResult!
     # Call-slot booking — cook proposes any free time (overlap-checked).
@@ -2397,6 +2401,10 @@ type UserMutation {
     # Append a free-text negotiation message (`USER_MESSAGE_SIMPLE` event).
     # `referenceId` is the new `bookingRequestOfferEventId`.
     bookingRequestOfferChatMessageCreate(bookingRequestOfferId: ID!, message: String!, fileUploadIds: [ID!]): MutationResult!
+    # Apply or clear an emoji reaction on a `*_MESSAGE_SIMPLE` event. Empty `emoji`
+    # clears. Gated by `BOOKING_REQUEST_OFFER_CHAT_REACTIONS`. No unread / email.
+    # `referenceId` is the target event id.
+    bookingRequestOfferChatMessageReactionUpsert(bookingRequestOfferEventId: ID!, emoji: String!): MutationResult!
     # Clears `userUnreadNotificationCount` on an owned offer (call when opening chat).
     bookingRequestOfferUnreadNotificationCountReset(bookingRequestOfferId: ID!): MutationResult!
     # Call-slot booking — customer proposes a derived free slot.
@@ -3896,6 +3904,10 @@ type AdminMutation {
     # Append a free-text negotiation message (`ADMIN_MESSAGE_SIMPLE` event).
     # `referenceId` is the new `bookingRequestOfferEventId`.
     bookingRequestOfferChatMessageCreate(bookingRequestOfferId: ID!, message: String!, fileUploadIds: [ID!]): MutationResult!
+    # Apply or clear an emoji reaction on a `*_MESSAGE_SIMPLE` event. Empty `emoji`
+    # clears. Gated by `BOOKING_REQUEST_OFFER_CHAT_REACTIONS`. Allowed even when
+    # chat send is closed. No unread / email. `referenceId` is the target event id.
+    bookingRequestOfferChatMessageReactionUpsert(bookingRequestOfferEventId: ID!, emoji: String!): MutationResult!
     # Replace the text body of a `*_MESSAGE_SIMPLE` offer-chat event (customer /
     # cook / admin). Attachments are unchanged. Empty body is allowed only when
     # the event already has attachments. Phone numbers rejected. Allowed even
@@ -4820,6 +4832,7 @@ enum FeatureToggleKey {
     COOK_BIOGRAPHY_AI_WRITE
     COOK_WALLET_STRIPE_BALANCE
     BOOKING_REQUEST_RESTRICTIONS
+    BOOKING_REQUEST_OFFER_CHAT_REACTIONS
     ASSISTANT_CUSTOMER
     ASSISTANT_COOK
     PUBLICATION_MEALS

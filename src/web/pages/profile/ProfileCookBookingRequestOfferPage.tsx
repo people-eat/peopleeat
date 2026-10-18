@@ -47,6 +47,7 @@ import {
     ProfileCookBookingRequestOfferCallSlotDeclineDocument,
     ProfileCookBookingRequestOfferCallSlotRequestDocument,
     ProfileCookBookingRequestOfferChatMessageCreateDocument,
+    ProfileCookBookingRequestOfferChatMessageReactionUpsertDocument,
     ProfileCookBookingRequestOfferDeclineDocument,
     ProfileCookBookingRequestOfferPageUpdatesDocument,
     ProfileCookBookingRequestOfferUnreadNotificationCountResetDocument,
@@ -142,6 +143,7 @@ export function ProfileCookBookingRequestOfferPage({
     const [, acceptOffer] = useMutation(ProfileCookBookingRequestOfferAcceptDocument);
     const [, declineOffer] = useMutation(ProfileCookBookingRequestOfferDeclineDocument);
     const [, sendChatMessage] = useMutation(ProfileCookBookingRequestOfferChatMessageCreateDocument);
+    const [, upsertOfferChatReaction] = useMutation(ProfileCookBookingRequestOfferChatMessageReactionUpsertDocument);
     const [, resetUnread] = useMutation(ProfileCookBookingRequestOfferUnreadNotificationCountResetDocument);
 
     useEffect(() => {
@@ -376,6 +378,22 @@ export function ProfileCookBookingRequestOfferPage({
                             const result = await sendChatMessage({ bookingRequestOfferId, message, fileUploadIds });
                             if (result.error || !result.data?.user.cook.bookingRequestOfferChatMessageCreate.success) {
                                 toast.error({ de: 'Nachricht konnte nicht gesendet werden.', en: 'Could not send the message.' }[locale]);
+                                return false;
+                            }
+                            return true;
+                        }}
+                        onReactMessage={async (chatMessageId, emoji) => {
+                            const result = await upsertOfferChatReaction({
+                                bookingRequestOfferEventId: chatMessageId,
+                                emoji,
+                            });
+                            if (result.error || !result.data?.user.cook.bookingRequestOfferChatMessageReactionUpsert.success) {
+                                toast.error(
+                                    {
+                                        de: 'Reaktion konnte nicht gespeichert werden.',
+                                        en: 'Could not save the reaction.',
+                                    }[locale],
+                                );
                                 return false;
                             }
                             return true;

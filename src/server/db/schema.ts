@@ -35,6 +35,7 @@ import type {
     BookingRequestOfferCallRecordingStatus,
     BookingRequestOfferCallRoomStatus,
     BookingRequestOfferCallTranscriptSegment,
+    BookingRequestOfferChatReactorRole,
     BookingRequestOfferConfiguredMenu,
     BookingRequestOfferEventPayload,
     BookingRequestOfferEventType,
@@ -1715,6 +1716,40 @@ export const bookingRequestOfferEventAttachments = pgTable(
 
 export type BookingRequestOfferEventAttachment = typeof bookingRequestOfferEventAttachments.$inferSelect;
 export type BookingRequestOfferEventAttachmentCreate = typeof bookingRequestOfferEventAttachments.$inferInsert;
+
+/** Current emoji reaction per party on a `*_MESSAGE_SIMPLE` offer-chat event. */
+export const bookingRequestOfferEventReactions = pgTable(
+    'BookingRequestOfferEventReactions',
+    {
+        bookingRequestOfferEventReactionId: nanoId().primaryKey(),
+        bookingRequestOfferEventId: nanoId().notNull(),
+        reactorRole: varchar().$type<BookingRequestOfferChatReactorRole>().notNull(),
+        reactorUserId: nanoId().notNull(),
+        /** Null when the party cleared their reaction (tombstone for idempotent clears). */
+        emoji: varchar(),
+        createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.bookingRequestOfferEventId],
+            foreignColumns: [bookingRequestOfferEvents.bookingRequestOfferEventId],
+        })
+            .onUpdate('cascade')
+            .onDelete('cascade'),
+        foreignKey({
+            columns: [table.reactorUserId],
+            foreignColumns: [users.userId],
+        })
+            .onUpdate('cascade')
+            .onDelete('cascade'),
+        uniqueIndex('BookingRequestOfferEventReactions_event_role_uidx').on(table.bookingRequestOfferEventId, table.reactorRole),
+        index('BookingRequestOfferEventReactions_eventId_idx').on(table.bookingRequestOfferEventId),
+        index('BookingRequestOfferEventReactions_reactorUserId_idx').on(table.reactorUserId),
+    ],
+);
+
+export type BookingRequestOfferEventReaction = typeof bookingRequestOfferEventReactions.$inferSelect;
+export type BookingRequestOfferEventReactionCreate = typeof bookingRequestOfferEventReactions.$inferInsert;
 
 // LiveKit room for an offer (ad-hoc or during a confirmed call-slot join window).
 // See docs/features/booking-request-offer-calls.md.

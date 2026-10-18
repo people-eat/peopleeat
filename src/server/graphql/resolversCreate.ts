@@ -106,6 +106,7 @@ import { authTotpEnrollCancel } from '../commands/authTotpEnrollCancel';
 import { authTotpEnrollConfirm } from '../commands/authTotpEnrollConfirm';
 import { authTotpEnrollStart } from '../commands/authTotpEnrollStart';
 import { authTotpVerify } from '../commands/authTotpVerify';
+import { bookingRequestOfferChatMessageReactionUpsert } from '../commands/bookingRequestOfferChatMessageReactionUpsert';
 import { chatDelete } from '../commands/chatDelete';
 import { chatInputCollectionRespond } from '../commands/chatInputCollectionRespond';
 import { chatMessageCreate } from '../commands/chatMessageCreate';
@@ -462,6 +463,7 @@ import type {
     GqlSAdminMutationBookingRequestOfferCallJoinArgs,
     GqlSAdminMutationBookingRequestOfferCallLeaveArgs,
     GqlSAdminMutationBookingRequestOfferChatMessageCreateArgs,
+    GqlSAdminMutationBookingRequestOfferChatMessageReactionUpsertArgs,
     GqlSAdminMutationBookingRequestOfferChatMessageUpdateArgs,
     GqlSAdminMutationBookingRequestOfferChatReviewAcknowledgeArgs,
     GqlSAdminMutationBookingRequestOfferConfiguredMenuUpdateArgs,
@@ -603,6 +605,7 @@ import type {
     GqlSCookMutationBookingRequestOfferCallSlotDeclineArgs,
     GqlSCookMutationBookingRequestOfferCallSlotRequestArgs,
     GqlSCookMutationBookingRequestOfferChatMessageCreateArgs,
+    GqlSCookMutationBookingRequestOfferChatMessageReactionUpsertArgs,
     GqlSCookMutationBookingRequestOfferCreateArgs,
     GqlSCookMutationBookingRequestOfferDeclineArgs,
     GqlSCookMutationBookingRequestOfferPriceUpdateArgs,
@@ -687,6 +690,7 @@ import type {
     GqlSUserMutationBookingRequestOfferCallSlotDeclineArgs,
     GqlSUserMutationBookingRequestOfferCallSlotRequestArgs,
     GqlSUserMutationBookingRequestOfferChatMessageCreateArgs,
+    GqlSUserMutationBookingRequestOfferChatMessageReactionUpsertArgs,
     GqlSUserMutationBookingRequestOfferConfiguredMenuCreateArgs,
     GqlSUserMutationBookingRequestOfferDeclineArgs,
     GqlSUserMutationBookingRequestOfferPaymentStatusUpdateArgs,
@@ -1671,6 +1675,22 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return cookBookingRequestOfferChatMessageCreate(parent, args, requestingSession, serverRuntime);
             },
+            bookingRequestOfferChatMessageReactionUpsert(
+                parent: GqlSCookMutation,
+                args: GqlSCookMutationBookingRequestOfferChatMessageReactionUpsertArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return bookingRequestOfferChatMessageReactionUpsert(
+                    {
+                        reactorUserId: parent.cookId,
+                        reactorRole: 'COOK',
+                        bookingRequestOfferEventId: args.bookingRequestOfferEventId,
+                        emoji: args.emoji,
+                    },
+                    requestingSession,
+                    serverRuntime,
+                );
+            },
             bookingRequestOfferUnreadNotificationCountReset(
                 parent: GqlSCookMutation,
                 args: GqlSCookMutationBookingRequestOfferUnreadNotificationCountResetArgs,
@@ -2084,6 +2104,22 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return adminBookingRequestOfferChatMessageCreate(parent, args, requestingSession, serverRuntime);
             },
+            bookingRequestOfferChatMessageReactionUpsert(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationBookingRequestOfferChatMessageReactionUpsertArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return bookingRequestOfferChatMessageReactionUpsert(
+                    {
+                        reactorUserId: parent.adminId,
+                        reactorRole: 'ADMIN',
+                        bookingRequestOfferEventId: args.bookingRequestOfferEventId,
+                        emoji: args.emoji,
+                    },
+                    requestingSession,
+                    serverRuntime,
+                );
+            },
             bookingRequestOfferChatMessageUpdate(
                 parent: GqlSAdminMutation,
                 args: GqlSAdminMutationBookingRequestOfferChatMessageUpdateArgs,
@@ -2313,6 +2349,22 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return userBookingRequestOfferChatMessageCreate(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferChatMessageReactionUpsert(
+                parent: GqlSUserMutation,
+                args: GqlSUserMutationBookingRequestOfferChatMessageReactionUpsertArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return bookingRequestOfferChatMessageReactionUpsert(
+                    {
+                        reactorUserId: parent.userId,
+                        reactorRole: 'USER',
+                        bookingRequestOfferEventId: args.bookingRequestOfferEventId,
+                        emoji: args.emoji,
+                    },
+                    requestingSession,
+                    serverRuntime,
+                );
             },
             bookingRequestOfferUnreadNotificationCountReset(
                 parent: GqlSUserMutation,

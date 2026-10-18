@@ -14,6 +14,7 @@ import type { GqlCAdminOfferChatReviewPageOfferFragment, GqlCAdminOfferChatRevie
 import {
     AdminBookingRequestOfferChatReviewAcknowledgeDocument,
     AdminOfferChatReviewChatMessageCreateDocument,
+    AdminOfferChatReviewChatMessageReactionUpsertDocument,
     AdminOfferChatReviewChatMessageUpdateDocument,
     AdminOfferChatReviewPageUpdatesDocument,
 } from '../../graphql/generated';
@@ -54,6 +55,7 @@ export function AdminOfferChatReviewPage({
     const [composerHost, setComposerHost] = useState<HTMLDivElement | null>(null);
     const [, acknowledge] = useMutation(AdminBookingRequestOfferChatReviewAcknowledgeDocument);
     const [, sendChatMessage] = useMutation(AdminOfferChatReviewChatMessageCreateDocument);
+    const [, upsertOfferChatReaction] = useMutation(AdminOfferChatReviewChatMessageReactionUpsertDocument);
     const [, updateChatMessage] = useMutation(AdminOfferChatReviewChatMessageUpdateDocument);
 
     useEffect(() => {
@@ -219,6 +221,22 @@ export function AdminOfferChatReviewPage({
                                 {
                                     de: 'Nachricht konnte nicht gespeichert werden.',
                                     en: 'Could not save the message.',
+                                }[locale],
+                            );
+                            return false;
+                        }
+                        return true;
+                    }}
+                    onReactMessage={async (chatMessageId, emoji) => {
+                        const result = await upsertOfferChatReaction({
+                            bookingRequestOfferEventId: chatMessageId,
+                            emoji,
+                        });
+                        if (result.error || !result.data?.admin.bookingRequestOfferChatMessageReactionUpsert.success) {
+                            toast.error(
+                                {
+                                    de: 'Reaktion konnte nicht gespeichert werden.',
+                                    en: 'Could not save the reaction.',
                                 }[locale],
                             );
                             return false;

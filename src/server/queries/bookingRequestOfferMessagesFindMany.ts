@@ -1,7 +1,8 @@
-import { asc, eq } from 'drizzle-orm';
+import { asc, eq, inArray } from 'drizzle-orm';
 
 import { offerEventAttachmentsByEventIdLoad } from '../db/offerEventAttachmentsLoad';
-import { bookingRequestOfferEvents, bookingRequests } from '../db/schema';
+import { bookingRequestOfferEventReactions, bookingRequestOfferEvents, bookingRequests } from '../db/schema';
+import type { BookingRequestOfferEventReaction } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSHumanChatMessage, GqlSSession } from '../graphql/generated';
 import type { OfferChatViewerRole } from '../mappers/toGqlOfferChatMessages';
@@ -66,12 +67,27 @@ export async function bookingRequestOfferMessagesFindMany(
             .map((event) => event.bookingRequestOfferEventId);
         const attachmentsByEventId = await offerEventAttachmentsByEventIdLoad(serverRuntime.db, messageSimpleIds);
 
+        const reactionsByEventId = new Map<string, BookingRequestOfferEventReaction[]>();
+        if (messageSimpleIds.length > 0) {
+            const reactionRows = await serverRuntime.db
+                .select()
+                .from(bookingRequestOfferEventReactions)
+                .where(inArray(bookingRequestOfferEventReactions.bookingRequestOfferEventId, messageSimpleIds))
+                .orderBy(asc(bookingRequestOfferEventReactions.createdAt));
+            for (const row of reactionRows) {
+                const list = reactionsByEventId.get(row.bookingRequestOfferEventId) ?? [];
+                list.push(row);
+                reactionsByEventId.set(row.bookingRequestOfferEventId, list);
+            }
+        }
+
         return toGqlOfferChatMessages({
             events,
             customer,
             cook,
             viewerRole,
             attachmentsByEventId,
+            reactionsByEventId,
         });
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);

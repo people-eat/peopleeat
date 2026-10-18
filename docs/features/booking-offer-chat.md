@@ -20,6 +20,10 @@ Customer, cook, and admin negotiate on an offer through a shared timeline chat w
 6. **Admins can edit** any free-text (`*_MESSAGE_SIMPLE`) bubble: pencil on the bubble opens a dialog, saves the body only (attachments
    unchanged). Same phone-number block as send. Edit stays available after chat send is closed (ops / moderation). No “edited” badge and no
    unread / email side effects.
+7. **Emoji reactions** on `*_MESSAGE_SIMPLE` bubbles (customer / cook / admin), gated by feature toggle
+   `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` (missing = off). Smile control on peer bubbles; toggle same emoji clears. One reaction per party.
+   No unread bump and no chat-notify email. Customer/cook reactions require chat still writable; admin may react after send is closed.
+   Milestone pills cannot receive reactions. Offer handover does **not** copy reactions onto the new offer.
 
 Admin uses the same chat component with admin-oriented presence copy — [admin-booking-requests.md](./admin-booking-requests.md). Peer
 messages also enter the post-hoc admin review pipeline — [admin-offer-chat-review.md](./admin-offer-chat-review.md).
@@ -35,11 +39,13 @@ messages also enter the post-hoc admin review pipeline — [admin-offer-chat-rev
 | Passive concierge presence only                        | **Chosen** for go-live — sets expectation without a tagging product         |
 | No phone-number policy                                 | Rejected — fee avoidance via phone exchange is a real marketplace risk      |
 | Immediate email on every message                       | Rejected — debounce coalesces rapid back-and-forth                          |
+| Emoji reactions always on                              | Rejected — ship behind `BOOKING_REQUEST_OFFER_CHAT_REACTIONS`               |
 
 ### Chosen
 
 Project the offer event timeline onto the shared chat UI model for rendering, keep persistence in booking offer events, show Juliana as
-passive presence, block phone numbers, and debounce peer chat emails.
+passive presence, block phone numbers, and debounce peer chat emails. Emoji reactions reuse `ChatMessageUser.reactions` / the shared smile
+picker, persist per party on `BookingRequestOfferEventReactions`, and stay silent (no unread / email).
 
 ## Next steps
 
@@ -80,7 +86,9 @@ payload; `toGqlOfferChatMessages` uses those so prior-chef bubbles keep the old 
 `isOwn` for the new cook. Peer chat-notify emails are not scheduled for copied messages.
 
 Shared UI: `BookingRequestOfferChat` — concierge row + `containsPhoneNumber` on client and all three create commands; optional
-`onEditMessage` (admin page) → pencil + dialog on `ChatMessageUserView`.
+`onEditMessage` (admin page) → pencil + dialog on `ChatMessageUserView`; optional `onReactMessage` when
+`BOOKING_REQUEST_OFFER_CHAT_REACTIONS` is active (`useFeatureToggleActive`). Mutations: `bookingRequestOfferChatMessageReactionUpsert` on
+User / Cook / Admin.
 
 ### Offer-chat message emails
 

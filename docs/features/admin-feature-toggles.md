@@ -16,6 +16,7 @@ Keys today:
 - Cook biography AI writing (Write / Improve with AI; short summary generation stays always on)
 - Cook wallet Stripe balance (live Connect balance + recent transactions on `/profile/wallet`)
 - Booking request restrictions
+- Offer chat emoji reactions
 - Customer assistant
 - Cook assistant
 - Meal publication
@@ -77,6 +78,9 @@ Wired today:
   create/update strip non-empty restriction values when off for the customer `userId`. Detail views still show stored restrictions. Admin
   shells treat an absent toggle provider as on for the editor (same as publication cards); the server still strips when the effective toggle
   is off
+- **Offer chat emoji reactions** (`BOOKING_REQUEST_OFFER_CHAT_REACTIONS`) — smile control on peer `*_MESSAGE_SIMPLE` bubbles in customer /
+  cook offer chat (profile toggle provider); admin shells keep the control visible when the provider is absent (same as publication /
+  restrictions); mutation `bookingRequestOfferChatMessageReactionUpsert` rejects when off for the acting `userId`
 - **Cook biography AI writing** (`COOK_BIOGRAPHY_AI_WRITE`) — shows Write / Improve with AI on the cook chef-profile editor; cook and admin
   suggest mutations reject when off for the **cook** `userId`. Biography **summary** generation (auto job on cook save + admin Generate
   summary) is not toggled and always runs. Admin shells keep the AI write button visible when the toggle provider is absent (same as

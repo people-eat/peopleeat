@@ -256,6 +256,15 @@ mutation AdminBookingRequestOfferChatMessageCreate($bookingRequestOfferId: ID!, 
     }
 }
 
+mutation AdminBookingRequestOfferChatMessageReactionUpsert($bookingRequestOfferEventId: ID!, $emoji: String!) {
+    admin {
+        bookingRequestOfferChatMessageReactionUpsert(bookingRequestOfferEventId: $bookingRequestOfferEventId, emoji: $emoji) {
+            success
+            referenceId
+        }
+    }
+}
+
 mutation AdminBookingRequestOfferChatMessageUpdate($bookingRequestOfferEventId: ID!, $message: String!) {
     admin {
         bookingRequestOfferChatMessageUpdate(bookingRequestOfferEventId: $bookingRequestOfferEventId, message: $message) {

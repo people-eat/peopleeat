@@ -81,6 +81,15 @@ mutation AdminOfferChatReviewChatMessageCreate($bookingRequestOfferId: ID!, $mes
     }
 }
 
+mutation AdminOfferChatReviewChatMessageReactionUpsert($bookingRequestOfferEventId: ID!, $emoji: String!) {
+    admin {
+        bookingRequestOfferChatMessageReactionUpsert(bookingRequestOfferEventId: $bookingRequestOfferEventId, emoji: $emoji) {
+            success
+            referenceId
+        }
+    }
+}
+
 mutation AdminOfferChatReviewChatMessageUpdate($bookingRequestOfferEventId: ID!, $message: String!) {
     admin {
         bookingRequestOfferChatMessageUpdate(bookingRequestOfferEventId: $bookingRequestOfferEventId, message: $message) {

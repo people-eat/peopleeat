@@ -6,6 +6,10 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
     COOK_BIOGRAPHY_AI_WRITE: { de: 'KI-Biografie schreiben', en: 'AI biography writing' },
     COOK_WALLET_STRIPE_BALANCE: { de: 'Wallet: Stripe-Guthaben', en: 'Wallet: Stripe balance' },
     BOOKING_REQUEST_RESTRICTIONS: { de: 'Buchungsanfrage: Einschränkungen', en: 'Booking request: restrictions' },
+    BOOKING_REQUEST_OFFER_CHAT_REACTIONS: {
+        de: 'Angebots-Chat: Emoji-Reaktionen',
+        en: 'Offer chat: emoji reactions',
+    },
     ASSISTANT_CUSTOMER: { de: 'Assistent: Kunden', en: 'Assistant: customer' },
     ASSISTANT_COOK: { de: 'Assistent: Köche', en: 'Assistant: cook' },
     PUBLICATION_MEALS: { de: 'Veröffentlichung: Gerichte', en: 'Publication: meals' },

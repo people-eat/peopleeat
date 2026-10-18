@@ -65,6 +65,7 @@ import {
     ProfileCustomerBookingRequestOfferCallSlotDeclineDocument,
     ProfileCustomerBookingRequestOfferCallSlotRequestDocument,
     ProfileCustomerBookingRequestOfferChatMessageCreateDocument,
+    ProfileCustomerBookingRequestOfferChatMessageReactionUpsertDocument,
     ProfileCustomerBookingRequestOfferConfiguredMenuCreateDocument,
     ProfileCustomerBookingRequestOfferPageUpdatesDocument,
     ProfileCustomerBookingRequestOfferUnreadNotificationCountResetDocument,
@@ -196,6 +197,7 @@ export function ProfileCustomerBookingRequestOfferPage({
     const [, acceptOffer] = useMutation(ProfileCustomerBookingRequestOfferAcceptDocument);
     const [, configureMenu] = useMutation(ProfileCustomerBookingRequestOfferConfiguredMenuCreateDocument);
     const [, sendOfferChatMessage] = useMutation(ProfileCustomerBookingRequestOfferChatMessageCreateDocument);
+    const [, upsertOfferChatReaction] = useMutation(ProfileCustomerBookingRequestOfferChatMessageReactionUpsertDocument);
     const [, resetUnread] = useMutation(ProfileCustomerBookingRequestOfferUnreadNotificationCountResetDocument);
 
     useEffect(() => {
@@ -529,6 +531,22 @@ export function ProfileCustomerBookingRequestOfferPage({
                                     {
                                         de: 'Nachricht konnte nicht gesendet werden.',
                                         en: 'Could not send the message.',
+                                    }[locale],
+                                );
+                                return false;
+                            }
+                            return true;
+                        }}
+                        onReactMessage={async (chatMessageId, emoji) => {
+                            const result = await upsertOfferChatReaction({
+                                bookingRequestOfferEventId: chatMessageId,
+                                emoji,
+                            });
+                            if (result.error || !result.data?.user.bookingRequestOfferChatMessageReactionUpsert.success) {
+                                toast.error(
+                                    {
+                                        de: 'Reaktion konnte nicht gespeichert werden.',
+                                        en: 'Could not save the reaction.',
                                     }[locale],
                                 );
                                 return false;

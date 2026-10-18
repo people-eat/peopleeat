@@ -1211,6 +1211,7 @@ export interface GqlCAdminMutation {
     bookingRequestOfferCallJoin: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlCMutationResult;
     bookingRequestOfferChatMessageCreate: GqlCMutationResult;
+    bookingRequestOfferChatMessageReactionUpsert: GqlCMutationResult;
     bookingRequestOfferChatMessageUpdate: GqlCMutationResult;
     bookingRequestOfferChatReviewAcknowledge: GqlCAdminBookingRequestOfferChatReviewAcknowledgeResult;
     bookingRequestOfferConfiguredMenuUpdate: GqlCMutationResult;
@@ -1329,6 +1330,11 @@ export type GqlCAdminMutationBookingRequestOfferChatMessageCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     message: Scalars['String']['input'];
+};
+
+export type GqlCAdminMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
+    emoji: Scalars['String']['input'];
 };
 
 export type GqlCAdminMutationBookingRequestOfferChatMessageUpdateArgs = {
@@ -3201,6 +3207,7 @@ export interface GqlCCookMutation {
     bookingRequestOfferCallSlotDecline: GqlCMutationResult;
     bookingRequestOfferCallSlotRequest: GqlCMutationResult;
     bookingRequestOfferChatMessageCreate: GqlCMutationResult;
+    bookingRequestOfferChatMessageReactionUpsert: GqlCMutationResult;
     bookingRequestOfferCreate: GqlCMutationResult;
     bookingRequestOfferDecline: GqlCMutationResult;
     bookingRequestOfferPriceUpdate: GqlCMutationResult;
@@ -3286,6 +3293,11 @@ export type GqlCCookMutationBookingRequestOfferChatMessageCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     message: Scalars['String']['input'];
+};
+
+export type GqlCCookMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
+    emoji: Scalars['String']['input'];
 };
 
 export type GqlCCookMutationBookingRequestOfferCreateArgs = {
@@ -3534,6 +3546,7 @@ export type GqlCFeatureToggleKey =
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
+    | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_WALLET_STRIPE_BALANCE'
@@ -4475,6 +4488,7 @@ export interface GqlCUserMutation {
     bookingRequestOfferCallSlotDecline: GqlCMutationResult;
     bookingRequestOfferCallSlotRequest: GqlCMutationResult;
     bookingRequestOfferChatMessageCreate: GqlCMutationResult;
+    bookingRequestOfferChatMessageReactionUpsert: GqlCMutationResult;
     bookingRequestOfferConfiguredMenuCreate: GqlCMutationResult;
     bookingRequestOfferDecline: GqlCMutationResult;
     bookingRequestOfferPaymentStatusUpdate: GqlCMutationResult;
@@ -4576,6 +4590,11 @@ export type GqlCUserMutationBookingRequestOfferChatMessageCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     message: Scalars['String']['input'];
+};
+
+export type GqlCUserMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
+    emoji: Scalars['String']['input'];
 };
 
 export type GqlCUserMutationBookingRequestOfferConfiguredMenuCreateArgs = {
@@ -9921,6 +9940,15 @@ export type GqlCAdminBookingRequestOfferChatMessageCreateMutation = {
     admin: { bookingRequestOfferChatMessageCreate: { success: boolean; referenceId: string | null } };
 };
 
+export type GqlCAdminBookingRequestOfferChatMessageReactionUpsertMutationVariables = Exact<{
+    bookingRequestOfferEventId: string;
+    emoji: string;
+}>;
+
+export type GqlCAdminBookingRequestOfferChatMessageReactionUpsertMutation = {
+    admin: { bookingRequestOfferChatMessageReactionUpsert: { success: boolean; referenceId: string | null } };
+};
+
 export type GqlCAdminBookingRequestOfferChatMessageUpdateMutationVariables = Exact<{
     bookingRequestOfferEventId: string;
     message: string;
@@ -12979,6 +13007,15 @@ export type GqlCAdminOfferChatReviewChatMessageCreateMutation = {
     admin: { bookingRequestOfferChatMessageCreate: { success: boolean; referenceId: string | null } };
 };
 
+export type GqlCAdminOfferChatReviewChatMessageReactionUpsertMutationVariables = Exact<{
+    bookingRequestOfferEventId: string;
+    emoji: string;
+}>;
+
+export type GqlCAdminOfferChatReviewChatMessageReactionUpsertMutation = {
+    admin: { bookingRequestOfferChatMessageReactionUpsert: { success: boolean; referenceId: string | null } };
+};
+
 export type GqlCAdminOfferChatReviewChatMessageUpdateMutationVariables = Exact<{
     bookingRequestOfferEventId: string;
     message: string;
@@ -15863,6 +15900,15 @@ export type GqlCProfileCookBookingRequestOfferChatMessageCreateMutation = {
     user: { cook: { bookingRequestOfferChatMessageCreate: { success: boolean; referenceId: string | null } } };
 };
 
+export type GqlCProfileCookBookingRequestOfferChatMessageReactionUpsertMutationVariables = Exact<{
+    bookingRequestOfferEventId: string;
+    emoji: string;
+}>;
+
+export type GqlCProfileCookBookingRequestOfferChatMessageReactionUpsertMutation = {
+    user: { cook: { bookingRequestOfferChatMessageReactionUpsert: { success: boolean; referenceId: string | null } } };
+};
+
 export type GqlCProfileCookBookingRequestOfferUnreadNotificationCountResetMutationVariables = Exact<{
     bookingRequestOfferId: string;
 }>;
@@ -18487,6 +18533,15 @@ export type GqlCProfileCustomerBookingRequestOfferChatMessageCreateMutationVaria
 
 export type GqlCProfileCustomerBookingRequestOfferChatMessageCreateMutation = {
     user: { bookingRequestOfferChatMessageCreate: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCProfileCustomerBookingRequestOfferChatMessageReactionUpsertMutationVariables = Exact<{
+    bookingRequestOfferEventId: string;
+    emoji: string;
+}>;
+
+export type GqlCProfileCustomerBookingRequestOfferChatMessageReactionUpsertMutation = {
+    user: { bookingRequestOfferChatMessageReactionUpsert: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCProfileCustomerBookingRequestOfferUnreadNotificationCountResetMutationVariables = Exact<{
@@ -43839,6 +43894,68 @@ export const AdminBookingRequestOfferChatMessageCreateDocument = {
     GqlCAdminBookingRequestOfferChatMessageCreateMutation,
     GqlCAdminBookingRequestOfferChatMessageCreateMutationVariables
 >;
+export const AdminBookingRequestOfferChatMessageReactionUpsertDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminBookingRequestOfferChatMessageReactionUpsert' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferEventId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'emoji' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferChatMessageReactionUpsert' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferEventId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferEventId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'emoji' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'emoji' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminBookingRequestOfferChatMessageReactionUpsertMutation,
+    GqlCAdminBookingRequestOfferChatMessageReactionUpsertMutationVariables
+>;
 export const AdminBookingRequestOfferChatMessageUpdateDocument = {
     kind: 'Document',
     definitions: [
@@ -53933,6 +54050,68 @@ export const AdminOfferChatReviewChatMessageCreateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminOfferChatReviewChatMessageCreateMutation, GqlCAdminOfferChatReviewChatMessageCreateMutationVariables>;
+export const AdminOfferChatReviewChatMessageReactionUpsertDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminOfferChatReviewChatMessageReactionUpsert' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferEventId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'emoji' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferChatMessageReactionUpsert' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferEventId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferEventId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'emoji' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'emoji' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminOfferChatReviewChatMessageReactionUpsertMutation,
+    GqlCAdminOfferChatReviewChatMessageReactionUpsertMutationVariables
+>;
 export const AdminOfferChatReviewChatMessageUpdateDocument = {
     kind: 'Document',
     definitions: [
@@ -64747,6 +64926,80 @@ export const ProfileCookBookingRequestOfferChatMessageCreateDocument = {
     GqlCProfileCookBookingRequestOfferChatMessageCreateMutation,
     GqlCProfileCookBookingRequestOfferChatMessageCreateMutationVariables
 >;
+export const ProfileCookBookingRequestOfferChatMessageReactionUpsertDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookBookingRequestOfferChatMessageReactionUpsert' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferEventId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'emoji' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'bookingRequestOfferChatMessageReactionUpsert' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'bookingRequestOfferEventId' },
+                                                        value: {
+                                                            kind: 'Variable',
+                                                            name: { kind: 'Name', value: 'bookingRequestOfferEventId' },
+                                                        },
+                                                    },
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'emoji' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'emoji' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCookBookingRequestOfferChatMessageReactionUpsertMutation,
+    GqlCProfileCookBookingRequestOfferChatMessageReactionUpsertMutationVariables
+>;
 export const ProfileCookBookingRequestOfferUnreadNotificationCountResetDocument = {
     kind: 'Document',
     definitions: [
@@ -72611,6 +72864,68 @@ export const ProfileCustomerBookingRequestOfferChatMessageCreateDocument = {
 } as unknown as DocumentNode<
     GqlCProfileCustomerBookingRequestOfferChatMessageCreateMutation,
     GqlCProfileCustomerBookingRequestOfferChatMessageCreateMutationVariables
+>;
+export const ProfileCustomerBookingRequestOfferChatMessageReactionUpsertDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCustomerBookingRequestOfferChatMessageReactionUpsert' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferEventId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'emoji' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferChatMessageReactionUpsert' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferEventId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferEventId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'emoji' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'emoji' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCustomerBookingRequestOfferChatMessageReactionUpsertMutation,
+    GqlCProfileCustomerBookingRequestOfferChatMessageReactionUpsertMutationVariables
 >;
 export const ProfileCustomerBookingRequestOfferUnreadNotificationCountResetDocument = {
     kind: 'Document',

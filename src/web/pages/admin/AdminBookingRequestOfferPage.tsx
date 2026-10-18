@@ -46,6 +46,7 @@ import {
     AdminBookingRequestOfferCallJoinDocument,
     AdminBookingRequestOfferCallLeaveDocument,
     AdminBookingRequestOfferChatMessageCreateDocument,
+    AdminBookingRequestOfferChatMessageReactionUpsertDocument,
     AdminBookingRequestOfferChatMessageUpdateDocument,
     AdminBookingRequestOfferPageUpdatesDocument,
     AdminBookingRequestOfferPayoutMarkOutOfSystemDocument,
@@ -256,6 +257,7 @@ export function AdminBookingRequestOfferPage({
     const [request, setRequest] = useState<GqlCAdminBookingRequestOfferPageRequestFragment | null>(seedRequest);
     const [handoverOpen, setHandoverOpen] = useState(false);
     const [, sendChatMessage] = useMutation(AdminBookingRequestOfferChatMessageCreateDocument);
+    const [, upsertOfferChatReaction] = useMutation(AdminBookingRequestOfferChatMessageReactionUpsertDocument);
     const [, updateChatMessage] = useMutation(AdminBookingRequestOfferChatMessageUpdateDocument);
 
     const showSchedule = offer != null && (offer.cook.callSchedulingEnabled || offer.callBookings.length > 0);
@@ -516,6 +518,22 @@ export function AdminBookingRequestOfferPage({
                                                     {
                                                         de: 'Nachricht konnte nicht gespeichert werden.',
                                                         en: 'Could not save the message.',
+                                                    }[locale],
+                                                );
+                                                return false;
+                                            }
+                                            return true;
+                                        }}
+                                        onReactMessage={async (chatMessageId, emoji) => {
+                                            const result = await upsertOfferChatReaction({
+                                                bookingRequestOfferEventId: chatMessageId,
+                                                emoji,
+                                            });
+                                            if (result.error || !result.data?.admin.bookingRequestOfferChatMessageReactionUpsert.success) {
+                                                toast.error(
+                                                    {
+                                                        de: 'Reaktion konnte nicht gespeichert werden.',
+                                                        en: 'Could not save the reaction.',
                                                     }[locale],
                                                 );
                                                 return false;

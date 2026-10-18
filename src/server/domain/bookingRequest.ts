@@ -366,6 +366,10 @@ const bookingRequestOfferEventTypes = [
 ] as const;
 export type BookingRequestOfferEventType = (typeof bookingRequestOfferEventTypes)[number];
 
+/** Party that applied an emoji reaction on a `*_MESSAGE_SIMPLE` event. */
+const bookingRequestOfferChatReactorRoles = ['USER', 'COOK', 'ADMIN'] as const;
+export type BookingRequestOfferChatReactorRole = (typeof bookingRequestOfferChatReactorRoles)[number];
+
 type BookingRequestOfferPriceSnapshot = {
     platformFeePercentCook: number;
     platformFeePercentCustomer: number;

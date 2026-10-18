@@ -218,6 +218,17 @@ mutation ProfileCookBookingRequestOfferChatMessageCreate($bookingRequestOfferId:
     }
 }
 
+mutation ProfileCookBookingRequestOfferChatMessageReactionUpsert($bookingRequestOfferEventId: ID!, $emoji: String!) {
+    user {
+        cook {
+            bookingRequestOfferChatMessageReactionUpsert(bookingRequestOfferEventId: $bookingRequestOfferEventId, emoji: $emoji) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
 mutation ProfileCookBookingRequestOfferUnreadNotificationCountReset($bookingRequestOfferId: ID!) {
     user {
         cook {
