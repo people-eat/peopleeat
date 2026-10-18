@@ -1,4 +1,4 @@
-import { FileIcon } from 'lucide-react';
+import { FileIcon, MicIcon } from 'lucide-react';
 import type { GqlCFileUpload } from '../../graphql/generated';
 import { cn } from '../../utils/cn';
 
@@ -68,6 +68,7 @@ export function ChatAttachmentTileGrid({
 
 function AttachmentTileButton({ attachment, onClick }: { attachment: GqlCFileUpload; onClick: () => void }) {
     const isImage = attachment.mediaType.startsWith('image/');
+    const isAudio = attachment.mediaType.toLowerCase().startsWith('audio/');
     return (
         <button
             type="button"
@@ -88,7 +89,7 @@ function AttachmentTileButton({ attachment, onClick }: { attachment: GqlCFileUpl
                 </>
             ) : (
                 <div className="flex size-full flex-col items-center justify-center gap-1 p-2 text-muted-foreground">
-                    <FileIcon className="size-6" />
+                    {isAudio ? <MicIcon className="size-6" /> : <FileIcon className="size-6" />}
                     <span className="line-clamp-2 text-center text-[11px] leading-tight break-all">{attachment.filename}</span>
                 </div>
             )}

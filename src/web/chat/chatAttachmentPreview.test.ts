@@ -12,6 +12,12 @@ describe('previewKindFor', () => {
         expect(previewKindFor('Image/PNG')).toBe('image');
     });
 
+    it('classifies audio MIME types as audio', () => {
+        expect(previewKindFor('audio/ogg')).toBe('audio');
+        expect(previewKindFor('audio/mpeg')).toBe('audio');
+        expect(previewKindFor('Audio/AAC')).toBe('audio');
+    });
+
     it('classifies markdown variants as markdown', () => {
         // Arrange — nothing
         // Act / Assert

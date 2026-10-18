@@ -28,10 +28,10 @@ customer-service window, and every send must be auditable.
    `whatsapp webhook: POST rejected (invalid signature…)` and successful applies as `whatsapp webhook: applied statuses=… messages=…`. When
    `WHATSAPP_TRANSPORT=meta` and `WEB_PAGE_URL` is not already `demo.people-eat.com`, each POST is also fire-and-forget forwarded (raw
    body + signature) to `https://demo.people-eat.com/api/webhooks/whatsapp` for test mirroring (Meta allows only one callback URL per app).
-   Inbound upserts conversation/message (conflict-safe on phone), downloads media into `FileUploads`, opens a 24h session window,
-   Slack-notifies `SLACK_CHANNEL_WHATSAPP_MESSAGES`, and routes known reaction quick-replies onto the booking Slack thread when possible.
-   Emoji reactions upsert `WhatsAppMessageReactions` on the target `providerMessageId`, bump unread + 24h window, and skip Slack. Statuses
-   stamp audit + linked transcript delivery columns.
+   Inbound upserts conversation/message (conflict-safe on phone), downloads media into `FileUploads` (caption-less audio/voice bodies store
+   `Sprachnachricht` for inbox preview), opens a 24h session window, Slack-notifies `SLACK_CHANNEL_WHATSAPP_MESSAGES`, and routes known
+   reaction quick-replies onto the booking Slack thread when possible. Emoji reactions upsert `WhatsAppMessageReactions` on the target
+   `providerMessageId`, bump unread + 24h window, and skip Slack. Statuses stamp audit + linked transcript delivery columns.
 6. **Admin free-form reply** — only while `customerServiceWindowExpiresAt` is in the future (`CONCIERGE_SESSION_REPLY`). Opening a chat
    clears admin unread and calls Meta `markMessageAsRead` for the latest inbound. Outside the window, lifecycle templates still send; ops
    cannot free-type. Admin composer is text-only (no outbound media attach). Admin emoji reactions (`whatsAppMessageReactionUpsert`) target

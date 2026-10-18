@@ -17,6 +17,7 @@ import { Spinner } from '../base/spinner';
 //
 // Type dispatch:
 // - `image/*`        → an `<img>` tag (max 70vh, object-contain).
+// - `audio/*`        → an `<audio controls>` element.
 // - `text/markdown`  → fetched + piped through `<AssistantMarkdown />` so the
 //                      preview is identical to how the assistant renders the
 //                      same markdown body in a reply.
@@ -196,6 +197,14 @@ function PreviewBody({
 }) {
     if (kind === 'image') {
         return <img src={attachment.url} alt={attachment.filename} className="max-h-[70vh] max-w-full object-contain" />;
+    }
+
+    if (kind === 'audio') {
+        return (
+            <audio controls preload="metadata" className="w-full max-w-md" src={attachment.url}>
+                {attachment.filename}
+            </audio>
+        );
     }
 
     if (kind === 'markdown' || kind === 'text') {

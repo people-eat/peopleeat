@@ -56,6 +56,7 @@ export type {
     FormatTimeOptions,
 } from './formatDate';
 export { formatDuration, formatHms } from './formatDuration';
+export { WHATSAPP_VOICE_MESSAGE_PREVIEW_BODY } from './whatsappVoiceMessage';
 export { formatIsoDate } from './formatIsoDate';
 export { formatParticipants } from './formatParticipants';
 export type { FormatParticipantsInput, FormatParticipantsOptions } from './formatParticipants';

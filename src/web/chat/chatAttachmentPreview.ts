@@ -6,7 +6,7 @@
 // Kept pure (no React, no fetch) so it can be unit-tested without DOM and
 // reused by future surfaces that need the same classification.
 
-export type AttachmentPreviewKind = 'image' | 'markdown' | 'text' | 'other';
+export type AttachmentPreviewKind = 'image' | 'audio' | 'markdown' | 'text' | 'other';
 
 // MIME types we treat as inline-renderable text. Includes the common
 // configuration / data formats users actually attach (`.json`, `.csv`,
@@ -32,6 +32,7 @@ const TEXT_LIKE_MEDIA_TYPES = new Set<string>([
 export function previewKindFor(mediaType: string): AttachmentPreviewKind {
     const normalized = mediaType.toLowerCase();
     if (normalized.startsWith('image/')) return 'image';
+    if (normalized.startsWith('audio/')) return 'audio';
     // Markdown gets its own branch so the dialog can pipe it through
     // `<AssistantMarkdown />` for headings / lists / fenced code instead of
     // dumping the raw `#`s into a `<pre>`.

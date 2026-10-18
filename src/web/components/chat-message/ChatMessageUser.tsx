@@ -2,6 +2,7 @@ import { ChevronDownIcon, PencilIcon, SmilePlusIcon } from 'lucide-react';
 import type { TransitionEvent } from 'react';
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { containsPhoneNumber } from '../../../shared';
+import { isVoiceNoteMessage, voiceNoteCaption } from '../../chat/chatVoiceMessage';
 import type { GqlCChatMessageUser } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
@@ -14,6 +15,7 @@ import { Textarea } from '../base/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../base/tooltip';
 import { ChatAttachmentPreviewDialog } from './ChatAttachmentPreviewDialog';
 import { ChatAttachmentTileGrid } from './ChatAttachmentTileGrid';
+import { ChatVoiceMessagePlayer } from './ChatVoiceMessagePlayer';
 import { Bubble, CopyButton, MessageRow, Timestamp } from './shared';
 
 /** WhatsApp-style quick reactions offered in the Concierge picker. */
@@ -48,6 +50,9 @@ export function ChatMessageUserView({
 }) {
     const locale = useLocale();
     const hasAttachments = message.attachments.length > 0;
+    const voiceNote = isVoiceNoteMessage(message.attachments);
+    const voiceAttachment = voiceNote ? message.attachments[0]! : null;
+    const visibleBody = voiceNote ? (voiceNoteCaption(message.body) ?? '') : message.body;
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewIndex, setPreviewIndex] = useState(0);
     const [editOpen, setEditOpen] = useState(false);
@@ -136,73 +141,84 @@ export function ChatMessageUserView({
             </Dialog>
         ) : null;
 
+    const messageMeta = (
+        <span
+            className={cn(
+                'inline-flex shrink-0 items-center gap-0.5 pb-px',
+                tone === 'user' ? 'text-primary-foreground/65' : 'text-muted-foreground',
+            )}
+        >
+            <Timestamp
+                iso={message.createdAt}
+                className={cn('mt-0 inline text-[10px]/none opacity-100', tone === 'user' && 'text-primary-foreground/65')}
+            />
+            {isOwn && message.deliveryStatus ? (
+                <span className="text-[10px] tracking-wide uppercase" title={message.deliveryStatus} aria-label={message.deliveryStatus}>
+                    {message.deliveryStatus === 'FAILED'
+                        ? '!'
+                        : message.deliveryStatus === 'READ'
+                          ? '✓✓'
+                          : message.deliveryStatus === 'DELIVERED'
+                            ? '✓✓'
+                            : '✓'}
+                </span>
+            ) : null}
+            {message.showCopyButton && message.body.length > 0 ? <CopyButton text={message.body} /> : null}
+            {onEdit != null ? (
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            aria-label={editLabel}
+                            onClick={() => setEditOpen(true)}
+                            className={cn(
+                                'opacity-70 hover:opacity-100',
+                                tone === 'user' &&
+                                    'text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground',
+                            )}
+                        >
+                            <PencilIcon aria-hidden />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{editLabel}</TooltipContent>
+                </Tooltip>
+            ) : null}
+        </span>
+    );
+
     const bubbleInner = (
         <>
             {!isOwn && showAuthorName ? (
                 <p className="mb-0.5 truncate text-[11px] leading-tight font-semibold text-primary">{message.author.display}</p>
             ) : null}
-            {hasAttachments ? (
+            {voiceAttachment ? (
+                <div className={cn(visibleBody.length > 0 && 'mb-2')}>
+                    <ChatVoiceMessagePlayer
+                        attachment={voiceAttachment}
+                        author={message.author}
+                        tone={tone}
+                        meta={visibleBody.length === 0 ? messageMeta : undefined}
+                    />
+                </div>
+            ) : hasAttachments ? (
                 <div className="mb-2">
                     <ChatAttachmentTileGrid attachments={message.attachments} onTileClick={openPreviewAt} />
                 </div>
             ) : null}
-            <div className="flex items-end gap-2">
-                {message.body.length > 0 ? (
-                    <div className="min-w-0 flex-1">
-                        <UserMessageBody body={message.body} tone={tone} collapseLongBody={message.collapseLongBody} />
-                    </div>
-                ) : (
-                    <span className="min-w-0 flex-1" />
-                )}
-                <span
-                    className={cn(
-                        'inline-flex shrink-0 items-center gap-0.5 pb-px',
-                        tone === 'user' ? 'text-primary-foreground/65' : 'text-muted-foreground',
+            {visibleBody.length > 0 || !voiceAttachment ? (
+                <div className="flex items-end gap-2">
+                    {visibleBody.length > 0 ? (
+                        <div className="min-w-0 flex-1">
+                            <UserMessageBody body={visibleBody} tone={tone} collapseLongBody={message.collapseLongBody} />
+                        </div>
+                    ) : (
+                        <span className="min-w-0 flex-1" />
                     )}
-                >
-                    <Timestamp
-                        iso={message.createdAt}
-                        className={cn('mt-0 inline text-[10px]/none opacity-100', tone === 'user' && 'text-primary-foreground/65')}
-                    />
-                    {isOwn && message.deliveryStatus ? (
-                        <span
-                            className="text-[10px] tracking-wide uppercase"
-                            title={message.deliveryStatus}
-                            aria-label={message.deliveryStatus}
-                        >
-                            {message.deliveryStatus === 'FAILED'
-                                ? '!'
-                                : message.deliveryStatus === 'READ'
-                                  ? '✓✓'
-                                  : message.deliveryStatus === 'DELIVERED'
-                                    ? '✓✓'
-                                    : '✓'}
-                        </span>
-                    ) : null}
-                    {message.showCopyButton && message.body.length > 0 ? <CopyButton text={message.body} /> : null}
-                    {onEdit != null ? (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="icon-xs"
-                                    aria-label={editLabel}
-                                    onClick={() => setEditOpen(true)}
-                                    className={cn(
-                                        'opacity-70 hover:opacity-100',
-                                        tone === 'user' &&
-                                            'text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground',
-                                    )}
-                                >
-                                    <PencilIcon aria-hidden />
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>{editLabel}</TooltipContent>
-                        </Tooltip>
-                    ) : null}
-                </span>
-            </div>
+                    {messageMeta}
+                </div>
+            ) : null}
         </>
     );
 

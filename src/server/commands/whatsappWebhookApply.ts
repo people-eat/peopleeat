@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, isNull, sql } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { WHATSAPP_VOICE_MESSAGE_PREVIEW_BODY } from '../../shared/whatsappVoiceMessage';
 import {
     bookingRequestOffers,
     bookingRequests,
@@ -454,10 +455,11 @@ async function inboundContentParse(
     if (mediaRef?.id) {
         const downloaded = await serverRuntime.whatsapp.downloadMedia(mediaRef.id);
         const caption = mediaRef.caption?.trim() || '';
+        const isVoiceOrAudio = message.type === 'audio' || message.type === 'voice';
         if (!downloaded) {
             return {
                 messageKind: 'MEDIA',
-                body: caption || '[Medien konnten nicht geladen werden]',
+                body: caption || (isVoiceOrAudio ? WHATSAPP_VOICE_MESSAGE_PREVIEW_BODY : '[Medien konnten nicht geladen werden]'),
                 buttonPayload: null,
                 buttonLabel: null,
                 fileUploadIds: [],
@@ -473,7 +475,7 @@ async function inboundContentParse(
         });
         return {
             messageKind: 'MEDIA',
-            body: caption,
+            body: caption || (isVoiceOrAudio ? WHATSAPP_VOICE_MESSAGE_PREVIEW_BODY : ''),
             buttonPayload: null,
             buttonLabel: null,
             fileUploadIds: [upload.fileUploadId],

@@ -22,10 +22,12 @@ threads in the admin inbox, including media, quick-reply reactions, and emoji re
   initials), name/phone + two-line last-message preview, right column with messenger-style relative time above a green unread
   `NotificationBadge`; search (phone / WA display name / user), pinned bottom pagination (`page` / `pageSize`), live updates, sidebar unread
   badge.
-- `/admin/whats-app-chats/<id>` — human transcript with attachments + delivery ticks + emoji reaction badges on the target bubble; free-form
-  reply only inside the Meta 24h customer-service window; smile control on inbound bubbles sends (or clears) a business emoji reaction via
-  Meta; mark read on open (admin unread + Meta blue-tick). Nested transcript owns the pane scroll under `AdminPinnedFooterLayout`
-  `contentScroll={false}` (chrome breakout; header keeps `px-4`, chat wrapper does not, so the scrollbar sits on the pane edge).
+- `/admin/whats-app-chats/<id>` — human transcript with attachments + delivery ticks + emoji reaction badges on the target bubble; inbound
+  voice notes (`audio/*`) render as a WhatsApp-style player (avatar + mic badge, play/pause, scrubbable waveform, duration) instead of a
+  file tile; free-form reply only inside the Meta 24h customer-service window (text-only, no outbound voice); smile control on inbound
+  bubbles sends (or clears) a business emoji reaction via Meta; mark read on open (admin unread + Meta blue-tick). Nested transcript owns
+  the pane scroll under `AdminPinnedFooterLayout` `contentScroll={false}` (chrome breakout; header keeps `px-4`, chat wrapper does not, so
+  the scrollbar sits on the pane edge). Caption-less audio/voice ingest stores body `Sprachnachricht` for inbox / Slack preview.
 - User detail **WhatsApp** tab lists that user’s conversations.
 - Inbound Slack mirror on `SLACK_CHANNEL_WHATSAPP_MESSAGES`; known reaction quick-replies also post on the booking Slack thread. Customer
   emoji reactions (Meta `type: reaction`) do not Slack-notify; they bump unread, refresh the 24h window, and overlay the target message.
