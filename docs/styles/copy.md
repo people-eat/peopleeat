@@ -32,7 +32,8 @@ When the same concept appears in both admin and end-user UI, keep two labels. Ex
 
 - **Map domain terms** before they hit the UI. If the product concept is a session cookie, the end-user label is still a device or browser.
 - **Say what happens next.** Prefer “Gerät abmelden” / “Sign out” over “Beenden” / “Revoke” when the action ends a sign-in.
-- **No em dashes (`—`)** in mid-sentence user-facing copy — see [conventions.md](../conventions.md#bilingual-copy).
+- **No mid-sentence em or en dashes (`—` / `–`)** in user-facing copy (ranges and empty placeholders are fine); see
+  [conventions.md](../conventions.md#bilingual-copy).
 - **Both locales are real copy.** Do not leave English loanwords in DE when a clear German word exists (`Geräte`, not “Devices” as a section
   title).
 - **Never surface transport errors.** Map failures to a short bilingual outcome (“Gerät konnte nicht abgemeldet werden.”).

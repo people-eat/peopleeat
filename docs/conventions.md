@@ -251,8 +251,9 @@ close, `Spinner` loading, pagination labels, breadcrumb landmark / ellipsis, mes
 `Status`, brand names). It is **not** fine when German has a clear equivalent — write `Fähigkeiten` not `Skills`, `Protokolle` not `Logs`.
 Prefer translating UI chrome even when the English loanword is common in German tech speech.
 
-**No em dashes (`—`) in user-facing copy.** Mid-sentence em dashes read as AI-generated. Prefer commas, periods, colons, or parentheses.
-Empty-value placeholders that render a lone `—` for missing data are fine. Document/comment prose is out of scope.
+**No mid-sentence em or en dashes (`—` / `–`) in user-facing copy.** They read as AI-generated. Prefer commas, periods, colons, or
+parentheses. Empty-value placeholders that render a lone `—` for missing data are fine, as are en dashes in numeric or alphabetic ranges
+(`12:00–13:00`, `A–Z`). Document/comment prose is out of scope.
 
 **Never render raw `error.message` / GraphQL `result.error.message` in the UI.** API and transport errors are English by convention; map
 them through a bilingual helper (e.g. `uploadErrorMessage()` in `src/web/chat/fileUpload.ts` for uploads) or a generic `{ de, en }` fallback

@@ -45,7 +45,7 @@ export function SectionMeetOurTeam() {
                                     Integration von AI-Services in bestehende Produkte. Neben seiner Tätigkeit bei SAP SE gründete er unter
                                     anderem{' '}
                                     <a className="underline underline-offset-4 hover:text-foreground" href="https://draw-schema.com">
-                                        Draw Schema – ein Tool zur visuellen Modellierung relationaler Datenbanken
+                                        Draw Schema, ein Tool zur visuellen Modellierung relationaler Datenbanken
                                     </a>
                                     .
                                     <br />
