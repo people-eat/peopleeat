@@ -4,8 +4,7 @@ Admins publish bilingual partnership landing pages with optional promo spotlight
 
 ## Behavior
 
-Public visitors open `/partners` and `/partners/$pathName`. Drafts stay unpublished until an admin sets a publish time. The sticky header
-hides the booking-request CTA on both list and detail (partner CTAs live in the first-section card instead).
+Public visitors open `/partners` and `/partners/$pathName`. Drafts stay unpublished until an admin sets a publish time.
 
 After the hero, the page may show:
 
@@ -21,9 +20,9 @@ in the featured-cook editor; other unlisted reasons keep the generic warning.
 
 Curated **testimonials** follow the same pattern as cities — [testimonials.md](./testimonials.md).
 
-By default the primary CTA links to the booking request form without encoding a full address in the URL. An optional `firstSectionCtaUrl`
-overrides that button only (WhatsApp / Google stay fixed). Display-only promo on the card; redeem codes are not passed as query params today
-unless the custom URL includes them.
+By default the primary CTA and the sticky header booking button both link to the booking request form without encoding a full address in the
+URL. An optional `firstSectionCtaUrl` overrides both (WhatsApp / Google stay fixed). Display-only promo on the card; redeem codes are not
+passed as query params today unless the custom URL includes them.
 
 ## Decisions
 
@@ -77,14 +76,15 @@ Direction: self-serve builder on the public partners surface, admins remain sole
   booking form), optional `promoCodeId` (FK; rejects missing and booking-request-scoped codes)
 - Public/admin promo preview via `partnerPromoFindOne` — null when unassigned, scoped, or expired
 - UI: `SectionChefForAnyOccasion` + `SectionChefCta` after hero (always mounted when the partner slot is passed; empty headline/body and
-  missing CTA image use muted italic / `ImageOffIcon` placeholders like content sections; `ctaUrl` overrides the primary button href); admin
-  cards for first section (incl. CTA link) and promo select
+  missing CTA image use muted italic / `ImageOffIcon` placeholders like content sections; `ctaUrl` / `firstSectionCtaUrl` overrides the
+  primary button and `Header` booking CTA via `ContentPageView` → `bookingRequestCtaUrl`); admin cards for first section (incl. CTA link)
+  and promo select
 - Admin editor order: SEO → partner name → hero → first section → promo → cooks → testimonials → configurable sections
 - Admin: `/admin/partners` (shared admin list cards: name, path, draft/published badge, updated; debounced client search),
   `/admin/partners/$partnerId` (cook search inside the choose-chefs dialog + listing warnings; cook/testimonial saves and in-flight image
   uploads mark the page dirty so the partner subscription does not reset unsaved form fields; hero/first-section image updates merge via
   functional setState so a completing upload cannot clobber newer edits)
-- Public: list + detail (`Header` / `ContentPageView` with `showBookingRequestCta={false}`); sitemap `/sitemap-partners.xml`
+- Public: list + detail; sitemap `/sitemap-partners.xml`
 - Draft flag: unified `publishedAt` (null = draft)
 - Separate admin vs public GraphQL shapes (same pattern as other content pages)
 

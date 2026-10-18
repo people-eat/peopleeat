@@ -45,7 +45,7 @@ export type ContentPageViewModel = {
         bodyDe: string;
         bodyEn: string;
         imageUrl?: string | null;
-        /** Partner-only primary CTA override; omit / null keeps the booking form. */
+        /** Partner-only CTA override for first-section + header; omit / null keeps the booking form. */
         ctaUrl?: string | null;
         promo?: SectionChefForAnyOccasionPromo | null;
     };
@@ -66,14 +66,11 @@ export function ContentPageView({
     locale,
     onLocaleChange,
     user,
-    showBookingRequestCta,
 }: {
     page: ContentPageViewModel;
     locale: Locale;
     onLocaleChange?: (locale: Locale) => void;
     user: PublicHeaderUser;
-    /** Forwarded to `Header`; partner pages pass false. */
-    showBookingRequestCta?: boolean;
 }) {
     const heroVariant = page.heroVariant ?? 'fullBleed';
     const headline = contentLocaleText(page.headlineDe, page.headlineEn, locale).trim();
@@ -87,7 +84,12 @@ export function ContentPageView({
         // Wrapper owns `@container` so Header / Footer / SectionHero / sections
         // query this pane’s width (admin split preview), not the viewport.
         <div className="@container w-full min-w-0" data-content-preview-anchor="top">
-            <Header user={user} overMedia={Boolean(fullBleedMedia)} locale={locale} showBookingRequestCta={showBookingRequestCta} />
+            <Header
+                user={user}
+                overMedia={Boolean(fullBleedMedia)}
+                locale={locale}
+                bookingRequestCtaUrl={page.chefForAnyOccasion?.ctaUrl}
+            />
             <main id="main-content">
                 <div data-content-preview-anchor="hero">
                     {heroVariant === 'article' ? (

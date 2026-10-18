@@ -16,7 +16,7 @@ export function PartnersPage({ data }: { data: GqlCPublicPartnersPageQuery }) {
 
     return (
         <>
-            <Header user={data.currentSession.user} showBookingRequestCta={false} />
+            <Header user={data.currentSession.user} />
             <main id="main-content" className="mx-auto w-full max-w-7xl px-4 py-16 @lg:px-6">
                 <h1 className="font-serif text-4xl font-light @md:text-5xl">{partnersPageTitle[locale]}</h1>
                 <p className="mt-3 max-w-2xl text-muted-foreground">{partnersPageDescription[locale]}</p>

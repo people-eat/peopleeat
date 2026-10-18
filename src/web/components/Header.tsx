@@ -38,17 +38,18 @@ export function Header({
     user,
     overMedia = false,
     locale: localeProp,
-    showBookingRequestCta: showBookingRequestCtaProp,
+    bookingRequestCtaUrl,
 }: {
     user: PublicHeaderUser;
     overMedia?: boolean;
     locale?: Locale;
-    /** Defaults to true for non-cooks; partner pages pass false. */
-    showBookingRequestCta?: boolean;
+    /** When set (e.g. partner `firstSectionCtaUrl`), overrides the default booking-form link. */
+    bookingRequestCtaUrl?: string | null;
 }) {
     const routeLocale = useLocale();
     const locale = localeProp ?? routeLocale;
-    const showBookingRequestCta = showBookingRequestCtaProp ?? !user?.cook;
+    const showBookingRequestCta = !user?.cook;
+    const trimmedBookingRequestCtaUrl = bookingRequestCtaUrl?.trim() || null;
     // Prefer inverted on first paint when the page opens over hero media; scroll
     // sync below corrects against every `[data-over-media]` region.
     const [invertLogo, setInvertLogo] = useState(overMedia);
@@ -87,7 +88,11 @@ export function Header({
                 <PublicSessionNav user={user} locale={locale} />
                 {showBookingRequestCta ? (
                     <HeroButton asChild className="px-4 text-sm @6xl:px-6 @6xl:text-md">
-                        <Link to="/{-$locale}/booking-request/form">{{ de: 'Anfrage senden', en: 'Send request' }[locale]}</Link>
+                        {trimmedBookingRequestCtaUrl ? (
+                            <a href={trimmedBookingRequestCtaUrl}>{{ de: 'Anfrage senden', en: 'Send request' }[locale]}</a>
+                        ) : (
+                            <Link to="/{-$locale}/booking-request/form">{{ de: 'Anfrage senden', en: 'Send request' }[locale]}</Link>
+                        )}
                     </HeroButton>
                 ) : null}
             </div>
