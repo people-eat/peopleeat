@@ -41,7 +41,7 @@ export function SectionChefForAnyOccasion({
 }) {
     const headline = contentLocaleText(headlineDe, headlineEn, locale).trim();
     const body = contentLocaleText(bodyDe, bodyEn, locale).trim();
-    const formattedAmount = promo ? formatCurrency(promo.amountCents, { locale, maximumFractionDigits: 0 }) : null;
+    const formattedAmount = promo ? formatCurrency(promo.amountCents, { locale }) : null;
 
     return (
         <section className={cn('mx-auto w-full max-w-7xl px-4 py-16 @lg:px-6', className)}>

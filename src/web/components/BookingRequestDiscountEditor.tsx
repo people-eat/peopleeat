@@ -121,20 +121,16 @@ export function BookingRequestDiscountEditor({
                                 <p>
                                     {appliedKind === 'giftCard' ? 'Gutschein' : 'Promocode'}{' '}
                                     <span className="font-semibold text-foreground">{appliedRedeemCode}</span> (
-                                    <span className="font-semibold text-foreground">
-                                        {formatCurrency(amountCents, { locale, maximumFractionDigits: 0 })}
-                                    </span>
-                                    ) ist gesichert und wird automatisch von den Angebotspreisen abgezogen.
+                                    <span className="font-semibold text-foreground">{formatCurrency(amountCents, { locale })}</span>) ist
+                                    gesichert und wird automatisch von den Angebotspreisen abgezogen.
                                 </p>
                             ),
                             en: (
                                 <p>
                                     {appliedKind === 'giftCard' ? 'Gift card' : 'Promo code'}{' '}
                                     <span className="font-semibold text-foreground">{appliedRedeemCode}</span> (
-                                    <span className="font-semibold text-foreground">
-                                        {formatCurrency(amountCents, { locale, maximumFractionDigits: 0 })}
-                                    </span>
-                                    ) is secured and will be automatically deducted from offer prices.
+                                    <span className="font-semibold text-foreground">{formatCurrency(amountCents, { locale })}</span>) is
+                                    secured and will be automatically deducted from offer prices.
                                 </p>
                             ),
                         }[locale]

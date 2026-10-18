@@ -918,10 +918,7 @@ export function BookingRequestFormPage({
                                                                 <p className="text-center">
                                                                     <span className="text-2xl font-semibold">
                                                                         {{ de: 'ab', en: 'starting at' }[locale]}{' '}
-                                                                        {formatCurrency(info.minimumAmountPerPersonCents, {
-                                                                            locale,
-                                                                            maximumFractionDigits: 0,
-                                                                        })}
+                                                                        {formatCurrency(info.minimumAmountPerPersonCents, { locale })}
                                                                     </span>{' '}
                                                                     <span className="text-sm text-muted-foreground">
                                                                         {{ de: 'pro Person', en: 'per person' }[locale]}
@@ -1117,10 +1114,7 @@ export function BookingRequestFormPage({
                                                             <p>
                                                                 Dein Vorteil in Höhe von{' '}
                                                                 <span className="font-semibold text-foreground">
-                                                                    {formatCurrency(confirmedDiscount.amountCents, {
-                                                                        locale,
-                                                                        maximumFractionDigits: 0,
-                                                                    })}
+                                                                    {formatCurrency(confirmedDiscount.amountCents, { locale })}
                                                                 </span>{' '}
                                                                 ist gesichert und wird automatisch von den Preisen deiner Angebote
                                                                 abgezogen.
@@ -1130,10 +1124,7 @@ export function BookingRequestFormPage({
                                                             <p>
                                                                 Your benefit of{' '}
                                                                 <span className="font-semibold text-foreground">
-                                                                    {formatCurrency(confirmedDiscount.amountCents, {
-                                                                        locale,
-                                                                        maximumFractionDigits: 0,
-                                                                    })}
+                                                                    {formatCurrency(confirmedDiscount.amountCents, { locale })}
                                                                 </span>{' '}
                                                                 is secured and will be automatically deducted from your offer prices.
                                                             </p>

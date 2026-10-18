@@ -62,9 +62,7 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
                 {!isDeclined ? (
                     <p className="flex items-center justify-between gap-3 text-sm font-semibold">
                         <span>{{ de: 'Verdiene ca.', en: 'Make about' }[locale]}</span>
-                        <span className="shrink-0">
-                            {formatCurrency(request.estimatedCookPayoutCents, { locale, maximumFractionDigits: 0 })}
-                        </span>
+                        <span className="shrink-0">{formatCurrency(request.estimatedCookPayoutCents, { locale })}</span>
                     </p>
                 ) : null}
             </div>

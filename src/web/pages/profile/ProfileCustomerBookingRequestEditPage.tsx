@@ -130,7 +130,7 @@ function signedKmLabel(deltaKm: number, locale: Locale): string {
 }
 
 function signedTravelExpenseLabel(deltaCents: number, locale: Locale): string {
-    const abs = formatCurrency(Math.abs(deltaCents), { locale, maximumFractionDigits: 0 });
+    const abs = formatCurrency(Math.abs(deltaCents), { locale });
     if (deltaCents > 0) return `+${abs}`;
     if (deltaCents < 0) return `−${abs}`;
     return { de: '±0 €', en: '±€0' }[locale];

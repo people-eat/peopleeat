@@ -120,12 +120,7 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
                 </p>
                 <p className="flex items-center justify-between gap-3 text-sm font-semibold">
                     <span>{amountLabel}</span>
-                    <span className="shrink-0">
-                        {formatCurrency(amountCents, {
-                            locale,
-                            maximumFractionDigits: 0,
-                        })}
-                    </span>
+                    <span className="shrink-0">{formatCurrency(amountCents, { locale })}</span>
                 </p>
             </div>
             <span className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">

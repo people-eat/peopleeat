@@ -211,7 +211,7 @@ function GiftCardPageInner({
         }
     }
 
-    const previewAmount = formatCurrency(balanceCents, { locale, maximumFractionDigits: 0 });
+    const previewAmount = formatCurrency(balanceCents, { locale });
     const previewOccasion = OCCASIONS.find((item) => item.value === values.occasion)?.[locale] ?? values.occasion;
     const busy = isSubmitting;
 
@@ -318,7 +318,7 @@ function GiftCardPageInner({
                                                                 }}
                                                                 disabled={busy}
                                                             >
-                                                                {formatCurrency(euros * 100, { locale, maximumFractionDigits: 0 })}
+                                                                {formatCurrency(euros * 100, { locale })}
                                                             </Button>
                                                         );
                                                     })}

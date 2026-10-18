@@ -122,7 +122,7 @@ export function CustomerBookingRequestOfferCard({
                 {menuHint ? <p className="line-clamp-2 text-sm text-foreground">{menuHint}</p> : null}
                 <p className="flex items-center justify-between gap-3 text-sm font-semibold">
                     <span>{{ de: 'Gesamtpreis', en: 'Total' }[locale]}</span>
-                    <span className="shrink-0">{formatCurrency(priceCents, { locale, maximumFractionDigits: 0 })}</span>
+                    <span className="shrink-0">{formatCurrency(priceCents, { locale })}</span>
                 </p>
 
                 {callHint ? <p className="text-sm font-medium text-foreground">{callHint.label}</p> : null}

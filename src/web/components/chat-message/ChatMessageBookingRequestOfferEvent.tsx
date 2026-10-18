@@ -14,7 +14,7 @@ import {
     UtensilsIcon,
 } from 'lucide-react';
 
-import { bookingRequestOfferPriceCalculate, formatDate, formatTime } from '../../../shared';
+import { bookingRequestOfferPriceCalculate, formatCurrency, formatDate, formatTime } from '../../../shared';
 import type { GqlCChatMessageBookingRequestOfferEvent, GqlCChatMessageBookingRequestOfferEventType } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
@@ -231,19 +231,19 @@ function chatMessageBookingRequestOfferEventDetail(
         return record.cookMessage.trim();
     }
     if (typeof record.totalWithoutDiscountsCentsCustomer === 'number') {
-        return formatCents(record.totalWithoutDiscountsCentsCustomer, locale);
+        return formatCurrency(record.totalWithoutDiscountsCentsCustomer, { locale });
     }
     if (isPriceSnapshot(record.priceAfter)) {
-        return formatCents(record.priceAfter.totalWithoutDiscountsCentsCustomer, locale);
+        return formatCurrency(record.priceAfter.totalWithoutDiscountsCentsCustomer, { locale });
     }
     // Legacy COOK_CREATED: only menuPriceCents was stored — approximate customer total with zero travel.
     if (typeof record.menuPriceCents === 'number') {
-        return formatCents(
+        return formatCurrency(
             bookingRequestOfferPriceCalculate({
                 menuPriceCents: record.menuPriceCents,
                 travelExpensesCents: 0,
             }).totalWithoutDiscountsCentsCustomer,
-            locale,
+            { locale },
         );
     }
     return null;
@@ -255,11 +255,4 @@ function isPriceSnapshot(value: unknown): value is { totalWithoutDiscountsCentsC
         value !== null &&
         typeof (value as { totalWithoutDiscountsCentsCustomer?: unknown }).totalWithoutDiscountsCentsCustomer === 'number'
     );
-}
-
-function formatCents(cents: number, locale: 'de' | 'en'): string {
-    return new Intl.NumberFormat(locale === 'de' ? 'de-DE' : 'en-GB', {
-        style: 'currency',
-        currency: 'EUR',
-    }).format(cents / 100);
 }

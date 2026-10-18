@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useMutation } from 'urql';
 
+import { formatCurrency } from '../../shared';
 import {
     ProfileBookingRequestChurnPromoCodeCreateDocument,
     ProfileBookingRequestDiscountUpdateDocument,
@@ -14,7 +15,7 @@ import { Button } from './base/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './base/dialog';
 import { StatusBadge } from './base/status-badge';
 
-const CHURN_DISCOUNT_AMOUNT_EUR = 50;
+const CHURN_DISCOUNT_AMOUNT_CENTS = 5000;
 
 type ChurnOption = 'DISCOUNT' | 'RECALL' | 'CANCEL';
 
@@ -142,15 +143,15 @@ export function UserBookingRequestChurnDialog({
                         }
                         title={
                             {
-                                de: `${CHURN_DISCOUNT_AMOUNT_EUR} € Rabatt nur für dich`,
-                                en: `${CHURN_DISCOUNT_AMOUNT_EUR} € discount just for you`,
+                                de: `${formatCurrency(CHURN_DISCOUNT_AMOUNT_CENTS, { locale })} Rabatt nur für dich`,
+                                en: `${formatCurrency(CHURN_DISCOUNT_AMOUNT_CENTS, { locale })} discount just for you`,
                             }[locale]
                         }
                         badge={{ de: 'Empfohlen', en: 'Recommended' }[locale]}
                         description={
                             {
-                                de: `Wir möchten, dass dein Abend unvergesslich wird. Deshalb schenken wir dir exklusiv für diese Buchung einen Rabatt von ${CHURN_DISCOUNT_AMOUNT_EUR} €.`,
-                                en: `We want your evening to be unforgettable. That's why we're giving you an exclusive ${CHURN_DISCOUNT_AMOUNT_EUR} € discount for this booking.`,
+                                de: `Wir möchten, dass dein Abend unvergesslich wird. Deshalb schenken wir dir exklusiv für diese Buchung einen Rabatt von ${formatCurrency(CHURN_DISCOUNT_AMOUNT_CENTS, { locale })}.`,
+                                en: `We want your evening to be unforgettable. That's why we're giving you an exclusive ${formatCurrency(CHURN_DISCOUNT_AMOUNT_CENTS, { locale })} discount for this booking.`,
                             }[locale]
                         }
                     >

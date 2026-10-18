@@ -237,7 +237,7 @@ export function ProfileCookBookingRequestPage({
                         <div className="grid w-full gap-3 @md:grid-cols-[minmax(0,1fr)_auto] @md:items-center">
                             <p className="text-sm font-semibold text-foreground">
                                 {{ de: 'Verdiene ca.', en: 'Make about' }[locale]}{' '}
-                                {formatCurrency(request.estimatedCookPayoutCents, { locale, maximumFractionDigits: 0 })}
+                                {formatCurrency(request.estimatedCookPayoutCents, { locale })}
                             </p>
                             <div className="grid grid-cols-2 gap-2">
                                 <Button type="button" variant="outline" className="w-full" onClick={() => setDeclineOpen(true)}>

@@ -644,7 +644,7 @@ export function AdminBookingRequestOfferPage({
 }
 
 function money(cents: number, locale: Locale): string {
-    return formatCurrency(cents, { locale, maximumFractionDigits: 0 });
+    return formatCurrency(cents, { locale });
 }
 
 function EconomicsRow({

@@ -494,13 +494,13 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                             <div className="grid gap-1">
                                 <p className="text-sm text-muted-foreground">{{ de: 'Verfügbar', en: 'Available' }[locale]}</p>
                                 <p className="text-3xl/tight font-semibold tabular-nums text-foreground">
-                                    {formatCurrency(stripeWallet.availableCents, { locale, maximumFractionDigits: 2 })}
+                                    {formatCurrency(stripeWallet.availableCents, { locale })}
                                 </p>
                             </div>
                             <div className="grid gap-1">
                                 <p className="text-sm text-muted-foreground">{{ de: 'Ausstehend', en: 'Pending' }[locale]}</p>
                                 <p className="text-3xl/tight font-semibold tabular-nums text-foreground">
-                                    {formatCurrency(stripeWallet.pendingCents, { locale, maximumFractionDigits: 2 })}
+                                    {formatCurrency(stripeWallet.pendingCents, { locale })}
                                 </p>
                             </div>
                         </div>
@@ -556,7 +556,7 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                                                     txn.netCents < 0 ? 'text-destructive' : 'text-foreground',
                                                 )}
                                             >
-                                                {formatCurrency(txn.netCents, { locale, maximumFractionDigits: 2 })}
+                                                {formatCurrency(txn.netCents, { locale })}
                                             </TableCell>
                                         </TableRow>
                                     ))}

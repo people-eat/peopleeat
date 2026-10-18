@@ -6,12 +6,13 @@ type FormatCurrencyNullAs = 'zero' | 'emDash' | 'empty';
 export type FormatCurrencyOptions = {
     locale: Locale;
     currency?: string;
+    /** Override fraction digits (default 2). Pass `0` for whole-euro admin summaries. */
     maximumFractionDigits?: number;
     nullAs?: FormatCurrencyNullAs;
 };
 
 export function formatCurrency(cents: number | null | undefined, options: FormatCurrencyOptions): string {
-    const { locale, currency = 'EUR', maximumFractionDigits, nullAs = 'zero' } = options;
+    const { locale, currency = 'EUR', maximumFractionDigits = 2, nullAs = 'zero' } = options;
 
     if (cents == null) {
         if (nullAs === 'emDash') return '—';
@@ -22,6 +23,7 @@ export function formatCurrency(cents: number | null | undefined, options: Format
     return new Intl.NumberFormat(languageTagFromLocale(locale), {
         style: 'currency',
         currency,
-        ...(maximumFractionDigits === undefined ? {} : { maximumFractionDigits }),
+        minimumFractionDigits: maximumFractionDigits,
+        maximumFractionDigits,
     }).format(cents / 100);
 }
