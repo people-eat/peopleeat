@@ -11,8 +11,9 @@ customer-service window, and every send must be auditable.
 1. **`WHATSAPP_TRANSPORT`** — `meta` (default) or `console`. When `meta`, boot requires `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`,
    `WHATSAPP_BUSINESS_ACCOUNT_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_WEBHOOK_VERIFY_TOKEN`. When `console`, those are omitted and sends print
    to the terminal (same pattern as email/Slack).
-2. **`serverRuntime.whatsapp`** — `sendTemplate` / `sendText` orchestrate audit + inbox transcript; `downloadMedia` / `markMessageAsRead`
-   support inbound media and Meta blue-ticks. Provider lives in `whatsappCreate()` (Graph API `v22.0` `/{phone-number-id}/messages`).
+2. **`serverRuntime.whatsapp`** — `sendTemplate` / `sendText` orchestrate audit + inbox transcript; `sendReaction` applies/clears a business
+   emoji on an inbound `wamid`; `downloadMedia` / `markMessageAsRead` support inbound media and Meta blue-ticks. Provider lives in
+   `whatsappCreate()` (Graph API `v22.0` `/{phone-number-id}/messages`).
 3. **Always both** — for supported lifecycle events, send WhatsApp whenever the recipient `Users.phoneNumber` is valid E.164, **in addition
    to** email. Do **not** gate on `preferredCommunication`. Cooks are included when they have a phone.
 4. **Tables** — `OutboundWhatsAppMessages` (one row per send attempt; first-write-wins lifecycle + optional Meta conversation/pricing);
@@ -33,7 +34,8 @@ customer-service window, and every send must be auditable.
    stamp audit + linked transcript delivery columns.
 6. **Admin free-form reply** — only while `customerServiceWindowExpiresAt` is in the future (`CONCIERGE_SESSION_REPLY`). Opening a chat
    clears admin unread and calls Meta `markMessageAsRead` for the latest inbound. Outside the window, lifecycle templates still send; ops
-   cannot free-type. Admin composer is text-only (no outbound media attach).
+   cannot free-type. Admin composer is text-only (no outbound media attach). Admin emoji reactions (`whatsAppMessageReactionUpsert`) target
+   inbound customer messages only (Meta rule), persist as `OUTBOUND` on `WhatsAppMessageReactions`, and are not gated on the 24h window.
 7. **Template buttons** — `sendTemplate` may pass a URL button dynamic path segment (`buttonUrlParameter`) for deep links approved in
    WhatsApp Manager.
 

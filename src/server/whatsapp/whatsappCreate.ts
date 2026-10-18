@@ -2,7 +2,14 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 
 import { whatsappPhoneNumberForMetaApi } from '../domain/whatsapp';
 import type { Logger } from '../utils/loggerCreate';
-import type { WhatsApp, WhatsAppMediaDownloadResult, WhatsAppSendResult, WhatsAppTemplateSendArgs, WhatsAppTextSendArgs } from './WhatsApp';
+import type {
+    WhatsApp,
+    WhatsAppMediaDownloadResult,
+    WhatsAppReactionSendArgs,
+    WhatsAppSendResult,
+    WhatsAppTemplateSendArgs,
+    WhatsAppTextSendArgs,
+} from './WhatsApp';
 
 export type WhatsAppCreateOptions = {
     transport: 'meta' | 'console';
@@ -100,6 +107,27 @@ export function whatsappCreate(options: WhatsAppCreateOptions): WhatsApp {
                 to: whatsappPhoneNumberForMetaApi(args.toPhoneNumber),
                 type: 'text',
                 text: { body: args.body },
+            });
+        },
+
+        async sendReaction(args: WhatsAppReactionSendArgs): Promise<WhatsAppSendResult> {
+            if (options.transport === 'console') {
+                console.info(
+                    `[whatsapp:console] reaction to=${args.toPhoneNumber} message=${args.providerMessageId}` +
+                        (args.emoji ? ` emoji=${args.emoji}` : ' (clear)'),
+                );
+                return { providerMessageId: `console-react-${Date.now()}` };
+            }
+
+            return metaMessagesPost({
+                messaging_product: 'whatsapp',
+                recipient_type: 'individual',
+                to: whatsappPhoneNumberForMetaApi(args.toPhoneNumber),
+                type: 'reaction',
+                reaction: {
+                    message_id: args.providerMessageId,
+                    emoji: args.emoji,
+                },
             });
         },
 

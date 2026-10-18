@@ -12,6 +12,7 @@ import {
     AdminWhatsAppChatPageUpdatesDocument,
     AdminWhatsAppConversationUnreadCountResetDocument,
     AdminWhatsAppMessageCreateDocument,
+    AdminWhatsAppMessageReactionUpsertDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { adminWhatsAppChatsPageTitle } from './AdminWhatsAppChatsPage';
@@ -43,6 +44,7 @@ export function AdminWhatsAppChatPage({
 
     const [conversation, setConversation] = useState<GqlCAdminWhatsAppChatDetailFieldsFragment>(seedConversation);
     const [, sendMessage] = useMutation(AdminWhatsAppMessageCreateDocument);
+    const [, upsertReaction] = useMutation(AdminWhatsAppMessageReactionUpsertDocument);
     const [, resetUnread] = useMutation(AdminWhatsAppConversationUnreadCountResetDocument);
     const resetDone = useRef(false);
 
@@ -110,6 +112,10 @@ export function AdminWhatsAppChatPage({
                     onSend={async (message) => {
                         const result = await sendMessage({ whatsAppConversationId, message });
                         return Boolean(result.data?.admin.whatsAppMessageCreate.success);
+                    }}
+                    onReact={async (whatsAppMessageId, emoji) => {
+                        const result = await upsertReaction({ whatsAppMessageId, emoji });
+                        return Boolean(result.data?.admin.whatsAppMessageReactionUpsert.success);
                     }}
                 />
             </AdminPinnedFooterLayout>

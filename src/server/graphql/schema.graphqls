@@ -3935,6 +3935,10 @@ type AdminMutation {
     # Concierge free-form reply inside the Meta 24h customer-service window.
     # `referenceId` is the new WhatsApp message id.
     whatsAppMessageCreate(whatsAppConversationId: ID!, message: String!): MutationResult!
+    # Apply or clear a business emoji reaction on an inbound Concierge message.
+    # Empty `emoji` clears. `referenceId` is the target WhatsApp message id.
+    # Meta only allows reacting to customer messages (not our outbound rows).
+    whatsAppMessageReactionUpsert(whatsAppMessageId: ID!, emoji: String!): MutationResult!
     # Clears `adminUnreadCount` when opening the WhatsApp chat.
     whatsAppConversationUnreadCountReset(whatsAppConversationId: ID!): MutationResult!
 }

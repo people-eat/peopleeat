@@ -27,12 +27,14 @@ export function WhatsAppConversationChat({
     messages,
     canSend,
     onSend,
+    onReact,
     peerDisplay,
     className,
 }: {
     messages: ReadonlyArray<GqlCHumanChatMessageFieldsFragment>;
     canSend: boolean;
     onSend: (message: string) => Promise<boolean>;
+    onReact: (chatMessageId: string, emoji: string) => Promise<boolean>;
     peerDisplay: string;
     className?: string;
 }) {
@@ -73,6 +75,7 @@ export function WhatsAppConversationChat({
                                         message={message}
                                         showAuthorName={streak.showName}
                                         showAuthorAvatar={streak.showAvatar}
+                                        onReactUserMessage={onReact}
                                     />
                                 </MessageScrollerItem>
                             );

@@ -170,6 +170,11 @@ export interface ServerRuntime {
     whatsapp: {
         sendTemplate: (args: WhatsAppTemplateOutboundArgs) => Promise<{ outboundWhatsAppMessageId: string } | null>;
         sendText: (args: WhatsAppTextOutboundArgs) => Promise<{ outboundWhatsAppMessageId: string; whatsAppMessageId: string }>;
+        sendReaction: (args: {
+            toPhoneNumber: string;
+            providerMessageId: string;
+            emoji: string;
+        }) => Promise<{ providerMessageId: string | null }>;
         downloadMedia: (mediaId: string) => Promise<{ buffer: Buffer; mimeType: string } | null>;
         markMessageAsRead: (providerMessageId: string) => Promise<void>;
         webhookSignatureVerify: (args: { rawBody: string; signatureHeader: string | null }) => boolean;

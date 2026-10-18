@@ -135,6 +135,9 @@ function whatsappStubCreate(): ServerRuntime['whatsapp'] {
             outboundWhatsAppMessageId: idCreate(),
             whatsAppMessageId: idCreate(),
         })),
+        sendReaction: vi.fn(async () => ({
+            providerMessageId: `console-react-${idCreate()}`,
+        })),
         downloadMedia: vi.fn(async () => null),
         markMessageAsRead: vi.fn(async () => undefined),
         webhookSignatureVerify: vi.fn(() => false),

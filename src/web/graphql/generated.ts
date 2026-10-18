@@ -1283,6 +1283,7 @@ export interface GqlCAdminMutation {
     webPageUpdate: GqlCMutationResult;
     whatsAppConversationUnreadCountReset: GqlCMutationResult;
     whatsAppMessageCreate: GqlCMutationResult;
+    whatsAppMessageReactionUpsert: GqlCMutationResult;
 }
 
 export type GqlCAdminMutationBlogPostDeleteArgs = {
@@ -1641,6 +1642,11 @@ export type GqlCAdminMutationWhatsAppConversationUnreadCountResetArgs = {
 export type GqlCAdminMutationWhatsAppMessageCreateArgs = {
     message: Scalars['String']['input'];
     whatsAppConversationId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationWhatsAppMessageReactionUpsertArgs = {
+    emoji: Scalars['String']['input'];
+    whatsAppMessageId: Scalars['ID']['input'];
 };
 
 export interface GqlCAdminObjectStorageObject {
@@ -14944,6 +14950,15 @@ export type GqlCAdminWhatsAppMessageCreateMutationVariables = Exact<{
 }>;
 
 export type GqlCAdminWhatsAppMessageCreateMutation = { admin: { whatsAppMessageCreate: { success: boolean; referenceId: string | null } } };
+
+export type GqlCAdminWhatsAppMessageReactionUpsertMutationVariables = Exact<{
+    whatsAppMessageId: string;
+    emoji: string;
+}>;
+
+export type GqlCAdminWhatsAppMessageReactionUpsertMutation = {
+    admin: { whatsAppMessageReactionUpsert: { success: boolean; referenceId: string | null } };
+};
 
 export type GqlCAdminWhatsAppConversationUnreadCountResetMutationVariables = Exact<{
     whatsAppConversationId: string;
@@ -61704,6 +61719,65 @@ export const AdminWhatsAppMessageCreateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminWhatsAppMessageCreateMutation, GqlCAdminWhatsAppMessageCreateMutationVariables>;
+export const AdminWhatsAppMessageReactionUpsertDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminWhatsAppMessageReactionUpsert' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'whatsAppMessageId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'emoji' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'whatsAppMessageReactionUpsert' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'whatsAppMessageId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'whatsAppMessageId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'emoji' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'emoji' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminWhatsAppMessageReactionUpsertMutation, GqlCAdminWhatsAppMessageReactionUpsertMutationVariables>;
 export const AdminWhatsAppConversationUnreadCountResetDocument = {
     kind: 'Document',
     definitions: [

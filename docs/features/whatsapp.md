@@ -23,12 +23,12 @@ threads in the admin inbox, including media, quick-reply reactions, and emoji re
   `NotificationBadge`; search (phone / WA display name / user), pinned bottom pagination (`page` / `pageSize`), live updates, sidebar unread
   badge.
 - `/admin/whats-app-chats/<id>` — human transcript with attachments + delivery ticks + emoji reaction badges on the target bubble; free-form
-  reply only inside the Meta 24h customer-service window; mark read on open (admin unread + Meta blue-tick). Nested transcript owns the pane
-  scroll under `AdminPinnedFooterLayout` `contentScroll={false}` (chrome breakout; header keeps `px-4`, chat wrapper does not, so the
-  scrollbar sits on the pane edge).
+  reply only inside the Meta 24h customer-service window; smile control on inbound bubbles sends (or clears) a business emoji reaction via
+  Meta; mark read on open (admin unread + Meta blue-tick). Nested transcript owns the pane scroll under `AdminPinnedFooterLayout`
+  `contentScroll={false}` (chrome breakout; header keeps `px-4`, chat wrapper does not, so the scrollbar sits on the pane edge).
 - User detail **WhatsApp** tab lists that user’s conversations.
-- Inbound Slack mirror on `SLACK_CHANNEL_WHATSAPP_MESSAGES`; known reaction quick-replies also post on the booking Slack thread. Emoji
-  reactions (Meta `type: reaction`) do not Slack-notify; they bump unread, refresh the 24h window, and overlay the target message.
+- Inbound Slack mirror on `SLACK_CHANNEL_WHATSAPP_MESSAGES`; known reaction quick-replies also post on the booking Slack thread. Customer
+  emoji reactions (Meta `type: reaction`) do not Slack-notify; they bump unread, refresh the 24h window, and overlay the target message.
 
 ### Ops prerequisite
 
@@ -54,14 +54,14 @@ secret (or signature validation off) and should not be the sole Meta callback if
 
 ### Alternatives considered
 
-| Topic           | Choice                                          |
-| --------------- | ----------------------------------------------- |
-| Channel model   | Dedicated conversations (not SupportRequests)   |
-| Send policy     | Always email + WhatsApp when phone is E.164     |
-| Free-form reply | Only inside 24h window                          |
-| Cook notifies   | Included when cook has E.164 phone              |
-| Media           | Inbound → FileUploads; admin outbound text-only |
-| Emoji reactions | Overlay on target message (not transcript rows) |
+| Topic           | Choice                                                                      |
+| --------------- | --------------------------------------------------------------------------- |
+| Channel model   | Dedicated conversations (not SupportRequests)                               |
+| Send policy     | Always email + WhatsApp when phone is E.164                                 |
+| Free-form reply | Only inside 24h window                                                      |
+| Cook notifies   | Included when cook has E.164 phone                                          |
+| Media           | Inbound → FileUploads; admin outbound text-only                             |
+| Emoji reactions | Overlay on target message (not transcript rows); admin can react to inbound |
 
 ### Chosen
 
@@ -70,7 +70,6 @@ Meta Cloud API + audit table + Concierge inbox, mirroring outbound-email / suppo
 ## Ideas
 
 - Admin outbound media attach
-- Admin outbound emoji reactions (send Meta `type: reaction`)
 - Richer AdminAssistant-style tooling on the Concierge surface (history import from ExternalMessages ships via go-live ETL)
 - WhatsApp contact avatars (not available via Meta Cloud API; peopleeat profile pictures only)
 
@@ -83,9 +82,9 @@ Meta Cloud API + audit table + Concierge inbox, mirroring outbound-email / suppo
 | Tables    | `WhatsAppConversations`, `WhatsAppMessages`, `WhatsAppMessageAttachments`, `WhatsAppMessageReactions`, `OutboundWhatsAppMessages` |
 | Webhook   | `src/routes/api/webhooks/whatsapp.ts`, `whatsappWebhookApply`, `whatsappWebhookDemoForward`                                       |
 | Lifecycle | `bookingRequestLifecycleWhatsApp.ts`, `bookingRequestOfferCallSlotWhatsApp.ts`                                                    |
-| Reaction  | `bookingRequestReactionReminder` job + `bookingRequestReactionReminderSchedule` (48h, offer signals); emoji via webhook           |
+| Reaction  | `bookingRequestReactionReminder` job; inbound emoji via webhook; admin `whatsAppMessageReactionUpsert` → `sendReaction`           |
 | Slack     | `src/server/slack/whatsappSlack.ts`, channel `whatsAppMessages`                                                                   |
-| Admin GQL | `whatsAppConversations*`, `whatsAppMessageCreate`, `whatsAppConversationUnreadCountReset`; `ChatMessageUser.reactions`            |
+| Admin GQL | `whatsAppConversations*`, `whatsAppMessageCreate`, `whatsAppMessageReactionUpsert`, unread reset; `ChatMessageUser.reactions`     |
 | Admin UI  | `AdminWhatsAppChatsPage`, `AdminWhatsAppChatPage`, user tab, sidebar badge                                                        |
 | Docs      | [architecture/whatsapp.md](../architecture/whatsapp.md)                                                                           |
 

@@ -12,10 +12,18 @@ interface HumanChatMessageProps {
     showAuthorAvatar?: boolean;
     /** When set, simple user bubbles expose an edit control (admin offer chat). */
     onEditUserMessage?: (chatMessageId: string, body: string) => Promise<boolean>;
+    /** When set, peer bubbles expose a reaction picker (WhatsApp Concierge). */
+    onReactUserMessage?: (chatMessageId: string, emoji: string) => Promise<boolean>;
 }
 
 /** Offer/support human transcript row. */
-export function HumanChatMessage({ message, showAuthorName = true, showAuthorAvatar = true, onEditUserMessage }: HumanChatMessageProps) {
+export function HumanChatMessage({
+    message,
+    showAuthorName = true,
+    showAuthorAvatar = true,
+    onEditUserMessage,
+    onReactUserMessage,
+}: HumanChatMessageProps) {
     switch (message.__typename) {
         case 'ChatMessageUser':
             return (
@@ -24,6 +32,7 @@ export function HumanChatMessage({ message, showAuthorName = true, showAuthorAva
                     showAuthorName={showAuthorName}
                     showAuthorAvatar={showAuthorAvatar}
                     onEdit={onEditUserMessage ? (body) => onEditUserMessage(message.chatMessageId, body) : undefined}
+                    onReact={onReactUserMessage ? (emoji) => onReactUserMessage(message.chatMessageId, emoji) : undefined}
                 />
             );
         case 'ChatMessageBookingRequestOfferEvent':

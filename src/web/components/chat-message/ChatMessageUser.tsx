@@ -1,4 +1,4 @@
-import { ChevronDownIcon, PencilIcon } from 'lucide-react';
+import { ChevronDownIcon, PencilIcon, SmilePlusIcon } from 'lucide-react';
 import type { TransitionEvent } from 'react';
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { containsPhoneNumber } from '../../../shared';
@@ -8,12 +8,16 @@ import { cn } from '../../utils/cn';
 import { Avatar, AvatarFallback, AvatarImage } from '../base/avatar';
 import { Button } from '../base/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../base/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '../base/popover';
 import { StatusAlert } from '../base/status-alert';
 import { Textarea } from '../base/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../base/tooltip';
 import { ChatAttachmentPreviewDialog } from './ChatAttachmentPreviewDialog';
 import { ChatAttachmentTileGrid } from './ChatAttachmentTileGrid';
 import { Bubble, CopyButton, MessageRow, Timestamp } from './shared';
+
+/** WhatsApp-style quick reactions offered in the Concierge picker. */
+const QUICK_REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🙏'] as const;
 
 function initialsFromName(name: string): string {
     const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -27,6 +31,7 @@ export function ChatMessageUserView({
     showAuthorName = true,
     showAuthorAvatar = true,
     onEdit,
+    onReact,
 }: {
     message: GqlCChatMessageUser;
     /** Peer only: name inside the first bubble of a same-author streak. */
@@ -35,6 +40,11 @@ export function ChatMessageUserView({
     showAuthorAvatar?: boolean;
     /** When set, shows an edit control that saves a new body via this callback. */
     onEdit?: (body: string) => Promise<boolean>;
+    /**
+     * When set on peer messages, shows a reaction picker. Pass `''` to clear the
+     * viewer's reaction. Clicking the current emoji again clears it.
+     */
+    onReact?: (emoji: string) => Promise<boolean>;
 }) {
     const locale = useLocale();
     const hasAttachments = message.attachments.length > 0;
@@ -43,12 +53,16 @@ export function ChatMessageUserView({
     const [editOpen, setEditOpen] = useState(false);
     const [editDraft, setEditDraft] = useState(message.body);
     const [editBusy, setEditBusy] = useState(false);
+    const [reactOpen, setReactOpen] = useState(false);
+    const [reactBusy, setReactBusy] = useState(false);
     const isOwn = message.isOwn;
     const side = isOwn ? 'user' : 'assistant';
     const tone = isOwn ? 'user' : 'assistant';
     const editContainsPhoneNumber = containsPhoneNumber(editDraft);
     const editEmptyBlocked = editDraft.trim().length === 0 && !hasAttachments;
     const editLabel = { de: 'Nachricht bearbeiten', en: 'Edit message' }[locale];
+    const reactLabel = { de: 'Reagieren', en: 'React' }[locale];
+    const ownReactionEmoji = message.reactions.find((reaction) => reaction.isOwn)?.emoji;
 
     useEffect(() => {
         if (editOpen) setEditDraft(message.body);
@@ -192,6 +206,73 @@ export function ChatMessageUserView({
         </>
     );
 
+    const applyReaction = async (emoji: string) => {
+        if (!onReact || reactBusy) return;
+        const next = ownReactionEmoji === emoji ? '' : emoji;
+        setReactBusy(true);
+        try {
+            const ok = await onReact(next);
+            if (ok) setReactOpen(false);
+        } finally {
+            setReactBusy(false);
+        }
+    };
+
+    const reactionPicker =
+        !isOwn && onReact != null ? (
+            <Popover open={reactOpen} onOpenChange={setReactOpen}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-xs"
+                                aria-label={reactLabel}
+                                disabled={reactBusy}
+                                className="mb-0.5 shrink-0 opacity-70 hover:opacity-100"
+                            >
+                                <SmilePlusIcon aria-hidden />
+                            </Button>
+                        </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>{reactLabel}</TooltipContent>
+                </Tooltip>
+                <PopoverContent align="start" side="top" className="w-auto p-1.5">
+                    <div className="flex items-center gap-0.5" role="listbox" aria-label={reactLabel}>
+                        {QUICK_REACTION_EMOJIS.map((emoji) => {
+                            const selected = ownReactionEmoji === emoji;
+                            return (
+                                <button
+                                    key={emoji}
+                                    type="button"
+                                    role="option"
+                                    aria-selected={selected}
+                                    disabled={reactBusy}
+                                    aria-label={
+                                        selected
+                                            ? { de: `${emoji} entfernen`, en: `Remove ${emoji}` }[locale]
+                                            : { de: `Mit ${emoji} reagieren`, en: `React with ${emoji}` }[locale]
+                                    }
+                                    onClick={() => {
+                                        void applyReaction(emoji);
+                                    }}
+                                    className={cn(
+                                        'flex size-9 items-center justify-center rounded-md text-lg leading-none',
+                                        'hover:bg-foreground/5 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                                        selected && 'bg-foreground/8 ring-1 ring-border',
+                                        reactBusy && 'opacity-50',
+                                    )}
+                                >
+                                    {emoji}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </PopoverContent>
+            </Popover>
+        ) : null;
+
     const reactionBadges =
         message.reactions.length > 0 ? (
             <div
@@ -246,6 +327,7 @@ export function ChatMessageUserView({
                     <Bubble tone={tone} tail={showAuthorAvatar}>
                         {bubbleInner}
                     </Bubble>
+                    {reactionPicker}
                 </div>
                 {reactionBadges}
                 {preview}

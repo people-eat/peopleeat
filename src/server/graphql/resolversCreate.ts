@@ -91,6 +91,7 @@ import { adminUserUpdate } from '../commands/adminUserUpdate';
 import { adminWebPageUpdate } from '../commands/adminWebPageUpdate';
 import { adminWhatsAppConversationUnreadCountReset } from '../commands/adminWhatsAppConversationUnreadCountReset';
 import { adminWhatsAppMessageCreate } from '../commands/adminWhatsAppMessageCreate';
+import { adminWhatsAppMessageReactionUpsert } from '../commands/adminWhatsAppMessageReactionUpsert';
 import { authEmailOtpDelete } from '../commands/authEmailOtpDelete';
 import { authEmailOtpRequest } from '../commands/authEmailOtpRequest';
 import { authEmailOtpVerify } from '../commands/authEmailOtpVerify';
@@ -530,6 +531,7 @@ import type {
     GqlSAdminMutationWebPageUpdateArgs,
     GqlSAdminMutationWhatsAppConversationUnreadCountResetArgs,
     GqlSAdminMutationWhatsAppMessageCreateArgs,
+    GqlSAdminMutationWhatsAppMessageReactionUpsertArgs,
     GqlSAdminObjectStorageObjectsArgs,
     GqlSAdminOccasion,
     GqlSAdminOccasionArgs,
@@ -2168,6 +2170,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return adminWhatsAppMessageCreate(parent, args, requestingSession, serverRuntime);
+            },
+            whatsAppMessageReactionUpsert(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationWhatsAppMessageReactionUpsertArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminWhatsAppMessageReactionUpsert(parent, args, requestingSession, serverRuntime);
             },
             whatsAppConversationUnreadCountReset(
                 parent: GqlSAdminMutation,

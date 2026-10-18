@@ -56,6 +56,15 @@ mutation AdminWhatsAppMessageCreate($whatsAppConversationId: ID!, $message: Stri
     }
 }
 
+mutation AdminWhatsAppMessageReactionUpsert($whatsAppMessageId: ID!, $emoji: String!) {
+    admin {
+        whatsAppMessageReactionUpsert(whatsAppMessageId: $whatsAppMessageId, emoji: $emoji) {
+            success
+            referenceId
+        }
+    }
+}
+
 mutation AdminWhatsAppConversationUnreadCountReset($whatsAppConversationId: ID!) {
     admin {
         whatsAppConversationUnreadCountReset(whatsAppConversationId: $whatsAppConversationId) {

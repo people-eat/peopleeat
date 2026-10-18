@@ -1280,6 +1280,7 @@ export interface GqlSAdminMutation {
     webPageUpdate: GqlSMutationResult;
     whatsAppConversationUnreadCountReset: GqlSMutationResult;
     whatsAppMessageCreate: GqlSMutationResult;
+    whatsAppMessageReactionUpsert: GqlSMutationResult;
 }
 
 export type GqlSAdminMutationBlogPostDeleteArgs = {
@@ -1638,6 +1639,11 @@ export type GqlSAdminMutationWhatsAppConversationUnreadCountResetArgs = {
 export type GqlSAdminMutationWhatsAppMessageCreateArgs = {
     message: Scalars['String']['input'];
     whatsAppConversationId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationWhatsAppMessageReactionUpsertArgs = {
+    emoji: Scalars['String']['input'];
+    whatsAppMessageId: Scalars['ID']['input'];
 };
 
 export interface GqlSAdminObjectStorageObject {
@@ -7368,6 +7374,12 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationWhatsAppMessageCreateArgs, 'message' | 'whatsAppConversationId'>
+    >;
+    whatsAppMessageReactionUpsert?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationWhatsAppMessageReactionUpsertArgs, 'emoji' | 'whatsAppMessageId'>
     >;
 }>;
 

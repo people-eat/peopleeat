@@ -278,6 +278,7 @@ export function serverRuntimeCreate(): ServerRuntime {
     serverRuntime.whatsapp = {
         sendTemplate: (args) => whatsappTemplateOutboundSend(serverRuntime, whatsappProvider, args),
         sendText: (args) => whatsappTextOutboundSend(serverRuntime, whatsappProvider, args),
+        sendReaction: (args) => whatsappProvider.sendReaction(args),
         downloadMedia: (mediaId) => whatsappProvider.downloadMedia(mediaId),
         markMessageAsRead: (providerMessageId) => whatsappProvider.markMessageAsRead(providerMessageId),
         webhookSignatureVerify: (args) => whatsappProvider.webhookSignatureVerify(args),

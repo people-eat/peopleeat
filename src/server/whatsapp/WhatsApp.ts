@@ -15,6 +15,15 @@ export type WhatsAppTextSendArgs = {
     body: string;
 };
 
+export type WhatsAppReactionSendArgs = {
+    /** E.164 with leading `+`. */
+    toPhoneNumber: string;
+    /** Meta `wamid` of the inbound user message to react to. */
+    providerMessageId: string;
+    /** Emoji to apply, or empty string to clear the business reaction. */
+    emoji: string;
+};
+
 export type WhatsAppSendResult = {
     providerMessageId: string | null;
 };
@@ -27,6 +36,7 @@ export type WhatsAppMediaDownloadResult = {
 export type WhatsApp = {
     sendTemplate: (args: WhatsAppTemplateSendArgs) => Promise<WhatsAppSendResult>;
     sendText: (args: WhatsAppTextSendArgs) => Promise<WhatsAppSendResult>;
+    sendReaction: (args: WhatsAppReactionSendArgs) => Promise<WhatsAppSendResult>;
     downloadMedia: (mediaId: string) => Promise<WhatsAppMediaDownloadResult | null>;
     markMessageAsRead: (providerMessageId: string) => Promise<void>;
     /** Verify Meta `X-Hub-Signature-256` against the raw POST body. */
