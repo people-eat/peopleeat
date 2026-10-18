@@ -42,7 +42,7 @@ describe('bookingRequestOfferInitialChatMessage', () => {
             }),
             event({
                 type: 'COOK_CREATED',
-                payload: { menuTitles: [], menuPriceCents: 1000 },
+                payload: { menuTitles: [], menuPriceCents: 1000, totalWithoutDiscountsCentsCustomer: 1200 },
                 createdAt: cookCreatedAt,
             }),
         ];
@@ -54,7 +54,7 @@ describe('bookingRequestOfferInitialChatMessage', () => {
         const events = [
             event({
                 type: 'COOK_CREATED',
-                payload: { menuTitles: [], menuPriceCents: 1000 },
+                payload: { menuTitles: [], menuPriceCents: 1000, totalWithoutDiscountsCentsCustomer: 1200 },
                 createdAt: new Date('2026-01-01T12:00:00.000Z'),
             }),
             event({

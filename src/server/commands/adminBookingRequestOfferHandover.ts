@@ -537,6 +537,7 @@ export async function adminBookingRequestOfferHandover(
                     payload: {
                         menuTitles: [],
                         menuPriceCents: price.menuPriceCents,
+                        totalWithoutDiscountsCentsCustomer: price.totalWithoutDiscountsCentsCustomer,
                     },
                     createdAt: now,
                 });

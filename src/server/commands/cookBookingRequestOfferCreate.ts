@@ -185,6 +185,7 @@ export async function cookBookingRequestOfferCreate(
                 payload: {
                     menuTitles,
                     menuPriceCents: price.menuPriceCents,
+                    totalWithoutDiscountsCentsCustomer: price.totalWithoutDiscountsCentsCustomer,
                 },
                 createdAt: cookCreatedAt,
             });

@@ -383,6 +383,7 @@ type BookingRequestOfferEventPayloadByType = {
     COOK_CREATED: {
         menuTitles?: string[];
         menuPriceCents: number;
+        totalWithoutDiscountsCentsCustomer: number;
     };
     COOK_UPDATED_SUGGESTED_MENU: {
         menuTitlesBefore?: string[];

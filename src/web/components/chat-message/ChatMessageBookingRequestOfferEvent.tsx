@@ -14,7 +14,7 @@ import {
     UtensilsIcon,
 } from 'lucide-react';
 
-import { formatDate, formatTime } from '../../../shared';
+import { bookingRequestOfferPriceCalculate, formatDate, formatTime } from '../../../shared';
 import type { GqlCChatMessageBookingRequestOfferEvent, GqlCChatMessageBookingRequestOfferEventType } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
@@ -230,17 +230,31 @@ function chatMessageBookingRequestOfferEventDetail(
     if (typeof record.cookMessage === 'string' && record.cookMessage.trim().length > 0) {
         return record.cookMessage.trim();
     }
-    if (typeof record.menuPriceCents === 'number') {
-        return formatCents(record.menuPriceCents, locale);
+    if (typeof record.totalWithoutDiscountsCentsCustomer === 'number') {
+        return formatCents(record.totalWithoutDiscountsCentsCustomer, locale);
     }
     if (isPriceSnapshot(record.priceAfter)) {
-        return formatCents(record.priceAfter.menuPriceCents, locale);
+        return formatCents(record.priceAfter.totalWithoutDiscountsCentsCustomer, locale);
+    }
+    // Legacy COOK_CREATED: only menuPriceCents was stored — approximate customer total with zero travel.
+    if (typeof record.menuPriceCents === 'number') {
+        return formatCents(
+            bookingRequestOfferPriceCalculate({
+                menuPriceCents: record.menuPriceCents,
+                travelExpensesCents: 0,
+            }).totalWithoutDiscountsCentsCustomer,
+            locale,
+        );
     }
     return null;
 }
 
-function isPriceSnapshot(value: unknown): value is { menuPriceCents: number } {
-    return typeof value === 'object' && value !== null && typeof (value as { menuPriceCents?: unknown }).menuPriceCents === 'number';
+function isPriceSnapshot(value: unknown): value is { totalWithoutDiscountsCentsCustomer: number } {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        typeof (value as { totalWithoutDiscountsCentsCustomer?: unknown }).totalWithoutDiscountsCentsCustomer === 'number'
+    );
 }
 
 function formatCents(cents: number, locale: 'de' | 'en'): string {

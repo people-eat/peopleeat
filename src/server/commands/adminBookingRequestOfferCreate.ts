@@ -140,6 +140,7 @@ export async function adminBookingRequestOfferCreate(
                 payload: {
                     menuTitles: [],
                     menuPriceCents: price.menuPriceCents,
+                    totalWithoutDiscountsCentsCustomer: price.totalWithoutDiscountsCentsCustomer,
                 },
                 createdAt: cookCreatedAt,
             });

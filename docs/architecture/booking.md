@@ -74,11 +74,12 @@ on any `*_MESSAGE_SIMPLE` event (attachments unchanged; allowed after send is cl
 
 Offer create (`cookBookingRequestOfferCreate` / `adminBookingRequestOfferCreate`) seeds the booking-request message (`adjustedMessage` ??
 `originalMessage`, when non-empty) as the first timeline event (`USER_MESSAGE_SIMPLE`, authored as the customer) immediately before
-`COOK_CREATED`, so both cook and customer see it as the chat opener. An optional cook `message` on create is then seeded as
-`COOK_MESSAGE_SIMPLE` (phone numbers rejected via `containsPhoneNumber`; not written onto the `COOK_CREATED` payload). Older offers missing
-the request-message seed are healed on first `messages` load. Pool / customer request-detail UIs also show that request message as a bubble
-(`CookBookingRequest.message` is the resolved text for cooks; customers keep `originalMessage`); the cook offer **request** tab does not
-repeat it.
+`COOK_CREATED`, so both cook and customer see it as the chat opener. `COOK_CREATED` payload includes `menuPriceCents` and
+`totalWithoutDiscountsCentsCustomer`; chat milestones show the customer total (same field on `COOK_CHANGED_PRICE` / `SYSTEM_CHANGED_PRICE`
+snapshots). An optional cook `message` on create is then seeded as `COOK_MESSAGE_SIMPLE` (phone numbers rejected via `containsPhoneNumber`;
+not written onto the `COOK_CREATED` payload). Older offers missing the request-message seed are healed on first `messages` load. Pool /
+customer request-detail UIs also show that request message as a bubble (`CookBookingRequest.message` is the resolved text for cooks;
+customers keep `originalMessage`); the cook offer **request** tab does not repeat it.
 
 Product behavior: [booking-offer-chat.md](../features/booking-offer-chat.md).
 
