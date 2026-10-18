@@ -103,7 +103,10 @@ export function ProfileAssistantPane({
                             ) : null}
                         </header>
                     )}
-                    <div className={fullscreen ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : contentClassName}>
+                    <div
+                        data-scroll-restoration-id={fullscreen ? undefined : 'workspace-inset'}
+                        className={fullscreen ? 'flex min-h-0 flex-1 flex-col overflow-hidden' : contentClassName}
+                    >
                         {banner != null && !fullscreen ? <div className="shrink-0">{banner}</div> : null}
                         <Outlet />
                     </div>

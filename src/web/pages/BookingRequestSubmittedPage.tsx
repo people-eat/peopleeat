@@ -120,7 +120,7 @@ export function BookingRequestSubmittedPage({
                 </Button>
             </header>
 
-            <div className="min-h-0 flex-1 overflow-y-auto pt-14 scrollbar-gutter-stable">
+            <div data-scroll-restoration-id="booking-form" className="min-h-0 flex-1 overflow-y-auto pt-14 scrollbar-gutter-stable">
                 <div className="mx-auto grid w-full max-w-3xl gap-10 p-4 lg:mt-12 lg:gap-14">
                     <section className="grid gap-8 lg:gap-10">
                         <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">

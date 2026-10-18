@@ -57,6 +57,7 @@ export function AdminPageChrome({
                 <AssistantTriggerButton label={assistantToggleLabel} title={adminAssistantTitle[locale]} />
             </header>
             <div
+                data-scroll-restoration-id="workspace-inset"
                 className={cn(
                     'workspace-inset-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pt-2 scrollbar-gutter-stable sm:pt-4',
                     contentClassName,

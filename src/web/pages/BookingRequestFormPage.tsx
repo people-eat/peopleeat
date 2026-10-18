@@ -581,7 +581,7 @@ export function BookingRequestFormPage({
             </header>
 
             <div className="flex min-h-0 flex-1 flex-col pt-14">
-                <div className="min-h-0 flex-1 overflow-y-auto scrollbar-gutter-stable">
+                <div data-scroll-restoration-id="booking-form" className="min-h-0 flex-1 overflow-y-auto scrollbar-gutter-stable">
                     <div className="mx-auto w-full max-w-7xl lg:mt-20">
                         <BookingRequestFormStepLayout
                             stepNumber={stepNumber}

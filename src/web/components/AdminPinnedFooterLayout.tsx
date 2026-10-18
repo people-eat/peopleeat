@@ -34,6 +34,7 @@ export function AdminPinnedFooterLayout({
             )}
         >
             <div
+                data-scroll-restoration-id={contentScroll ? 'workspace-pinned' : undefined}
                 className={cn(
                     'min-h-0',
                     // Nested tab/chat scrollports must own horizontal padding — a padded

@@ -27,7 +27,8 @@ Visiting `/admin/*` as an admin shows:
   default). Compact on mobile (`h-12` / tighter content `pt`) — [theme.md](../styles/theme.md#workspace-chrome-density).
 - **Main pane body:** viewport-locked inset; default scroll on content; full-bleed chat pages override so transcript scrolls inside chat
   chrome and composer stays pinned. Document scroll is off — `html` opts out of document scrollbar gutters; the inset uses one-sided
-  `scrollbar-gutter-stable` ([theme.md](../styles/theme.md)).
+  `scrollbar-gutter-stable` ([theme.md](../styles/theme.md)). Navigating to another admin path resets the inset (and pinned-footer body) to
+  the top — [theme.md — Route scroll reset](../styles/theme.md#route-scroll-reset).
 - **Assistant rail:** floating right sidebar; wired chat today with admin assistant target documented in [assistants.md](./assistants.md)
   and [assistant-sidebar.md](./assistant-sidebar.md). Lazy-loaded on first open. Full-screen owner chat lives at `/admin/assistant` (+
   `$chatId`) and hides the rail while open.

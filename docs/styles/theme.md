@@ -62,6 +62,21 @@ document-scroll, so reserving gutters on `html` would be empty wasted strips nex
 `.workspace-no-document-scroll` from the locale-stripped path (`isWorkspaceNoDocumentScrollPath`). Overlay-scrollbar environments (typical
 macOS) do not paint gutters either way.
 
+### Route scroll reset
+
+TanStack Router’s `scrollRestoration` tracks every scrolled element. Workspace inset panes sit outside `window`, so without an explicit list
+the previous pane’s `scrollTop` is copied onto the next route (same DOM path or shared `data-scroll-restoration-id`). `src/router.tsx` sets
+`scrollToTopSelectors` for the marked scrollports; forward navigations land at the top, back/forward still restore from the cache.
+
+| `data-scroll-restoration-id` | Owners                                                                              |
+| ---------------------------- | ----------------------------------------------------------------------------------- |
+| `workspace-inset`            | `AdminPageChrome`, profile `ProfileAssistantPane` content pane                      |
+| `workspace-pinned`           | `AdminPinnedFooterLayout` / `ProfilePinnedFooterLayout` body (when `contentScroll`) |
+| `booking-form`               | Booking-request form + submitted page scrollers                                     |
+
+New shell scrollports that own route-level scrolling must take one of these ids (or add a selector in `scrollToTopSelectors`). Do not mark
+chat `MessageScroller` viewports — they open at bottom / last-anchor per [chat.md](./chat.md).
+
 Classic scrollbar thickness is `scrollbar-width: thin` on `*` in `src/styles.css` so every nested scrollport (shell panes, tab panels, chat,
 dialogs) matches — do not leave some surfaces on the platform default.
 

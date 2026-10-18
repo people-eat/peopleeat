@@ -80,8 +80,9 @@ booking requests (full subtree), gift cards, and support. Other `/profile/*` pat
 - Assistant: shared `ProfileAssistantPane` / `ProfileAssistantSidebar` with the cook shell; header AI entry is `AssistantTriggerButton`.
   Chat stack not wired yet — see [assistants.md](./assistants.md).
 - Customer inset matches cook: viewport-locked with scrollable content pane (document gutters off; inset uses one-sided
-  `scrollbar-gutter-stable` — [theme.md](../styles/theme.md)). Offer chat fills the pane with overflow breakout so its composer stays pinned
-  to the shell bottom ([styles/chat.md](../styles/chat.md)).
+  `scrollbar-gutter-stable` — [theme.md](../styles/theme.md)). Path changes reset that pane (and pinned-footer bodies) to the top —
+  [theme.md — Route scroll reset](../styles/theme.md#route-scroll-reset). Offer chat fills the pane with overflow breakout so its composer
+  stays pinned to the shell bottom ([styles/chat.md](../styles/chat.md)).
 - **Pinned action footers:** booking-request detail uses `ProfilePinnedFooterLayout` for edit / cancel; booking-request edit uses it for
   Cancel / Save; customer offer detail uses it for Accept on the Offer tab (same pattern as cook meal/menu view). Do not use CSS sticky for
   shell action bars — see [conventions](../conventions.md#profile-pinned-action-footers).

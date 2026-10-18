@@ -80,8 +80,9 @@ destinations share a catalog until real pages replace them. `/profile/account` i
 - `SidebarInset` is a `<div>` so pages do not nest `<main>` landmarks ([conventions](../conventions.md)).
 - Cook inset is viewport-locked with a scrollable content pane under the chrome header. That pane owns default page scroll; its padding is
   paint room for outset focus rings / card shadows. Document scroll is off — `html` opts out of document scrollbar gutters; the inset uses
-  one-sided `scrollbar-gutter-stable` ([theme.md](../styles/theme.md)). Pages must not put overflow scroll on `<main>` unless they introduce
-  a nested scrollport.
+  one-sided `scrollbar-gutter-stable` ([theme.md](../styles/theme.md)). Path changes reset that pane (and pinned-footer bodies) to the top —
+  [theme.md — Route scroll reset](../styles/theme.md#route-scroll-reset). Pages must not put overflow scroll on `<main>` unless they
+  introduce a nested scrollport.
 - **Pinned action footers:** meal/menu view+edit, booking-request pool detail, offer create, and offer price/menus edit pages use
   `ProfilePinnedFooterLayout` (grid body scroll + bottom action row). Cook offer detail keeps the layout for tab scrollports but has no
   negotiate footer — edit-menus / edit-price CTAs sit end-aligned under the Offer-tab sections. Do not use CSS sticky for shell action bars.
