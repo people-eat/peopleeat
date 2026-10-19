@@ -26,6 +26,19 @@ export type GraphqlExecuteOptions = {
     operationName?: string | null;
 };
 
+export type GraphqlHttpQueryRunInput = {
+    query: string;
+    variables: Record<string, any>;
+    operationName?: string | null;
+    /** Runs inside the GraphQL span so session SQL nests under the same Tempo tree. */
+    sessionLoad: () => Promise<GqlSSession>;
+};
+
+export type GraphqlHttpQueryRunResult = {
+    session: GqlSSession;
+    body: { data?: any; errors?: any };
+};
+
 // Orphan queued/running turns from a previous process — no provider resume.
 void chatTurnRecover(serverRuntime);
 
@@ -55,49 +68,56 @@ async function ensureServerStarted() {
     await serverStartPromise;
 }
 
-export async function executeGraphQLQuery(
-    query: string,
-    variables: Record<string, any>,
-    session: GqlSSession,
-    options: GraphqlExecuteOptions = {},
-): Promise<{ data?: any; errors?: any }> {
+function graphqlResponseBodyFromApolloResult(result: Awaited<ReturnType<typeof graphqlServer.executeOperation>>): {
+    data?: any;
+    errors?: any;
+} {
+    // URQL expects `{ data, errors }`; Apollo Server v5 wraps it in
+    // `result.body` with a `kind` discriminator. We only emit single results
+    // here — incremental delivery (`@defer`/`@stream`) is not used by any
+    // operation in this app, so it's an error if we see one.
+    if (result.body.kind === 'single') {
+        return {
+            data: result.body.singleResult.data,
+            errors: result.body.singleResult.errors,
+        };
+    }
+    return {
+        data: null,
+        errors: [{ message: 'Unexpected incremental response format' }],
+    };
+}
+
+/**
+ * Full `/api/graphql` query path: one Tempo span covering session upsert +
+ * Apollo execute so `pg.query:*` children nest under `graphql {operation}`.
+ */
+export async function graphqlHttpQueryRun(input: GraphqlHttpQueryRunInput): Promise<GraphqlHttpQueryRunResult> {
     await ensureServerStarted();
 
     const operationName = graphqlOperationNameResolve({
-        document: query,
-        clientOperationName: options.operationName,
+        document: input.query,
+        clientOperationName: input.operationName,
     });
-    const operationType = graphqlOperationType(query);
+    const operationType = graphqlOperationType(input.query);
     const startedAt = Date.now();
 
     return tracer.startActiveSpan(`graphql ${operationName}`, async (span) => {
         span.setAttribute('graphql.operation.name', operationName);
         span.setAttribute('graphql.operation.type', operationType);
-        span.setAttribute('session.id', session.sessionId);
-        if (session.userId) {
-            span.setAttribute('enduser.id', session.userId);
-        }
 
         try {
-            const result = await graphqlServer.executeOperation({ query, variables }, { contextValue: session });
-
-            // URQL expects `{ data, errors }`; Apollo Server v5 wraps it in
-            // `result.body` with a `kind` discriminator. We only emit single results
-            // here — incremental delivery (`@defer`/`@stream`) is not used by any
-            // operation in this app, so it's an error if we see one.
-            let responseBody: { data?: any; errors?: any } = {};
-
-            if (result.body.kind === 'single') {
-                responseBody = {
-                    data: result.body.singleResult.data,
-                    errors: result.body.singleResult.errors,
-                };
-            } else {
-                responseBody = {
-                    data: null,
-                    errors: [{ message: 'Unexpected incremental response format' }],
-                };
+            const session = await input.sessionLoad();
+            span.setAttribute('session.id', session.sessionId);
+            if (session.userId) {
+                span.setAttribute('enduser.id', session.userId);
             }
+
+            const result = await graphqlServer.executeOperation(
+                { query: input.query, variables: input.variables },
+                { contextValue: session },
+            );
+            const responseBody = graphqlResponseBodyFromApolloResult(result);
 
             const errored = Boolean(responseBody.errors?.length);
             const errorClass = graphqlErrorClass(responseBody.errors);
@@ -115,7 +135,7 @@ export async function executeGraphQLQuery(
                 errorClass,
             });
             graphqlOperationWindowRecord(operationName, durationMs, errored);
-            return responseBody;
+            return { session, body: responseBody };
         } catch (error) {
             span.recordException(error instanceof Error ? error : new Error(String(error)));
             span.setStatus({ code: SpanStatusCode.ERROR, message: error instanceof Error ? error.message : 'GraphQL throw' });

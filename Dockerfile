@@ -34,9 +34,11 @@ ENV BUILD_SHA=$BUILD_SHA
 # changes. See `docs/architecture/browser-capture.md`.
 #
 # Nitro inlines the rest of the app. The runtime `node_modules` only needs
-# playwright (chromium-bidi loads via paths Vite cannot statically resolve).
-# Installing the full production tree with `npm ci --omit=dev` would extract
-# hundreds of packages the container never imports.
+# playwright (chromium-bidi loads via paths Vite cannot statically resolve)
+# and `pg` (so `@opentelemetry/instrumentation-pg` can patch the real module;
+# Nitro must keep `pg` / `pg-pool` external). Installing the full production
+# tree with `npm ci --omit=dev` would extract hundreds of packages the
+# container never imports.
 #
 # The Debian-based `node:24-slim` base is required — Chromium's prebuilt
 # binaries are linked against glibc and will not run on Alpine.
@@ -51,19 +53,21 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 COPY package.json package-lock.json ./
 RUN npm install -g "npm@$(node -p "require('./package.json').packageManager.split('@')[1]")"
-# Pin playwright to the lockfile version, drop the rest of the tree, and
+# Pin playwright + pg to lockfile versions, drop the rest of the tree, and
 # install. `npm ci` cannot be used after rewriting package.json (the
-# lockfile would no longer match).
+# lockfile would no longer match). `pg-pool` installs transitively with `pg`.
 RUN --mount=type=cache,target=/root/.npm \
     node --input-type=commonjs -e "\
 const { readFileSync, writeFileSync, unlinkSync } = require('node:fs');\
 const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));\
 const playwright = lock.packages['node_modules/playwright']?.version;\
+const pg = lock.packages['node_modules/pg']?.version;\
 if (!playwright) throw new Error('lockfile missing playwright');\
+if (!pg) throw new Error('lockfile missing pg');\
 writeFileSync('package.json', JSON.stringify({\
   name: 'runtime',\
   private: true,\
-  dependencies: { playwright },\
+  dependencies: { playwright, pg },\
 }, null, 2));\
 unlinkSync('package-lock.json');\
 " \

@@ -78,9 +78,21 @@ See [infrastructure.md](../infrastructure.md). Self-host on Coolify: [Self-hosti
 [`src/server/graphql/server.ts`](../../src/server/graphql/server.ts) before Apollo / jobs start:
 
 1. Builds OTel `NodeSDK` span processors (Langfuse and/or OTLP and/or console)
-2. Registers `PgInstrumentation` + `HttpInstrumentation`
+2. Registers `PgInstrumentation` (`enhancedDatabaseReporting`, `ignoreConnectSpans`) + `HttpInstrumentation`
 3. Registers AI SDK 7 `LangfuseVercelAiSdkIntegration` when Langfuse or OTLP is on (so LLM spans exist for either exporter)
 4. Starts a metrics `MeterProvider` with OTLP export when `OTEL_TRANSPORT=otlp`
+
+### External `pg` (required for SQL child spans)
+
+`@opentelemetry/instrumentation-pg` patches the real `node_modules/pg` / `pg-pool` modules. Nitro would otherwise **inline** them into the
+drizzle chunk, and Tempo GraphQL traces would show only the root `graphql {operation}` span with no `pg.query:*` children.
+
+Same pattern as Playwright ([browser-capture.md](./browser-capture.md)):
+
+1. [`vite.config.ts`](../../vite.config.ts) — `optimizeDeps.exclude` and `nitro.rollupConfig.external` include `pg` and `pg-pool`
+2. [`Dockerfile`](../../Dockerfile) runtime stage — installs lockfile-pinned `pg` next to `playwright` (`pg-pool` comes transitively)
+
+Without both, production waterfalls cannot answer “where did this request’s time go?”
 
 ### AI instrumentation
 
@@ -106,10 +118,12 @@ Key files: [`clientConnectionAbortPlugin.ts`](../../src/server/nitro/clientConne
 
 ### Request / job / ingress instrumentation
 
-- **GraphQL queries/mutations**: span + RED (`graphql.operation.duration` / `.errors`) around `executeGraphQLQuery`. Attributes:
-  `graphql.operation.name` (client `operationName` when present, else document name), `graphql.operation.type`, and on failure
-  `graphql.error.class` (`unauthorized` / `not_found` / `graphql_error`) + `graphql.error.count`. Helpers live in
-  [`graphqlOperationMeta.ts`](../../src/server/observability/graphqlOperationMeta.ts).
+- **GraphQL queries/mutations**: [`graphqlHttpQueryRun`](../../src/server/graphql/server.ts) (from
+  [`/api/graphql`](../../src/routes/api/graphql.ts)) opens one Tempo span + RED (`graphql.operation.duration` / `.errors`) that covers
+  **session upsert and** Apollo `executeOperation`, so session SQL and resolver SQL both nest as `pg.query:*` children. Attributes:
+  `graphql.operation.name` (client `operationName` when present, else document name), `graphql.operation.type`, `session.id` / `enduser.id`
+  after session load, and on failure `graphql.error.class` (`unauthorized` / `not_found` / `graphql_error`) + `graphql.error.count`. Helpers
+  live in [`graphqlOperationMeta.ts`](../../src/server/observability/graphqlOperationMeta.ts).
 - **GraphQL subscriptions**: setup span + RED on `executeGraphQLSubscription` (same operation metrics, type `subscription`). SSE connection
   lifetime is a separate metric family (`graphql.subscription.duration` / `.events` / `.errors`) recorded when the stream ends — not a
   long-lived Tempo span.
@@ -127,6 +141,19 @@ Key files: [`clientConnectionAbortPlugin.ts`](../../src/server/nitro/clientConne
 
 Grafana Explore: Tempo filter `ingress.provider` or span name `ingress stripe`; Prometheus `http.ingress.duration`,
 `graphql.operation.duration`, `graphql.subscription.duration`, `client.web_vital.duration`, `client.graphql.errors`.
+
+### Runbook: where did this GraphQL request’s time go?
+
+1. Grafana → Explore → Tempo (or GraphQL dashboard → drill into a slow series).
+2. TraceQL: `{ span.graphql.operation.name = "ChefsPage" }` (or the operation you care about). Prefer
+   `resource.deployment.environment = "production"` when the variable is not already scoped.
+3. Open a slow trace. Under `graphql ChefsPage` you should see many `pg.query:SELECT …` (and similar) children. Their durations explain the
+   parent; look for one heavy statement vs a fan-out of tiny queries (e.g. per-row `file_uploads` loads).
+4. For **aggregate** “which SQL is expensive globally?”, use `pg_stat_statements` (admin `/admin/database-slow-statements` or the SQL below)
+   — that is not per-request attribution.
+
+If a GraphQL span has **no** `pg.query:*` children in production, check that `pg` is still Nitro-external and present in the runtime image
+([External `pg`](#external-pg-required-for-sql-child-spans)).
 
 ### Slack ops alert
 
@@ -273,7 +300,9 @@ Then open `/admin/database-slow-statements`, use GraphQL `databaseSlowStatements
 
 ## Key files
 
-- `src/server/observability/observabilityStart.ts` — OTel + Langfuse boot
+- `src/server/observability/observabilityStart.ts` — OTel + Langfuse boot (`PgInstrumentation`, HTTP, exporters)
+- `src/server/graphql/server.ts` — `graphqlHttpQueryRun` / subscription spans
+- `src/routes/api/graphql.ts` — HTTP entry; session upsert inside the GraphQL span
 - `src/server/observability/aiTelemetry.ts` — AI SDK telemetry helpers
 - `src/server/observability/graphqlOperationMeta.ts` — operation name / type / error class
 - `src/server/observability/redMetrics.ts` — GraphQL / subscription / job / ingress RED meters
@@ -285,3 +314,4 @@ Then open `/admin/database-slow-statements`, use GraphQL `databaseSlowStatements
 - `src/server/queries/adminDatabaseSlowStatementsFindMany.ts` — `pg_stat_statements` admin read
 - `src/server/jobs/handlers/observabilityOpsAlert.ts` — Slack threshold alerts
 - `ops/grafana/dashboards/` — Grafana dashboard JSON + `generate.mjs`
+- `vite.config.ts` / `Dockerfile` — external + runtime `pg` (SQL child spans)

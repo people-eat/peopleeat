@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { db } from '../../server/db';
 import { environmentVariables } from '../../server/env/environmentVariablesCreate';
-import { executeGraphQLQuery } from '../../server/graphql/server';
+import { graphqlHttpQueryRun } from '../../server/graphql/server';
 import { clientIpFromRequest } from '../../server/utils/clientIpFromRequest';
 import { loggerCreate } from '../../server/utils/loggerCreate';
 import { sessionUpsert } from '../../server/utils/sessionUpsert';
@@ -15,21 +15,25 @@ export const Route = createFileRoute('/api/graphql')({
             POST: async ({ request }) => {
                 let sessionCookie = '';
                 try {
-                    const existingSessionId = sessionUtils.getSessionIdFromRequest(environmentVariables.sessionCookie, request);
-                    const session = await sessionUpsert(
-                        db,
-                        log,
-                        existingSessionId,
-                        request.headers.get('user-agent'),
-                        clientIpFromRequest(request),
-                        request.headers.get('referer'),
-                        request.headers.get('x-landing-path'),
-                    );
-                    sessionCookie = sessionUtils.createSetSessionCookie(environmentVariables.sessionCookie, session);
-
                     const body = await request.clone().json();
-                    const result = await executeGraphQLQuery(body.query, body.variables, session, {
+                    const existingSessionId = sessionUtils.getSessionIdFromRequest(environmentVariables.sessionCookie, request);
+                    const { body: result } = await graphqlHttpQueryRun({
+                        query: body.query,
+                        variables: body.variables,
                         operationName: typeof body.operationName === 'string' ? body.operationName : undefined,
+                        sessionLoad: async () => {
+                            const session = await sessionUpsert(
+                                db,
+                                log,
+                                existingSessionId,
+                                request.headers.get('user-agent'),
+                                clientIpFromRequest(request),
+                                request.headers.get('referer'),
+                                request.headers.get('x-landing-path'),
+                            );
+                            sessionCookie = sessionUtils.createSetSessionCookie(environmentVariables.sessionCookie, session);
+                            return session;
+                        },
                     });
 
                     return new Response(JSON.stringify(result), {

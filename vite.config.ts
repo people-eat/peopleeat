@@ -94,8 +94,13 @@ const config = defineConfig({
     // production nitro bundle (rollup external) — the runtime image
     // installs it as a real `node_modules` dependency. See
     // `docs/architecture/browser-capture.md`.
+    //
+    // `pg` / `pg-pool` must also stay external so `@opentelemetry/instrumentation-pg`
+    // can patch `Client.prototype.query` at runtime. Nitro would otherwise inline
+    // them into the drizzle chunk and SQL child spans never appear under GraphQL.
+    // See `docs/architecture/observability.md`.
     optimizeDeps: {
-        exclude: ['playwright', 'playwright-core'],
+        exclude: ['playwright', 'playwright-core', 'pg', 'pg-pool'],
     },
     plugins: [
         apiSecFetchDestStrip(),
@@ -107,7 +112,7 @@ const config = defineConfig({
             // See [architecture/observability.md](docs/architecture/observability.md#client-connection-aborts).
             plugins: ['./src/server/nitro/clientConnectionAbortPlugin.ts'],
             rollupConfig: {
-                external: ['playwright', 'playwright-core'],
+                external: ['playwright', 'playwright-core', 'pg', 'pg-pool'],
                 // Nitro's server rollup does not always see root Vite plugins
                 // for vendored chunks — register the polyfill transform here
                 // too. See [architecture/authentication.md](docs/architecture/authentication.md#passkeys-webauthn).

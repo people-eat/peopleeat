@@ -118,6 +118,7 @@ export function observabilityStart(environmentVariablesValue: EnvironmentVariabl
             new PgInstrumentation({
                 enhancedDatabaseReporting: true,
                 addSqlCommenterCommentToQueries: false,
+                ignoreConnectSpans: true,
             }),
         ],
     });

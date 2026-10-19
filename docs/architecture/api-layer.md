@@ -37,11 +37,11 @@ scalar name (e.g. `$email: EmailAddress!`), not `String!` / `Float!`.
 
 Apollo Server is set up in `src/server/graphql/server.ts` with two execution paths:
 
-- `executeGraphQLQuery()` — for queries and mutations (via Apollo's `executeOperation`)
+- `graphqlHttpQueryRun()` — for queries and mutations (session load + Apollo `executeOperation` under one OTel span; used by `/api/graphql`)
 - `executeGraphQLSubscription()` — for subscriptions (via GraphQL's `subscribe()` directly, bypassing Apollo since Apollo Server does not
   handle subscriptions natively)
 
-Startup is lazy: `executeGraphQLQuery()` awaits `ensureServerStarted()`, which calls `graphqlServer.start()` and `ensureJobsStarted()` once.
+Startup is lazy: `graphqlHttpQueryRun()` awaits `ensureServerStarted()`, which calls `graphqlServer.start()` and `ensureJobsStarted()` once.
 Concurrent callers share a single in-flight promise so Apollo's "start only once" rule is not violated under parallel cold-start requests.
 
 The schema is built with `@graphql-tools/schema` (`makeExecutableSchema`) combining the SDL and resolvers from `resolversCreate()`. The SDL
