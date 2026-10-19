@@ -20,11 +20,11 @@ neither is useful in the image, and Playwright's postinstall would try to fetch 
 instead of re-downloading the whole tree. `.dockerignore` keeps tests, docs, editor config, and similar out of the build context so
 `COPY . .` in the build stage stays small.
 
-**`playwright` is the one runtime dependency that cannot be inlined into the nitro bundle** (Chromium-bidi loads via paths Vite cannot
-statically resolve, so `vite.config.ts` declares it `external`). The runtime stage therefore does **not** run `npm ci --omit=dev` on the
-full tree — that would extract hundreds of packages the container never imports. It rewrites `package.json` to pin `playwright` to the
-lockfile version and runs `npm install --omit=dev`. `npm ci` cannot be used after rewriting `package.json` (the lockfile would no longer
-match).
+**Runtime `node_modules` is a small allowlist** (not a full `npm ci --omit=dev`): `playwright` (Chromium-bidi cannot be inlined), `pg` /
+`pg-pool` (Nitro-external so OTel can patch queries), and `@opentelemetry/api` + `@opentelemetry/instrumentation` + `instrumentation-http` +
+`instrumentation-pg` for the `--import` preload in [`ops/observability/register.mjs`](../ops/observability/register.mjs). The runtime stage
+rewrites `package.json` to those lockfile-pinned versions and runs `npm install --omit=dev`. `npm ci` cannot be used after rewriting
+`package.json` (the lockfile would no longer match). See [architecture/observability.md](./architecture/observability.md).
 
 The runtime stage then runs `npx playwright install-deps chromium` and `npx playwright install chromium` to add the system libraries
 Chromium needs (fonts, libnss, libatk, ...) and download the matching Chromium build. Chromium is installed into a BuildKit cache mount
@@ -45,7 +45,8 @@ The `tanstackStart()` Vite plugin alone emits only a fetch-handler module (`expo
 module has no top-level side effects — running it under Node imports the file and exits with code 0 without ever opening a port. To produce
 a real Node entrypoint, `vite.config.ts` adds the `nitro/vite` plugin alongside `tanstackStart()`. Nitro wraps the fetch handler in a
 `node:http` listener that reads `PORT` and `HOST` from the environment, and emits a self-contained bundle at `.output/server/index.mjs` with
-its runtime dependencies inlined. This is the file the Dockerfile launches in production. A Nitro runtime plugin
+its runtime dependencies inlined. Production launches that file **after** the OTel preload:
+`node --import ./ops/observability/register.mjs .output/server/index.mjs`. A Nitro runtime plugin
 (`src/server/nitro/clientConnectionAbortPlugin.ts`) treats client disconnects (`ECONNRESET` / `aborted`) as expected so they do not flood
 Coolify logs — see [architecture/observability.md](./architecture/observability.md#client-connection-aborts).
 
@@ -65,9 +66,9 @@ nitro) ignores those headers unless `trustProxy` is enabled, so `Request.url` re
 (notably the SSR → `/api/graphql` hop in `routeLoaderGraphqlClient`) must not rely on it — see
 [architecture/api-layer.md](./architecture/api-layer.md#session--cookie-handover).
 
-Nitro inlines most application runtime deps (`react`, `@tanstack/react-router`, `pg`, etc.) into `.output/`. The Docker **runtime stage
-still keeps `package.json` / `node_modules`** because Playwright (Chromium) must resolve as a real package on disk — see the Dockerfile
-notes above. Do not describe the image as "`.output` only."
+Nitro inlines most application runtime deps (`react`, `@tanstack/react-router`, etc.) into `.output/`, but keeps `pg` / `pg-pool` and
+`playwright` external. The Docker **runtime stage still keeps `package.json` / `node_modules`** for those packages plus the OTel
+instrumentation preload — see the Dockerfile notes above. Do not describe the image as "`.output` only."
 
 ```bash
 docker build -t app .
@@ -388,7 +389,7 @@ DATABASE_URL=<env-url> npx drizzle-kit migrate
 
 # Option B: Run on container start (entrypoint script)
 #!/bin/sh
-npx drizzle-kit migrate && node .output/server/index.mjs
+npx drizzle-kit migrate && node --import ./ops/observability/register.mjs .output/server/index.mjs
 ```
 
 Option A is safer — if the migration fails, the old container keeps running.

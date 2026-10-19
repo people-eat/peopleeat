@@ -34,11 +34,12 @@ ENV BUILD_SHA=$BUILD_SHA
 # changes. See `docs/architecture/browser-capture.md`.
 #
 # Nitro inlines the rest of the app. The runtime `node_modules` only needs
-# playwright (chromium-bidi loads via paths Vite cannot statically resolve)
-# and `pg` (so `@opentelemetry/instrumentation-pg` can patch the real module;
-# Nitro must keep `pg` / `pg-pool` external). Installing the full production
-# tree with `npm ci --omit=dev` would extract hundreds of packages the
-# container never imports.
+# playwright (chromium-bidi loads via paths Vite cannot statically resolve),
+# `pg` (Nitro-external; patched by PgInstrumentation), and the small OTel
+# instrumentation packages used by `ops/observability/register.mjs` (Node
+# `--import` preload — must run before the app loads `pg`). Installing the
+# full production tree with `npm ci --omit=dev` would extract hundreds of
+# packages the container never imports.
 #
 # The Debian-based `node:24-slim` base is required — Chromium's prebuilt
 # binaries are linked against glibc and will not run on Alpine.
@@ -53,21 +54,30 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 COPY package.json package-lock.json ./
 RUN npm install -g "npm@$(node -p "require('./package.json').packageManager.split('@')[1]")"
-# Pin playwright + pg to lockfile versions, drop the rest of the tree, and
-# install. `npm ci` cannot be used after rewriting package.json (the
-# lockfile would no longer match). `pg-pool` installs transitively with `pg`.
+# Pin playwright, pg, and OTel instrumentation packages to lockfile versions,
+# drop the rest of the tree, and install. `npm ci` cannot be used after
+# rewriting package.json (the lockfile would no longer match). `pg-pool`
+# installs transitively with `pg`.
 RUN --mount=type=cache,target=/root/.npm \
     node --input-type=commonjs -e "\
 const { readFileSync, writeFileSync, unlinkSync } = require('node:fs');\
 const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'));\
-const playwright = lock.packages['node_modules/playwright']?.version;\
-const pg = lock.packages['node_modules/pg']?.version;\
-if (!playwright) throw new Error('lockfile missing playwright');\
-if (!pg) throw new Error('lockfile missing pg');\
+const ver = (name) => {\
+  const v = lock.packages['node_modules/' + name]?.version;\
+  if (!v) throw new Error('lockfile missing ' + name);\
+  return v;\
+};\
 writeFileSync('package.json', JSON.stringify({\
   name: 'runtime',\
   private: true,\
-  dependencies: { playwright, pg },\
+  dependencies: {\
+    playwright: ver('playwright'),\
+    pg: ver('pg'),\
+    '@opentelemetry/api': ver('@opentelemetry/api'),\
+    '@opentelemetry/instrumentation': ver('@opentelemetry/instrumentation'),\
+    '@opentelemetry/instrumentation-http': ver('@opentelemetry/instrumentation-http'),\
+    '@opentelemetry/instrumentation-pg': ver('@opentelemetry/instrumentation-pg'),\
+  },\
 }, null, 2));\
 unlinkSync('package-lock.json');\
 " \
@@ -85,6 +95,8 @@ RUN --mount=type=cache,id=playwright-chromium,target=/opt/playwright-cache \
     && chmod -R a+rX /ms-playwright
 
 COPY --from=build --chown=node:node /app/.output ./.output
+# OTel `--import` preload (must run before `.output/server/index.mjs` loads `pg`).
+COPY --chown=node:node ops/observability/register.mjs ./ops/observability/register.mjs
 
 USER node
 
@@ -93,4 +105,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://localhost:'+(process.env.PORT||3000)+'/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"
 
-CMD ["node", ".output/server/index.mjs"]
+CMD ["node", "--import", "./ops/observability/register.mjs", ".output/server/index.mjs"]

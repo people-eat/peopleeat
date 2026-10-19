@@ -14,6 +14,7 @@ import { registerTelemetry } from 'ai';
 
 import type { EnvironmentVariables } from '../env/EnvironmentVariables';
 import { environmentVariables } from '../env/environmentVariablesCreate';
+import { otelInstrumentationsAlreadyRegistered, otelInstrumentationsMarkRegistered } from './otelInstrumentationsRegistered';
 
 let started = false;
 
@@ -105,25 +106,36 @@ export function observabilityStart(environmentVariablesValue: EnvironmentVariabl
         spanProcessors.push(new SimpleSpanProcessor(new ConsoleSpanExporter()));
     }
 
+    // Prefer `ops/observability/register.mjs` via Node `--import` so PgInstrumentation
+    // patches `pg` before the app imports it. Fall back to registering here for
+    // processes that skip the preload (e.g. some tests) — too late for SQL children
+    // if `pg` was already loaded.
+    const instrumentations = otelInstrumentationsAlreadyRegistered()
+        ? []
+        : [
+              new HttpInstrumentation({
+                  ignoreIncomingRequestHook: (request) => {
+                      const url = request.url ?? '';
+                      return url.includes('/api/health');
+                  },
+              }),
+              new PgInstrumentation({
+                  enhancedDatabaseReporting: true,
+                  addSqlCommenterCommentToQueries: false,
+                  ignoreConnectSpans: true,
+              }),
+          ];
+
     const sdk = new NodeSDK({
         resource,
         spanProcessors,
-        instrumentations: [
-            new HttpInstrumentation({
-                ignoreIncomingRequestHook: (request) => {
-                    const url = request.url ?? '';
-                    return url.includes('/api/health');
-                },
-            }),
-            new PgInstrumentation({
-                enhancedDatabaseReporting: true,
-                addSqlCommenterCommentToQueries: false,
-                ignoreConnectSpans: true,
-            }),
-        ],
+        instrumentations,
     });
 
     sdk.start();
+    if (instrumentations.length > 0) {
+        otelInstrumentationsMarkRegistered();
+    }
 
     if (langfuseEnabled || otlpEnabled) {
         registerTelemetry(new LangfuseVercelAiSdkIntegration());

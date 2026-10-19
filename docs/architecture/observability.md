@@ -74,25 +74,38 @@ See [infrastructure.md](../infrastructure.md). Self-host on Coolify: [Self-hosti
 
 ### Boot
 
-[`src/server/observability/observabilityStart.ts`](../../src/server/observability/observabilityStart.ts) runs once from
-[`src/server/graphql/server.ts`](../../src/server/graphql/server.ts) before Apollo / jobs start:
+Two steps, in order:
 
-1. Builds OTel `NodeSDK` span processors (Langfuse and/or OTLP and/or console)
-2. Registers `PgInstrumentation` (`enhancedDatabaseReporting`, `ignoreConnectSpans`) + `HttpInstrumentation`
-3. Registers AI SDK 7 `LangfuseVercelAiSdkIntegration` when Langfuse or OTLP is on (so LLM spans exist for either exporter)
-4. Starts a metrics `MeterProvider` with OTLP export when `OTEL_TRANSPORT=otlp`
+1. **Preload instrumentations** — Node `--import ./ops/observability/register.mjs` runs
+   [`ops/observability/register.mjs`](../../ops/observability/register.mjs) **before** any application module. It calls
+   `registerInstrumentations` for `PgInstrumentation` + `HttpInstrumentation` when `OTEL_TRANSPORT` or `LANGFUSE_TRANSPORT` is not `off`.
+   This is required so `pg` is patched before the app imports it.
+2. **Start exporters** — [`observabilityStart()`](../../src/server/observability/observabilityStart.ts) runs once from
+   [`server.ts`](../../src/server/graphql/server.ts) (after static imports). It builds OTel `NodeSDK` span processors (Langfuse and/or OTLP
+   and/or console), registers AI SDK 7 `LangfuseVercelAiSdkIntegration` when Langfuse or OTLP is on, and starts a metrics `MeterProvider`
+   when `OTEL_TRANSPORT=otlp`. It does **not** re-register Pg/HTTP instrumentations if the preload already did (see
+   `otelInstrumentationsRegistered.ts`).
 
-### External `pg` (required for SQL child spans)
+Wiring:
 
-`@opentelemetry/instrumentation-pg` patches the real `node_modules/pg` / `pg-pool` modules. Nitro would otherwise **inline** them into the
-drizzle chunk, and Tempo GraphQL traces would show only the root `graphql {operation}` span with no `pg.query:*` children.
+| Environment | How `--import` is applied                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| Production  | Dockerfile `CMD`: `node --import ./ops/observability/register.mjs .output/server/index.mjs` |
+| Local dev   | `npm run dev` → `node --import ./ops/observability/register.mjs …/vite.js dev`              |
 
-Same pattern as Playwright ([browser-capture.md](./browser-capture.md)):
+Calling `observabilityStart()` alone (no preload) is too late: `serverRuntimeCreate` → `db` → `pg` already loaded via static imports.
 
-1. [`vite.config.ts`](../../vite.config.ts) — `optimizeDeps.exclude` and `nitro.rollupConfig.external` include `pg` and `pg-pool`
-2. [`Dockerfile`](../../Dockerfile) runtime stage — installs lockfile-pinned `pg` next to `playwright` (`pg-pool` comes transitively)
+### External `pg` + preload (required for SQL child spans)
 
-Without both, production waterfalls cannot answer “where did this request’s time go?”
+`@opentelemetry/instrumentation-pg` patches the real `node_modules/pg` / `pg-pool` modules. Three pieces must all be true:
+
+1. [`vite.config.ts`](../../vite.config.ts) — `optimizeDeps.exclude` and `nitro.rollupConfig.external` include `pg` and `pg-pool` (Nitro
+   would otherwise inline them into the drizzle chunk)
+2. [`Dockerfile`](../../Dockerfile) runtime — installs lockfile-pinned `pg` next to `playwright`, plus `@opentelemetry/api` /
+   `@opentelemetry/instrumentation` / `instrumentation-http` / `instrumentation-pg` for the preload
+3. Node `--import` preload above — registers instrumentations before the app loads
+
+Without all three, Tempo GraphQL traces show only the root `graphql {operation}` span with no `pg.query:*` children.
 
 ### AI instrumentation
 
@@ -152,8 +165,8 @@ Grafana Explore: Tempo filter `ingress.provider` or span name `ingress stripe`; 
 4. For **aggregate** “which SQL is expensive globally?”, use `pg_stat_statements` (admin `/admin/database-slow-statements` or the SQL below)
    — that is not per-request attribution.
 
-If a GraphQL span has **no** `pg.query:*` children in production, check that `pg` is still Nitro-external and present in the runtime image
-([External `pg`](#external-pg-required-for-sql-child-spans)).
+If a GraphQL span has **no** `pg.query:*` children in production, check the three requirements in
+[External `pg` + preload](#external-pg--preload-required-for-sql-child-spans) (external `pg`, runtime packages, and `--import` preload).
 
 ### Slack ops alert
 
@@ -300,7 +313,9 @@ Then open `/admin/database-slow-statements`, use GraphQL `databaseSlowStatements
 
 ## Key files
 
-- `src/server/observability/observabilityStart.ts` — OTel + Langfuse boot (`PgInstrumentation`, HTTP, exporters)
+- `ops/observability/register.mjs` — Node `--import` preload (Pg/HTTP instrumentations before app load)
+- `src/server/observability/observabilityStart.ts` — OTel + Langfuse exporters / meters (idempotent instrumentations)
+- `src/server/observability/otelInstrumentationsRegistered.ts` — preload ↔ app handoff flag
 - `src/server/graphql/server.ts` — `graphqlHttpQueryRun` / subscription spans
 - `src/routes/api/graphql.ts` — HTTP entry; session upsert inside the GraphQL span
 - `src/server/observability/aiTelemetry.ts` — AI SDK telemetry helpers
