@@ -1,5 +1,7 @@
 import { createClient as createSSEClient } from 'graphql-sse';
-import { createClient, fetchExchange, subscriptionExchange } from 'urql';
+import { createClient, errorExchange, fetchExchange, subscriptionExchange } from 'urql';
+
+import { clientObservabilityGraphqlErrorReport, clientObservabilityIsReportOperation } from '../observability/clientObservability';
 
 // URQL ships with a GET-with-query-params default for queries, which trips up
 // proxies that cap URL length and complicates request logging. We force every
@@ -15,6 +17,7 @@ const urqlPostFetch: typeof fetch = async (url, options) => {
     if (isGetWithQueryParams) {
         const query = urlObj.searchParams.get('query');
         const variables = urlObj.searchParams.get('variables');
+        const operationName = urlObj.searchParams.get('operationName');
 
         return fetch(urlObj.pathname, {
             ...options,
@@ -26,6 +29,7 @@ const urqlPostFetch: typeof fetch = async (url, options) => {
             body: JSON.stringify({
                 query,
                 variables: variables ? JSON.parse(variables) : undefined,
+                ...(operationName ? { operationName } : {}),
             }),
             credentials: options?.credentials || 'same-origin',
         });
@@ -49,6 +53,17 @@ const sseClient = createSSEClient({
     credentials: 'same-origin',
 });
 
+const clientErrorExchange = errorExchange({
+    onError(error, operation) {
+        const operationName = operation.query.definitions.find((definition) => definition.kind === 'OperationDefinition')?.name?.value;
+        if (clientObservabilityIsReportOperation(operationName)) {
+            return;
+        }
+        const message = error.graphQLErrors[0]?.message ?? error.networkError?.message ?? error.message;
+        clientObservabilityGraphqlErrorReport(operationName, message);
+    },
+});
+
 export const urqlClient = createClient({
     url: '/api/graphql',
     fetch: urqlPostFetch,
@@ -59,6 +74,7 @@ export const urqlClient = createClient({
     preferGetMethod: false,
     requestPolicy: 'cache-first',
     exchanges: [
+        clientErrorExchange,
         fetchExchange,
         subscriptionExchange({
             forwardSubscription: (operation) => {
@@ -88,5 +104,5 @@ export const urqlClientSimple = createClient({
     },
     preferGetMethod: false,
     requestPolicy: 'network-only',
-    exchanges: [fetchExchange],
+    exchanges: [clientErrorExchange, fetchExchange],
 });

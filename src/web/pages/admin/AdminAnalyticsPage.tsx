@@ -57,8 +57,8 @@ function AdminAnalyticsSankeyNode({
 
 export const adminAnalyticsPageTitle = { de: 'Analysen', en: 'Analytics' } as const;
 export const adminAnalyticsPageDescription = {
-    de: 'Buchungsformular-Funnel, Koch-Angebots-Funnel und Seitenbesuche.',
-    en: 'Booking form funnel, cook offer funnel, and page visits.',
+    de: 'Buchungsformular-, Geschenkkarten- und Koch-Funnels sowie Seitenbesuche.',
+    en: 'Booking form, gift card, and chef funnels, plus page visits.',
 } as const;
 
 export function adminAnalyticsPageVariables(search: AdminOverviewRangeSearch = {}) {
@@ -131,6 +131,8 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
     const range = adminOverviewRangeResolve(search);
     const admin = data.currentSession.user?.admin;
     const flow = admin?.bookingRequestFormFlow;
+    const giftCardFlow = admin?.giftCardFlow;
+    const chefSignUpFlow = admin?.chefSignUpFlow;
     const cookOfferFlow = admin?.cookBookingRequestOfferFlow;
     const formVisits = admin?.formVisits ?? [];
     const landingVisits = admin?.landingVisits ?? [];
@@ -176,7 +178,18 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
     }
 
     const sankeyData = sankeyFromFlow(flow, locale);
+    const giftCardSankeyData = sankeyFromFlow(giftCardFlow, locale);
+    const chefSignUpSankeyData = sankeyFromFlow(chefSignUpFlow, locale);
     const cookSankeyData = sankeyFromFlow(cookOfferFlow, locale);
+
+    const giftCardSteps = giftCardFlow?.steps ?? [];
+    const giftCardStepsWithActivity = giftCardSteps.filter((step) => step.enteredCount > 0 || step.completedCount > 0);
+    const showGiftCardReachedColumn = giftCardStepsWithActivity.some(
+        (step) => step.enteredCount > 0 && step.id !== 'created' && step.id !== 'paid',
+    );
+    const chefSignUpSteps = chefSignUpFlow?.steps ?? [];
+    const chefSignUpStepsWithActivity = chefSignUpSteps.filter((step) => step.enteredCount > 0 || step.completedCount > 0);
+    const showChefSignUpReachedColumn = chefSignUpStepsWithActivity.some((step) => step.enteredCount > 0 && step.id !== 'created');
 
     const sankeyEmptyCopy = (() => {
         if (hasStepActivity && flow && flow.nodes.length > 0 && flow.links.length === 0) {
@@ -342,6 +355,205 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                         </Card>
                     ) : (
                         <p className="text-sm text-muted-foreground">{sankeyEmptyCopy}</p>
+                    )}
+                </section>
+
+                <section className="grid gap-3">
+                    <h2 className="font-serif text-2xl text-foreground">
+                        {{ de: 'Geschenkkarten-Funnel', en: 'Gift card funnel' }[locale]}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Menschliche Nicht-Admin-/Nicht-Koch-Sitzungen. Ende = Geschenkkarte bezahlt.',
+                                en: 'Human non-admin/non-cook sessions. End = gift card paid.',
+                            }[locale]
+                        }
+                    </p>
+                    <dl className="grid gap-3 sm:grid-cols-2">
+                        <AdminOverviewStatCard
+                            label={{ de: 'Sitzungen mit Abschluss', en: 'Sessions with completion' }[locale]}
+                            value={giftCardFlow?.sessionsWithCompletion ?? 0}
+                        />
+                        <AdminOverviewStatCard label={{ de: 'Bezahlt', en: 'Paid' }[locale]} value={giftCardFlow?.terminalCount ?? 0} />
+                    </dl>
+                    {giftCardStepsWithActivity.length > 0 ? (
+                        <Card>
+                            <CardContent className="pt-4">
+                                <Table aria-label={{ de: 'Geschenkkarten-Schritte', en: 'Gift card steps' }[locale]}>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>{{ de: 'Schritt', en: 'Step' }[locale]}</TableHead>
+                                            {showGiftCardReachedColumn ? (
+                                                <TableHead className="text-right">{{ de: 'Erreicht', en: 'Reached' }[locale]}</TableHead>
+                                            ) : null}
+                                            <TableHead className="text-right">{{ de: 'Abgeschlossen', en: 'Completed' }[locale]}</TableHead>
+                                            <TableHead className="text-right">{{ de: 'Abfall %', en: 'Drop-off %' }[locale]}</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {giftCardStepsWithActivity.map((step, index) => {
+                                            const previous = giftCardStepsWithActivity[index - 1];
+                                            const dropOff =
+                                                previous == null ? null : dropOffPercent(previous.completedCount, step.completedCount);
+                                            return (
+                                                <TableRow key={step.id}>
+                                                    <TableCell className="font-medium">
+                                                        {locale === 'de' ? step.labelDe : step.labelEn}
+                                                    </TableCell>
+                                                    {showGiftCardReachedColumn ? (
+                                                        <TableCell className="text-right tabular-nums">
+                                                            {step.id === 'created' || step.id === 'paid' ? '-' : step.enteredCount}
+                                                        </TableCell>
+                                                    ) : null}
+                                                    <TableCell className="text-right tabular-nums">{step.completedCount}</TableCell>
+                                                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                                                        {dropOff == null ? '-' : `${dropOff}%`}
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    ) : null}
+                    {giftCardSankeyData ? (
+                        <Card>
+                            <CardContent className="pt-4">
+                                <div
+                                    className="w-full"
+                                    style={{ height: SANKEY_HEIGHT }}
+                                    aria-label={{ de: 'Geschenkkarten Sankey', en: 'Gift card Sankey' }[locale]}
+                                >
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height={SANKEY_HEIGHT}
+                                        initialDimension={{ width: 640, height: SANKEY_HEIGHT }}
+                                    >
+                                        <Sankey
+                                            data={giftCardSankeyData}
+                                            nodePadding={24}
+                                            margin={{ top: 12, right: 160, bottom: 12, left: 12 }}
+                                            link={{ stroke: 'var(--foreground)', strokeOpacity: 0.2 }}
+                                            node={AdminAnalyticsSankeyNode}
+                                        >
+                                            <Tooltip />
+                                        </Sankey>
+                                    </ResponsiveContainer>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            {
+                                {
+                                    de: 'Keine Geschenkkarten-Funnel-Daten im gewählten Zeitraum.',
+                                    en: 'No gift card funnel data in the selected range.',
+                                }[locale]
+                            }
+                        </p>
+                    )}
+                </section>
+
+                <section className="grid gap-3">
+                    <h2 className="font-serif text-2xl text-foreground">
+                        {{ de: 'Koch-Registrierungs-Funnel', en: 'Chef sign-up funnel' }[locale]}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Menschliche Nicht-Admin-Sitzungen (Köche eingeschlossen). Ende = Koch-Konto erstellt.',
+                                en: 'Human non-admin sessions (cooks included). End = chef account created.',
+                            }[locale]
+                        }
+                    </p>
+                    <dl className="grid gap-3 sm:grid-cols-2">
+                        <AdminOverviewStatCard
+                            label={{ de: 'Sitzungen mit Abschluss', en: 'Sessions with completion' }[locale]}
+                            value={chefSignUpFlow?.sessionsWithCompletion ?? 0}
+                        />
+                        <AdminOverviewStatCard
+                            label={{ de: 'Koch-Konten erstellt', en: 'Chef accounts created' }[locale]}
+                            value={chefSignUpFlow?.terminalCount ?? 0}
+                        />
+                    </dl>
+                    {chefSignUpStepsWithActivity.length > 0 ? (
+                        <Card>
+                            <CardContent className="pt-4">
+                                <Table aria-label={{ de: 'Koch-Registrierungs-Schritte', en: 'Chef sign-up steps' }[locale]}>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>{{ de: 'Schritt', en: 'Step' }[locale]}</TableHead>
+                                            {showChefSignUpReachedColumn ? (
+                                                <TableHead className="text-right">{{ de: 'Erreicht', en: 'Reached' }[locale]}</TableHead>
+                                            ) : null}
+                                            <TableHead className="text-right">{{ de: 'Abgeschlossen', en: 'Completed' }[locale]}</TableHead>
+                                            <TableHead className="text-right">{{ de: 'Abfall %', en: 'Drop-off %' }[locale]}</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {chefSignUpStepsWithActivity.map((step, index) => {
+                                            const previous = chefSignUpStepsWithActivity[index - 1];
+                                            const dropOff =
+                                                previous == null ? null : dropOffPercent(previous.completedCount, step.completedCount);
+                                            return (
+                                                <TableRow key={step.id}>
+                                                    <TableCell className="font-medium">
+                                                        {locale === 'de' ? step.labelDe : step.labelEn}
+                                                    </TableCell>
+                                                    {showChefSignUpReachedColumn ? (
+                                                        <TableCell className="text-right tabular-nums">
+                                                            {step.id === 'created' ? '-' : step.enteredCount}
+                                                        </TableCell>
+                                                    ) : null}
+                                                    <TableCell className="text-right tabular-nums">{step.completedCount}</TableCell>
+                                                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                                                        {dropOff == null ? '-' : `${dropOff}%`}
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    ) : null}
+                    {chefSignUpSankeyData ? (
+                        <Card>
+                            <CardContent className="pt-4">
+                                <div
+                                    className="w-full"
+                                    style={{ height: SANKEY_HEIGHT }}
+                                    aria-label={{ de: 'Koch-Registrierung Sankey', en: 'Chef sign-up Sankey' }[locale]}
+                                >
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height={SANKEY_HEIGHT}
+                                        initialDimension={{ width: 640, height: SANKEY_HEIGHT }}
+                                    >
+                                        <Sankey
+                                            data={chefSignUpSankeyData}
+                                            nodePadding={24}
+                                            margin={{ top: 12, right: 160, bottom: 12, left: 12 }}
+                                            link={{ stroke: 'var(--foreground)', strokeOpacity: 0.2 }}
+                                            node={AdminAnalyticsSankeyNode}
+                                        >
+                                            <Tooltip />
+                                        </Sankey>
+                                    </ResponsiveContainer>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            {
+                                {
+                                    de: 'Keine Koch-Registrierungs-Funnel-Daten im gewählten Zeitraum.',
+                                    en: 'No chef sign-up funnel data in the selected range.',
+                                }[locale]
+                            }
+                        </p>
                     )}
                 </section>
 

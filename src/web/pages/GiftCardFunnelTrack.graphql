@@ -1,0 +1,6 @@
+mutation GiftCardFunnelTrack($input: SessionWebPageInteractionCreateInput!) {
+    sessionWebPageInteractionCreate(input: $input) {
+        success
+        referenceId
+    }
+}

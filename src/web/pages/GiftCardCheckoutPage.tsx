@@ -1,15 +1,16 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { formatCurrency, formatDate, userDisplayName } from '../../shared';
+import { giftCardFunnelArea } from '../../shared/giftCardFunnel';
 import { Button } from '../components/base/button';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import type { GqlCGiftCardCheckoutPageQuery, GqlCInvoiceAddressInput } from '../graphql/generated';
-import { GiftCardCheckoutPayDocument, GiftCardCheckoutSessionUpdatesDocument } from '../graphql/generated';
+import { GiftCardCheckoutPayDocument, GiftCardCheckoutSessionUpdatesDocument, GiftCardFunnelTrackDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 
@@ -51,6 +52,24 @@ export function GiftCardCheckoutPage({
     const [invoiceAddress, setInvoiceAddress] = useState<GqlCInvoiceAddressInput>(invoiceAddressEmpty());
 
     const [, giftCardPay] = useMutation(GiftCardCheckoutPayDocument);
+    const [, trackFunnelInteraction] = useMutation(GiftCardFunnelTrackDocument);
+    const checkoutEnteredRef = useRef(false);
+
+    const trackCheckoutEntered = useEffectEvent(() => {
+        if (checkoutEnteredRef.current) return;
+        checkoutEnteredRef.current = true;
+        void trackFunnelInteraction({
+            input: {
+                webPageKey: 'GIFT_CARD',
+                area: giftCardFunnelArea,
+                interaction: { type: 'step_entered', step: 'checkout' },
+            },
+        });
+    });
+
+    useEffect(() => {
+        trackCheckoutEntered();
+    }, []);
 
     useEffect(() => {
         const request = createRequest(GiftCardCheckoutSessionUpdatesDocument, {});

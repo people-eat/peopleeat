@@ -1,5 +1,7 @@
 import { bookingRequestFormFunnelArea } from '../../shared/bookingRequestFormFunnel';
+import { chefSignUpFunnelArea } from '../../shared/chefSignUpFunnel';
 import { cookBookingRequestOfferFunnelArea } from '../../shared/cookBookingRequestOfferFunnel';
+import { giftCardFunnelArea } from '../../shared/giftCardFunnel';
 import type { SessionEvent } from '../db/schema';
 import type { SessionEventKey, SessionEventPayload } from '../domain/sessionEvent';
 import { isSessionEventKey } from '../domain/sessionEvent';
@@ -10,6 +12,9 @@ const STATIC_DESCRIPTIONS = {
     WEB_PAGE_INTERACTION: { de: 'Seiteninteraktion', en: 'Page interaction' },
     BOOKING_REQUEST_CREATED: { de: 'Buchungsanfrage erstellt', en: 'Booking request created' },
     BOOKING_REQUEST_CANCELED: { de: 'Buchungsanfrage storniert', en: 'Booking request canceled' },
+    GIFT_CARD_CREATED: { de: 'Geschenkkarte erstellt', en: 'Gift card created' },
+    GIFT_CARD_PAYED: { de: 'Geschenkkarte bezahlt', en: 'Gift card paid' },
+    COOK_CREATED: { de: 'Koch-Konto erstellt', en: 'Chef account created' },
     USER_CREATE_SUCCESSFUL: { de: 'Konto erstellt', en: 'Account created' },
     USER_CREATE_FAILED: { de: 'Kontoerstellung fehlgeschlagen', en: 'Account creation failed' },
     USER_CREATE_USER_WITH_EMAIL_ADDRESS_ALREADY_EXISTS: {
@@ -101,15 +106,26 @@ function interactionDescription(payload: SessionEventPayload<'WEB_PAGE_INTERACTI
     const interaction = payload.interaction;
     if (interaction.type === 'step_entered' || interaction.type === 'step_completed') {
         const isCookOfferFunnel = payload.area === cookBookingRequestOfferFunnelArea;
+        const isGiftCardFunnel = payload.area === giftCardFunnelArea;
+        const isChefSignUpFunnel = payload.area === chefSignUpFunnelArea;
         const verb =
             interaction.type === 'step_entered'
                 ? isCookOfferFunnel
                     ? { de: 'Angebots-Funnel-Schritt betreten', en: 'Entered offer funnel step' }
-                    : { de: 'Formularschritt betreten', en: 'Entered form step' }
+                    : isGiftCardFunnel
+                      ? { de: 'Geschenkkarten-Schritt betreten', en: 'Entered gift card step' }
+                      : isChefSignUpFunnel
+                        ? { de: 'Koch-Registrierungs-Schritt betreten', en: 'Entered chef sign-up step' }
+                        : { de: 'Formularschritt betreten', en: 'Entered form step' }
                 : isCookOfferFunnel
                   ? { de: 'Angebots-Funnel-Schritt abgeschlossen', en: 'Completed offer funnel step' }
-                  : { de: 'Formularschritt abgeschlossen', en: 'Completed form step' };
-        const knownFunnelArea = payload.area === bookingRequestFormFunnelArea || isCookOfferFunnel;
+                  : isGiftCardFunnel
+                    ? { de: 'Geschenkkarten-Schritt abgeschlossen', en: 'Completed gift card step' }
+                    : isChefSignUpFunnel
+                      ? { de: 'Koch-Registrierungs-Schritt abgeschlossen', en: 'Completed chef sign-up step' }
+                      : { de: 'Formularschritt abgeschlossen', en: 'Completed form step' };
+        const knownFunnelArea =
+            payload.area === bookingRequestFormFunnelArea || isCookOfferFunnel || isGiftCardFunnel || isChefSignUpFunnel;
         const areaNote = knownFunnelArea ? '' : ` [${payload.area}]`;
         const requestNote = isCookOfferFunnel && payload.bookingRequestId != null ? ` (${payload.bookingRequestId})` : '';
         return {
@@ -150,6 +166,30 @@ function bookingCanceledDescription(payload: SessionEventPayload<'BOOKING_REQUES
         de: `Buchungsanfrage storniert (${payload.bookingRequestId})`,
         en: `Booking request canceled (${payload.bookingRequestId})`,
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
+    };
+}
+
+function giftCardCreatedDescription(payload: SessionEventPayload<'GIFT_CARD_CREATED'>): {
+    de: string;
+    en: string;
+    link: string;
+} {
+    return {
+        de: `Geschenkkarte erstellt (${payload.giftCardId})`,
+        en: `Gift card created (${payload.giftCardId})`,
+        link: `/admin/gift-cards/${payload.giftCardId}`,
+    };
+}
+
+function giftCardPayedDescription(payload: SessionEventPayload<'GIFT_CARD_PAYED'>): {
+    de: string;
+    en: string;
+    link: string;
+} {
+    return {
+        de: `Geschenkkarte bezahlt (${payload.giftCardId})`,
+        en: `Gift card paid (${payload.giftCardId})`,
+        link: `/admin/gift-cards/${payload.giftCardId}`,
     };
 }
 
@@ -218,6 +258,20 @@ export function toGqlAdminSessionEvent(event: SessionEvent): GqlSAdminSessionEve
             }
             case 'BOOKING_REQUEST_CANCELED': {
                 const copy = bookingCanceledDescription(event.payload as SessionEventPayload<'BOOKING_REQUEST_CANCELED'>);
+                descriptionDe = copy.de;
+                descriptionEn = copy.en;
+                link = copy.link;
+                break;
+            }
+            case 'GIFT_CARD_CREATED': {
+                const copy = giftCardCreatedDescription(event.payload as SessionEventPayload<'GIFT_CARD_CREATED'>);
+                descriptionDe = copy.de;
+                descriptionEn = copy.en;
+                link = copy.link;
+                break;
+            }
+            case 'GIFT_CARD_PAYED': {
+                const copy = giftCardPayedDescription(event.payload as SessionEventPayload<'GIFT_CARD_PAYED'>);
                 descriptionDe = copy.de;
                 descriptionEn = copy.en;
                 link = copy.link;

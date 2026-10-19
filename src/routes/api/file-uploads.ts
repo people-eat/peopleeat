@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { fileUploadCreate } from '../../server/commands/fileUploadCreate';
 import { db } from '../../server/db';
 import { environmentVariables } from '../../server/env/environmentVariablesCreate';
+import { withIngressSpan } from '../../server/observability/withIngressSpan';
 import { clientIpFromRequest } from '../../server/utils/clientIpFromRequest';
 import { loggerCreate } from '../../server/utils/loggerCreate';
 import { sessionUpsert } from '../../server/utils/sessionUpsert';
@@ -30,98 +31,104 @@ export const Route = createFileRoute('/api/file-uploads')({
     server: {
         handlers: {
             POST: async ({ request }) => {
-                const existingSessionId = sessionUtils.getSessionIdFromRequest(environmentVariables.sessionCookie, request);
-                const session = await sessionUpsert(
-                    db,
-                    log,
-                    existingSessionId,
-                    request.headers.get('user-agent'),
-                    clientIpFromRequest(request),
-                    request.headers.get('referer'),
-                    request.headers.get('x-landing-path'),
-                );
-                const setCookie = sessionUtils.createSetSessionCookie(environmentVariables.sessionCookie, session);
-
-                if (!session.userId) {
-                    return new Response(JSON.stringify({ error: 'Unauthorized: anonymous session has no user' }), {
-                        status: 401,
-                        headers: { 'Content-Type': 'application/json', 'Set-Cookie': setCookie },
-                    });
-                }
-
-                let formData: FormData;
-                try {
-                    formData = await request.formData();
-                } catch (error) {
-                    log.error(error, session);
-                    return new Response(JSON.stringify({ error: 'Could not parse multipart form data' }), {
-                        status: 400,
-                        headers: { 'Content-Type': 'application/json', 'Set-Cookie': setCookie },
-                    });
-                }
-
-                // Single-file POST. The client doesn't rely on a particular
-                // form field name beyond a single one — we accept the first
-                // file entry we see so a `<input name="file">` and
-                // `<input name="attachment">` both work.
-                let file: File | null = null;
-                for (const value of formData.values()) {
-                    if (value instanceof File) {
-                        file = value;
-                        break;
+                return withIngressSpan({ provider: 'file_upload', route: '/api/file-uploads' }, async (span) => {
+                    const existingSessionId = sessionUtils.getSessionIdFromRequest(environmentVariables.sessionCookie, request);
+                    const session = await sessionUpsert(
+                        db,
+                        log,
+                        existingSessionId,
+                        request.headers.get('user-agent'),
+                        clientIpFromRequest(request),
+                        request.headers.get('referer'),
+                        request.headers.get('x-landing-path'),
+                    );
+                    span.setAttribute('session.id', session.sessionId);
+                    if (session.userId) {
+                        span.setAttribute('enduser.id', session.userId);
                     }
-                }
-                if (!file) {
-                    return new Response(JSON.stringify({ error: 'No file in form data' }), {
-                        status: 400,
-                        headers: { 'Content-Type': 'application/json', 'Set-Cookie': setCookie },
-                    });
-                }
+                    const setCookie = sessionUtils.createSetSessionCookie(environmentVariables.sessionCookie, session);
 
-                if (file.size > FILE_UPLOAD_MAX_BYTES) {
-                    return new Response(
-                        JSON.stringify({ error: `File too large: ${file.size} bytes exceeds ${FILE_UPLOAD_MAX_BYTES}-byte limit` }),
-                        {
-                            status: 413,
+                    if (!session.userId) {
+                        return new Response(JSON.stringify({ error: 'Unauthorized: anonymous session has no user' }), {
+                            status: 401,
                             headers: { 'Content-Type': 'application/json', 'Set-Cookie': setCookie },
-                        },
-                    );
-                }
+                        });
+                    }
 
-                const arrayBuffer = await file.arrayBuffer();
-                const bytes = Buffer.from(arrayBuffer);
-
-                try {
-                    const fileUpload = await fileUploadCreate(db, {
-                        userId: session.userId,
-                        filename: file.name,
-                        // Browsers occasionally send empty media types for
-                        // unknown extensions — fall back to a generic so
-                        // downstream code doesn't have to special-case the
-                        // empty string.
-                        mediaType: file.type || 'application/octet-stream',
-                        bytes,
-                    });
-
-                    return new Response(
-                        JSON.stringify({
-                            fileUploadId: fileUpload.fileUploadId,
-                            filename: fileUpload.filename,
-                            mediaType: fileUpload.mediaType,
-                            size: fileUpload.size,
-                        }),
-                        {
-                            status: 201,
+                    let formData: FormData;
+                    try {
+                        formData = await request.formData();
+                    } catch (error) {
+                        log.error(error, session);
+                        return new Response(JSON.stringify({ error: 'Could not parse multipart form data' }), {
+                            status: 400,
                             headers: { 'Content-Type': 'application/json', 'Set-Cookie': setCookie },
-                        },
-                    );
-                } catch (error) {
-                    log.error(error, session);
-                    return new Response(JSON.stringify({ error: 'Failed to persist file upload' }), {
-                        status: 500,
-                        headers: { 'Content-Type': 'application/json', 'Set-Cookie': setCookie },
-                    });
-                }
+                        });
+                    }
+
+                    // Single-file POST. The client doesn't rely on a particular
+                    // form field name beyond a single one — we accept the first
+                    // file entry we see so a `<input name="file">` and
+                    // `<input name="attachment">` both work.
+                    let file: File | null = null;
+                    for (const value of formData.values()) {
+                        if (value instanceof File) {
+                            file = value;
+                            break;
+                        }
+                    }
+                    if (!file) {
+                        return new Response(JSON.stringify({ error: 'No file in form data' }), {
+                            status: 400,
+                            headers: { 'Content-Type': 'application/json', 'Set-Cookie': setCookie },
+                        });
+                    }
+
+                    if (file.size > FILE_UPLOAD_MAX_BYTES) {
+                        return new Response(
+                            JSON.stringify({ error: `File too large: ${file.size} bytes exceeds ${FILE_UPLOAD_MAX_BYTES}-byte limit` }),
+                            {
+                                status: 413,
+                                headers: { 'Content-Type': 'application/json', 'Set-Cookie': setCookie },
+                            },
+                        );
+                    }
+
+                    const arrayBuffer = await file.arrayBuffer();
+                    const bytes = Buffer.from(arrayBuffer);
+
+                    try {
+                        const fileUpload = await fileUploadCreate(db, {
+                            userId: session.userId,
+                            filename: file.name,
+                            // Browsers occasionally send empty media types for
+                            // unknown extensions — fall back to a generic so
+                            // downstream code doesn't have to special-case the
+                            // empty string.
+                            mediaType: file.type || 'application/octet-stream',
+                            bytes,
+                        });
+
+                        return new Response(
+                            JSON.stringify({
+                                fileUploadId: fileUpload.fileUploadId,
+                                filename: fileUpload.filename,
+                                mediaType: fileUpload.mediaType,
+                                size: fileUpload.size,
+                            }),
+                            {
+                                status: 201,
+                                headers: { 'Content-Type': 'application/json', 'Set-Cookie': setCookie },
+                            },
+                        );
+                    } catch (error) {
+                        log.error(error, session);
+                        return new Response(JSON.stringify({ error: 'Failed to persist file upload' }), {
+                            status: 500,
+                            headers: { 'Content-Type': 'application/json', 'Set-Cookie': setCookie },
+                        });
+                    }
+                });
             },
         },
     },

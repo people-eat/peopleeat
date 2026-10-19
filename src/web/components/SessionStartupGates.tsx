@@ -6,6 +6,7 @@ import { useQuery } from 'urql';
 import { SessionStartupGatesDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { TimeZoneProvider } from '../hooks/useTimeZone';
+import { ClientObservabilityBootstrap } from '../observability/ClientObservabilityBootstrap';
 import { AnalyticsClarity } from './AnalyticsClarity';
 import { AnalyticsGoogle } from './AnalyticsGoogle';
 import { CookieBanner } from './CookieBanner';
@@ -60,7 +61,12 @@ export function SessionStartupGates({ children, enableCookieShell }: PropsWithCh
     const content = (
         <TimeZoneProvider timeZone={profileTimeZone}>
             {children}
-            {enableCookieShell ? <SessionWebPageVisitTracker /> : null}
+            {enableCookieShell ? (
+                <>
+                    <SessionWebPageVisitTracker />
+                    <ClientObservabilityBootstrap />
+                </>
+            ) : null}
             <LocaleMismatchGate open={active === 'locale'} profileLocale={profileLocale ?? null} onResolved={onGateResolved} />
             <LegalAcceptanceGate
                 open={active === 'legal'}

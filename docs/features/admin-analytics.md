@@ -1,6 +1,7 @@
 # Admin analytics
 
-Operators inspect first-party product analytics: booking-form conversion funnel, cook offer creation funnel, and page-visit time series.
+Operators inspect first-party product analytics: booking-form, gift-card, chef sign-up, and cook offer creation funnels, plus page-visit
+time series.
 
 ## Behavior
 
@@ -15,7 +16,11 @@ Operators inspect first-party product analytics: booking-form conversion funnel,
    - **Sankey** — forward transitions between consecutive `step_completed` steps (plus `created`) for the same session. Backward edits
      (later step → earlier step) are dropped so the graph stays a DAG Recharts can lay out. Shown only when at least one forward link
      exists.
-5. **Cook offer funnel** (cook × booking-request grain)
+5. **Gift card funnel** — session-grain steps `configure` → `auth` → `created` → `checkout` → `paid` (human non-admin/non-cook). Terminals
+   from `GIFT_CARD_CREATED` / `GIFT_CARD_PAYED`.
+6. **Chef sign-up funnel** — session-grain steps `auth` → `profile` → `created` (human non-admin; cooks included). Terminal from
+   `COOK_CREATED`.
+7. **Cook offer funnel** (cook × booking-request grain)
    - **Cohort** — `BookingRequestCooks` rows with `notifiedAt` in range (admins excluded).
    - **KPIs** — notified, opened, declined (decline without create-UI path), offers created, conversion notified→offer.
    - **Opened** — `firstOpenedAt`, or inferred when the row later declined / started create / has an offer (legacy rows often lack
@@ -26,7 +31,7 @@ Operators inspect first-party product analytics: booking-form conversion funnel,
    - **Drop-off %** — vs the graph parent (`declined` and `offer_create` both vs `opened`), not vs the previous table row. Negative values
      meant the UI was wrongly comparing the offer branch to the decline branch.
    - **Sankey** — forward-only edges on that per-row sequence (decline branches off opened).
-6. **Visit charts** — zero-filled day buckets of `WEB_PAGE_VISITED` for `BOOKING_REQUEST_FORM` and `LANDING` (all sessions; not filtered to
+8. **Visit charts** — zero-filled day buckets of `WEB_PAGE_VISITED` for `BOOKING_REQUEST_FORM` and `LANDING` (all sessions; not filtered to
    non-admin/non-cook).
 
 ### Funnel filters and empty states
@@ -71,12 +76,13 @@ In-app overview with KPIs, step table, Sankey + visit buckets; event store docum
 
 ## Implementation
 
-- SDL: `AdminSessionEvent`, `AdminAnalyticsBookingRequestFormFlow`, `AdminAnalyticsCookBookingRequestOfferFlow`,
-  `AdminAnalyticsFunnelStepStats`, `Admin.bookingRequestFormFlow`, `Admin.cookBookingRequestOfferFlow`,
-  `Admin.sessionEventWebPageVisitCreations`, `Admin.sessionEvents`
-- Queries: `adminAnalyticsBookingRequestFormFlow`, `adminAnalyticsCookBookingRequestOfferFlow`,
-  `adminSessionEventWebPageVisitCreationsFindMany`, `adminSessionEventFindMany`
+- SDL: `AdminSessionEvent`, `AdminAnalyticsBookingRequestFormFlow`, `AdminAnalyticsSessionFunnelFlow`,
+  `AdminAnalyticsCookBookingRequestOfferFlow`, `AdminAnalyticsFunnelStepStats`, `Admin.bookingRequestFormFlow`, `Admin.giftCardFlow`,
+  `Admin.chefSignUpFlow`, `Admin.cookBookingRequestOfferFlow`, `Admin.sessionEventWebPageVisitCreations`, `Admin.sessionEvents`
+- Queries: `adminAnalyticsBookingRequestFormFlow`, `adminAnalyticsGiftCardFlow`, `adminAnalyticsChefSignUpFlow`,
+  `adminAnalyticsCookBookingRequestOfferFlow`, `adminSessionEventWebPageVisitCreationsFindMany`, `adminSessionEventFindMany`
 - Mapper: `toGqlAdminSessionEvent`
-- Shared steps: `src/shared/bookingRequestFormFunnel.ts`, `src/shared/cookBookingRequestOfferFunnel.ts`
+- Shared steps: `src/shared/bookingRequestFormFunnel.ts`, `src/shared/cookBookingRequestOfferFunnel.ts`, `src/shared/giftCardFunnel.ts`,
+  `src/shared/chefSignUpFunnel.ts`
 - UI: `AdminAnalyticsPage`, route `analytics.tsx`, nav via `adminCatalog` (`analytics` stub slug with real page)
 - Architecture: [session-events.md](../architecture/session-events.md)

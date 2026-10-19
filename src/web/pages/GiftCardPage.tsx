@@ -1,12 +1,14 @@
 import { useForm, useSelector } from '@tanstack/react-form';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { formatCurrency } from '../../shared';
+import { giftCardFunnelArea } from '../../shared/giftCardFunnel';
+import type { GiftCardFunnelClientStep } from '../../shared/giftCardFunnel';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
 import { AuthPasskeyLogOn } from '../components/auth/AuthPasskeyLogOn';
 import { sessionAuthPhase } from '../components/auth/sessionAuthPhase';
@@ -17,7 +19,7 @@ import { Textarea } from '../components/base/textarea';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import type { GqlCGiftCardPageQuery } from '../graphql/generated';
-import { GiftCardCreateDocument, GiftCardSessionUpdatesDocument } from '../graphql/generated';
+import { GiftCardCreateDocument, GiftCardFunnelTrackDocument, GiftCardSessionUpdatesDocument } from '../graphql/generated';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
 import { SITE_WHATSAPP_URL } from '../seo/seoConstants';
@@ -94,7 +96,25 @@ function GiftCardPageInner({
     const [recaptchaErrorOpen, setRecaptchaErrorOpen] = useState(false);
 
     const [, giftCardCreate] = useMutation(GiftCardCreateDocument);
+    const [, trackFunnelInteraction] = useMutation(GiftCardFunnelTrackDocument);
+    const enteredStepsRef = useRef(new Set<GiftCardFunnelClientStep>());
     const seededValues = giftCardFormValuesFromSearch(search);
+
+    const trackFunnelStep = useEffectEvent((type: 'step_entered' | 'step_completed', funnelStep: GiftCardFunnelClientStep) => {
+        void trackFunnelInteraction({
+            input: {
+                webPageKey: 'GIFT_CARD',
+                area: giftCardFunnelArea,
+                interaction: { type, step: funnelStep },
+            },
+        });
+    });
+
+    useEffect(() => {
+        if (enteredStepsRef.current.has(step)) return;
+        enteredStepsRef.current.add(step);
+        trackFunnelStep('step_entered', step);
+    }, [step]);
 
     const form = useForm({
         defaultValues: {
@@ -106,9 +126,11 @@ function GiftCardPageInner({
         } satisfies GiftCardFormValues,
         onSubmit: async ({ value }) => {
             if (!signedIn) {
+                trackFunnelStep('step_completed', 'configure');
                 setStep('auth');
                 return;
             }
+            trackFunnelStep('step_completed', 'configure');
             await createAndGoToCheckout(value);
         },
     });
@@ -147,6 +169,7 @@ function GiftCardPageInner({
 
     useEffect(() => {
         if (signedIn && step === 'auth') {
+            trackFunnelStep('step_completed', 'auth');
             setStep('configure');
         }
     }, [signedIn, step]);

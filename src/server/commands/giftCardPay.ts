@@ -9,6 +9,7 @@ import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutatio
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { giftCardPreparedExpire } from '../jobs/handlers/giftCardPreparedExpire';
 import { createServerToken } from '../utils/serverToken';
+import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { fileUploadCreate } from './fileUploadCreate';
 
 const RECEIPT_FILENAME = 'peopleeat-gift-card-receipt.pdf';
@@ -201,6 +202,12 @@ export async function giftCardPay(
             relatedEntity: { type: 'GIFT_CARD', id: row.giftCardId },
             userId,
             attachments: attachments.length > 0 ? attachments : undefined,
+        });
+
+        await sessionEventCreate(serverRuntime, {
+            sessionId: requestingSession.sessionId,
+            type: 'GIFT_CARD_PAYED',
+            payload: { giftCardId: row.giftCardId },
         });
 
         await serverRuntime.publish.sessionUpdates({ sessionId: requestingSession.sessionId });

@@ -13,6 +13,7 @@ const GRAPHQL_P95_MS_THRESHOLD = 5_000;
 const ERROR_LOG_COUNT_THRESHOLD = 25;
 const SLOW_MEAN_MS_THRESHOLD = 1_000;
 const SLOW_MIN_CALLS = 5;
+const INGRESS_MIN_SAMPLES = 5;
 
 /**
  * Hourly observability threshold check → ops-alerts Slack channel.
@@ -49,16 +50,18 @@ export async function observabilityOpsAlertRun(serverRuntime: ServerRuntime): Pr
         (windows.graphql.sampleCount >= 20 && windows.graphql.errorRate >= GRAPHQL_ERROR_RATE_THRESHOLD) ||
         (windows.graphql.p95DurationMs != null && windows.graphql.p95DurationMs >= GRAPHQL_P95_MS_THRESHOLD);
     const jobsHot = windows.jobs.sampleCount >= 10 && windows.jobs.errorRate >= GRAPHQL_ERROR_RATE_THRESHOLD;
+    const ingressHot = windows.ingress.sampleCount >= INGRESS_MIN_SAMPLES && windows.ingress.errorRate >= GRAPHQL_ERROR_RATE_THRESHOLD;
     const logsHot = errorLogCount >= ERROR_LOG_COUNT_THRESHOLD;
     const sqlHot = slowStatements.length > 0;
 
-    if (!graphqlHot && !jobsHot && !logsHot && !sqlHot) {
+    if (!graphqlHot && !jobsHot && !ingressHot && !logsHot && !sqlHot) {
         return;
     }
 
     const { text, blocks } = observabilityOpsAlertSlackMessageBuild({
         graphql: windows.graphql,
         jobs: windows.jobs,
+        ingress: windows.ingress,
         windowMinutes: WINDOW_MINUTES,
         errorLogCount,
         slowStatements,

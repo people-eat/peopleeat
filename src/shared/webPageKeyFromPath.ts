@@ -31,6 +31,7 @@ export function webPageKeyFromPath(pathWithoutLocale: string): WebPageVisitMatch
     if (path === '/blog-posts') return { webPageKey: 'BLOG_POSTS' };
     if (path === '/about-us') return { webPageKey: 'ABOUT_US' };
     if (path === '/gift-cards' || path === '/gift-card') return { webPageKey: 'GIFT_CARD' };
+    if (/^\/gift-card\/[^/]+\/checkout$/.test(path)) return { webPageKey: 'GIFT_CARD' };
     if (path === '/how-to-become-a-chef') return { webPageKey: 'HOW_TO_BECOME_A_CHEF' };
     if (path === '/booking-request') return { webPageKey: 'BOOKING_REQUEST' };
     if (path === '/booking-request/form') return { webPageKey: 'BOOKING_REQUEST_FORM' };

@@ -56,6 +56,7 @@ export interface GqlCAdmin {
     callTraffic: Array<GqlCAdminCallListItem>;
     callTrafficCounts: Array<Scalars['Int']['output']>;
     calls: Array<GqlCAdminCallListItem>;
+    chefSignUpFlow: GqlCAdminAnalyticsSessionFunnelFlow;
     cities: Array<GqlCAdminCity>;
     city?: Maybe<GqlCAdminCity>;
     cookBookingRequestOfferFlow: GqlCAdminAnalyticsCookBookingRequestOfferFlow;
@@ -74,6 +75,7 @@ export interface GqlCAdmin {
     featureToggles: Array<GqlCAdminFeatureToggle>;
     giftCard?: Maybe<GqlCAdminGiftCard>;
     giftCardCreations: Array<GqlCAdminTimeBucket>;
+    giftCardFlow: GqlCAdminAnalyticsSessionFunnelFlow;
     giftCardOccasionStats: Array<GqlCAdminGiftCardOccasionStat>;
     giftCardPaidPurchaseAverageCents: Scalars['Int']['output'];
     giftCardSalesMonthStats: Array<GqlCAdminGiftCardSalesMonthStat>;
@@ -231,6 +233,10 @@ export type GqlCAdminCallTrafficCountsArgs = {
     criteria: Array<GqlCAdminCallTrafficCriterion>;
 };
 
+export type GqlCAdminChefSignUpFlowArgs = {
+    range: GqlCDateTimeRange;
+};
+
 export type GqlCAdminCityArgs = {
     cityId: Scalars['ID']['input'];
 };
@@ -287,6 +293,10 @@ export type GqlCAdminGiftCardArgs = {
 
 export type GqlCAdminGiftCardCreationsArgs = {
     granularity?: GqlCAdminTimeBucketGranularity;
+    range: GqlCDateTimeRange;
+};
+
+export type GqlCAdminGiftCardFlowArgs = {
     range: GqlCDateTimeRange;
 };
 
@@ -520,6 +530,15 @@ export interface GqlCAdminAnalyticsSankeyNode {
     id: Scalars['String']['output'];
     labelDe: Scalars['String']['output'];
     labelEn: Scalars['String']['output'];
+}
+
+export interface GqlCAdminAnalyticsSessionFunnelFlow {
+    __typename?: 'AdminAnalyticsSessionFunnelFlow';
+    links: Array<GqlCAdminAnalyticsSankeyLink>;
+    nodes: Array<GqlCAdminAnalyticsSankeyNode>;
+    sessionsWithCompletion: Scalars['Int']['output'];
+    steps: Array<GqlCAdminAnalyticsFunnelStepStats>;
+    terminalCount: Scalars['Int']['output'];
 }
 
 export interface GqlCAdminAssistantChat {
@@ -2644,6 +2663,20 @@ export type GqlCCityUpsert = {
     titleEn: Scalars['String']['input'];
 };
 
+export type GqlCClientObservabilityKind = 'GRAPHQL_ERROR' | 'ROUTE_ERROR' | 'WEB_VITAL';
+
+export type GqlCClientObservabilityReportInput = {
+    kind: GqlCClientObservabilityKind;
+    message?: InputMaybe<Scalars['String']['input']>;
+    operationName?: InputMaybe<Scalars['String']['input']>;
+    path?: InputMaybe<Scalars['String']['input']>;
+    routeId?: InputMaybe<Scalars['String']['input']>;
+    value?: InputMaybe<Scalars['Float']['input']>;
+    vitalName?: InputMaybe<GqlCClientWebVitalName>;
+};
+
+export type GqlCClientWebVitalName = 'CLS' | 'FCP' | 'INP' | 'LCP' | 'TTFB';
+
 export type GqlCContentListStyle = 'BULLET' | 'NUMBERED';
 
 export type GqlCContentSection =
@@ -3680,6 +3713,7 @@ export interface GqlCMutation {
     authPasskeyAuthenticateVerify: GqlCMutationResult;
     authTotpChallengeDelete: GqlCMutationResult;
     authTotpVerify: GqlCMutationResult;
+    clientObservabilityReport: GqlCMutationResult;
     sessionCookieSettingAcceptAll: GqlCMutationResult;
     sessionCookieSettingAcceptMandatory: GqlCMutationResult;
     sessionNewsletterSubscriptionCreate: GqlCMutationResult;
@@ -3709,6 +3743,10 @@ export type GqlCMutationAuthPasskeyAuthenticateVerifyArgs = {
 
 export type GqlCMutationAuthTotpVerifyArgs = {
     code: Scalars['String']['input'];
+};
+
+export type GqlCMutationClientObservabilityReportArgs = {
+    input: GqlCClientObservabilityReportInput;
 };
 
 export type GqlCMutationSessionNewsletterSubscriptionCreateArgs = {
@@ -7436,6 +7474,12 @@ export type GqlCChefPageQuery = {
     };
 };
 
+export type GqlCChefSignUpFunnelTrackMutationVariables = Exact<{
+    input: Schema.GqlCSessionWebPageInteractionCreateInput;
+}>;
+
+export type GqlCChefSignUpFunnelTrackMutation = { sessionWebPageInteractionCreate: { success: boolean; referenceId: string | null } };
+
 export type GqlCChefSignUpPageQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCChefSignUpPageQuery = {
@@ -7718,6 +7762,12 @@ export type GqlCGiftCardCheckoutPayMutationVariables = Exact<{
 }>;
 
 export type GqlCGiftCardCheckoutPayMutation = { user: { giftCardPay: { success: boolean; referenceId: string | null } } };
+
+export type GqlCGiftCardFunnelTrackMutationVariables = Exact<{
+    input: Schema.GqlCSessionWebPageInteractionCreateInput;
+}>;
+
+export type GqlCGiftCardFunnelTrackMutation = { sessionWebPageInteractionCreate: { success: boolean; referenceId: string | null } };
 
 export type GqlCGiftCardPageQueryVariables = Exact<{ [key: string]: never }>;
 
@@ -8506,6 +8556,20 @@ export type GqlCAdminAnalyticsPageQuery = {
                 bookingRequestFormFlow: {
                     sessionsWithCompletion: number;
                     bookingRequestsCreated: number;
+                    nodes: Array<{ id: string; labelDe: string; labelEn: string }>;
+                    links: Array<{ source: string; target: string; value: number }>;
+                    steps: Array<{ id: string; labelDe: string; labelEn: string; enteredCount: number; completedCount: number }>;
+                };
+                giftCardFlow: {
+                    sessionsWithCompletion: number;
+                    terminalCount: number;
+                    nodes: Array<{ id: string; labelDe: string; labelEn: string }>;
+                    links: Array<{ source: string; target: string; value: number }>;
+                    steps: Array<{ id: string; labelDe: string; labelEn: string; enteredCount: number; completedCount: number }>;
+                };
+                chefSignUpFlow: {
+                    sessionsWithCompletion: number;
+                    terminalCount: number;
                     nodes: Array<{ id: string; labelDe: string; labelEn: string }>;
                     links: Array<{ source: string; target: string; value: number }>;
                     steps: Array<{ id: string; labelDe: string; labelEn: string; enteredCount: number; completedCount: number }>;
@@ -35671,6 +35735,49 @@ export const ChefPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCChefPageQuery, GqlCChefPageQueryVariables>;
+export const ChefSignUpFunnelTrackDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ChefSignUpFunnelTrack' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'SessionWebPageInteractionCreateInput' } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'sessionWebPageInteractionCreate' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCChefSignUpFunnelTrackMutation, GqlCChefSignUpFunnelTrackMutationVariables>;
 export const ChefSignUpPageDocument = {
     kind: 'Document',
     definitions: [
@@ -36752,6 +36859,49 @@ export const GiftCardCheckoutPayDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCGiftCardCheckoutPayMutation, GqlCGiftCardCheckoutPayMutationVariables>;
+export const GiftCardFunnelTrackDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'GiftCardFunnelTrack' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'SessionWebPageInteractionCreateInput' } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'sessionWebPageInteractionCreate' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCGiftCardFunnelTrackMutation, GqlCGiftCardFunnelTrackMutationVariables>;
 export const GiftCardPageDocument = {
     kind: 'Document',
     definitions: [
@@ -39891,6 +40041,136 @@ export const AdminAnalyticsPageDocument = {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'bookingRequestsCreated' },
                                                                     },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'giftCardFlow' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'nodes' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'links' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'target' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'steps' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'enteredCount' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'completedCount' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'sessionsWithCompletion' },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'terminalCount' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'chefSignUpFlow' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'nodes' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'links' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'target' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'steps' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'enteredCount' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'completedCount' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'sessionsWithCompletion' },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'terminalCount' } },
                                                                 ],
                                                             },
                                                         },

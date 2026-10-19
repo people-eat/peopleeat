@@ -28,6 +28,9 @@ Legacy people-eat keys remain in the taxonomy for import and admin humanization.
 | `WEB_PAGE_INTERACTION`                               | Booking form / cook offer create → `sessionWebPageInteractionCreate` | `webPageKey`, `area`, optional `bookingRequestId`, structured `interaction` |
 | `BOOKING_REQUEST_CREATED`                            | `userBookingRequestCreate`                                           | `bookingRequestId`                                                          |
 | `BOOKING_REQUEST_CANCELED`                           | `userBookingRequestCancel`                                           | `bookingRequestId`                                                          |
+| `GIFT_CARD_CREATED`                                  | `giftCardCreate`                                                     | `giftCardId`                                                                |
+| `GIFT_CARD_PAYED`                                    | `giftCardPay`                                                        | `giftCardId`                                                                |
+| `COOK_CREATED`                                       | `userCookCreate`                                                     | empty                                                                       |
 | `USER_CREATE_SUCCESSFUL`                             | `userCreate`                                                         | empty                                                                       |
 | `USER_CREATE_FAILED`                                 | `userCreate`                                                         | empty                                                                       |
 | `USER_CREATE_USER_WITH_EMAIL_ADDRESS_ALREADY_EXISTS` | `userCreate`                                                         | empty                                                                       |
@@ -44,7 +47,10 @@ Legacy people-eat keys remain in the taxonomy for import and admin humanization.
 
 Booking-form funnel interactions use stable step ids from `src/shared/bookingRequestFormFunnel.ts` (`step_entered` / `step_completed`), not
 UI label strings. Cook offer create-UI steps use `src/shared/cookBookingRequestOfferFunnel.ts` (`area: cook_booking_request_offer`, client
-steps `offer_create` / `menus` / `price`) and require `bookingRequestId` on the payload for cook × request aggregation.
+steps `offer_create` / `menus` / `price`) and require `bookingRequestId` on the payload for cook × request aggregation. Gift-card funnel:
+`src/shared/giftCardFunnel.ts` (`area: gift_card`, client steps `configure` / `auth` / `checkout`; terminals `created` / `paid` from
+lifecycle events). Chef sign-up funnel: `src/shared/chefSignUpFunnel.ts` (`area: chef_sign_up`, client steps `auth` / `profile`; terminal
+`created` from `COOK_CREATED`).
 
 ### Legacy (imported only; no longer produced)
 
@@ -103,7 +109,8 @@ The freeze-cutover ETL (`scripts/migrateFromPeopleEat/`) imports predecessor row
 ## Key files
 
 - Domain: `src/server/domain/sessionEvent.ts`
-- Shared funnels: `src/shared/bookingRequestFormFunnel.ts`, `src/shared/cookBookingRequestOfferFunnel.ts`
+- Shared funnels: `src/shared/bookingRequestFormFunnel.ts`, `src/shared/cookBookingRequestOfferFunnel.ts`, `src/shared/giftCardFunnel.ts`,
+  `src/shared/chefSignUpFunnel.ts`
 - Path map: `src/shared/webPageKeyFromPath.ts`
 - Helper: `src/server/utils/sessionEventCreate.ts`
 - Commands: `sessionWebPageVisitCreate`, `sessionWebPageInteractionCreate`, auth / user-create / legal / booking lifecycle emitters

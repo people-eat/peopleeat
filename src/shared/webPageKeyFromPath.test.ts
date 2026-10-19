@@ -12,6 +12,7 @@ describe('webPageKeyFromPath', () => {
     it('maps dynamic public routes', () => {
         expect(webPageKeyFromPath('/chefs/abc')).toEqual({ webPageKey: 'CHEFS', params: { cookId: 'abc' } });
         expect(webPageKeyFromPath('/cities/berlin')).toEqual({ webPageKey: 'CITIES' });
+        expect(webPageKeyFromPath('/gift-card/abc123/checkout')).toEqual({ webPageKey: 'GIFT_CARD' });
     });
 
     it('skips admin and profile paths', () => {

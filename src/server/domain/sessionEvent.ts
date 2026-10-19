@@ -1,5 +1,7 @@
 import type { BookingRequestFormFunnelInteraction } from '../../shared/bookingRequestFormFunnel';
+import type { ChefSignUpFunnelInteraction } from '../../shared/chefSignUpFunnel';
 import type { CookBookingRequestOfferFunnelInteraction } from '../../shared/cookBookingRequestOfferFunnel';
+import type { GiftCardFunnelInteraction } from '../../shared/giftCardFunnel';
 import type { WebPageKey } from '../../shared/webPage';
 
 export type SessionEventWebPageVisitedPayload = {
@@ -23,6 +25,8 @@ export type SessionEventWebPageInteractionPayload = {
     interaction:
         | BookingRequestFormFunnelInteraction
         | CookBookingRequestOfferFunnelInteraction
+        | GiftCardFunnelInteraction
+        | ChefSignUpFunnelInteraction
         | { type: 'click'; key: string }
         | { type: 'change'; key: string; value: string };
 };
@@ -33,6 +37,10 @@ type SessionEventBookingRequestCreatedPayload = {
 
 type SessionEventBookingRequestCanceledPayload = {
     bookingRequestId: string;
+};
+
+type SessionEventGiftCardPayload = {
+    giftCardId: string;
 };
 
 type SessionEventAuthEmailOtpVerifySucceededPayload = {
@@ -89,6 +97,10 @@ const sessionEventKeyDataMap = {
 
     BOOKING_REQUEST_CREATED: {} as SessionEventBookingRequestCreatedPayload,
     BOOKING_REQUEST_CANCELED: {} as SessionEventBookingRequestCanceledPayload,
+
+    GIFT_CARD_CREATED: {} as SessionEventGiftCardPayload,
+    GIFT_CARD_PAYED: {} as SessionEventGiftCardPayload,
+    COOK_CREATED: {} as SessionEventEmptyPayload,
 
     USER_CREATE_SUCCESSFUL: {} as SessionEventEmptyPayload,
     USER_CREATE_FAILED: {} as SessionEventEmptyPayload,

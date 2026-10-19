@@ -1,7 +1,9 @@
 import { eq } from 'drizzle-orm';
 
 import { bookingRequestFormFunnelArea, isBookingRequestFormFunnelStep } from '../../shared/bookingRequestFormFunnel';
+import { chefSignUpFunnelArea, isChefSignUpFunnelClientStep } from '../../shared/chefSignUpFunnel';
 import { cookBookingRequestOfferFunnelArea, isCookBookingRequestOfferFunnelClientStep } from '../../shared/cookBookingRequestOfferFunnel';
+import { giftCardFunnelArea, isGiftCardFunnelClientStep } from '../../shared/giftCardFunnel';
 import { isNanoId } from '../../shared/idCreate';
 import { sessions } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -19,6 +21,12 @@ function parseInteraction(raw: unknown): SessionEventWebPageInteractionPayload['
             return { type, step: record.step };
         }
         if (isCookBookingRequestOfferFunnelClientStep(record.step)) {
+            return { type, step: record.step };
+        }
+        if (isGiftCardFunnelClientStep(record.step)) {
+            return { type, step: record.step };
+        }
+        if (isChefSignUpFunnelClientStep(record.step)) {
             return { type, step: record.step };
         }
         return null;
@@ -87,6 +95,14 @@ export async function sessionWebPageInteractionCreate(
                 }
                 if (bookingRequestId == null) {
                     throw new Error('sessionWebPageInteractionCreate: cook offer funnel requires bookingRequestId');
+                }
+            } else if (area === giftCardFunnelArea) {
+                if (!isGiftCardFunnelClientStep(interaction.step)) {
+                    throw new Error('sessionWebPageInteractionCreate: gift card funnel step invalid for area');
+                }
+            } else if (area === chefSignUpFunnelArea) {
+                if (!isChefSignUpFunnelClientStep(interaction.step)) {
+                    throw new Error('sessionWebPageInteractionCreate: chef sign-up funnel step invalid for area');
                 }
             } else {
                 throw new Error('sessionWebPageInteractionCreate: funnel steps require a known funnel area');

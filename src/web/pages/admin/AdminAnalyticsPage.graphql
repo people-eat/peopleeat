@@ -34,6 +34,48 @@ query AdminAnalyticsPage(
                     sessionsWithCompletion
                     bookingRequestsCreated
                 }
+                giftCardFlow(range: $range) {
+                    nodes {
+                        id
+                        labelDe
+                        labelEn
+                    }
+                    links {
+                        source
+                        target
+                        value
+                    }
+                    steps {
+                        id
+                        labelDe
+                        labelEn
+                        enteredCount
+                        completedCount
+                    }
+                    sessionsWithCompletion
+                    terminalCount
+                }
+                chefSignUpFlow(range: $range) {
+                    nodes {
+                        id
+                        labelDe
+                        labelEn
+                    }
+                    links {
+                        source
+                        target
+                        value
+                    }
+                    steps {
+                        id
+                        labelDe
+                        labelEn
+                        enteredCount
+                        completedCount
+                    }
+                    sessionsWithCompletion
+                    terminalCount
+                }
                 cookBookingRequestOfferFlow(range: $range) {
                     nodes {
                         id

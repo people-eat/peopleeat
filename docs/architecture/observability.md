@@ -87,16 +87,35 @@ See [infrastructure.md](../infrastructure.md). Self-host on Coolify: [Self-hosti
   [`chatTurnAgentCreate.ts`](../../src/server/lib/chatTurnAgentCreate.ts)
 - One-shots / agents: shared helpers in [`aiTelemetry.ts`](../../src/server/observability/aiTelemetry.ts)
 
-### Request / job instrumentation
+### Request / job / ingress instrumentation
 
-- GraphQL: span + RED histogram/counter around `executeGraphQLQuery`
-- Jobs: span + RED metrics around each `boss.work` handler
-- Logger: active `traceId` / `spanId` merged into persisted log context
+- **GraphQL queries/mutations**: span + RED (`graphql.operation.duration` / `.errors`) around `executeGraphQLQuery`. Attributes:
+  `graphql.operation.name` (client `operationName` when present, else document name), `graphql.operation.type`, and on failure
+  `graphql.error.class` (`unauthorized` / `not_found` / `graphql_error`) + `graphql.error.count`. Helpers live in
+  [`graphqlOperationMeta.ts`](../../src/server/observability/graphqlOperationMeta.ts).
+- **GraphQL subscriptions**: setup span + RED on `executeGraphQLSubscription` (same operation metrics, type `subscription`). SSE connection
+  lifetime is a separate metric family (`graphql.subscription.duration` / `.events` / `.errors`) recorded when the stream ends — not a
+  long-lived Tempo span.
+- **Jobs**: span + RED around each `boss.work` handler
+- **HTTP ingress**: [`withIngressSpan`](../../src/server/observability/withIngressSpan.ts) wraps Stripe / WhatsApp POST / Resend / Slack
+  webhooks and `POST /api/file-uploads`. Span attrs include `ingress.provider`, `http.route`, optional `ingress.event_type` (Stripe/Resend).
+  RED: `http.ingress.duration` / `.errors` (errors = status ≥ 500 only; 4xx is not alert noise). File download GET is not wrapped (high
+  volume; HttpInstrumentation is enough).
+- **Logger**: active `traceId` / `spanId` merged into persisted log context
+- **Browser RUM**: public mutation `clientObservabilityReport` (not consent-gated; same stance as SessionEvents). Collectors in
+  [`src/web/observability/`](../../src/web/observability/) report Web Vitals (`web-vitals`), URQL operation failures, and `RouteError`
+  mounts. Server records OTel metrics (`client.web_vital.duration` / `.score`, `client.graphql.errors`, `client.route.errors`) via
+  [`clientMetrics.ts`](../../src/server/observability/clientMetrics.ts). GraphQL / route errors also write `Logs` rows (message prefix
+  `client graphql:` / `client route:`). Web Vitals are metrics-only (not persisted to Logs or SessionEvents).
+
+Grafana Explore: Tempo filter `ingress.provider` or span name `ingress stripe`; Prometheus `http.ingress.duration`,
+`graphql.operation.duration`, `graphql.subscription.duration`, `client.web_vital.duration`, `client.graphql.errors`.
 
 ### Slack ops alert
 
-Recurring job `observability-ops-alert` samples recent Postgres error-log volume and top `pg_stat_statements` means, posting to
-`slackChannelOpsAlerts` when thresholds are crossed (silent when healthy or Slack is `console`).
+Recurring job `observability-ops-alert` samples GraphQL / job / ingress RED windows, recent Postgres error-log volume, and top
+`pg_stat_statements` means, posting to `slackChannelOpsAlerts` when thresholds are crossed (silent when healthy or Slack is `console`).
+Ingress alerts when ≥5 samples in the window and error rate ≥ 5%.
 
 ### Runbook: enable `pg_stat_statements`
 
@@ -189,7 +208,8 @@ OBSERVABILITY_ENVIRONMENT=production
 Redeploy peopleeat. Trigger a chat turn and a GraphQL mutation, then:
 
 - Langfuse → Traces / Sessions (session id = chat id)
-- Grafana → Explore → Tempo (GraphQL / `pg` spans) and Prometheus (`graphql.operation.duration`, `job.handler.duration`)
+- Grafana → Explore → Tempo (GraphQL / ingress / `pg` spans) and Prometheus (`graphql.operation.duration`, `graphql.subscription.duration`,
+  `http.ingress.duration`, `job.handler.duration`)
 
 ### D. App Postgres `pg_stat_statements`
 
@@ -215,7 +235,12 @@ Then use admin GraphQL `databaseSlowStatements` or the SQL in the runbook above.
 
 - `src/server/observability/observabilityStart.ts` — OTel + Langfuse boot
 - `src/server/observability/aiTelemetry.ts` — AI SDK telemetry helpers
-- `src/server/observability/redMetrics.ts` — GraphQL / job RED meters
+- `src/server/observability/graphqlOperationMeta.ts` — operation name / type / error class
+- `src/server/observability/redMetrics.ts` — GraphQL / subscription / job / ingress RED meters
+- `src/server/observability/clientMetrics.ts` — browser RUM meters
+- `src/server/observability/withIngressSpan.ts` — webhook + file-upload span wrapper
 - `src/server/observability/traceContext.ts` — active span ids for logs
+- `src/server/commands/clientObservabilityReport.ts` — browser RUM ingest mutation
+- `src/web/observability/` — Web Vitals bootstrap + report helpers
 - `src/server/queries/adminDatabaseSlowStatementsFindMany.ts` — `pg_stat_statements` admin read
 - `src/server/jobs/handlers/observabilityOpsAlert.ts` — Slack threshold alerts

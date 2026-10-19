@@ -28,7 +28,9 @@ export const Route = createFileRoute('/api/graphql')({
                     sessionCookie = sessionUtils.createSetSessionCookie(environmentVariables.sessionCookie, session);
 
                     const body = await request.clone().json();
-                    const result = await executeGraphQLQuery(body.query, body.variables, session);
+                    const result = await executeGraphQLQuery(body.query, body.variables, session, {
+                        operationName: typeof body.operationName === 'string' ? body.operationName : undefined,
+                    });
 
                     return new Response(JSON.stringify(result), {
                         status: 200,

@@ -6,6 +6,7 @@ import { slackMessageBlocksBuild } from './slackBlocks';
 export type ObservabilityOpsAlertInput = {
     graphql: RedWindowSnapshot;
     jobs: RedWindowSnapshot;
+    ingress: RedWindowSnapshot;
     windowMinutes: number;
     errorLogCount: number;
     slowStatements: Array<{
@@ -36,6 +37,11 @@ export function observabilityOpsAlertSlackMessageBuild(input: ObservabilityOpsAl
     if (input.jobs.sampleCount > 0 && input.jobs.errorRate >= input.graphqlErrorRateThreshold) {
         lines.push(
             `Job error rate ${(input.jobs.errorRate * 100).toFixed(1)}% over ${input.jobs.sampleCount} runs (threshold ${(input.graphqlErrorRateThreshold * 100).toFixed(0)}%)`,
+        );
+    }
+    if (input.ingress.sampleCount > 0 && input.ingress.errorRate >= input.graphqlErrorRateThreshold) {
+        lines.push(
+            `Ingress error rate ${(input.ingress.errorRate * 100).toFixed(1)}% over ${input.ingress.sampleCount} requests (threshold ${(input.graphqlErrorRateThreshold * 100).toFixed(0)}%)`,
         );
     }
     if (input.errorLogCount >= input.errorLogCountThreshold) {

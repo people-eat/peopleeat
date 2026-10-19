@@ -1,0 +1,6 @@
+mutation ChefSignUpFunnelTrack($input: SessionWebPageInteractionCreateInput!) {
+    sessionWebPageInteractionCreate(input: $input) {
+        success
+        referenceId
+    }
+}

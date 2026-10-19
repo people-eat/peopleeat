@@ -1,6 +1,8 @@
 import { metrics } from '@opentelemetry/api';
 import type { Counter, Histogram, Meter } from '@opentelemetry/api';
 
+import type { GraphqlErrorClass, GraphqlOperationType } from './graphqlOperationMeta';
+
 const METER_NAME = 'peopleeat';
 
 type RedMeters = {
@@ -10,6 +12,10 @@ type RedMeters = {
 
 let graphqlMeters: RedMeters | undefined;
 let jobMeters: RedMeters | undefined;
+let ingressMeters: RedMeters | undefined;
+let subscriptionDuration: Histogram | undefined;
+let subscriptionEvents: Counter | undefined;
+let subscriptionErrors: Counter | undefined;
 
 function meterGet(): Meter {
     return metrics.getMeter(METER_NAME);
@@ -47,12 +53,59 @@ function jobMetersGet(): RedMeters {
     return jobMeters;
 }
 
-export function graphqlOperationRecord(operationName: string, durationMs: number, errored: boolean): void {
-    const attributes = { 'graphql.operation.name': operationName };
+function ingressMetersGet(): RedMeters {
+    if (!ingressMeters) {
+        const meter = meterGet();
+        ingressMeters = {
+            duration: meter.createHistogram('http.ingress.duration', {
+                description: 'HTTP ingress handler duration (webhooks, file upload)',
+                unit: 'ms',
+            }),
+            errors: meter.createCounter('http.ingress.errors', {
+                description: 'HTTP ingress handlers that returned 5xx or threw',
+            }),
+        };
+    }
+    return ingressMeters;
+}
+
+function subscriptionMetersGet(): { duration: Histogram; events: Counter; errors: Counter } {
+    if (!subscriptionDuration || !subscriptionEvents || !subscriptionErrors) {
+        const meter = meterGet();
+        subscriptionDuration = meter.createHistogram('graphql.subscription.duration', {
+            description: 'GraphQL SSE subscription connection lifetime',
+            unit: 'ms',
+        });
+        subscriptionEvents = meter.createCounter('graphql.subscription.events', {
+            description: 'GraphQL SSE events emitted',
+        });
+        subscriptionErrors = meter.createCounter('graphql.subscription.errors', {
+            description: 'GraphQL SSE subscription connections that errored',
+        });
+    }
+    return { duration: subscriptionDuration, events: subscriptionEvents, errors: subscriptionErrors };
+}
+
+export type GraphqlOperationRecordInput = {
+    operationName: string;
+    operationType: GraphqlOperationType;
+    durationMs: number;
+    errored: boolean;
+    errorClass?: GraphqlErrorClass;
+};
+
+export function graphqlOperationRecord(input: GraphqlOperationRecordInput): void {
+    const attributes = {
+        'graphql.operation.name': input.operationName,
+        'graphql.operation.type': input.operationType,
+    };
     const meters = graphqlMetersGet();
-    meters.duration.record(durationMs, attributes);
-    if (errored) {
-        meters.errors.add(1, attributes);
+    meters.duration.record(input.durationMs, attributes);
+    if (input.errored) {
+        meters.errors.add(1, {
+            ...attributes,
+            'graphql.error.class': input.errorClass ?? 'graphql_error',
+        });
     }
 }
 
@@ -65,6 +118,37 @@ export function jobHandlerRecord(jobName: string, durationMs: number, errored: b
     }
 }
 
+export type IngressProvider = 'stripe' | 'whatsapp' | 'resend' | 'file_upload';
+
+export function httpIngressRecord(provider: IngressProvider, durationMs: number, statusCode: number, errored: boolean): void {
+    const attributes = { 'ingress.provider': provider };
+    const meters = ingressMetersGet();
+    meters.duration.record(durationMs, attributes);
+    if (errored || statusCode >= 500) {
+        meters.errors.add(1, attributes);
+    }
+}
+
+export function graphqlSubscriptionConnectionRecord(input: {
+    operationName: string;
+    durationMs: number;
+    eventCount: number;
+    errored: boolean;
+}): void {
+    const attributes = {
+        'graphql.operation.name': input.operationName,
+        'graphql.operation.type': 'subscription' as const,
+    };
+    const meters = subscriptionMetersGet();
+    meters.duration.record(input.durationMs, attributes);
+    if (input.eventCount > 0) {
+        meters.events.add(input.eventCount, { 'graphql.operation.name': input.operationName });
+    }
+    if (input.errored) {
+        meters.errors.add(1, attributes);
+    }
+}
+
 /** In-process sliding window for Slack ops alerts (not a substitute for Grafana). */
 type WindowSample = { atMs: number; durationMs: number; errored: boolean; name: string };
 
@@ -73,6 +157,7 @@ const MAX_SAMPLES = 5_000;
 
 const graphqlWindow: WindowSample[] = [];
 const jobWindow: WindowSample[] = [];
+const ingressWindow: WindowSample[] = [];
 
 function windowPush(window: WindowSample[], sample: WindowSample): void {
     window.push(sample);
@@ -88,6 +173,10 @@ export function graphqlOperationWindowRecord(operationName: string, durationMs: 
 
 export function jobHandlerWindowRecord(jobName: string, durationMs: number, errored: boolean): void {
     windowPush(jobWindow, { atMs: Date.now(), durationMs, errored, name: jobName });
+}
+
+export function httpIngressWindowRecord(provider: IngressProvider, durationMs: number, errored: boolean): void {
+    windowPush(ingressWindow, { atMs: Date.now(), durationMs, errored, name: provider });
 }
 
 export type RedWindowSnapshot = {
@@ -114,10 +203,16 @@ function windowSnapshot(window: WindowSample[]): RedWindowSnapshot {
     };
 }
 
-export function redWindowSnapshotGet(): { graphql: RedWindowSnapshot; jobs: RedWindowSnapshot; windowMinutes: number } {
+export function redWindowSnapshotGet(): {
+    graphql: RedWindowSnapshot;
+    jobs: RedWindowSnapshot;
+    ingress: RedWindowSnapshot;
+    windowMinutes: number;
+} {
     return {
         graphql: windowSnapshot(graphqlWindow),
         jobs: windowSnapshot(jobWindow),
+        ingress: windowSnapshot(ingressWindow),
         windowMinutes: WINDOW_MS / 60_000,
     };
 }

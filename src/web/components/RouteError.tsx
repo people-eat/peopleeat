@@ -2,6 +2,7 @@ import { isNotFound, useRouter } from '@tanstack/react-router';
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { useLocale } from '../hooks/useLocale';
+import { clientObservabilityRouteErrorReport } from '../observability/clientObservability';
 import { localePath } from '../utils/locale';
 import { Button } from './base/button';
 import { RouteNotFound } from './RouteNotFound';
@@ -21,6 +22,8 @@ function RouteErrorFallback({ error, reset }: ErrorComponentProps) {
 
     useEffect(() => {
         console.error('[route-error]', error);
+        const message = error instanceof Error ? error.message : String(error);
+        clientObservabilityRouteErrorReport(message);
     }, [error]);
 
     return (

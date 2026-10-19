@@ -3,6 +3,8 @@ import { db } from '../../server/db';
 import { environmentVariables } from '../../server/env/environmentVariablesCreate';
 import type { GqlSSession } from '../../server/graphql/generated';
 import { executeGraphQLSubscription } from '../../server/graphql/server';
+import { graphqlOperationNameResolve } from '../../server/observability/graphqlOperationMeta';
+import { graphqlSubscriptionConnectionRecord } from '../../server/observability/redMetrics';
 import { clientIpFromRequest } from '../../server/utils/clientIpFromRequest';
 import { loggerCreate } from '../../server/utils/loggerCreate';
 import { sessionUpsert } from '../../server/utils/sessionUpsert';
@@ -15,9 +17,27 @@ function createSubscriptionStream(
     query: string,
     variables: Record<string, any>,
     session: GqlSSession,
+    operationName: string,
 ) {
     const encoder = new TextEncoder();
     let activeSubscriptionIterator: AsyncIterator<any> | null = null;
+    const connectionStartedAt = Date.now();
+    let eventCount = 0;
+    let connectionErrored = false;
+    let connectionRecorded = false;
+
+    const recordConnection = () => {
+        if (connectionRecorded) {
+            return;
+        }
+        connectionRecorded = true;
+        graphqlSubscriptionConnectionRecord({
+            operationName,
+            durationMs: Date.now() - connectionStartedAt,
+            eventCount,
+            errored: connectionErrored,
+        });
+    };
 
     // Initial padding forces proxies (e.g. nginx) to flush early so the client
     // receives the open event immediately instead of after the proxy buffer
@@ -28,7 +48,9 @@ function createSubscriptionStream(
     let eventId = 0;
     (async () => {
         try {
-            const subscriptionIterator = await executeGraphQLSubscription(query, variables, session);
+            const subscriptionIterator = await executeGraphQLSubscription(query, variables, session, {
+                operationName,
+            });
             activeSubscriptionIterator = subscriptionIterator;
 
             for await (const result of subscriptionIterator) {
@@ -42,6 +64,7 @@ function createSubscriptionStream(
 
                 try {
                     controller.enqueue(encoder.encode(data));
+                    eventCount += 1;
                 } catch (enqueueError: any) {
                     if (enqueueError.message?.includes('closed') || enqueueError.code === 'ERR_INVALID_STATE') {
                         break;
@@ -50,6 +73,7 @@ function createSubscriptionStream(
                 }
             }
         } catch (iterError: any) {
+            connectionErrored = true;
             if (controller.desiredSize !== null) {
                 const errorData = `data: ${JSON.stringify({ errors: [{ message: iterError.message }] })}\n\n`;
                 try {
@@ -59,14 +83,17 @@ function createSubscriptionStream(
                     // Already closed by a concurrent cancel — nothing to clean up.
                 }
             }
+        } finally {
+            recordConnection();
         }
     })();
 
     return {
         cleanup: () => {
             if (activeSubscriptionIterator && typeof activeSubscriptionIterator.return === 'function') {
-                activeSubscriptionIterator.return();
+                void activeSubscriptionIterator.return();
             }
+            recordConnection();
         },
     };
 }
@@ -90,6 +117,7 @@ export const Route = createFileRoute('/api/stream')({
                     const body = await request.json();
                     const query = body.query || null;
                     const variables = body.variables || undefined;
+                    const clientOperationName = typeof body.operationName === 'string' ? body.operationName : undefined;
 
                     if (!query) {
                         return new Response(
@@ -106,12 +134,17 @@ export const Route = createFileRoute('/api/stream')({
                         );
                     }
 
+                    const operationName = graphqlOperationNameResolve({
+                        document: query,
+                        clientOperationName,
+                    });
+
                     let subscriptionCleanup: (() => void) | null = null;
 
                     const stream = new ReadableStream({
                         start(controller) {
                             try {
-                                const subscription = createSubscriptionStream(controller, query, variables, session);
+                                const subscription = createSubscriptionStream(controller, query, variables, session, operationName);
                                 subscriptionCleanup = subscription.cleanup;
                             } catch (error: any) {
                                 const errorData = `data: ${JSON.stringify({ errors: [{ message: error.message }] })}\n\n`;

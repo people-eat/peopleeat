@@ -15,6 +15,7 @@ import type {
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { giftCardPreparedExpire } from '../jobs/handlers/giftCardPreparedExpire';
 import { redeemCodeCreate } from '../utils/redeemCodeCreate';
+import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { verifyRecaptchaV3 } from '../utils/verifyRecaptchaV3';
 
 const MIN_BALANCE_CENTS = 2500;
@@ -179,6 +180,12 @@ export async function giftCardCreate(
             .update(sessions)
             .set({ giftCardPurchaseError: null })
             .where(eq(sessions.sessionId, requestingSession.sessionId));
+
+        await sessionEventCreate(serverRuntime, {
+            sessionId: requestingSession.sessionId,
+            type: 'GIFT_CARD_CREATED',
+            payload: { giftCardId },
+        });
 
         await serverRuntime.publish.sessionUpdates({ sessionId: requestingSession.sessionId });
         await serverRuntime.publish.userUpdates({ userId });

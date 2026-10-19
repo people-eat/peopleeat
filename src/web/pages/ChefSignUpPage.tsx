@@ -1,9 +1,11 @@
 import { useForm, useSelector } from '@tanstack/react-form';
 import { Link } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
+import { chefSignUpFunnelArea } from '../../shared/chefSignUpFunnel';
+import type { ChefSignUpFunnelClientStep } from '../../shared/chefSignUpFunnel';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
 import { Button } from '../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../components/base/combobox';
@@ -13,7 +15,7 @@ import { StatusAlert } from '../components/base/status-alert';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import type { GqlCChefSignUpPageQuery, GqlCLocationSuggestion } from '../graphql/generated';
-import { ChefSignUpCookCreateDocument, CookCreateLocationSuggestionsDocument } from '../graphql/generated';
+import { ChefSignUpCookCreateDocument, ChefSignUpFunnelTrackDocument, CookCreateLocationSuggestionsDocument } from '../graphql/generated';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
 
@@ -54,6 +56,39 @@ export function ChefSignUpPage({ loaderData }: { loaderData: GqlCChefSignUpPageQ
     const [success, setSuccess] = useState(Boolean(loaderData.currentSession.user?.cook));
     const [session, setSession] = useState(loaderData.currentSession);
     const [, cookCreate] = useMutation(ChefSignUpCookCreateDocument);
+    const [, trackFunnelInteraction] = useMutation(ChefSignUpFunnelTrackDocument);
+    const enteredStepsRef = useRef(new Set<ChefSignUpFunnelClientStep>());
+    const completedAuthRef = useRef(false);
+
+    const trackFunnelStep = useEffectEvent((type: 'step_entered' | 'step_completed', funnelStep: ChefSignUpFunnelClientStep) => {
+        void trackFunnelInteraction({
+            input: {
+                webPageKey: 'CHEF_SIGN_UP',
+                area: chefSignUpFunnelArea,
+                interaction: { type, step: funnelStep },
+            },
+        });
+    });
+
+    const alreadyCook = success || Boolean(session.user?.cook);
+    const signedIn = Boolean(session.user);
+
+    useEffect(() => {
+        if (alreadyCook) return;
+        if (!signedIn) {
+            if (enteredStepsRef.current.has('auth')) return;
+            enteredStepsRef.current.add('auth');
+            trackFunnelStep('step_entered', 'auth');
+            return;
+        }
+        if (!completedAuthRef.current && enteredStepsRef.current.has('auth')) {
+            completedAuthRef.current = true;
+            trackFunnelStep('step_completed', 'auth');
+        }
+        if (enteredStepsRef.current.has('profile')) return;
+        enteredStepsRef.current.add('profile');
+        trackFunnelStep('step_entered', 'profile');
+    }, [alreadyCook, signedIn]);
 
     const form = useForm({
         defaultValues: {
@@ -96,8 +131,8 @@ export function ChefSignUpPage({ loaderData }: { loaderData: GqlCChefSignUpPageQ
                 },
             });
             if (result.error || !result.data?.user.cookCreate.success) {
-                const alreadyCook = result.error?.message.includes('already a cook');
-                if (alreadyCook) {
+                const wasAlreadyCook = result.error?.message.includes('already a cook');
+                if (wasAlreadyCook) {
                     setSuccess(true);
                     return;
                 }
@@ -121,8 +156,6 @@ export function ChefSignUpPage({ loaderData }: { loaderData: GqlCChefSignUpPageQ
         pause: debouncedLocationSearch.trim().length < 3 || selectedLocation?.displayText === locationSearchText,
     });
     const suggestions = suggestionsData?.currentSession.locationSuggestions ?? [];
-
-    const alreadyCook = success || Boolean(session.user?.cook);
 
     return (
         <main id="main-content" className="flex min-h-screen flex-col">

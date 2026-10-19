@@ -5,6 +5,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationCookCreateArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { cookCreatePayloadBuild } from '../utils/cookCreatePayloadBuild';
+import { sessionEventCreate } from '../utils/sessionEventCreate';
 
 export async function userCookCreate(
     { userId }: GqlSUserMutation,
@@ -33,6 +34,13 @@ export async function userCookCreate(
         });
 
         await serverRuntime.db.insert(cooks).values({ cookId: userId, ...cookPayload });
+
+        await sessionEventCreate(serverRuntime, {
+            sessionId: requestingSession.sessionId,
+            type: 'COOK_CREATED',
+            payload: {},
+        });
+
         await serverRuntime.publish.userUpdates({ userId });
 
         const { slackNotifyCookSignUp } = await import('../slack/slackNotifyAdjacent');

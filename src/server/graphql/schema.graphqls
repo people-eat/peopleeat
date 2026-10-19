@@ -2522,6 +2522,9 @@ type Mutation {
     sessionWebPageVisitCreate(input: SessionWebPageVisitCreateInput!): MutationResult!
     # First-party product analytics — structured interaction (e.g. booking form step).
     sessionWebPageInteractionCreate(input: SessionWebPageInteractionCreateInput!): MutationResult!
+    # Browser RUM ingest (Web Vitals / client GraphQL errors / route errors). Soft-succeeds.
+    # See docs/architecture/observability.md.
+    clientObservabilityReport(input: ClientObservabilityReportInput!): MutationResult!
     user: UserMutation!
     # Admin-only mutations, gated by `guardAdminMutation`.
     admin: AdminMutation!
@@ -2546,6 +2549,36 @@ input SessionWebPageInteractionCreateInput {
     # JSON interaction payload. Funnels use
     # `{ type: "step_entered"|"step_completed", step: "…" }`.
     interaction: JSON!
+}
+
+enum ClientObservabilityKind {
+    WEB_VITAL
+    GRAPHQL_ERROR
+    ROUTE_ERROR
+}
+
+enum ClientWebVitalName {
+    LCP
+    INP
+    CLS
+    FCP
+    TTFB
+}
+
+input ClientObservabilityReportInput {
+    kind: ClientObservabilityKind!
+    # WEB_VITAL only.
+    vitalName: ClientWebVitalName
+    # WEB_VITAL numeric value (ms for timing vitals; unitless for CLS).
+    value: Float
+    # GRAPHQL_ERROR / ROUTE_ERROR message (truncated server-side).
+    message: String
+    # GRAPHQL_ERROR operation name.
+    operationName: String
+    # Locale-stripped path when known.
+    path: String
+    # ROUTE_ERROR optional TanStack route id.
+    routeId: String
 }
 
 # Admin-only user row for operator lists and detail. Privileged fields stay on
@@ -3013,6 +3046,16 @@ type AdminAnalyticsBookingRequestFormFlow {
     bookingRequestsCreated: Int!
 }
 
+# Session-grain funnel shared by gift-card and chef sign-up analytics.
+# `terminalCount` is distinct sessions that hit the lifecycle terminal step(s).
+type AdminAnalyticsSessionFunnelFlow {
+    nodes: [AdminAnalyticsSankeyNode!]!
+    links: [AdminAnalyticsSankeyLink!]!
+    steps: [AdminAnalyticsFunnelStepStats!]!
+    sessionsWithCompletion: Int!
+    terminalCount: Int!
+}
+
 # Cook × booking-request offer funnel for cooks notified in range.
 # Early/terminal steps from BookingRequestCooks + Offers; create-UI mid-steps
 # from session interactions. See docs/features/admin-analytics.md.
@@ -3148,6 +3191,10 @@ type Admin {
     # counts + KPIs) for human non-cook/non-admin sessions in `range`. See
     # docs/features/admin-analytics.md.
     bookingRequestFormFlow(range: DateTimeRange!): AdminAnalyticsBookingRequestFormFlow!
+    # Gift-card purchase funnel for human non-cook/non-admin sessions in `range`.
+    giftCardFlow(range: DateTimeRange!): AdminAnalyticsSessionFunnelFlow!
+    # Chef sign-up funnel for human non-admin sessions in `range` (cooks included).
+    chefSignUpFlow(range: DateTimeRange!): AdminAnalyticsSessionFunnelFlow!
     # Cook × booking-request offer funnel for cooks notified in `range`.
     cookBookingRequestOfferFlow(range: DateTimeRange!): AdminAnalyticsCookBookingRequestOfferFlow!
     # WEB_PAGE_VISITED time series for a fixed WebPageKey. Same bucket rules as

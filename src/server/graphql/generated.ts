@@ -53,6 +53,7 @@ export interface GqlSAdmin {
     callTraffic: Array<GqlSAdminCallListItem>;
     callTrafficCounts: Array<Scalars['Int']['output']>;
     calls: Array<GqlSAdminCallListItem>;
+    chefSignUpFlow: GqlSAdminAnalyticsSessionFunnelFlow;
     cities: Array<GqlSAdminCity>;
     city?: Maybe<GqlSAdminCity>;
     cookBookingRequestOfferFlow: GqlSAdminAnalyticsCookBookingRequestOfferFlow;
@@ -71,6 +72,7 @@ export interface GqlSAdmin {
     featureToggles: Array<GqlSAdminFeatureToggle>;
     giftCard?: Maybe<GqlSAdminGiftCard>;
     giftCardCreations: Array<GqlSAdminTimeBucket>;
+    giftCardFlow: GqlSAdminAnalyticsSessionFunnelFlow;
     giftCardOccasionStats: Array<GqlSAdminGiftCardOccasionStat>;
     giftCardPaidPurchaseAverageCents: Scalars['Int']['output'];
     giftCardSalesMonthStats: Array<GqlSAdminGiftCardSalesMonthStat>;
@@ -228,6 +230,10 @@ export type GqlSAdminCallTrafficCountsArgs = {
     criteria: Array<GqlSAdminCallTrafficCriterion>;
 };
 
+export type GqlSAdminChefSignUpFlowArgs = {
+    range: GqlSDateTimeRange;
+};
+
 export type GqlSAdminCityArgs = {
     cityId: Scalars['ID']['input'];
 };
@@ -284,6 +290,10 @@ export type GqlSAdminGiftCardArgs = {
 
 export type GqlSAdminGiftCardCreationsArgs = {
     granularity?: GqlSAdminTimeBucketGranularity;
+    range: GqlSDateTimeRange;
+};
+
+export type GqlSAdminGiftCardFlowArgs = {
     range: GqlSDateTimeRange;
 };
 
@@ -517,6 +527,15 @@ export interface GqlSAdminAnalyticsSankeyNode {
     id: Scalars['String']['output'];
     labelDe: Scalars['String']['output'];
     labelEn: Scalars['String']['output'];
+}
+
+export interface GqlSAdminAnalyticsSessionFunnelFlow {
+    __typename?: 'AdminAnalyticsSessionFunnelFlow';
+    links: Array<GqlSAdminAnalyticsSankeyLink>;
+    nodes: Array<GqlSAdminAnalyticsSankeyNode>;
+    sessionsWithCompletion: Scalars['Int']['output'];
+    steps: Array<GqlSAdminAnalyticsFunnelStepStats>;
+    terminalCount: Scalars['Int']['output'];
 }
 
 export interface GqlSAdminAssistantChat {
@@ -2641,6 +2660,20 @@ export type GqlSCityUpsert = {
     titleEn: Scalars['String']['input'];
 };
 
+export type GqlSClientObservabilityKind = 'GRAPHQL_ERROR' | 'ROUTE_ERROR' | 'WEB_VITAL';
+
+export type GqlSClientObservabilityReportInput = {
+    kind: GqlSClientObservabilityKind;
+    message?: InputMaybe<Scalars['String']['input']>;
+    operationName?: InputMaybe<Scalars['String']['input']>;
+    path?: InputMaybe<Scalars['String']['input']>;
+    routeId?: InputMaybe<Scalars['String']['input']>;
+    value?: InputMaybe<Scalars['Float']['input']>;
+    vitalName?: InputMaybe<GqlSClientWebVitalName>;
+};
+
+export type GqlSClientWebVitalName = 'CLS' | 'FCP' | 'INP' | 'LCP' | 'TTFB';
+
 export type GqlSContentListStyle = 'BULLET' | 'NUMBERED';
 
 export type GqlSContentSection =
@@ -3677,6 +3710,7 @@ export interface GqlSMutation {
     authPasskeyAuthenticateVerify: GqlSMutationResult;
     authTotpChallengeDelete: GqlSMutationResult;
     authTotpVerify: GqlSMutationResult;
+    clientObservabilityReport: GqlSMutationResult;
     sessionCookieSettingAcceptAll: GqlSMutationResult;
     sessionCookieSettingAcceptMandatory: GqlSMutationResult;
     sessionNewsletterSubscriptionCreate: GqlSMutationResult;
@@ -3706,6 +3740,10 @@ export type GqlSMutationAuthPasskeyAuthenticateVerifyArgs = {
 
 export type GqlSMutationAuthTotpVerifyArgs = {
     code: Scalars['String']['input'];
+};
+
+export type GqlSMutationClientObservabilityReportArgs = {
+    input: GqlSClientObservabilityReportInput;
 };
 
 export type GqlSMutationSessionNewsletterSubscriptionCreateArgs = {
@@ -4962,6 +5000,7 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminAnalyticsFunnelStepStats: ResolverTypeWrapper<GqlSAdminAnalyticsFunnelStepStats>;
     AdminAnalyticsSankeyLink: ResolverTypeWrapper<GqlSAdminAnalyticsSankeyLink>;
     AdminAnalyticsSankeyNode: ResolverTypeWrapper<GqlSAdminAnalyticsSankeyNode>;
+    AdminAnalyticsSessionFunnelFlow: ResolverTypeWrapper<GqlSAdminAnalyticsSessionFunnelFlow>;
     AdminAssistantChat: ResolverTypeWrapper<Omit<GqlSAdminAssistantChat, 'turns'> & { turns: Array<GqlSResolversTypes['ChatTurn']> }>;
     AdminAssistantChatCriterion: GqlSAdminAssistantChatCriterion;
     AdminBlogPost: ResolverTypeWrapper<Omit<GqlSAdminBlogPost, 'sections'> & { sections: Array<GqlSResolversTypes['ContentSection']> }>;
@@ -5197,6 +5236,9 @@ export type GqlSResolversTypes = ResolversObject<{
     ChatTurnUsage: ResolverTypeWrapper<GqlSChatTurnUsage>;
     CityTestimonial: ResolverTypeWrapper<Omit<GqlSCityTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['Testimonial'] }>;
     CityUpsert: GqlSCityUpsert;
+    ClientObservabilityKind: GqlSClientObservabilityKind;
+    ClientObservabilityReportInput: GqlSClientObservabilityReportInput;
+    ClientWebVitalName: GqlSClientWebVitalName;
     ContentListStyle: GqlSContentListStyle;
     ContentSection: ResolverTypeWrapper<GqlSResolversUnionTypes<GqlSResolversTypes>['ContentSection']>;
     ContentSectionContent: ResolverTypeWrapper<GqlSContentSectionContent>;
@@ -5524,6 +5566,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminAnalyticsFunnelStepStats: GqlSAdminAnalyticsFunnelStepStats;
     AdminAnalyticsSankeyLink: GqlSAdminAnalyticsSankeyLink;
     AdminAnalyticsSankeyNode: GqlSAdminAnalyticsSankeyNode;
+    AdminAnalyticsSessionFunnelFlow: GqlSAdminAnalyticsSessionFunnelFlow;
     AdminAssistantChat: Omit<GqlSAdminAssistantChat, 'turns'> & { turns: Array<GqlSResolversParentTypes['ChatTurn']> };
     AdminAssistantChatCriterion: GqlSAdminAssistantChatCriterion;
     AdminBlogPost: Omit<GqlSAdminBlogPost, 'sections'> & { sections: Array<GqlSResolversParentTypes['ContentSection']> };
@@ -5700,6 +5743,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     ChatTurnUsage: GqlSChatTurnUsage;
     CityTestimonial: Omit<GqlSCityTestimonial, 'testimonial'> & { testimonial: GqlSResolversParentTypes['Testimonial'] };
     CityUpsert: GqlSCityUpsert;
+    ClientObservabilityReportInput: GqlSClientObservabilityReportInput;
     ContentSection: GqlSResolversUnionTypes<GqlSResolversParentTypes>['ContentSection'];
     ContentSectionContent: GqlSContentSectionContent;
     ContentSectionCta: GqlSContentSectionCta;
@@ -6066,6 +6110,12 @@ export type GqlSAdminResolvers<
         RequireFields<GqlSAdminCallTrafficCountsArgs, 'criteria'>
     >;
     calls?: Resolver<Array<GqlSResolversTypes['AdminCallListItem']>, ParentType, ContextType>;
+    chefSignUpFlow?: Resolver<
+        GqlSResolversTypes['AdminAnalyticsSessionFunnelFlow'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminChefSignUpFlowArgs, 'range'>
+    >;
     cities?: Resolver<Array<GqlSResolversTypes['AdminCity']>, ParentType, ContextType>;
     city?: Resolver<Maybe<GqlSResolversTypes['AdminCity']>, ParentType, ContextType, RequireFields<GqlSAdminCityArgs, 'cityId'>>;
     cookBookingRequestOfferFlow?: Resolver<
@@ -6148,6 +6198,12 @@ export type GqlSAdminResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminGiftCardCreationsArgs, 'granularity' | 'range'>
+    >;
+    giftCardFlow?: Resolver<
+        GqlSResolversTypes['AdminAnalyticsSessionFunnelFlow'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminGiftCardFlowArgs, 'range'>
     >;
     giftCardOccasionStats?: Resolver<
         Array<GqlSResolversTypes['AdminGiftCardOccasionStat']>,
@@ -6412,6 +6468,18 @@ export type GqlSAdminAnalyticsSankeyNodeResolvers<
     id?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     labelDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     labelEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminAnalyticsSessionFunnelFlowResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminAnalyticsSessionFunnelFlow'] =
+        GqlSResolversParentTypes['AdminAnalyticsSessionFunnelFlow'],
+> = ResolversObject<{
+    links?: Resolver<Array<GqlSResolversTypes['AdminAnalyticsSankeyLink']>, ParentType, ContextType>;
+    nodes?: Resolver<Array<GqlSResolversTypes['AdminAnalyticsSankeyNode']>, ParentType, ContextType>;
+    sessionsWithCompletion?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    steps?: Resolver<Array<GqlSResolversTypes['AdminAnalyticsFunnelStepStats']>, ParentType, ContextType>;
+    terminalCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminAssistantChatResolvers<
@@ -9261,6 +9329,12 @@ export type GqlSMutationResolvers<
         ContextType,
         RequireFields<GqlSMutationAuthTotpVerifyArgs, 'code'>
     >;
+    clientObservabilityReport?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSMutationClientObservabilityReportArgs, 'input'>
+    >;
     sessionCookieSettingAcceptAll?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
     sessionCookieSettingAcceptMandatory?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
     sessionNewsletterSubscriptionCreate?: Resolver<
@@ -10277,6 +10351,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminAnalyticsFunnelStepStats?: GqlSAdminAnalyticsFunnelStepStatsResolvers<ContextType>;
     AdminAnalyticsSankeyLink?: GqlSAdminAnalyticsSankeyLinkResolvers<ContextType>;
     AdminAnalyticsSankeyNode?: GqlSAdminAnalyticsSankeyNodeResolvers<ContextType>;
+    AdminAnalyticsSessionFunnelFlow?: GqlSAdminAnalyticsSessionFunnelFlowResolvers<ContextType>;
     AdminAssistantChat?: GqlSAdminAssistantChatResolvers<ContextType>;
     AdminBlogPost?: GqlSAdminBlogPostResolvers<ContextType>;
     AdminBookingRequest?: GqlSAdminBookingRequestResolvers<ContextType>;
@@ -10979,6 +11054,14 @@ export const GqlSChatTurnStatusSchema: z.ZodType<
     'AWAITING_INPUT' | 'CANCELLED' | 'COMPLETE' | 'FAILED' | 'QUEUED' | 'RUNNING'
 > = z.enum(['AWAITING_INPUT', 'CANCELLED', 'COMPLETE', 'FAILED', 'QUEUED', 'RUNNING']);
 
+export const GqlSClientObservabilityKindSchema: z.ZodType<
+    'GRAPHQL_ERROR' | 'ROUTE_ERROR' | 'WEB_VITAL',
+    'GRAPHQL_ERROR' | 'ROUTE_ERROR' | 'WEB_VITAL'
+> = z.enum(['GRAPHQL_ERROR', 'ROUTE_ERROR', 'WEB_VITAL']);
+
+export const GqlSClientWebVitalNameSchema: z.ZodType<'CLS' | 'FCP' | 'INP' | 'LCP' | 'TTFB', 'CLS' | 'FCP' | 'INP' | 'LCP' | 'TTFB'> =
+    z.enum(['CLS', 'FCP', 'INP', 'LCP', 'TTFB']);
+
 export const GqlSContentListStyleSchema: z.ZodType<'BULLET' | 'NUMBERED', 'BULLET' | 'NUMBERED'> = z.enum(['BULLET', 'NUMBERED']);
 
 export const GqlSContentSectionKindSchema: z.ZodType<
@@ -11655,6 +11738,18 @@ export function GqlSCityUpsertSchema(): z.ZodObject<Properties<GqlSCityUpsert>> 
         titleDe: z.string(),
         titleEn: z.string(),
     }) as z.ZodObject<Properties<GqlSCityUpsert>>;
+}
+
+export function GqlSClientObservabilityReportInputSchema(): z.ZodObject<Properties<GqlSClientObservabilityReportInput>> {
+    return z.object({
+        kind: GqlSClientObservabilityKindSchema,
+        message: z.string().nullish(),
+        operationName: z.string().nullish(),
+        path: z.string().nullish(),
+        routeId: z.string().nullish(),
+        value: z.number().nullish(),
+        vitalName: GqlSClientWebVitalNameSchema.nullish(),
+    });
 }
 
 export function GqlSContentSectionInputSchema(): z.ZodObject<Properties<GqlSContentSectionInput>> {

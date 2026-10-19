@@ -112,6 +112,7 @@ import { chatInputCollectionRespond } from '../commands/chatInputCollectionRespo
 import { chatMessageCreate } from '../commands/chatMessageCreate';
 import { chatTitleUpdate } from '../commands/chatTitleUpdate';
 import { chatToolApprovalRespond } from '../commands/chatToolApprovalRespond';
+import { clientObservabilityReport } from '../commands/clientObservabilityReport';
 import { cookBiographySuggest } from '../commands/cookBiographySuggest';
 import { cookBookingRequestDecline } from '../commands/cookBookingRequestDecline';
 import { cookBookingRequestGeneratedMenuApply } from '../commands/cookBookingRequestGeneratedMenuApply';
@@ -203,7 +204,9 @@ import { adminAiGenerationCreationsFindMany } from '../queries/adminAiGeneration
 import { adminAiGenerationFindMany } from '../queries/adminAiGenerationFindMany';
 import { adminAiGenerationFindOne } from '../queries/adminAiGenerationFindOne';
 import { adminAnalyticsBookingRequestFormFlow } from '../queries/adminAnalyticsBookingRequestFormFlow';
+import { adminAnalyticsChefSignUpFlow } from '../queries/adminAnalyticsChefSignUpFlow';
 import { adminAnalyticsCookBookingRequestOfferFlow } from '../queries/adminAnalyticsCookBookingRequestOfferFlow';
+import { adminAnalyticsGiftCardFlow } from '../queries/adminAnalyticsGiftCardFlow';
 import { adminAssistantChatCreationsFindMany } from '../queries/adminAssistantChatCreationsFindMany';
 import { adminAssistantChatFindMany } from '../queries/adminAssistantChatFindMany';
 import { adminAssistantChatFindOne } from '../queries/adminAssistantChatFindOne';
@@ -423,6 +426,7 @@ import type {
     GqlSAdminCallSlotCreationsArgs,
     GqlSAdminCallTrafficArgs,
     GqlSAdminCallTrafficCountsArgs,
+    GqlSAdminChefSignUpFlowArgs,
     GqlSAdminCity,
     GqlSAdminCityArgs,
     GqlSAdminCook,
@@ -445,6 +449,7 @@ import type {
     GqlSAdminGiftCard,
     GqlSAdminGiftCardArgs,
     GqlSAdminGiftCardCreationsArgs,
+    GqlSAdminGiftCardFlowArgs,
     GqlSAdminGiftCardOccasionStatsArgs,
     GqlSAdminGiftCardSalesMonthStatsArgs,
     GqlSAdminGiftCardsArgs,
@@ -639,6 +644,7 @@ import type {
     GqlSMutationAuthEmailOtpVerifyArgs,
     GqlSMutationAuthPasskeyAuthenticateVerifyArgs,
     GqlSMutationAuthTotpVerifyArgs,
+    GqlSMutationClientObservabilityReportArgs,
     GqlSMutationSessionNewsletterSubscriptionCreateArgs,
     GqlSMutationSessionWebPageInteractionCreateArgs,
     GqlSMutationSessionWebPageVisitCreateArgs,
@@ -1058,6 +1064,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             bookingRequestFormFlow(_parent: GqlSAdmin, args: GqlSAdminBookingRequestFormFlowArgs, requestingSession: GqlSSession) {
                 return adminAnalyticsBookingRequestFormFlow(args.range, requestingSession, serverRuntime);
+            },
+            giftCardFlow(_parent: GqlSAdmin, args: GqlSAdminGiftCardFlowArgs, requestingSession: GqlSSession) {
+                return adminAnalyticsGiftCardFlow(args.range, requestingSession, serverRuntime);
+            },
+            chefSignUpFlow(_parent: GqlSAdmin, args: GqlSAdminChefSignUpFlowArgs, requestingSession: GqlSSession) {
+                return adminAnalyticsChefSignUpFlow(args.range, requestingSession, serverRuntime);
             },
             cookBookingRequestOfferFlow(
                 _parent: GqlSAdmin,
@@ -2623,6 +2635,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return sessionWebPageInteractionCreate(args, requestingSession, serverRuntime);
+            },
+            clientObservabilityReport(_parent: unknown, args: GqlSMutationClientObservabilityReportArgs, requestingSession: GqlSSession) {
+                return clientObservabilityReport(args, requestingSession, serverRuntime);
             },
             user(_parent: unknown, __: unknown, requestingSession: GqlSSession) {
                 return guardUserMutation(requestingSession);
