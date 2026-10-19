@@ -11,6 +11,7 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { aiTelemetry } from '../observability/aiTelemetry';
 import { aiGenerationOutputSerialize } from '../utils/aiGenerationOutputSerialize';
 import { aiGenerationUsageFromLanguageModel } from '../utils/aiGenerationUsage';
 
@@ -78,6 +79,7 @@ Gib als Ergebnis title und description zurück.
             system,
             prompt,
             output: Output.object({ schema: TITLE_DESCRIPTION_SCHEMA }),
+            telemetry: aiTelemetry('COOK_MENU_TITLE_DESCRIPTION'),
         });
 
         serverRuntime.aiGenerations.record({

@@ -31,6 +31,9 @@ export function environmentVariablesTestSource(overrides: NodeJS.ProcessEnv = {}
         EMAIL_TRANSPORT: 'console',
         SLACK_TRANSPORT: 'console',
         WHATSAPP_TRANSPORT: 'console',
+        LANGFUSE_TRANSPORT: 'off',
+        OTEL_TRANSPORT: 'off',
+        NODE_ENV: 'test',
         ...overrides,
     };
 }

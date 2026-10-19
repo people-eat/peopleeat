@@ -52,6 +52,7 @@ describe('environmentVariablesCreate', () => {
             recaptchaSecretKey: 'test-recaptcha-secret',
             recaptchaSiteKey: 'test-recaptcha-site',
             klaviyoPrivateApiKey: 'pk_klaviyo_test',
+            klaviyoNewsletterListId: undefined,
             slackTransport: 'console',
             slackBotToken: undefined,
             slackChannelBookingRequests: undefined,
@@ -69,6 +70,14 @@ describe('environmentVariablesCreate', () => {
             whatsappAppSecret: undefined,
             whatsappWebhookVerifyToken: undefined,
             chatDebugEnabled: true,
+            langfuseTransport: 'off',
+            langfusePublicKey: undefined,
+            langfuseSecretKey: undefined,
+            langfuseBaseUrl: 'https://cloud.langfuse.com',
+            otelTransport: 'off',
+            otelExporterOtlpEndpoint: undefined,
+            otelExporterOtlpHeaders: undefined,
+            observabilityEnvironment: 'test',
         });
     });
 
@@ -224,5 +233,57 @@ describe('environmentVariablesCreate', () => {
 
     it('does not require Resend or Slack credentials when both transports are console', () => {
         expect(() => environmentVariablesCreate(environmentVariablesTestSource())).not.toThrow();
+    });
+
+    it('requires Langfuse keys when LANGFUSE_TRANSPORT=cloud', () => {
+        expect(() =>
+            environmentVariablesCreate(
+                environmentVariablesTestSource({
+                    LANGFUSE_TRANSPORT: 'cloud',
+                }),
+            ),
+        ).toThrow(/LANGFUSE_PUBLIC_KEY/);
+
+        const environmentVariables = environmentVariablesCreate(
+            environmentVariablesTestSource({
+                LANGFUSE_TRANSPORT: 'cloud',
+                LANGFUSE_PUBLIC_KEY: 'pk-lf-test',
+                LANGFUSE_SECRET_KEY: 'sk-lf-test',
+                LANGFUSE_BASE_URL: 'https://cloud.langfuse.com/',
+            }),
+        );
+        expect(environmentVariables.langfuseTransport).toBe('cloud');
+        expect(environmentVariables.langfusePublicKey).toBe('pk-lf-test');
+        expect(environmentVariables.langfuseBaseUrl).toBe('https://cloud.langfuse.com');
+    });
+
+    it('requires OTLP endpoint when OTEL_TRANSPORT=otlp', () => {
+        expect(() =>
+            environmentVariablesCreate(
+                environmentVariablesTestSource({
+                    OTEL_TRANSPORT: 'otlp',
+                }),
+            ),
+        ).toThrow(/OTEL_EXPORTER_OTLP_ENDPOINT/);
+
+        const environmentVariables = environmentVariablesCreate(
+            environmentVariablesTestSource({
+                OTEL_TRANSPORT: 'otlp',
+                OTEL_EXPORTER_OTLP_ENDPOINT: 'https://otlp.example.com',
+                OTEL_EXPORTER_OTLP_HEADERS: 'Authorization=Basic abc',
+            }),
+        );
+        expect(environmentVariables.otelTransport).toBe('otlp');
+        expect(environmentVariables.otelExporterOtlpEndpoint).toBe('https://otlp.example.com');
+    });
+
+    it('rejects an invalid LANGFUSE_TRANSPORT', () => {
+        expect(() =>
+            environmentVariablesCreate(
+                environmentVariablesTestSource({
+                    LANGFUSE_TRANSPORT: 'self-hosted',
+                }),
+            ),
+        ).toThrow(/Invalid LANGFUSE_TRANSPORT/);
     });
 });

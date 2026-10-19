@@ -48,6 +48,10 @@ const whatsappRequiredEnvironmentVariables = [
     'WHATSAPP_WEBHOOK_VERIFY_TOKEN',
 ] as const;
 
+const langfuseRequiredEnvironmentVariables = ['LANGFUSE_PUBLIC_KEY', 'LANGFUSE_SECRET_KEY'] as const;
+
+const otlpRequiredEnvironmentVariables = ['OTEL_EXPORTER_OTLP_ENDPOINT'] as const;
+
 const emailTransports = ['resend', 'console'] as const;
 type EmailTransport = (typeof emailTransports)[number];
 
@@ -56,6 +60,12 @@ type SlackTransport = (typeof slackTransports)[number];
 
 const whatsappTransports = ['meta', 'console'] as const;
 type WhatsAppTransport = (typeof whatsappTransports)[number];
+
+const langfuseTransports = ['off', 'cloud'] as const;
+type LangfuseTransport = (typeof langfuseTransports)[number];
+
+const otelTransports = ['off', 'otlp', 'console'] as const;
+type OtelTransport = (typeof otelTransports)[number];
 
 function emailTransportParse(raw: string | undefined): EmailTransport {
     const value = raw ?? 'resend';
@@ -81,6 +91,35 @@ function whatsappTransportParse(raw: string | undefined): WhatsAppTransport {
     return value as WhatsAppTransport;
 }
 
+function langfuseTransportParse(raw: string | undefined): LangfuseTransport {
+    const value = raw ?? 'off';
+    if (!(langfuseTransports as readonly string[]).includes(value)) {
+        throw new Error(`Invalid LANGFUSE_TRANSPORT "${value}". Expected one of: ${langfuseTransports.join(', ')}`);
+    }
+    return value as LangfuseTransport;
+}
+
+function otelTransportParse(raw: string | undefined): OtelTransport {
+    const value = raw ?? 'off';
+    if (!(otelTransports as readonly string[]).includes(value)) {
+        throw new Error(`Invalid OTEL_TRANSPORT "${value}". Expected one of: ${otelTransports.join(', ')}`);
+    }
+    return value as OtelTransport;
+}
+
+function observabilityEnvironmentParse(raw: string | undefined, nodeEnv: string | undefined): string {
+    if (raw?.trim()) {
+        return raw.trim();
+    }
+    if (nodeEnv === 'production') {
+        return 'production';
+    }
+    if (nodeEnv === 'test') {
+        return 'test';
+    }
+    return 'development';
+}
+
 function missingEnvironmentVariablesReport(missing: string[]): never {
     const list = missing.map((name) => `  - ${name}`).join('\n');
     const message = `Missing required environment variables:\n${list}`;
@@ -92,6 +131,8 @@ export function environmentVariablesCreate(source: NodeJS.ProcessEnv = process.e
     const emailTransport = emailTransportParse(source.EMAIL_TRANSPORT);
     const slackTransport = slackTransportParse(source.SLACK_TRANSPORT);
     const whatsappTransport = whatsappTransportParse(source.WHATSAPP_TRANSPORT);
+    const langfuseTransport = langfuseTransportParse(source.LANGFUSE_TRANSPORT);
+    const otelTransport = otelTransportParse(source.OTEL_TRANSPORT);
 
     const required: string[] = [...alwaysRequiredEnvironmentVariables];
     if (emailTransport === 'resend') {
@@ -102,6 +143,12 @@ export function environmentVariablesCreate(source: NodeJS.ProcessEnv = process.e
     }
     if (whatsappTransport === 'meta') {
         required.push(...whatsappRequiredEnvironmentVariables);
+    }
+    if (langfuseTransport === 'cloud') {
+        required.push(...langfuseRequiredEnvironmentVariables);
+    }
+    if (otelTransport === 'otlp') {
+        required.push(...otlpRequiredEnvironmentVariables);
     }
 
     const missing = required.filter((name) => !source[name]);
@@ -162,6 +209,14 @@ export function environmentVariablesCreate(source: NodeJS.ProcessEnv = process.e
         whatsappAppSecret: source.WHATSAPP_APP_SECRET,
         whatsappWebhookVerifyToken: source.WHATSAPP_WEBHOOK_VERIFY_TOKEN,
         chatDebugEnabled: source.CHAT_DEBUG_ENABLED === 'true' || source.NODE_ENV !== 'production',
+        langfuseTransport,
+        langfusePublicKey: source.LANGFUSE_PUBLIC_KEY,
+        langfuseSecretKey: source.LANGFUSE_SECRET_KEY,
+        langfuseBaseUrl: (source.LANGFUSE_BASE_URL ?? 'https://cloud.langfuse.com').replace(/\/$/, ''),
+        otelTransport,
+        otelExporterOtlpEndpoint: source.OTEL_EXPORTER_OTLP_ENDPOINT,
+        otelExporterOtlpHeaders: source.OTEL_EXPORTER_OTLP_HEADERS,
+        observabilityEnvironment: observabilityEnvironmentParse(source.OBSERVABILITY_ENVIRONMENT, source.NODE_ENV),
     };
 }
 

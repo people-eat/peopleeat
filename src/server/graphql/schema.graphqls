@@ -3185,6 +3185,10 @@ type Admin {
     # across `range` at the given `granularity` (default `day`). Span capped at
     # 366 days.
     logCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Top Postgres statements by total execution time from `pg_stat_statements`.
+    # Empty when the extension is not installed. `limit` capped at 100.
+    # See docs/architecture/observability.md.
+    databaseSlowStatements(limit: Int! = 20): [AdminDatabaseSlowStatement!]!
     # Single one-shot AI generation. Null when the id is unknown.
     aiGeneration(aiGenerationId: ID!): AdminAiGeneration
     # One-shot LLM call ledger. Sorted by criterion (default newest first). See
@@ -3657,6 +3661,15 @@ type AdminLog {
     message: String!
     context: JSON
     createdAt: DateTime!
+}
+
+# One row from `pg_stat_statements` for admin slow-query inspection.
+type AdminDatabaseSlowStatement {
+    query: String!
+    calls: Int!
+    totalExecTimeMs: Float!
+    meanExecTimeMs: Float!
+    rows: Int!
 }
 
 # Sortable columns for `Admin.logs`. Default when omitted: `createdAt` DESC.

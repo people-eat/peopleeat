@@ -1,0 +1,221 @@
+# Observability
+
+## Context
+
+peopleeat already persists product ledgers for debugging: Postgres `Logs` ([logging.md](./logging.md)), one-shot `AiGenerations`
+([ai-generations.md](./ai-generations.md)), and chat-turn token columns. Those answer “what happened in our domain tables?” They do not
+answer “why was this GraphQL request slow?”, “which SQL dominated?”, or “how did the cook assistant nest tools and tokens on this turn?”
+
+OpenTelemetry (OTel) is the instrumentation standard. Langfuse is the AI specialty UI on top of OTel traces. A Grafana stack (Tempo /
+Prometheus, Cloud or self-hosted on Coolify) is the general APM surface for HTTP, GraphQL, jobs, and Postgres spans.
+
+## Decision
+
+**Instrument once with OpenTelemetry; export with soft transports; keep Postgres ledgers.**
+
+| Signal                                   | Destination                                                 | Role                                                      |
+| ---------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------- |
+| App errors / events                      | Postgres `Logs` (unchanged)                                 | Durable, admin-queryable product log                      |
+| One-shot AI prompts                      | `AiGenerations` (unchanged)                                 | Admin audit ledger                                        |
+| LLM / agent traces                       | Langfuse (`LANGFUSE_TRANSPORT=cloud` + `LANGFUSE_BASE_URL`) | Generations, tools, cost, sessions (Cloud or self-hosted) |
+| Request / SQL / job traces + RED metrics | Grafana via OTLP (`OTEL_TRANSPORT=otlp`)                    | Latency waterfalls, p95, error rate (Cloud or Coolify)    |
+| Aggregate slow SQL                       | `pg_stat_statements` (+ admin GraphQL)                      | “Which queries take longest?” globally                    |
+| Ops thresholds                           | Slack `opsAlerts` recurring job                             | Error-rate and slow-SQL alerts without opening Grafana    |
+
+Transports default to **off** so local/test boot never requires vendor keys (same pattern as email/Slack/WhatsApp console transports).
+
+### Trace vocabulary
+
+- **Trace** — one unit of work (one GraphQL operation, one chat turn, one job run)
+- **Span** — a timed step (SQL, LLM generation, tool execute)
+- **Session** (Langfuse) — many related traces; for assistant chats we set `sessionId` to `chatId`
+- **Generation** — LLM call observation (tokens, model, cost)
+
+### Slow queries (two complementary answers)
+
+1. **Aggregate** — `pg_stat_statements` ranked by `total_exec_time` / `mean_exec_time` (admin `databaseSlowStatements`, runbook SQL below)
+2. **Per-request** — OTel `pg` spans nested under the GraphQL / job span in Grafana
+
+## Alternatives considered
+
+| Option                             | Why rejected                                                            |
+| ---------------------------------- | ----------------------------------------------------------------------- |
+| Langfuse only                      | Strong for AI; weak for GraphQL/SQL/job latency                         |
+| Grafana / Datadog only             | Weak LLM tree, cost, and eval surface                                   |
+| Replace Postgres `Logs` with Loki  | Loses admin GraphQL product log; more ops for little gain at this stage |
+| Always-required Langfuse/OTLP keys | Breaks local/test; contradicts transport pattern                        |
+
+## Consequences
+
+- Enable Langfuse and/or OTLP in Coolify when ready; leave transports `off` in `.env.local` / `.env.test`.
+- Prompts and tool I/O may contain PII — use separate Langfuse projects (or environments) for production vs staging; never point local
+  development at the production Langfuse project with real user data unless intentional.
+- `pg_stat_statements` must be available on the Postgres instance (`shared_preload_libraries`); the admin query returns `[]` when the
+  extension is missing.
+- Trace ids are merged into `Logs.context` when an active span exists so admin log rows can be correlated with Grafana/Langfuse.
+
+## How it works
+
+### Environment
+
+| Variable                      | Required         | Notes                                                                           |
+| ----------------------------- | ---------------- | ------------------------------------------------------------------------------- |
+| `LANGFUSE_TRANSPORT`          | No               | `off` (default) \| `cloud` (means “send to Langfuse API”, Cloud or self-hosted) |
+| `LANGFUSE_PUBLIC_KEY`         | Yes when `cloud` | Project public key                                                              |
+| `LANGFUSE_SECRET_KEY`         | Yes when `cloud` | Project secret key                                                              |
+| `LANGFUSE_BASE_URL`           | No               | Default `https://cloud.langfuse.com`; set to your Coolify Langfuse origin       |
+| `OTEL_TRANSPORT`              | No               | `off` (default) \| `otlp` \| `console`                                          |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Yes when `otlp`  | OTLP HTTP base (Grafana Cloud or Coolify Alloy / otel-lgtm)                     |
+| `OTEL_EXPORTER_OTLP_HEADERS`  | No               | Comma-separated `k=v` pairs for auth                                            |
+| `OBSERVABILITY_ENVIRONMENT`   | No               | Defaults from `NODE_ENV` (`production` / `development` / `test`)                |
+
+See [infrastructure.md](../infrastructure.md). Self-host on Coolify: [Self-hosting on Coolify](#self-hosting-on-coolify).
+
+### Boot
+
+[`src/server/observability/observabilityStart.ts`](../../src/server/observability/observabilityStart.ts) runs once from
+[`src/server/graphql/server.ts`](../../src/server/graphql/server.ts) before Apollo / jobs start:
+
+1. Builds OTel `NodeSDK` span processors (Langfuse and/or OTLP and/or console)
+2. Registers `PgInstrumentation` + `HttpInstrumentation`
+3. Registers AI SDK 7 `LangfuseVercelAiSdkIntegration` when Langfuse or OTLP is on (so LLM spans exist for either exporter)
+4. Starts a metrics `MeterProvider` with OTLP export when `OTEL_TRANSPORT=otlp`
+
+### AI instrumentation
+
+- Chat turns: `propagateAttributes` + agent `telemetry.functionId` in
+  [`chatTurnAgentCreate.ts`](../../src/server/lib/chatTurnAgentCreate.ts)
+- One-shots / agents: shared helpers in [`aiTelemetry.ts`](../../src/server/observability/aiTelemetry.ts)
+
+### Request / job instrumentation
+
+- GraphQL: span + RED histogram/counter around `executeGraphQLQuery`
+- Jobs: span + RED metrics around each `boss.work` handler
+- Logger: active `traceId` / `spanId` merged into persisted log context
+
+### Slack ops alert
+
+Recurring job `observability-ops-alert` samples recent Postgres error-log volume and top `pg_stat_statements` means, posting to
+`slackChannelOpsAlerts` when thresholds are crossed (silent when healthy or Slack is `console`).
+
+### Runbook: enable `pg_stat_statements`
+
+On the Postgres host (requires ability to set preload libraries — Coolify/managed PG UI or superuser):
+
+```sql
+-- After shared_preload_libraries includes 'pg_stat_statements' and Postgres restarts:
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+
+SELECT
+  round(total_exec_time::numeric, 2) AS total_ms,
+  round(mean_exec_time::numeric, 2) AS mean_ms,
+  calls,
+  left(query, 200) AS query
+FROM pg_stat_statements
+ORDER BY total_exec_time DESC
+LIMIT 20;
+```
+
+Admin GraphQL: `Admin.databaseSlowStatements(limit: Int! = 20)`.
+
+## Self-hosting on Coolify
+
+Run **two** Coolify resources next to peopleeat (do not put them inside the peopleeat app container):
+
+1. **Langfuse** — AI traces (official Docker Compose)
+2. **Grafana OTel LGTM** — OTLP sink for GraphQL / SQL / job traces + metrics (single image to start)
+
+Keep them on a dedicated Coolify project (e.g. `observability`) so restarts do not couple to app deploys. Prefer a VM with **≥4 vCPU / 16
+GiB RAM** and **≥100 GiB** disk; observability volume grows quickly.
+
+Official Langfuse compose guide:
+[langfuse.com/self-hosting/deployment/docker-compose](https://langfuse.com/self-hosting/deployment/docker-compose). Grafana all-in-one OTLP
+image: [`grafana/otel-lgtm`](https://github.com/grafana/docker-otel-lgtm).
+
+### A. Langfuse (Docker Compose resource)
+
+1. Coolify → **New Resource** → **Docker Compose** (empty / raw compose).
+2. Paste the upstream compose from https://github.com/langfuse/langfuse/blob/main/docker-compose.yml (pin a release tag in production).
+3. Replace every `# CHANGEME` secret before first start:
+   - `NEXTAUTH_SECRET` — `openssl rand -base64 32`
+   - `SALT` — long random string
+   - `ENCRYPTION_KEY` — `openssl rand -hex 32` (64 hex chars)
+   - Postgres / Redis / ClickHouse / MinIO passwords
+4. Set public URL env on **both** web and worker:
+   - `NEXTAUTH_URL=https://langfuse.<your-domain>` (exact browser URL, HTTPS)
+5. Coolify **Domains**: map `langfuse.<your-domain>` → service `langfuse-web` port `3000`. Do **not** publicly expose Postgres, Redis,
+   ClickHouse, or worker.
+6. Enable **persistent volumes** for postgres, clickhouse, redis, minio (Coolify volume UI / compose `volumes:`).
+7. Deploy; wait until `langfuse-web` logs `Ready` (~2–3 minutes).
+8. Open the UI → **Sign up** (no default admin) → create org + project → **Settings → API Keys** → copy public/secret keys.
+9. Optional later: point Langfuse S3 event/media buckets at your existing Garage instead of MinIO
+   ([blob storage docs](https://langfuse.com/self-hosting/deployment/infrastructure/blobstorage)). Keep MinIO for v1 unless you need one
+   less container.
+
+### B. Grafana OTel LGTM (single Docker image)
+
+Simplest Coolify path that accepts OTLP HTTP and shows Tempo traces + Prometheus metrics + Grafana UI:
+
+1. Coolify → **New Resource** → **Docker Image** → `grafana/otel-lgtm:latest` (pin a digest/tag in production).
+2. Publish container port **3000** (Grafana UI) and **4318** (OTLP HTTP). Coolify Traefik can map two domains or one domain + path; easiest
+   is two hostnames:
+   - `grafana.<your-domain>` → `3000`
+   - `otel.<your-domain>` → `4318`
+3. Add a persistent volume for `/data` (or the image’s documented data path) so traces survive restarts.
+4. Open Grafana (`admin` / check image docs for default password; change immediately).
+5. Confirm Tempo + Prometheus datasources exist (pre-wired in `otel-lgtm`).
+
+When you outgrow the all-in-one image, replace it with Alloy + Tempo + Mimir + Grafana as separate Coolify services; peopleeat’s
+`OTEL_EXPORTER_OTLP_ENDPOINT` stays the same shape.
+
+### C. Point peopleeat at the stack
+
+On the **peopleeat** Coolify application env (test first, then production):
+
+```bash
+LANGFUSE_TRANSPORT=cloud
+LANGFUSE_PUBLIC_KEY=pk-lf-…
+LANGFUSE_SECRET_KEY=sk-lf-…
+LANGFUSE_BASE_URL=https://langfuse.<your-domain>
+
+OTEL_TRANSPORT=otlp
+OTEL_EXPORTER_OTLP_ENDPOINT=https://otel.<your-domain>
+# OTEL_EXPORTER_OTLP_HEADERS=   # only if you put basic-auth / token in front of OTLP
+OBSERVABILITY_ENVIRONMENT=production
+```
+
+`LANGFUSE_TRANSPORT=cloud` means “export to a Langfuse API”; `LANGFUSE_BASE_URL` selects Cloud vs your Coolify instance.
+
+Redeploy peopleeat. Trigger a chat turn and a GraphQL mutation, then:
+
+- Langfuse → Traces / Sessions (session id = chat id)
+- Grafana → Explore → Tempo (GraphQL / `pg` spans) and Prometheus (`graphql.operation.duration`, `job.handler.duration`)
+
+### D. App Postgres `pg_stat_statements`
+
+On the **peopleeat** Postgres (not Langfuse’s Postgres), enable the extension (Coolify DB → config / `shared_preload_libraries`, then
+restart):
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+```
+
+Then use admin GraphQL `databaseSlowStatements` or the SQL in the runbook above.
+
+### E. Network and security checklist
+
+- Langfuse and OTLP only on HTTPS via Coolify Traefik; restrict who can open Grafana (SSO / IP allowlist / basic auth).
+- Prefer private Docker network so peopleeat → `http://otel:4318` works **without** public OTLP if both apps share a Coolify destination;
+  otherwise keep public `https://otel.…` and protect it.
+- Separate Langfuse projects (or instances) for test vs production; prompts contain PII.
+- Disk alerts on ClickHouse / MinIO / LGTM volumes.
+- Do not reuse peopleeat’s app `DATABASE_URL` for Langfuse — Langfuse needs its own Postgres (+ ClickHouse + Redis + blob).
+
+## Key files
+
+- `src/server/observability/observabilityStart.ts` — OTel + Langfuse boot
+- `src/server/observability/aiTelemetry.ts` — AI SDK telemetry helpers
+- `src/server/observability/redMetrics.ts` — GraphQL / job RED meters
+- `src/server/observability/traceContext.ts` — active span ids for logs
+- `src/server/queries/adminDatabaseSlowStatementsFindMany.ts` — `pg_stat_statements` admin read
+- `src/server/jobs/handlers/observabilityOpsAlert.ts` — Slack threshold alerts

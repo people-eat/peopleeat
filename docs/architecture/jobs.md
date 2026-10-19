@@ -4,7 +4,8 @@
 
 The application needs two categories of background work:
 
-1. **Recurring jobs** — run on a cron schedule (e.g., weekday open-request Slack digest)
+1. **Recurring jobs** — run on a cron schedule (e.g., weekday open-request Slack digest, hourly `observability-ops-alert` — see
+   [observability.md](./observability.md))
 2. **Queued/scheduled jobs** — enqueued programmatically to run at a specific future time (e.g., expire an unpaid gift card after 15
    minutes)
 

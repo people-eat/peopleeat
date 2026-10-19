@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { meals } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSSession } from '../graphql/generated';
+import { aiTelemetry } from '../observability/aiTelemetry';
 import { aiGenerationOutputSerialize } from '../utils/aiGenerationOutputSerialize';
 import { aiGenerationUsageFromLanguageModel } from '../utils/aiGenerationUsage';
 import type { CookMenuSuggestionDraft } from '../utils/cookMenuSuggestionDraftMaterialize';
@@ -88,6 +89,7 @@ export async function cookMenuSuggestionFromInventoryGenerate(
         system: SYSTEM_PROMPT,
         prompt,
         output: Output.object({ schema: MENU_SUGGESTION_SCHEMA }),
+        telemetry: aiTelemetry('COOK_MENU_SUGGESTION_FROM_INVENTORY'),
     });
 
     serverRuntime.aiGenerations.record({

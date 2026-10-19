@@ -16,6 +16,7 @@ import { chatTitleGenerate } from './handlers/chatTitleGenerate';
 import { cookBiographySummaryGenerate } from './handlers/cookBiographySummaryGenerate';
 import { cookBookingRequestMenuEvaluationGenerateJob } from './handlers/cookBookingRequestMenuEvaluationGenerate';
 import { giftCardPreparedExpire } from './handlers/giftCardPreparedExpire';
+import { observabilityOpsAlert } from './handlers/observabilityOpsAlert';
 import { resendUsageSlackAlert } from './handlers/resendUsageSlackAlert';
 import { supportRequestCustomerReplyNotify } from './handlers/supportRequestCustomerReplyNotify';
 import { userKlaviyoProfileSync } from './handlers/userKlaviyoProfileSync';
@@ -42,5 +43,6 @@ export const jobDefinitions: JobDefinition[] = [
     bookingRequestSlackDigest,
     adminActionItemsSlackDaily,
     resendUsageSlackAlert,
+    observabilityOpsAlert,
     supportRequestCustomerReplyNotify,
 ];

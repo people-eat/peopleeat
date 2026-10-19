@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { cooks, meals, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSSession } from '../graphql/generated';
+import { aiTelemetry } from '../observability/aiTelemetry';
 import { aiGenerationOutputSerialize } from '../utils/aiGenerationOutputSerialize';
 import { aiGenerationUsageFromLanguageModel } from '../utils/aiGenerationUsage';
 
@@ -131,6 +132,7 @@ export async function cookBiographySummaryGenerate({
             system: BIOGRAPHY_SUMMARY_SYSTEM,
             prompt,
             output: Output.object({ schema: BIOGRAPHY_SUMMARY_SCHEMA }),
+            telemetry: aiTelemetry('COOK_BIOGRAPHY_SUMMARY'),
         });
 
         serverRuntime.aiGenerations.record({

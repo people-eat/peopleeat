@@ -100,4 +100,14 @@ export interface EnvironmentVariables {
     // When true, chat turn GraphQL payloads include agent/model/usage debug.
     // Enabled explicitly via CHAT_DEBUG_ENABLED=true, or implicitly outside production.
     chatDebugEnabled: boolean;
+    // OpenTelemetry / Langfuse — see docs/architecture/observability.md.
+    // Defaults to `off` so local/test do not require vendor keys.
+    langfuseTransport: 'off' | 'cloud';
+    langfusePublicKey: string | undefined;
+    langfuseSecretKey: string | undefined;
+    langfuseBaseUrl: string;
+    otelTransport: 'off' | 'otlp' | 'console';
+    otelExporterOtlpEndpoint: string | undefined;
+    otelExporterOtlpHeaders: string | undefined;
+    observabilityEnvironment: string;
 }

@@ -67,6 +67,7 @@ export interface GqlSAdmin {
     cooksInTravelRadius: Array<GqlSAdminCookInTravelRadiusPreview>;
     customerTestimonial?: Maybe<GqlSAdminCustomerTestimonial>;
     customerTestimonials: Array<GqlSAdminCustomerTestimonial>;
+    databaseSlowStatements: Array<GqlSAdminDatabaseSlowStatement>;
     featureToggles: Array<GqlSAdminFeatureToggle>;
     giftCard?: Maybe<GqlSAdminGiftCard>;
     giftCardCreations: Array<GqlSAdminTimeBucket>;
@@ -271,6 +272,10 @@ export type GqlSAdminCooksInTravelRadiusArgs = {
 
 export type GqlSAdminCustomerTestimonialArgs = {
     customerTestimonialId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminDatabaseSlowStatementsArgs = {
+    limit?: Scalars['Int']['input'];
 };
 
 export type GqlSAdminGiftCardArgs = {
@@ -1072,6 +1077,15 @@ export type GqlSAdminCustomerTestimonialUpdate = {
     occasion?: InputMaybe<Scalars['String']['input']>;
     rating?: InputMaybe<Scalars['Int']['input']>;
 };
+
+export interface GqlSAdminDatabaseSlowStatement {
+    __typename?: 'AdminDatabaseSlowStatement';
+    calls: Scalars['Int']['output'];
+    meanExecTimeMs: Scalars['Float']['output'];
+    query: Scalars['String']['output'];
+    rows: Scalars['Int']['output'];
+    totalExecTimeMs: Scalars['Float']['output'];
+}
 
 export interface GqlSAdminFeatureToggle {
     __typename?: 'AdminFeatureToggle';
@@ -5017,6 +5031,7 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminCustomerTestimonial: ResolverTypeWrapper<GqlSAdminCustomerTestimonial>;
     AdminCustomerTestimonialCreate: GqlSAdminCustomerTestimonialCreate;
     AdminCustomerTestimonialUpdate: GqlSAdminCustomerTestimonialUpdate;
+    AdminDatabaseSlowStatement: ResolverTypeWrapper<GqlSAdminDatabaseSlowStatement>;
     AdminFeatureToggle: ResolverTypeWrapper<GqlSAdminFeatureToggle>;
     AdminFeatureToggleUserOverride: ResolverTypeWrapper<GqlSAdminFeatureToggleUserOverride>;
     AdminGiftCard: ResolverTypeWrapper<GqlSAdminGiftCard>;
@@ -5560,6 +5575,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminCustomerTestimonial: GqlSAdminCustomerTestimonial;
     AdminCustomerTestimonialCreate: GqlSAdminCustomerTestimonialCreate;
     AdminCustomerTestimonialUpdate: GqlSAdminCustomerTestimonialUpdate;
+    AdminDatabaseSlowStatement: GqlSAdminDatabaseSlowStatement;
     AdminFeatureToggle: GqlSAdminFeatureToggle;
     AdminFeatureToggleUserOverride: GqlSAdminFeatureToggleUserOverride;
     AdminGiftCard: GqlSAdminGiftCard;
@@ -6114,6 +6130,12 @@ export type GqlSAdminResolvers<
         RequireFields<GqlSAdminCustomerTestimonialArgs, 'customerTestimonialId'>
     >;
     customerTestimonials?: Resolver<Array<GqlSResolversTypes['AdminCustomerTestimonial']>, ParentType, ContextType>;
+    databaseSlowStatements?: Resolver<
+        Array<GqlSResolversTypes['AdminDatabaseSlowStatement']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminDatabaseSlowStatementsArgs, 'limit'>
+    >;
     featureToggles?: Resolver<Array<GqlSResolversTypes['AdminFeatureToggle']>, ParentType, ContextType>;
     giftCard?: Resolver<
         Maybe<GqlSResolversTypes['AdminGiftCard']>,
@@ -6798,6 +6820,17 @@ export type GqlSAdminCustomerTestimonialResolvers<
     user?: Resolver<GqlSResolversTypes['AdminUser'], ParentType, ContextType>;
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type GqlSAdminDatabaseSlowStatementResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminDatabaseSlowStatement'] = GqlSResolversParentTypes['AdminDatabaseSlowStatement'],
+> = ResolversObject<{
+    calls?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    meanExecTimeMs?: Resolver<GqlSResolversTypes['Float'], ParentType, ContextType>;
+    query?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    rows?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    totalExecTimeMs?: Resolver<GqlSResolversTypes['Float'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminFeatureToggleResolvers<
@@ -10266,6 +10299,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminCookMenuCourse?: GqlSAdminCookMenuCourseResolvers<ContextType>;
     AdminCookTestimonial?: GqlSAdminCookTestimonialResolvers<ContextType>;
     AdminCustomerTestimonial?: GqlSAdminCustomerTestimonialResolvers<ContextType>;
+    AdminDatabaseSlowStatement?: GqlSAdminDatabaseSlowStatementResolvers<ContextType>;
     AdminFeatureToggle?: GqlSAdminFeatureToggleResolvers<ContextType>;
     AdminFeatureToggleUserOverride?: GqlSAdminFeatureToggleUserOverrideResolvers<ContextType>;
     AdminGiftCard?: GqlSAdminGiftCardResolvers<ContextType>;

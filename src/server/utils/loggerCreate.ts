@@ -1,6 +1,7 @@
 import { idCreate } from '../../shared/idCreate';
 import type { Database } from '../db';
 import { logs } from '../db/schema';
+import { activeTraceContext } from '../observability/traceContext';
 
 type LogLevel = 'error' | 'warn' | 'info' | 'debug';
 
@@ -22,6 +23,14 @@ function normalize(input: LogInput): { message: string; context: Record<string, 
     return { message: String(input), context: undefined };
 }
 
+function contextWithTrace(context: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+    const trace = activeTraceContext();
+    if (!trace) {
+        return context;
+    }
+    return { ...context, ...trace };
+}
+
 export function loggerCreate(db: Database): Logger {
     const pending: Promise<unknown>[] = [];
 
@@ -32,8 +41,9 @@ export function loggerCreate(db: Database): Logger {
 
     function log(level: LogLevel, input: LogInput, session?: LogSession) {
         const { message, context } = normalize(input);
-        context ? console[level](message, context) : console[level](message);
-        logPersist(level, message, session?.sessionId, context);
+        const merged = contextWithTrace(context);
+        merged ? console[level](message, merged) : console[level](message);
+        logPersist(level, message, session?.sessionId, merged);
     }
 
     return {

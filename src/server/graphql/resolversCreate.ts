@@ -251,6 +251,7 @@ import { adminCookUserFindOne } from '../queries/adminCookUserFindOne';
 import { adminCustomerTestimonialFindOne } from '../queries/adminCustomerTestimonialFindOne';
 import { adminCustomerTestimonialFindOneByOfferId } from '../queries/adminCustomerTestimonialFindOneByOfferId';
 import { adminCustomerTestimonialsFindMany } from '../queries/adminCustomerTestimonialsFindMany';
+import { adminDatabaseSlowStatementsFindMany } from '../queries/adminDatabaseSlowStatementsFindMany';
 import { adminFeatureToggleFindMany } from '../queries/adminFeatureToggleFindMany';
 import { adminFeatureToggleUserOverrideFindMany } from '../queries/adminFeatureToggleUserOverrideFindMany';
 import { adminFeatureToggleUserOverrideFindManyByKey } from '../queries/adminFeatureToggleUserOverrideFindManyByKey';
@@ -438,6 +439,7 @@ import type {
     GqlSAdminCookTestimonialArgs,
     GqlSAdminCustomerTestimonial,
     GqlSAdminCustomerTestimonialArgs,
+    GqlSAdminDatabaseSlowStatementsArgs,
     GqlSAdminFeatureToggle,
     GqlSAdminFeatureToggleUserOverride,
     GqlSAdminGiftCard,
@@ -1100,6 +1102,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             logCreations(_parent: GqlSAdmin, args: GqlSAdminLogCreationsArgs, requestingSession: GqlSSession) {
                 return adminLogCreationsFindMany(args, requestingSession, serverRuntime);
+            },
+            databaseSlowStatements(_parent: GqlSAdmin, args: GqlSAdminDatabaseSlowStatementsArgs, requestingSession: GqlSSession) {
+                return adminDatabaseSlowStatementsFindMany(args, requestingSession, serverRuntime);
             },
             aiGeneration(_parent: GqlSAdmin, args: GqlSAdminAiGenerationArgs, requestingSession: GqlSSession) {
                 return adminAiGenerationFindOne(args, requestingSession, serverRuntime);

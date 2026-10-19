@@ -1,6 +1,7 @@
 import type { GenerateTextOnStepEndCallback } from 'ai';
 import { isStepCount, ToolLoopAgent } from 'ai';
 import type { ServerRuntime } from '../domain/ServerRuntime';
+import { aiTelemetry } from '../observability/aiTelemetry';
 import { agentUserFacingWritingRules, currentDateForAgent, googleAgentProviderOptionsFor } from './agentScaffolding';
 
 interface AgentBookingRequestCreateOptions {
@@ -13,8 +14,10 @@ interface AgentBookingRequestCreateOptions {
 export async function agentBookingRequestCreate({ serverRuntime, modelId, onStepEnd }: AgentBookingRequestCreateOptions) {
     const resolvedModelId = modelId ?? 'gemini-2.5-flash';
     return new ToolLoopAgent({
+        id: 'booking-request-assistant',
         model: serverRuntime.ai.bookingRequestAssistantModel(resolvedModelId),
         onStepEnd,
+        telemetry: aiTelemetry('booking-request-assistant'),
         providerOptions: googleAgentProviderOptionsFor(resolvedModelId),
         stopWhen: [isStepCount(5)],
         instructions: [

@@ -13,7 +13,8 @@ Ops receives structured Slack messages (German copy — internal surface):
 - **Digests / alerts** — weekday booking report; 24h / 48h no-offer aging as a thread reply on the booking request; payment failures /
   payouts as booking-thread replies (channel-broadcast when urgency/visibility matters); **daily admin action-item report** (08:00
   Europe/Berlin, mirrors `/admin` queues) on the ops-alerts channel; **Resend quota at-risk alert** (00:00 and 19:00 Europe/Berlin, only
-  when monthly or free-tier daily quota is at risk) on the same channel
+  when monthly or free-tier daily quota is at risk) on the same channel; **observability ops alert** (hourly, GraphQL/job error rate or p95,
+  elevated error logs, or slow `pg_stat_statements`) on the same channel — see [observability.md](../architecture/observability.md)
 - **WhatsApp Concierge** — inbound customer messages on `SLACK_CHANNEL_WHATSAPP_MESSAGES`; known reaction quick-replies also reply on the
   booking-request Slack thread
 
@@ -52,7 +53,7 @@ Block Kit layout (header → fields → optional body → context → optional a
 | `SLACK_CHANNEL_SUPPORT_REQUESTS`        | Support tickets                                                                                                   |
 | `SLACK_CHANNEL_GIFT_CARD_PURCHASES`     | Gift-card paid                                                                                                    |
 | `SLACK_CHANNEL_BOOKING_REQUEST_REPORTS` | Weekday digest                                                                                                    |
-| `SLACK_CHANNEL_OPS_ALERTS`              | Daily admin action-item report (pending cooks, publication, …); Resend quota alerts; other non-booking ops alerts |
+| `SLACK_CHANNEL_OPS_ALERTS`              | Daily admin action-item report; Resend quota alerts; observability threshold alerts; other non-booking ops alerts |
 | `SLACK_CHANNEL_WHATSAPP_MESSAGES`       | Inbound Concierge WhatsApp messages                                                                               |
 
 When `SLACK_TRANSPORT=slack`, the bot token and every channel id are required at boot. When `console`, those credentials are omitted and
@@ -85,6 +86,8 @@ Root refs: `BookingRequests.references` / `SupportRequests.references` as `{ sla
   Berlin hour gate)
 - `resend-usage-slack-alert` — every day ≈00:00 and 19:00 Europe/Berlin, posts only when Resend monthly (or free-tier daily) quota is at
   risk (DST-safe via UTC `0 17,18,22,23 * * *` + Berlin hour gate); see [admin-outbound-emails.md](./admin-outbound-emails.md)
+- `observability-ops-alert` — hourly (`15 * * * *`), posts only when in-process RED windows, recent error logs, or slow SQL cross
+  thresholds; see [observability.md](../architecture/observability.md)
 
 ### Out of scope
 

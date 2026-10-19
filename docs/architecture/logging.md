@@ -9,6 +9,9 @@ adds cost and another dependency for a project that already runs PostgreSQL.
 
 **PostgreSQL-backed logging** with dual console output, exposed as `ServerRuntime.log` from `loggerCreate(db)`.
 
+Request/job latency and LLM trees live in OpenTelemetry exporters (Langfuse / Grafana), not this table — see
+[observability.md](./observability.md). When an OTel span is active, `traceId` / `spanId` are merged into `Logs.context` for correlation.
+
 Four levels: `error`, `warn`, `info`, `debug`. Rows land in the `Logs` table (`src/server/db/schema.ts`). Inserts are fire-and-forget so
 logging never blocks a request; insert failures fall back to `console.error`.
 

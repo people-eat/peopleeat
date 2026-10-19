@@ -70,46 +70,47 @@ These are non-negotiable. The full details are in `docs/conventions.md`.
 One row per doc under `docs/architecture/`. Feature behavior lives in `docs/features/` — do not duplicate it here. Presentation rules live
 in `docs/styles/`.
 
-| Concern                      | Doc                                                                        |
-| ---------------------------- | -------------------------------------------------------------------------- |
-| Server-side structure        | [`server-architecture.md`](./docs/architecture/server-architecture.md)     |
-| Dependency injection         | [`dependency-injection.md`](./docs/architecture/dependency-injection.md)   |
-| Environment variables        | [`environment.md`](./docs/architecture/environment.md)                     |
-| Authentication               | [`authentication.md`](./docs/architecture/authentication.md)               |
-| Authorization                | [`authorization.md`](./docs/architecture/authorization.md)                 |
-| Admin access                 | [`authorization-admin.md`](./docs/architecture/authorization-admin.md)     |
-| API layer                    | [`api-layer.md`](./docs/architecture/api-layer.md)                         |
-| State synchronization        | [`state-synchronization.md`](./docs/architecture/state-synchronization.md) |
-| Jobs                         | [`jobs.md`](./docs/architecture/jobs.md)                                   |
-| Browser capture (Playwright) | [`browser-capture.md`](./docs/architecture/browser-capture.md)             |
-| Stripe Connect payments      | [`stripe-payment.md`](./docs/architecture/stripe-payment.md)               |
-| Testimonials / reviews       | [`testimonials.md`](./docs/architecture/testimonials.md)                   |
-| Booking requests / offers    | [`booking.md`](./docs/architecture/booking.md)                             |
-| Outbound email tracking      | [`outbound-email.md`](./docs/architecture/outbound-email.md)               |
-| WhatsApp (Meta Cloud API)    | [`whatsapp.md`](./docs/architecture/whatsapp.md)                           |
-| Persistent logging           | [`logging.md`](./docs/architecture/logging.md)                             |
-| Session events (analytics)   | [`session-events.md`](./docs/architecture/session-events.md)               |
-| Go-live data migration       | [`go-live-data-migration.md`](./docs/features/go-live-data-migration.md)   |
-| Go-live cutover gaps         | [`go-live-cutover-gaps.md`](./docs/features/go-live-cutover-gaps.md)       |
-| SEO                          | [`discovery-seo.md`](./docs/architecture/discovery-seo.md)                 |
-| AI-search (GEO)              | [`discovery-geo.md`](./docs/architecture/discovery-geo.md)                 |
-| Content model                | [`content-model.md`](./docs/architecture/content-model.md)                 |
-| Content sections             | [`content-sections.md`](./docs/architecture/content-sections.md)           |
-| File storage                 | [`file-storage.md`](./docs/architecture/file-storage.md)                   |
-| i18n                         | [`i18n.md`](./docs/architecture/i18n.md)                                   |
-| Chat foundation              | [`chat.md`](./docs/architecture/chat.md)                                   |
-| Chat persistence             | [`chat-persistence.md`](./docs/architecture/chat-persistence.md)           |
-| Agent delegation             | [`agent-delegation.md`](./docs/architecture/agent-delegation.md)           |
-| E2e (Playwright UI)          | [`e2e.md`](./docs/architecture/e2e.md)                                     |
-| Motion                       | [`styles/motion.md`](./docs/styles/motion.md)                              |
-| Theme (light-only)           | [`styles/theme.md`](./docs/styles/theme.md)                                |
-| Status messaging             | [`styles/status-messaging.md`](./docs/styles/status-messaging.md)          |
-| Copy (voice)                 | [`styles/copy.md`](./docs/styles/copy.md)                                  |
-| Fonts                        | [`styles/fonts.md`](./docs/styles/fonts.md)                                |
-| Emails                       | [`styles/emails.md`](./docs/styles/emails.md)                              |
-| Chat experience              | [`styles/chat.md`](./docs/styles/chat.md)                                  |
-| Navigation progress          | [`styles/navigation-progress.md`](./docs/styles/navigation-progress.md)    |
-| One-shot AI generations      | [`ai-generations.md`](./docs/architecture/ai-generations.md)               |
+| Concern                               | Doc                                                                        |
+| ------------------------------------- | -------------------------------------------------------------------------- |
+| Server-side structure                 | [`server-architecture.md`](./docs/architecture/server-architecture.md)     |
+| Dependency injection                  | [`dependency-injection.md`](./docs/architecture/dependency-injection.md)   |
+| Environment variables                 | [`environment.md`](./docs/architecture/environment.md)                     |
+| Authentication                        | [`authentication.md`](./docs/architecture/authentication.md)               |
+| Authorization                         | [`authorization.md`](./docs/architecture/authorization.md)                 |
+| Admin access                          | [`authorization-admin.md`](./docs/architecture/authorization-admin.md)     |
+| API layer                             | [`api-layer.md`](./docs/architecture/api-layer.md)                         |
+| State synchronization                 | [`state-synchronization.md`](./docs/architecture/state-synchronization.md) |
+| Jobs                                  | [`jobs.md`](./docs/architecture/jobs.md)                                   |
+| Browser capture (Playwright)          | [`browser-capture.md`](./docs/architecture/browser-capture.md)             |
+| Stripe Connect payments               | [`stripe-payment.md`](./docs/architecture/stripe-payment.md)               |
+| Testimonials / reviews                | [`testimonials.md`](./docs/architecture/testimonials.md)                   |
+| Booking requests / offers             | [`booking.md`](./docs/architecture/booking.md)                             |
+| Outbound email tracking               | [`outbound-email.md`](./docs/architecture/outbound-email.md)               |
+| WhatsApp (Meta Cloud API)             | [`whatsapp.md`](./docs/architecture/whatsapp.md)                           |
+| Persistent logging                    | [`logging.md`](./docs/architecture/logging.md)                             |
+| Observability (OTel / Langfuse / APM) | [`observability.md`](./docs/architecture/observability.md)                 |
+| Session events (analytics)            | [`session-events.md`](./docs/architecture/session-events.md)               |
+| Go-live data migration                | [`go-live-data-migration.md`](./docs/features/go-live-data-migration.md)   |
+| Go-live cutover gaps                  | [`go-live-cutover-gaps.md`](./docs/features/go-live-cutover-gaps.md)       |
+| SEO                                   | [`discovery-seo.md`](./docs/architecture/discovery-seo.md)                 |
+| AI-search (GEO)                       | [`discovery-geo.md`](./docs/architecture/discovery-geo.md)                 |
+| Content model                         | [`content-model.md`](./docs/architecture/content-model.md)                 |
+| Content sections                      | [`content-sections.md`](./docs/architecture/content-sections.md)           |
+| File storage                          | [`file-storage.md`](./docs/architecture/file-storage.md)                   |
+| i18n                                  | [`i18n.md`](./docs/architecture/i18n.md)                                   |
+| Chat foundation                       | [`chat.md`](./docs/architecture/chat.md)                                   |
+| Chat persistence                      | [`chat-persistence.md`](./docs/architecture/chat-persistence.md)           |
+| Agent delegation                      | [`agent-delegation.md`](./docs/architecture/agent-delegation.md)           |
+| E2e (Playwright UI)                   | [`e2e.md`](./docs/architecture/e2e.md)                                     |
+| Motion                                | [`styles/motion.md`](./docs/styles/motion.md)                              |
+| Theme (light-only)                    | [`styles/theme.md`](./docs/styles/theme.md)                                |
+| Status messaging                      | [`styles/status-messaging.md`](./docs/styles/status-messaging.md)          |
+| Copy (voice)                          | [`styles/copy.md`](./docs/styles/copy.md)                                  |
+| Fonts                                 | [`styles/fonts.md`](./docs/styles/fonts.md)                                |
+| Emails                                | [`styles/emails.md`](./docs/styles/emails.md)                              |
+| Chat experience                       | [`styles/chat.md`](./docs/styles/chat.md)                                  |
+| Navigation progress                   | [`styles/navigation-progress.md`](./docs/styles/navigation-progress.md)    |
+| One-shot AI generations               | [`ai-generations.md`](./docs/architecture/ai-generations.md)               |
 
 ## How to Add Things
 

@@ -10,6 +10,7 @@ import { chatMessageBodyEmpty } from '../domain/chatMessageBody';
 import type { ChatTurnFunction } from '../domain/chatTurn';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSChatAssistantOptions, GqlSSession } from '../graphql/generated';
+import { withAiTraceAttributes } from '../observability/aiTelemetry';
 
 type ChatTurnAgentOptions = {
     serverRuntime: ServerRuntime;
@@ -18,56 +19,109 @@ type ChatTurnAgentOptions = {
     surface: ChatSurface;
 };
 
+type AgentStreamResult = {
+    stream: ReadableStream<TextStreamPart<ToolSet>>;
+    finishReason: PromiseLike<string>;
+    usage: PromiseLike<{
+        inputTokens: number | undefined;
+        outputTokens: number | undefined;
+        totalTokens: number | undefined;
+        outputTokenDetails: { reasoningTokens: number | undefined };
+        inputTokenDetails: { cacheReadTokens: number | undefined };
+    }>;
+    finalStep: PromiseLike<{ response: { modelId: string } }>;
+    agentId: string;
+};
+
 /**
  * Build a `ChatTurnFunction` for the given chat surface.
  * Admin uses the demo-capable admin factory; customer/cook use scaffolds until
  * their tool catalogs land.
  */
 export function chatTurnAgentCreate({ serverRuntime, session, assistantOptions, surface }: ChatTurnAgentOptions): ChatTurnFunction {
-    return async ({ assistantMessageId, messages }) => {
+    return async ({ turn, assistantMessageId, messages }) => {
         const onStepEnd = async () => {};
-        const agent =
-            surface === 'admin'
-                ? await agentAdminCreate({
-                      serverRuntime,
-                      assistantOptions,
-                      session,
-                      onStepEnd,
-                  })
-                : surface === 'cook'
-                  ? await agentCookCreate({
+        const modelMessages = await chatMessageBodiesToModelMessages(messages);
+
+        const streamed = await withAiTraceAttributes(
+            {
+                traceName: `chat-turn-${surface}`,
+                userId: session.userId ?? undefined,
+                sessionId: turn.chatId,
+                tags: ['chat', surface],
+                metadata: {
+                    chatTurnId: turn.chatTurnId,
+                    surface,
+                },
+            },
+            async (): Promise<AgentStreamResult> => {
+                if (surface === 'admin') {
+                    const agent = await agentAdminCreate({
+                        serverRuntime,
+                        assistantOptions,
+                        session,
+                        onStepEnd,
+                    });
+                    const result = await agent.stream({ messages: modelMessages });
+                    return {
+                        stream: result.stream as ReadableStream<TextStreamPart<ToolSet>>,
+                        finishReason: result.finishReason,
+                        usage: result.usage,
+                        finalStep: result.finalStep,
+                        agentId: agent.id ?? 'assistant-admin',
+                    };
+                }
+                if (surface === 'cook') {
+                    const agent = await agentCookCreate({
                         serverRuntime,
                         session,
                         assistantOptions,
                         onStepEnd,
-                    })
-                  : await agentCustomerCreate({ serverRuntime, onStepEnd });
-
-        const modelMessages = await chatMessageBodiesToModelMessages(messages);
-        const result = await agent.stream({ messages: modelMessages });
+                    });
+                    const result = await agent.stream({ messages: modelMessages });
+                    return {
+                        stream: result.stream as ReadableStream<TextStreamPart<ToolSet>>,
+                        finishReason: result.finishReason,
+                        usage: result.usage,
+                        finalStep: result.finalStep,
+                        agentId: agent.id ?? 'assistant-cook',
+                    };
+                }
+                const agent = await agentCustomerCreate({ serverRuntime, onStepEnd });
+                const result = await agent.stream({ messages: modelMessages });
+                return {
+                    stream: result.stream as ReadableStream<TextStreamPart<ToolSet>>,
+                    finishReason: result.finishReason,
+                    usage: result.usage,
+                    finalStep: result.finalStep,
+                    agentId: agent.id ?? 'assistant-customer',
+                };
+            },
+        );
 
         return {
             updates: chatMessageBodyUpdatesFromAiStream({
                 initialMessage: chatMessageBodyEmpty({ id: assistantMessageId, role: 'assistant' }),
                 stream: toUIMessageStream({
-                    // Standalone helper defaults TOOLS to {}; agent streams are wider ToolSets.
-                    stream: result.stream as ReadableStream<TextStreamPart<ToolSet>>,
+                    stream: streamed.stream,
                     generateMessageId: () => assistantMessageId,
                     sendSources: true,
                 }),
             }),
-            completion: Promise.all([result.finishReason, result.usage, result.finalStep]).then(([finishReason, usage, finalStep]) => ({
-                agentName: agent.id ?? `assistant-${surface}`,
-                modelId: finalStep.response.modelId,
-                finishReason,
-                usage: {
-                    inputTokens: usage.inputTokens,
-                    outputTokens: usage.outputTokens,
-                    totalTokens: usage.totalTokens,
-                    reasoningTokens: usage.outputTokenDetails.reasoningTokens,
-                    cachedInputTokens: usage.inputTokenDetails.cacheReadTokens,
-                },
-            })),
+            completion: Promise.all([streamed.finishReason, streamed.usage, streamed.finalStep]).then(
+                ([finishReason, usage, finalStep]) => ({
+                    agentName: streamed.agentId,
+                    modelId: finalStep.response.modelId,
+                    finishReason,
+                    usage: {
+                        inputTokens: usage.inputTokens,
+                        outputTokens: usage.outputTokens,
+                        totalTokens: usage.totalTokens,
+                        reasoningTokens: usage.outputTokenDetails.reasoningTokens,
+                        cachedInputTokens: usage.inputTokenDetails.cacheReadTokens,
+                    },
+                }),
+            ),
         };
     };
 }

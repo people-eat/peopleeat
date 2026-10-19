@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { BookingRequestCookMenuEvaluation } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSSession } from '../graphql/generated';
+import { aiTelemetry } from '../observability/aiTelemetry';
 import { aiGenerationOutputSerialize } from '../utils/aiGenerationOutputSerialize';
 import { aiGenerationUsageFromLanguageModel } from '../utils/aiGenerationUsage';
 
@@ -80,6 +81,7 @@ export async function cookBookingRequestMenuEvaluationGenerate(
         system: SYSTEM_PROMPT,
         prompt,
         output: Output.object({ schema: EVALUATION_SCHEMA }),
+        telemetry: aiTelemetry('BOOKING_REQUEST_COOK_MENU_EVALUATION'),
     });
 
     serverRuntime.aiGenerations.record({

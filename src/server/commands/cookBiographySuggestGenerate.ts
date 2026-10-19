@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSSession } from '../graphql/generated';
+import { aiTelemetry } from '../observability/aiTelemetry';
 import { aiGenerationOutputSerialize } from '../utils/aiGenerationOutputSerialize';
 import { aiGenerationUsageFromLanguageModel } from '../utils/aiGenerationUsage';
 
@@ -61,6 +62,7 @@ Gib als Ergebnis biography zurück.
         system,
         prompt,
         output: Output.object({ schema: BIOGRAPHY_SUGGEST_SCHEMA }),
+        telemetry: aiTelemetry('COOK_BIOGRAPHY_SUGGESTION'),
     });
 
     serverRuntime.aiGenerations.record({

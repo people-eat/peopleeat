@@ -6,6 +6,7 @@ import { chatMessages, chats, chatTurns } from '../../db/schema';
 import { chatMessageTextRead } from '../../domain/chatMessageBody';
 import { CHAT_TITLE_MAX_LENGTH } from '../../domain/chatTitle';
 import type { ServerRuntime } from '../../domain/ServerRuntime';
+import { aiTelemetry } from '../../observability/aiTelemetry';
 import { aiGenerationOutputSerialize } from '../../utils/aiGenerationOutputSerialize';
 import { aiGenerationUsageFromLanguageModel } from '../../utils/aiGenerationUsage';
 import type { QueuedJobDefinition } from '../types';
@@ -101,6 +102,7 @@ async function generateChatTitle(chatId: string, serverRuntime: ServerRuntime): 
         output: Output.object({ schema: TITLE_SCHEMA }),
         system: SYSTEM_PROMPT,
         prompt: userPrompt,
+        telemetry: aiTelemetry('CHAT_TITLE'),
     });
 
     serverRuntime.aiGenerations.record({

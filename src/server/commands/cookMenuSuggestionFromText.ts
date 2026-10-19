@@ -15,6 +15,7 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { aiTelemetry } from '../observability/aiTelemetry';
 import { aiGenerationOutputSerialize } from '../utils/aiGenerationOutputSerialize';
 import { aiGenerationUsageFromLanguageModel } from '../utils/aiGenerationUsage';
 
@@ -76,6 +77,7 @@ export async function cookMenuSuggestionFromText(
             system: SYSTEM_PROMPT,
             prompt,
             output: Output.object({ schema: MENU_SUGGESTION_SCHEMA }),
+            telemetry: aiTelemetry('COOK_MENU_SUGGESTION_FROM_TEXT'),
         });
 
         serverRuntime.aiGenerations.record({

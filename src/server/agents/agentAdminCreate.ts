@@ -3,6 +3,7 @@ import { hasToolCall, isStepCount, ToolLoopAgent } from 'ai';
 import type { GqlCChatAssistantOptions } from '../../web/graphql/generated';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSSession } from '../graphql/generated';
+import { aiTelemetry } from '../observability/aiTelemetry';
 import { toolAdminBookingRequestsFindMany } from '../queries/adminBookingRequestFindMany';
 import { toolAdminCookMealsFindMany } from '../queries/adminCookMealFindMany';
 import { toolAdminCookMenusFindMany } from '../queries/adminCookMenuFindMany';
@@ -35,6 +36,7 @@ export async function agentAdminCreate({ serverRuntime, assistantOptions, sessio
         id: 'admin-assistant',
         model: serverRuntime.ai.adminAssistantModel(resolvedModelId),
         onStepEnd,
+        telemetry: aiTelemetry('admin-assistant'),
         providerOptions: googleAgentProviderOptionsFor(resolvedModelId),
         stopWhen: [isStepCount(5), hasToolCall('promptUserForInput')],
         instructions: [

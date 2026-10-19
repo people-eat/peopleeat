@@ -31,6 +31,7 @@ docs/
 │   ├── i18n.md                   # DE / EN locale strategy
 │   ├── jobs.md                   # pg-boss background jobs
 │   ├── logging.md                # PostgreSQL-backed logger
+│   ├── observability.md          # OpenTelemetry, Langfuse, Grafana APM, slow SQL
 │   ├── session-events.md         # First-party session analytics events
 │   ├── server-architecture.md    # Server-side domain logic structure (CQRS)
 │   └── state-synchronization.md  # Client-server state sync via subscriptions
@@ -74,6 +75,7 @@ docs/
 │   ├── admin-sessions.md
 │   ├── admin-analytics.md        # Booking funnel Sankey + visit buckets
 │   ├── admin-logs.md
+│   ├── admin-database-slow-statements.md # pg_stat_statements top-N via Admin GraphQL
 │   ├── admin-outbound-emails.md
 │   ├── admin-booking-requests.md # Booking-request list + detail
 │   ├── admin-promo-codes.md      # Promo code list + create

@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { bookingRequestOfferCallRecordings } from '../../db/schema';
 import type { BookingRequestOfferCallTranscriptSegment } from '../../domain/bookingRequest';
+import { aiTelemetry } from '../../observability/aiTelemetry';
 import { aiGenerationOutputSerialize } from '../../utils/aiGenerationOutputSerialize';
 import { aiGenerationUsageFromLanguageModel } from '../../utils/aiGenerationUsage';
 import type { QueuedJobDefinition } from '../types';
@@ -138,6 +139,7 @@ export const bookingRequestOfferCallRecordingFinalize: QueuedJobDefinition<Booki
                         },
                     ],
                     output: Output.object({ schema: TRANSCRIPT_SCHEMA }),
+                    telemetry: aiTelemetry('BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT'),
                 });
 
                 serverRuntime.aiGenerations.record({

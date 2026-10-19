@@ -6,6 +6,7 @@ import { toolCookMealCreate } from '../commands/cookMealCreate';
 import { toolCookUpdate } from '../commands/cookUpdate';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSSession } from '../graphql/generated';
+import { aiTelemetry } from '../observability/aiTelemetry';
 import { cookAssistantStateSnapshotFormat, cookAssistantStateSnapshotRead } from '../queries/cookAssistantStateSnapshotRead';
 import { agentUserFacingWritingRules, currentDateForAgent, googleAgentProviderOptionsFor } from './agentScaffolding';
 import { toolPromptUserForInput } from './toolPromptUserForInput';
@@ -49,6 +50,7 @@ export async function agentCookCreate({ serverRuntime, session, assistantOptions
         id: 'cook-assistant',
         model: serverRuntime.ai.cookAssistantModel(resolvedModelId),
         onStepEnd,
+        telemetry: aiTelemetry('cook-assistant'),
         providerOptions: googleAgentProviderOptionsFor(resolvedModelId),
         stopWhen: [isStepCount(8), hasToolCall('promptUserForInput')],
         instructions: [

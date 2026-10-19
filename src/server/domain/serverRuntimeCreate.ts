@@ -82,6 +82,8 @@ export function serverRuntimeCreate(): ServerRuntime {
             // rides the result back on the same tool-call channel as function
             // tools. Agents wrap this via a `delegateTo*` / web-search tool
             // when product surfaces need it.
+            // Cast: provider-executed Google Search tool is assignable at runtime;
+            // AI SDK's ProviderExecutedTool<> is narrower than the shared `Tool` alias.
             webSearchTool: () => google.tools.googleSearch({}),
         },
 

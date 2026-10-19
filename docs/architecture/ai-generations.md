@@ -12,6 +12,9 @@ list / detail under `/admin/ai-generations`.
 
 Scope is **one-shot only**. Chat turn generations stay on message variants; do not unify in v1.
 
+Live LLM/agent trees (nested tools, latency, Langfuse sessions) are OpenTelemetry traces — see [observability.md](./observability.md).
+`AiGenerations` remains the durable admin ledger for one-shot prompt/output audit.
+
 ## Alternatives considered
 
 | Option                            | Why rejected                                                                 |

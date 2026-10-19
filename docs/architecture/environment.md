@@ -32,7 +32,11 @@ peppers, reCAPTCHA, `SERVER_TOKEN_SECRET`, …). Two transports are the only esc
 | `WHATSAPP_TRANSPORT` | `meta` (default) / `console`   | When `meta`, also require `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_BUSINESS_ACCOUNT_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_WEBHOOK_VERIFY_TOKEN`. When `console`, those are omitted and WhatsApp sends print to the terminal. |
 
 True defaults (not credentials) stay optional: `sessionCookieSecure`, `sessionCookieDomainScope`, `BUILD_SHA`, `LIVEKIT_ROOM_PREFIX`,
-`OBJECT_STORAGE_S3_FORCE_PATH_STYLE`, `CHAT_DEBUG_ENABLED`.
+`OBJECT_STORAGE_S3_FORCE_PATH_STYLE`, `CHAT_DEBUG_ENABLED`, `OBSERVABILITY_ENVIRONMENT`, `LANGFUSE_BASE_URL`, `OTEL_EXPORTER_OTLP_HEADERS`.
+
+Observability vendors follow the same transport pattern as email/Slack/WhatsApp: `LANGFUSE_TRANSPORT=off|cloud` (default `off`) and
+`OTEL_TRANSPORT=off|otlp|console` (default `off`). Provider keys are required only when the matching transport is on — see
+[observability.md](./observability.md).
 
 `environmentVariablesCreate()` collects every missing variable, `console.error`s a multi-line list (one name per line), then throws once
 with the same names joined — the operator sees the full picture in Coolify/Docker logs even when Vite wraps the throw. The
@@ -84,7 +88,7 @@ never reach `serverRuntimeCreate`, so they do not need real provider HTTP even t
 
 - Validation happens once, at startup. A misconfigured deployment fails immediately with a clear multi-line list of missing variables.
 - Local/dev uses `EMAIL_TRANSPORT=console`, `SLACK_TRANSPORT=console`, and `WHATSAPP_TRANSPORT=console` so Resend/Slack/WhatsApp credentials
-  are not required.
+  are not required. Observability defaults to `LANGFUSE_TRANSPORT=off` and `OTEL_TRANSPORT=off` so Langfuse/Grafana keys are not required.
 - `process.env` access is centralized — an ESLint `no-restricted-syntax` rule bans `process.env` reads everywhere except
   `environmentVariablesCreate.ts`. Build-time configs (`drizzle.config.ts`) and tests call `environmentVariablesCreate()` like everything
   else.

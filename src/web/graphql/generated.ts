@@ -70,6 +70,7 @@ export interface GqlCAdmin {
     cooksInTravelRadius: Array<GqlCAdminCookInTravelRadiusPreview>;
     customerTestimonial?: Maybe<GqlCAdminCustomerTestimonial>;
     customerTestimonials: Array<GqlCAdminCustomerTestimonial>;
+    databaseSlowStatements: Array<GqlCAdminDatabaseSlowStatement>;
     featureToggles: Array<GqlCAdminFeatureToggle>;
     giftCard?: Maybe<GqlCAdminGiftCard>;
     giftCardCreations: Array<GqlCAdminTimeBucket>;
@@ -274,6 +275,10 @@ export type GqlCAdminCooksInTravelRadiusArgs = {
 
 export type GqlCAdminCustomerTestimonialArgs = {
     customerTestimonialId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminDatabaseSlowStatementsArgs = {
+    limit?: Scalars['Int']['input'];
 };
 
 export type GqlCAdminGiftCardArgs = {
@@ -1075,6 +1080,15 @@ export type GqlCAdminCustomerTestimonialUpdate = {
     occasion?: InputMaybe<Scalars['String']['input']>;
     rating?: InputMaybe<Scalars['Int']['input']>;
 };
+
+export interface GqlCAdminDatabaseSlowStatement {
+    __typename?: 'AdminDatabaseSlowStatement';
+    calls: Scalars['Int']['output'];
+    meanExecTimeMs: Scalars['Float']['output'];
+    query: Scalars['String']['output'];
+    rows: Scalars['Int']['output'];
+    totalExecTimeMs: Scalars['Float']['output'];
+}
 
 export interface GqlCAdminFeatureToggle {
     __typename?: 'AdminFeatureToggle';
