@@ -19,7 +19,6 @@ export const Route = createFileRoute('/api/webhooks/whatsapp')({
                 const expected = environmentVariables.whatsappWebhookVerifyToken;
 
                 if (mode === 'subscribe' && expected && token === expected && challenge) {
-                    serverRuntime.log.info('whatsapp webhook: GET verify challenge accepted');
                     return new Response(challenge, { status: 200, headers: { 'Content-Type': 'text/plain' } });
                 }
                 serverRuntime.log.warn(
@@ -58,10 +57,7 @@ export const Route = createFileRoute('/api/webhooks/whatsapp')({
                     }
 
                     try {
-                        const result = await whatsappWebhookApply(payload, serverRuntime);
-                        serverRuntime.log.info(
-                            `whatsapp webhook: applied statuses=${result.statusesApplied} messages=${result.messagesApplied}`,
-                        );
+                        await whatsappWebhookApply(payload, serverRuntime);
                     } catch (error) {
                         serverRuntime.log.error(error, null);
                         return new Response('Webhook handler failed', { status: 500 });

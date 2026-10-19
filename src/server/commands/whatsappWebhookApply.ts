@@ -87,6 +87,10 @@ export async function whatsappWebhookApply(
     let statusesApplied = 0;
     let messagesApplied = 0;
 
+    if (payload.object != null && payload.object !== 'whatsapp_business_account') {
+        serverRuntime.log.warn(`whatsappWebhookApply: unexpected payload.object=${payload.object}`);
+    }
+
     for (const entry of payload.entry ?? []) {
         for (const change of entry.changes ?? []) {
             const value = change.value;
@@ -118,11 +122,15 @@ export async function whatsappWebhookApply(
 async function statusApply(status: MetaStatus, serverRuntime: ServerRuntime): Promise<boolean> {
     const providerMessageId = status.id?.trim();
     if (!providerMessageId || !status.status) {
+        serverRuntime.log.warn(
+            `whatsappWebhookApply: skipping status with missing id/status (id=${status.id ?? 'null'} status=${status.status ?? 'null'})`,
+        );
         return false;
     }
 
     const column = lifecycleColumnForStatus(status.status);
     if (!column) {
+        serverRuntime.log.warn(`whatsappWebhookApply: skipping unknown status=${status.status} id=${providerMessageId}`);
         return false;
     }
 
@@ -219,6 +227,9 @@ async function inboundApply(message: MetaInboundMessage, contactName: string | n
     const providerMessageId = message.id?.trim();
     const fromRaw = message.from?.trim();
     if (!providerMessageId || !fromRaw) {
+        serverRuntime.log.warn(
+            `whatsappWebhookApply: skipping inbound with missing id/from (id=${message.id ?? 'null'} from=${message.from ?? 'null'} type=${message.type ?? 'null'})`,
+        );
         return false;
     }
 
@@ -233,7 +244,7 @@ async function inboundApply(message: MetaInboundMessage, contactName: string | n
 
     const phoneNumber = whatsappPhoneNumberNormalize(fromRaw.startsWith('+') ? fromRaw : `+${fromRaw}`);
     if (!phoneNumber) {
-        serverRuntime.log.info(`whatsappWebhookApply: skipping inbound with non-E.164 from=${fromRaw}`);
+        serverRuntime.log.warn(`whatsappWebhookApply: skipping inbound with non-E.164 from=${fromRaw}`);
         return false;
     }
 
@@ -337,6 +348,9 @@ async function inboundReactionApply(message: MetaInboundMessage, serverRuntime: 
     const targetProviderMessageId = message.reaction?.message_id?.trim();
     const fromRaw = message.from?.trim();
     if (!providerMessageId || !targetProviderMessageId || !fromRaw) {
+        serverRuntime.log.warn(
+            `whatsappWebhookApply: skipping reaction with missing fields (id=${message.id ?? 'null'} target=${message.reaction?.message_id ?? 'null'} from=${message.from ?? 'null'})`,
+        );
         return false;
     }
 
@@ -358,12 +372,12 @@ async function inboundReactionApply(message: MetaInboundMessage, serverRuntime: 
         .where(eq(whatsAppMessages.providerMessageId, targetProviderMessageId))
         .limit(1);
     if (!target) {
-        serverRuntime.log.info(`whatsappWebhookApply: skipping reaction; target providerMessageId=${targetProviderMessageId} not found`);
+        serverRuntime.log.warn(`whatsappWebhookApply: skipping reaction; target providerMessageId=${targetProviderMessageId} not found`);
         return false;
     }
 
     if (!whatsappPhoneNumberNormalize(fromRaw.startsWith('+') ? fromRaw : `+${fromRaw}`)) {
-        serverRuntime.log.info(`whatsappWebhookApply: skipping reaction with non-E.164 from=${fromRaw}`);
+        serverRuntime.log.warn(`whatsappWebhookApply: skipping reaction with non-E.164 from=${fromRaw}`);
         return false;
     }
 
@@ -482,6 +496,9 @@ async function inboundContentParse(
         };
     }
 
+    serverRuntime.log.warn(
+        `whatsappWebhookApply: unsupported inbound content type=${message.type ?? 'null'} id=${message.id ?? 'null'}`,
+    );
     return {
         messageKind: 'UNSUPPORTED',
         body: '[Unsupported message content]',
