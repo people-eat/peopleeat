@@ -27,6 +27,8 @@ const ADMIN_IMPORTANT_LINK_GROUPS: readonly AdminImportantLinkGroup[] = [
         links: [
             { title: 'Coolify', href: 'https://coolify.people-eat.com' },
             { title: 'Kuma', href: 'https://kuma.people-eat.com' },
+            { title: 'Grafana', href: 'https://grafana.people-eat.com' },
+            { title: 'Langfuse', href: 'https://langfuse.people-eat.com' },
             { title: 'IONOS', href: 'https://mein.ionos.de/' },
             { title: 'Metabase', href: 'https://metabase.people-eat.com' },
             { title: 'Storybook', href: 'https://storybook.people-eat.com' },
