@@ -118,7 +118,7 @@ export function jobHandlerRecord(jobName: string, durationMs: number, errored: b
     }
 }
 
-export type IngressProvider = 'stripe' | 'whatsapp' | 'resend' | 'file_upload';
+export type IngressProvider = 'stripe' | 'whatsapp' | 'resend' | 'slack' | 'file_upload';
 
 export function httpIngressRecord(provider: IngressProvider, durationMs: number, statusCode: number, errored: boolean): void {
     const attributes = { 'ingress.provider': provider };

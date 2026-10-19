@@ -55,6 +55,7 @@ describe('environmentVariablesCreate', () => {
             klaviyoNewsletterListId: undefined,
             slackTransport: 'console',
             slackBotToken: undefined,
+            slackSigningSecret: undefined,
             slackChannelBookingRequests: undefined,
             slackChannelCashCows: undefined,
             slackChannelSignUps: undefined,
@@ -133,10 +134,20 @@ describe('environmentVariablesCreate', () => {
             ),
         ).toThrow(/SLACK_BOT_TOKEN/);
 
+        expect(() =>
+            environmentVariablesCreate(
+                environmentVariablesTestSource({
+                    SLACK_TRANSPORT: 'slack',
+                    SLACK_BOT_TOKEN: 'xoxb-test',
+                }),
+            ),
+        ).toThrow(/SLACK_SIGNING_SECRET/);
+
         const environmentVariables = environmentVariablesCreate(
             environmentVariablesTestSource({
                 SLACK_TRANSPORT: 'slack',
                 SLACK_BOT_TOKEN: 'xoxb-test',
+                SLACK_SIGNING_SECRET: 'signing-secret-test',
                 SLACK_CHANNEL_BOOKING_REQUESTS: 'C1',
                 SLACK_CHANNEL_CASH_COWS: 'C2',
                 SLACK_CHANNEL_SIGN_UPS: 'C3',
@@ -149,6 +160,7 @@ describe('environmentVariablesCreate', () => {
         );
         expect(environmentVariables.slackTransport).toBe('slack');
         expect(environmentVariables.slackBotToken).toBe('xoxb-test');
+        expect(environmentVariables.slackSigningSecret).toBe('signing-secret-test');
         expect(environmentVariables.slackChannelWhatsAppMessages).toBe('C8');
     });
 

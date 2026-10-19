@@ -30,6 +30,7 @@ const resendRequiredEnvironmentVariables = ['RESEND_API_KEY', 'RESEND_FROM_EMAIL
 
 const slackRequiredEnvironmentVariables = [
     'SLACK_BOT_TOKEN',
+    'SLACK_SIGNING_SECRET',
     'SLACK_CHANNEL_BOOKING_REQUESTS',
     'SLACK_CHANNEL_CASH_COWS',
     'SLACK_CHANNEL_SIGN_UPS',
@@ -194,6 +195,7 @@ export function environmentVariablesCreate(source: NodeJS.ProcessEnv = process.e
         klaviyoNewsletterListId: source.KLAVIYO_NEWSLETTER_LIST_ID?.trim() || undefined,
         slackTransport,
         slackBotToken: source.SLACK_BOT_TOKEN,
+        slackSigningSecret: source.SLACK_SIGNING_SECRET,
         slackChannelBookingRequests: source.SLACK_CHANNEL_BOOKING_REQUESTS,
         slackChannelCashCows: source.SLACK_CHANNEL_CASH_COWS,
         slackChannelSignUps: source.SLACK_CHANNEL_SIGN_UPS,

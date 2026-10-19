@@ -78,6 +78,9 @@ export interface EnvironmentVariables {
     slackTransport: 'slack' | 'console';
     // Present when `slackTransport` is `slack`; omitted when `console`.
     slackBotToken: string | undefined;
+    // Slack app signing secret for Interactivity Request URL verification
+    // (`/api/webhooks/slack`). Present when `slackTransport` is `slack`.
+    slackSigningSecret: string | undefined;
     slackChannelBookingRequests: string | undefined;
     slackChannelCashCows: string | undefined;
     slackChannelSignUps: string | undefined;

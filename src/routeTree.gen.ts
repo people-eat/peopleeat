@@ -43,6 +43,7 @@ import { Route as Char123LocaleChar125SignInRouteImport } from './routes/{-$loca
 import { Route as Char123LocaleChar125TermsAndConditionsRouteImport } from './routes/{-$locale}/terms-and-conditions'
 import { Route as ApiFileUploadsFileUploadIdRouteImport } from './routes/api/file-uploads_.$fileUploadId'
 import { Route as ApiWebhooksResendRouteImport } from './routes/api/webhooks/resend'
+import { Route as ApiWebhooksSlackRouteImport } from './routes/api/webhooks/slack'
 import { Route as ApiWebhooksStripeRouteImport } from './routes/api/webhooks/stripe'
 import { Route as ApiWebhooksWhatsappRouteImport } from './routes/api/webhooks/whatsapp'
 import { Route as Char123LocaleChar125AdminIndexRouteImport } from './routes/{-$locale}/admin/index'
@@ -352,6 +353,11 @@ const ApiFileUploadsFileUploadIdRoute =
 const ApiWebhooksResendRoute = ApiWebhooksResendRouteImport.update({
   id: '/api/webhooks/resend',
   path: '/api/webhooks/resend',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWebhooksSlackRoute = ApiWebhooksSlackRouteImport.update({
+  id: '/api/webhooks/slack',
+  path: '/api/webhooks/slack',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWebhooksStripeRoute = ApiWebhooksStripeRouteImport.update({
@@ -1148,6 +1154,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
   '/api/file-uploads/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
+  '/api/webhooks/slack': typeof ApiWebhooksSlackRoute
   '/api/webhooks/stripe': typeof ApiWebhooksStripeRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
   '/{-$locale}/admin/account': typeof Char123LocaleChar125AdminAccountRoute
@@ -1302,6 +1309,7 @@ export interface FileRoutesByTo {
   '/{-$locale}': typeof Char123LocaleChar125IndexRoute
   '/api/file-uploads/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
+  '/api/webhooks/slack': typeof ApiWebhooksSlackRoute
   '/api/webhooks/stripe': typeof ApiWebhooksStripeRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
   '/{-$locale}/admin/account': typeof Char123LocaleChar125AdminAccountRoute
@@ -1460,6 +1468,7 @@ export interface FileRoutesById {
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
   '/api/file-uploads_/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
+  '/api/webhooks/slack': typeof ApiWebhooksSlackRoute
   '/api/webhooks/stripe': typeof ApiWebhooksStripeRoute
   '/api/webhooks/whatsapp': typeof ApiWebhooksWhatsappRoute
   '/{-$locale}/admin/account': typeof Char123LocaleChar125AdminAccountRoute
@@ -1619,6 +1628,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/'
     | '/api/file-uploads/$fileUploadId'
     | '/api/webhooks/resend'
+    | '/api/webhooks/slack'
     | '/api/webhooks/stripe'
     | '/api/webhooks/whatsapp'
     | '/{-$locale}/admin/account'
@@ -1773,6 +1783,7 @@ export interface FileRouteTypes {
     | '/{-$locale}'
     | '/api/file-uploads/$fileUploadId'
     | '/api/webhooks/resend'
+    | '/api/webhooks/slack'
     | '/api/webhooks/stripe'
     | '/api/webhooks/whatsapp'
     | '/{-$locale}/admin/account'
@@ -1930,6 +1941,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/'
     | '/api/file-uploads_/$fileUploadId'
     | '/api/webhooks/resend'
+    | '/api/webhooks/slack'
     | '/api/webhooks/stripe'
     | '/api/webhooks/whatsapp'
     | '/{-$locale}/admin/account'
@@ -2070,6 +2082,7 @@ export interface RootRouteChildren {
   ApiStreamRoute: typeof ApiStreamRoute
   ApiFileUploadsFileUploadIdRoute: typeof ApiFileUploadsFileUploadIdRoute
   ApiWebhooksResendRoute: typeof ApiWebhooksResendRoute
+  ApiWebhooksSlackRoute: typeof ApiWebhooksSlackRoute
   ApiWebhooksStripeRoute: typeof ApiWebhooksStripeRoute
   ApiWebhooksWhatsappRoute: typeof ApiWebhooksWhatsappRoute
   ServerGiftCardsGiftCardIdReceiptRoute: typeof ServerGiftCardsGiftCardIdReceiptRoute
@@ -2315,6 +2328,13 @@ declare module '@tanstack/react-router' {
       path: '/api/webhooks/resend'
       fullPath: '/api/webhooks/resend'
       preLoaderRoute: typeof ApiWebhooksResendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/slack': {
+      id: '/api/webhooks/slack'
+      path: '/api/webhooks/slack'
+      fullPath: '/api/webhooks/slack'
+      preLoaderRoute: typeof ApiWebhooksSlackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/webhooks/stripe': {
@@ -3594,6 +3614,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiStreamRoute: ApiStreamRoute,
   ApiFileUploadsFileUploadIdRoute: ApiFileUploadsFileUploadIdRoute,
   ApiWebhooksResendRoute: ApiWebhooksResendRoute,
+  ApiWebhooksSlackRoute: ApiWebhooksSlackRoute,
   ApiWebhooksStripeRoute: ApiWebhooksStripeRoute,
   ApiWebhooksWhatsappRoute: ApiWebhooksWhatsappRoute,
   ServerGiftCardsGiftCardIdReceiptRoute: ServerGiftCardsGiftCardIdReceiptRoute,
@@ -3604,12 +3625,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

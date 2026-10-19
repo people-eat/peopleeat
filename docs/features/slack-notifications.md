@@ -47,6 +47,7 @@ Block Kit layout (header → fields → optional body → context → optional a
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `SLACK_TRANSPORT`                       | `slack` (default) or `console` (local/dev: log posts to the terminal)                                             |
 | `SLACK_BOT_TOKEN`                       | Bot token; required when `SLACK_TRANSPORT=slack`                                                                  |
+| `SLACK_SIGNING_SECRET`                  | App signing secret; required when `SLACK_TRANSPORT=slack` (verifies Interactivity POSTs)                          |
 | `SLACK_CHANNEL_BOOKING_REQUESTS`        | Default booking roots / threads                                                                                   |
 | `SLACK_CHANNEL_CASH_COWS`               | ≥12 guests (same threshold as publication review)                                                                 |
 | `SLACK_CHANNEL_SIGN_UPS`                | Customer / cook sign-ups                                                                                          |
@@ -56,10 +57,22 @@ Block Kit layout (header → fields → optional body → context → optional a
 | `SLACK_CHANNEL_OPS_ALERTS`              | Daily admin action-item report; Resend quota alerts; observability threshold alerts; other non-booking ops alerts |
 | `SLACK_CHANNEL_WHATSAPP_MESSAGES`       | Inbound Concierge WhatsApp messages                                                                               |
 
-When `SLACK_TRANSPORT=slack`, the bot token and every channel id are required at boot. When `console`, those credentials are omitted and
-`postMessage` prints to the server terminal (same idea as `EMAIL_TRANSPORT=console`).
+When `SLACK_TRANSPORT=slack`, the bot token, signing secret, and every channel id are required at boot. When `console`, those credentials
+are omitted and `postMessage` prints to the server terminal (same idea as `EMAIL_TRANSPORT=console`).
 
 Root refs: `BookingRequests.references` / `SupportRequests.references` as `{ slackTs, slackChannelId }`.
+
+### Interactivity Request URL (admin URL buttons)
+
+Ops Block Kit messages include an `In Admin öffnen` **URL button**. Slack still POSTs to the app Interactivity Request URL on click and
+expects HTTP 200 — otherwise the Slack client shows _This app responded with status code …_ (even though the browser opens the admin link).
+
+1. Deploy with `SLACK_SIGNING_SECRET` set (Slack app → **Basic Information** → **App Credentials** → Signing Secret).
+2. In the Slack app → **Interactivity & Shortcuts** → turn Interactivity **On**.
+3. Set **Request URL** to `{WEB_PAGE_URL}/api/webhooks/slack` (e.g. `https://people-eat.com/api/webhooks/slack`).
+4. Save — Slack probes the URL; the handler verifies the signature (or legacy `ssl_check`) and returns 200.
+
+The route only acks; it does not run slash commands or other interactive workflows.
 
 ### Module layout
 
@@ -67,6 +80,8 @@ Root refs: `BookingRequests.references` / `SupportRequests.references` as `{ sla
 | -------------------------------------------------- | --------------------------------------- |
 | `src/server/slack/slackCreate.ts`                  | WebClient wrapper                       |
 | `src/server/slack/slackBlocks.ts`                  | Block Kit template                      |
+| `src/server/slack/slackWebhookSignatureVerify.ts`  | HMAC verify for Interactivity POSTs     |
+| `src/routes/api/webhooks/slack.ts`                 | Interactivity Request URL (ack only)    |
 | `src/server/slack/bookingRequestSlack.ts`          | Booking root post + thread reply        |
 | `src/server/slack/supportRequestSlack.ts`          | Support root post + thread reply        |
 | `src/server/slack/slackNotifyBooking.ts`           | Booking lifecycle helpers               |
@@ -91,5 +106,5 @@ Root refs: `BookingRequests.references` / `SupportRequests.references` as `{ sla
 
 ### Out of scope
 
-Slack interactive actions, DM bot, message edits/reactions, historical thread migration. WhatsApp is a separate channel — see
-[whatsapp.md](./whatsapp.md).
+Interactive workflows beyond the URL-button ack (slash commands, modals, action handlers), DM bot, message edits/reactions, historical
+thread migration. WhatsApp is a separate channel — see [whatsapp.md](./whatsapp.md).
