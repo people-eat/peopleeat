@@ -5,7 +5,7 @@ import { useEffect, useId, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { bookingRequestOfferChatCanSend, bookingRequestPaidParticipants, formatCountryName } from '../../../shared';
+import { bookingRequestOfferChatCanSend, bookingRequestPaidParticipants, formatCountryName, formatCurrency } from '../../../shared';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -615,6 +615,38 @@ function OfferTabPanel({
                     travelExpensesCents={offer.travelExpensesCents}
                     menuPriceCents={offer.menuPriceCents}
                 />
+                {offer.status === 'COMPLETED' && offer.menuPriceCents + offer.travelExpensesCents > 0 ? (
+                    <StatusAlert tone="info" title={{ de: 'Rechnung stellen', en: 'Issue your invoice' }[locale]}>
+                        <p>
+                            {
+                                {
+                                    de: 'Bitte stelle deine Rechnung über den Betrag ',
+                                    en: 'Please issue your invoice for the amount ',
+                                }[locale]
+                            }
+                            <span className="font-semibold">
+                                {formatCurrency(offer.menuPriceCents + offer.travelExpensesCents, { locale })}
+                            </span>
+                            {
+                                {
+                                    de: ' aus. Dies entspricht deiner Leistung vor Abzug unserer Gebühr. Unsere peopleeat-Gebühr in Höhe von ',
+                                    en: '. This corresponds to your service before deduction of our fee. Our peopleeat fee of ',
+                                }[locale]
+                            }
+                            <span className="font-semibold">
+                                {formatCurrency(offer.menuPriceCents + offer.travelExpensesCents - offer.payoutCentsCook, {
+                                    locale,
+                                })}
+                            </span>
+                            {
+                                {
+                                    de: ' wurde bereits bei der Auszahlung automatisch abgezogen. Du erhältst von uns per Email einen Beleg mit dem Auszahlungsbetrag zur Dokumentation.',
+                                    en: ' was already automatically deducted at payout. You will receive a receipt with the payout amount from us by email for documentation.',
+                                }[locale]
+                            }
+                        </p>
+                    </StatusAlert>
+                ) : null}
                 {canNegotiate ? (
                     <Button type="button" variant="outline" className="justify-self-end" asChild disabled={busy}>
                         <Link

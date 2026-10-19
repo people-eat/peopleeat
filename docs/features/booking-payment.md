@@ -12,7 +12,8 @@ After dual acceptance, the customer pays (or completes a €0 path); later an ad
    invoicing).
 4. For pull/charge-later paths, the customer receives an announcement email before the card is charged.
 5. After the event, **cook bank payout** is admin-gated: due payouts surface on the admin overview; an admin releases Connect payout or
-   marks out-of-system. Cooks do not self-trigger payout.
+   marks out-of-system. Cooks do not self-trigger payout. On completed offers, the cook Offer tab shows an info banner with the invoice
+   amount (menu + travel before the platform fee) and notes that the fee was deducted at payout.
 
 Stripe Connect setup for cooks: [cook-profile.md](./cook-profile.md). Fee structure:
 [architecture/stripe-payment.md](../architecture/stripe-payment.md) and [architecture/booking.md](../architecture/booking.md). Admin payout
