@@ -31,7 +31,7 @@ async function seedOutboundEmail(providerMessageId: string) {
 }
 
 describe('outboundEmailProviderEventApply', () => {
-    it('returns applied:false for unknown event types without touching the row or publishing', async () => {
+    it('returns applied:false and warns for unknown event types without touching the row or publishing', async () => {
         // Arrange
         const { serverRuntime } = await commandSetup();
         const providerMessageId = `msg-${idCreate()}`;
@@ -50,12 +50,15 @@ describe('outboundEmailProviderEventApply', () => {
         // Assert
         expect(result).toEqual({ applied: false });
         expect(serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
+        expect(console.warn).toHaveBeenCalledWith(
+            expect.stringContaining(`outboundEmailProviderEventApply: unknown event type=email.unknown_event emailId=${providerMessageId}`),
+        );
         const [row] = await testDb.select().from(outboundEmails).where(eq(outboundEmails.outboundEmailId, outboundEmailId));
         expect(row!.sentAt).toBeNull();
         expect(row!.deliveredAt).toBeNull();
     });
 
-    it('returns applied:false and logs info when no outbound email matches the provider message id', async () => {
+    it('returns applied:false silently when no outbound email matches the provider message id', async () => {
         // Arrange
         const { serverRuntime } = await commandSetup();
         const missingId = `missing-${idCreate()}`;
@@ -73,8 +76,8 @@ describe('outboundEmailProviderEventApply', () => {
         // Assert
         expect(result).toEqual({ applied: false });
         expect(serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
-        // No session on this log path — assert via console spy that info was emitted.
-        expect(console.info).toHaveBeenCalledWith(expect.stringContaining(`no matching outbound email for providerMessageId=${missingId}`));
+        expect(console.info).not.toHaveBeenCalled();
+        expect(console.warn).not.toHaveBeenCalled();
     });
 
     for (const { type, column } of LIFECYCLE_EVENTS) {

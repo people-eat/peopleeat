@@ -496,9 +496,7 @@ async function inboundContentParse(
         };
     }
 
-    serverRuntime.log.warn(
-        `whatsappWebhookApply: unsupported inbound content type=${message.type ?? 'null'} id=${message.id ?? 'null'}`,
-    );
+    serverRuntime.log.warn(`whatsappWebhookApply: unsupported inbound content type=${message.type ?? 'null'} id=${message.id ?? 'null'}`);
     return {
         messageKind: 'UNSUPPORTED',
         body: '[Unsupported message content]',

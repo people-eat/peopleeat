@@ -1,0 +1,688 @@
+{
+    "uid": "peopleeat-overview",
+    "title": "peopleeat / Overview",
+    "description": "Ops at a glance: GraphQL RED, jobs, client vitals. Environment defaults to production; toggle to test or All.",
+    "tags": ["peopleeat"],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+        "from": "now-6h",
+        "to": "now"
+    },
+    "editable": true,
+    "graphTooltip": 1,
+    "fiscalYearStartMonth": 0,
+    "liveNow": false,
+    "weekStart": "",
+    "links": [
+        {
+            "title": "peopleeat dashboards",
+            "type": "dashboards",
+            "tags": ["peopleeat"],
+            "asDropdown": true,
+            "includeVars": true,
+            "keepTime": true
+        }
+    ],
+    "annotations": {
+        "list": []
+    },
+    "templating": {
+        "list": [
+            {
+                "name": "environment",
+                "type": "query",
+                "label": "Environment",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                },
+                "description": "Defaults to production. Switch to test (or All) when debugging staging.",
+                "query": "label_values(graphql_operation_duration_milliseconds_count{service_name=\"peopleeat\"}, deployment_environment)",
+                "refresh": 2,
+                "includeAll": true,
+                "multi": true,
+                "allValue": ".*",
+                "current": {
+                    "selected": true,
+                    "text": "production",
+                    "value": "production"
+                },
+                "sort": 1
+            }
+        ]
+    },
+    "panels": [
+        {
+            "id": 100,
+            "type": "row",
+            "title": "GraphQL",
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 1,
+            "type": "stat",
+            "title": "GraphQL req/s",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 0,
+                "y": 1
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "reqps",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "blue",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": ["lastNotNull"],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "area",
+                "textMode": "auto",
+                "orientation": "auto"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "sum(rate(graphql_operation_duration_milliseconds_count{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval]))",
+                    "legendFormat": "",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": false,
+                    "instant": true
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "type": "stat",
+            "title": "GraphQL error rate",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 6,
+                "y": 1
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "percentunit",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 0.01
+                            },
+                            {
+                                "color": "red",
+                                "value": 0.05
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": ["lastNotNull"],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "area",
+                "textMode": "auto",
+                "orientation": "auto"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "sum(rate(graphql_operation_errors_total{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval])) / clamp_min(sum(rate(graphql_operation_duration_milliseconds_count{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval])), 1e-9)",
+                    "legendFormat": "",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": false,
+                    "instant": true
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "type": "stat",
+            "title": "GraphQL p95 latency",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 12,
+                "y": 1
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ms",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 500
+                            },
+                            {
+                                "color": "red",
+                                "value": 2000
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": ["lastNotNull"],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "area",
+                "textMode": "auto",
+                "orientation": "auto"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "histogram_quantile(0.95, sum by (le) (rate(graphql_operation_duration_milliseconds_bucket{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval])))",
+                    "legendFormat": "",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": false,
+                    "instant": true
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "type": "stat",
+            "title": "Job p95 latency",
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 18,
+                "y": 1
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ms",
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "yellow",
+                                "value": 500
+                            },
+                            {
+                                "color": "red",
+                                "value": 2000
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "reduceOptions": {
+                    "calcs": ["lastNotNull"],
+                    "fields": "",
+                    "values": false
+                },
+                "colorMode": "value",
+                "graphMode": "area",
+                "textMode": "auto",
+                "orientation": "auto"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "histogram_quantile(0.95, sum by (le) (rate(job_handler_duration_milliseconds_bucket{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval])))",
+                    "legendFormat": "",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": false,
+                    "instant": true
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "type": "timeseries",
+            "title": "GraphQL request rate by operation",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 5
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "reqps",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "sum by (graphql_operation_name) (rate(graphql_operation_duration_milliseconds_count{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval]))",
+                    "legendFormat": "{{graphql_operation_name}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "type": "timeseries",
+            "title": "GraphQL p95 latency by operation",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 5
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ms",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "histogram_quantile(0.95, sum by (le, graphql_operation_name) (rate(graphql_operation_duration_milliseconds_bucket{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval])))",
+                    "legendFormat": "{{graphql_operation_name}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "type": "timeseries",
+            "title": "GraphQL errors by operation",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 13
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ops",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "sum by (graphql_operation_name) (rate(graphql_operation_errors_total{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval]))",
+                    "legendFormat": "{{graphql_operation_name}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "type": "timeseries",
+            "title": "Job handler rate by name",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 13
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ops",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "sum by (job_name) (rate(job_handler_duration_milliseconds_count{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval]))",
+                    "legendFormat": "{{job_name}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        },
+        {
+            "id": 101,
+            "type": "row",
+            "title": "Client",
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 21
+            },
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 9,
+            "type": "timeseries",
+            "title": "Web Vitals (p75)",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 22
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ms",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "histogram_quantile(0.75, sum by (le, vital_name) (rate(client_web_vital_duration_milliseconds_bucket{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval])))",
+                    "legendFormat": "{{vital_name}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        },
+        {
+            "id": 10,
+            "type": "timeseries",
+            "title": "CLS score (p75)",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 22
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "histogram_quantile(0.75, sum by (le, vital_name) (rate(client_web_vital_score_bucket{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval])))",
+                    "legendFormat": "{{vital_name}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        },
+        {
+            "id": 102,
+            "type": "row",
+            "title": "Traces",
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 30
+            },
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 11,
+            "type": "traces",
+            "title": "Recent traces (filtered by Environment)",
+            "gridPos": {
+                "h": 10,
+                "w": 24,
+                "x": 0,
+                "y": 31
+            },
+            "datasource": {
+                "type": "tempo",
+                "uid": "tempo"
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "datasource": {
+                        "type": "tempo",
+                        "uid": "tempo"
+                    },
+                    "queryType": "traceql",
+                    "limit": 20,
+                    "tableType": "traces",
+                    "query": "{ resource.service.name = \"peopleeat\" && resource.deployment.environment =~ \"${environment:regex}\" }"
+                }
+            ]
+        }
+    ]
+}

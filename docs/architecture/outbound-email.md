@@ -25,7 +25,9 @@ and retries must not erase history.
    the quota Slack alert call this instead of importing Resend directly.
 4. **Resend webhooks** at `/api/webhooks/resend` verify Svix signatures with `RESEND_WEBHOOK_SECRET`, then `outboundEmailProviderEventApply`
    first-write-wins lifecycle timestamps (`sentAt`, `deliveredAt`, `deliveryDelayedAt`, `openedAt`, `clickedAt`, `bouncedAt`,
-   `complainedAt`, `failedAt`).
+   `complainedAt`, `failedAt`). Happy-path applies are silent; `log.warn` only for unexpected/unhandled inputs (missing/invalid Svix
+   signature, missing `email_id`, unknown event type). Orphan `emailId` values (no matching `OutboundEmails` row) stay silent so Resend
+   at-least-once retries do not flood logs; `log.error` when the handler throws.
 5. **Admin GraphQL** — `Admin.outboundEmails` / `outboundEmailsCounts` / `outboundEmailCreations` / `outboundEmail` with criterion filters
    (`searchText`, `purposes`, optional `lifecycleStatuses`, `userId`, related entity). Detail exposes `attachments`. `Admin.resendUsage`
    resolves via `serverRuntime.email.usageGet()` (null when console transport or API failure) for the overview quota hero.

@@ -15,11 +15,15 @@ export const Route = createFileRoute('/api/webhooks/resend')({
                         return new Response('RESEND_WEBHOOK_SECRET is not configured', { status: 503 });
                     }
 
+                    const serverRuntime = serverRuntimeGet();
                     const payload = await request.text();
                     const svixId = request.headers.get('svix-id');
                     const svixTimestamp = request.headers.get('svix-timestamp');
                     const svixSignature = request.headers.get('svix-signature');
                     if (!svixId || !svixTimestamp || !svixSignature) {
+                        serverRuntime.log.warn(
+                            `resend webhook: POST rejected (missing Svix headers; hasId=${Boolean(svixId)} hasTimestamp=${Boolean(svixTimestamp)} hasSignature=${Boolean(svixSignature)})`,
+                        );
                         return new Response('Missing Svix signature headers', { status: 400 });
                     }
 
@@ -42,6 +46,7 @@ export const Route = createFileRoute('/api/webhooks/resend')({
                         }) as typeof verified;
                     } catch (error) {
                         const message = error instanceof Error ? error.message : 'Invalid webhook signature';
+                        serverRuntime.log.warn(`resend webhook: POST rejected (invalid signature; ${message})`);
                         return new Response(message, { status: 400 });
                     }
 
@@ -49,10 +54,10 @@ export const Route = createFileRoute('/api/webhooks/resend')({
 
                     const emailId = verified.data.email_id;
                     if (!emailId) {
+                        serverRuntime.log.warn(`resend webhook: skipping event with missing email_id type=${verified.type}`);
                         return new Response(null, { status: 200 });
                     }
 
-                    const serverRuntime = serverRuntimeGet();
                     try {
                         await outboundEmailProviderEventApply(
                             {
@@ -64,7 +69,7 @@ export const Route = createFileRoute('/api/webhooks/resend')({
                             serverRuntime,
                         );
                     } catch (error) {
-                        serverRuntime.log.error(error);
+                        serverRuntime.log.error(error, null);
                         return new Response('Webhook handler failed', { status: 500 });
                     }
 

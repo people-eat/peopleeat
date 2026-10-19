@@ -1,0 +1,415 @@
+{
+    "uid": "peopleeat-client",
+    "title": "peopleeat / Client",
+    "description": "Browser Web Vitals and client-reported GraphQL / route errors.",
+    "tags": ["peopleeat"],
+    "timezone": "browser",
+    "schemaVersion": 39,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+        "from": "now-6h",
+        "to": "now"
+    },
+    "editable": true,
+    "graphTooltip": 1,
+    "fiscalYearStartMonth": 0,
+    "liveNow": false,
+    "weekStart": "",
+    "links": [
+        {
+            "title": "peopleeat dashboards",
+            "type": "dashboards",
+            "tags": ["peopleeat"],
+            "asDropdown": true,
+            "includeVars": true,
+            "keepTime": true
+        }
+    ],
+    "annotations": {
+        "list": []
+    },
+    "templating": {
+        "list": [
+            {
+                "name": "environment",
+                "type": "query",
+                "label": "Environment",
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                },
+                "description": "Defaults to production. Switch to test (or All) when debugging staging.",
+                "query": "label_values(graphql_operation_duration_milliseconds_count{service_name=\"peopleeat\"}, deployment_environment)",
+                "refresh": 2,
+                "includeAll": true,
+                "multi": true,
+                "allValue": ".*",
+                "current": {
+                    "selected": true,
+                    "text": "production",
+                    "value": "production"
+                },
+                "sort": 1
+            }
+        ]
+    },
+    "panels": [
+        {
+            "id": 100,
+            "type": "row",
+            "title": "Web Vitals",
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 1,
+            "type": "timeseries",
+            "title": "LCP / INP / FCP / TTFB p75",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 1
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ms",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "histogram_quantile(0.75, sum by (le, vital_name) (rate(client_web_vital_duration_milliseconds_bucket{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval])))",
+                    "legendFormat": "{{vital_name}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "type": "timeseries",
+            "title": "CLS p75",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 1
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "short",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "histogram_quantile(0.75, sum by (le, vital_name) (rate(client_web_vital_score_bucket{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval])))",
+                    "legendFormat": "{{vital_name}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "type": "timeseries",
+            "title": "Web Vital sample rate",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 9
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ops",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "sum by (vital_name) (rate(client_web_vital_duration_milliseconds_count{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval]))",
+                    "legendFormat": "{{vital_name}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                },
+                {
+                    "refId": "B",
+                    "expr": "sum by (vital_name) (rate(client_web_vital_score_count{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval]))",
+                    "legendFormat": "CLS {{vital_name}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "type": "timeseries",
+            "title": "LCP p75 by environment",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 9
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ms",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "histogram_quantile(0.75, sum by (le, deployment_environment) (rate(client_web_vital_duration_milliseconds_bucket{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\",vital_name=\"LCP\"}[$__rate_interval])))",
+                    "legendFormat": "{{deployment_environment}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        },
+        {
+            "id": 101,
+            "type": "row",
+            "title": "Client errors",
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 17
+            },
+            "collapsed": false,
+            "panels": []
+        },
+        {
+            "id": 5,
+            "type": "timeseries",
+            "title": "Client GraphQL errors by operation (when exported)",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 18
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ops",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "sum by (graphql_operation_name) (rate(client_graphql_errors_total{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval]))",
+                    "legendFormat": "{{graphql_operation_name}}",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "type": "timeseries",
+            "title": "Client route errors (when exported)",
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 18
+            },
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "unit": "ops",
+                    "custom": {
+                        "drawStyle": "line",
+                        "lineWidth": 1,
+                        "fillOpacity": 15,
+                        "spanNulls": true,
+                        "showPoints": "never"
+                    }
+                },
+                "overrides": []
+            },
+            "options": {
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "desc"
+                }
+            },
+            "targets": [
+                {
+                    "refId": "A",
+                    "expr": "sum(rate(client_route_errors_total{service_name=\"peopleeat\",deployment_environment=~\"${environment:regex}\"}[$__rate_interval]))",
+                    "legendFormat": "route errors",
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "range": true,
+                    "instant": false
+                }
+            ]
+        }
+    ]
+}

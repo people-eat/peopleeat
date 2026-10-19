@@ -26,6 +26,7 @@ export async function outboundEmailProviderEventApply(
 ): Promise<{ applied: boolean }> {
     const column = lifecycleColumnForEventType(event.type);
     if (!column) {
+        serverRuntime.log.warn(`outboundEmailProviderEventApply: unknown event type=${event.type} emailId=${event.emailId}`);
         return { applied: false };
     }
 
@@ -36,9 +37,7 @@ export async function outboundEmailProviderEventApply(
         .limit(1);
 
     if (!existing) {
-        serverRuntime.log.info(
-            `outboundEmailProviderEventApply: no matching outbound email for providerMessageId=${event.emailId} type=${event.type}`,
-        );
+        // Orphan / other-app Resend traffic — expected; keep silent so at-least-once retries stay quiet.
         return { applied: false };
     }
 

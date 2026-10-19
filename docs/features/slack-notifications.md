@@ -72,7 +72,8 @@ expects HTTP 200 — otherwise the Slack client shows _This app responded with s
 3. Set **Request URL** to `{WEB_PAGE_URL}/api/webhooks/slack` (e.g. `https://people-eat.com/api/webhooks/slack`).
 4. Save — Slack probes the URL; the handler verifies the signature (or legacy `ssl_check`) and returns 200.
 
-The route only acks; it does not run slash commands or other interactive workflows.
+The route only acks; it does not run slash commands or other interactive workflows. Happy-path acks (and legacy `ssl_check`) are silent;
+`log.warn` only when signature verification fails.
 
 ### Module layout
 

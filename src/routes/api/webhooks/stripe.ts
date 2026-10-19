@@ -14,18 +14,20 @@ export const Route = createFileRoute('/api/webhooks/stripe')({
                         return new Response('Stripe webhook is not configured', { status: 503 });
                     }
 
+                    const serverRuntime = serverRuntimeGet();
                     const payload = Buffer.from(await request.arrayBuffer());
                     const signatureHeader = request.headers.get('stripe-signature');
                     if (!signatureHeader) {
+                        serverRuntime.log.warn('stripe webhook: POST rejected (missing stripe-signature header)');
                         return new Response('Missing stripe-signature header', { status: 400 });
                     }
 
-                    const serverRuntime = serverRuntimeGet();
                     let event: { id: string; type: string; dataObject: unknown };
                     try {
                         event = serverRuntime.stripe.webhookEventConstruct({ payload, signatureHeader });
                     } catch (error) {
                         const message = error instanceof Error ? error.message : 'Invalid webhook signature';
+                        serverRuntime.log.warn(`stripe webhook: POST rejected (invalid signature; ${message})`);
                         return new Response(message, { status: 400 });
                     }
 
@@ -34,7 +36,7 @@ export const Route = createFileRoute('/api/webhooks/stripe')({
                     try {
                         await stripeWebhookApply(event, serverRuntime);
                     } catch (error) {
-                        serverRuntime.log.error(error);
+                        serverRuntime.log.error(error, null);
                         return new Response('Webhook handler failed', { status: 500 });
                     }
 

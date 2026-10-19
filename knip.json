@@ -13,7 +13,8 @@
         "src/server/agents/agentBookingRequestCreate.ts",
         ".storybook/vite.config.ts",
         "scripts/fixGraphqlZodLazyNesting.mjs",
-        "scripts/migrateFromPeopleEat/**"
+        "scripts/migrateFromPeopleEat/**",
+        "ops/grafana/dashboards/generate.mjs"
     ],
     "ignoreDependencies": [
         "@tanstack/react-devtools",

@@ -103,8 +103,9 @@ HTTP route: `POST /api/webhooks/stripe` (`src/routes/api/webhooks/stripe.ts`).
 4. Local tip: `stripe listen --forward-to localhost:3000/api/webhooks/stripe` and use the CLI signing secret for `.env.local`.
 
 `webhookEventConstruct` verifies the Stripe-Signature header against the raw body and returns `{ id, type, dataObject }`. Dispatch lives in
-`stripeWebhookApply`. Unknown / ack-only types return HTTP 200 with no DB write. Gift-card checkout still finalizes via client
-`giftCardPay`.
+`stripeWebhookApply`. Happy-path applies and subscribed ack-only types are silent (HTTP 200, no DB write for ack-only). `log.warn` for
+unexpected/unhandled inputs (missing/invalid signature, handled event missing object `id`, event type outside the handle + ack-only
+catalog); `log.error` when the handler throws. Gift-card checkout still finalizes via client `giftCardPay`.
 
 #### Events we subscribe to
 

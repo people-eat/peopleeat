@@ -211,8 +211,31 @@ Redeploy peopleeat. Trigger a chat turn and a GraphQL mutation, then:
 - Langfuse → Traces / Sessions (session id = chat id)
 - Grafana → Explore → Tempo (GraphQL / ingress / `pg` spans) and Prometheus (`graphql.operation.duration`, `graphql.subscription.duration`,
   `http.ingress.duration`, `job.handler.duration`)
+- Grafana → folder **peopleeat** (versioned dashboards below)
 
-### D. App Postgres `pg_stat_statements`
+### D. Grafana APM dashboards
+
+Live on `https://grafana.people-eat.com` in folder UID `peopleeat` (tag `peopleeat`). The `environment` dashboard variable defaults to
+**production** (`deployment_environment`); switch to `test` or All when needed. Metrics and the Overview Tempo panel both honor it
+(`resource.deployment.environment` on traces). Datasource UIDs: `prometheus`, `tempo`.
+
+| Dashboard      | UID                      | URL                                                                                  |
+| -------------- | ------------------------ | ------------------------------------------------------------------------------------ |
+| Overview       | `peopleeat-overview`     | [/d/peopleeat-overview](https://grafana.people-eat.com/d/peopleeat-overview)         |
+| GraphQL        | `peopleeat-graphql`      | [/d/peopleeat-graphql](https://grafana.people-eat.com/d/peopleeat-graphql)           |
+| Jobs & Ingress | `peopleeat-jobs-ingress` | [/d/peopleeat-jobs-ingress](https://grafana.people-eat.com/d/peopleeat-jobs-ingress) |
+| Client         | `peopleeat-client`       | [/d/peopleeat-client](https://grafana.people-eat.com/d/peopleeat-client)             |
+
+JSON sources of truth: [`ops/grafana/dashboards/`](../../ops/grafana/dashboards/). Regenerate with
+`node ops/grafana/dashboards/generate.mjs`, then push via Grafana UI import or API (`POST /api/dashboards/db` with `folderUid: peopleeat`,
+`overwrite: true`). Prometheus metric names use OTel → Prometheus conventions (e.g. `graphql_operation_duration_milliseconds_bucket`, label
+`graphql_operation_name`). Panels for metrics not yet exported (ingress, some error counters, client GraphQL/route errors) stay empty until
+those series appear.
+
+Cursor: Grafana MCP (`mcp-grafana`) against this instance can create/update the same dashboards; keep the service-account token in
+`~/.cursor/mcp.json` only (never commit it).
+
+### E. App Postgres `pg_stat_statements`
 
 On the **peopleeat** Postgres (not Langfuse’s Postgres), enable the extension (Coolify DB → config / `shared_preload_libraries`, then
 restart):
@@ -223,7 +246,7 @@ CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 
 Then open `/admin/database-slow-statements`, use GraphQL `databaseSlowStatements`, or the SQL in the runbook above.
 
-### E. Network and security checklist
+### F. Network and security checklist
 
 - Langfuse and OTLP only on HTTPS via Coolify Traefik; restrict who can open Grafana (SSO / IP allowlist / basic auth).
 - Prefer private Docker network so peopleeat → `http://otel:4318` works **without** public OTLP if both apps share a Coolify destination;
@@ -245,3 +268,4 @@ Then open `/admin/database-slow-statements`, use GraphQL `databaseSlowStatements
 - `src/web/observability/` — Web Vitals bootstrap + report helpers
 - `src/server/queries/adminDatabaseSlowStatementsFindMany.ts` — `pg_stat_statements` admin read
 - `src/server/jobs/handlers/observabilityOpsAlert.ts` — Slack threshold alerts
+- `ops/grafana/dashboards/` — Grafana dashboard JSON + `generate.mjs`
