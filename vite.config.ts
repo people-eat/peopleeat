@@ -102,6 +102,10 @@ const config = defineConfig({
         reflectMetadataForTsyringe(),
         devtools(),
         nitro({
+            // Client disconnects (mobile hang-up, refresh) must not pollute
+            // production logs as uncaught `ECONNRESET` / `aborted` errors.
+            // See [architecture/observability.md](docs/architecture/observability.md#client-connection-aborts).
+            plugins: ['./src/server/nitro/clientConnectionAbortPlugin.ts'],
             rollupConfig: {
                 external: ['playwright', 'playwright-core'],
                 // Nitro's server rollup does not always see root Vite plugins

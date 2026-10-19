@@ -88,6 +88,22 @@ See [infrastructure.md](../infrastructure.md). Self-host on Coolify: [Self-hosti
   [`chatTurnAgentCreate.ts`](../../src/server/lib/chatTurnAgentCreate.ts)
 - One-shots / agents: shared helpers in [`aiTelemetry.ts`](../../src/server/observability/aiTelemetry.ts)
 
+### Client connection aborts
+
+Mobile clients, browser refreshes, and Traefik idle closes routinely tear down the TCP socket while a request is still open. Node's HTTP
+server then destroys the `IncomingMessage` with `Error: aborted` / `code: 'ECONNRESET'` (`abortIncoming`). That is expected peer behavior,
+not an application failure — it must not appear as `[uncaughtException]` (or bare `console.error`) noise in Coolify logs.
+
+Handling lives in a Nitro runtime plugin registered from `vite.config.ts`:
+
+1. Patch `http.Server` / `https.Server` `emit('request')` so every req/res gets an `'error'` listener that swallows client-abort shapes
+   (`isClientConnectionAbortError`) and still logs anything else
+2. Filter residual `console.error` calls whose arguments match the same predicate (Nitro's `trapUnhandledErrors` always logs before
+   `captureError`, so a hook alone cannot silence it)
+
+Key files: [`clientConnectionAbortPlugin.ts`](../../src/server/nitro/clientConnectionAbortPlugin.ts),
+[`isClientConnectionAbortError.ts`](../../src/server/utils/isClientConnectionAbortError.ts).
+
 ### Request / job / ingress instrumentation
 
 - **GraphQL queries/mutations**: span + RED (`graphql.operation.duration` / `.errors`) around `executeGraphQLQuery`. Attributes:

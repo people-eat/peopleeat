@@ -45,7 +45,9 @@ The `tanstackStart()` Vite plugin alone emits only a fetch-handler module (`expo
 module has no top-level side effects — running it under Node imports the file and exits with code 0 without ever opening a port. To produce
 a real Node entrypoint, `vite.config.ts` adds the `nitro/vite` plugin alongside `tanstackStart()`. Nitro wraps the fetch handler in a
 `node:http` listener that reads `PORT` and `HOST` from the environment, and emits a self-contained bundle at `.output/server/index.mjs` with
-its runtime dependencies inlined. This is the file the Dockerfile launches in production.
+its runtime dependencies inlined. This is the file the Dockerfile launches in production. A Nitro runtime plugin
+(`src/server/nitro/clientConnectionAbortPlugin.ts`) treats client disconnects (`ECONNRESET` / `aborted`) as expected so they do not flood
+Coolify logs — see [architecture/observability.md](./architecture/observability.md#client-connection-aborts).
 
 **Passkeys / `reflect-metadata`:** the WebAuthn stack (`@simplewebauthn/server` → `@peculiar/x509` → `tsyringe`) requires the Reflect
 metadata polyfill before `tsyringe` loads. Nitro's SSR rollup can place CJS `reflect-metadata` in the importer chunk body while
