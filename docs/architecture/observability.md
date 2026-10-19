@@ -19,7 +19,7 @@ Prometheus, Cloud or self-hosted on Coolify) is the general APM surface for HTTP
 | One-shot AI prompts                      | `AiGenerations` (unchanged)                                 | Admin audit ledger                                        |
 | LLM / agent traces                       | Langfuse (`LANGFUSE_TRANSPORT=cloud` + `LANGFUSE_BASE_URL`) | Generations, tools, cost, sessions (Cloud or self-hosted) |
 | Request / SQL / job traces + RED metrics | Grafana via OTLP (`OTEL_TRANSPORT=otlp`)                    | Latency waterfalls, p95, error rate (Cloud or Coolify)    |
-| Aggregate slow SQL                       | `pg_stat_statements` (+ admin GraphQL)                      | “Which queries take longest?” globally                    |
+| Aggregate slow SQL                       | `pg_stat_statements` (+ admin UI / GraphQL)                 | “Which queries take longest?” globally                    |
 | Ops thresholds                           | Slack `opsAlerts` recurring job                             | Error-rate and slow-SQL alerts without opening Grafana    |
 
 Transports default to **off** so local/test boot never requires vendor keys (same pattern as email/Slack/WhatsApp console transports).
@@ -33,7 +33,8 @@ Transports default to **off** so local/test boot never requires vendor keys (sam
 
 ### Slow queries (two complementary answers)
 
-1. **Aggregate** — `pg_stat_statements` ranked by `total_exec_time` / `mean_exec_time` (admin `databaseSlowStatements`, runbook SQL below)
+1. **Aggregate** — `pg_stat_statements` ranked by `total_exec_time` / `mean_exec_time` (admin `/admin/database-slow-statements`, GraphQL
+   `databaseSlowStatements`, runbook SQL below)
 2. **Per-request** — OTel `pg` spans nested under the GraphQL / job span in Grafana
 
 ## Alternatives considered
@@ -135,7 +136,7 @@ ORDER BY total_exec_time DESC
 LIMIT 20;
 ```
 
-Admin GraphQL: `Admin.databaseSlowStatements(limit: Int! = 20)`.
+Admin UI: `/admin/database-slow-statements`. GraphQL: `Admin.databaseSlowStatements(limit: Int! = 20)`.
 
 ## Self-hosting on Coolify
 
@@ -220,7 +221,7 @@ restart):
 CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
 ```
 
-Then use admin GraphQL `databaseSlowStatements` or the SQL in the runbook above.
+Then open `/admin/database-slow-statements`, use GraphQL `databaseSlowStatements`, or the SQL in the runbook above.
 
 ### E. Network and security checklist
 

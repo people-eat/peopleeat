@@ -56,6 +56,7 @@ import { Route as Char123LocaleChar125AdminBlogPostsRouteImport } from './routes
 import { Route as Char123LocaleChar125AdminBookingRequestsRouteImport } from './routes/{-$locale}/admin/booking-requests'
 import { Route as Char123LocaleChar125AdminCallsRouteImport } from './routes/{-$locale}/admin/calls'
 import { Route as Char123LocaleChar125AdminCitiesRouteImport } from './routes/{-$locale}/admin/cities'
+import { Route as Char123LocaleChar125AdminDatabaseSlowStatementsRouteImport } from './routes/{-$locale}/admin/database-slow-statements'
 import { Route as Char123LocaleChar125AdminFeatureTogglesRouteImport } from './routes/{-$locale}/admin/feature-toggles'
 import { Route as Char123LocaleChar125AdminFileStoreRouteImport } from './routes/{-$locale}/admin/file-store'
 import { Route as Char123LocaleChar125AdminGiftCardsRouteImport } from './routes/{-$locale}/admin/gift-cards'
@@ -428,6 +429,12 @@ const Char123LocaleChar125AdminCitiesRoute =
   Char123LocaleChar125AdminCitiesRouteImport.update({
     id: '/cities',
     path: '/cities',
+    getParentRoute: () => Char123LocaleChar125AdminRoute,
+  } as any)
+const Char123LocaleChar125AdminDatabaseSlowStatementsRoute =
+  Char123LocaleChar125AdminDatabaseSlowStatementsRouteImport.update({
+    id: '/database-slow-statements',
+    path: '/database-slow-statements',
     getParentRoute: () => Char123LocaleChar125AdminRoute,
   } as any)
 const Char123LocaleChar125AdminFeatureTogglesRoute =
@@ -1166,6 +1173,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/admin/booking-requests': typeof Char123LocaleChar125AdminBookingRequestsRoute
   '/{-$locale}/admin/calls': typeof Char123LocaleChar125AdminCallsRoute
   '/{-$locale}/admin/cities': typeof Char123LocaleChar125AdminCitiesRoute
+  '/{-$locale}/admin/database-slow-statements': typeof Char123LocaleChar125AdminDatabaseSlowStatementsRoute
   '/{-$locale}/admin/feature-toggles': typeof Char123LocaleChar125AdminFeatureTogglesRoute
   '/{-$locale}/admin/file-store': typeof Char123LocaleChar125AdminFileStoreRoute
   '/{-$locale}/admin/gift-cards': typeof Char123LocaleChar125AdminGiftCardsRoute
@@ -1321,6 +1329,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/admin/booking-requests': typeof Char123LocaleChar125AdminBookingRequestsRoute
   '/{-$locale}/admin/calls': typeof Char123LocaleChar125AdminCallsRoute
   '/{-$locale}/admin/cities': typeof Char123LocaleChar125AdminCitiesRoute
+  '/{-$locale}/admin/database-slow-statements': typeof Char123LocaleChar125AdminDatabaseSlowStatementsRoute
   '/{-$locale}/admin/feature-toggles': typeof Char123LocaleChar125AdminFeatureTogglesRoute
   '/{-$locale}/admin/file-store': typeof Char123LocaleChar125AdminFileStoreRoute
   '/{-$locale}/admin/gift-cards': typeof Char123LocaleChar125AdminGiftCardsRoute
@@ -1480,6 +1489,7 @@ export interface FileRoutesById {
   '/{-$locale}/admin/booking-requests': typeof Char123LocaleChar125AdminBookingRequestsRoute
   '/{-$locale}/admin/calls': typeof Char123LocaleChar125AdminCallsRoute
   '/{-$locale}/admin/cities': typeof Char123LocaleChar125AdminCitiesRoute
+  '/{-$locale}/admin/database-slow-statements': typeof Char123LocaleChar125AdminDatabaseSlowStatementsRoute
   '/{-$locale}/admin/feature-toggles': typeof Char123LocaleChar125AdminFeatureTogglesRoute
   '/{-$locale}/admin/file-store': typeof Char123LocaleChar125AdminFileStoreRoute
   '/{-$locale}/admin/gift-cards': typeof Char123LocaleChar125AdminGiftCardsRoute
@@ -1640,6 +1650,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/booking-requests'
     | '/{-$locale}/admin/calls'
     | '/{-$locale}/admin/cities'
+    | '/{-$locale}/admin/database-slow-statements'
     | '/{-$locale}/admin/feature-toggles'
     | '/{-$locale}/admin/file-store'
     | '/{-$locale}/admin/gift-cards'
@@ -1795,6 +1806,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/booking-requests'
     | '/{-$locale}/admin/calls'
     | '/{-$locale}/admin/cities'
+    | '/{-$locale}/admin/database-slow-statements'
     | '/{-$locale}/admin/feature-toggles'
     | '/{-$locale}/admin/file-store'
     | '/{-$locale}/admin/gift-cards'
@@ -1953,6 +1965,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/booking-requests'
     | '/{-$locale}/admin/calls'
     | '/{-$locale}/admin/cities'
+    | '/{-$locale}/admin/database-slow-statements'
     | '/{-$locale}/admin/feature-toggles'
     | '/{-$locale}/admin/file-store'
     | '/{-$locale}/admin/gift-cards'
@@ -2419,6 +2432,13 @@ declare module '@tanstack/react-router' {
       path: '/cities'
       fullPath: '/{-$locale}/admin/cities'
       preLoaderRoute: typeof Char123LocaleChar125AdminCitiesRouteImport
+      parentRoute: typeof Char123LocaleChar125AdminRoute
+    }
+    '/{-$locale}/admin/database-slow-statements': {
+      id: '/{-$locale}/admin/database-slow-statements'
+      path: '/database-slow-statements'
+      fullPath: '/{-$locale}/admin/database-slow-statements'
+      preLoaderRoute: typeof Char123LocaleChar125AdminDatabaseSlowStatementsRouteImport
       parentRoute: typeof Char123LocaleChar125AdminRoute
     }
     '/{-$locale}/admin/feature-toggles': {
@@ -3197,6 +3217,7 @@ interface Char123LocaleChar125AdminRouteChildren {
   Char123LocaleChar125AdminBookingRequestsRoute: typeof Char123LocaleChar125AdminBookingRequestsRoute
   Char123LocaleChar125AdminCallsRoute: typeof Char123LocaleChar125AdminCallsRoute
   Char123LocaleChar125AdminCitiesRoute: typeof Char123LocaleChar125AdminCitiesRoute
+  Char123LocaleChar125AdminDatabaseSlowStatementsRoute: typeof Char123LocaleChar125AdminDatabaseSlowStatementsRoute
   Char123LocaleChar125AdminFeatureTogglesRoute: typeof Char123LocaleChar125AdminFeatureTogglesRoute
   Char123LocaleChar125AdminFileStoreRoute: typeof Char123LocaleChar125AdminFileStoreRoute
   Char123LocaleChar125AdminGiftCardsRoute: typeof Char123LocaleChar125AdminGiftCardsRoute
@@ -3283,6 +3304,8 @@ const Char123LocaleChar125AdminRouteChildren: Char123LocaleChar125AdminRouteChil
       Char123LocaleChar125AdminBookingRequestsRoute,
     Char123LocaleChar125AdminCallsRoute: Char123LocaleChar125AdminCallsRoute,
     Char123LocaleChar125AdminCitiesRoute: Char123LocaleChar125AdminCitiesRoute,
+    Char123LocaleChar125AdminDatabaseSlowStatementsRoute:
+      Char123LocaleChar125AdminDatabaseSlowStatementsRoute,
     Char123LocaleChar125AdminFeatureTogglesRoute:
       Char123LocaleChar125AdminFeatureTogglesRoute,
     Char123LocaleChar125AdminFileStoreRoute:
@@ -3625,3 +3648,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

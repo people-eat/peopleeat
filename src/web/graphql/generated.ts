@@ -11380,6 +11380,29 @@ export type GqlCAdminCustomerTestimonialDetailImageUpdateMutation = {
     admin: { customerTestimonialImageUpdate: { success: boolean; referenceId: string | null } };
 };
 
+export type GqlCAdminDatabaseSlowStatementsPageQueryVariables = Exact<{
+    limit?: number;
+}>;
+
+export type GqlCAdminDatabaseSlowStatementsPageQuery = {
+    currentSession: {
+        sessionId: string;
+        user: {
+            userId: string;
+            admin: {
+                adminId: string;
+                databaseSlowStatements: Array<{
+                    query: string;
+                    calls: number;
+                    totalExecTimeMs: number;
+                    meanExecTimeMs: number;
+                    rows: number;
+                }>;
+            } | null;
+        } | null;
+    };
+};
+
 export type GqlCAdminFeatureToggleFieldsFragment = {
     featureToggleKey: Schema.GqlCFeatureToggleKey;
     enabled: boolean;
@@ -48863,6 +48886,80 @@ export const AdminCustomerTestimonialDetailImageUpdateDocument = {
     GqlCAdminCustomerTestimonialDetailImageUpdateMutation,
     GqlCAdminCustomerTestimonialDetailImageUpdateMutationVariables
 >;
+export const AdminDatabaseSlowStatementsPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminDatabaseSlowStatementsPage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
+                    defaultValue: { kind: 'IntValue', value: '50' },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'admin' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'databaseSlowStatements' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'limit' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'limit' } },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'query' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'calls' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'totalExecTimeMs' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'meanExecTimeMs' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'rows' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminDatabaseSlowStatementsPageQuery, GqlCAdminDatabaseSlowStatementsPageQueryVariables>;
 export const AdminFeatureTogglesPageDocument = {
     kind: 'Document',
     definitions: [

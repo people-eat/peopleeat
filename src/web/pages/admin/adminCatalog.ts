@@ -5,6 +5,7 @@ import {
     Building2Icon,
     CalendarClockIcon,
     ChartColumnIcon,
+    DatabaseIcon,
     FileClockIcon,
     FileInputIcon,
     GiftIcon,
@@ -43,6 +44,7 @@ export type AdminStubSlug =
     | 'support-requests'
     | 'promo-codes'
     | 'logs'
+    | 'database-slow-statements'
     | 'ai-generations'
     | 'sessions'
     | 'analytics'
@@ -122,7 +124,7 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
     {
         id: 'platform',
         label: { de: 'Plattform', en: 'Platform' },
-        items: ['jobs', 'logs', 'ai-generations', 'feature-toggles', 'file-store', 'links'],
+        items: ['jobs', 'logs', 'database-slow-statements', 'ai-generations', 'feature-toggles', 'file-store', 'links'],
     },
 ];
 
@@ -326,6 +328,17 @@ export const ADMIN_STUB_ROUTES: readonly AdminStubRoute[] = [
         title: { de: 'Log Nachrichten', en: 'Log Messages' },
         description: { de: 'Log-Nachrichten durchsuchen und einsehen.', en: 'Browse and inspect log messages.' },
         icon: FileClockIcon,
+    },
+    {
+        slug: 'database-slow-statements',
+        path: '/admin/database-slow-statements',
+        to: '/{-$locale}/admin/database-slow-statements',
+        title: { de: 'Langsame SQL', en: 'Slow SQL' },
+        description: {
+            de: 'Top Postgres-Statements nach Gesamtausführungszeit (pg_stat_statements).',
+            en: 'Top Postgres statements by total execution time (pg_stat_statements).',
+        },
+        icon: DatabaseIcon,
     },
     {
         slug: 'ai-generations',

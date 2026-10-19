@@ -1,0 +1,21 @@
+# Top Postgres statements by total execution time from `pg_stat_statements`.
+# See docs/features/admin-database-slow-statements.md.
+
+query AdminDatabaseSlowStatementsPage($limit: Int! = 50) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                databaseSlowStatements(limit: $limit) {
+                    query
+                    calls
+                    totalExecTimeMs
+                    meanExecTimeMs
+                    rows
+                }
+            }
+        }
+    }
+}
