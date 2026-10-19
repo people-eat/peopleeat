@@ -48,10 +48,6 @@ Feature toggles (admin `/admin/feature-toggles`, missing = off):
   signature verification. If this is on and `WHATSAPP_APP_SECRET` does not match the Meta app secret, Meta POSTs return `400` and inbound
   never lands in admin (look for `whatsapp webhook: POST rejected (invalid signature…)` in Admin Logs / Coolify logs)
 
-Temporary test mirror: on Meta transport, the primary webhook host fire-and-forget forwards each POST (body + `X-Hub-Signature-256`) to
-`https://demo.people-eat.com/api/webhooks/whatsapp`. Skipped when this deploy already is demo (`WEB_PAGE_URL` host). Demo needs the same app
-secret (or signature validation off) and should not be the sole Meta callback if you still want prod to receive events.
-
 ## Decisions
 
 ### Alternatives considered
@@ -82,7 +78,7 @@ Meta Cloud API + audit table + Concierge inbox, mirroring outbound-email / suppo
 | Provider  | `src/server/whatsapp/whatsappCreate.ts`, `ServerRuntime.whatsapp`                                                                 |
 | Domain    | `src/server/domain/whatsapp.ts`                                                                                                   |
 | Tables    | `WhatsAppConversations`, `WhatsAppMessages`, `WhatsAppMessageAttachments`, `WhatsAppMessageReactions`, `OutboundWhatsAppMessages` |
-| Webhook   | `src/routes/api/webhooks/whatsapp.ts`, `whatsappWebhookApply`, `whatsappWebhookDemoForward`                                       |
+| Webhook   | `src/routes/api/webhooks/whatsapp.ts`, `whatsappWebhookApply`                                                                     |
 | Lifecycle | `bookingRequestLifecycleWhatsApp.ts`, `bookingRequestOfferCallSlotWhatsApp.ts`                                                    |
 | Reaction  | `bookingRequestReactionReminder` job; inbound emoji via webhook; admin `whatsAppMessageReactionUpsert` → `sendReaction`           |
 | Slack     | `src/server/slack/whatsappSlack.ts`, channel `whatsAppMessages`                                                                   |

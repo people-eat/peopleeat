@@ -25,9 +25,7 @@ customer-service window, and every send must be auditable.
 5. **Webhook** — `GET`/`POST` `/api/webhooks/whatsapp` (Meta challenge + optional `X-Hub-Signature-256`). Signature verification is gated by
    feature toggle `WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION` (missing/off skips the check; enable once Meta app secret is confirmed). A wrong
    `WHATSAPP_APP_SECRET` with the toggle on rejects every Meta POST with `400` and no transcript/status updates — the route logs
-   `whatsapp webhook: POST rejected (invalid signature…)` and successful applies as `whatsapp webhook: applied statuses=… messages=…`. When
-   `WHATSAPP_TRANSPORT=meta` and `WEB_PAGE_URL` is not already `demo.people-eat.com`, each POST is also fire-and-forget forwarded (raw
-   body + signature) to `https://demo.people-eat.com/api/webhooks/whatsapp` for test mirroring (Meta allows only one callback URL per app).
+   `whatsapp webhook: POST rejected (invalid signature…)` and successful applies as `whatsapp webhook: applied statuses=… messages=…`.
    Inbound upserts conversation/message (conflict-safe on phone), downloads media into `FileUploads` (caption-less audio/voice bodies store
    `Sprachnachricht` for inbox preview), opens a 24h session window, Slack-notifies `SLACK_CHANNEL_WHATSAPP_MESSAGES`, and routes known
    reaction quick-replies onto the booking Slack thread when possible. Emoji reactions upsert `WhatsAppMessageReactions` on the target

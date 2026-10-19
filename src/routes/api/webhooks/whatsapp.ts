@@ -5,7 +5,6 @@ import type { WhatsAppWebhookPayload } from '../../../server/commands/whatsappWe
 import { environmentVariables } from '../../../server/env/environmentVariablesCreate';
 import { serverRuntimeGet } from '../../../server/graphql/server';
 import { featureToggleIsEnabled } from '../../../server/utils/featureToggleIsEnabled';
-import { whatsappWebhookDemoForward } from '../../../server/utils/whatsappWebhookDemoForward';
 
 export const Route = createFileRoute('/api/webhooks/whatsapp')({
     server: {
@@ -43,14 +42,6 @@ export const Route = createFileRoute('/api/webhooks/whatsapp')({
                             return new Response('Invalid signature', { status: 400 });
                         }
                     }
-
-                    // Temporary: Meta allows one callback URL; mirror POSTs to demo for testing.
-                    whatsappWebhookDemoForward({
-                        rawBody,
-                        signatureHeader,
-                        webPageUrl: environmentVariables.webPageUrl,
-                        log: serverRuntime.log,
-                    });
                 }
 
                 let payload: WhatsAppWebhookPayload;
