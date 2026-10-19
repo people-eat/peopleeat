@@ -43,6 +43,13 @@
             "when": 1792348877164,
             "tag": "0005_great_toad",
             "breakpoints": true
+        },
+        {
+            "idx": 6,
+            "version": "7",
+            "when": 1792427653683,
+            "tag": "0006_blushing_terror",
+            "breakpoints": true
         }
     ]
 }

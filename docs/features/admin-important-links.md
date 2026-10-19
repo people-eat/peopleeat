@@ -6,7 +6,8 @@ One admin page of curated external tools and social profiles for day-to-day ops 
 
 At `/admin/links` (sidebar: Important Links), admins see a static grouped card list (shared admin link-card chrome; opens in a new tab):
 
-- **Infrastructure** — Coolify, Kuma, Grafana, Langfuse, IONOS, Metabase, Google Search Console, Microsoft Clarity, OpenAI Dashboard, Stripe, GitHub Projects
+- **Infrastructure** — Coolify, Kuma, Grafana, Langfuse, IONOS, Metabase, Google Search Console, Microsoft Clarity, OpenAI Dashboard,
+  Stripe, GitHub Projects
 - **Notifications & messaging** — Resend, Klaviyo, Slack, WhatsApp Manager
 - **Social media** — Facebook, Instagram, LinkedIn
 

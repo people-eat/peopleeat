@@ -62,11 +62,14 @@ export async function cookBookingRequestHydrate(
 
         const origin = cook.exactTravelOriginAddress;
         const event = bookingRequest.exactEventAddress;
+        // Prefer Routes distance stamped on BookingRequestCooks (first open / offer create).
+        // Haversine fallback for pool list / not-yet-opened rows (avoids Routes API cost).
         const estimatedTravelDistanceKm = origin
-            ? geoDistance(
+            ? (details?.travelDistanceKm ??
+              geoDistance(
                   { latitude: origin.latitude, longitude: origin.longitude },
                   { latitude: event.latitude, longitude: event.longitude },
-              )
+              ))
             : null;
         const estimatedTravelExpensesCents =
             estimatedTravelDistanceKm != null ? Math.round(estimatedTravelDistanceKm * cook.travelExpensesAmount * 2) : null;

@@ -120,17 +120,10 @@ export function ProfileCookBookingRequestOfferMenusEditPage({
 
     useEffect(() => {
         if (cook == null) return;
+        // Keep incomplete draft ids (new menu / Fertigstellen returnTo); only drop
+        // ids that disappeared from inventory. Save still requires completeness.
         setSelectedMenuIds((current) => {
-            const next = current.filter((menuId) => {
-                const menu = cook.menus.find((row) => row.menuId === menuId);
-                if (menu == null) return false;
-                return cookMenuSelectPanelMenuIsComplete(
-                    menu.courses.map((course) => ({
-                        title: course.title,
-                        mealOptionCount: course.mealOptions.length,
-                    })),
-                );
-            });
+            const next = current.filter((menuId) => cook.menus.some((row) => row.menuId === menuId));
             return next.length === current.length ? current : next;
         });
     }, [cook]);

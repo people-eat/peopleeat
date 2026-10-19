@@ -11,6 +11,7 @@ import { bookingRequestOfferPaymentIsPaid } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminMutation, GqlSAdminMutationBookingRequestUpdateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { bookingRequestCookTravelDistanceKmClear } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
 import { bookingRequestExpireNotifySchedule } from '../utils/bookingRequestExpireNotifySchedule';
 import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
 import { userBookingRequestUpdateEmailSend } from '../utils/bookingRequestLifecycleEmails';
@@ -150,8 +151,17 @@ export async function adminBookingRequestUpdate(
             }
         }
 
+        let eventAddressChanged = false;
         if (input.exactEventAddress != null) {
-            requestPatch.exactEventAddress = exactEventAddressNormalize(input.exactEventAddress);
+            const nextAddress = exactEventAddressNormalize(input.exactEventAddress);
+            const previous = bookingRequest.exactEventAddress;
+            eventAddressChanged =
+                previous.latitude !== nextAddress.latitude ||
+                previous.longitude !== nextAddress.longitude ||
+                previous.addressLine1 !== nextAddress.addressLine1 ||
+                previous.city !== nextAddress.city ||
+                previous.postCode !== nextAddress.postCode;
+            requestPatch.exactEventAddress = nextAddress;
         }
 
         const offers = await serverRuntime.db
@@ -279,6 +289,10 @@ export async function adminBookingRequestUpdate(
                 );
             }
         });
+
+        if (eventAddressChanged) {
+            await bookingRequestCookTravelDistanceKmClear(serverRuntime, { bookingRequestId });
+        }
 
         if (dateTimeChanged && requestPatch.dateTime) {
             const newDateTime = requestPatch.dateTime;

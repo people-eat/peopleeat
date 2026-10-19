@@ -1,0 +1,1 @@
+ALTER TABLE "BookingRequestCooks" ADD COLUMN "travelDistanceKm" double precision;

@@ -12,13 +12,14 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    exact address is shared after mutual accept and is already used for travel expense calculations. The pinned footer repeats the same
    approximate payout (soft suggested price × paid participants, travel, cook platform fee — same breakdown as offer create). Footer stacks
    payout above equal-width decline / make-offer on narrow panes; from `@md` payout sits left of the button pair. Opening a request marks it
-   viewed; they may decline with a reason, or start **Make offer** when Stripe Connect and travel origin are ready. After decline or offer
-   create, if more open requests remain they return to the open pool (Tinder-style review); if that was the last open request, decline lands
-   on the declined tab and offer create forwards to the offer just created — never leave the cook on an empty open pool. Stale notify-email
-   deep links use `Cook.bookingRequestLookup`: pool-eligible cooks (auto-approved + in radius, or admin-approved + `notifiedAt`) get a
-   differentiated unavailable state (canceled / taken / expired / already offered) with **no** request PII; every other denial is identical
-   not-found (no existence oracle). Admin analytics tracks this path as a cook × request funnel (notified → opened → declined or offer
-   create → menus → price → created); see [admin-analytics.md](./admin-analytics.md).
+   viewed (which stamps Google Routes travel distance onto `BookingRequestCooks` so estimated travel expenses match offer create); they may
+   decline with a reason, or start **Make offer** when Stripe Connect and travel origin are ready. After decline or offer create, if more
+   open requests remain they return to the open pool (Tinder-style review); if that was the last open request, decline lands on the declined
+   tab and offer create forwards to the offer just created — never leave the cook on an empty open pool. Stale notify-email deep links use
+   `Cook.bookingRequestLookup`: pool-eligible cooks (auto-approved + in radius, or admin-approved + `notifiedAt`) get a differentiated
+   unavailable state (canceled / taken / expired / already offered) with **no** request PII; every other denial is identical not-found (no
+   existence oracle). Admin analytics tracks this path as a cook × request funnel (notified → opened → declined or offer create → menus →
+   price → created); see [admin-analytics.md](./admin-analytics.md).
 2. Offer create (`/profile/booking-request-pool/$id/create`): no request summary (pool detail already covered that). Two steps with a thin
    progress bar (same visual as the public booking-request form): (1) pick menus (or **New menu** / **Edit** → `/profile/menus/$menuId/edit`
    with safe `returnTo`), then **Continue**; (2) set **price per person**, see price-class guidance and payout / customer-total preview
@@ -71,24 +72,28 @@ offer, admins can patch that snapshot (title, description, courses/meals) withou
 
 ### Alternatives considered
 
-| Approach                                                            | Notes                                                                                          |
-| ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Isolated offers — cooks never see peers’ prices or menus            | **Chosen** — avoids race-to-bottom and copycat menus; each cook competes on their own proposal |
-| Show other cooks’ offer forms / prices to cooks                     | Rejected — harms cook trust and platform fee integrity                                         |
-| Menu required on cook offer create (UI)                             | **Chosen** — create page requires ≥1 complete menu; server still allows empty for ops/admin    |
-| Menu required on every offer (server)                               | Rejected — API still accepts empty `suggestedMenuIds`                                          |
-| Customer comparison board (side-by-side matrix)                     | Rejected for go-live — sequential offer cards on request detail; board can return later        |
-| Cook-only offer create                                              | **Chosen** for the default path; admins may also create offers for ops                         |
-| Admin-only authored offers                                          | Rejected as the sole path — cooks must own pricing and menus                                   |
-| Open / Accepted API unions mirroring old dialogs                    | Rejected — derived status enum drives UI                                                       |
-| Separate `/archived` route + fat `CookBookingRequestOffers` wrapper | Rejected — pool-style tabs + flat `[CookBookingRequestOffer!]!` with `bucket` criterion        |
-| Homepage “Stattgefunden” section separate from inbox                | Rejected — Completed tab on the offer inbox is the single surface                              |
+| Approach                                                            | Notes                                                                                                                |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Isolated offers — cooks never see peers’ prices or menus            | **Chosen** — avoids race-to-bottom and copycat menus; each cook competes on their own proposal                       |
+| Show other cooks’ offer forms / prices to cooks                     | Rejected — harms cook trust and platform fee integrity                                                               |
+| Menu required on cook offer create (UI)                             | **Chosen** — create page requires ≥1 complete menu; server still allows empty for ops/admin                          |
+| Menu required on every offer (server)                               | Rejected — API still accepts empty `suggestedMenuIds`                                                                |
+| Customer comparison board (side-by-side matrix)                     | Rejected for go-live — sequential offer cards on request detail; board can return later                              |
+| Cook-only offer create                                              | **Chosen** for the default path; admins may also create offers for ops                                               |
+| Admin-only authored offers                                          | Rejected as the sole path — cooks must own pricing and menus                                                         |
+| Open / Accepted API unions mirroring old dialogs                    | Rejected — derived status enum drives UI                                                                             |
+| Separate `/archived` route + fat `CookBookingRequestOffers` wrapper | Rejected — pool-style tabs + flat `[CookBookingRequestOffer!]!` with `bucket` criterion                              |
+| Homepage “Stattgefunden” section separate from inbox                | Rejected — Completed tab on the offer inbox is the single surface                                                    |
+| Routes travel distance only at offer create                         | Rejected — cooks saw haversine estimates that jumped on create                                                       |
+| Stamp Routes distance on `BookingRequestCooks` at first open        | **Chosen** — same distance for pool detail / create preview and the locked offer; list stays haversine until stamped |
+| Resolve Routes for every cook on notify                             | Rejected — API cost for cooks who never open the request                                                             |
 
 ### Chosen
 
 One offer per cook per request; dual-accept flags; suggested menus required on the cook create UI (server still allows empty); customer sees
 offer cards then a dedicated offer page; cooks work from pool → create → offer inbox (Active / Completed / Archive tabs). Peer offer
-contents stay private to each cook (plus customer / admin).
+contents stay private to each cook (plus customer / admin). Travel expenses preview after first open uses the same Routes distance the offer
+locks.
 
 ## Next steps
 
@@ -127,6 +132,7 @@ external tab; opening the same route in Google Maps remains a useful secondary a
 | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | `BookingRequestOffers`                              | Dual accept, cents fee breakdown, `paymentStatus` / `paymentData`, optional `configuredMenu`; chat-notify job ids |
 | `BookingRequestOfferEvents`                         | Typed timeline; GraphQL projects `messages: [ChatMessage!]!`                                                      |
+| `BookingRequestCooks.travelDistanceKm`              | Routes (haversine fallback) stamp from first open / offer create; hydrate + create reuse it                       |
 | `Menus.bookingRequestOfferId`, `Menus.copyOfMenuId` | Optional offer menu copies                                                                                        |
 
 Constraints: unique `(bookingRequestId, cookId)` on offers; partial unique one dual-accepted offer per request. Domain:
@@ -168,6 +174,8 @@ promo / gift (+ participant count) into each offer’s cost breakdown.
   `ProfileCookBookingRequestOfferMenusEditPage.tsx`, `CookBookingRequestCard.tsx`, `CookBookingRequestOfferCard.tsx`,
   `CookBookingRequestSummaryCard.tsx`
 - Lookup query: `cookBookingRequestLookup.ts`, eligibility helper `cookBookingRequestPoolEligibility.ts`
+- Travel stamp: `bookingRequestCookTravelDistanceKmEnsure.ts` (open / offer create); hydrate prefers `BookingRequestCooks.travelDistanceKm`
+  over haversine
 - Customer offer: `ProfileCustomerBookingRequestOfferPage.tsx`, `CustomerBookingRequestOfferDeclineDialog.tsx`,
   `BookingRequestDiscountEditor.tsx`, `CustomerBookingRequestCard.tsx`, `CustomerBookingRequestOfferCard.tsx` (request-detail comparison
   cards: cook avatar, city, `CookProfileTags` cuisine/philosophy pills, menu/price, lifecycle pill, CTA); meal rows via `CustomerMealCard`

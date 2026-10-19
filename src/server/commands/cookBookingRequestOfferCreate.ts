@@ -3,7 +3,16 @@ import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { containsPhoneNumber } from '../../shared';
 import { bookingRequestOfferPriceCalculate } from '../../shared/bookingRequestOfferPrice';
 import { idCreate } from '../../shared/idCreate';
-import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests, cooks, menus, promoCodes, users } from '../db/schema';
+import {
+    bookingRequestCooks,
+    bookingRequestOfferEvents,
+    bookingRequestOffers,
+    bookingRequests,
+    cooks,
+    menus,
+    promoCodes,
+    users,
+} from '../db/schema';
 import { cookCanCreateOffersDerive } from '../domain/cook';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
@@ -14,6 +23,7 @@ import type {
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { slackNotifyOfferCreated } from '../slack/slackNotifyBooking';
+import { bookingRequestCookTravelDistanceKmEnsure } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
 import { cookBookingRequestOfferCreateEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestNoOffersNotifyCancel } from '../utils/bookingRequestNoOffersNotifySchedule';
 import { bookingRequestOfferHardMinimumAssert } from '../utils/bookingRequestOfferHardMinimumAssert';
@@ -23,7 +33,6 @@ import {
 } from '../utils/bookingRequestOfferInitialChatMessage';
 import { bookingRequestReactionReminderSchedule } from '../utils/bookingRequestReactionReminderSchedule';
 import { menuDeepCopyInsert } from '../utils/menuDeepCopyInsert';
-import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
 
 export async function cookBookingRequestOfferCreate(
     { cookId }: GqlSCookMutation,
@@ -108,11 +117,18 @@ export async function cookBookingRequestOfferCreate(
             latitude: bookingRequest.exactEventAddress.latitude,
             longitude: bookingRequest.exactEventAddress.longitude,
         };
-        const travelDistanceKm = await travelDistanceKmResolve(
-            serverRuntime.places,
-            { latitude: origin.latitude, longitude: origin.longitude },
-            eventLocation,
-        );
+        const [affinity] = await serverRuntime.db
+            .select({ travelDistanceKm: bookingRequestCooks.travelDistanceKm })
+            .from(bookingRequestCooks)
+            .where(and(eq(bookingRequestCooks.cookId, cookId), eq(bookingRequestCooks.bookingRequestId, input.bookingRequestId)))
+            .limit(1);
+        const travelDistanceKm = await bookingRequestCookTravelDistanceKmEnsure(serverRuntime, {
+            cookId,
+            bookingRequestId: input.bookingRequestId,
+            origin: { latitude: origin.latitude, longitude: origin.longitude },
+            destination: eventLocation,
+            existingTravelDistanceKm: affinity?.travelDistanceKm ?? null,
+        });
         const travelExpensesCents = Math.round(travelDistanceKm * cook.travelExpensesAmount * 2);
         const price = bookingRequestOfferPriceCalculate({
             menuPriceCents: input.menuPriceCents,

@@ -243,11 +243,14 @@ export function CookMenuSelectPanel({
     className?: string;
 }) {
     const locale = useLocale();
-    const [incompleteExpanded, setIncompleteExpanded] = useState(false);
     const evaluationById = new Map((menuEvaluations ?? []).map((row) => [row.menuId, row]));
     const sortedMenus = cookMenuSelectPanelMenusSortByEvaluation(menus, menuEvaluations);
     const selectableMenus = sortedMenus.filter((menu) => cookMenuSelectPanelMenuIsComplete(menu.courses));
     const incompleteMenus = sortedMenus.filter((menu) => !cookMenuSelectPanelMenuIsComplete(menu.courses));
+    // Expand when returnTo draft includes an incomplete menu (new menu / Fertigstellen).
+    const [incompleteExpanded, setIncompleteExpanded] = useState(() =>
+        incompleteMenus.some((menu) => selectedMenuIds.includes(menu.menuId)),
+    );
     const showEvaluationUi = menuEvaluationLoading || menuEvaluations != null || generatedMenu != null || onRefreshEvaluation != null;
 
     return (

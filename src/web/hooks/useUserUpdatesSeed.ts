@@ -12,7 +12,9 @@ type UserUpdatesData<TUser> = {
  *
  * Seeds from the route loader fragment, re-seeds when the loader delivers a new
  * value, and replaces state on every SSE push. Mutations must not set owned
- * state or call `router.invalidate()` — commands publish after commit.
+ * state or call `router.invalidate()` / `clearCache` on the same page — commands
+ * publish after commit. Cross-page `returnTo` is the exception (see
+ * state-synchronization.md).
  *
  * @see docs/architecture/state-synchronization.md
  */

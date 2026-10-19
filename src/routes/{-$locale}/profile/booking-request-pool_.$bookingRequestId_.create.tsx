@@ -14,10 +14,15 @@ import { localeFromParam } from '../../../web/utils/locale';
 
 export const Route = createFileRoute('/{-$locale}/profile/booking-request-pool_/$bookingRequestId_/create')({
     validateSearch: (search: Record<string, unknown>) => parseProfileCookBookingRequestOfferCreateSearch(search),
-    loader: ({ params }) =>
-        routeLoaderGraphqlClient(ProfileCookBookingRequestOfferCreatePageDocument, {
-            bookingRequestId: params.bookingRequestId,
-        })(),
+    // Blocking: seed-and-subscribe must not remount on a pre-mutation SWR snapshot
+    // after menu edit returnTo (or browser back). See state-synchronization.md.
+    loader: {
+        handler: ({ params }) =>
+            routeLoaderGraphqlClient(ProfileCookBookingRequestOfferCreatePageDocument, {
+                bookingRequestId: params.bookingRequestId,
+            })(),
+        staleReloadMode: 'blocking',
+    },
     staleTime: 0,
     head: ({ params }) => {
         const locale = localeFromParam(params);

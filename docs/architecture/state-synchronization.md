@@ -127,8 +127,12 @@ For any page that displays owned data kept fresh via `userUpdates` (or a similar
    `onMealCreated` appends, no mutation-response `setState` for catalog rows). Commands that own the data publish
    `serverRuntime.publish.userUpdates({ userId })` after commit — the subscription closes the loop **on the subscribed page**.
 9. **Cross-page `returnTo`:** if page A unmounts (drops its `userUpdates` subscription), page B mutates and publishes, then navigates back
-   to A via safe `returnTo`, A missed the push. Before that navigation, `router.invalidate()` so A's loader reseeds (see menu edit → offer
-   create / edit-menus). Same-page mutations still must not invalidate.
+   to A via safe `returnTo`, A missed the push. Before that navigation, `router.clearCache({ filter })` for A's route ids so the next match
+   cannot remount on a pre-mutation loader snapshot (see menu edit → offer create / edit-menus). Do **not** rely on `router.invalidate()`
+   alone here: with default stale-while-revalidate, A briefly (or stuck) reseeds from the cached pre-mutation fragment and the new row is
+   missing until a full refresh. Destination routes that seed-and-subscribe after `returnTo` also set
+   `loader: { handler, staleReloadMode: 'blocking' }` so browser-back cannot SWR the same stale seed. Same-page mutations still must not
+   invalidate or clearCache.
 
 Admin catalog pages use the same loop on `adminUpdates` with an `Admin` fragment (seed under `currentSession.user.admin`, subscribe to
 `adminUpdates`, publish `serverRuntime.publish.adminUpdates()` after commit).

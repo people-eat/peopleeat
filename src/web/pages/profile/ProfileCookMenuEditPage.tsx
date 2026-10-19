@@ -76,11 +76,17 @@ export function ProfileCookMenuEditPage({
 
     const [, updateMenu] = useMutation(ProfileMenuUpdateDocument);
 
-    // Offer create / edit-menus unmount while here, so they miss the menuUpdate
-    // userUpdates push. Invalidate before returnTo so their loaders reseed.
+    // Offer create / edit-menus unmount while here, so they miss menuCreate /
+    // menuUpdate userUpdates. Drop their cached loader snapshots before
+    // returnTo — `invalidate()` alone leaves stale-while-revalidate showing the
+    // pre-mutation seed (new menu missing until a full refresh).
     async function navigateAfterEdit() {
         if (safeReturnTo) {
-            await router.invalidate();
+            router.clearCache({
+                filter: (match) =>
+                    match.routeId.includes('/booking-request-pool_/$bookingRequestId_/create') ||
+                    match.routeId.includes('/booking-request-offers_/$bookingRequestOfferId_/edit-menus'),
+            });
             await navigate({ href: safeReturnTo });
             return;
         }

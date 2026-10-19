@@ -117,7 +117,8 @@ changes. Customers still only see city, never the pin or street.
   cooking philosophy on chef-profile read, public/hero/offer/featured surfaces (not `Badge secondary`, which is white-on-card)
 - Places: `src/server/places/` — Text Search + Routes driving km for offer travel; env `GOOGLE_PLACES_API_KEY`,
   `Session.locationSuggestions`
-- Booking travel: `travelDistanceKmResolve` — Routes preferred, haversine fallback; customer edit previews per-offer delta via travel impact
+- Booking travel: `travelDistanceKmResolve` — Routes preferred, haversine fallback; stamped on `BookingRequestCooks` at first open; customer
+  edit previews per-offer delta via travel impact; origin / venue edits clear the stamp
 - Commands: `cookUpdate` (queues `cook-biography-summary-generate` on biography save; does not await the LLM), `cookBiographySuggest` (gated
   by `COOK_BIOGRAPHY_AI_WRITE`), `cookBiographySummaryGenerate`, `cookBiographySuggestGenerate`, `cookStripeOnboardingStart`,
   `cookStripeStatusSync` (calls shared `cookStripeAccountStatusApply`), `cookStripeDashboardUrlCreate`, `adminCookApprovalUpdate`,

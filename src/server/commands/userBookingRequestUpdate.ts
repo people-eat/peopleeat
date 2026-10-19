@@ -10,6 +10,7 @@ import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutatio
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { slackFormatDateTime, slackFormatParticipants } from '../slack/slackFormat';
 import { slackNotifyBookingRequestFieldChange } from '../slack/slackNotifyBooking';
+import { bookingRequestCookTravelDistanceKmClear } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
 import { bookingRequestExpireNotifySchedule } from '../utils/bookingRequestExpireNotifySchedule';
 import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
 import { userBookingRequestUpdateEmailSend } from '../utils/bookingRequestLifecycleEmails';
@@ -395,6 +396,10 @@ export async function userBookingRequestUpdate(
                 );
             }
         });
+
+        if (requestPatch.exactEventAddress != null) {
+            await bookingRequestCookTravelDistanceKmClear(serverRuntime, { bookingRequestId });
+        }
 
         if (requestPatch.dateTime) {
             const newDateTime = requestPatch.dateTime;

@@ -22,20 +22,19 @@ Expose a domain-facing `StripePayment` interface on `ServerRuntime.stripe`, impl
   Connect accounts, require `existingAccountId` when the cook row already has one. Commands own writing `stripeAccountId`,
   `stripeAccountActive`, and `stripeAccountActiveWasReset` on `Cooks` (flat columns — not a JSON payout-methods array). See
   [docs/features/cook-profile.md](../features/cook-profile.md).
-- **Do not** list all Connect accounts to find by email on the happy path (unbounded and fragile). Customers get
-  `customers.search`; Connect has no equivalent search API. Reuse is `existingAccountId` from the cook row. Bounded metadata scan
-  (`metadata.cookId`) is recovery-only when an idempotency key collides with a different prior body.
+- **Do not** list all Connect accounts to find by email on the happy path (unbounded and fragile). Customers get `customers.search`; Connect
+  has no equivalent search API. Reuse is `existingAccountId` from the cook row. Bounded metadata scan (`metadata.cookId`) is recovery-only
+  when an idempotency key collides with a different prior body.
 - Amounts are integer minor units (cents for EUR). Currency is fixed to `eur` in the factory until multi-currency is a product need.
 - Address `country` values are ISO 3166-1 alpha-2; callers map localized names.
-- **Express account create is stable; KYC prefill is a follow-up update.** `accountCreate` creates the Express account with a fixed
-  body (type, email, business profile, payout schedule, capabilities, `metadata.cookId`) under idempotency key
-  `cook-express-account:{cookId}`, then best-effort `accounts.update`s optional `phoneNumber` / `dateOfBirth` /
-  name / `address` from `cookStripeOnboardingStart` before the first Account Link. Mutable prefill must not sit on the create call —
-  otherwise a second click after the cook edits phone/address hits Stripe’s “same idempotency key, different parameters” error while
-  `Cooks.stripeAccountId` is still null. Phone prefill: if Stripe rejects `individual.phone`, retry the update without phone (no second
-  create key). On idempotency parameter mismatch (legacy create bodies that included KYC fields), recover by bounded
-  `accounts.list` scan for `metadata.cookId`, else create under `cook-express-account:{cookId}:stable`. Existing Connect accounts are
-  not retroactively updated outside this first-create path.
+- **Express account create is stable; KYC prefill is a follow-up update.** `accountCreate` creates the Express account with a fixed body
+  (type, email, business profile, payout schedule, capabilities, `metadata.cookId`) under idempotency key `cook-express-account:{cookId}`,
+  then best-effort `accounts.update`s optional `phoneNumber` / `dateOfBirth` / name / `address` from `cookStripeOnboardingStart` before the
+  first Account Link. Mutable prefill must not sit on the create call — otherwise a second click after the cook edits phone/address hits
+  Stripe’s “same idempotency key, different parameters” error while `Cooks.stripeAccountId` is still null. Phone prefill: if Stripe rejects
+  `individual.phone`, retry the update without phone (no second create key). On idempotency parameter mismatch (legacy create bodies that
+  included KYC fields), recover by bounded `accounts.list` scan for `metadata.cookId`, else create under
+  `cook-express-account:{cookId}:stable`. Existing Connect accounts are not retroactively updated outside this first-create path.
 
 ### Charge pattern
 

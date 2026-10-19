@@ -1,9 +1,10 @@
 import { and, eq, sql } from 'drizzle-orm';
 
-import { bookingRequestCooks, bookingRequests } from '../db/schema';
+import { bookingRequestCooks, bookingRequests, cooks } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookMutation, GqlSCookMutationBookingRequestOpenArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { bookingRequestCookTravelDistanceKmEnsure } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
 import { cookBookingRequestMenuEvaluationSchedule } from '../utils/cookBookingRequestMenuEvaluationSchedule';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 
@@ -17,11 +18,21 @@ export async function cookBookingRequestOpen(
     await assertLegalAcceptanceCurrent(cookId, serverRuntime);
 
     try {
-        const [bookingRequest] = await serverRuntime.db
-            .select({ bookingRequestId: bookingRequests.bookingRequestId })
-            .from(bookingRequests)
-            .where(eq(bookingRequests.bookingRequestId, args.bookingRequestId))
-            .limit(1);
+        const [[bookingRequest], [cook]] = await Promise.all([
+            serverRuntime.db
+                .select({
+                    bookingRequestId: bookingRequests.bookingRequestId,
+                    exactEventAddress: bookingRequests.exactEventAddress,
+                })
+                .from(bookingRequests)
+                .where(eq(bookingRequests.bookingRequestId, args.bookingRequestId))
+                .limit(1),
+            serverRuntime.db
+                .select({ exactTravelOriginAddress: cooks.exactTravelOriginAddress })
+                .from(cooks)
+                .where(eq(cooks.cookId, cookId))
+                .limit(1),
+        ]);
 
         if (!bookingRequest) {
             throw new Error('cookBookingRequestOpen: booking request not found');
@@ -47,10 +58,25 @@ export async function cookBookingRequestOpen(
             .select({
                 menuEvaluation: bookingRequestCooks.menuEvaluation,
                 menuEvaluationLoading: bookingRequestCooks.menuEvaluationLoading,
+                travelDistanceKm: bookingRequestCooks.travelDistanceKm,
             })
             .from(bookingRequestCooks)
             .where(and(eq(bookingRequestCooks.cookId, cookId), eq(bookingRequestCooks.bookingRequestId, args.bookingRequestId)))
             .limit(1);
+
+        const origin = cook?.exactTravelOriginAddress;
+        if (origin) {
+            await bookingRequestCookTravelDistanceKmEnsure(serverRuntime, {
+                cookId,
+                bookingRequestId: args.bookingRequestId,
+                origin: { latitude: origin.latitude, longitude: origin.longitude },
+                destination: {
+                    latitude: bookingRequest.exactEventAddress.latitude,
+                    longitude: bookingRequest.exactEventAddress.longitude,
+                },
+                existingTravelDistanceKm: details?.travelDistanceKm ?? null,
+            });
+        }
 
         const shouldScheduleEvaluation =
             details != null &&

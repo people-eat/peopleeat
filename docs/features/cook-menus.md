@@ -29,8 +29,9 @@ Signed-in cooks manage menus under the cook shell:
   and confirms; no draft/published badge; publish status is inventory organization only); meal multi-picker uses the same cards with
   Select/Selected + selected fill; card click opens read-only details, not toggle; optional limit; create/edit meals (title, description,
   image) in a shared dialog without leaving the menu form; course rows have Edit and missing-image Add picture). Save / Cancel return to
-  detail, or to a safe `returnTo` path when opened from offer create / edit-menus (`router.invalidate()` first so the offer page reseeds
-  after missing the in-flight `userUpdates` push). Offer-scoped edit redirects to detail when the offer is no longer negotiable.
+  detail, or to a safe `returnTo` path when opened from offer create / edit-menus (`router.clearCache` for those routes first so the offer
+  page reseeds after missing the in-flight `userUpdates` push; those destinations use blocking stale reload). Offer-scoped edit redirects to
+  detail when the offer is no longer negotiable.
 
 Soft-deleted menus 404 on cook detail. Soft-deleted meals omitted from course options.
 

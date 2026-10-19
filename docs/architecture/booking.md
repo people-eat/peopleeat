@@ -101,9 +101,11 @@ decline / cancel. Slot **derivation** (`deriveCookCallSlots` / `cookCallSlotsFin
 commands are implemented. LiveKit rooms (`BookingRequestOfferCallRooms` + participants) support ad-hoc create/join/leave; confirmed slots
 link via `videoCallRoomId` when a room opens in the join window. Reminder / complete / empty-room sweep jobs are registered. When
 `OBJECT_STORAGE_S3_*` is set, room create starts audio egress and room end enqueues transcript finalize (see
-[call-recordings.md](../features/call-recordings.md)). Offer create currently uses **Google Routes driving distance** via
-`serverRuntime.places.drivingDistanceKm`, with haversine `geoDistance` as fallback (`travelDistanceKmResolve`). Cook pool list estimates
-stay haversine-only (API cost).
+[call-recordings.md](../features/call-recordings.md)). Travel distance uses **Google Routes driving km** via
+`serverRuntime.places.drivingDistanceKm`, with haversine `geoDistance` as fallback (`travelDistanceKmResolve`). That value is stamped on
+`BookingRequestCooks.travelDistanceKm` at first pool open (and on offer create if open was skipped), so cook pool detail / offer-create
+previews match the distance locked onto the offer. Pool **list** cards still use haversine when the affinity row has no stamp yet (API
+cost). Customer / admin venue edits and cook travel-origin changes clear the stamp so the next open re-resolves.
 
 ### Money & payment
 

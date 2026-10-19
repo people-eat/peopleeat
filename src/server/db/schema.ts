@@ -1550,6 +1550,8 @@ export const bookingRequestCooks = pgTable(
         declinedAt: timestamp({ withTimezone: true }),
         notifiedAt: timestamp({ withTimezone: true }),
         firstOpenedAt: timestamp({ withTimezone: true }),
+        // Google Routes driving km (haversine fallback) — stamped on first open / offer create.
+        travelDistanceKm: doublePrecision(),
     },
     (table) => [
         primaryKey({ columns: [table.cookId, table.bookingRequestId] }),

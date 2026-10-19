@@ -26,7 +26,12 @@ const berlin = {
 
 async function setupCook() {
     const setup = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Open' });
-    await testDb.insert(cooks).values({ cookId: setup.user.userId });
+    await testDb.insert(cooks).values({
+        cookId: setup.user.userId,
+        exactTravelOriginAddress: berlin,
+        travelExpensesAmount: 25,
+        maximumTravelDistance: 100,
+    });
     return setup;
 }
 
@@ -53,10 +58,11 @@ describe('cookBookingRequestOpen', () => {
         vi.mocked(featureToggleIsEnabled).mockResolvedValue(false);
     });
 
-    it('inserts a bookingRequestCooks row with firstOpenedAt and publishes', async () => {
+    it('inserts a bookingRequestCooks row with firstOpenedAt, stamps travel distance, and publishes', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
         const { bookingRequestId } = await insertCustomerBookingRequest();
+        vi.mocked(serverRuntime.places.drivingDistanceKm).mockResolvedValue(18.4);
 
         // Act
         const result = await cookBookingRequestOpen(
@@ -73,8 +79,10 @@ describe('cookBookingRequestOpen', () => {
             .from(bookingRequestCooks)
             .where(and(eq(bookingRequestCooks.cookId, user.userId), eq(bookingRequestCooks.bookingRequestId, bookingRequestId)));
         expect(details?.firstOpenedAt).toBeTruthy();
+        expect(details?.travelDistanceKm).toBe(18.4);
         expect(details?.menuEvaluationLoading).toBe(false);
         expect(details?.declinedAt).toBeNull();
+        expect(serverRuntime.places.drivingDistanceKm).toHaveBeenCalledTimes(1);
         expect(serverRuntime.publish.userUpdates).toHaveBeenCalledTimes(1);
         expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: user.userId });
         expect(serverRuntime.jobs.enqueue).not.toHaveBeenCalled();

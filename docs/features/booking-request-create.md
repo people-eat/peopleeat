@@ -77,7 +77,7 @@ datetime via search params. Fixed calendar helper — no CMS for a first slice.
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `BookingRequests`            | Request header; `exactEventAddress` only; `publicationStatus`; optional `giftCardId` / `promoCodeId` / `invoiceAddress`; Slack `references` |
 | `BookingRequestParticipants` | `ADULT` / `DISCOUNTED`, name, `restrictions[]`                                                                                              |
-| `BookingRequestCooks`        | Composite PK `(cookId, bookingRequestId)`; notify / open / decline; nullable `menuEvaluation`                                               |
+| `BookingRequestCooks`        | Composite PK `(cookId, bookingRequestId)`; notify / open / decline; nullable `menuEvaluation`; nullable `travelDistanceKm` (Routes stamp)   |
 
 Domain: `src/server/domain/bookingRequest.ts` (enums, payloads, status derive). Create sets `expiresAt` via `bookingRequestExpiresAt`.
 `menuEvaluation` / `menuEvaluationLoading` are filled by the AI menu-evaluation job when `AI_MENU_EVALUATION` is on — see

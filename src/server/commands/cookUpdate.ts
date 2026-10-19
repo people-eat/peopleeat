@@ -9,6 +9,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import { GqlSCookUpdateSchema } from '../graphql/generated';
 import type { GqlSCookMutation, GqlSCookMutationUpdateArgs, GqlSCookUpdate, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { bookingRequestCookTravelDistanceKmClear } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
 import { cookBiographySummaryGenerateCancel, cookBiographySummaryGenerateSchedule } from '../utils/cookBiographySummaryGenerateSchedule';
 import {
     COOK_MAXIMUM_TRAVEL_DISTANCE_KM,
@@ -120,7 +121,18 @@ export async function cookUpdate(
     if (cookingPhilosophy !== undefined) {
         patch.cookingPhilosophy = cookingPhilosophy === null || cookingPhilosophy.trim() === '' ? null : cookingPhilosophy.trim();
     }
+    let travelOriginChanged = false;
     if (resolvedAddress) {
+        const [currentCook] = await serverRuntime.db
+            .select({ exactTravelOriginAddress: cooks.exactTravelOriginAddress })
+            .from(cooks)
+            .where(eq(cooks.cookId, cookId))
+            .limit(1);
+        const previousOrigin = currentCook?.exactTravelOriginAddress;
+        travelOriginChanged =
+            previousOrigin == null ||
+            previousOrigin.latitude !== resolvedAddress.latitude ||
+            previousOrigin.longitude !== resolvedAddress.longitude;
         patch.exactTravelOriginAddress = resolvedAddress;
     }
     if (travelExpensesAmount !== undefined && travelExpensesAmount !== null) {
@@ -206,6 +218,10 @@ export async function cookUpdate(
                 }
             }
         });
+
+        if (travelOriginChanged) {
+            await bookingRequestCookTravelDistanceKmClear(serverRuntime, { cookId });
+        }
 
         if (cancelBiographySummary) {
             await cookBiographySummaryGenerateCancel(serverRuntime, cookId);
