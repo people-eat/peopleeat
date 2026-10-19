@@ -25,6 +25,8 @@ import type {
     StripeWebhookEvent,
     StripeWebhookEventConstruct,
 } from './StripePayment';
+import { isStripeIdempotencyMismatchError } from './stripeIdempotencyMismatchError';
+import { isStripeInvalidPhoneError } from './stripeInvalidPhoneError';
 import { stripeDisabledReasonFromStripe, stripeRequirementCategoriesFromKeys } from './stripeRequirementCategories';
 import { stripeSearchQuote } from './stripeSearchQuote';
 
@@ -308,58 +310,127 @@ export function stripePaymentCreate({
             // Do not list-all-accounts to find by email — that does not scale.
             // Commands must persist `accountId` on the cook row after create
             // and pass `existingAccountId` on subsequent calls.
-            const account = await stripe.accounts.create(
-                {
-                    type: 'express',
-                    email: emailAddress,
-                    business_type: 'individual',
-                    individual: {
-                        first_name: firstName,
-                        last_name: lastName,
-                        phone: phoneNumber,
-                        ...(dateOfBirth
-                            ? {
-                                  dob: {
-                                      day: dateOfBirth.day,
-                                      month: dateOfBirth.month,
-                                      year: dateOfBirth.year,
-                                  },
-                              }
-                            : {}),
-                        ...(address
-                            ? {
-                                  address: {
-                                      country: address.country,
-                                      postal_code: address.postCode,
-                                      city: address.city,
-                                      line1: address.line1,
-                                      line2: address.line2,
-                                  },
-                              }
-                            : {}),
-                    },
-                    business_profile: {
-                        url: businessProfileUrl,
-                    },
-                    settings: {
-                        payouts: {
-                            schedule: {
-                                interval: 'manual',
+            //
+            // Create body is intentionally stable (no KYC prefill). Prefill goes
+            // on a follow-up `accounts.update` so retries with the same
+            // idempotency key stay valid when phone/DOB/address change between
+            // clicks. Long-term uniqueness is still the persisted cook.accountId.
+            const expressAccountCreate = async (idempotencyKey: string) =>
+                stripe.accounts.create(
+                    {
+                        type: 'express',
+                        email: emailAddress,
+                        business_type: 'individual',
+                        business_profile: {
+                            url: businessProfileUrl,
+                        },
+                        settings: {
+                            payouts: {
+                                schedule: {
+                                    interval: 'manual',
+                                },
                             },
                         },
+                        metadata: { cookId },
+                        capabilities: {
+                            card_payments: { requested: true },
+                            transfers: { requested: true },
+                        },
                     },
-                    metadata: { cookId },
-                    capabilities: {
-                        card_payments: { requested: true },
-                        transfers: { requested: true },
-                    },
-                },
-                // Best-effort de-dupe for retries within Stripe's idempotency
-                // window. Long-term uniqueness is the persisted cook.accountId.
-                { idempotencyKey: `cook-express-account:${cookId}` },
-            );
+                    { idempotencyKey },
+                );
 
-            return { kind: 'onboardingRequired', accountId: account.id };
+            const connectedAccountFindByCookId = async (): Promise<Stripe.Account | undefined> => {
+                // Bounded recovery scan only — Stripe has no accounts.search.
+                let startingAfter: string | undefined;
+                for (let page = 0; page < 20; page++) {
+                    const list = await stripe.accounts.list({
+                        limit: 100,
+                        ...(startingAfter ? { starting_after: startingAfter } : {}),
+                    });
+                    const match = list.data.find((account) => account.metadata?.cookId === cookId);
+                    if (match) return match;
+                    if (!list.has_more || list.data.length === 0) return undefined;
+                    startingAfter = list.data[list.data.length - 1]?.id;
+                }
+                return undefined;
+            };
+
+            const individualPrefill = {
+                first_name: firstName,
+                last_name: lastName,
+                ...(dateOfBirth
+                    ? {
+                          dob: {
+                              day: dateOfBirth.day,
+                              month: dateOfBirth.month,
+                              year: dateOfBirth.year,
+                          },
+                      }
+                    : {}),
+                ...(address
+                    ? {
+                          address: {
+                              country: address.country,
+                              postal_code: address.postCode,
+                              city: address.city,
+                              line1: address.line1,
+                              line2: address.line2,
+                          },
+                      }
+                    : {}),
+            };
+
+            const expressAccountPrefill = async (accountId: string) => {
+                const update = async (phone: string | undefined) =>
+                    stripe.accounts.update(accountId, {
+                        individual: {
+                            ...individualPrefill,
+                            ...(phone ? { phone } : {}),
+                        },
+                    });
+
+                try {
+                    await update(phoneNumber);
+                } catch (error) {
+                    // Prefill is best-effort. Our PhoneNumber scalar is E.164-shaped;
+                    // Stripe also checks country completeness and rejects placeholders
+                    // like +49123456789. Retry once without phone.
+                    if (!phoneNumber || !isStripeInvalidPhoneError(error)) {
+                        return;
+                    }
+                    try {
+                        await update(undefined);
+                    } catch {
+                        // Still best-effort — Account Link can collect KYC.
+                    }
+                }
+            };
+
+            const toResult = async (account: Stripe.Account): Promise<StripeAccountCreateResult> => {
+                await expressAccountPrefill(account.id);
+                return stripeAccountOnboardingComplete(account)
+                    ? { kind: 'onboardingComplete', accountId: account.id }
+                    : { kind: 'onboardingRequired', accountId: account.id };
+            };
+
+            try {
+                const account = await expressAccountCreate(`cook-express-account:${cookId}`);
+                return toResult(account);
+            } catch (error) {
+                // Older create payloads included mutable KYC fields under this key.
+                // A param mismatch means Stripe already saw a different body — recover
+                // the existing Connect account by metadata, or create under a new key.
+                if (!isStripeIdempotencyMismatchError(error)) {
+                    throw error;
+                }
+                const existing = await connectedAccountFindByCookId();
+                if (existing) {
+                    return toResult(existing);
+                }
+                const account = await expressAccountCreate(`cook-express-account:${cookId}:stable`);
+                return toResult(account);
+            }
         },
 
         async accountOnboardingUrlCreate(accountId, refreshUrl, returnUrl) {

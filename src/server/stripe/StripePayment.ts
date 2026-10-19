@@ -104,6 +104,8 @@ export interface StripeAccountCreate {
     // When the cook row already stores a Stripe account id, pass it so we
     // retrieve instead of creating a duplicate. Persistence of that id is
     // the command layer's job — this capability does not query our DB.
+    // Unlike Customers (search by metadata.userId), Connect has no search API;
+    // reuse without existingAccountId is recovery-only (idempotency mismatch).
     existingAccountId?: string;
 }
 
