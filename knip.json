@@ -14,7 +14,8 @@
         ".storybook/vite.config.ts",
         "scripts/fixGraphqlZodLazyNesting.mjs",
         "scripts/migrateFromPeopleEat/**",
-        "ops/grafana/dashboards/generate.mjs"
+        "ops/grafana/dashboards/generate.mjs",
+        "src/server/nitro/clientConnectionAbortPlugin.ts"
     ],
     "ignoreDependencies": [
         "@tanstack/react-devtools",
