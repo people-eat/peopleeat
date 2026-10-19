@@ -43,8 +43,8 @@ Resolver-mounted query files follow `{accessPath}{Entity}{FindOne|FindMany|Count
 
 Example pattern: `userFindOne.ts`, `sessionFindMany.ts`, `adminBookingRequestHydrate.ts` (utils). **Commands and queries must not import
 each other.** A command that needs a read either inlines the `select` or calls a shared helper that lives outside `queries/` (for example
-under `src/server/db/` — `chatMessageRowsLoad` / `fileUploadLoad` — or `utils/` / `mappers/`). ESLint enforces both directions via
-`no-restricted-imports` in `eslint.config.js`.
+under `src/server/db/` — `chatMessageRowsLoad` / `fileUploadMetadataLoad` / `fileUploadLoad` (bytes, download route only) — or `utils/` /
+`mappers/`). ESLint enforces both directions via `no-restricted-imports` in `eslint.config.js`.
 
 ### Mappers
 

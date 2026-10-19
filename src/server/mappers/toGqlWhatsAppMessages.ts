@@ -1,4 +1,5 @@
-import type { FileUpload, WhatsAppMessage, WhatsAppMessageReaction } from '../db/schema';
+import type { FileUploadMetadata } from '../db/fileUploadMetadata';
+import type { WhatsAppMessage, WhatsAppMessageReaction } from '../db/schema';
 import type { GqlSChatMessageDeliveryStatus, GqlSChatMessageReaction, GqlSHumanChatMessage, GqlSPublicUser } from '../graphql/generated';
 import { toGqlFileUpload } from './toGqlFileUpload';
 
@@ -33,7 +34,7 @@ function reactionsResolve(rows: ReadonlyArray<WhatsAppMessageReaction> | undefin
 export function toGqlWhatsAppMessages(input: {
     messages: ReadonlyArray<WhatsAppMessage>;
     customer: GqlSPublicUser;
-    attachmentsByMessageId: Map<string, ReadonlyArray<Pick<FileUpload, 'fileUploadId' | 'filename' | 'mediaType' | 'size'>>>;
+    attachmentsByMessageId: Map<string, ReadonlyArray<FileUploadMetadata>>;
     reactionsByMessageId?: Map<string, ReadonlyArray<WhatsAppMessageReaction>>;
 }): GqlSHumanChatMessage[] {
     return input.messages.map((message) => {

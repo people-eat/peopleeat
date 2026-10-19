@@ -1,4 +1,5 @@
-import type { FileUpload, SupportRequestMessage, User } from '../db/schema';
+import type { FileUploadMetadata } from '../db/fileUploadMetadata';
+import type { SupportRequestMessage, User } from '../db/schema';
 import type { GqlSHumanChatMessage, GqlSPublicUser } from '../graphql/generated';
 import { toGqlFileUpload } from './toGqlFileUpload';
 import { toGqlPublicUser } from './toGqlPublicUser';
@@ -18,8 +19,8 @@ export function toGqlSupportRequestMessages(input: {
     customer: GqlSPublicUser;
     viewerRole: SupportChatViewerRole;
     authorsByUserId?: ReadonlyMap<string, Pick<User, 'firstName' | 'createdAt'>>;
-    /** Send-ordered FileUploads keyed by supportRequestMessageId. */
-    attachmentsByMessageId?: ReadonlyMap<string, ReadonlyArray<FileUpload>>;
+    /** Send-ordered file metadata keyed by supportRequestMessageId (no bytes). */
+    attachmentsByMessageId?: ReadonlyMap<string, ReadonlyArray<FileUploadMetadata>>;
 }): GqlSHumanChatMessage[] {
     return input.messages.map((message) => {
         const isCustomer = message.authorUserId === input.customerUserId;

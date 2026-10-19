@@ -1,4 +1,5 @@
-import type { BookingRequestOfferEvent, BookingRequestOfferEventReaction, FileUpload } from '../db/schema';
+import type { FileUploadMetadata } from '../db/fileUploadMetadata';
+import type { BookingRequestOfferEvent, BookingRequestOfferEventReaction } from '../db/schema';
 import type { BookingRequestOfferChatReactorRole, BookingRequestOfferEventType } from '../domain/bookingRequest';
 import type {
     GqlSChatMessageBookingRequestOfferEventType,
@@ -15,8 +16,8 @@ export type ToGqlOfferChatMessagesInput = {
     customer: GqlSPublicUser;
     cook: GqlSPublicUser;
     viewerRole: OfferChatViewerRole;
-    /** Send-ordered FileUploads keyed by MESSAGE_SIMPLE event id. */
-    attachmentsByEventId?: ReadonlyMap<string, ReadonlyArray<FileUpload>>;
+    /** Send-ordered file metadata keyed by MESSAGE_SIMPLE event id (no bytes). */
+    attachmentsByEventId?: ReadonlyMap<string, ReadonlyArray<FileUploadMetadata>>;
     reactionsByEventId?: ReadonlyMap<string, ReadonlyArray<BookingRequestOfferEventReaction>>;
 };
 

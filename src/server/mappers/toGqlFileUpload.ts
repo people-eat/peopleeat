@@ -1,8 +1,8 @@
 import { fileUploadPublicUrl } from '../../shared/contentSection';
-import type { FileUpload } from '../db/schema';
+import type { FileUploadMetadata } from '../db/fileUploadMetadata';
 import type { GqlSFileUpload } from '../graphql/generated';
 
-export function toGqlFileUpload(fileUpload: Pick<FileUpload, 'fileUploadId' | 'filename' | 'mediaType' | 'size'>): GqlSFileUpload {
+export function toGqlFileUpload(fileUpload: FileUploadMetadata): GqlSFileUpload {
     return {
         fileUploadId: fileUpload.fileUploadId,
         filename: fileUpload.filename,

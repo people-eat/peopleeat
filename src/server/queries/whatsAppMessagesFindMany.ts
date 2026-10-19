@@ -1,5 +1,7 @@
 import { asc, eq, inArray } from 'drizzle-orm';
 
+import type { FileUploadMetadata } from '../db/fileUploadMetadata';
+import { fileUploadMetadataColumns } from '../db/fileUploadMetadata';
 import {
     fileUploads,
     users,
@@ -36,18 +38,14 @@ export async function whatsAppMessagesFindMany(
         .orderBy(asc(whatsAppMessages.createdAt));
 
     const messageIds = messageRows.map((row) => row.whatsAppMessageId);
-    const attachmentsByMessageId = new Map<string, Array<{ fileUploadId: string; filename: string; mediaType: string; size: number }>>();
+    const attachmentsByMessageId = new Map<string, FileUploadMetadata[]>();
     const reactionsByMessageId = new Map<string, WhatsAppMessageReaction[]>();
 
     if (messageIds.length > 0) {
         const attachmentRows = await serverRuntime.db
             .select({
                 whatsAppMessageId: whatsAppMessageAttachments.whatsAppMessageId,
-                fileUploadId: fileUploads.fileUploadId,
-                filename: fileUploads.filename,
-                mediaType: fileUploads.mediaType,
-                size: fileUploads.size,
-                position: whatsAppMessageAttachments.position,
+                ...fileUploadMetadataColumns,
             })
             .from(whatsAppMessageAttachments)
             .innerJoin(fileUploads, eq(fileUploads.fileUploadId, whatsAppMessageAttachments.fileUploadId))

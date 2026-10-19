@@ -40,6 +40,11 @@ chats use `SupportRequestMessageAttachments`. Gift-card purchase receipts store 
 domain-specific join or FK, layer per-consumer cascade and authorization rules on top. A new domain-specific blob table is the exception,
 not the default.
 
+**Bytes never travel through GraphQL.** The `FileUpload` GraphQL type exposes metadata plus a URL (`fileUploadId`, `filename`, `mediaType`,
+`size`, `url`). Resolvers and hydrates select only those columns via `fileUploadMetadataColumns` / `fileUploadMetadataLoad`
+(`src/server/db/fileUploadMetadata.ts`). Clients fetch the payload from `GET /api/file-uploads/:fileUploadId`. The full-row loader
+`fileUploadLoad` (includes `bytes`) is reserved for that download route.
+
 The upload and download routes are likewise consumer-agnostic:
 
 - `POST /api/file-uploads` — multipart upload, returns `{ fileUploadId, filename, mediaType, size }`.

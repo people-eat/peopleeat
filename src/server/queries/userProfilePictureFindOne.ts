@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 
-import { fileUploadLoad } from '../db/fileUploadLoad';
+import { fileUploadMetadataLoad } from '../db/fileUploadMetadata';
 import { users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSFileUpload, GqlSUser } from '../graphql/generated';
@@ -16,6 +16,6 @@ export async function userProfilePictureFindOne(
         .where(eq(users.userId, parentUser.userId))
         .limit(1);
     if (row?.profilePictureFileUploadId == null) return null;
-    const file = await fileUploadLoad(serverRuntime.db, row.profilePictureFileUploadId);
+    const file = await fileUploadMetadataLoad(serverRuntime.db, row.profilePictureFileUploadId);
     return file ? toGqlFileUpload(file) : null;
 }

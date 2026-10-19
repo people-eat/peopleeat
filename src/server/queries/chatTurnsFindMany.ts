@@ -1,5 +1,7 @@
 import { eq, inArray } from 'drizzle-orm';
 
+import type { FileUploadMetadata } from '../db/fileUploadMetadata';
+import { fileUploadMetadataColumns } from '../db/fileUploadMetadata';
 import { admins, chatMessageUserAttachments, fileUploads } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSChatTurn, GqlSSession } from '../graphql/generated';
@@ -29,12 +31,12 @@ export async function chatTurnsFindMany(
             : await chatTurnAggregateFindMany(serverRuntime, parent.chatId, requestingSession.userId!);
 
         const userMessageIds = aggregates.map((a) => a.userMessage.chatMessageId);
-        const attachmentsByMessageId = new Map<string, (typeof fileUploads.$inferSelect)[]>();
+        const attachmentsByMessageId = new Map<string, FileUploadMetadata[]>();
         if (userMessageIds.length > 0) {
             const attachmentRows = await serverRuntime.db
                 .select({
                     chatMessageId: chatMessageUserAttachments.chatMessageId,
-                    file: fileUploads,
+                    ...fileUploadMetadataColumns,
                 })
                 .from(chatMessageUserAttachments)
                 .innerJoin(fileUploads, eq(fileUploads.fileUploadId, chatMessageUserAttachments.fileUploadId))
@@ -42,7 +44,12 @@ export async function chatTurnsFindMany(
                 .orderBy(chatMessageUserAttachments.position);
             for (const row of attachmentRows) {
                 const list = attachmentsByMessageId.get(row.chatMessageId) ?? [];
-                list.push(row.file);
+                list.push({
+                    fileUploadId: row.fileUploadId,
+                    filename: row.filename,
+                    mediaType: row.mediaType,
+                    size: row.size,
+                });
                 attachmentsByMessageId.set(row.chatMessageId, list);
             }
         }

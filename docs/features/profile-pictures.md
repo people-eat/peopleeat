@@ -31,8 +31,8 @@ Central file uploads with client crop and compress before link; server asserts o
 
 - DB: `Users.profilePictureFileUploadId` → `FileUploads` (`onDelete: set null`). FK in SQL migration only (circular with
   `FileUploads.userId`).
-- GraphQL: `User.profilePicture: FileUpload`; `UserUpdate.profilePictureFileUploadId` (nullable clears). Patch requires at least one of name
-  or picture id.
+- GraphQL: `User.profilePicture: FileUpload` (metadata + URL only; bytes via GET `/api/file-uploads/:id`);
+  `UserUpdate.profilePictureFileUploadId` (nullable clears). Patch requires at least one of name or picture id.
 - Upload: `POST /api/file-uploads` (10 MB cap). Link via `userUpdate` + `fileUploadAssertOwned`; replaces and deletes previous row.
 - GET: public when referenced as the user’s current profile picture (plus owner / published content / admin rules).
 - UI: `ImageCropDialog` + `imageCropCompress` (react-easy-crop). Variants avatar (square 512px ~400 KB), logo (16:9 landscape 1280px ~400

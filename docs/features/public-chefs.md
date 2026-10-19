@@ -93,6 +93,7 @@ ship.
 - Routes: `chefs.tsx`, `chefs_.$cookId.tsx`, `profile/public.tsx`
 - Sitemap: `/sitemap-chefs.xml` in index
 
-Hydration helpers for booking-offer nesting do not apply the public meal gate on nested cooks.
+Hydration helpers for booking-offer nesting do not apply the public meal gate on nested cooks. `publicCooksByIdFindMany` loads cooks with
+`INNER JOIN users LEFT JOIN FileUploads` (profile-picture **metadata only** — never `bytes`).
 
 See [testimonials.md](./testimonials.md), [cities.md](./cities.md), [booking-request-create.md](./booking-request-create.md).

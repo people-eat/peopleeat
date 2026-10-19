@@ -1,11 +1,9 @@
-import { eq } from 'drizzle-orm';
-
-import { fileUploads } from '../db/schema';
+import { fileUploadMetadataLoad } from '../db/fileUploadMetadata';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSFileUpload } from '../graphql/generated';
 import { toGqlFileUpload } from '../mappers/toGqlFileUpload';
 
-/** Shared file-upload resolver for gift-card PDF FKs (invoice / voucher). */
+/** Shared file-upload resolver for gift-card PDF FKs (invoice / voucher). Never selects bytes. */
 export async function giftCardFileUploadFindOne(
     fileUploadId: string | null | undefined,
     serverRuntime: ServerRuntime,
@@ -13,15 +11,6 @@ export async function giftCardFileUploadFindOne(
     if (!fileUploadId) {
         return null;
     }
-    const [row] = await serverRuntime.db
-        .select({
-            fileUploadId: fileUploads.fileUploadId,
-            filename: fileUploads.filename,
-            mediaType: fileUploads.mediaType,
-            size: fileUploads.size,
-        })
-        .from(fileUploads)
-        .where(eq(fileUploads.fileUploadId, fileUploadId))
-        .limit(1);
+    const row = await fileUploadMetadataLoad(serverRuntime.db, fileUploadId);
     return row ? toGqlFileUpload(row) : null;
 }

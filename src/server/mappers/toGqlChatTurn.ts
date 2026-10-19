@@ -1,4 +1,5 @@
-import type { ChatMessage, ChatTurn, FileUpload } from '../db/schema';
+import type { FileUploadMetadata } from '../db/fileUploadMetadata';
+import type { ChatMessage, ChatTurn } from '../db/schema';
 import type { ChatMessagePart, ChatToolApproval, ChatToolState } from '../domain/chatMessageBody';
 import type { ChatTurnAggregate } from '../domain/chatTurn';
 import { chatMessageBodyRead } from '../domain/chatTurn';
@@ -140,7 +141,7 @@ function partToGql(message: ChatMessage, part: ChatMessagePart, index: number, i
     };
 }
 
-function messageToGql(message: ChatMessage, includeDebug: boolean, attachments: FileUpload[] = []): GqlSChatMessage {
+function messageToGql(message: ChatMessage, includeDebug: boolean, attachments: FileUploadMetadata[] = []): GqlSChatMessage {
     const body = chatMessageBodyRead(message);
     return {
         chatMessageId: message.chatMessageId,
@@ -159,7 +160,7 @@ function messageToGql(message: ChatMessage, includeDebug: boolean, attachments: 
 
 export function toGqlChatTurn(
     aggregate: ChatTurnAggregate,
-    { includeDebug, userAttachments = [] }: { includeDebug: boolean; userAttachments?: FileUpload[] },
+    { includeDebug, userAttachments = [] }: { includeDebug: boolean; userAttachments?: FileUploadMetadata[] },
 ): GqlSChatTurn {
     return {
         chatTurnId: aggregate.turn.chatTurnId,
