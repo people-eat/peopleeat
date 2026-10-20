@@ -16,11 +16,14 @@ dist
 dist-ssr
 drizzle/
 docs/
+!docs/features/
+!docs/features/**
 scripts/
 coverage
 test-results
 playwright-report
 *.md
+!docs/features/*.md
 todos.json
 **/*.test.ts
 **/*.test.tsx

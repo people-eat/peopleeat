@@ -12,7 +12,10 @@ Each surface gets an assistant matched to the job:
 - **Booking request form** — Conversational help while filling or refining a request (when wired).
 
 `chatTurnAgentCreate` dispatches by `Chat.surface`. Admin ships booking-request / user / meal / menu / support-request / gift-card /
-testimonial list tools plus `promptUserForInput`. Cook ships meal create / profile update tools with a cook state snapshot in the system
+testimonial list tools, a read-only **product-docs wiki** (`productDocsRead`), plus `promptUserForInput`. The wiki index (slug + short blurb
+for every `docs/features/` page) is always in the admin system prompt; `productDocsRead` returns the product section of up to three pages
+(content above `## Implementation` only — see [documentation.md](../documentation.md)). Prefer the wiki for how product or admin surfaces
+work; prefer list tools for live database rows. Cook ships meal create / profile update tools with a cook state snapshot in the system
 prompt. Customer remains scaffolded. Tool-loop agents reply in markdown — Gemini cannot combine `Output.object` (JSON mime type) with
 function calling. Admin list cards are persisted as `admin.bookingRequestList` / `admin.userList` / `admin.mealList` / `admin.menuList` /
 `admin.supportRequestList` / `admin.giftCardList` / `admin.testimonialList` data parts from the matching tool result. Each list tool accepts
@@ -31,14 +34,20 @@ count/ids/meta unless the call requested `evidence`.
 
 ### Factory status
 
-| Factory                     | File                                             | Intended surface      | Status                                                                                                         |
-| --------------------------- | ------------------------------------------------ | --------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `agentCustomerCreate`       | `src/server/agents/agentCustomerCreate.ts`       | Customer profile rail | **Scaffold** — empty tools                                                                                     |
-| `agentCookCreate`           | `src/server/agents/agentCookCreate.ts`           | Cook profile rail     | **Wired** — `cookMealCreate`, `cookUpdate`, snapshot                                                           |
-| `agentAdminCreate`          | `src/server/agents/agentAdminCreate.ts`          | Admin rail            | **Wired** — booking / user / meal / menu / support / gift-card / testimonial list tools + `promptUserForInput` |
-| `agentBookingRequestCreate` | `src/server/agents/agentBookingRequestCreate.ts` | Booking request form  | **Scaffold** — empty tools                                                                                     |
+| Factory                     | File                                             | Intended surface      | Status                                                                                |
+| --------------------------- | ------------------------------------------------ | --------------------- | ------------------------------------------------------------------------------------- |
+| `agentCustomerCreate`       | `src/server/agents/agentCustomerCreate.ts`       | Customer profile rail | **Scaffold** — empty tools                                                            |
+| `agentCookCreate`           | `src/server/agents/agentCookCreate.ts`           | Cook profile rail     | **Wired** — `cookMealCreate`, `cookUpdate`, snapshot                                  |
+| `agentAdminCreate`          | `src/server/agents/agentAdminCreate.ts`          | Admin rail            | **Wired** — list tools + product-docs wiki (`productDocsRead`) + `promptUserForInput` |
+| `agentBookingRequestCreate` | `src/server/agents/agentBookingRequestCreate.ts` | Booking request form  | **Scaffold** — empty tools                                                            |
 
 Dispatch: `src/server/lib/chatTurnAgentCreate.ts`.
+
+### Product-docs wiki (admin)
+
+- Catalog + strip helpers: `src/server/agents/productDocsWiki.ts` (`import.meta.glob` on `docs/features/*.md?raw`).
+- Tool: `src/server/agents/toolProductDocsRead.ts` → `productDocsRead`.
+- Bundled at Vite build time; Docker build context whitelists `docs/features/` so the glob resolves (runtime still ships only `.output/`).
 
 ### Scaffold shape
 

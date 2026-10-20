@@ -151,8 +151,9 @@ One-sentence product summary.
 Omit **Next steps** or **Ideas** when empty. Do not invent a Decisions block for thin **index** docs
 ([`features/chat.md`](./features/chat.md), [`features/booking.md`](./features/booking.md)) that only point elsewhere.
 
-**Admin AI / product RAG:** ingest only the content **above** `## Implementation`. Never embed Implementation sections into admin-facing
-assistants.
+**Admin AI / product wiki:** the admin assistant loads a read-only wiki from `docs/features/` (slim slug index in the system prompt;
+`productDocsRead` fetches full pages). Ingest only the content **above** `## Implementation`. Never embed Implementation sections into
+admin-facing assistants. See [assistants.md](./features/assistants.md).
 
 Features are different from architecture: architecture describes structural decisions that affect many features; features describe specific
 end-to-end functionality built on top of that architecture.

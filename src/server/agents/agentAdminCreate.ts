@@ -12,6 +12,8 @@ import { toolAdminSupportRequestsFindMany } from '../queries/adminSupportRequest
 import { toolAdminTestimonialsFindMany } from '../queries/adminTestimonialsFindMany';
 import { toolAdminUsersFindMany } from '../queries/adminUserFindMany';
 import { agentUserFacingWritingRules, currentDateForAgent, googleAgentProviderOptionsFor } from './agentScaffolding';
+import { productDocsCatalogFormat } from './productDocsWiki';
+import { toolProductDocsRead } from './toolProductDocsRead';
 import { toolPromptUserForInput } from './toolPromptUserForInput';
 
 interface AgentAdminCreateOptions {
@@ -24,7 +26,8 @@ interface AgentAdminCreateOptions {
 
 /**
  * Admin personal assistant. List tools for booking requests, users, meals,
- * menus, support requests, gift cards, and testimonials, plus promptUserForInput.
+ * menus, support requests, gift cards, and testimonials, plus a read-only
+ * product-docs wiki (`productDocsRead`) and promptUserForInput.
  *
  * Gemini cannot combine `Output.object` (JSON mime type) with function calling,
  * so final answers are plain markdown while tools remain available. Rich list
@@ -39,10 +42,11 @@ export async function agentAdminCreate({ serverRuntime, session, modelId, onStep
         onStepEnd,
         telemetry: aiTelemetry('admin-assistant'),
         providerOptions: googleAgentProviderOptionsFor(resolvedModelId),
-        stopWhen: [isStepCount(5), hasToolCall('promptUserForInput')],
+        stopWhen: [isStepCount(8), hasToolCall('promptUserForInput')],
         instructions: [
             currentDateForAgent(),
             'You are the peopleeat admin assistant. Help operators with users, support, content, and marketplace ops. Be concise and practical.',
+            'When the operator asks how a product or admin surface works, call productDocsRead with slug(s) from the Product docs wiki index before answering. Prefer list tools for live database rows.',
             'When the operator asks to show, list, or find booking requests (especially by recency like “past 7 days”), call adminBookingRequestsFindMany.',
             'When the operator asks to show, list, or find users / customers / cooks / admins, call adminUsersFindMany.',
             'When the operator asks to show, list, or find meals or dishes, call adminCookMealsFindMany.',
@@ -56,9 +60,11 @@ export async function agentAdminCreate({ serverRuntime, session, modelId, onStep
             'If a required filter (time window, search target) is unclear, ask with promptUserForInput before searching.',
             'Reply in clear markdown. Prefer short paragraphs and lists over walls of text.',
             agentUserFacingWritingRules(),
-        ].join('\n'),
+            productDocsCatalogFormat(),
+        ].join('\n\n'),
         tools: {
             promptUserForInput: toolPromptUserForInput(),
+            productDocsRead: toolProductDocsRead(),
             adminBookingRequestsFindMany: toolAdminBookingRequestsFindMany({
                 requestingSession: session,
                 serverRuntime,

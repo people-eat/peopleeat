@@ -17,8 +17,10 @@ The `deps` stage installs the npm version declared in `package.json#packageManag
 lockfile with the same npm version as CI. It strips `scripts.prepare` (husky) and `scripts.postinstall` (`npm dedupe`) before installing —
 neither is useful in the image, and Playwright's postinstall would try to fetch browsers (Chromium is installed only in the runtime stage).
 `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is a second guard. A BuildKit cache mount on `/root/.npm` reuses tarballs when the lockfile changes
-instead of re-downloading the whole tree. `.dockerignore` keeps tests, docs, editor config, and similar out of the build context so
-`COPY . .` in the build stage stays small.
+instead of re-downloading the whole tree. `.dockerignore` keeps tests, most of `docs/`, editor config, and similar out of the build context
+so `COPY . .` in the build stage stays small. **Exception:** `docs/features/**` is whitelisted so the admin product-docs wiki
+(`import.meta.glob` in `src/server/agents/productDocsWiki.ts`) can bundle feature markdown into `.output/` at build time. Architecture /
+styles / other docs stay out of the image context.
 
 **Runtime `node_modules` is a small allowlist** (not a full `npm ci --omit=dev`): `playwright` (Chromium-bidi cannot be inlined), `pg` /
 `pg-pool` (Nitro-external so OTel can patch queries), and `@opentelemetry/api` + `@opentelemetry/instrumentation` + `instrumentation-http` +
@@ -59,7 +61,7 @@ metadata polyfill before `tsyringe` loads. Nitro's SSR rollup can place CJS `ref
 
 Local `npm run dev`: `vite.config.ts` sets `server.watch.ignored` to `**/docs/**`, and `src/styles.css` has `@source not "../docs"`, so
 markdown edits under `docs/` do not wake the Vite watcher or rebuild Tailwind CSS. Restart the dev server after changing either of those
-settings.
+settings, and after editing `docs/features/*.md` when you need the admin product-docs wiki bundle to pick up the new text.
 
 Coolify terminates TLS at Traefik and forwards plain HTTP into the container with `X-Forwarded-Proto: https`. srvx ≥0.11.22 (pulled in via
 nitro) ignores those headers unless `trustProxy` is enabled, so `Request.url` reports `http://…`. Absolute URLs derived from `request.url`
