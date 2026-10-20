@@ -287,6 +287,8 @@ import { adminOutboundEmailCounts } from '../queries/adminOutboundEmailCounts';
 import { adminOutboundEmailCreationsFindMany } from '../queries/adminOutboundEmailCreationsFindMany';
 import { adminOutboundEmailFindMany } from '../queries/adminOutboundEmailFindMany';
 import { adminOutboundEmailFindOne } from '../queries/adminOutboundEmailFindOne';
+import { adminOutboundEmailPurposeStatsFindMany } from '../queries/adminOutboundEmailPurposeStatsFindMany';
+import { adminOutboundEmailRecipientStatsFindMany } from '../queries/adminOutboundEmailRecipientStatsFindMany';
 import { adminPartnerCooksFindMany } from '../queries/adminPartnerCooksFindMany';
 import { adminPartnerFindMany } from '../queries/adminPartnerFindMany';
 import { adminPartnerFindOne } from '../queries/adminPartnerFindOne';
@@ -560,6 +562,8 @@ import type {
     GqlSAdminOutboundEmail,
     GqlSAdminOutboundEmailArgs,
     GqlSAdminOutboundEmailCreationsArgs,
+    GqlSAdminOutboundEmailPurposeStatsArgs,
+    GqlSAdminOutboundEmailRecipientStatsArgs,
     GqlSAdminOutboundEmailsArgs,
     GqlSAdminOutboundEmailsCountsArgs,
     GqlSAdminPartner,
@@ -1303,6 +1307,16 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             outboundEmailCreations(_parent: GqlSAdmin, args: GqlSAdminOutboundEmailCreationsArgs, requestingSession: GqlSSession) {
                 return adminOutboundEmailCreationsFindMany(args, requestingSession, serverRuntime);
+            },
+            outboundEmailRecipientStats(
+                _parent: GqlSAdmin,
+                args: GqlSAdminOutboundEmailRecipientStatsArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminOutboundEmailRecipientStatsFindMany(args, requestingSession, serverRuntime);
+            },
+            outboundEmailPurposeStats(_parent: GqlSAdmin, args: GqlSAdminOutboundEmailPurposeStatsArgs, requestingSession: GqlSSession) {
+                return adminOutboundEmailPurposeStatsFindMany(args, requestingSession, serverRuntime);
             },
             outboundEmail(_parent: GqlSAdmin, args: GqlSAdminOutboundEmailArgs, requestingSession: GqlSSession) {
                 return adminOutboundEmailFindOne(args, requestingSession, serverRuntime);

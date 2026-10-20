@@ -18,6 +18,7 @@ import {
     AlertDialogTitle,
 } from '../../components/base/alert-dialog';
 import { Button } from '../../components/base/button';
+import { Checkbox } from '../../components/base/checkbox';
 import { StatusBadge } from '../../components/base/status-badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import { SupportRequestChat } from '../../components/SupportRequestChat';
@@ -56,6 +57,7 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
     const [, resolveRequest] = useMutation(AdminSupportRequestResolveDocument);
     const [resolveBusy, setResolveBusy] = useState(false);
     const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
+    const [resolveWithoutNotification, setResolveWithoutNotification] = useState(false);
     const resetDone = useRef(false);
 
     useEffect(() => {
@@ -89,7 +91,7 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
     async function onResolveConfirm() {
         setResolveBusy(true);
         try {
-            await resolveRequest({ supportRequestId });
+            await resolveRequest({ supportRequestId, notifyCustomer: !resolveWithoutNotification });
             setResolveDialogOpen(false);
         } finally {
             setResolveBusy(false);
@@ -169,6 +171,7 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
                 onOpenChange={(open) => {
                     if (resolveBusy) return;
                     setResolveDialogOpen(open);
+                    if (open) setResolveWithoutNotification(false);
                 }}
             >
                 <AlertDialogContent>
@@ -179,12 +182,27 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
                         <AlertDialogDescription>
                             {
                                 {
-                                    de: 'Die Anfrage verschwindet aus dem offenen Posteingang und der Kunde erhält eine Abschluss-E-Mail. Eine neue Nachricht vom Kunden öffnet sie wieder.',
-                                    en: 'The request leaves the open inbox and the customer gets a closed-case email. A new message from the customer reopens it.',
+                                    de: 'Die Anfrage verschwindet aus dem offenen Posteingang. Standardmäßig erhält der Kunde eine Abschluss-E-Mail und eine In-App-Benachrichtigung. Eine neue Nachricht vom Kunden öffnet sie wieder.',
+                                    en: 'The request leaves the open inbox. By default the customer gets a closed-case email and an in-app notification. A new message from the customer reopens it.',
                                 }[locale]
                             }
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <label className="flex items-start gap-2 text-sm">
+                        <Checkbox
+                            checked={resolveWithoutNotification}
+                            disabled={resolveBusy}
+                            onCheckedChange={(checked) => setResolveWithoutNotification(checked === true)}
+                        />
+                        <span>
+                            {
+                                {
+                                    de: 'Ohne Benachrichtigung erledigen (keine E-Mail, kein ungelesenes Badge)',
+                                    en: 'Resolve without notification (no email, no unread badge)',
+                                }[locale]
+                            }
+                        </span>
+                    </label>
                     <AlertDialogFooter>
                         <AlertDialogCancel disabled={resolveBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
                         <AlertDialogAction

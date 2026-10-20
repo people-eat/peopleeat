@@ -67,9 +67,9 @@ mutation AdminSupportRequestUnreadNotificationCountReset($supportRequestId: ID!)
     }
 }
 
-mutation AdminSupportRequestResolve($supportRequestId: ID!) {
+mutation AdminSupportRequestResolve($supportRequestId: ID!, $notifyCustomer: Boolean! = true) {
     admin {
-        supportRequestResolve(supportRequestId: $supportRequestId) {
+        supportRequestResolve(supportRequestId: $supportRequestId, notifyCustomer: $notifyCustomer) {
             success
             referenceId
         }

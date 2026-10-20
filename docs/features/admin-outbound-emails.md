@@ -13,6 +13,9 @@ Admins inspect outbound email under `/admin/outbound-emails` (overview + list + 
 - Counts by lifecycle (total, failed, opened, bounced, pending) and a creation bar chart. Distribution cards deep-link into the list with
   `lifecycleStatus` preselected (Total clears the filter).
 - Date range in the URL (`from` / `to`, default previous calendar month start through current month end); daily buckets zero-filled.
+- Top 5 recipients and top 5 purposes (all-time, independent of the chart picker). Recipient rows with a known `userId` deep-link to the
+  admin user detail; guest addresses deep-link into the list with `q` set to that address. Purpose rows deep-link with `purpose`
+  preselected.
 - Section card links to the list (also in the sidebar).
 
 ### List — `/admin/outbound-emails/list`
@@ -50,25 +53,25 @@ healthy or when email transport is console.
 
 ### Chosen
 
-Overview + list + detail with purpose tabs, lifecycle facet counts, Resend quota hero, and shared admin outbound-email queries; attachments
-exposed on detail when stored.
+Overview + list + detail with purpose tabs, lifecycle facet counts, Resend quota hero, all-time top recipients / purposes, and shared admin
+outbound-email queries; attachments exposed on detail when stored.
 
 ## Implementation
 
-| Piece       | Location                                                                                         |
-| ----------- | ------------------------------------------------------------------------------------------------ |
-| Overview UI | `AdminOutboundEmailsOverviewPage` + `AdminOverviewNavCard` / `AdminOverviewStatCard` / chart     |
-| List UI     | `AdminOutboundEmailsPage` + columns / shared data table                                          |
-| Detail      | `AdminOutboundEmailPage`                                                                         |
-| Queries     | `adminOutboundEmailFindMany`, counts, creations, find one; `adminResendUsage` → `email.usageGet` |
-| Mapper      | `toGqlAdminOutboundEmail`                                                                        |
-| Runtime     | `serverRuntime.email.send` / `usageGet`                                                          |
-| Nav         | Catalog slug `outbound-emails`; section helper `adminOutboundEmails.ts`                          |
-| Alert job   | `resend-usage-slack-alert` (see [jobs.md](../architecture/jobs.md))                              |
+| Piece       | Location                                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Overview UI | `AdminOutboundEmailsOverviewPage` + `AdminOverviewNavCard` / `AdminOverviewStatCard` / chart                              |
+| List UI     | `AdminOutboundEmailsPage` + columns / shared data table                                                                   |
+| Detail      | `AdminOutboundEmailPage`                                                                                                  |
+| Queries     | `adminOutboundEmailFindMany`, counts, creations, recipient/purpose stats, find one; `adminResendUsage` → `email.usageGet` |
+| Mapper      | `toGqlAdminOutboundEmail`                                                                                                 |
+| Runtime     | `serverRuntime.email.send` / `usageGet`                                                                                   |
+| Nav         | Catalog slug `outbound-emails`; section helper `adminOutboundEmails.ts`                                                   |
+| Alert job   | `resend-usage-slack-alert` (see [jobs.md](../architecture/jobs.md))                                                       |
 
 GraphQL: `outboundEmails(criterion)` / counts — search on to/subject, purposes, optional lifecycle statuses, optional user ids, optional
-related entity, sort, paginate; `outboundEmailCreations(range, granularity)`; `outboundEmail(id)` with attachments via join table;
-`resendUsage` (nullable).
+related entity, sort, paginate; `outboundEmailCreations(range, granularity)`; `outboundEmailRecipientStats` / `outboundEmailPurposeStats`
+(optional range, take); `outboundEmail(id)` with attachments via join table; `resendUsage` (nullable).
 
 See [outbound-email.md](../architecture/outbound-email.md), [admin-users.md](./admin-users.md),
 [gift-card-purchase.md](./gift-card-purchase.md), [slack-notifications.md](./slack-notifications.md).

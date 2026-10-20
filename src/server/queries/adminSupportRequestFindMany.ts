@@ -1,17 +1,18 @@
 import { tool } from 'ai';
-import { desc, eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { userDisplayName } from '../../shared';
 import { adminListDetailField, adminListToolOutputToModelResult, resolveAdminListDetail } from '../agents/adminListToolDetail';
 import type { ChatAdminSupportRequestListItem } from '../db/chatPayloadTypes';
-import { supportRequests, users } from '../db/schema';
+import { bookingRequests, supportRequests, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminSupportRequest, GqlSAdminSupportRequestsArgs, GqlSSession } from '../graphql/generated';
-import { GqlSSupportRequestStatusSchema } from '../graphql/generated';
+import { GqlSAdminSupportRequestSortFieldSchema, GqlSSupportRequestStatusSchema } from '../graphql/generated';
 import { toGqlAdminSupportRequest } from '../mappers/toGqlAdminSupportRequest';
 import { toGqlAdminUser } from '../mappers/toGqlAdminUser';
 import { adminSupportRequestCriterionWhere } from '../utils/adminSupportRequestCriterionWhere';
+import { adminSupportRequestOrderBy } from '../utils/adminSupportRequestOrderBy';
 import { adminUserTypesByUserIdFindMany } from '../utils/adminUserTypesByUserIdFindMany';
 import { findManySkip, findManyTake } from '../utils/findManyTake';
 import { supportRequestBookingSummariesById } from '../utils/supportRequestBookingSummariesById';
@@ -35,8 +36,9 @@ export async function adminSupportRequestFindMany(
             })
             .from(supportRequests)
             .innerJoin(users, eq(users.userId, supportRequests.userId))
+            .leftJoin(bookingRequests, eq(bookingRequests.bookingRequestId, supportRequests.bookingRequestId))
             .where(where)
-            .orderBy(desc(sql`${supportRequests.adminUnreadNotificationCount} > 0`), desc(supportRequests.createdAt))
+            .orderBy(...adminSupportRequestOrderBy(criterion))
             .limit(findManyTake(criterion.take))
             .offset(findManySkip(criterion.skip));
 
@@ -92,6 +94,10 @@ const toolAdminSupportRequestsFindManyInputSchema = z.object({
     searchText: z.string().optional().describe('Optional subject / supportRequestId / userId search.'),
     statuses: z.array(GqlSSupportRequestStatusSchema).optional().describe('Optional status filter (OPEN / RESOLVED).'),
     hasAdminUnread: z.boolean().optional().describe('When true, only rows with admin unread messages.'),
+    sortField: GqlSAdminSupportRequestSortFieldSchema.optional().describe(
+        'Sort: lastMessageAt (default, newest activity), createdAt, or bookingDateTime (soonest booking).',
+    ),
+    unreadFirst: z.boolean().optional().describe('When true (default), admin-unread rows come before others within the chosen sort.'),
     take: z.coerce
         .number()
         .int()
@@ -124,6 +130,7 @@ export function toolAdminSupportRequestsFindMany({
             'List admin support requests matching a criterion.',
             'Use when the operator asks to show / list / find support tickets or support requests.',
             'Optionally narrow with searchText, statuses, or hasAdminUnread.',
+            'Optional sortField (lastMessageAt default, createdAt, bookingDateTime) and unreadFirst (default true).',
             'For a specific known support request (follow-up drill-in), pass supportRequestIds from a prior tool result.',
             'Default detail is summary (count + ids for the model; UI still shows cards). Pass detail=evidence when you need row fields.',
             'After the tool returns, summarize the count briefly in markdown — the UI renders the request cards.',
@@ -143,6 +150,8 @@ export function toolAdminSupportRequestsFindMany({
                         searchText: input.searchText,
                         statuses: input.statuses,
                         hasAdminUnread: input.hasAdminUnread,
+                        sortField: input.sortField,
+                        unreadFirst: input.unreadFirst,
                     },
                 },
                 requestingSession,

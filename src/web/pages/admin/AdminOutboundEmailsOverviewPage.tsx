@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { ListIcon, MailsIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
@@ -15,8 +15,9 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import { adminOutboundEmailsSectionTo } from './adminOutboundEmails';
-import { adminOutboundEmailLifecycleStatusLabel } from './adminOutboundEmailsColumns';
+import { adminOutboundEmailLifecycleStatusLabel, adminOutboundEmailPurposeLabel } from './adminOutboundEmailsColumns';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
+import { adminOverviewLinkCardClassName } from './adminOverviewLinkCard';
 import { AdminOverviewNavCard } from './AdminOverviewNavCard';
 import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from './adminOverviewRange';
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
@@ -24,8 +25,8 @@ import { AdminOverviewStatCard } from './AdminOverviewStatCard';
 
 export const adminOutboundEmailsOverviewPageTitle = { de: 'E-Mails', en: 'Emails' } as const;
 export const adminOutboundEmailsOverviewPageDescription = {
-    de: 'Resend-Kontingent, Zustellstatus und Neuanlagen ausgehender Transaktions-E-Mails.',
-    en: 'Resend quota, delivery status, and outbound transactional email creations.',
+    de: 'Resend-Kontingent, Zustellstatus, Neuanlagen, Empfänger und Zwecke ausgehender Transaktions-E-Mails.',
+    en: 'Resend quota, delivery status, creations, recipients, and purposes of outbound transactional emails.',
 } as const;
 
 const ADMIN_OUTBOUND_EMAILS_ALL_PURPOSES: GqlCAdminOutboundEmailPurpose[] = [
@@ -71,22 +72,41 @@ const ADMIN_OUTBOUND_EMAIL_COUNT_CRITERIA: GqlCAdminOutboundEmailCriterion[] = [
     { purposes: [...ADMIN_OUTBOUND_EMAILS_ALL_PURPOSES], lifecycleStatuses: ['PENDING'] },
 ];
 
+const ADMIN_OUTBOUND_EMAIL_RANKING_TAKE = 5;
+
 export function adminOutboundEmailsOverviewPageVariables(search: AdminOverviewRangeSearch = {}) {
     return {
         criteria: ADMIN_OUTBOUND_EMAIL_COUNT_CRITERIA,
         ...adminOverviewRangeToGraphQlVariables(adminOverviewRangeResolve(search)),
+        recipientStatsTake: ADMIN_OUTBOUND_EMAIL_RANKING_TAKE,
+        purposeStatsTake: ADMIN_OUTBOUND_EMAIL_RANKING_TAKE,
     };
 }
 
-function adminOutboundEmailsListSearch(lifecycleStatus: GqlCAdminOutboundEmailLifecycleStatus | undefined) {
+function adminOutboundEmailsListSearch({
+    lifecycleStatus,
+    purpose,
+    q,
+}: {
+    lifecycleStatus?: GqlCAdminOutboundEmailLifecycleStatus;
+    purpose?: GqlCAdminOutboundEmailPurpose;
+    q?: string;
+} = {}) {
     return {
-        q: undefined,
-        purpose: undefined,
+        q,
+        purpose,
         lifecycleStatus,
         page: undefined,
         sort: undefined,
         dir: undefined,
     };
+}
+
+function emailsCountLabel(count: number, locale: 'de' | 'en'): string {
+    return {
+        de: count === 1 ? '1 E-Mail' : `${count} E-Mails`,
+        en: count === 1 ? '1 email' : `${count} emails`,
+    }[locale];
 }
 
 function quotaPercent(used: number, limit: number | null | undefined): number | null {
@@ -163,6 +183,8 @@ export function AdminOutboundEmailsOverviewPage({
     const admin = data.currentSession.user?.admin;
     const counts = admin?.outboundEmailsCounts ?? [];
     const buckets = admin?.outboundEmailCreations ?? [];
+    const recipientStats = admin?.outboundEmailRecipientStats ?? [];
+    const purposeStats = admin?.outboundEmailPurposeStats ?? [];
     const resendUsage = admin?.resendUsage ?? null;
 
     const distribution: {
@@ -273,7 +295,7 @@ export function AdminOutboundEmailsOverviewPage({
                         <li>
                             <AdminOverviewNavCard
                                 to={adminOutboundEmailsSectionTo('list')}
-                                search={adminOutboundEmailsListSearch(undefined)}
+                                search={adminOutboundEmailsListSearch()}
                                 icon={ListIcon}
                             >
                                 {{ de: 'Liste', en: 'List' }[locale]}
@@ -291,7 +313,7 @@ export function AdminOutboundEmailsOverviewPage({
                                 label={entry.label}
                                 value={entry.value}
                                 to={adminOutboundEmailsSectionTo('list')}
-                                search={adminOutboundEmailsListSearch(entry.lifecycleStatus)}
+                                search={adminOutboundEmailsListSearch({ lifecycleStatus: entry.lifecycleStatus })}
                             />
                         ))}
                     </dl>
@@ -320,6 +342,94 @@ export function AdminOutboundEmailsOverviewPage({
                             }[locale]
                         }
                     />
+                </section>
+
+                <section className="grid gap-3">
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Top 5 über alle E-Mails (unabhängig vom Diagrammzeitraum).',
+                                en: 'Top 5 across all emails (independent of the chart range).',
+                            }[locale]
+                        }
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
+                        <div className="grid gap-3">
+                            <h2 className="text-lg font-medium">{{ de: 'Top-5-Empfänger', en: 'Top 5 recipients' }[locale]}</h2>
+                            {recipientStats.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">{{ de: 'Keine E-Mails.', en: 'No emails.' }[locale]}</p>
+                            ) : (
+                                <ul className="grid gap-2">
+                                    {recipientStats.map((stat) => (
+                                        <li key={stat.toEmail}>
+                                            {stat.userId ? (
+                                                <Link
+                                                    to="/{-$locale}/admin/users/$userId"
+                                                    params={{ userId: stat.userId }}
+                                                    className={adminOverviewLinkCardClassName(
+                                                        'flex flex-wrap items-center justify-between gap-3 px-4 py-3',
+                                                    )}
+                                                >
+                                                    <span className="grid min-w-0 gap-0.5">
+                                                        <span className="truncate font-medium text-foreground">
+                                                            {stat.displayName ?? stat.toEmail}
+                                                        </span>
+                                                        {stat.displayName ? (
+                                                            <span className="truncate text-sm text-muted-foreground">{stat.toEmail}</span>
+                                                        ) : null}
+                                                    </span>
+                                                    <span className="text-sm text-muted-foreground tabular-nums">
+                                                        {emailsCountLabel(stat.count, locale)}
+                                                    </span>
+                                                </Link>
+                                            ) : (
+                                                <Link
+                                                    to={adminOutboundEmailsSectionTo('list')}
+                                                    search={adminOutboundEmailsListSearch({ q: stat.toEmail })}
+                                                    className={adminOverviewLinkCardClassName(
+                                                        'flex flex-wrap items-center justify-between gap-3 px-4 py-3',
+                                                    )}
+                                                >
+                                                    <span className="truncate font-medium text-foreground">{stat.toEmail}</span>
+                                                    <span className="text-sm text-muted-foreground tabular-nums">
+                                                        {emailsCountLabel(stat.count, locale)}
+                                                    </span>
+                                                </Link>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        <div className="grid gap-3">
+                            <h2 className="text-lg font-medium">{{ de: 'Top-5-Zwecke', en: 'Top 5 purposes' }[locale]}</h2>
+                            {purposeStats.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">{{ de: 'Keine E-Mails.', en: 'No emails.' }[locale]}</p>
+                            ) : (
+                                <ul className="grid gap-2">
+                                    {purposeStats.map((stat) => (
+                                        <li key={stat.purpose}>
+                                            <Link
+                                                to={adminOutboundEmailsSectionTo('list')}
+                                                search={adminOutboundEmailsListSearch({ purpose: stat.purpose })}
+                                                className={adminOverviewLinkCardClassName(
+                                                    'flex flex-wrap items-center justify-between gap-3 px-4 py-3',
+                                                )}
+                                            >
+                                                <span className="font-medium text-foreground">
+                                                    {adminOutboundEmailPurposeLabel(stat.purpose, locale)}
+                                                </span>
+                                                <span className="text-sm text-muted-foreground tabular-nums">
+                                                    {emailsCountLabel(stat.count, locale)}
+                                                </span>
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    </div>
                 </section>
             </main>
         </AdminPathPageChrome>

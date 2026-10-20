@@ -1813,11 +1813,23 @@ type AdminSupportRequest {
     messages: [HumanChatMessage!]!
 }
 
+# Sortable columns for `Admin.supportRequests`. Default when omitted:
+# `lastMessageAt` (newest message / activity first). `bookingDateTime` sorts
+# soonest linked booking first (rows without a booking last).
+enum AdminSupportRequestSortField {
+    lastMessageAt
+    createdAt
+    bookingDateTime
+}
+
 # Filter + pagination for `Admin.supportRequests` / `supportRequestsCounts`.
 # Optional `statuses` (`IN`); omit or empty = no status filter. Optional
 # `hasAdminUnread` keeps rows with `adminUnreadNotificationCount > 0`. Optional
-# `searchText` matches subject / supportRequestId / userId. `skip` / `take`
-# ignored by counts.
+# `searchText` matches subject / supportRequestId / userId. Optional
+# `sortField` drives server `ORDER BY` (default `lastMessageAt`). When
+# `unreadFirst` is true (default), rows with admin unread come before others,
+# each group still ordered by `sortField`. `skip` / `take` / `sort*` /
+# `unreadFirst` ignored by counts.
 input AdminSupportRequestCriterion {
     skip: Int! = 0
     take: Int! = 25
@@ -1827,6 +1839,8 @@ input AdminSupportRequestCriterion {
     supportRequestIds: [ID!]
     statuses: [SupportRequestStatus!]
     hasAdminUnread: Boolean
+    sortField: AdminSupportRequestSortField
+    unreadFirst: Boolean = true
 }
 
 # Concierge WhatsApp inbox. One conversation per phone. Messages project onto
@@ -3417,8 +3431,8 @@ type Admin {
     bookingRequestOffersCounts(criteria: [AdminBookingRequestOfferCriterion!]!): [Int!]!
     bookingRequestOffer(bookingRequestOfferId: ID!): AdminBookingRequestOffer
 
-    # Support cases (customer ↔ admin). Sorted by criterion (default newest
-    # first). See `AdminSupportRequestCriterion` and
+    # Support cases (customer ↔ admin). Sorted by criterion (default unread
+    # first, then newest message). See `AdminSupportRequestCriterion` and
     # docs/features/support-requests.md.
     supportRequests(criterion: AdminSupportRequestCriterion!): [AdminSupportRequest!]!
     # One count per criterion, same order. List pages pass a single criterion;
@@ -3474,6 +3488,12 @@ type Admin {
     # Creation time series for outbound emails (`OutboundEmails.createdAt`).
     # Same bucket rules as other admin creations queries.
     outboundEmailCreations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Top recipients by send count (then toEmail). Omit `range` for all-time
+    # (overview default; independent of the chart picker). Default take is 3.
+    outboundEmailRecipientStats(range: DateTimeRange, take: Int! = 3): [AdminOutboundEmailRecipientStat!]!
+    # Top purposes by send count (then purpose). Omit `range` for all-time
+    # (overview default; independent of the chart picker). Default take is 3.
+    outboundEmailPurposeStats(range: DateTimeRange, take: Int! = 3): [AdminOutboundEmailPurposeStat!]!
     # Single outbound email detail. Null when the id is unknown.
     outboundEmail(outboundEmailId: ID!): AdminOutboundEmail
     # Live Resend account email quota (monthly + daily). Null when
@@ -3734,6 +3754,21 @@ type AdminOutboundEmail {
     clickedAt: DateTime
     bouncedAt: DateTime
     complainedAt: DateTime
+}
+
+# Aggregated outbound sends for one recipient address (overview ranking).
+# `userId` / `displayName` are any attributed user for that address when known.
+type AdminOutboundEmailRecipientStat {
+    toEmail: String!
+    count: Int!
+    userId: ID
+    displayName: String
+}
+
+# Aggregated outbound sends for one purpose (overview ranking).
+type AdminOutboundEmailPurposeStat {
+    purpose: AdminOutboundEmailPurpose!
+    count: Int!
 }
 
 # Sortable columns for `Admin.outboundEmails`. Default when omitted: `createdAt`
@@ -4111,7 +4146,9 @@ type AdminMutation {
     # Clears `adminUnreadNotificationCount` when opening the support chat.
     supportRequestUnreadNotificationCountReset(supportRequestId: ID!): MutationResult!
     # Marks a support case resolved. Returns `supportRequestId` as `referenceId`.
-    supportRequestResolve(supportRequestId: ID!): MutationResult!
+    # When `notifyCustomer` is true (default), bumps customer unread and sends
+    # the closed-case email; false resolves quietly (ops Slack still fires).
+    supportRequestResolve(supportRequestId: ID!, notifyCustomer: Boolean! = true): MutationResult!
     # Cancel a pending pg-boss queued job by queue `name` + `jobId`. Only known
     # queued definitions from `jobDefinitions` are allowed. Returns `jobId`.
     # See docs/features/admin-jobs.md.

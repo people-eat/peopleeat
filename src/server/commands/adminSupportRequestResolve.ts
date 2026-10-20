@@ -14,6 +14,7 @@ export async function adminSupportRequestResolve(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     const { supportRequestId } = args;
+    const notifyCustomer = args.notifyCustomer !== false;
 
     try {
         const [supportRequest] = await serverRuntime.db
@@ -33,7 +34,7 @@ export async function adminSupportRequestResolve(
                     status: 'RESOLVED',
                     resolvedAt: new Date(),
                     adminUnreadNotificationCount: 0,
-                    userUnreadNotificationCount: sql`${supportRequests.userUnreadNotificationCount} + 1`,
+                    ...(notifyCustomer ? { userUnreadNotificationCount: sql`${supportRequests.userUnreadNotificationCount} + 1` } : {}),
                 })
                 .where(eq(supportRequests.supportRequestId, supportRequestId));
 
@@ -43,7 +44,9 @@ export async function adminSupportRequestResolve(
             });
 
             await Promise.all([serverRuntime.publish.userUpdates({ userId: supportRequest.userId }), serverRuntime.publish.adminUpdates()]);
-            await adminSupportRequestResolveEmailSend(serverRuntime, { supportRequestId });
+            if (notifyCustomer) {
+                await adminSupportRequestResolveEmailSend(serverRuntime, { supportRequestId });
+            }
 
             const [customer] = await serverRuntime.db
                 .select({ firstName: users.firstName, lastName: users.lastName })

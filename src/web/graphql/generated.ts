@@ -94,6 +94,8 @@ export interface GqlCAdmin {
     occasions: Array<GqlCAdminOccasion>;
     outboundEmail?: Maybe<GqlCAdminOutboundEmail>;
     outboundEmailCreations: Array<GqlCAdminTimeBucket>;
+    outboundEmailPurposeStats: Array<GqlCAdminOutboundEmailPurposeStat>;
+    outboundEmailRecipientStats: Array<GqlCAdminOutboundEmailRecipientStat>;
     outboundEmails: Array<GqlCAdminOutboundEmail>;
     outboundEmailsCounts: Array<Scalars['Int']['output']>;
     partner?: Maybe<GqlCAdminPartner>;
@@ -362,6 +364,16 @@ export type GqlCAdminOutboundEmailArgs = {
 export type GqlCAdminOutboundEmailCreationsArgs = {
     granularity?: GqlCAdminTimeBucketGranularity;
     range: GqlCDateTimeRange;
+};
+
+export type GqlCAdminOutboundEmailPurposeStatsArgs = {
+    range?: InputMaybe<GqlCDateTimeRange>;
+    take?: Scalars['Int']['input'];
+};
+
+export type GqlCAdminOutboundEmailRecipientStatsArgs = {
+    range?: InputMaybe<GqlCDateTimeRange>;
+    take?: Scalars['Int']['input'];
 };
 
 export type GqlCAdminOutboundEmailsArgs = {
@@ -1675,6 +1687,7 @@ export type GqlCAdminMutationSupportRequestMessageCreateArgs = {
 };
 
 export type GqlCAdminMutationSupportRequestResolveArgs = {
+    notifyCustomer?: Scalars['Boolean']['input'];
     supportRequestId: Scalars['ID']['input'];
 };
 
@@ -1879,6 +1892,20 @@ export type GqlCAdminOutboundEmailPurpose =
     | 'TESTIMONIAL_REMINDER_MORNING_COOK'
     | 'TESTIMONIAL_REMINDER_MORNING_CUSTOMER';
 
+export interface GqlCAdminOutboundEmailPurposeStat {
+    __typename?: 'AdminOutboundEmailPurposeStat';
+    count: Scalars['Int']['output'];
+    purpose: GqlCAdminOutboundEmailPurpose;
+}
+
+export interface GqlCAdminOutboundEmailRecipientStat {
+    __typename?: 'AdminOutboundEmailRecipientStat';
+    count: Scalars['Int']['output'];
+    displayName?: Maybe<Scalars['String']['output']>;
+    toEmail: Scalars['String']['output'];
+    userId?: Maybe<Scalars['ID']['output']>;
+}
+
 export type GqlCAdminOutboundEmailRelatedEntityType =
     'BOOKING_REQUEST' | 'BOOKING_REQUEST_OFFER' | 'COOK' | 'COOK_CALL_SLOT_BOOKING' | 'GIFT_CARD' | 'SUPPORT_REQUEST';
 
@@ -2068,10 +2095,14 @@ export type GqlCAdminSupportRequestCriterion = {
     hasAdminUnread?: InputMaybe<Scalars['Boolean']['input']>;
     searchText?: InputMaybe<Scalars['String']['input']>;
     skip?: Scalars['Int']['input'];
+    sortField?: InputMaybe<GqlCAdminSupportRequestSortField>;
     statuses?: InputMaybe<Array<GqlCSupportRequestStatus>>;
     supportRequestIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     take?: Scalars['Int']['input'];
+    unreadFirst?: InputMaybe<Scalars['Boolean']['input']>;
 };
+
+export type GqlCAdminSupportRequestSortField = 'bookingDateTime' | 'createdAt' | 'lastMessageAt';
 
 export type GqlCAdminTestimonial = GqlCAdminCookTestimonial | GqlCAdminCustomerTestimonial;
 
@@ -13380,6 +13411,8 @@ export type GqlCAdminOutboundEmailsOverviewPageQueryVariables = Exact<{
     criteria: Array<Schema.GqlCAdminOutboundEmailCriterion> | Schema.GqlCAdminOutboundEmailCriterion;
     range: Schema.GqlCDateTimeRange;
     granularity?: Schema.GqlCAdminTimeBucketGranularity;
+    recipientStatsTake?: number;
+    purposeStatsTake?: number;
 }>;
 
 export type GqlCAdminOutboundEmailsOverviewPageQuery = {
@@ -13395,6 +13428,8 @@ export type GqlCAdminOutboundEmailsOverviewPageQuery = {
                     daily: { used: number; limit: number | null; sent: number; received: number; resetsAt: string };
                 } | null;
                 outboundEmailCreations: Array<{ bucketStart: string; count: number }>;
+                outboundEmailRecipientStats: Array<{ toEmail: string; count: number; userId: string | null; displayName: string | null }>;
+                outboundEmailPurposeStats: Array<{ purpose: Schema.GqlCAdminOutboundEmailPurpose; count: number }>;
             } | null;
         } | null;
     };
@@ -14353,6 +14388,7 @@ export type GqlCAdminSupportRequestUnreadNotificationCountResetMutation = {
 
 export type GqlCAdminSupportRequestResolveMutationVariables = Exact<{
     supportRequestId: string;
+    notifyCustomer?: boolean;
 }>;
 
 export type GqlCAdminSupportRequestResolveMutation = { admin: { supportRequestResolve: { success: boolean; referenceId: string | null } } };
@@ -55951,6 +55987,18 @@ export const AdminOutboundEmailsOverviewPageDocument = {
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminTimeBucketGranularity' } } },
                     defaultValue: { kind: 'EnumValue', value: 'day' },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'recipientStatsTake' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
+                    defaultValue: { kind: 'IntValue', value: '5' },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'purposeStatsTake' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
+                    defaultValue: { kind: 'IntValue', value: '5' },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -56058,6 +56106,50 @@ export const AdminOutboundEmailsOverviewPageDocument = {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'outboundEmailRecipientStats' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'take' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'recipientStatsTake' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'toEmail' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayName' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'outboundEmailPurposeStats' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'take' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'purposeStatsTake' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'purpose' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'count' } },
                                                                 ],
                                                             },
@@ -59690,6 +59782,12 @@ export const AdminSupportRequestResolveDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'supportRequestId' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'notifyCustomer' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                    defaultValue: { kind: 'BooleanValue', value: true },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -59708,6 +59806,11 @@ export const AdminSupportRequestResolveDocument = {
                                             kind: 'Argument',
                                             name: { kind: 'Name', value: 'supportRequestId' },
                                             value: { kind: 'Variable', name: { kind: 'Name', value: 'supportRequestId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'notifyCustomer' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'notifyCustomer' } },
                                         },
                                     ],
                                     selectionSet: {

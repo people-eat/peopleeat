@@ -21,11 +21,12 @@ across cases.
 
 ### Admin
 
-- `/admin/support-requests` — Filterable list (all / open / unread / resolved), live updates, unread-first ordering.
+- `/admin/support-requests` — Search + status select + sort (newest message, created at, soonest booking) + unread-first checkbox; live
+  updates. Default sort is newest message with unread first.
 - `/admin/support-requests/<id>` — Condensed chat chrome (crumbs + presence avatar linking to the customer, customer name above status,
   booking as an outlined button beside mark-resolved). Resolve is icon-only below `md`, labeled on desktop, and confirms closed-case email
-  plus reopen-on-customer-message.
-- `/admin` overview queue lists **open** cases (live), unread-first.
+  plus reopen-on-customer-message; dialog offers **resolve without notification** (no email, no customer unread bump).
+- `/admin` overview queue lists **open** cases (live), unread-first then newest message.
 - Sidebar badge counts cases with admin unread.
 
 ### Customer emails (no admin outbound mail)
@@ -34,7 +35,7 @@ across cases.
 | ------------- | ---------------------------------------------------------------------------------------------- |
 | Create        | Confirmation that the case was opened                                                          |
 | Admin reply   | Notification of new message (debounced — rapid admin replies coalesce within about one minute) |
-| Admin resolve | Case closed notice                                                                             |
+| Admin resolve | Case closed notice (skipped when admin resolves without notification)                          |
 
 Create and resolve send immediately after the case updates. Admin reply email sends only if the customer still has unread when the debounced
 job runs; opening the chat or resolving cancels a pending reply job.
@@ -67,14 +68,17 @@ lifecycle emails; ops Slack threading.
   `SupportRequestMessageAttachments` → file uploads
 - Domain: `src/server/domain/supportRequest.ts`; outbound email purposes in `outboundEmail.ts`
 - Slack: `supportRequestSlack.ts` root/thread; wired from create / message / resolve
-- Commands: user create (optional attachments), message create, unread reset (cancels pending reply job), admin resolve
+- Commands: user create (optional attachments), message create, unread reset (cancels pending reply job), admin resolve (`notifyCustomer`,
+  default true)
 - Job: `supportRequestCustomerReplyNotify` — ~1m debounce for admin→customer reply email
-- Queries: user list/one, booking-request field, admin criterion list/counts/one (unread-first; optional `supportRequestIds`), messages with
-  attachments; admin assistant list tool `adminSupportRequestsFindMany` → `admin.supportRequestList` cards
+- Queries: user list/one, booking-request field, admin criterion list/counts/one (`sortField` / `unreadFirst`; optional
+  `supportRequestIds`), messages with attachments; admin assistant list tool `adminSupportRequestsFindMany` → `admin.supportRequestList`
+  cards
 - Customer UI: catalog slug `support-requests`; `SupportRequestCreateForm`, `SupportRequestSummaryCard`, `SupportRequestChat` (composer
   attachments; presence header scrolls below `md`, static from `md` — same as offer chat); nav badges
-- Admin UI: overview + list live via admin updates; nav badge; pinned bottom pagination (`page` / `pageSize`); detail viewport-locked like
-  WhatsApp chat (`AdminPinnedFooterLayout` + `SupportRequestChat` presence avatar / user link)
+- Admin UI: overview + list live via admin updates; nav badge; pinned bottom pagination (`page` / `pageSize`); list search params `status` /
+  `sort` / `unreadFirst`; detail viewport-locked like WhatsApp chat (`AdminPinnedFooterLayout` + `SupportRequestChat` presence avatar / user
+  link)
 - Message selection: admin + customer detail queries use shared `HumanChatMessageFields` (includes `reactions`, even though support always
   returns `[]`) so `ChatMessageUserView` matches offer / WhatsApp chat
 

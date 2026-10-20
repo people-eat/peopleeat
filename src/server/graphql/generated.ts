@@ -91,6 +91,8 @@ export interface GqlSAdmin {
     occasions: Array<GqlSAdminOccasion>;
     outboundEmail?: Maybe<GqlSAdminOutboundEmail>;
     outboundEmailCreations: Array<GqlSAdminTimeBucket>;
+    outboundEmailPurposeStats: Array<GqlSAdminOutboundEmailPurposeStat>;
+    outboundEmailRecipientStats: Array<GqlSAdminOutboundEmailRecipientStat>;
     outboundEmails: Array<GqlSAdminOutboundEmail>;
     outboundEmailsCounts: Array<Scalars['Int']['output']>;
     partner?: Maybe<GqlSAdminPartner>;
@@ -359,6 +361,16 @@ export type GqlSAdminOutboundEmailArgs = {
 export type GqlSAdminOutboundEmailCreationsArgs = {
     granularity?: GqlSAdminTimeBucketGranularity;
     range: GqlSDateTimeRange;
+};
+
+export type GqlSAdminOutboundEmailPurposeStatsArgs = {
+    range?: InputMaybe<GqlSDateTimeRange>;
+    take?: Scalars['Int']['input'];
+};
+
+export type GqlSAdminOutboundEmailRecipientStatsArgs = {
+    range?: InputMaybe<GqlSDateTimeRange>;
+    take?: Scalars['Int']['input'];
 };
 
 export type GqlSAdminOutboundEmailsArgs = {
@@ -1672,6 +1684,7 @@ export type GqlSAdminMutationSupportRequestMessageCreateArgs = {
 };
 
 export type GqlSAdminMutationSupportRequestResolveArgs = {
+    notifyCustomer?: Scalars['Boolean']['input'];
     supportRequestId: Scalars['ID']['input'];
 };
 
@@ -1876,6 +1889,20 @@ export type GqlSAdminOutboundEmailPurpose =
     | 'TESTIMONIAL_REMINDER_MORNING_COOK'
     | 'TESTIMONIAL_REMINDER_MORNING_CUSTOMER';
 
+export interface GqlSAdminOutboundEmailPurposeStat {
+    __typename?: 'AdminOutboundEmailPurposeStat';
+    count: Scalars['Int']['output'];
+    purpose: GqlSAdminOutboundEmailPurpose;
+}
+
+export interface GqlSAdminOutboundEmailRecipientStat {
+    __typename?: 'AdminOutboundEmailRecipientStat';
+    count: Scalars['Int']['output'];
+    displayName?: Maybe<Scalars['String']['output']>;
+    toEmail: Scalars['String']['output'];
+    userId?: Maybe<Scalars['ID']['output']>;
+}
+
 export type GqlSAdminOutboundEmailRelatedEntityType =
     'BOOKING_REQUEST' | 'BOOKING_REQUEST_OFFER' | 'COOK' | 'COOK_CALL_SLOT_BOOKING' | 'GIFT_CARD' | 'SUPPORT_REQUEST';
 
@@ -2065,10 +2092,14 @@ export type GqlSAdminSupportRequestCriterion = {
     hasAdminUnread?: InputMaybe<Scalars['Boolean']['input']>;
     searchText?: InputMaybe<Scalars['String']['input']>;
     skip?: Scalars['Int']['input'];
+    sortField?: InputMaybe<GqlSAdminSupportRequestSortField>;
     statuses?: InputMaybe<Array<GqlSSupportRequestStatus>>;
     supportRequestIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     take?: Scalars['Int']['input'];
+    unreadFirst?: InputMaybe<Scalars['Boolean']['input']>;
 };
+
+export type GqlSAdminSupportRequestSortField = 'bookingDateTime' | 'createdAt' | 'lastMessageAt';
 
 export type GqlSAdminTestimonial = GqlSAdminCookTestimonial | GqlSAdminCustomerTestimonial;
 
@@ -5198,6 +5229,8 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminOutboundEmailLifecycleStatus: GqlSAdminOutboundEmailLifecycleStatus;
     AdminOutboundEmailProvider: GqlSAdminOutboundEmailProvider;
     AdminOutboundEmailPurpose: GqlSAdminOutboundEmailPurpose;
+    AdminOutboundEmailPurposeStat: ResolverTypeWrapper<GqlSAdminOutboundEmailPurposeStat>;
+    AdminOutboundEmailRecipientStat: ResolverTypeWrapper<GqlSAdminOutboundEmailRecipientStat>;
     AdminOutboundEmailRelatedEntityType: GqlSAdminOutboundEmailRelatedEntityType;
     AdminOutboundEmailSortField: GqlSAdminOutboundEmailSortField;
     AdminPartner: ResolverTypeWrapper<
@@ -5235,6 +5268,7 @@ export type GqlSResolversTypes = ResolversObject<{
         }
     >;
     AdminSupportRequestCriterion: GqlSAdminSupportRequestCriterion;
+    AdminSupportRequestSortField: GqlSAdminSupportRequestSortField;
     AdminTestimonial: ResolverTypeWrapper<GqlSResolversUnionTypes<GqlSResolversTypes>['AdminTestimonial']>;
     AdminTimeBucket: ResolverTypeWrapper<GqlSAdminTimeBucket>;
     AdminTimeBucketGranularity: GqlSAdminTimeBucketGranularity;
@@ -5743,6 +5777,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
     };
     AdminOutboundEmail: GqlSAdminOutboundEmail;
     AdminOutboundEmailCriterion: GqlSAdminOutboundEmailCriterion;
+    AdminOutboundEmailPurposeStat: GqlSAdminOutboundEmailPurposeStat;
+    AdminOutboundEmailRecipientStat: GqlSAdminOutboundEmailRecipientStat;
     AdminPartner: Omit<GqlSAdminPartner, 'cooks' | 'sections' | 'testimonials'> & {
         cooks: Array<GqlSResolversParentTypes['AdminPartnerCook']>;
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
@@ -6379,6 +6415,18 @@ export type GqlSAdminResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminOutboundEmailCreationsArgs, 'granularity' | 'range'>
+    >;
+    outboundEmailPurposeStats?: Resolver<
+        Array<GqlSResolversTypes['AdminOutboundEmailPurposeStat']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminOutboundEmailPurposeStatsArgs, 'take'>
+    >;
+    outboundEmailRecipientStats?: Resolver<
+        Array<GqlSResolversTypes['AdminOutboundEmailRecipientStat']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminOutboundEmailRecipientStatsArgs, 'take'>
     >;
     outboundEmails?: Resolver<
         Array<GqlSResolversTypes['AdminOutboundEmail']>,
@@ -7582,7 +7630,7 @@ export type GqlSAdminMutationResolvers<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSAdminMutationSupportRequestResolveArgs, 'supportRequestId'>
+        RequireFields<GqlSAdminMutationSupportRequestResolveArgs, 'notifyCustomer' | 'supportRequestId'>
     >;
     supportRequestUnreadNotificationCountReset?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -7757,6 +7805,26 @@ export type GqlSAdminOutboundEmailResolvers<
     subject?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     toEmail?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     user?: Resolver<Maybe<GqlSResolversTypes['AdminUser']>, ParentType, ContextType>;
+    userId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+}>;
+
+export type GqlSAdminOutboundEmailPurposeStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminOutboundEmailPurposeStat'] =
+        GqlSResolversParentTypes['AdminOutboundEmailPurposeStat'],
+> = ResolversObject<{
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    purpose?: Resolver<GqlSResolversTypes['AdminOutboundEmailPurpose'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminOutboundEmailRecipientStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminOutboundEmailRecipientStat'] =
+        GqlSResolversParentTypes['AdminOutboundEmailRecipientStat'],
+> = ResolversObject<{
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    displayName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    toEmail?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     userId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
 }>;
 
@@ -10597,6 +10665,8 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminOccasionCook?: GqlSAdminOccasionCookResolvers<ContextType>;
     AdminOccasionTestimonial?: GqlSAdminOccasionTestimonialResolvers<ContextType>;
     AdminOutboundEmail?: GqlSAdminOutboundEmailResolvers<ContextType>;
+    AdminOutboundEmailPurposeStat?: GqlSAdminOutboundEmailPurposeStatResolvers<ContextType>;
+    AdminOutboundEmailRecipientStat?: GqlSAdminOutboundEmailRecipientStatResolvers<ContextType>;
     AdminPartner?: GqlSAdminPartnerResolvers<ContextType>;
     AdminPartnerCook?: GqlSAdminPartnerCookResolvers<ContextType>;
     AdminPartnerTestimonial?: GqlSAdminPartnerTestimonialResolvers<ContextType>;
@@ -11009,6 +11079,11 @@ export const GqlSAdminSessionSortFieldSchema: z.ZodType<
     'createdAt' | 'lastInteractionAt' | 'user' | 'userAgent',
     'createdAt' | 'lastInteractionAt' | 'user' | 'userAgent'
 > = z.enum(['createdAt', 'lastInteractionAt', 'user', 'userAgent']);
+
+export const GqlSAdminSupportRequestSortFieldSchema: z.ZodType<
+    'bookingDateTime' | 'createdAt' | 'lastMessageAt',
+    'bookingDateTime' | 'createdAt' | 'lastMessageAt'
+> = z.enum(['bookingDateTime', 'createdAt', 'lastMessageAt']);
 
 export const GqlSAdminTimeBucketGranularitySchema: z.ZodType<'day' | 'month' | 'week', 'day' | 'month' | 'week'> = z.enum([
     'day',
@@ -11793,9 +11868,11 @@ export function GqlSAdminSupportRequestCriterionSchema(): z.ZodType<GqlSAdminSup
         hasAdminUnread: z.boolean().nullish(),
         searchText: z.string().nullish(),
         skip: z.number().default(0),
+        sortField: GqlSAdminSupportRequestSortFieldSchema.nullish(),
         statuses: z.array(GqlSSupportRequestStatusSchema).nullish(),
         supportRequestIds: z.array(z.string()).nullish(),
         take: z.number().default(25),
+        unreadFirst: z.boolean().default(true).nullish(),
     });
 }
 
