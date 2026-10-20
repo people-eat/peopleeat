@@ -42,6 +42,9 @@ passed as query params today unless the custom URL includes them.
 Shared content-section stack. Partner-specific: single display name, curated cooks, fixed first-section slot, optional promo link, image
 overlay toggles, How it works alternative media, and landing chrome (How it works / Known from).
 
+Dedicated co-branded landings such as a former Amex route are **not** rebuilt. Partner pages (`/partners/$pathName`) are the product home
+for partnership campaigns and CTAs.
+
 ## Next steps
 
 - **Partner deep-link on booking form** — CTAs may open the form with a short partner id so default venue resolves from the partner record

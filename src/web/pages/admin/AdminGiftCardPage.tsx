@@ -1,10 +1,15 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useRouter } from '@tanstack/react-router';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { useMutation } from 'urql';
 
 import { formatCurrency, formatDate } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
+import { Button } from '../../components/base/button';
 import { Separator } from '../../components/base/separator';
 import type { GqlCAdminGiftCardPageQuery, GqlCAdminOutboundEmailPurpose } from '../../graphql/generated';
+import { AdminGiftCardPdfsRegenerateDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { adminGiftCardPaymentStatusLabel } from './adminGiftCardsColumns';
@@ -75,8 +80,27 @@ export function AdminGiftCardPage({ data }: { data: GqlCAdminGiftCardPageQuery }
 function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
+    const router = useRouter();
+    const [, regeneratePdfs] = useMutation(AdminGiftCardPdfsRegenerateDocument);
+    const [regenerating, setRegenerating] = useState(false);
     const empty = { de: '—', en: '—' }[locale];
     const address = giftCard.invoiceAddress;
+    const paid = giftCard.paymentStatus === 'PAYED';
+
+    async function onRegeneratePdfs() {
+        setRegenerating(true);
+        try {
+            const result = await regeneratePdfs({ giftCardId: giftCard.giftCardId });
+            if (result.error || !result.data?.admin.giftCardPdfsRegenerate.success) {
+                toast.error({ de: 'PDFs konnten nicht erzeugt werden.', en: 'Could not generate PDFs.' }[locale]);
+                return;
+            }
+            toast.success({ de: 'PDFs aktualisiert.', en: 'PDFs updated.' }[locale]);
+            await router.invalidate();
+        } finally {
+            setRegenerating(false);
+        }
+    }
 
     return (
         <dl className="grid gap-4">
@@ -188,6 +212,26 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
                     )}
                 </dd>
             </div>
+            {paid ? (
+                <>
+                    <Separator />
+                    <div className="grid gap-2">
+                        <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                            {{ de: 'PDFs', en: 'PDFs' }[locale]}
+                        </dt>
+                        <dd>
+                            <Button type="button" variant="outline" size="sm" disabled={regenerating} onClick={() => void onRegeneratePdfs()}>
+                                {
+                                    {
+                                        de: regenerating ? 'Wird erzeugt…' : 'PDFs neu erzeugen',
+                                        en: regenerating ? 'Generating…' : 'Regenerate PDFs',
+                                    }[locale]
+                                }
+                            </Button>
+                        </dd>
+                    </div>
+                </>
+            ) : null}
             <Separator />
             <DetailField
                 label={{ de: 'Erstellt', en: 'Created' }[locale]}

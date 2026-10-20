@@ -89,6 +89,20 @@ suggestions and driving distance; wallet page owns one-shot return/refresh handl
 - On public profile, show when the cook is featured on city or partner landing pages.
 - Cook profile UI to edit `stageName` (API + public display already support it).
 
+### Cook scrape on sign-up (planned)
+
+Speed up chef onboarding by optionally importing public profile material during `/chef-sign-up` (or the first profile visit).
+
+Target behavior:
+
+1. Cook pastes a URL to an existing public presence (personal site, portfolio, blog, or similar).
+2. peopleeat fetches publicly available text and images and suggests biography, cuisine tags, and draft meal ideas for review.
+3. Nothing is saved until the cook confirms; suggestions are editable before write.
+4. Ops can disable the path with a feature toggle if scrapes become unreliable or abusive.
+
+Not in scope for the first cut: logging into third-party accounts, private social graphs, or overwriting an already-filled profile without
+confirm.
+
 ### Cook profile review overview
 
 Give cooks a calm overview of how customers have rated them: average stars, review count, and recent published customer testimonials,

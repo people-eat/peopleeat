@@ -97,6 +97,9 @@ on save. AI suggestions return a full suggestion object synchronously (no stream
 Library vs offer scope is first-class on the cook menus list (scope tabs + publication Select). Offer copies stay separate rows; cooks can
 edit them while negotiable and optionally sync content back to the inventory template.
 
+Historical fields such as menu `preparationTime` or `greetingFromKitchen` are not modeled (accepted product loss). Cooks set timing and
+kitchen notes in description or offer chat instead.
+
 Desktop course/meal reorder uses `@dnd-kit` (not a custom pointer layer) so siblings can live-shift and the active slot can keep the dragged
 item’s full height while a `DragOverlay` follows the pointer on the vertical axis only. Button up/down stays for touch / narrow viewports.
 

@@ -1,0 +1,8 @@
+mutation AdminGiftCardPdfsRegenerate($giftCardId: ID!) {
+    admin {
+        giftCardPdfsRegenerate(giftCardId: $giftCardId) {
+            success
+            referenceId
+        }
+    }
+}

@@ -2478,6 +2478,10 @@ type UserMutation {
     giftCardCreate(input: GiftCardCreate!): MutationResult!
     # After Elements confirms the PaymentIntent — flips to PAYED, PDFs, email.
     giftCardPay(input: GiftCardPay!): MutationResult!
+    # Re-capture voucher + receipt PDFs for a PAYED gift card owned by the
+    # signed-in buyer. Soft-fails per PDF; success when at least one is written.
+    # See docs/features/gift-card-purchase.md.
+    giftCardPdfsRegenerate(giftCardId: ID!): MutationResult!
     # Cook-only write namespace. Throws when the session user is not a cook.
     cook: CookMutation!
 }
@@ -4035,6 +4039,9 @@ type AdminMutation {
     whatsAppMessageReactionUpsert(whatsAppMessageId: ID!, emoji: String!): MutationResult!
     # Clears `adminUnreadCount` when opening the WhatsApp chat.
     whatsAppConversationUnreadCountReset(whatsAppConversationId: ID!): MutationResult!
+    # Re-capture voucher + receipt PDFs for any PAYED gift card. Soft-fails per
+    # PDF; success when at least one is written. See docs/features/admin-gift-cards.md.
+    giftCardPdfsRegenerate(giftCardId: ID!): MutationResult!
 }
 
 # Admin create for an existing customer. Same fields as customer create plus

@@ -8,15 +8,8 @@ import { environmentVariables } from '../env/environmentVariablesCreate';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationGiftCardPayArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { giftCardPreparedExpire } from '../jobs/handlers/giftCardPreparedExpire';
-import { createServerToken } from '../utils/serverToken';
+import { giftCardPdfFilenames, giftCardPdfsCreate } from '../utils/giftCardPdfsCreate';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
-import { fileUploadCreate } from './fileUploadCreate';
-
-const RECEIPT_FILENAME = 'peopleeat-gift-card-receipt.pdf';
-const VOUCHER_FILENAME = 'peopleeat-gift-card.pdf';
-const PDF_MEDIA_TYPE = 'application/pdf';
-
-type PdfCaptureResult = { fileUploadId: string; content: Buffer };
 
 async function cancelCleanupJob(serverRuntime: ServerRuntime, cleanupJobId: string | null | undefined): Promise<void> {
     if (!cleanupJobId) return;
@@ -24,65 +17,6 @@ async function cancelCleanupJob(serverRuntime: ServerRuntime, cleanupJobId: stri
         await serverRuntime.jobs.cancel(giftCardPreparedExpire.name, cleanupJobId);
     } catch (error) {
         serverRuntime.log.error(error, null);
-    }
-}
-
-async function giftCardReceiptPdfCreate(
-    giftCardId: string,
-    buyerUserId: string,
-    serverRuntime: ServerRuntime,
-): Promise<PdfCaptureResult | null> {
-    try {
-        const token = createServerToken(giftCardId);
-        const url = `${environmentVariables.webPageUrl}/server/gift-cards/${giftCardId}/receipt?token=${encodeURIComponent(token)}`;
-        const content = await serverRuntime.browser.capturePdf({
-            url,
-            waitForSelector: '[data-receipt-ready]',
-        });
-        const fileUpload = await fileUploadCreate(serverRuntime.db, {
-            userId: buyerUserId,
-            filename: RECEIPT_FILENAME,
-            mediaType: PDF_MEDIA_TYPE,
-            bytes: content,
-        });
-        await serverRuntime.db
-            .update(giftCards)
-            .set({ invoiceFileUploadId: fileUpload.fileUploadId })
-            .where(eq(giftCards.giftCardId, giftCardId));
-        return { fileUploadId: fileUpload.fileUploadId, content };
-    } catch (error) {
-        // Payment already succeeded — never fail the pay mutation for PDF issues.
-        serverRuntime.log.error(error, null);
-        return null;
-    }
-}
-
-async function giftCardVoucherPdfCreate(
-    giftCardId: string,
-    buyerUserId: string,
-    serverRuntime: ServerRuntime,
-): Promise<PdfCaptureResult | null> {
-    try {
-        const token = createServerToken(giftCardId);
-        const url = `${environmentVariables.webPageUrl}/server/gift-cards/${giftCardId}/voucher?token=${encodeURIComponent(token)}`;
-        const content = await serverRuntime.browser.capturePdf({
-            url,
-            waitForSelector: '[data-voucher-ready]',
-        });
-        const fileUpload = await fileUploadCreate(serverRuntime.db, {
-            userId: buyerUserId,
-            filename: VOUCHER_FILENAME,
-            mediaType: PDF_MEDIA_TYPE,
-            bytes: content,
-        });
-        await serverRuntime.db
-            .update(giftCards)
-            .set({ voucherFileUploadId: fileUpload.fileUploadId })
-            .where(eq(giftCards.giftCardId, giftCardId));
-        return { fileUploadId: fileUpload.fileUploadId, content };
-    } catch (error) {
-        serverRuntime.log.error(error, null);
-        return null;
     }
 }
 
@@ -159,26 +93,26 @@ export async function giftCardPay(
 
         await cancelCleanupJob(serverRuntime, row.cleanupJobId);
 
-        const [receipt, voucher] = await Promise.all([
-            giftCardReceiptPdfCreate(row.giftCardId, userId, serverRuntime),
-            giftCardVoucherPdfCreate(row.giftCardId, userId, serverRuntime),
-        ]);
+        const { receipt, voucher } = await giftCardPdfsCreate(row.giftCardId, userId, serverRuntime, {
+            invoiceFileUploadId: row.invoiceFileUploadId,
+            voucherFileUploadId: row.voucherFileUploadId,
+        });
 
         const locale = row.locale;
         const attachments = [
             voucher
                 ? {
-                      filename: VOUCHER_FILENAME,
+                      filename: giftCardPdfFilenames.voucher,
                       content: voucher.content,
-                      mediaType: PDF_MEDIA_TYPE,
+                      mediaType: giftCardPdfFilenames.mediaType,
                       fileUploadId: voucher.fileUploadId,
                   }
                 : null,
             receipt
                 ? {
-                      filename: RECEIPT_FILENAME,
+                      filename: giftCardPdfFilenames.receipt,
                       content: receipt.content,
-                      mediaType: PDF_MEDIA_TYPE,
+                      mediaType: giftCardPdfFilenames.mediaType,
                       fileUploadId: receipt.fileUploadId,
                   }
                 : null,

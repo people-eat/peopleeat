@@ -14,9 +14,9 @@ After configuration, checkout opens on a dedicated full-page Stripe flow. Succes
 voucher and a purchase receipt as PDFs, and emails the redeem code with both attachments. PDF generation is best-effort per file — email
 still sends if one capture fails.
 
-Buyers review codes, status, and PDF downloads under `/profile/gift-cards` (customer sidebar). Admins get an overview at `/admin/gift-cards`
-(purchases over time, all-time average purchase value, all-time top 3 occasions and sales months), a list at `/admin/gift-cards/list`, and
-detail with PDF links when present. See [admin-gift-cards.md](./admin-gift-cards.md).
+Buyers review codes, status, and PDF downloads under `/profile/gift-cards` (customer sidebar). Paid cards always offer **Generate /
+Regenerate PDFs** so missing or stale voucher/receipt files can be re-captured on demand (same headless path as pay). Admins can do the same
+from gift-card detail — see [admin-gift-cards.md](./admin-gift-cards.md).
 
 Voucher validity is three years from create or update.
 
@@ -56,7 +56,8 @@ the same finalize path as pay so abandoned tabs still mint codes. See [architect
 | Piece     | Location                                                                                                                                                                                                                                                |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Table     | `giftCards` in `src/server/db/schema.ts` (`invoiceFileUploadId`, `voucherFileUploadId` → `FileUploads`)                                                                                                                                                 |
-| Commands  | `giftCardCreate`, `giftCardPay` under `UserMutation`                                                                                                                                                                                                    |
+| Commands  | `giftCardCreate`, `giftCardPay`, `giftCardPdfsRegenerate` under `UserMutation`; admin `giftCardPdfsRegenerate`                                                                                                                                        |
+| PDF utils | `giftCardPdfsCreate` / `giftCardPdfsRegenerateForPayedCard` in `src/server/utils/giftCardPdfsCreate.ts`                                                                                                                                                 |
 | Queries   | `sessionGiftCardFindOne`, `sessionGiftCardPurchaseErrorFindOne`, `userGiftCardFindMany`, `adminGiftCardFindMany`, `adminGiftCardCounts`, `adminGiftCardCreationsFindMany`, `adminGiftCardOccasionStatsFindMany`, `adminGiftCardSalesMonthStatsFindMany` |
 | Mappers   | `toGqlGiftCard`, `toGqlUserGiftCard`, `toGqlAdminGiftCard`, `toGqlInvoiceAddress`, `toGqlFileUpload`                                                                                                                                                    |
 | Utils     | `redeemCodeCreate`, `verifyRecaptchaV3`, `adminGiftCardCriterionWhere`, `createServerToken`, `giftCardFileUploadFindOne`                                                                                                                                |

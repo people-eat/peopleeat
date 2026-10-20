@@ -1287,6 +1287,7 @@ export interface GqlSAdminMutation {
     featureToggleUpdate: GqlSMutationResult;
     featureToggleUserOverrideDelete: GqlSMutationResult;
     featureToggleUserOverrideUpsert: GqlSMutationResult;
+    giftCardPdfsRegenerate: GqlSMutationResult;
     legalImprintDraftCreate: GqlSMutationResult;
     legalImprintDraftUpdate: GqlSMutationResult;
     legalImprintPublish: GqlSMutationResult;
@@ -1557,6 +1558,10 @@ export type GqlSAdminMutationFeatureToggleUserOverrideUpsertArgs = {
     enabled: Scalars['Boolean']['input'];
     featureToggleKey: GqlSFeatureToggleKey;
     userId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationGiftCardPdfsRegenerateArgs = {
+    giftCardId: Scalars['ID']['input'];
 };
 
 export type GqlSAdminMutationLegalImprintDraftUpdateArgs = {
@@ -4574,6 +4579,7 @@ export interface GqlSUserMutation {
     emailAddressUpdateOtpVerify: GqlSMutationResult;
     giftCardCreate: GqlSMutationResult;
     giftCardPay: GqlSMutationResult;
+    giftCardPdfsRegenerate: GqlSMutationResult;
     supportRequestCreate: GqlSMutationResult;
     supportRequestMessageCreate: GqlSMutationResult;
     supportRequestUnreadNotificationCountReset: GqlSMutationResult;
@@ -4755,6 +4761,10 @@ export type GqlSUserMutationGiftCardCreateArgs = {
 
 export type GqlSUserMutationGiftCardPayArgs = {
     input: GqlSGiftCardPay;
+};
+
+export type GqlSUserMutationGiftCardPdfsRegenerateArgs = {
+    giftCardId: Scalars['ID']['input'];
 };
 
 export type GqlSUserMutationSupportRequestCreateArgs = {
@@ -7347,6 +7357,12 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationFeatureToggleUserOverrideUpsertArgs, 'enabled' | 'featureToggleKey' | 'userId'>
+    >;
+    giftCardPdfsRegenerate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationGiftCardPdfsRegenerateArgs, 'giftCardId'>
     >;
     legalImprintDraftCreate?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
     legalImprintDraftUpdate?: Resolver<
@@ -10321,6 +10337,12 @@ export type GqlSUserMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSUserMutationGiftCardPayArgs, 'input'>
+    >;
+    giftCardPdfsRegenerate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserMutationGiftCardPdfsRegenerateArgs, 'giftCardId'>
     >;
     supportRequestCreate?: Resolver<
         GqlSResolversTypes['MutationResult'],

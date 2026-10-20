@@ -1,9 +1,11 @@
 import { Link } from '@tanstack/react-router';
-import { CheckIcon, CopyIcon, FileTextIcon, GiftIcon } from 'lucide-react';
+import { CheckIcon, CopyIcon, FileTextIcon, GiftIcon, RefreshCwIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useMutation } from 'urql';
 
 import { formatCurrency, formatDate } from '../../shared';
+import { ProfileGiftCardPdfsRegenerateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
@@ -28,13 +30,16 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
     const locale = useLocale();
     const timeZone = useTimeZone();
     const [copied, setCopied] = useState(false);
+    const [regenerating, setRegenerating] = useState(false);
     const copiedResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [, regeneratePdfs] = useMutation(ProfileGiftCardPdfsRegenerateDocument);
     const paid = giftCard.paymentStatus === 'PAYED';
     const prepared = giftCard.paymentStatus === 'PREPARED';
     const amount = formatCurrency(giftCard.originalBalanceCents, { locale });
     const createdLabel = formatDate(giftCard.createdAt, { locale, timeZone, dateStyle: 'medium' });
     const expiresLabel = formatDate(giftCard.expiresAt, { locale, timeZone, dateStyle: 'long' });
     const message = giftCard.message.trim();
+    const missingPdf = paid && (!giftCard.voucherFileUpload || !giftCard.invoiceFileUpload);
     const statusLabel =
         {
             PAYED: { de: 'Bezahlt', en: 'Paid' },
@@ -58,6 +63,20 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
             copiedResetRef.current = setTimeout(() => setCopied(false), 1500);
         } catch {
             toast.error({ de: 'Kopieren fehlgeschlagen', en: 'Could not copy' }[locale]);
+        }
+    }
+
+    async function onRegeneratePdfs() {
+        setRegenerating(true);
+        try {
+            const result = await regeneratePdfs({ giftCardId: giftCard.giftCardId });
+            if (result.error || !result.data?.user.giftCardPdfsRegenerate.success) {
+                toast.error({ de: 'PDFs konnten nicht erzeugt werden.', en: 'Could not generate PDFs.' }[locale]);
+                return;
+            }
+            toast.success({ de: 'PDFs aktualisiert.', en: 'PDFs updated.' }[locale]);
+        } finally {
+            setRegenerating(false);
         }
     }
 
@@ -134,7 +153,7 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
                 </div>
             ) : null}
 
-            {paid && (giftCard.voucherFileUpload || giftCard.invoiceFileUpload) ? (
+            {paid ? (
                 <div className="mt-auto flex flex-wrap gap-2">
                     {giftCard.voucherFileUpload ? (
                         <Button asChild variant="outline" size="sm">
@@ -152,6 +171,25 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
                             </a>
                         </Button>
                     ) : null}
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={regenerating}
+                        onClick={() => void onRegeneratePdfs()}
+                    >
+                        <RefreshCwIcon aria-hidden className={regenerating ? 'animate-spin' : undefined} />
+                        {
+                            {
+                                de: regenerating
+                                    ? 'Wird erzeugt…'
+                                    : missingPdf
+                                      ? 'PDFs erzeugen'
+                                      : 'PDFs neu erzeugen',
+                                en: regenerating ? 'Generating…' : missingPdf ? 'Generate PDFs' : 'Regenerate PDFs',
+                            }[locale]
+                        }
+                    </Button>
                 </div>
             ) : null}
         </article>

@@ -20,7 +20,8 @@ pagination bar with per-page size (`page` / `pageSize`; default 25). Row → det
 
 ### Detail — `/admin/gift-cards/<giftCardId>`
 
-Purchase fields, PDF links when present, and related outbound emails. See [gift-card-purchase.md](./gift-card-purchase.md).
+Purchase fields, PDF links when present, related outbound emails, and **Regenerate PDFs** for paid cards (re-captures voucher + receipt;
+soft-fails per file). See [gift-card-purchase.md](./gift-card-purchase.md).
 
 Non-admins cannot access admin gift-card APIs; layout gates `/admin/*`.
 
@@ -46,9 +47,10 @@ Overview hub with paid purchase time series, all-time average purchase value, an
 ## Implementation
 
 - SDL: `AdminGiftCard`, criterion, `giftCardCreations`, `giftCardOccasionStats`, `giftCardSalesMonthStats`,
-  `giftCardPaidPurchaseAverageCents` in `schema.graphqls`
+  `giftCardPaidPurchaseAverageCents` in `schema.graphqls`; `AdminMutation.giftCardPdfsRegenerate`
 - Queries: find many, counts, creations, occasion stats, sales-month stats, paid-purchase average, find one
-- UI: overview, list with status tabs + data table, detail page
+- Commands: `adminGiftCardPdfsRegenerate`
+- UI: overview, list with status tabs + data table, detail page (+ regenerate PDFs)
 - Routes: `gift-cards.tsx`, `gift-cards_.list.tsx`, `gift-cards_.$giftCardId.tsx`
 - Nav: `adminGiftCards.ts` — [admin-shell.md](./admin-shell.md)
 

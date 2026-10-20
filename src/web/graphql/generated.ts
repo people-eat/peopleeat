@@ -1290,6 +1290,7 @@ export interface GqlCAdminMutation {
     featureToggleUpdate: GqlCMutationResult;
     featureToggleUserOverrideDelete: GqlCMutationResult;
     featureToggleUserOverrideUpsert: GqlCMutationResult;
+    giftCardPdfsRegenerate: GqlCMutationResult;
     legalImprintDraftCreate: GqlCMutationResult;
     legalImprintDraftUpdate: GqlCMutationResult;
     legalImprintPublish: GqlCMutationResult;
@@ -1560,6 +1561,10 @@ export type GqlCAdminMutationFeatureToggleUserOverrideUpsertArgs = {
     enabled: Scalars['Boolean']['input'];
     featureToggleKey: GqlCFeatureToggleKey;
     userId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationGiftCardPdfsRegenerateArgs = {
+    giftCardId: Scalars['ID']['input'];
 };
 
 export type GqlCAdminMutationLegalImprintDraftUpdateArgs = {
@@ -4577,6 +4582,7 @@ export interface GqlCUserMutation {
     emailAddressUpdateOtpVerify: GqlCMutationResult;
     giftCardCreate: GqlCMutationResult;
     giftCardPay: GqlCMutationResult;
+    giftCardPdfsRegenerate: GqlCMutationResult;
     supportRequestCreate: GqlCMutationResult;
     supportRequestMessageCreate: GqlCMutationResult;
     supportRequestUnreadNotificationCountReset: GqlCMutationResult;
@@ -4758,6 +4764,10 @@ export type GqlCUserMutationGiftCardCreateArgs = {
 
 export type GqlCUserMutationGiftCardPayArgs = {
     input: GqlCGiftCardPay;
+};
+
+export type GqlCUserMutationGiftCardPdfsRegenerateArgs = {
+    giftCardId: Scalars['ID']['input'];
 };
 
 export type GqlCUserMutationSupportRequestCreateArgs = {
@@ -11618,6 +11628,14 @@ export type GqlCAdminGiftCardPageQuery = {
             } | null;
         } | null;
     };
+};
+
+export type GqlCAdminGiftCardPdfsRegenerateMutationVariables = Exact<{
+    giftCardId: string;
+}>;
+
+export type GqlCAdminGiftCardPdfsRegenerateMutation = {
+    admin: { giftCardPdfsRegenerate: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCAdminGiftCardsOverviewPageQueryVariables = Exact<{
@@ -19429,6 +19447,14 @@ export type GqlCProfileCustomerSupportRequestsPageUpdatesSubscription = {
             supportRequest: { supportRequestId: string } | null;
         }> | null;
     };
+};
+
+export type GqlCProfileGiftCardPdfsRegenerateMutationVariables = Exact<{
+    giftCardId: string;
+}>;
+
+export type GqlCProfileGiftCardPdfsRegenerateMutation = {
+    user: { giftCardPdfsRegenerate: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCProfileGiftCardsPageUserFragment = {
@@ -50075,6 +50101,55 @@ export const AdminGiftCardPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminGiftCardPageQuery, GqlCAdminGiftCardPageQueryVariables>;
+export const AdminGiftCardPdfsRegenerateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminGiftCardPdfsRegenerate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'giftCardId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'giftCardPdfsRegenerate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'giftCardId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'giftCardId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminGiftCardPdfsRegenerateMutation, GqlCAdminGiftCardPdfsRegenerateMutationVariables>;
 export const AdminGiftCardsOverviewPageDocument = {
     kind: 'Document',
     definitions: [
@@ -76255,6 +76330,55 @@ export const ProfileCustomerSupportRequestsPageUpdatesDocument = {
     GqlCProfileCustomerSupportRequestsPageUpdatesSubscription,
     GqlCProfileCustomerSupportRequestsPageUpdatesSubscriptionVariables
 >;
+export const ProfileGiftCardPdfsRegenerateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileGiftCardPdfsRegenerate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'giftCardId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'giftCardPdfsRegenerate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'giftCardId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'giftCardId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileGiftCardPdfsRegenerateMutation, GqlCProfileGiftCardPdfsRegenerateMutationVariables>;
 export const ProfileGiftCardsPageDocument = {
     kind: 'Document',
     definitions: [

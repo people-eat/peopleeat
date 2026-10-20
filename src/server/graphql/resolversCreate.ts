@@ -59,6 +59,7 @@ import { adminCustomerTestimonialUpdate } from '../commands/adminCustomerTestimo
 import { adminFeatureToggleUpdate } from '../commands/adminFeatureToggleUpdate';
 import { adminFeatureToggleUserOverrideDelete } from '../commands/adminFeatureToggleUserOverrideDelete';
 import { adminFeatureToggleUserOverrideUpsert } from '../commands/adminFeatureToggleUserOverrideUpsert';
+import { adminGiftCardPdfsRegenerate } from '../commands/adminGiftCardPdfsRegenerate';
 import { adminLegalImprintDraftCreate } from '../commands/adminLegalImprintDraftCreate';
 import { adminLegalImprintDraftUpdate } from '../commands/adminLegalImprintDraftUpdate';
 import { adminLegalImprintPublish } from '../commands/adminLegalImprintPublish';
@@ -158,6 +159,7 @@ import { emailAddressUpdateOtpRequest } from '../commands/emailAddressUpdateOtpR
 import { emailAddressUpdateOtpVerify } from '../commands/emailAddressUpdateOtpVerify';
 import { giftCardCreate } from '../commands/giftCardCreate';
 import { giftCardPay } from '../commands/giftCardPay';
+import { giftCardPdfsRegenerate } from '../commands/giftCardPdfsRegenerate';
 import { sessionCookieSettingAcceptAll } from '../commands/sessionCookieSettingAcceptAll';
 import { sessionCookieSettingAcceptMandatory } from '../commands/sessionCookieSettingAcceptMandatory';
 import { sessionNewsletterSubscriptionCreate } from '../commands/sessionNewsletterSubscriptionCreate';
@@ -514,6 +516,7 @@ import type {
     GqlSAdminMutationFeatureToggleUpdateArgs,
     GqlSAdminMutationFeatureToggleUserOverrideDeleteArgs,
     GqlSAdminMutationFeatureToggleUserOverrideUpsertArgs,
+    GqlSAdminMutationGiftCardPdfsRegenerateArgs,
     GqlSAdminMutationLegalImprintDraftUpdateArgs,
     GqlSAdminMutationLegalImprintPublishArgs,
     GqlSAdminMutationLegalPrivacyPolicyDraftUpdateArgs,
@@ -722,6 +725,7 @@ import type {
     GqlSUserMutationEmailAddressUpdateOtpVerifyArgs,
     GqlSUserMutationGiftCardCreateArgs,
     GqlSUserMutationGiftCardPayArgs,
+    GqlSUserMutationGiftCardPdfsRegenerateArgs,
     GqlSUserMutationSupportRequestCreateArgs,
     GqlSUserMutationSupportRequestMessageCreateArgs,
     GqlSUserMutationSupportRequestUnreadNotificationCountResetArgs,
@@ -2261,6 +2265,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return adminWhatsAppConversationUnreadCountReset(parent, args, requestingSession, serverRuntime);
             },
+            giftCardPdfsRegenerate(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationGiftCardPdfsRegenerateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminGiftCardPdfsRegenerate(parent, args, requestingSession, serverRuntime);
+            },
         },
         UserMutation: {
             userUpdate(parent: GqlSUserMutation, args: GqlSUserMutationUserUpdateArgs, requestingSession: GqlSSession) {
@@ -2510,6 +2521,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             giftCardPay(parent: GqlSUserMutation, args: GqlSUserMutationGiftCardPayArgs, requestingSession: GqlSSession) {
                 return giftCardPay(parent, args, requestingSession, serverRuntime);
+            },
+            giftCardPdfsRegenerate(
+                parent: GqlSUserMutation,
+                args: GqlSUserMutationGiftCardPdfsRegenerateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return giftCardPdfsRegenerate(parent, args, requestingSession, serverRuntime);
             },
             cook(_: GqlSUserMutation, __: unknown, requestingSession: GqlSSession) {
                 return guardCookMutation(requestingSession, serverRuntime);
