@@ -2127,6 +2127,7 @@ export interface GqlSAdminUserInsights {
     averageAge?: Maybe<Scalars['Float']['output']>;
     birthDateSampleSize: Scalars['Int']['output'];
     locales: Array<GqlSAdminUserLocaleStat>;
+    medianAge?: Maybe<Scalars['Float']['output']>;
     preferredCommunication: Array<GqlSAdminUserPreferredCommunicationStat>;
     timeZones: Array<GqlSAdminUserTimeZoneStat>;
 }
@@ -7948,6 +7949,7 @@ export type GqlSAdminUserInsightsResolvers<
     averageAge?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
     birthDateSampleSize?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     locales?: Resolver<Array<GqlSResolversTypes['AdminUserLocaleStat']>, ParentType, ContextType>;
+    medianAge?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
     preferredCommunication?: Resolver<Array<GqlSResolversTypes['AdminUserPreferredCommunicationStat']>, ParentType, ContextType>;
     timeZones?: Resolver<Array<GqlSResolversTypes['AdminUserTimeZoneStat']>, ParentType, ContextType>;
 }>;

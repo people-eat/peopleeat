@@ -60,6 +60,8 @@ describe('adminUserInsightsFindOne', () => {
 
         // Assert
         expect(insights.birthDateSampleSize).toBeGreaterThanOrEqual(3);
+        expect(insights.medianAge).not.toBeNull();
+        expect(insights.medianAge!).toBeGreaterThan(0);
         expect(insights.averageAge).not.toBeNull();
         expect(insights.averageAge!).toBeGreaterThan(0);
 

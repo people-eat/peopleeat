@@ -83,9 +83,9 @@ function countShareLabel(count: number, total: number, locale: Locale): string {
     return { de: `${count} · ${percent} %`, en: `${count} · ${percent}%` }[locale];
 }
 
-function formatAverageAge(averageAge: number | null | undefined, locale: Locale): string {
-    if (averageAge == null) return { de: 'k. A.', en: 'n/a' }[locale];
-    return averageAge.toLocaleString(locale === 'de' ? 'de-DE' : 'en-US', {
+function formatAgeYears(age: number | null | undefined, locale: Locale): string {
+    if (age == null) return { de: 'k. A.', en: 'n/a' }[locale];
+    return age.toLocaleString(locale === 'de' ? 'de-DE' : 'en-US', {
         maximumFractionDigits: 1,
         minimumFractionDigits: 0,
     });
@@ -247,18 +247,6 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                             }[locale]
                         }
                     </p>
-                    <dl className="grid grid-cols-2 gap-3 sm:grid-cols-2">
-                        <AdminOverviewStatCard
-                            label={{ de: 'Durchschnittsalter', en: 'Average age' }[locale]}
-                            value={insights?.averageAge ?? 0}
-                            displayValue={formatAverageAge(insights?.averageAge, locale)}
-                        />
-                        <AdminOverviewStatCard
-                            label={{ de: 'Mit Geburtsdatum', en: 'With birth date' }[locale]}
-                            value={insights?.birthDateSampleSize ?? 0}
-                        />
-                    </dl>
-
                     <div className="grid gap-3 sm:grid-cols-3 sm:items-start">
                         <div className="grid gap-3">
                             <h3 className="text-base font-medium">
@@ -341,16 +329,33 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                 <section className="grid gap-3">
                     <h2 className="flex items-center gap-2 text-lg font-medium">
                         <CakeIcon className="size-5 text-muted-foreground" aria-hidden />
-                        {{ de: 'Kommende Geburtstage', en: 'Upcoming birthdays' }[locale]}
+                        {{ de: 'Alter und Geburtstage', en: 'Age and birthdays' }[locale]}
                     </h2>
                     <p className="text-sm text-muted-foreground">
                         {
                             {
-                                de: 'Nächste Geburtstage unter Konten mit Geburtsdatum (anonymisierte ausgeschlossen).',
-                                en: 'Next birthdays among accounts with a birth date (anonymized excluded).',
+                                de: 'Altersstatistik und nächste Geburtstage (nur Konten mit Geburtsdatum, anonymisierte ausgeschlossen).',
+                                en: 'Age stats and next birthdays (accounts with a birth date only, anonymized excluded).',
                             }[locale]
                         }
                     </p>
+                    <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        <AdminOverviewStatCard
+                            label={{ de: 'Medianalter', en: 'Median age' }[locale]}
+                            value={insights?.medianAge ?? 0}
+                            displayValue={formatAgeYears(insights?.medianAge, locale)}
+                        />
+                        <AdminOverviewStatCard
+                            label={{ de: 'Durchschnittsalter', en: 'Average age' }[locale]}
+                            value={insights?.averageAge ?? 0}
+                            displayValue={formatAgeYears(insights?.averageAge, locale)}
+                        />
+                        <AdminOverviewStatCard
+                            label={{ de: 'Mit Geburtsdatum', en: 'With birth date' }[locale]}
+                            value={insights?.birthDateSampleSize ?? 0}
+                        />
+                    </dl>
+                    <h3 className="text-base font-medium">{{ de: 'Kommende Geburtstage', en: 'Upcoming birthdays' }[locale]}</h3>
                     {upcomingBirthdays.length === 0 ? (
                         <p className="text-sm text-muted-foreground">
                             {{ de: 'Keine kommenden Geburtstage.', en: 'No upcoming birthdays.' }[locale]}

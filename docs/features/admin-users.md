@@ -12,9 +12,10 @@ Section order matches other admin overviews: section cards, membership distribut
 upcoming birthdays. Date range in URL drives zero-filled daily buckets for registrations only. Distribution cards deep-link into the list
 with `type` preselected (Total clears the filter).
 
-**Insights** (all non-anonymized accounts, independent of the chart range): average age among users with a birth date, sample size, and
-ranked breakdowns for preferred communication, locale, and top time zones (count + share of non-anonymized accounts). **Upcoming birthdays**
-lists the next occurrences (name links to the user detail; shows next date and age they turn).
+**Insights** (all non-anonymized accounts, independent of the chart range): ranked breakdowns for preferred communication, locale, and top
+time zones (count + share of non-anonymized accounts). **Age and birthdays** follows with median + average age and birth-date sample size,
+then upcoming birthdays (name links to the user detail; shows next date and age they turn). Median is the primary age signal; average stays
+for comparison when the distribution is skewed.
 
 ### List — `/admin/users/list`
 

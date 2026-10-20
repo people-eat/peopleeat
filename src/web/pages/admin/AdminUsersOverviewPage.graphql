@@ -21,6 +21,7 @@ query AdminUsersOverviewPage(
                 }
                 userInsights {
                     accountCount
+                    medianAge
                     averageAge
                     birthDateSampleSize
                     preferredCommunication {

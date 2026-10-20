@@ -2633,9 +2633,12 @@ type AdminUserTimeZoneStat {
 type AdminUserInsights {
     # Non-anonymized accounts (denominator for preference / locale / zone shares).
     accountCount: Int!
+    # Median completed years of age among users with a birth date. Null when none.
+    # Prefer this over `averageAge` when a few outliers would skew the mean.
+    medianAge: Float
     # Mean completed years of age among users with a birth date. Null when none.
     averageAge: Float
-    # Users contributing to `averageAge` (non-null birth date, not anonymized).
+    # Users contributing to age stats (non-null birth date, not anonymized).
     birthDateSampleSize: Int!
     preferredCommunication: [AdminUserPreferredCommunicationStat!]!
     locales: [AdminUserLocaleStat!]!

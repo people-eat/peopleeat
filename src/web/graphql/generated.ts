@@ -2130,6 +2130,7 @@ export interface GqlCAdminUserInsights {
     averageAge?: Maybe<Scalars['Float']['output']>;
     birthDateSampleSize: Scalars['Int']['output'];
     locales: Array<GqlCAdminUserLocaleStat>;
+    medianAge?: Maybe<Scalars['Float']['output']>;
     preferredCommunication: Array<GqlCAdminUserPreferredCommunicationStat>;
     timeZones: Array<GqlCAdminUserTimeZoneStat>;
 }
@@ -15045,6 +15046,7 @@ export type GqlCAdminUsersOverviewPageQuery = {
                 userRegistrations: Array<{ bucketStart: string; count: number }>;
                 userInsights: {
                     accountCount: number;
+                    medianAge: number | null;
                     averageAge: number | null;
                     birthDateSampleSize: number;
                     preferredCommunication: Array<{ preferredCommunication: Schema.GqlCUserPreferredCommunication | null; count: number }>;
@@ -62644,6 +62646,7 @@ export const AdminUsersOverviewPageDocument = {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'accountCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'medianAge' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'averageAge' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'birthDateSampleSize' } },
                                                                     {

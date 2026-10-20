@@ -6,6 +6,12 @@ import type { GqlSAdminUserInsights, GqlSLocale, GqlSSession, GqlSUserPreferredC
 
 const TIME_ZONE_STATS_TAKE = 12;
 
+function parseNullableNumber(value: string | number | null | undefined): number | null {
+    if (value == null || value === '') return null;
+    const parsed = typeof value === 'number' ? value : Number(value);
+    return Number.isNaN(parsed) ? null : parsed;
+}
+
 /** Demographic / preference aggregates for the admin users overview. */
 export async function adminUserInsightsFindOne(
     requestingSession: GqlSSession,
@@ -22,6 +28,9 @@ export async function adminUserInsightsFindOne(
                 .then((rows) => rows[0]),
             serverRuntime.db
                 .select({
+                    medianAge: sql<
+                        string | number | null
+                    >`PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY DATE_PART('year', AGE(CURRENT_DATE, ${users.birthDate})))`,
                     averageAge: sql<string | number | null>`AVG(DATE_PART('year', AGE(CURRENT_DATE, ${users.birthDate})))`,
                     birthDateSampleSize: count(),
                 })
@@ -58,17 +67,13 @@ export async function adminUserInsightsFindOne(
                 .limit(TIME_ZONE_STATS_TAKE),
         ]);
 
-        const averageAgeRaw = ageRow?.averageAge;
-        const averageAge =
-            averageAgeRaw == null || averageAgeRaw === ''
-                ? null
-                : typeof averageAgeRaw === 'number'
-                  ? averageAgeRaw
-                  : Number(averageAgeRaw);
+        const medianAge = parseNullableNumber(ageRow?.medianAge);
+        const averageAge = parseNullableNumber(ageRow?.averageAge);
 
         return {
             accountCount: accountRow?.value ?? 0,
-            averageAge: averageAge == null || Number.isNaN(averageAge) ? null : averageAge,
+            medianAge,
+            averageAge,
             birthDateSampleSize: ageRow?.birthDateSampleSize ?? 0,
             preferredCommunication: preferredCommunicationRows.map((row) => ({
                 preferredCommunication: (row.preferredCommunication ?? null) as GqlSUserPreferredCommunication | null,
