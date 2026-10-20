@@ -74,8 +74,9 @@ lifecycle emails; ops Slack threading.
 - Queries: user list/one, booking-request field, admin criterion list/counts/one (`sortField` / `unreadFirst`; optional
   `supportRequestIds`), messages with attachments; admin assistant list tool `adminSupportRequestsFindMany` → `admin.supportRequestList`
   cards
-- Customer UI: catalog slug `support-requests`; `SupportRequestCreateForm`, `SupportRequestSummaryCard`, `SupportRequestChat` (composer
-  attachments; presence header scrolls below `md`, static from `md` — same as offer chat); nav badges
+- Customer UI: catalog slug `support-requests`; `SupportRequestCreateForm`, `SupportRequestSummaryCard` (inbox-style row: avatar, title,
+  booking meta, single-line subject; status / inbox timestamp / unread on the right), `SupportRequestChat` (composer attachments; presence
+  header scrolls below `md`, static from `md` — same as offer chat); nav badges
 - Admin UI: overview + list live via admin updates; nav badge; pinned bottom pagination (`page` / `pageSize`); list search params `status` /
   `sort` / `unreadFirst`; detail viewport-locked like WhatsApp chat (`AdminPinnedFooterLayout` + `SupportRequestChat` presence avatar / user
   link)

@@ -18,6 +18,10 @@ fragment AdminSupportRequestsPageAdmin on Admin {
             userId
             firstName
             lastName
+            profilePicture {
+                fileUploadId
+                url
+            }
         }
     }
     supportRequestsCounts(criteria: [$countsCriterion])

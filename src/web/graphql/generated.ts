@@ -14404,7 +14404,7 @@ export type GqlCAdminSupportRequestsPageAdminFragment = {
         createdAt: string;
         resolvedAt: string | null;
         bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
-        customer: { userId: string; firstName: string; lastName: string };
+        customer: { userId: string; firstName: string; lastName: string; profilePicture: { fileUploadId: string; url: string } | null };
     }>;
 };
 
@@ -14428,7 +14428,12 @@ export type GqlCAdminSupportRequestsPageQuery = {
                     createdAt: string;
                     resolvedAt: string | null;
                     bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
-                    customer: { userId: string; firstName: string; lastName: string };
+                    customer: {
+                        userId: string;
+                        firstName: string;
+                        lastName: string;
+                        profilePicture: { fileUploadId: string; url: string } | null;
+                    };
                 }>;
             } | null;
         } | null;
@@ -14452,7 +14457,7 @@ export type GqlCAdminSupportRequestsPageUpdatesSubscription = {
             createdAt: string;
             resolvedAt: string | null;
             bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
-            customer: { userId: string; firstName: string; lastName: string };
+            customer: { userId: string; firstName: string; lastName: string; profilePicture: { fileUploadId: string; url: string } | null };
         }>;
     };
 };
@@ -26884,6 +26889,17 @@ export const AdminSupportRequestsPageAdminFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'profilePicture' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -59940,6 +59956,17 @@ export const AdminSupportRequestsPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'profilePicture' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -60052,6 +60079,17 @@ export const AdminSupportRequestsPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'profilePicture' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },

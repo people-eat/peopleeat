@@ -304,13 +304,14 @@ export function AdminSupportRequestsPage({
                         {{ de: 'Keine Support-Anfragen gefunden.', en: 'No support requests found.' }[locale]}
                     </p>
                 ) : (
-                    <ul className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    <ul className="grid auto-rows-fr grid-cols-1 gap-2 @2xl:grid-cols-2 @5xl:grid-cols-3">
                         {supportRequests.map((request) => (
-                            <li key={request.supportRequestId} className="min-w-0">
+                            <li key={request.supportRequestId} className="min-h-0 min-w-0">
                                 <SupportRequestSummaryCard
                                     request={request}
                                     unreadCount={request.adminUnreadNotificationCount}
                                     customerName={`${request.customer.firstName} ${request.customer.lastName}`.trim()}
+                                    customerProfilePictureUrl={request.customer.profilePicture?.url ?? null}
                                     to="/{-$locale}/admin/support-requests/$supportRequestId"
                                     params={{ supportRequestId: request.supportRequestId }}
                                 />
