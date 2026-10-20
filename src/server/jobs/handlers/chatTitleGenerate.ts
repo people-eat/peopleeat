@@ -100,7 +100,7 @@ async function generateChatTitle(chatId: string, serverRuntime: ServerRuntime): 
     const result = await generateText({
         model: serverRuntime.ai.chatTitlerModel(),
         output: Output.object({ schema: TITLE_SCHEMA }),
-        system: SYSTEM_PROMPT,
+        instructions: SYSTEM_PROMPT,
         prompt: userPrompt,
         telemetry: aiTelemetry('CHAT_TITLE'),
     });

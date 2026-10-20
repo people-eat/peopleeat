@@ -76,7 +76,7 @@ Gib als Ergebnis title und description zurück.
 
         const result = await generateText({
             model: serverRuntime.ai.cookMenuTitleDescriptionModel(),
-            system,
+            instructions: system,
             prompt,
             output: Output.object({ schema: TITLE_DESCRIPTION_SCHEMA }),
             telemetry: aiTelemetry('COOK_MENU_TITLE_DESCRIPTION'),

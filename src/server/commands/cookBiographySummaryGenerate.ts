@@ -129,7 +129,7 @@ export async function cookBiographySummaryGenerate({
 
         const result = await generateText({
             model: serverRuntime.ai.cookBiographySummaryModel(),
-            system: BIOGRAPHY_SUMMARY_SYSTEM,
+            instructions: BIOGRAPHY_SUMMARY_SYSTEM,
             prompt,
             output: Output.object({ schema: BIOGRAPHY_SUMMARY_SCHEMA }),
             telemetry: aiTelemetry('COOK_BIOGRAPHY_SUMMARY'),

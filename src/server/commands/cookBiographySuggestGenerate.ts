@@ -59,7 +59,7 @@ Gib als Ergebnis biography zurück.
 
     const result = await generateText({
         model: serverRuntime.ai.cookBiographySuggestModel(),
-        system,
+        instructions: system,
         prompt,
         output: Output.object({ schema: BIOGRAPHY_SUGGEST_SCHEMA }),
         telemetry: aiTelemetry('COOK_BIOGRAPHY_SUGGESTION'),

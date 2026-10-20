@@ -128,7 +128,7 @@ export const bookingRequestOfferCallRecordingFinalize: QueuedJobDefinition<Booki
 
                 const result = await generateText({
                     model: serverRuntime.ai.bookingRequestOfferCallRecordingTranscriptModel(),
-                    system,
+                    instructions: system,
                     messages: [
                         {
                             role: 'user',

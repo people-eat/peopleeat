@@ -78,7 +78,7 @@ export async function cookBookingRequestMenuEvaluationGenerate(
 
     const result = await generateText({
         model: serverRuntime.ai.cookMenuEvaluationModel(),
-        system: SYSTEM_PROMPT,
+        instructions: SYSTEM_PROMPT,
         prompt,
         output: Output.object({ schema: EVALUATION_SCHEMA }),
         telemetry: aiTelemetry('BOOKING_REQUEST_COOK_MENU_EVALUATION'),

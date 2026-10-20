@@ -86,7 +86,7 @@ export async function cookMenuSuggestionFromInventoryGenerate(
 
     const result = await generateText({
         model: serverRuntime.ai.cookMenuSuggestionFromInventoryModel(),
-        system: SYSTEM_PROMPT,
+        instructions: SYSTEM_PROMPT,
         prompt,
         output: Output.object({ schema: MENU_SUGGESTION_SCHEMA }),
         telemetry: aiTelemetry('COOK_MENU_SUGGESTION_FROM_INVENTORY'),
