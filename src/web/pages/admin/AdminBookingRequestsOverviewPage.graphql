@@ -1,5 +1,5 @@
-# Admin booking-requests overview hub — publication distribution, creation time
-# series, all-time rankings, offer economics, and cook offer/conversion leaders.
+# Admin booking-requests overview hub — publication distribution, received
+# requests time series, all-time rankings, offer economics, and cook leaders.
 # See docs/features/admin-booking-requests.md.
 # `bookingRequestsCounts` order matches `ADMIN_BOOKING_REQUEST_COUNT_CRITERIA` in
 # AdminBookingRequestsOverviewPage.tsx.
@@ -8,9 +8,9 @@ query AdminBookingRequestsOverviewPage(
     $criteria: [AdminBookingRequestCriterion!]!
     $range: DateTimeRange!
     $granularity: AdminTimeBucketGranularity! = day
-    $occasionStatsTake: Int! = 3
-    $creationMonthStatsTake: Int! = 3
-    $cookOfferStatsTake: Int! = 3
+    $occasionStatsTake: Int! = 5
+    $creationMonthStatsTake: Int! = 5
+    $cookOfferStatsTake: Int! = 5
 ) {
     currentSession {
         sessionId
@@ -34,11 +34,15 @@ query AdminBookingRequestsOverviewPage(
                     totalParticipants
                 }
                 bookingRequestAverageParticipants
-                bookingRequestOfferEconomics {
+                bookingRequestOfferEconomics(range: $range) {
                     averageOffersPerRequest
                     averageMenuPriceCents
                     averagePaidCustomerTotalCents
                     averagePaidPlatformRevenueCents
+                    totalPaidCustomerTotalCents
+                    totalPaidPlatformRevenueCents
+                    rangeTotalPaidCustomerTotalCents
+                    rangeTotalPaidPlatformRevenueCents
                 }
                 cooksByOffers: bookingRequestCookOfferStats(take: $cookOfferStatsTake, sortBy: offerCount) {
                     cookId

@@ -16,3 +16,8 @@ export function stripeDashboardSetupIntentUrl(setupIntentId: string, testMode: b
     const base = testMode ? 'https://dashboard.stripe.com/test/setup_intents' : 'https://dashboard.stripe.com/setup_intents';
     return `${base}/${setupIntentId}`;
 }
+
+export function stripeDashboardConnectAccountUrl(stripeAccountId: string, testMode: boolean): string {
+    const base = testMode ? 'https://dashboard.stripe.com/test/connect/accounts' : 'https://dashboard.stripe.com/connect/accounts';
+    return `${base}/${stripeAccountId}`;
+}

@@ -86,7 +86,7 @@ export function BookingRequestOfferChat({
     onVisibilityChangeMessage?: (chatMessageId: string, hiddenByAdmin: boolean) => Promise<boolean>;
     /** Admin-only: permanently delete an `ADMIN_MESSAGE_SIMPLE`. */
     onDeleteMessage?: (chatMessageId: string) => Promise<boolean>;
-    /** When set and `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` is on, peer bubbles get a reaction picker. */
+    /** When set and `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` is on (incl. admin shell), peer bubbles get a reaction picker. */
     onReactMessage?: (chatMessageId: string, emoji: string) => Promise<boolean>;
     peers: ReadonlyArray<BookingRequestOfferChatPeer>;
     viewerRole: BookingRequestOfferChatViewerRole;
@@ -99,7 +99,7 @@ export function BookingRequestOfferChat({
     composerHost?: Element | null;
 }) {
     const locale = useLocale();
-    const reactionsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_CHAT_REACTIONS');
+    const reactionsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_CHAT_REACTIONS', { gateInAdminShell: true });
     const [draft, setDraft] = useState('');
     const [busy, setBusy] = useState(false);
     const { attachments, onAttachmentsAdd, onAttachmentRemove, clearAttachments, restoreAttachments, uploadedFileUploadIds, hasUploaded } =

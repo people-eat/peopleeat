@@ -12,6 +12,7 @@ fragment AdminUserCook on AdminCook {
     canCreateOffers
     stripeStatus
     stripeAccountId
+    stripeAccountUrl
     stripeAccountActive
     stripeAccountActiveWasReset
     exactTravelOriginAddress {
@@ -253,27 +254,6 @@ query AdminUserPage(
     }
 }
 
-query AdminUserLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = true) {
-    currentSession {
-        locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
-            displayText
-            latitude
-            longitude
-            structuredAddress {
-                displayText
-                latitude
-                longitude
-                addressLine1
-                addressLine2
-                city
-                postCode
-                state
-                country
-            }
-        }
-    }
-}
-
 mutation AdminCookApprovalUpdate($cookId: ID!, $isApprovedByAdmin: Boolean!) {
     admin {
         cookApprovalUpdate(cookId: $cookId, isApprovedByAdmin: $isApprovedByAdmin) {
@@ -351,18 +331,6 @@ mutation AdminUserCookUpdate($cookId: ID!, $input: CookUpdate!) {
             success
             referenceId
         }
-    }
-}
-
-mutation AdminUserCookBiographySuggest($cookId: ID!, $currentBiography: String!) {
-    admin {
-        cookBiographySuggest(cookId: $cookId, currentBiography: $currentBiography)
-    }
-}
-
-mutation AdminUserCookBiographySummarySuggest($cookId: ID!, $biography: String!) {
-    admin {
-        cookBiographySummarySuggest(cookId: $cookId, biography: $biography)
     }
 }
 

@@ -2067,7 +2067,9 @@ type AdminBookingRequestCreationMonthStat {
     totalParticipants: Int!
 }
 
-# All-time offer economics for the booking-requests overview.
+# Offer economics for the booking-requests overview. Averages and all-time totals
+# ignore the chart picker; range totals use `range` when provided (payment time:
+# `paymentDateTime`, else `createdAt`).
 type AdminBookingRequestOfferEconomics {
     # Mean offers per request (requests with zero offers included). 0 when no requests.
     averageOffersPerRequest: Float!
@@ -2078,6 +2080,14 @@ type AdminBookingRequestOfferEconomics {
     averagePaidCustomerTotalCents: Int!
     # Mean platform fee (`platformFeeCentsCook` + `platformFeeCentsCustomer`) on paid offers.
     averagePaidPlatformRevenueCents: Int!
+    # Sum of customer totals on paid offers (all-time).
+    totalPaidCustomerTotalCents: Int!
+    # Sum of platform fees on paid offers (all-time). Platform profit / win.
+    totalPaidPlatformRevenueCents: Int!
+    # Sum of customer totals on paid offers whose payment falls in `range`. 0 when range omitted.
+    rangeTotalPaidCustomerTotalCents: Int!
+    # Sum of platform fees on paid offers whose payment falls in `range`. 0 when range omitted.
+    rangeTotalPaidPlatformRevenueCents: Int!
 }
 
 # Per-cook offer volume / dual-accept conversions (overview leaderboard).
@@ -2599,6 +2609,51 @@ input ClientObservabilityReportInput {
     routeId: String
 }
 
+# One preferred-communication bucket for `Admin.userInsights`.
+# `preferredCommunication` is null when the user has not set a preference.
+type AdminUserPreferredCommunicationStat {
+    preferredCommunication: UserPreferredCommunication
+    count: Int!
+}
+
+# One locale bucket for `Admin.userInsights`.
+type AdminUserLocaleStat {
+    locale: Locale!
+    count: Int!
+}
+
+# One IANA time-zone bucket for `Admin.userInsights`.
+type AdminUserTimeZoneStat {
+    timeZone: TimeZone!
+    count: Int!
+}
+
+# Demographic / preference aggregates for the users overview. Excludes
+# anonymized accounts. See docs/features/admin-users.md.
+type AdminUserInsights {
+    # Non-anonymized accounts (denominator for preference / locale / zone shares).
+    accountCount: Int!
+    # Mean completed years of age among users with a birth date. Null when none.
+    averageAge: Float
+    # Users contributing to `averageAge` (non-null birth date, not anonymized).
+    birthDateSampleSize: Int!
+    preferredCommunication: [AdminUserPreferredCommunicationStat!]!
+    locales: [AdminUserLocaleStat!]!
+    # Sorted by count descending. Cap is applied in the query (top zones).
+    timeZones: [AdminUserTimeZoneStat!]!
+}
+
+# Upcoming birthday row for the users overview list.
+type AdminUserUpcomingBirthday {
+    userId: ID!
+    firstName: String!
+    lastName: String!
+    # Original birth date (year included).
+    birthDate: Date!
+    # Next calendar occurrence of the birthday (today or later).
+    nextBirthday: Date!
+}
+
 # Admin-only user row for operator lists and detail. Privileged fields stay on
 # this access-path type rather than widening the public `User` surface.
 type AdminUser {
@@ -2646,6 +2701,8 @@ type AdminCook {
     canCreateOffers: Boolean!
     stripeStatus: CookStripeStatus!
     stripeAccountId: String
+    # Stripe Dashboard deep link for the Connect account (test/live from secret key).
+    stripeAccountUrl: String
     stripeAccountActive: Boolean!
     stripeAccountActiveWasReset: Boolean!
     exactTravelOriginAddress: CookTravelOriginAddress
@@ -3184,6 +3241,12 @@ type Admin {
     # across `range` at the given `granularity` (default `day`). Span capped at
     # 366 days.
     userRegistrations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
+    # Demographic / preference aggregates for the users overview (age, locale,
+    # time zone, preferred communication). Independent of the chart range.
+    userInsights: AdminUserInsights!
+    # Next birthdays among non-anonymized users with a birth date. Sorted by
+    # soonest `nextBirthday`. Default / max via `findManyTake`.
+    upcomingBirthdays(take: Int! = 12): [AdminUserUpcomingBirthday!]!
     # Single-user detail. Null when the id is unknown.
     user(userId: ID!): AdminUser
     # Cook meals (draft + published + soft-deleted). See `AdminCookMealCriterion`.
@@ -3328,9 +3391,9 @@ type Admin {
     bookingRequestCreationMonthStats(range: DateTimeRange, take: Int! = 3): [AdminBookingRequestCreationMonthStat!]!
     # Average participant count per request (all-time). 0 when none.
     bookingRequestAverageParticipants: Int!
-    # Offer funnel economics (all-time): offers per request, menu price, paid
-    # customer totals, and platform fee revenue on paid offers.
-    bookingRequestOfferEconomics: AdminBookingRequestOfferEconomics!
+    # Offer funnel economics: all-time averages and paid totals, plus paid
+    # revenue / platform-profit totals for optional `range` (payment time).
+    bookingRequestOfferEconomics(range: DateTimeRange): AdminBookingRequestOfferEconomics!
     # Top cooks by offer volume or dual-accept conversions (all-time).
     bookingRequestCookOfferStats(
         take: Int! = 3

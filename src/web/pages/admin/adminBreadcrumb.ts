@@ -17,6 +17,7 @@ export type AdminBreadcrumbCrumb = {
     to?:
         | '/{-$locale}/admin'
         | '/{-$locale}/admin/users'
+        | '/{-$locale}/admin/users/$userId'
         | '/{-$locale}/admin/sessions'
         | '/{-$locale}/admin/logs'
         | '/{-$locale}/admin/ai-generations'
@@ -41,7 +42,8 @@ export type AdminBreadcrumbCrumb = {
         | '/{-$locale}/admin/web-pages'
         | '/{-$locale}/admin/legal'
         | '/{-$locale}/admin/legal/$kind';
-    params?: { kind: string } | { bookingRequestId: string } | { mealId: string } | { menuId: string };
+    params?: { kind: string } | { bookingRequestId: string } | { mealId: string } | { menuId: string } | { userId: string };
+    search?: { tab?: string };
 };
 
 export function adminPathWithoutLocale(pathname: string, locale: Locale): string {

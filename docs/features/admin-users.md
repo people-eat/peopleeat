@@ -8,8 +8,13 @@ Admins manage accounts under `/admin/users` (overview + list + create + detail),
 
 ### Overview — `/admin/users`
 
-Membership distribution (total, customer, cook, admin) and registration bar chart. Date range in URL drives zero-filled daily buckets.
-Section cards link to list and create. Distribution cards deep-link into the list with `type` preselected (Total clears the filter).
+Section order matches other admin overviews: section cards, membership distribution, registration bar chart, then demographic insights and
+upcoming birthdays. Date range in URL drives zero-filled daily buckets for registrations only. Distribution cards deep-link into the list
+with `type` preselected (Total clears the filter).
+
+**Insights** (all non-anonymized accounts, independent of the chart range): average age among users with a birth date, sample size, and
+ranked breakdowns for preferred communication, locale, and top time zones (count + share of non-anonymized accounts). **Upcoming birthdays**
+lists the next occurrences (name links to the user detail; shows next date and age they turn).
 
 ### List — `/admin/users/list`
 
@@ -27,32 +32,35 @@ shows the legal gate — [admin-legal.md](./admin-legal.md).
 
 Tabs via URL: **general**, **notes** (full-width editable operator note; **Save** in pinned footer), **sessions** (list with Details +
 revoke; terminate-all in pinned footer), **emails**, **assistant-chats**, **booking-requests** (customer-sent requests as
-`AdminBookingRequestListCard` grid; create in pinned footer → `/admin/booking-requests/create?userId=`), **cook-profile** (approve/revoke,
-visibility, travel, biography/tags — [cook-profile.md](./cook-profile.md)), **meals** / **menus** (browse + create draft), **offers**
-(cook-created offers as `AdminBookingRequestOfferCard` grid), **whatsapp** (conversations for that user), **session-events** (first-party
-analytics timeline across the user’s sessions; pinned bottom pagination with `page` / `pageSize` in the URL, default 25). Lazy-loaded tab
-data where noted in implementation. Tab actions use `AdminPinnedFooterLayout` so more tabs can grow footers over time.
+`AdminBookingRequestListCard` grid; create in pinned footer → `/admin/booking-requests/create?userId=`), **cook-profile** (read-only detail
+with approve/revoke and visibility actions; **Edit** in pinned footer → `/admin/users/<userId>/cook-profile/edit` —
+[cook-profile.md](./cook-profile.md)), **meals** / **menus** (browse + create draft), **offers** (cook-created offers as
+`AdminBookingRequestOfferCard` grid), **whatsapp** (conversations for that user), **session-events** (first-party analytics timeline across
+the user’s sessions; pinned bottom pagination with `page` / `pageSize` in the URL, default 25). Tab order: customers get **general**, then
+**booking-requests**, then shared ops tabs; cooks get **general**, **cook-profile**, **offers**, **meals**, **menus**, then shared ops tabs,
+with **booking-requests** last. Lazy-loaded tab data where noted in implementation. Tab actions use `AdminPinnedFooterLayout` so more tabs
+can grow footers over time.
 
-**General** defaults to a read-only detail on a full-width two-column desktop layout: sticky identity aside (avatar, name, status, types,
-registered, user id with copy) plus a fluid main column that fills the remaining width (no `max-w-*`). View mode lays contact fields in a
-responsive grid (2 cols from `sm`, 3 from `xl`); email and phone offer copy plus `mailto:` / `tel:` action links when set; danger zone sits
-full-width under a divider. **Edit** / **Cancel** / **Save** and a quieter **Sign in as** live in the pinned footer. **Edit** switches the
-main column into a multi-column form for first/last name, email (direct, no OTP), phone, birth date, preferred communication, time zone, and
-profile picture (`AdminMutation.userUpdate` / `userEmailAddressUpdate`); **Cancel** or successful **Save** returns to view. Account status
-(`ACTIVE` / `BANNED` / `ANONYMIZED`) with **Ban** / **Unban** (`AdminMutation.userStatusUpdate`, `ACTIVE` ↔ `BANNED` only) stays on the
-identity aside in both modes. Ban keeps sessions bound so the private profile restriction banner can appear live; open cook offers are
-auto-declined; public cook listing already excludes non-`ACTIVE`. **Sign in as** rebinds the admin cookie session to that ACTIVE account
-(`AdminMutation.sessionUserBind`), sets the locale cookie to that user’s `Users.locale`, and navigates to `/profile` (or `/en/profile`) in
-that locale so the locale-mismatch gate does not open on the way in (exit = re-auth as admin). Danger-zone **Anonymize**
-(`AdminMutation.userAnonymize`) is view-only (hidden while editing). Already-anonymized users cannot be edited, banned, or impersonated.
-Same scrub as self-serve delete — see [account.md](./account.md).
+**General** uses the same single-column flow as cook-profile (container queries for sidebar width): status/type badges, avatar + name, then
+a detail-field grid (2 cols from `@2xl`, 3 from `@6xl`). Email and phone offer copy plus `mailto:` / `tel:` when set; user id has copy. At
+the bottom (view-only; hidden while editing): **Ban** / **Unban** (`AdminMutation.userStatusUpdate`, `ACTIVE` ↔ `BANNED` only) and
+**Anonymize** side by side from `@2xl`. **Edit** / **Cancel** / **Save** and a quieter **Sign in as** live in the pinned footer. **Edit**
+switches into a form for first/last name, email (direct, no OTP), phone, birth date, preferred communication, time zone, and profile picture
+(`AdminMutation.userUpdate` / `userEmailAddressUpdate`); **Cancel** or successful **Save** returns to view. Ban keeps sessions bound so the
+private profile restriction banner can appear live; open cook offers are auto-declined; public cook listing already excludes non-`ACTIVE`.
+**Sign in as** rebinds the admin cookie session to that ACTIVE account (`AdminMutation.sessionUserBind`), sets the locale cookie to that
+user’s `Users.locale`, and navigates to `/profile` (or `/en/profile`) in that locale so the locale-mismatch gate does not open on the way in
+(exit = re-auth as admin). Already-anonymized users cannot be edited, banned, or impersonated. Same scrub as self-serve delete — see
+[account.md](./account.md).
 
-**Cook profile** toggles admin approval and public visibility (both behind confirm dialogs), and patches biography, biography summary,
-cuisine/philosophy catalogs, and travel fields via `AdminMutation.cookUpdate` (legal acceptance asserted on the admin, not the cook). Admin
-can edit biography and summary manually. **Write with AI / Improve with AI** opens a side-by-side review; **Accept** fills the biography
-field (save still required; no auto summary job). The suggest mutation is gated by `COOK_BIOGRAPHY_AI_WRITE` (admin UI stays visible when
-the toggle provider is absent; server rejects when off). **Generate summary** fills the summary field via AI without persisting until Save
-and is **not** feature-toggled. Unlike cook self-serve saves, admin biography saves do **not** auto-regenerate the summary.
+**Cook profile** defaults to a read-only detail: approval/visibility badges, then travel, Stripe, call-scheduling, tags, biography, and
+summary fields; confirm-gated approve/revoke and public-visibility actions sit at the bottom. **Edit** in the pinned footer opens
+`/admin/users/<userId>/cook-profile/edit`, where admins patch biography, biography summary, cuisine/philosophy catalogs, and travel fields
+via `AdminMutation.cookUpdate` (legal acceptance asserted on the admin, not the cook). Admin can edit biography and summary manually.
+**Write with AI / Improve with AI** opens a side-by-side review; **Accept** fills the biography field (save still required; no auto summary
+job). The suggest mutation is gated by `COOK_BIOGRAPHY_AI_WRITE` (admin UI stays visible for ops; server rejects when off). **Generate
+summary** fills the summary field via AI without persisting until Save and is **not** feature-toggled. Unlike cook self-serve saves, admin
+biography saves do **not** auto-regenerate the summary. **Cancel** / successful **Save** return to the cook-profile tab.
 
 Non-admins never reach admin routes; the layout gates on admin membership.
 
@@ -76,25 +84,28 @@ detail with URL tabs; manual create with optional admin and cook payloads.
 
 ## Implementation
 
-- SDL: `AdminUser`, types, criterion, registrations, create, admin note update in `schema.graphqls`
-- Queries: `adminUserFindMany`, `adminUserCounts`, `adminUserRegistrationsFindMany`, `adminUserFindOne`; criterion helpers
+- SDL: `AdminUser`, types, criterion, registrations, `AdminUserInsights` / upcoming birthday types, create, admin note update in
+  `schema.graphqls`
+- Queries: `adminUserFindMany`, `adminUserCounts`, `adminUserRegistrationsFindMany`, `adminUserInsightsFindOne`,
+  `adminUserUpcomingBirthdaysFindMany`, `adminUserFindOne`; criterion helpers
 - Commands: `adminUserCreate` (transaction when membership rows); `adminUserAdminNoteUpdate`; `adminUserUpdate`;
   `adminUserEmailAddressUpdate`; `adminUserStatusUpdate`; `adminSessionUserBind`; `adminUserAnonymize`; `adminSessionTerminateMany`;
   `adminCookUpdate`; `adminCookBiographySuggest`; `adminCookBiographySummarySuggest`; `adminCookMealCreate`; `adminCookMenuCreate`
 - Mapper: `toGqlAdminUser` (`profilePicture` resolved like public `User`)
 - Resolvers under `Admin` / `AdminMutation`
-- UI: overview with stat cards + chart; list with tabs, data table, and pinned `AdminListPaginationBar`; create form; detail with `@include`
-  per tab; session-events tab uses `Admin.sessionEvents` + `Admin.sessionEventsCounts` with pinned `AdminListPaginationBar`;
-  `AdminUserGeneralSection`, `AdminUserCookProfileSection`; booking-requests / offers tabs reuse `AdminBookingRequestListCard` /
-  `AdminBookingRequestOfferCard` (same field selections as the booking-request list / detail offer cards)
-- Routes: `users.tsx`, `users_.list.tsx`, `users_.create.tsx`, `users_.$userId.tsx`
+- UI: overview with stat cards, insights breakdowns, upcoming birthdays, + chart; list with tabs, data table, and pinned
+  `AdminListPaginationBar`; create form; detail with `@include` per tab; session-events tab uses `Admin.sessionEvents` +
+  `Admin.sessionEventsCounts` with pinned `AdminListPaginationBar`; `AdminUserGeneralSection`, `AdminUserCookProfileSection`,
+  `AdminUserCookProfileEditPage`; booking-requests / offers tabs reuse `AdminBookingRequestListCard` / `AdminBookingRequestOfferCard` (same
+  field selections as the booking-request list / detail offer cards)
+- Routes: `users.tsx`, `users_.list.tsx`, `users_.create.tsx`, `users_.$userId.tsx`, `users_.$userId_.cook-profile_.edit.tsx`
 - Nav: `adminUsers.ts`, sidebar subs — [admin-shell.md](./admin-shell.md)
 
 GraphQL: `users(criterion)` / `userCounts(criteria)` — search, types filter, optional `status`, optional `userIds` (`IN`; omit or empty = no
-id filter — admin assistant drill-in), sort, paginate; `userRegistrations(range)`; `user(id)`; `userCreate`, `userUpdate`,
-`userEmailAddressUpdate`, `userAdminNoteUpdate`, `userStatusUpdate`, `sessionUserBind`, `userAnonymize`, `terminateSessions`, `cookUpdate`,
-`cookBiographySuggest`, `cookBiographySummarySuggest`, `cookMealCreate`, `cookMenuCreate`. Type labels: admin (admins row), cook (cooks
-row), customer (no cook row); combinations allowed. `AdminUser.status` exposes `UserStatus`.
+id filter — admin assistant drill-in), sort, paginate; `userRegistrations(range)`; `userInsights`; `upcomingBirthdays(take)`; `user(id)`;
+`userCreate`, `userUpdate`, `userEmailAddressUpdate`, `userAdminNoteUpdate`, `userStatusUpdate`, `sessionUserBind`, `userAnonymize`,
+`terminateSessions`, `cookUpdate`, `cookBiographySuggest`, `cookBiographySummarySuggest`, `cookMealCreate`, `cookMenuCreate`. Type labels:
+admin (admins row), cook (cooks row), customer (no cook row); combinations allowed. `AdminUser.status` exposes `UserStatus`.
 
 Gate: [authorization-admin.md](../architecture/authorization-admin.md).
 

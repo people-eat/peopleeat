@@ -1,11 +1,11 @@
-import { useForm, useSelector } from '@tanstack/react-form';
 import { useRouter } from '@tanstack/react-router';
-import { SparklesIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { CheckIcon, CopyIcon, ExternalLinkIcon } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { toast } from 'sonner';
-import { useMutation, useQuery } from 'urql';
+import { useMutation } from 'urql';
 
-import { COOKING_PHILOSOPHIES, CUISINE_STYLES } from '../../../shared/cookProfile';
+import { formatCurrency } from '../../../shared';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -16,127 +16,111 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '../../components/base/alert-dialog';
+import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
-import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
-import { Input } from '../../components/base/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
-import { Separator } from '../../components/base/separator';
-import { Spinner } from '../../components/base/spinner';
 import { Switch } from '../../components/base/switch';
-import { Textarea } from '../../components/base/textarea';
-import { BiographySuggestionReview } from '../../components/BiographySuggestionReview';
-import type { GqlCAdminUserPageQuery, GqlCLocationSuggestion } from '../../graphql/generated';
-import {
-    AdminCookApprovalUpdateDocument,
-    AdminUserCookBiographySuggestDocument,
-    AdminUserCookBiographySummarySuggestDocument,
-    AdminUserCookUpdateDocument,
-    AdminUserLocationSuggestionsDocument,
-} from '../../graphql/generated';
-import { useDebouncedValue } from '../../hooks/useDebouncedValue';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
+import { CookProfileTags } from '../../components/CookProfileTags';
+import type { GqlCAdminUserPageQuery } from '../../graphql/generated';
+import { AdminCookApprovalUpdateDocument, AdminUserCookUpdateDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 
 type AdminUserRow = NonNullable<NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['user']>;
-type AdminCookRow = NonNullable<AdminUserRow['cook']>;
 
-const CUISINE_STYLE_ITEMS = [...CUISINE_STYLES];
-const COOKING_PHILOSOPHY_ITEMS = [...COOKING_PHILOSOPHIES];
-const TRAVEL_DISTANCE_OPTIONS = ['50', '100', '150', '200'] as const;
-
-type CookFormValues = {
-    biography: string;
-    biographySummary: string;
-    cuisineStyle: string;
-    cookingPhilosophy: string;
-    locationSearchText: string;
-    selectedLocation: GqlCLocationSuggestion | null;
-    travelExpensesText: string;
-    maximumTravelDistanceText: string;
-};
-
-function centsToEuroText(cents: number): string {
-    return (cents / 100).toFixed(2).replace('.', ',');
-}
-
-function euroTextToCents(value: string): number | null {
-    if (value.trim() === '' || /[a-zA-Z]/u.test(value) || !/^-?\d*([.,]\d{0,2})?$/u.test(value)) {
-        return null;
-    }
-    const floatValue = Number.parseFloat(value.replace(',', '.'));
-    if (Number.isNaN(floatValue)) return null;
-    return Math.round(floatValue * 100);
-}
-
-function formFromCook(cook: AdminCookRow): CookFormValues {
-    return {
-        biography: cook.biography,
-        biographySummary: cook.biographySummary,
-        cuisineStyle: cook.cuisineStyle ?? '',
-        cookingPhilosophy: cook.cookingPhilosophy ?? '',
-        locationSearchText: cook.exactTravelOriginAddress?.displayText ?? '',
-        selectedLocation: cook.exactTravelOriginAddress
-            ? {
-                  displayText: cook.exactTravelOriginAddress.displayText,
-                  latitude: cook.exactTravelOriginAddress.latitude,
-                  longitude: cook.exactTravelOriginAddress.longitude,
-                  structuredAddress: cook.exactTravelOriginAddress,
-              }
-            : null,
-        travelExpensesText: centsToEuroText(cook.travelExpensesAmount),
-        maximumTravelDistanceText: String(cook.maximumTravelDistance ?? 100),
-    };
-}
-
-function CatalogCombobox({
-    id,
-    items,
-    value,
-    onChange,
-    placeholder,
-    emptyLabel,
-}: {
-    id: string;
-    items: string[];
-    value: string;
-    onChange: (next: string) => void;
-    placeholder: string;
-    emptyLabel: string;
-}) {
-    const [inputValue, setInputValue] = useState(value);
+function CopyValueButton({ text }: { text: string }) {
+    const locale = useLocale();
+    const [copied, setCopied] = useState(false);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const idleLabel = { de: 'Kopieren', en: 'Copy' }[locale];
+    const ariaLabel = copied ? { de: 'Kopiert', en: 'Copied' }[locale] : idleLabel;
 
     useEffect(() => {
-        setInputValue(value);
-    }, [value]);
+        return () => {
+            if (timerRef.current) clearTimeout(timerRef.current);
+        };
+    }, []);
+
+    const onCopy = useCallback(async () => {
+        try {
+            await navigator.clipboard.writeText(text);
+            toast.success({ de: 'In die Zwischenablage kopiert', en: 'Copied to clipboard' }[locale]);
+        } catch {
+            toast.error({ de: 'Kopieren in die Zwischenablage fehlgeschlagen', en: 'Could not copy to clipboard' }[locale]);
+        }
+        setCopied(true);
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => setCopied(false), 1500);
+    }, [text, locale]);
 
     return (
-        <Combobox
-            items={items}
-            value={value.trim().length > 0 ? value : null}
-            inputValue={inputValue}
-            onValueChange={(next) => {
-                if (next == null) {
-                    onChange('');
-                    setInputValue('');
-                    return;
-                }
-                onChange(next);
-                setInputValue(next);
-            }}
-            onInputValueChange={setInputValue}
-            itemToStringLabel={(item: string) => item}
-        >
-            <ComboboxInput id={id} className="w-full min-w-0" placeholder={placeholder} showClear={value.trim().length > 0} />
-            <ComboboxContent>
-                <ComboboxEmpty>{emptyLabel}</ComboboxEmpty>
-                <ComboboxList>
-                    {(item: string) => (
-                        <ComboboxItem key={item} value={item}>
-                            {item}
-                        </ComboboxItem>
-                    )}
-                </ComboboxList>
-            </ComboboxContent>
-        </Combobox>
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label={ariaLabel}
+                    onClick={() => void onCopy()}
+                    className="opacity-70 hover:opacity-100"
+                >
+                    {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
+                </Button>
+            </TooltipTrigger>
+            <TooltipContent>{ariaLabel}</TooltipContent>
+        </Tooltip>
+    );
+}
+
+function DetailActionLink({ href, label, children }: { href: string; label: string; children: ReactNode }) {
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Button type="button" variant="ghost" size="icon-xs" asChild className="opacity-70 hover:opacity-100">
+                    <a href={href} target="_blank" rel="noreferrer" aria-label={label}>
+                        {children}
+                    </a>
+                </Button>
+            </TooltipTrigger>
+            <TooltipContent>{label}</TooltipContent>
+        </Tooltip>
+    );
+}
+
+function DetailField({
+    label,
+    value,
+    mono,
+    copyText,
+    actions,
+}: {
+    label: string;
+    value: ReactNode;
+    mono?: boolean;
+    copyText?: string;
+    actions?: ReactNode;
+}) {
+    const hasActions = copyText != null || actions != null;
+    return (
+        <div className="grid gap-1">
+            <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</dt>
+            <dd className="flex min-w-0 items-start gap-1">
+                <div
+                    className={
+                        mono
+                            ? 'min-w-0 flex-1 font-mono text-sm break-all text-foreground'
+                            : 'min-w-0 flex-1 text-sm whitespace-pre-wrap text-foreground'
+                    }
+                >
+                    {value}
+                </div>
+                {hasActions ? (
+                    <div className="flex shrink-0 items-center gap-0.5">
+                        {actions}
+                        {copyText != null ? <CopyValueButton text={copyText} /> : null}
+                    </div>
+                ) : null}
+            </dd>
+        </div>
     );
 }
 
@@ -146,139 +130,18 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
     const cook = user.cook;
     const [, approvalUpdate] = useMutation(AdminCookApprovalUpdateDocument);
     const [, cookUpdate] = useMutation(AdminUserCookUpdateDocument);
-    const [{ fetching: biographySuggestFetching }, biographySuggest] = useMutation(AdminUserCookBiographySuggestDocument);
-    const [{ fetching: summarySuggestFetching }, summarySuggest] = useMutation(AdminUserCookBiographySummarySuggestDocument);
     const [approvalBusy, setApprovalBusy] = useState(false);
     const [approved, setApproved] = useState(cook?.isApprovedByAdmin ?? false);
     const [pendingApproved, setPendingApproved] = useState<boolean | null>(null);
     const [visible, setVisible] = useState(cook?.isVisible ?? false);
     const [visibilityBusy, setVisibilityBusy] = useState(false);
     const [pendingVisible, setPendingVisible] = useState<boolean | null>(null);
-    const [biographySuggestion, setBiographySuggestion] = useState<string | null>(null);
+    const empty = { de: 'Nicht angegeben', en: 'Not set' }[locale];
 
     useEffect(() => {
         setApproved(cook?.isApprovedByAdmin ?? false);
         setVisible(cook?.isVisible ?? false);
     }, [cook?.isApprovedByAdmin, cook?.isVisible]);
-
-    const form = useForm({
-        defaultValues: cook
-            ? formFromCook(cook)
-            : {
-                  biography: '',
-                  biographySummary: '',
-                  cuisineStyle: '',
-                  cookingPhilosophy: '',
-                  locationSearchText: '',
-                  selectedLocation: null as GqlCLocationSuggestion | null,
-                  travelExpensesText: '0,25',
-                  maximumTravelDistanceText: '100',
-              },
-        onSubmit: async ({ value }) => {
-            if (!cook) return;
-            const amount = euroTextToCents(value.travelExpensesText);
-            if (amount == null || amount < 25) {
-                toast.error(
-                    {
-                        de: 'Reisekosten müssen mindestens 0,25 € betragen.',
-                        en: 'Travel expenses must be at least €0.25.',
-                    }[locale],
-                );
-                return;
-            }
-            const distance = Number(value.maximumTravelDistanceText);
-            if (!Number.isInteger(distance) || distance < 5 || distance > 250) {
-                toast.error(
-                    {
-                        de: 'Die maximale Reisestrecke muss zwischen 5 und 250 km liegen.',
-                        en: 'Maximum travel distance must be between 5 and 250 km.',
-                    }[locale],
-                );
-                return;
-            }
-
-            const result = await cookUpdate({
-                cookId: cook.cookId,
-                input: {
-                    biography: value.biography,
-                    biographySummary: value.biographySummary,
-                    cuisineStyle: value.cuisineStyle.trim() || null,
-                    cookingPhilosophy: value.cookingPhilosophy.trim() || null,
-                    exactTravelOriginAddress: value.selectedLocation?.displayText ?? undefined,
-                    travelExpensesAmount: amount,
-                    maximumTravelDistance: distance,
-                },
-            });
-            if (result.error || !result.data?.admin.cookUpdate.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
-                return;
-            }
-            toast.success({ de: 'Kochprofil gespeichert.', en: 'Cook profile saved.' }[locale]);
-            await router.invalidate();
-        },
-    });
-
-    const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
-    const isDirty = useSelector(form.store, (state) => state.isDirty);
-    const locationSearchText = useSelector(form.store, (state) => state.values.locationSearchText);
-    const selectedLocation = useSelector(form.store, (state) => state.values.selectedLocation);
-    const biographyValue = useSelector(form.store, (state) => state.values.biography);
-    const reviewingSuggestion = biographySuggestion != null;
-    const aiBusy = biographySuggestFetching || summarySuggestFetching;
-    const formBusy = isSubmitting || aiBusy || reviewingSuggestion;
-
-    async function onBiographySuggest(currentBiography: string) {
-        if (!cook) return;
-        const result = await biographySuggest({ cookId: cook.cookId, currentBiography });
-        const suggestion = result.data?.admin.cookBiographySuggest;
-        if (result.error || !suggestion) {
-            toast.error(
-                {
-                    de: 'Biografie konnte nicht erzeugt werden.',
-                    en: 'Could not generate the biography.',
-                }[locale],
-            );
-            return;
-        }
-        setBiographySuggestion(suggestion);
-    }
-
-    function onAcceptBiographySuggestion() {
-        if (!biographySuggestion) return;
-        form.setFieldValue('biography', biographySuggestion);
-        setBiographySuggestion(null);
-    }
-
-    async function onSummarySuggest(biography: string) {
-        if (!cook) return;
-        const result = await summarySuggest({ cookId: cook.cookId, biography });
-        const suggestion = result.data?.admin.cookBiographySummarySuggest;
-        if (result.error || !suggestion) {
-            toast.error(
-                {
-                    de: 'Kurzfassung konnte nicht erzeugt werden.',
-                    en: 'Could not generate the summary.',
-                }[locale],
-            );
-            return;
-        }
-        form.setFieldValue('biographySummary', suggestion);
-    }
-
-    useEffect(() => {
-        if (!cook) return;
-        if (!isDirty) {
-            form.reset(formFromCook(cook));
-        }
-    }, [form, isDirty, cook]);
-
-    const debouncedLocationSearch = useDebouncedValue(locationSearchText, 300);
-    const [{ data: suggestionsData }] = useQuery({
-        query: AdminUserLocationSuggestionsDocument,
-        variables: { searchText: debouncedLocationSearch, onlyFullAddresses: true },
-        pause: debouncedLocationSearch.trim().length < 3 || selectedLocation?.displayText === locationSearchText,
-    });
-    const suggestions = suggestionsData?.currentSession.locationSuggestions ?? [];
 
     if (!cook) {
         return (
@@ -289,6 +152,7 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
     }
 
     const cookId = cook.cookId;
+    const stripeAccountId = cook.stripeAccountId?.trim() || null;
 
     async function onConfirmApproval() {
         if (pendingApproved == null) return;
@@ -307,6 +171,7 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
                     ? { de: 'Koch freigeschaltet.', en: 'Cook approved.' }[locale]
                     : { de: 'Freischaltung entzogen.', en: 'Approval revoked.' }[locale],
             );
+            await router.invalidate();
         } finally {
             setApprovalBusy(false);
         }
@@ -336,33 +201,128 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
     }
 
     return (
-        <div className="grid max-w-2xl gap-8">
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4">
-                <div className="grid gap-1">
-                    <p className="font-medium">
-                        {approved
-                            ? { de: 'Freigeschaltet', en: 'Approved' }[locale]
-                            : { de: 'Nicht freigeschaltet', en: 'Not approved' }[locale]}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Steuert Wallet-Onboarding und Angebotsfähigkeit.',
-                                en: 'Controls wallet onboarding and offer eligibility.',
-                            }[locale]
-                        }
-                    </p>
-                </div>
-                <Button
-                    type="button"
-                    variant={approved ? 'outline' : 'default'}
-                    disabled={approvalBusy}
-                    onClick={() => setPendingApproved(!approved)}
-                >
+        <div className="@container grid w-full min-w-0 gap-8">
+            <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={approved ? 'default' : 'outline'}>
                     {approved
-                        ? { de: 'Freischaltung entziehen', en: 'Revoke approval' }[locale]
-                        : { de: 'Freischalten', en: 'Approve' }[locale]}
-                </Button>
+                        ? { de: 'Freigeschaltet', en: 'Approved' }[locale]
+                        : { de: 'Nicht freigeschaltet', en: 'Not approved' }[locale]}
+                </Badge>
+                <Badge variant={visible ? 'secondary' : 'outline'}>
+                    {visible ? { de: 'Öffentlich sichtbar', en: 'Publicly visible' }[locale] : { de: 'Verborgen', en: 'Hidden' }[locale]}
+                </Badge>
+                {cook.canCreateOffers ? (
+                    <Badge variant="outline">{{ de: 'Kann Angebote erstellen', en: 'Can create offers' }[locale]}</Badge>
+                ) : null}
+            </div>
+
+            <dl className="grid gap-6">
+                <div className="grid gap-x-8 gap-y-5 @2xl:grid-cols-2 @6xl:grid-cols-3">
+                    <DetailField
+                        label={{ de: 'Reiseadresse', en: 'Travel origin' }[locale]}
+                        value={cook.exactTravelOriginAddress?.displayText?.trim() || empty}
+                    />
+                    <DetailField
+                        label={{ de: 'Reisekosten / km', en: 'Travel expenses / km' }[locale]}
+                        value={formatCurrency(cook.travelExpensesAmount, { locale })}
+                    />
+                    <DetailField
+                        label={{ de: 'Max. Distanz', en: 'Max distance' }[locale]}
+                        value={cook.maximumTravelDistance != null ? `${cook.maximumTravelDistance} km` : empty}
+                    />
+                    <DetailField label={{ de: 'Stripe-Status', en: 'Stripe status' }[locale]} value={cook.stripeStatus} />
+                    <DetailField
+                        label={{ de: 'Stripe Account', en: 'Stripe account' }[locale]}
+                        value={stripeAccountId ?? empty}
+                        mono
+                        copyText={stripeAccountId ?? undefined}
+                        actions={
+                            cook.stripeAccountUrl ? (
+                                <DetailActionLink
+                                    href={cook.stripeAccountUrl}
+                                    label={{ de: 'Im Stripe Dashboard öffnen', en: 'Open in Stripe Dashboard' }[locale]}
+                                >
+                                    <ExternalLinkIcon aria-hidden />
+                                </DetailActionLink>
+                            ) : undefined
+                        }
+                    />
+                    <DetailField
+                        label={{ de: 'Anrufplanung', en: 'Call scheduling' }[locale]}
+                        value={
+                            cook.callSchedulingEnabled
+                                ? `${{ de: 'Aktiv', en: 'On' }[locale]} · ${cook.callDurationMinutes} min`
+                                : { de: 'Inaktiv', en: 'Off' }[locale]
+                        }
+                    />
+                </div>
+                <div className="grid gap-1">
+                    <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                        {{ de: 'Küchenstil und Philosophie', en: 'Cuisine style and philosophy' }[locale]}
+                    </dt>
+                    <dd>
+                        {cook.cuisineStyle || cook.cookingPhilosophy ? (
+                            <CookProfileTags cuisineStyle={cook.cuisineStyle} cookingPhilosophy={cook.cookingPhilosophy} size="md" />
+                        ) : (
+                            <p className="text-sm text-muted-foreground">{empty}</p>
+                        )}
+                    </dd>
+                </div>
+                <DetailField label={{ de: 'Biografie', en: 'Biography' }[locale]} value={cook.biography.trim() ? cook.biography : empty} />
+                <DetailField
+                    label={{ de: 'Biografie-Kurzfassung', en: 'Biography summary' }[locale]}
+                    value={cook.biographySummary.trim() ? cook.biographySummary : empty}
+                />
+            </dl>
+
+            <div className="grid gap-4 @2xl:grid-cols-2">
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4">
+                    <div className="grid gap-1">
+                        <p className="font-medium">
+                            {approved
+                                ? { de: 'Freigeschaltet', en: 'Approved' }[locale]
+                                : { de: 'Nicht freigeschaltet', en: 'Not approved' }[locale]}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                            {
+                                {
+                                    de: 'Steuert Wallet-Onboarding und Angebotsfähigkeit.',
+                                    en: 'Controls wallet onboarding and offer eligibility.',
+                                }[locale]
+                            }
+                        </p>
+                    </div>
+                    <Button
+                        type="button"
+                        variant={approved ? 'outline' : 'default'}
+                        disabled={approvalBusy}
+                        onClick={() => setPendingApproved(!approved)}
+                    >
+                        {approved
+                            ? { de: 'Freischaltung entziehen', en: 'Revoke approval' }[locale]
+                            : { de: 'Freischalten', en: 'Approve' }[locale]}
+                    </Button>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4">
+                    <div className="grid gap-1">
+                        <p className="font-medium">{{ de: 'Öffentliche Sichtbarkeit', en: 'Public visibility' }[locale]}</p>
+                        <p className="text-sm text-muted-foreground">
+                            {
+                                {
+                                    de: 'Steuert die Anzeige in der Kochsuche (zusätzlich zur Freischaltung).',
+                                    en: 'Controls chef listing visibility (in addition to approval).',
+                                }[locale]
+                            }
+                        </p>
+                    </div>
+                    <Switch
+                        checked={visible}
+                        disabled={visibilityBusy}
+                        onCheckedChange={(next) => setPendingVisible(next)}
+                        aria-label={{ de: 'Öffentliche Sichtbarkeit', en: 'Public visibility' }[locale]}
+                    />
+                </div>
             </div>
 
             <AlertDialog open={pendingApproved != null} onOpenChange={(open) => !open && setPendingApproved(null)}>
@@ -398,26 +358,6 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
                 </AlertDialogContent>
             </AlertDialog>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4">
-                <div className="grid gap-1">
-                    <p className="font-medium">{{ de: 'Öffentliche Sichtbarkeit', en: 'Public visibility' }[locale]}</p>
-                    <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Steuert die Anzeige in der Kochsuche (zusätzlich zur Freischaltung).',
-                                en: 'Controls chef listing visibility (in addition to approval).',
-                            }[locale]
-                        }
-                    </p>
-                </div>
-                <Switch
-                    checked={visible}
-                    disabled={visibilityBusy}
-                    onCheckedChange={(next) => setPendingVisible(next)}
-                    aria-label={{ de: 'Öffentliche Sichtbarkeit', en: 'Public visibility' }[locale]}
-                />
-            </div>
-
             <AlertDialog open={pendingVisible != null} onOpenChange={(open) => !open && setPendingVisible(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -448,263 +388,6 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
-            <form
-                className="grid gap-6"
-                onSubmit={(event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    void form.handleSubmit();
-                }}
-            >
-                <form.Field name="biography">
-                    {(field) => (
-                        <div className="grid gap-2">
-                            <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-                                <label htmlFor="admin-cook-biography" className="text-sm font-medium">
-                                    {{ de: 'Biografie', en: 'Biography' }[locale]}
-                                </label>
-                                {reviewingSuggestion ? null : (
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={isSubmitting || aiBusy}
-                                        onClick={() => void onBiographySuggest(field.state.value)}
-                                    >
-                                        {biographySuggestFetching ? (
-                                            <Spinner className="size-4" />
-                                        ) : (
-                                            <SparklesIcon className="size-4" aria-hidden />
-                                        )}
-                                        {biographySuggestFetching
-                                            ? { de: 'Wird erzeugt…', en: 'Generating…' }[locale]
-                                            : field.state.value.trim()
-                                              ? { de: 'Mit KI verbessern', en: 'Improve with AI' }[locale]
-                                              : { de: 'Mit KI schreiben', en: 'Write with AI' }[locale]}
-                                    </Button>
-                                )}
-                            </div>
-                            {biographySuggestion != null ? (
-                                <BiographySuggestionReview
-                                    currentBiography={field.state.value}
-                                    suggestedBiography={biographySuggestion}
-                                    locale={locale}
-                                    onAccept={onAcceptBiographySuggestion}
-                                    onDiscard={() => setBiographySuggestion(null)}
-                                />
-                            ) : (
-                                <Textarea
-                                    id="admin-cook-biography"
-                                    rows={6}
-                                    value={field.state.value}
-                                    disabled={formBusy}
-                                    onBlur={field.handleBlur}
-                                    onChange={(event) => field.handleChange(event.target.value)}
-                                />
-                            )}
-                        </div>
-                    )}
-                </form.Field>
-
-                <form.Field name="biographySummary">
-                    {(field) => (
-                        <div className="grid gap-2">
-                            <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
-                                <label htmlFor="admin-cook-biography-summary" className="text-sm font-medium">
-                                    {{ de: 'Biografie-Kurzfassung', en: 'Biography summary' }[locale]}
-                                </label>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={formBusy || !biographyValue.trim()}
-                                    onClick={() => void onSummarySuggest(biographyValue)}
-                                >
-                                    <SparklesIcon className="size-4" aria-hidden />
-                                    {summarySuggestFetching
-                                        ? { de: 'Wird erzeugt…', en: 'Generating…' }[locale]
-                                        : { de: 'Kurzfassung erzeugen', en: 'Generate summary' }[locale]}
-                                </Button>
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                                {
-                                    {
-                                        de: 'Manuell bearbeitbar. Speichern überschreibt die Kurzfassung nicht automatisch.',
-                                        en: 'Editable manually. Saving does not auto-regenerate the summary.',
-                                    }[locale]
-                                }
-                            </p>
-                            <Textarea
-                                id="admin-cook-biography-summary"
-                                rows={3}
-                                value={field.state.value}
-                                disabled={formBusy}
-                                onBlur={field.handleBlur}
-                                onChange={(event) => field.handleChange(event.target.value)}
-                            />
-                        </div>
-                    )}
-                </form.Field>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                    <form.Field name="cuisineStyle">
-                        {(field) => (
-                            <div className="grid gap-2">
-                                <label htmlFor="admin-cook-cuisine" className="text-sm font-medium">
-                                    {{ de: 'Küchenstil', en: 'Cuisine style' }[locale]}
-                                </label>
-                                <CatalogCombobox
-                                    id="admin-cook-cuisine"
-                                    items={CUISINE_STYLE_ITEMS}
-                                    value={field.state.value}
-                                    onChange={(next) => field.handleChange(next)}
-                                    placeholder={{ de: 'Küchenstil wählen…', en: 'Select cuisine style…' }[locale]}
-                                    emptyLabel={{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}
-                                />
-                            </div>
-                        )}
-                    </form.Field>
-                    <form.Field name="cookingPhilosophy">
-                        {(field) => (
-                            <div className="grid gap-2">
-                                <label htmlFor="admin-cook-philosophy" className="text-sm font-medium">
-                                    {{ de: 'Kochphilosophie', en: 'Cooking philosophy' }[locale]}
-                                </label>
-                                <CatalogCombobox
-                                    id="admin-cook-philosophy"
-                                    items={COOKING_PHILOSOPHY_ITEMS}
-                                    value={field.state.value}
-                                    onChange={(next) => field.handleChange(next)}
-                                    placeholder={{ de: 'Philosophie wählen…', en: 'Select philosophy…' }[locale]}
-                                    emptyLabel={{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}
-                                />
-                            </div>
-                        )}
-                    </form.Field>
-                </div>
-
-                <Separator />
-
-                <div className="grid gap-2">
-                    <label htmlFor="admin-cook-travel-origin" className="text-sm font-medium">
-                        {{ de: 'Reiseadresse', en: 'Travel origin' }[locale]}
-                    </label>
-                    <Combobox
-                        filter={null}
-                        items={suggestions.map((suggestion) => suggestion.displayText)}
-                        value={selectedLocation?.displayText ?? null}
-                        inputValue={locationSearchText}
-                        onValueChange={(next) => {
-                            if (next == null) return;
-                            const match = suggestions.find((suggestion) => suggestion.displayText === next);
-                            if (match) {
-                                form.setFieldValue('selectedLocation', match);
-                                form.setFieldValue('locationSearchText', match.displayText);
-                            }
-                        }}
-                        onInputValueChange={(next) => {
-                            form.setFieldValue('locationSearchText', next);
-                            if (selectedLocation && next !== selectedLocation.displayText) {
-                                form.setFieldValue('selectedLocation', null);
-                            }
-                        }}
-                        itemToStringLabel={(item: string) => item}
-                    >
-                        <ComboboxInput
-                            id="admin-cook-travel-origin"
-                            className="w-full min-w-0"
-                            placeholder={{ de: 'Adresse suchen…', en: 'Search address…' }[locale]}
-                            showClear={false}
-                        />
-                        <ComboboxContent>
-                            <ComboboxEmpty>{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</ComboboxEmpty>
-                            <ComboboxList>
-                                {(item: string) => (
-                                    <ComboboxItem key={item} value={item}>
-                                        {item}
-                                    </ComboboxItem>
-                                )}
-                            </ComboboxList>
-                        </ComboboxContent>
-                    </Combobox>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                    <form.Field name="travelExpensesText">
-                        {(field) => (
-                            <div className="grid gap-2">
-                                <label htmlFor="admin-cook-travel-expenses" className="text-sm font-medium">
-                                    {{ de: 'Reisekosten / km (€)', en: 'Travel expenses / km (€)' }[locale]}
-                                </label>
-                                <Input
-                                    id="admin-cook-travel-expenses"
-                                    value={field.state.value}
-                                    disabled={isSubmitting}
-                                    onBlur={field.handleBlur}
-                                    onChange={(event) => field.handleChange(event.target.value)}
-                                />
-                            </div>
-                        )}
-                    </form.Field>
-                    <form.Field name="maximumTravelDistanceText">
-                        {(field) => (
-                            <div className="grid gap-2">
-                                <label htmlFor="admin-cook-max-distance" className="text-sm font-medium">
-                                    {{ de: 'Max. Distanz', en: 'Max distance' }[locale]}
-                                </label>
-                                <Select
-                                    value={field.state.value}
-                                    onValueChange={(next) => field.handleChange(next)}
-                                    disabled={isSubmitting}
-                                >
-                                    <SelectTrigger id="admin-cook-max-distance">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {TRAVEL_DISTANCE_OPTIONS.map((option) => (
-                                            <SelectItem key={option} value={option}>
-                                                {option} km
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                    </form.Field>
-                </div>
-
-                <dl className="grid gap-3 text-sm">
-                    <div className="grid gap-1">
-                        <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                            {{ de: 'Stripe-Status', en: 'Stripe status' }[locale]}
-                        </dt>
-                        <dd>{cook.stripeStatus}</dd>
-                    </div>
-                    <div className="grid gap-1">
-                        <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                            {{ de: 'Stripe Account', en: 'Stripe account' }[locale]}
-                        </dt>
-                        <dd className="font-mono break-all">{cook.stripeAccountId ?? '—'}</dd>
-                    </div>
-                    <div className="grid gap-1">
-                        <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                            {{ de: 'Anrufplanung', en: 'Call scheduling' }[locale]}
-                        </dt>
-                        <dd>
-                            {cook.callSchedulingEnabled
-                                ? `${{ de: 'Aktiv', en: 'On' }[locale]} · ${cook.callDurationMinutes} min`
-                                : { de: 'Inaktiv', en: 'Off' }[locale]}
-                        </dd>
-                    </div>
-                </dl>
-
-                <div>
-                    <Button type="submit" disabled={formBusy || !isDirty}>
-                        {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
-                    </Button>
-                </div>
-            </form>
         </div>
     );
 }

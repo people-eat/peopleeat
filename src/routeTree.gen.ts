@@ -162,6 +162,7 @@ import { Route as Char123LocaleChar125ProfileMealsMealIdEditRouteImport } from '
 import { Route as Char123LocaleChar125ProfileMenusMenuIdEditRouteImport } from './routes/{-$locale}/profile/menus_.$menuId_.edit'
 import { Route as Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRouteImport } from './routes/{-$locale}/admin/booking-requests_.$bookingRequestId_.offers_.$bookingRequestOfferId'
 import { Route as Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRouteImport } from './routes/{-$locale}/admin/booking-requests_.$bookingRequestId_.offers_.create'
+import { Route as Char123LocaleChar125AdminUsersUserIdCookProfileEditRouteImport } from './routes/{-$locale}/admin/users_.$userId_.cook-profile_.edit'
 import { Route as Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRouteImport } from './routes/{-$locale}/profile/booking-requests_.$bookingRequestId_.offers_.$bookingRequestOfferId'
 import { Route as Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRouteImport } from './routes/{-$locale}/admin/booking-requests_.$bookingRequestId_.offers_.$bookingRequestOfferId_.edit'
 import { Route as Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRouteImport } from './routes/{-$locale}/admin/booking-requests_.$bookingRequestId_.offers_.$bookingRequestOfferId_.edit-configured-menu'
@@ -1093,6 +1094,12 @@ const Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRoute 
       getParentRoute: () => Char123LocaleChar125AdminRoute,
     } as any,
   )
+const Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute =
+  Char123LocaleChar125AdminUsersUserIdCookProfileEditRouteImport.update({
+    id: '/users_/$userId_/cook-profile_/edit',
+    path: '/users/$userId/cook-profile/edit',
+    getParentRoute: () => Char123LocaleChar125AdminRoute,
+  } as any)
 const Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute =
   Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRouteImport.update(
     {
@@ -1280,6 +1287,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/profile/menus/$menuId/edit': typeof Char123LocaleChar125ProfileMenusMenuIdEditRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/create': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRoute
+  '/{-$locale}/admin/users/$userId/cook-profile/edit': typeof Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute
   '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute
@@ -1436,6 +1444,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/profile/menus/$menuId/edit': typeof Char123LocaleChar125ProfileMenusMenuIdEditRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/create': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRoute
+  '/{-$locale}/admin/users/$userId/cook-profile/edit': typeof Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute
   '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute
@@ -1596,6 +1605,7 @@ export interface FileRoutesById {
   '/{-$locale}/profile/menus_/$menuId_/edit': typeof Char123LocaleChar125ProfileMenusMenuIdEditRoute
   '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/create': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRoute
+  '/{-$locale}/admin/users_/$userId_/cook-profile_/edit': typeof Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute
   '/{-$locale}/profile/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute
   '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit-configured-menu': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute
@@ -1757,6 +1767,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/menus/$menuId/edit'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/create'
+    | '/{-$locale}/admin/users/$userId/cook-profile/edit'
     | '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu'
@@ -1913,6 +1924,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/menus/$menuId/edit'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/create'
+    | '/{-$locale}/admin/users/$userId/cook-profile/edit'
     | '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu'
@@ -2072,6 +2084,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/menus_/$menuId_/edit'
     | '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/create'
+    | '/{-$locale}/admin/users_/$userId_/cook-profile_/edit'
     | '/{-$locale}/profile/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit'
     | '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit-configured-menu'
@@ -3176,6 +3189,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRouteImport
       parentRoute: typeof Char123LocaleChar125AdminRoute
     }
+    '/{-$locale}/admin/users_/$userId_/cook-profile_/edit': {
+      id: '/{-$locale}/admin/users_/$userId_/cook-profile_/edit'
+      path: '/users/$userId/cook-profile/edit'
+      fullPath: '/{-$locale}/admin/users/$userId/cook-profile/edit'
+      preLoaderRoute: typeof Char123LocaleChar125AdminUsersUserIdCookProfileEditRouteImport
+      parentRoute: typeof Char123LocaleChar125AdminRoute
+    }
     '/{-$locale}/profile/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId': {
       id: '/{-$locale}/profile/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId'
       path: '/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId'
@@ -3282,6 +3302,7 @@ interface Char123LocaleChar125AdminRouteChildren {
   Char123LocaleChar125AdminTestimonialsCustomerCustomerTestimonialIdRoute: typeof Char123LocaleChar125AdminTestimonialsCustomerCustomerTestimonialIdRoute
   Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute: typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRoute: typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRoute
+  Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute: typeof Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute
   Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute: typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute
   Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute: typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute
 }
@@ -3425,6 +3446,8 @@ const Char123LocaleChar125AdminRouteChildren: Char123LocaleChar125AdminRouteChil
       Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute,
     Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRoute:
       Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRoute,
+    Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute:
+      Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute,
     Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute:
       Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute,
     Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute:

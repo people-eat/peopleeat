@@ -1,15 +1,22 @@
-import { useNavigate } from '@tanstack/react-router';
-import { ListIcon, UserPlusIcon, UsersIcon } from 'lucide-react';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { CakeIcon, ListIcon, UserPlusIcon, UsersIcon } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
-import { formatIsoDate } from '../../../shared';
+import { formatDate, formatIsoDate, userDisplayName } from '../../../shared';
+import type { Locale } from '../../../shared/locale';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { DateRangePicker } from '../../components/base/date-range-picker';
-import type { GqlCAdminUserCriterion, GqlCAdminUsersOverviewPageQuery, GqlCAdminUserType } from '../../graphql/generated';
+import type {
+    GqlCAdminUserCriterion,
+    GqlCAdminUsersOverviewPageQuery,
+    GqlCAdminUserType,
+    GqlCUserPreferredCommunication,
+} from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import { AdminOverviewBarChart } from './AdminOverviewBarChart';
+import { adminOverviewLinkCardClassName } from './adminOverviewLinkCard';
 import { AdminOverviewNavCard } from './AdminOverviewNavCard';
 import { adminOverviewRangeResolve, adminOverviewRangeToGraphQlVariables } from './adminOverviewRange';
 import type { AdminOverviewRangeSearch } from './adminOverviewRange';
@@ -19,9 +26,11 @@ import { adminUserTypeLabel } from './adminUsersColumns';
 
 export const adminUsersOverviewPageTitle = { de: 'Benutzer', en: 'Users' } as const;
 export const adminUsersOverviewPageDescription = {
-    de: 'Verteilung und Registrierungen der Konten.',
-    en: 'Account distribution and registrations.',
+    de: 'Verteilung, Einblicke und Registrierungen der Konten.',
+    en: 'Account distribution, insights, and registrations.',
 } as const;
+
+const ADMIN_USERS_UPCOMING_BIRTHDAYS_TAKE = 12;
 
 /** Order matches `userCounts` indices on the overview query. */
 const ADMIN_USER_COUNT_CRITERIA: GqlCAdminUserCriterion[] = [
@@ -34,6 +43,7 @@ const ADMIN_USER_COUNT_CRITERIA: GqlCAdminUserCriterion[] = [
 export function adminUsersOverviewPageVariables(search: AdminOverviewRangeSearch = {}) {
     return {
         criteria: ADMIN_USER_COUNT_CRITERIA,
+        upcomingBirthdaysTake: ADMIN_USERS_UPCOMING_BIRTHDAYS_TAKE,
         ...adminOverviewRangeToGraphQlVariables(adminOverviewRangeResolve(search)),
     };
 }
@@ -50,6 +60,45 @@ function adminUsersListSearch(type: GqlCAdminUserType | undefined) {
     };
 }
 
+function preferredCommunicationLabel(value: GqlCUserPreferredCommunication | null | undefined, locale: Locale): string {
+    if (value == null) return { de: 'Nicht angegeben', en: 'Not set' }[locale];
+    return {
+        SMS: { de: 'Nachricht', en: 'Message' },
+        WHATS_APP: { de: 'WhatsApp', en: 'WhatsApp' },
+        CALL: { de: 'Anruf', en: 'Call' },
+        E_MAIL: { de: 'E-Mail', en: 'Email' },
+    }[value][locale];
+}
+
+function localeLabel(value: Locale, uiLocale: Locale): string {
+    return {
+        de: { de: 'Deutsch', en: 'German' },
+        en: { de: 'Englisch', en: 'English' },
+    }[value][uiLocale];
+}
+
+function countShareLabel(count: number, total: number, locale: Locale): string {
+    if (total <= 0) return String(count);
+    const percent = Math.round((count / total) * 100);
+    return { de: `${count} · ${percent} %`, en: `${count} · ${percent}%` }[locale];
+}
+
+function formatAverageAge(averageAge: number | null | undefined, locale: Locale): string {
+    if (averageAge == null) return { de: 'k. A.', en: 'n/a' }[locale];
+    return averageAge.toLocaleString(locale === 'de' ? 'de-DE' : 'en-US', {
+        maximumFractionDigits: 1,
+        minimumFractionDigits: 0,
+    });
+}
+
+function turningAgeLabel(birthDate: string, nextBirthday: string, locale: Locale): string {
+    const birthYear = Number(birthDate.slice(0, 4));
+    const nextYear = Number(nextBirthday.slice(0, 4));
+    if (!Number.isFinite(birthYear) || !Number.isFinite(nextYear)) return '';
+    const age = nextYear - birthYear;
+    return { de: `wird ${age}`, en: `turns ${age}` }[locale];
+}
+
 export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersOverviewPageQuery; search: AdminOverviewRangeSearch }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
@@ -58,6 +107,13 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
     const admin = data.currentSession.user?.admin;
     const [total = 0, customer = 0, cook = 0, adminCount = 0] = admin?.userCounts ?? [];
     const buckets = admin?.userRegistrations ?? [];
+    const insights = admin?.userInsights;
+    const upcomingBirthdays = admin?.upcomingBirthdays ?? [];
+
+    const preferredCommunication = insights?.preferredCommunication ?? [];
+    const locales = insights?.locales ?? [];
+    const timeZones = insights?.timeZones ?? [];
+    const accountCount = insights?.accountCount ?? 0;
 
     const distribution: {
         key: 'total' | 'customer' | 'cook' | 'admin';
@@ -179,6 +235,149 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                             }[locale]
                         }
                     />
+                </section>
+
+                <section className="grid gap-3">
+                    <h2 className="text-lg font-medium">{{ de: 'Einblicke', en: 'Insights' }[locale]}</h2>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Über alle nicht anonymisierten Konten (unabhängig vom Diagrammzeitraum).',
+                                en: 'Across all non-anonymized accounts (independent of the chart range).',
+                            }[locale]
+                        }
+                    </p>
+                    <dl className="grid grid-cols-2 gap-3 sm:grid-cols-2">
+                        <AdminOverviewStatCard
+                            label={{ de: 'Durchschnittsalter', en: 'Average age' }[locale]}
+                            value={insights?.averageAge ?? 0}
+                            displayValue={formatAverageAge(insights?.averageAge, locale)}
+                        />
+                        <AdminOverviewStatCard
+                            label={{ de: 'Mit Geburtsdatum', en: 'With birth date' }[locale]}
+                            value={insights?.birthDateSampleSize ?? 0}
+                        />
+                    </dl>
+
+                    <div className="grid gap-3 sm:grid-cols-3 sm:items-start">
+                        <div className="grid gap-3">
+                            <h3 className="text-base font-medium">
+                                {{ de: 'Bevorzugte Kommunikation', en: 'Preferred communication' }[locale]}
+                            </h3>
+                            {preferredCommunication.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">{{ de: 'Keine Daten.', en: 'No data.' }[locale]}</p>
+                            ) : (
+                                <ul className="grid gap-2">
+                                    {preferredCommunication.map((stat) => (
+                                        <li key={stat.preferredCommunication ?? 'unset'}>
+                                            <div
+                                                className={adminOverviewLinkCardClassName(
+                                                    'flex flex-wrap items-center justify-between gap-3 px-4 py-3',
+                                                )}
+                                            >
+                                                <span className="font-medium text-foreground">
+                                                    {preferredCommunicationLabel(stat.preferredCommunication, locale)}
+                                                </span>
+                                                <span className="text-sm text-muted-foreground tabular-nums">
+                                                    {countShareLabel(stat.count, accountCount, locale)}
+                                                </span>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        <div className="grid gap-3">
+                            <h3 className="text-base font-medium">{{ de: 'Sprache', en: 'Locale' }[locale]}</h3>
+                            {locales.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">{{ de: 'Keine Daten.', en: 'No data.' }[locale]}</p>
+                            ) : (
+                                <ul className="grid gap-2">
+                                    {locales.map((stat) => (
+                                        <li key={stat.locale}>
+                                            <div
+                                                className={adminOverviewLinkCardClassName(
+                                                    'flex flex-wrap items-center justify-between gap-3 px-4 py-3',
+                                                )}
+                                            >
+                                                <span className="font-medium text-foreground">{localeLabel(stat.locale, locale)}</span>
+                                                <span className="text-sm text-muted-foreground tabular-nums">
+                                                    {countShareLabel(stat.count, accountCount, locale)}
+                                                </span>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+
+                        <div className="grid gap-3">
+                            <h3 className="text-base font-medium">{{ de: 'Zeitzone', en: 'Time zone' }[locale]}</h3>
+                            {timeZones.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">{{ de: 'Keine Daten.', en: 'No data.' }[locale]}</p>
+                            ) : (
+                                <ul className="grid gap-2">
+                                    {timeZones.map((stat) => (
+                                        <li key={stat.timeZone}>
+                                            <div
+                                                className={adminOverviewLinkCardClassName(
+                                                    'flex flex-wrap items-center justify-between gap-3 px-4 py-3',
+                                                )}
+                                            >
+                                                <span className="min-w-0 break-all font-medium text-foreground">{stat.timeZone}</span>
+                                                <span className="text-sm text-muted-foreground tabular-nums">
+                                                    {countShareLabel(stat.count, accountCount, locale)}
+                                                </span>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    </div>
+                </section>
+
+                <section className="grid gap-3">
+                    <h2 className="flex items-center gap-2 text-lg font-medium">
+                        <CakeIcon className="size-5 text-muted-foreground" aria-hidden />
+                        {{ de: 'Kommende Geburtstage', en: 'Upcoming birthdays' }[locale]}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Nächste Geburtstage unter Konten mit Geburtsdatum (anonymisierte ausgeschlossen).',
+                                en: 'Next birthdays among accounts with a birth date (anonymized excluded).',
+                            }[locale]
+                        }
+                    </p>
+                    {upcomingBirthdays.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                            {{ de: 'Keine kommenden Geburtstage.', en: 'No upcoming birthdays.' }[locale]}
+                        </p>
+                    ) : (
+                        <ul className="grid gap-2">
+                            {upcomingBirthdays.map((entry) => (
+                                <li key={entry.userId}>
+                                    <Link
+                                        to="/{-$locale}/admin/users/$userId"
+                                        params={{ userId: entry.userId }}
+                                        className={adminOverviewLinkCardClassName(
+                                            'flex flex-wrap items-center justify-between gap-3 px-4 py-3',
+                                        )}
+                                    >
+                                        <span className="font-medium text-foreground">{userDisplayName(entry)}</span>
+                                        <span className="text-sm text-muted-foreground tabular-nums">
+                                            {formatDate(entry.nextBirthday, { locale, timeZone, dateStyle: 'medium' })}
+                                            <span className="text-muted-foreground/80">
+                                                {` · ${turningAgeLabel(entry.birthDate, entry.nextBirthday, locale)}`}
+                                            </span>
+                                        </span>
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </section>
             </main>
         </AdminPathPageChrome>

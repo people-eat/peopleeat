@@ -6,6 +6,7 @@
 query AdminPage {
     currentSession {
         sessionId
+        activeFeatureToggleKeys
         user {
             userId
             admin {

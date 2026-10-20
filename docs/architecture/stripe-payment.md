@@ -82,6 +82,7 @@ Publishable key is served to the browser via GraphQL (not only on `ServerRuntime
 
 Admin offer detail also exposes Stripe Dashboard deep links (`AdminBookingRequestOffer.stripePaymentIntentUrl` / `stripeSetupIntentUrl`)
 built from stored `paymentData` ids via `stripeDashboardUrls` helpers; test vs live path follows `stripeSecretKey.startsWith('sk_test')`.
+`AdminCook.stripeAccountUrl` uses the same helpers for Connect account deep links on the admin user cook-profile tab.
 
 ### Connect wallet requirements (live)
 

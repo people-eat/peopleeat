@@ -22,7 +22,7 @@ export function AdminBreadcrumbTrail({ crumbs }: { crumbs: readonly AdminBreadcr
                                     <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                                 ) : (
                                     <BreadcrumbLink asChild>
-                                        <Link to={crumb.to} params={crumb.params}>
+                                        <Link to={crumb.to} params={crumb.params} search={crumb.search}>
                                             {crumb.label}
                                         </Link>
                                     </BreadcrumbLink>

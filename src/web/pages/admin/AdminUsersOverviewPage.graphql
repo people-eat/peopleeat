@@ -1,8 +1,13 @@
-# Admin users overview hub — membership distribution + registration time series.
-# See docs/features/admin-users.md.
+# Admin users overview hub — membership distribution, registration time series,
+# demographic insights, and upcoming birthdays. See docs/features/admin-users.md.
 # `userCounts` order matches `ADMIN_USER_COUNT_CRITERIA` in AdminUsersOverviewPage.tsx.
 
-query AdminUsersOverviewPage($criteria: [AdminUserCriterion!]!, $range: DateTimeRange!, $granularity: AdminTimeBucketGranularity! = day) {
+query AdminUsersOverviewPage(
+    $criteria: [AdminUserCriterion!]!
+    $range: DateTimeRange!
+    $granularity: AdminTimeBucketGranularity! = day
+    $upcomingBirthdaysTake: Int! = 12
+) {
     currentSession {
         sessionId
         user {
@@ -13,6 +18,30 @@ query AdminUsersOverviewPage($criteria: [AdminUserCriterion!]!, $range: DateTime
                 userRegistrations(range: $range, granularity: $granularity) {
                     bucketStart
                     count
+                }
+                userInsights {
+                    accountCount
+                    averageAge
+                    birthDateSampleSize
+                    preferredCommunication {
+                        preferredCommunication
+                        count
+                    }
+                    locales {
+                        locale
+                        count
+                    }
+                    timeZones {
+                        timeZone
+                        count
+                    }
+                }
+                upcomingBirthdays(take: $upcomingBirthdaysTake) {
+                    userId
+                    firstName
+                    lastName
+                    birthDate
+                    nextBirthday
                 }
             }
         }

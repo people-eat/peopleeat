@@ -1,0 +1,84 @@
+# Admin cook-profile edit. Loaded by `/admin/users/$userId/cook-profile/edit`.
+# See `docs/features/admin-users.md`. Mutations for save / AI biography live here;
+# approval and visibility stay on the user detail cook-profile tab.
+
+fragment AdminUserCookProfileEditCook on AdminCook {
+    cookId
+    biography
+    biographySummary
+    cuisineStyle
+    cookingPhilosophy
+    exactTravelOriginAddress {
+        displayText
+        latitude
+        longitude
+        addressLine1
+        addressLine2
+        city
+        postCode
+        state
+        country
+    }
+    travelExpensesAmount
+    maximumTravelDistance
+}
+
+query AdminUserCookProfileEditPage($userId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                user(userId: $userId) {
+                    userId
+                    firstName
+                    lastName
+                    cook {
+                        ...AdminUserCookProfileEditCook
+                    }
+                }
+            }
+        }
+    }
+}
+
+mutation AdminUserCookProfileEditUpdate($cookId: ID!, $input: CookUpdate!) {
+    admin {
+        cookUpdate(cookId: $cookId, input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserCookProfileEditBiographySuggest($cookId: ID!, $currentBiography: String!) {
+    admin {
+        cookBiographySuggest(cookId: $cookId, currentBiography: $currentBiography)
+    }
+}
+
+mutation AdminUserCookProfileEditBiographySummarySuggest($cookId: ID!, $biography: String!) {
+    admin {
+        cookBiographySummarySuggest(cookId: $cookId, biography: $biography)
+    }
+}
+
+query AdminUserCookProfileEditLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean! = true) {
+    currentSession {
+        locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
+            displayText
+            latitude
+            longitude
+            structuredAddress {
+                displayText
+                latitude
+                longitude
+                addressLine1
+                addressLine2
+                city
+                postCode
+                state
+                country
+            }
+        }
+    }
+}

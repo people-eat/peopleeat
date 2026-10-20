@@ -77,21 +77,41 @@ export const adminUserPageDescription = {
 
 const CUSTOMER_TABS = [
     'general',
+    'booking-requests',
     'feature-toggles',
     'session-events',
     'sessions',
-    'booking-requests',
     'notes',
     'whatsapp',
     'emails',
     'assistant-chats',
 ] as const;
 
-const COOK_TABS = ['cook-profile', 'meals', 'menus', 'offers'] as const;
+const COOK_TABS = ['cook-profile', 'offers', 'meals', 'menus'] as const;
 
 type AdminUserCustomerTab = (typeof CUSTOMER_TABS)[number];
 type AdminUserCookTab = (typeof COOK_TABS)[number];
 export type AdminUserTab = AdminUserCustomerTab | AdminUserCookTab;
+
+/** Customers: general, booking-requests, then shared ops tabs. */
+const CUSTOMER_TAB_ORDER = CUSTOMER_TABS;
+
+/** Cooks: general, cook inventory tabs, shared ops tabs, booking-requests last. */
+const COOK_TAB_ORDER = [
+    'general',
+    'cook-profile',
+    'offers',
+    'meals',
+    'menus',
+    'feature-toggles',
+    'session-events',
+    'sessions',
+    'notes',
+    'whatsapp',
+    'emails',
+    'assistant-chats',
+    'booking-requests',
+] as const satisfies readonly AdminUserTab[];
 
 export type AdminUserSearch = {
     tab?: AdminUserTab;
@@ -235,26 +255,33 @@ type AdminUserTabDef = {
 
 const ADMIN_USER_TABS: readonly AdminUserTabDef[] = [
     { id: 'general', label: { de: 'Allgemeines', en: 'General' }, Icon: UserIcon },
+    { id: 'cook-profile', label: { de: 'Kochprofil', en: 'Cook profile' }, Icon: ChefHatIcon, cookOnly: true },
+    { id: 'offers', label: { de: 'Angebote', en: 'Offers' }, Icon: FileTextIcon, cookOnly: true },
+    { id: 'meals', label: { de: 'Gerichte', en: 'Meals' }, Icon: UtensilsIcon, cookOnly: true },
+    { id: 'menus', label: { de: 'Menüs', en: 'Menus' }, Icon: HandPlatterIcon, cookOnly: true },
+    { id: 'booking-requests', label: { de: 'Buchungsanfragen', en: 'Booking requests' }, Icon: FileInputIcon },
     { id: 'feature-toggles', label: { de: 'Feature Toggles', en: 'Feature toggles' }, Icon: ToggleRightIcon },
     { id: 'session-events', label: { de: 'Sitzungsereignisse', en: 'Session events' }, Icon: LayersIcon },
     { id: 'sessions', label: { de: 'Sitzungen', en: 'Sessions' }, Icon: AppWindowIcon },
-    { id: 'booking-requests', label: { de: 'Buchungsanfragen', en: 'Booking requests' }, Icon: FileInputIcon },
     { id: 'notes', label: { de: 'Notizen', en: 'Notes' }, Icon: NotebookPenIcon },
     { id: 'whatsapp', label: { de: 'WhatsApp', en: 'WhatsApp' }, Icon: MessageSquareIcon },
     { id: 'emails', label: { de: 'E-Mails', en: 'Emails' }, Icon: MailsIcon },
     { id: 'assistant-chats', label: { de: 'Assistent-Chats', en: 'Assistant chats' }, Icon: BotMessageSquareIcon },
-    { id: 'cook-profile', label: { de: 'Kochprofil', en: 'Cook profile' }, Icon: ChefHatIcon, cookOnly: true },
-    { id: 'meals', label: { de: 'Gerichte', en: 'Meals' }, Icon: UtensilsIcon, cookOnly: true },
-    { id: 'menus', label: { de: 'Menüs', en: 'Menus' }, Icon: HandPlatterIcon, cookOnly: true },
-    { id: 'offers', label: { de: 'Angebote', en: 'Offers' }, Icon: FileTextIcon, cookOnly: true },
 ];
+
+const ADMIN_USER_TAB_BY_ID = Object.fromEntries(ADMIN_USER_TABS.map((entry) => [entry.id, entry])) as Record<AdminUserTab, AdminUserTabDef>;
 
 function resolveAdminUserTab(tab: AdminUserTab | undefined, isCook: boolean): AdminUserTab {
     if (!tab || tab === 'general') return 'general';
-    const def = ADMIN_USER_TABS.find((entry) => entry.id === tab);
+    const def = ADMIN_USER_TAB_BY_ID[tab];
     if (!def) return 'general';
     if (def.cookOnly && !isCook) return 'general';
     return tab;
+}
+
+function visibleAdminUserTabs(isCook: boolean): readonly AdminUserTabDef[] {
+    const order = isCook ? COOK_TAB_ORDER : CUSTOMER_TAB_ORDER;
+    return order.map((id) => ADMIN_USER_TAB_BY_ID[id]);
 }
 
 export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPageQuery; search: AdminUserSearch; userId: string }) {
@@ -282,7 +309,7 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
     const assistantChats = admin?.assistantChats ?? [];
     const isCook = user?.types.includes('cook') ?? false;
     const tab = resolveAdminUserTab(search.tab, isCook);
-    const visibleTabs = ADMIN_USER_TABS.filter((entry) => !entry.cookOnly || isCook);
+    const visibleTabs = visibleAdminUserTabs(isCook);
     const activeSessionIds = sessions.filter((session) => session.wasTerminatedAt == null).map((session) => session.sessionId);
     const sessionEventsPage = search.page ?? 1;
     const sessionEventsPageSize = adminListPageSize(search);
@@ -354,7 +381,7 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
             contentClassName="min-h-0 overflow-hidden gap-0"
         >
             {user ? (
-                <AdminPinnedFooterLayout footer={footer} contentClassName="grid w-full content-start gap-6">
+                <AdminPinnedFooterLayout footer={footer} contentClassName="@container grid w-full min-w-0 content-start gap-6">
                     <Tabs value={tab}>
                         <TabsList variant="line" aria-label={{ de: 'Benutzerbereiche', en: 'User sections' }[locale]}>
                             {visibleTabs.map(({ id, label, Icon }) => (
@@ -516,6 +543,14 @@ function adminUserTabFooter({
                     </Link>
                 </Button>
             );
+        case 'cook-profile':
+            return cookId ? (
+                <Button type="button" asChild>
+                    <Link to="/{-$locale}/admin/users/$userId/cook-profile/edit" params={{ userId }}>
+                        {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                    </Link>
+                </Button>
+            ) : undefined;
         case 'meals':
             return cookId ? <AdminUserCreateMealFooter cookId={cookId} locale={locale} /> : undefined;
         case 'menus':
@@ -612,11 +647,12 @@ function AdminUserMealsSection({ meals }: { meals: AdminUserMeal[] }) {
     }
 
     return (
-        <ul className="grid gap-4">
+        <ul className="grid auto-rows-fr grid-cols-1 gap-2 @3xl:grid-cols-2">
             {meals.map((meal) => (
-                <li key={meal.mealId}>
+                <li key={meal.mealId} className="min-w-0">
                     <CookMealCard
                         meal={meal}
+                        density="compact"
                         to="/{-$locale}/admin/meals/$mealId"
                         params={{ mealId: meal.mealId }}
                         meta={<span className="tabular-nums">{formatDate(meal.createdAt, { locale, timeZone, dateStyle: 'medium' })}</span>}
@@ -638,11 +674,12 @@ function AdminUserMenusSection({ menus }: { menus: AdminUserMenu[] }) {
     }
 
     return (
-        <ul className="grid gap-4">
+        <ul className="grid auto-rows-fr grid-cols-1 gap-2 @3xl:grid-cols-2">
             {menus.map((menu) => (
-                <li key={menu.menuId}>
+                <li key={menu.menuId} className="min-w-0">
                     <CookMenuCard
                         menu={menu}
+                        density="compact"
                         to="/{-$locale}/admin/menus/$menuId"
                         params={{ menuId: menu.menuId }}
                         meta={<span className="tabular-nums">{formatDate(menu.createdAt, { locale, timeZone, dateStyle: 'medium' })}</span>}

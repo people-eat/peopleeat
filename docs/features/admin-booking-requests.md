@@ -9,12 +9,13 @@ Admins manage marketplace booking requests under `/admin/booking-requests` (hub 
 
 ### Overview — `/admin/booking-requests`
 
-Publication distribution (total, blocked for review, auto-approved, admin-approved), all-time average guests per request, offer economics
-(average offers per request, average menu price, average paid customer total / GMV, average paid platform fee), a creations bar chart, top 3
-occasions, top 3 creation months, and top 3 cooks by offers and by dual-accept conversions. Date range in URL drives daily chart buckets
-only (zero-filled). Rankings, economics, and cook leaderboards are all-time (independent of that picker). Section cards link to list and
-create. Distribution cards deep-link into the list with `publicationStatus` preselected (Total clears the filter). Cook rows deep-link to
-the admin user detail.
+Publication distribution (total, blocked for review, auto-approved, admin-approved), all-time average guests per request, a
+received-requests bar chart, then offer economics (average offers per request, average menu price, average paid customer total / GMV,
+average paid platform fee, plus all-time and range-scoped total revenue / platform profit), top 5 occasions, top 5 creation months, and top
+5 cooks by offers and by dual-accept conversions. Date range in URL drives daily chart buckets (zero-filled) and paid revenue/profit totals
+in that window (by `paymentDateTime`, falling back to offer `createdAt`). Rankings, averages, and cook leaderboards stay all-time
+(independent of that picker). Section cards link to list and create. Distribution cards deep-link into the list with `publicationStatus`
+preselected (Total clears the filter). Cook rows deep-link to the admin user detail.
 
 ### List — `/admin/booking-requests/list`
 
@@ -116,10 +117,10 @@ Publication approve on overview when blocked (picker over radius cooks). Post-ap
 
 ### Chosen
 
-Mirrors users/legal hierarchy. Overview stats + chart + all-time occasion/month rankings, offer economics, and cook offer/conversion
-leaderboards; list with grid/table toggle; manual create with publication rules by participant count; offer detail with chat, offer, costs,
-menu, call; admin calls overview + traffic list. Radius cooks without an offer show estimated travel expenses and soft suggested menu price
-total (same guidance as cook pool / offer create).
+Mirrors users/legal hierarchy. Overview stats + received-requests chart + offer economics (averages, all-time and range totals) + all-time
+top-5 occasion/month rankings and cook offer/conversion leaderboards; list with grid/table toggle; manual create with publication rules by
+participant count; offer detail with chat, offer, costs, menu, call; admin calls overview + traffic list. Radius cooks without an offer show
+estimated travel expenses and soft suggested menu price total (same guidance as cook pool / offer create).
 
 ## Ideas
 
@@ -137,15 +138,16 @@ total (same guidance as cook pool / offer create).
 | Routes   | Under `src/routes/{-$locale}/admin/` for booking-requests and calls                                                                                                        |
 
 GraphQL (admin): `bookingRequests` / counts / creations / occasion stats / creation-month stats / average participants /
-`bookingRequestOfferEconomics` / `bookingRequestCookOfferStats` / single request; `bookingRequestOffers` / counts / single offer;
+`bookingRequestOfferEconomics(range)` / `bookingRequestCookOfferStats` / single request; `bookingRequestOffers` / counts / single offer;
 `cooksInTravelRadius`; create/update/cancel request; `bookingRequestDiscountUpdate`; create/update/handover offer;
 `bookingRequestOfferChatMessageCreate` / `bookingRequestOfferChatMessageUpdate`; `bookingRequestOfferConfiguredMenuUpdate`; publication
-approve; cooks notify; payout mutations; `calls`, `callTraffic`, slot/room creations, cook stats. Overview rankings and economics omit chart
-`range` for all-time (same pattern as gift-card overview). Paid revenue averages use `PAYED` / `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM`.
-Conversions are dual-accepted offers. `AdminBookingRequest` exposes applied `promoCode` / `giftCard` snapshots.
-`AdminBookingRequestCriterion` supports optional `statuses` (derived lifecycle SQL, same rules as `bookingRequestStatusDerive`),
-`createdAtFrom` / `createdAtTo` (used by the admin assistant “past X days” list tool and available to the list API), and `bookingRequestIds`
-(`IN`; omit or empty = no id filter — admin assistant drill-in on the same list tool).
+approve; cooks notify; payout mutations; `calls`, `callTraffic`, slot/room creations, cook stats. Overview rankings omit chart `range` for
+all-time (same pattern as gift-card overview). Economics averages and all-time paid totals ignore `range`; optional `range` scopes
+`rangeTotalPaid*` by payment time. Paid revenue uses `PAYED` / `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM`. Conversions are dual-accepted offers.
+`AdminBookingRequest` exposes applied `promoCode` / `giftCard` snapshots. `AdminBookingRequestCriterion` supports optional `statuses`
+(derived lifecycle SQL, same rules as `bookingRequestStatusDerive`), `createdAtFrom` / `createdAtTo` (used by the admin assistant “past X
+days” list tool and available to the list API), and `bookingRequestIds` (`IN`; omit or empty = no id filter — admin assistant drill-in on
+the same list tool).
 
 UI building blocks: `AdminBookingRequestListCard` (list page + admin user detail booking-requests tab + admin assistant chat via
 `admin.bookingRequestList` data parts), `AdminBookingRequestOfferCard` (request-detail offers funnel + admin user detail cook offers tab:

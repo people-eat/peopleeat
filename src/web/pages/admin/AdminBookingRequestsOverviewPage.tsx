@@ -24,8 +24,8 @@ import { AdminOverviewStatCard } from './AdminOverviewStatCard';
 
 export const adminBookingRequestsOverviewPageTitle = { de: 'Buchungsanfragen', en: 'Booking Requests' } as const;
 export const adminBookingRequestsOverviewPageDescription = {
-    de: 'Verteilung, Neuanlagen, Anlässe, Angebote und Koch-Rankings.',
-    en: 'Distribution, creations, occasions, offers, and cook rankings.',
+    de: 'Verteilung, eingegangene Anfragen, Anlässe, Angebote und Koch-Rankings.',
+    en: 'Distribution, received requests, occasions, offers, and cook rankings.',
 } as const;
 
 /** Order matches `bookingRequestsCounts` indices on the overview query. */
@@ -36,7 +36,7 @@ const ADMIN_BOOKING_REQUEST_COUNT_CRITERIA: GqlCAdminBookingRequestCriterion[] =
     { publicationStatuses: ['PUBLICATION_APPROVED_BY_ADMIN'] },
 ];
 
-const ADMIN_BOOKING_REQUEST_RANKING_TAKE = 3;
+const ADMIN_BOOKING_REQUEST_RANKING_TAKE = 5;
 
 export function adminBookingRequestsOverviewPageVariables(search: AdminOverviewRangeSearch = {}) {
     return {
@@ -194,13 +194,45 @@ export function AdminBookingRequestsOverviewPage({
                 </section>
 
                 <section className="grid gap-3">
+                    <div className="flex flex-wrap items-end justify-between gap-3">
+                        <h2 className="text-lg font-medium">
+                            {{ de: 'Eingegangene Buchungsanfragen', en: 'Received booking requests' }[locale]}
+                        </h2>
+                        <DateRangePicker
+                            value={pickerValue}
+                            onValueChange={onRangeChange}
+                            locale={DATE_FNS_LOCALE[locale]}
+                            placeholder={{ de: 'Zeitraum wählen', en: 'Pick a date range' }[locale]}
+                            className="w-auto"
+                            aria-label={
+                                {
+                                    de: 'Zeitraum für eingegangene Buchungsanfragen und Umsatz',
+                                    en: 'Date range for received booking requests and revenue',
+                                }[locale]
+                            }
+                        />
+                    </div>
+                    <AdminOverviewBarChart
+                        data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}
+                        locale={locale}
+                        timeZone={timeZone}
+                        ariaLabel={
+                            {
+                                de: 'Balkendiagramm der eingegangenen Buchungsanfragen im gewählten Zeitraum',
+                                en: 'Bar chart of received booking requests in the selected range',
+                            }[locale]
+                        }
+                    />
+                </section>
+
+                <section className="grid gap-3">
                     <div className="grid gap-1">
                         <h2 className="text-lg font-medium">{{ de: 'Angebote & Umsatz', en: 'Offers & revenue' }[locale]}</h2>
                         <p className="text-sm text-muted-foreground">
                             {
                                 {
-                                    de: 'Über alle Anfragen und bezahlte Angebote (unabhängig vom Diagrammzeitraum).',
-                                    en: 'Across all requests and paid offers (independent of the chart range).',
+                                    de: 'Durchschnitte und Gesamtumsatz über alle bezahlten Angebote. Zeitraum-Summen folgen dem Diagrammzeitraum oben (Zahlungszeitpunkt).',
+                                    en: 'Averages and totals across all paid offers. Range totals follow the chart range above (payment time).',
                                 }[locale]
                             }
                         </p>
@@ -236,47 +268,54 @@ export function AdminBookingRequestsOverviewPage({
                             })}
                         />
                     </dl>
-                </section>
-
-                <section className="grid gap-3">
-                    <div className="flex flex-wrap items-end justify-between gap-3">
-                        <h2 className="text-lg font-medium">{{ de: 'Neuanlagen', en: 'Creations' }[locale]}</h2>
-                        <DateRangePicker
-                            value={pickerValue}
-                            onValueChange={onRangeChange}
-                            locale={DATE_FNS_LOCALE[locale]}
-                            placeholder={{ de: 'Zeitraum wählen', en: 'Pick a date range' }[locale]}
-                            className="w-auto"
-                            aria-label={
-                                { de: 'Zeitraum für Buchungsanfrage-Neuanlagen', en: 'Date range for booking request creations' }[locale]
-                            }
+                    <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                        <AdminOverviewStatCard
+                            label={{ de: 'Umsatz gesamt', en: 'Total revenue' }[locale]}
+                            value={economics?.totalPaidCustomerTotalCents ?? 0}
+                            displayValue={formatCurrency(economics?.totalPaidCustomerTotalCents ?? 0, {
+                                locale,
+                                maximumFractionDigits: 0,
+                            })}
                         />
-                    </div>
-                    <AdminOverviewBarChart
-                        data={buckets.map((bucket) => ({ bucketStart: bucket.bucketStart, count: bucket.count }))}
-                        locale={locale}
-                        timeZone={timeZone}
-                        ariaLabel={
-                            {
-                                de: 'Balkendiagramm der Buchungsanfrage-Neuanlagen im gewählten Zeitraum',
-                                en: 'Bar chart of booking request creations in the selected range',
-                            }[locale]
-                        }
-                    />
+                        <AdminOverviewStatCard
+                            label={{ de: 'Plattformgewinn gesamt', en: 'Total platform profit' }[locale]}
+                            value={economics?.totalPaidPlatformRevenueCents ?? 0}
+                            displayValue={formatCurrency(economics?.totalPaidPlatformRevenueCents ?? 0, {
+                                locale,
+                                maximumFractionDigits: 0,
+                            })}
+                        />
+                        <AdminOverviewStatCard
+                            label={{ de: 'Umsatz im Zeitraum', en: 'Revenue in range' }[locale]}
+                            value={economics?.rangeTotalPaidCustomerTotalCents ?? 0}
+                            displayValue={formatCurrency(economics?.rangeTotalPaidCustomerTotalCents ?? 0, {
+                                locale,
+                                maximumFractionDigits: 0,
+                            })}
+                        />
+                        <AdminOverviewStatCard
+                            label={{ de: 'Plattformgewinn im Zeitraum', en: 'Platform profit in range' }[locale]}
+                            value={economics?.rangeTotalPaidPlatformRevenueCents ?? 0}
+                            displayValue={formatCurrency(economics?.rangeTotalPaidPlatformRevenueCents ?? 0, {
+                                locale,
+                                maximumFractionDigits: 0,
+                            })}
+                        />
+                    </dl>
                 </section>
 
                 <section className="grid gap-3">
                     <p className="text-sm text-muted-foreground">
                         {
                             {
-                                de: 'Top 3 über alle Anfragen (unabhängig vom Diagrammzeitraum).',
-                                en: 'Top 3 across all requests (independent of the chart range).',
+                                de: 'Top 5 über alle Anfragen (unabhängig vom Diagrammzeitraum).',
+                                en: 'Top 5 across all requests (independent of the chart range).',
                             }[locale]
                         }
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2 sm:items-start">
                         <div className="grid gap-3">
-                            <h2 className="text-lg font-medium">{{ de: 'Top-3-Anlässe', en: 'Top 3 occasions' }[locale]}</h2>
+                            <h2 className="text-lg font-medium">{{ de: 'Top-5-Anlässe', en: 'Top 5 occasions' }[locale]}</h2>
                             {occasionStats.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">{{ de: 'Keine Anfragen.', en: 'No requests.' }[locale]}</p>
                             ) : (
@@ -300,7 +339,7 @@ export function AdminBookingRequestsOverviewPage({
                         </div>
 
                         <div className="grid gap-3">
-                            <h2 className="text-lg font-medium">{{ de: 'Top-3-Monate', en: 'Top 3 months' }[locale]}</h2>
+                            <h2 className="text-lg font-medium">{{ de: 'Top-5-Monate', en: 'Top 5 months' }[locale]}</h2>
                             {creationMonthStats.length === 0 ? (
                                 <p className="text-sm text-muted-foreground">{{ de: 'Keine Anfragen.', en: 'No requests.' }[locale]}</p>
                             ) : (
@@ -331,8 +370,8 @@ export function AdminBookingRequestsOverviewPage({
                     <p className="text-sm text-muted-foreground">
                         {
                             {
-                                de: 'Top 3 Köche über alle Angebote (unabhängig vom Diagrammzeitraum).',
-                                en: 'Top 3 cooks across all offers (independent of the chart range).',
+                                de: 'Top 5 Köche über alle Angebote (unabhängig vom Diagrammzeitraum).',
+                                en: 'Top 5 cooks across all offers (independent of the chart range).',
                             }[locale]
                         }
                     </p>

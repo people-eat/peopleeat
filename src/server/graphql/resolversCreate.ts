@@ -309,7 +309,9 @@ import { adminUserCookFindOne } from '../queries/adminUserCookFindOne';
 import { adminUserCounts } from '../queries/adminUserCounts';
 import { adminUserFindMany } from '../queries/adminUserFindMany';
 import { adminUserFindOne } from '../queries/adminUserFindOne';
+import { adminUserInsightsFindOne } from '../queries/adminUserInsightsFindOne';
 import { adminUserRegistrationsFindMany } from '../queries/adminUserRegistrationsFindMany';
+import { adminUserUpcomingBirthdaysFindMany } from '../queries/adminUserUpcomingBirthdaysFindMany';
 import { adminWebPageFindMany } from '../queries/adminWebPageFindMany';
 import { adminWebPageFindOne } from '../queries/adminWebPageFindOne';
 import { adminWhatsAppConversationFindMany } from '../queries/adminWhatsAppConversationFindMany';
@@ -422,6 +424,7 @@ import type {
     GqlSAdminBookingRequestOccasionStatsArgs,
     GqlSAdminBookingRequestOffer,
     GqlSAdminBookingRequestOfferArgs,
+    GqlSAdminBookingRequestOfferEconomicsArgs,
     GqlSAdminBookingRequestOffersArgs,
     GqlSAdminBookingRequestOffersCountsArgs,
     GqlSAdminBookingRequestsArgs,
@@ -575,6 +578,7 @@ import type {
     GqlSAdminSupportRequestArgs,
     GqlSAdminSupportRequestsArgs,
     GqlSAdminSupportRequestsCountsArgs,
+    GqlSAdminUpcomingBirthdaysArgs,
     GqlSAdminUser,
     GqlSAdminUserArgs,
     GqlSAdminUserCountsArgs,
@@ -1057,6 +1061,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             userRegistrations(_parent: GqlSAdmin, args: GqlSAdminUserRegistrationsArgs, requestingSession: GqlSSession) {
                 return adminUserRegistrationsFindMany(args, requestingSession, serverRuntime);
             },
+            userInsights(_parent: GqlSAdmin, _args: Record<string, never>, requestingSession: GqlSSession) {
+                return adminUserInsightsFindOne(requestingSession, serverRuntime);
+            },
+            upcomingBirthdays(_parent: GqlSAdmin, args: GqlSAdminUpcomingBirthdaysArgs, requestingSession: GqlSSession) {
+                return adminUserUpcomingBirthdaysFindMany(args, requestingSession, serverRuntime);
+            },
             sessions(_parent: GqlSAdmin, args: GqlSAdminSessionsArgs, requestingSession: GqlSSession) {
                 return adminSessionFindMany(args, requestingSession, serverRuntime);
             },
@@ -1199,8 +1209,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             bookingRequestAverageParticipants(_parent: GqlSAdmin, _args: unknown, requestingSession: GqlSSession) {
                 return adminBookingRequestAverageParticipantsFindOne(requestingSession, serverRuntime);
             },
-            bookingRequestOfferEconomics(_parent: GqlSAdmin, _args: unknown, requestingSession: GqlSSession) {
-                return adminBookingRequestOfferEconomicsFindOne(requestingSession, serverRuntime);
+            bookingRequestOfferEconomics(
+                _parent: GqlSAdmin,
+                args: GqlSAdminBookingRequestOfferEconomicsArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestOfferEconomicsFindOne(args, requestingSession, serverRuntime);
             },
             bookingRequestCookOfferStats(
                 _parent: GqlSAdmin,

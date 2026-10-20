@@ -112,8 +112,10 @@ export interface GqlCAdmin {
     supportRequest?: Maybe<GqlCAdminSupportRequest>;
     supportRequests: Array<GqlCAdminSupportRequest>;
     supportRequestsCounts: Array<Scalars['Int']['output']>;
+    upcomingBirthdays: Array<GqlCAdminUserUpcomingBirthday>;
     user?: Maybe<GqlCAdminUser>;
     userCounts: Array<Scalars['Int']['output']>;
+    userInsights: GqlCAdminUserInsights;
     userRegistrations: Array<GqlCAdminTimeBucket>;
     users: Array<GqlCAdminUser>;
     webPage: GqlCAdminWebPage;
@@ -192,6 +194,10 @@ export type GqlCAdminBookingRequestOccasionStatsArgs = {
 
 export type GqlCAdminBookingRequestOfferArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminBookingRequestOfferEconomicsArgs = {
+    range?: InputMaybe<GqlCDateTimeRange>;
 };
 
 export type GqlCAdminBookingRequestOffersArgs = {
@@ -418,6 +424,10 @@ export type GqlCAdminSupportRequestsArgs = {
 
 export type GqlCAdminSupportRequestsCountsArgs = {
     criteria: Array<GqlCAdminSupportRequestCriterion>;
+};
+
+export type GqlCAdminUpcomingBirthdaysArgs = {
+    take?: Scalars['Int']['input'];
 };
 
 export type GqlCAdminUserArgs = {
@@ -781,6 +791,10 @@ export interface GqlCAdminBookingRequestOfferEconomics {
     averageOffersPerRequest: Scalars['Float']['output'];
     averagePaidCustomerTotalCents: Scalars['Int']['output'];
     averagePaidPlatformRevenueCents: Scalars['Int']['output'];
+    rangeTotalPaidCustomerTotalCents: Scalars['Int']['output'];
+    rangeTotalPaidPlatformRevenueCents: Scalars['Int']['output'];
+    totalPaidCustomerTotalCents: Scalars['Int']['output'];
+    totalPaidPlatformRevenueCents: Scalars['Int']['output'];
 }
 
 export type GqlCAdminBookingRequestOfferHandover = {
@@ -940,6 +954,7 @@ export interface GqlCAdminCook {
     stripeAccountActive: Scalars['Boolean']['output'];
     stripeAccountActiveWasReset: Scalars['Boolean']['output'];
     stripeAccountId?: Maybe<Scalars['String']['output']>;
+    stripeAccountUrl?: Maybe<Scalars['String']['output']>;
     stripeStatus: GqlCCookStripeStatus;
     travelExpensesAmount: Scalars['Int']['output'];
     user: GqlCAdminUser;
@@ -2109,9 +2124,46 @@ export type GqlCAdminUserCriterion = {
     userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
+export interface GqlCAdminUserInsights {
+    __typename?: 'AdminUserInsights';
+    accountCount: Scalars['Int']['output'];
+    averageAge?: Maybe<Scalars['Float']['output']>;
+    birthDateSampleSize: Scalars['Int']['output'];
+    locales: Array<GqlCAdminUserLocaleStat>;
+    preferredCommunication: Array<GqlCAdminUserPreferredCommunicationStat>;
+    timeZones: Array<GqlCAdminUserTimeZoneStat>;
+}
+
+export interface GqlCAdminUserLocaleStat {
+    __typename?: 'AdminUserLocaleStat';
+    count: Scalars['Int']['output'];
+    locale: GqlCLocale;
+}
+
+export interface GqlCAdminUserPreferredCommunicationStat {
+    __typename?: 'AdminUserPreferredCommunicationStat';
+    count: Scalars['Int']['output'];
+    preferredCommunication?: Maybe<GqlCUserPreferredCommunication>;
+}
+
 export type GqlCAdminUserSortField = 'createdAt' | 'emailAddress' | 'firstName' | 'lastName';
 
+export interface GqlCAdminUserTimeZoneStat {
+    __typename?: 'AdminUserTimeZoneStat';
+    count: Scalars['Int']['output'];
+    timeZone: Scalars['TimeZone']['output'];
+}
+
 export type GqlCAdminUserType = 'admin' | 'cook' | 'customer';
+
+export interface GqlCAdminUserUpcomingBirthday {
+    __typename?: 'AdminUserUpcomingBirthday';
+    birthDate: Scalars['Date']['output'];
+    firstName: Scalars['String']['output'];
+    lastName: Scalars['String']['output'];
+    nextBirthday: Scalars['Date']['output'];
+    userId: Scalars['ID']['output'];
+}
 
 export interface GqlCAdminWebPage {
     __typename?: 'AdminWebPage';
@@ -10523,6 +10575,10 @@ export type GqlCAdminBookingRequestsOverviewPageQuery = {
                     averageMenuPriceCents: number;
                     averagePaidCustomerTotalCents: number;
                     averagePaidPlatformRevenueCents: number;
+                    totalPaidCustomerTotalCents: number;
+                    totalPaidPlatformRevenueCents: number;
+                    rangeTotalPaidCustomerTotalCents: number;
+                    rangeTotalPaidPlatformRevenueCents: number;
                 };
                 cooksByOffers: Array<{ cookId: string; displayName: string; offerCount: number; conversionCount: number }>;
                 cooksByConversions: Array<{ cookId: string; displayName: string; offerCount: number; conversionCount: number }>;
@@ -13526,6 +13582,7 @@ export type GqlCAdminPageQueryVariables = Exact<{ [key: string]: never }>;
 export type GqlCAdminPageQuery = {
     currentSession: {
         sessionId: string;
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
         user: {
             userId: string;
             admin: {
@@ -14513,6 +14570,113 @@ export type GqlCAdminCookTestimonialCreateMutationVariables = Exact<{
 
 export type GqlCAdminCookTestimonialCreateMutation = { admin: { cookTestimonialCreate: { success: boolean; referenceId: string | null } } };
 
+export type GqlCAdminUserCookProfileEditCookFragment = {
+    cookId: string;
+    biography: string;
+    biographySummary: string;
+    cuisineStyle: string | null;
+    cookingPhilosophy: string | null;
+    travelExpensesAmount: number;
+    maximumTravelDistance: number | null;
+    exactTravelOriginAddress: {
+        displayText: string;
+        latitude: number;
+        longitude: number;
+        addressLine1: string;
+        addressLine2: string;
+        city: string;
+        postCode: string;
+        state: string;
+        country: string;
+    } | null;
+};
+
+export type GqlCAdminUserCookProfileEditPageQueryVariables = Exact<{
+    userId: string;
+}>;
+
+export type GqlCAdminUserCookProfileEditPageQuery = {
+    currentSession: {
+        user: {
+            admin: {
+                adminId: string;
+                user: {
+                    userId: string;
+                    firstName: string;
+                    lastName: string;
+                    cook: {
+                        cookId: string;
+                        biography: string;
+                        biographySummary: string;
+                        cuisineStyle: string | null;
+                        cookingPhilosophy: string | null;
+                        travelExpensesAmount: number;
+                        maximumTravelDistance: number | null;
+                        exactTravelOriginAddress: {
+                            displayText: string;
+                            latitude: number;
+                            longitude: number;
+                            addressLine1: string;
+                            addressLine2: string;
+                            city: string;
+                            postCode: string;
+                            state: string;
+                            country: string;
+                        } | null;
+                    } | null;
+                } | null;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCAdminUserCookProfileEditUpdateMutationVariables = Exact<{
+    cookId: string;
+    input: Schema.GqlCCookUpdate;
+}>;
+
+export type GqlCAdminUserCookProfileEditUpdateMutation = { admin: { cookUpdate: { success: boolean; referenceId: string | null } } };
+
+export type GqlCAdminUserCookProfileEditBiographySuggestMutationVariables = Exact<{
+    cookId: string;
+    currentBiography: string;
+}>;
+
+export type GqlCAdminUserCookProfileEditBiographySuggestMutation = { admin: { cookBiographySuggest: string } };
+
+export type GqlCAdminUserCookProfileEditBiographySummarySuggestMutationVariables = Exact<{
+    cookId: string;
+    biography: string;
+}>;
+
+export type GqlCAdminUserCookProfileEditBiographySummarySuggestMutation = { admin: { cookBiographySummarySuggest: string } };
+
+export type GqlCAdminUserCookProfileEditLocationSuggestionsQueryVariables = Exact<{
+    searchText: string;
+    onlyFullAddresses?: boolean;
+}>;
+
+export type GqlCAdminUserCookProfileEditLocationSuggestionsQuery = {
+    currentSession: {
+        locationSuggestions: Array<{
+            displayText: string;
+            latitude: number;
+            longitude: number;
+            structuredAddress: {
+                displayText: string;
+                latitude: number;
+                longitude: number;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                state: string;
+                country: string;
+            } | null;
+        }>;
+    };
+};
+
 export type GqlCAdminUserCreateMutationVariables = Exact<{
     input: Schema.GqlCAdminUserCreate;
 }>;
@@ -14526,6 +14690,7 @@ export type GqlCAdminUserCookFragment = {
     canCreateOffers: boolean;
     stripeStatus: Schema.GqlCCookStripeStatus;
     stripeAccountId: string | null;
+    stripeAccountUrl: string | null;
     stripeAccountActive: boolean;
     stripeAccountActiveWasReset: boolean;
     biography: string;
@@ -14621,6 +14786,7 @@ export type GqlCAdminUserPageQuery = {
                         canCreateOffers: boolean;
                         stripeStatus: Schema.GqlCCookStripeStatus;
                         stripeAccountId: string | null;
+                        stripeAccountUrl: string | null;
                         stripeAccountActive: boolean;
                         stripeAccountActiveWasReset: boolean;
                         biography: string;
@@ -14767,32 +14933,6 @@ export type GqlCAdminUserPageQuery = {
     };
 };
 
-export type GqlCAdminUserLocationSuggestionsQueryVariables = Exact<{
-    searchText: string;
-    onlyFullAddresses?: boolean;
-}>;
-
-export type GqlCAdminUserLocationSuggestionsQuery = {
-    currentSession: {
-        locationSuggestions: Array<{
-            displayText: string;
-            latitude: number;
-            longitude: number;
-            structuredAddress: {
-                displayText: string;
-                latitude: number;
-                longitude: number;
-                addressLine1: string;
-                addressLine2: string;
-                city: string;
-                postCode: string;
-                state: string;
-                country: string;
-            } | null;
-        }>;
-    };
-};
-
 export type GqlCAdminCookApprovalUpdateMutationVariables = Exact<{
     cookId: string;
     isApprovedByAdmin: boolean;
@@ -14855,20 +14995,6 @@ export type GqlCAdminUserCookUpdateMutationVariables = Exact<{
 
 export type GqlCAdminUserCookUpdateMutation = { admin: { cookUpdate: { success: boolean; referenceId: string | null } } };
 
-export type GqlCAdminUserCookBiographySuggestMutationVariables = Exact<{
-    cookId: string;
-    currentBiography: string;
-}>;
-
-export type GqlCAdminUserCookBiographySuggestMutation = { admin: { cookBiographySuggest: string } };
-
-export type GqlCAdminUserCookBiographySummarySuggestMutationVariables = Exact<{
-    cookId: string;
-    biography: string;
-}>;
-
-export type GqlCAdminUserCookBiographySummarySuggestMutation = { admin: { cookBiographySummarySuggest: string } };
-
 export type GqlCAdminUserCookMealCreateMutationVariables = Exact<{
     cookId: string;
     meal?: Schema.GqlCCookMealCreate | null | undefined;
@@ -14905,6 +15031,7 @@ export type GqlCAdminUsersOverviewPageQueryVariables = Exact<{
     criteria: Array<Schema.GqlCAdminUserCriterion> | Schema.GqlCAdminUserCriterion;
     range: Schema.GqlCDateTimeRange;
     granularity?: Schema.GqlCAdminTimeBucketGranularity;
+    upcomingBirthdaysTake?: number;
 }>;
 
 export type GqlCAdminUsersOverviewPageQuery = {
@@ -14912,7 +15039,20 @@ export type GqlCAdminUsersOverviewPageQuery = {
         sessionId: string;
         user: {
             userId: string;
-            admin: { adminId: string; userCounts: Array<number>; userRegistrations: Array<{ bucketStart: string; count: number }> } | null;
+            admin: {
+                adminId: string;
+                userCounts: Array<number>;
+                userRegistrations: Array<{ bucketStart: string; count: number }>;
+                userInsights: {
+                    accountCount: number;
+                    averageAge: number | null;
+                    birthDateSampleSize: number;
+                    preferredCommunication: Array<{ preferredCommunication: Schema.GqlCUserPreferredCommunication | null; count: number }>;
+                    locales: Array<{ locale: Schema.GqlCLocale; count: number }>;
+                    timeZones: Array<{ timeZone: string; count: number }>;
+                };
+                upcomingBirthdays: Array<{ userId: string; firstName: string; lastName: string; birthDate: string; nextBirthday: string }>;
+            } | null;
         } | null;
     };
 };
@@ -26794,6 +26934,46 @@ export const AdminTestimonialsListCookFragmentDoc = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminTestimonialsListCookFragment, unknown>;
+export const AdminUserCookProfileEditCookFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminUserCookProfileEditCook' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                            ],
+                        },
+                    },
+                    { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesAmount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'maximumTravelDistance' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminUserCookProfileEditCookFragment, unknown>;
 export const AdminUserCookFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -26810,6 +26990,7 @@ export const AdminUserCookFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountActive' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountActiveWasReset' } },
                     {
@@ -46069,19 +46250,19 @@ export const AdminBookingRequestsOverviewPageDocument = {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'occasionStatsTake' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
-                    defaultValue: { kind: 'IntValue', value: '3' },
+                    defaultValue: { kind: 'IntValue', value: '5' },
                 },
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'creationMonthStatsTake' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
-                    defaultValue: { kind: 'IntValue', value: '3' },
+                    defaultValue: { kind: 'IntValue', value: '5' },
                 },
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookOfferStatsTake' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
-                    defaultValue: { kind: 'IntValue', value: '3' },
+                    defaultValue: { kind: 'IntValue', value: '5' },
                 },
             ],
             selectionSet: {
@@ -46196,6 +46377,13 @@ export const AdminBookingRequestsOverviewPageDocument = {
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'bookingRequestOfferEconomics' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
@@ -46214,6 +46402,22 @@ export const AdminBookingRequestsOverviewPageDocument = {
                                                                     {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'averagePaidPlatformRevenueCents' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'totalPaidCustomerTotalCents' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'totalPaidPlatformRevenueCents' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'rangeTotalPaidCustomerTotalCents' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'rangeTotalPaidPlatformRevenueCents' },
                                                                     },
                                                                 ],
                                                             },
@@ -56522,6 +56726,7 @@ export const AdminPageDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'user' },
@@ -60151,6 +60356,377 @@ export const AdminCookTestimonialCreateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminCookTestimonialCreateMutation, GqlCAdminCookTestimonialCreateMutationVariables>;
+export const AdminUserCookProfileEditPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminUserCookProfileEditPage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'userId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'admin' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'user' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'userId' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'userId' } },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'cook' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'FragmentSpread',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'AdminUserCookProfileEditCook',
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminUserCookProfileEditCook' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                            ],
+                        },
+                    },
+                    { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesAmount' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'maximumTravelDistance' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminUserCookProfileEditPageQuery, GqlCAdminUserCookProfileEditPageQueryVariables>;
+export const AdminUserCookProfileEditUpdateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminUserCookProfileEditUpdate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookUpdate' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookUpdate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'cookId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminUserCookProfileEditUpdateMutation, GqlCAdminUserCookProfileEditUpdateMutationVariables>;
+export const AdminUserCookProfileEditBiographySuggestDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminUserCookProfileEditBiographySuggest' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'currentBiography' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookBiographySuggest' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'cookId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'currentBiography' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'currentBiography' } },
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminUserCookProfileEditBiographySuggestMutation,
+    GqlCAdminUserCookProfileEditBiographySuggestMutationVariables
+>;
+export const AdminUserCookProfileEditBiographySummarySuggestDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminUserCookProfileEditBiographySummarySuggest' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'biography' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookBiographySummarySuggest' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'cookId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'biography' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'biography' } },
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminUserCookProfileEditBiographySummarySuggestMutation,
+    GqlCAdminUserCookProfileEditBiographySummarySuggestMutationVariables
+>;
+export const AdminUserCookProfileEditLocationSuggestionsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminUserCookProfileEditLocationSuggestions' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                    defaultValue: { kind: 'BooleanValue', value: true },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'locationSuggestions' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'searchText' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'onlyFullAddresses' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'structuredAddress' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminUserCookProfileEditLocationSuggestionsQuery,
+    GqlCAdminUserCookProfileEditLocationSuggestionsQueryVariables
+>;
 export const AdminUserCreateDocument = {
     kind: 'Document',
     definitions: [
@@ -61177,6 +61753,7 @@ export const AdminUserPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountActive' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountActiveWasReset' } },
                     {
@@ -61216,85 +61793,6 @@ export const AdminUserPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminUserPageQuery, GqlCAdminUserPageQueryVariables>;
-export const AdminUserLocationSuggestionsDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'query',
-            name: { kind: 'Name', value: 'AdminUserLocationSuggestions' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
-                    defaultValue: { kind: 'BooleanValue', value: true },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'currentSession' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'locationSuggestions' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'searchText' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
-                                        },
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'onlyFullAddresses' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
-                                        },
-                                    ],
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'structuredAddress' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'state' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCAdminUserLocationSuggestionsQuery, GqlCAdminUserLocationSuggestionsQueryVariables>;
 export const AdminCookApprovalUpdateDocument = {
     kind: 'Document',
     definitions: [
@@ -61799,110 +62297,6 @@ export const AdminUserCookUpdateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminUserCookUpdateMutation, GqlCAdminUserCookUpdateMutationVariables>;
-export const AdminUserCookBiographySuggestDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminUserCookBiographySuggest' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'currentBiography' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cookBiographySuggest' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'cookId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
-                                        },
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'currentBiography' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'currentBiography' } },
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCAdminUserCookBiographySuggestMutation, GqlCAdminUserCookBiographySuggestMutationVariables>;
-export const AdminUserCookBiographySummarySuggestDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminUserCookBiographySummarySuggest' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'biography' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cookBiographySummarySuggest' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'cookId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
-                                        },
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'biography' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'biography' } },
-                                        },
-                                    ],
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCAdminUserCookBiographySummarySuggestMutation, GqlCAdminUserCookBiographySummarySuggestMutationVariables>;
 export const AdminUserCookMealCreateDocument = {
     kind: 'Document',
     definitions: [
@@ -62175,6 +62569,12 @@ export const AdminUsersOverviewPageDocument = {
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminTimeBucketGranularity' } } },
                     defaultValue: { kind: 'EnumValue', value: 'day' },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingBirthdaysTake' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
+                    defaultValue: { kind: 'IntValue', value: '12' },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -62234,6 +62634,81 @@ export const AdminUsersOverviewPageDocument = {
                                                                 selections: [
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'userInsights' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'accountCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'averageAge' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'birthDateSampleSize' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'preferredCommunication' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'preferredCommunication' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'locales' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'timeZones' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'timeZone' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'upcomingBirthdays' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'take' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'upcomingBirthdaysTake' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'nextBirthday' } },
                                                                 ],
                                                             },
                                                         },

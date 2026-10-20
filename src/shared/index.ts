@@ -43,7 +43,12 @@ export type {
     BookingRequestOfferPriceGuidanceInput,
     BookingRequestOfferPriceGuidanceResult,
 } from './bookingRequestOfferPriceGuidance';
-export { stripeDashboardIsTestMode, stripeDashboardPaymentIntentUrl, stripeDashboardSetupIntentUrl } from './stripeDashboardUrls';
+export {
+    stripeDashboardConnectAccountUrl,
+    stripeDashboardIsTestMode,
+    stripeDashboardPaymentIntentUrl,
+    stripeDashboardSetupIntentUrl,
+} from './stripeDashboardUrls';
 export { formatBytes } from './formatBytes';
 export { formatCountryName } from './formatCountryName';
 export { formatCurrency } from './formatCurrency';

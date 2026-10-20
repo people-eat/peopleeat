@@ -62,7 +62,9 @@ target user so their session can refresh effective keys.
 
 ### Client and server runtime
 
-Visitors can read currently enabled keys on `Session.activeFeatureToggleKeys` (effective for the session user). Server code can call
+Visitors can read currently enabled keys on `Session.activeFeatureToggleKeys` (effective for the session user). Profile and admin shells
+mount `FeatureToggleKeysProvider` from that list; admin also sets `FeatureToggleAdminShellProvider` so ops UI stays on by default while
+product gates that pass `gateInAdminShell: true` (offer chat reactions) follow the admin’s effective keys. Server code can call
 `featureToggleIsEnabled` for commands and jobs (pass `userId` when the acting user matters; omit for global-only / jobs). Product surfaces
 that should respect a key still need an explicit gate at the call site.
 
@@ -76,15 +78,16 @@ Wired today:
 - **Menu publication** (`PUBLICATION_MENUS`) — same for menus
 - **Booking request restrictions** (`BOOKING_REQUEST_RESTRICTIONS`) — shows the dietary-restrictions wizard step and customer/admin editors;
   create/update strip non-empty restriction values when off for the customer `userId`. Detail views still show stored restrictions. Admin
-  shells treat an absent toggle provider as on for the editor (same as publication cards); the server still strips when the effective toggle
-  is off
+  shells keep the editor visible for ops (`FeatureToggleAdminShellProvider`, default not `gateInAdminShell`); the server still strips when
+  the effective toggle is off
 - **Offer chat emoji reactions** (`BOOKING_REQUEST_OFFER_CHAT_REACTIONS`) — smile control on peer `*_MESSAGE_SIMPLE` bubbles in customer /
-  cook offer chat (profile toggle provider); admin shells keep the control visible when the provider is absent (same as publication /
-  restrictions); mutation `bookingRequestOfferChatMessageReactionUpsert` rejects when off for the acting `userId`
+  cook **and admin** offer chat; admin shells mount the session toggle provider and gate this key with `gateInAdminShell` (unlike
+  publication / restrictions, which stay visible for ops when the end-user rollout is off). Mutation
+  `bookingRequestOfferChatMessageReactionUpsert` rejects when off for the acting `userId`
 - **Cook biography AI writing** (`COOK_BIOGRAPHY_AI_WRITE`) — shows Write / Improve with AI on the cook chef-profile editor; cook and admin
   suggest mutations reject when off for the **cook** `userId`. Biography **summary** generation (auto job on cook save + admin Generate
-  summary) is not toggled and always runs. Admin shells keep the AI write button visible when the toggle provider is absent (same as
-  publication / restrictions); the server still rejects when the effective toggle is off
+  summary) is not toggled and always runs. Admin shells keep the AI write button visible for ops (same as publication / restrictions); the
+  server still rejects when the effective toggle is off
 - **Cook wallet Stripe balance** (`COOK_WALLET_STRIPE_BALANCE`) — shows live Connect available/pending balance and recent balance
   transactions on `/profile/wallet`; `Cook.stripeWallet` returns null when off for the cook `userId` (no Stripe balance calls)
 - **AI menu evaluation** (`AI_MENU_EVALUATION`) — cook open / refresh / apply gates use the cook `userId`

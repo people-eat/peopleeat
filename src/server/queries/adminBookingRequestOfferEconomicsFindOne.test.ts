@@ -24,11 +24,12 @@ async function setupCook() {
 }
 
 describe('adminBookingRequestOfferEconomicsFindOne', () => {
-    it('returns finite averages including paid revenue after a paid offer insert', async () => {
+    it('returns finite averages and paid totals after a paid offer insert', async () => {
         // Arrange
         const customer = await commandSetup.withUser();
         const cook = await setupCook();
         const bookingRequestId = idCreate();
+        const paymentDateTime = new Date('2024-06-15T12:00:00.000Z');
         await testDb.insert(bookingRequests).values({
             bookingRequestId,
             userId: customer.user.userId,
@@ -56,10 +57,20 @@ describe('adminBookingRequestOfferEconomicsFindOne', () => {
             totalWithoutDiscountsCentsCustomer: 48_000,
             totalCentsCustomer: 48_000,
             paymentStatus: 'PAYED',
+            paymentDateTime,
         });
 
         // Act
-        const economics = await adminBookingRequestOfferEconomicsFindOne(customer.requestingSession, customer.serverRuntime);
+        const economics = await adminBookingRequestOfferEconomicsFindOne(
+            {
+                range: {
+                    startDateTime: new Date('2024-06-01T00:00:00.000Z'),
+                    endDateTime: new Date('2024-06-30T23:59:59.999Z'),
+                },
+            },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
 
         // Assert
         expect(Number.isFinite(economics.averageOffersPerRequest)).toBe(true);
@@ -67,5 +78,30 @@ describe('adminBookingRequestOfferEconomicsFindOne', () => {
         expect(economics.averageMenuPriceCents).toBeGreaterThan(0);
         expect(economics.averagePaidCustomerTotalCents).toBeGreaterThan(0);
         expect(economics.averagePaidPlatformRevenueCents).toBeGreaterThan(0);
+        expect(economics.totalPaidCustomerTotalCents).toBeGreaterThanOrEqual(48_000);
+        expect(economics.totalPaidPlatformRevenueCents).toBeGreaterThanOrEqual(8_000);
+        expect(economics.rangeTotalPaidCustomerTotalCents).toBeGreaterThanOrEqual(48_000);
+        expect(economics.rangeTotalPaidPlatformRevenueCents).toBeGreaterThanOrEqual(8_000);
+    });
+
+    it('returns zero range totals for a window with no paid offers', async () => {
+        // Arrange — far-future window so parallel fixtures cannot collide
+        const customer = await commandSetup.withUser();
+
+        // Act
+        const economics = await adminBookingRequestOfferEconomicsFindOne(
+            {
+                range: {
+                    startDateTime: new Date('2099-01-01T00:00:00.000Z'),
+                    endDateTime: new Date('2099-01-31T23:59:59.999Z'),
+                },
+            },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+
+        // Assert
+        expect(economics.rangeTotalPaidCustomerTotalCents).toBe(0);
+        expect(economics.rangeTotalPaidPlatformRevenueCents).toBe(0);
     });
 });

@@ -109,8 +109,10 @@ export interface GqlSAdmin {
     supportRequest?: Maybe<GqlSAdminSupportRequest>;
     supportRequests: Array<GqlSAdminSupportRequest>;
     supportRequestsCounts: Array<Scalars['Int']['output']>;
+    upcomingBirthdays: Array<GqlSAdminUserUpcomingBirthday>;
     user?: Maybe<GqlSAdminUser>;
     userCounts: Array<Scalars['Int']['output']>;
+    userInsights: GqlSAdminUserInsights;
     userRegistrations: Array<GqlSAdminTimeBucket>;
     users: Array<GqlSAdminUser>;
     webPage: GqlSAdminWebPage;
@@ -189,6 +191,10 @@ export type GqlSAdminBookingRequestOccasionStatsArgs = {
 
 export type GqlSAdminBookingRequestOfferArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminBookingRequestOfferEconomicsArgs = {
+    range?: InputMaybe<GqlSDateTimeRange>;
 };
 
 export type GqlSAdminBookingRequestOffersArgs = {
@@ -415,6 +421,10 @@ export type GqlSAdminSupportRequestsArgs = {
 
 export type GqlSAdminSupportRequestsCountsArgs = {
     criteria: Array<GqlSAdminSupportRequestCriterion>;
+};
+
+export type GqlSAdminUpcomingBirthdaysArgs = {
+    take?: Scalars['Int']['input'];
 };
 
 export type GqlSAdminUserArgs = {
@@ -778,6 +788,10 @@ export interface GqlSAdminBookingRequestOfferEconomics {
     averageOffersPerRequest: Scalars['Float']['output'];
     averagePaidCustomerTotalCents: Scalars['Int']['output'];
     averagePaidPlatformRevenueCents: Scalars['Int']['output'];
+    rangeTotalPaidCustomerTotalCents: Scalars['Int']['output'];
+    rangeTotalPaidPlatformRevenueCents: Scalars['Int']['output'];
+    totalPaidCustomerTotalCents: Scalars['Int']['output'];
+    totalPaidPlatformRevenueCents: Scalars['Int']['output'];
 }
 
 export type GqlSAdminBookingRequestOfferHandover = {
@@ -937,6 +951,7 @@ export interface GqlSAdminCook {
     stripeAccountActive: Scalars['Boolean']['output'];
     stripeAccountActiveWasReset: Scalars['Boolean']['output'];
     stripeAccountId?: Maybe<Scalars['String']['output']>;
+    stripeAccountUrl?: Maybe<Scalars['String']['output']>;
     stripeStatus: GqlSCookStripeStatus;
     travelExpensesAmount: Scalars['Int']['output'];
     user: GqlSAdminUser;
@@ -2106,9 +2121,46 @@ export type GqlSAdminUserCriterion = {
     userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
+export interface GqlSAdminUserInsights {
+    __typename?: 'AdminUserInsights';
+    accountCount: Scalars['Int']['output'];
+    averageAge?: Maybe<Scalars['Float']['output']>;
+    birthDateSampleSize: Scalars['Int']['output'];
+    locales: Array<GqlSAdminUserLocaleStat>;
+    preferredCommunication: Array<GqlSAdminUserPreferredCommunicationStat>;
+    timeZones: Array<GqlSAdminUserTimeZoneStat>;
+}
+
+export interface GqlSAdminUserLocaleStat {
+    __typename?: 'AdminUserLocaleStat';
+    count: Scalars['Int']['output'];
+    locale: GqlSLocale;
+}
+
+export interface GqlSAdminUserPreferredCommunicationStat {
+    __typename?: 'AdminUserPreferredCommunicationStat';
+    count: Scalars['Int']['output'];
+    preferredCommunication?: Maybe<GqlSUserPreferredCommunication>;
+}
+
 export type GqlSAdminUserSortField = 'createdAt' | 'emailAddress' | 'firstName' | 'lastName';
 
+export interface GqlSAdminUserTimeZoneStat {
+    __typename?: 'AdminUserTimeZoneStat';
+    count: Scalars['Int']['output'];
+    timeZone: Scalars['TimeZone']['output'];
+}
+
 export type GqlSAdminUserType = 'admin' | 'cook' | 'customer';
+
+export interface GqlSAdminUserUpcomingBirthday {
+    __typename?: 'AdminUserUpcomingBirthday';
+    birthDate: Scalars['Date']['output'];
+    firstName: Scalars['String']['output'];
+    lastName: Scalars['String']['output'];
+    nextBirthday: Scalars['Date']['output'];
+    userId: Scalars['ID']['output'];
+}
 
 export interface GqlSAdminWebPage {
     __typename?: 'AdminWebPage';
@@ -5183,8 +5235,13 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminUser: ResolverTypeWrapper<GqlSAdminUser>;
     AdminUserCreate: GqlSAdminUserCreate;
     AdminUserCriterion: GqlSAdminUserCriterion;
+    AdminUserInsights: ResolverTypeWrapper<GqlSAdminUserInsights>;
+    AdminUserLocaleStat: ResolverTypeWrapper<GqlSAdminUserLocaleStat>;
+    AdminUserPreferredCommunicationStat: ResolverTypeWrapper<GqlSAdminUserPreferredCommunicationStat>;
     AdminUserSortField: GqlSAdminUserSortField;
+    AdminUserTimeZoneStat: ResolverTypeWrapper<GqlSAdminUserTimeZoneStat>;
     AdminUserType: GqlSAdminUserType;
+    AdminUserUpcomingBirthday: ResolverTypeWrapper<GqlSAdminUserUpcomingBirthday>;
     AdminWebPage: ResolverTypeWrapper<GqlSAdminWebPage>;
     AdminWebPageUpdate: GqlSAdminWebPageUpdate;
     AdminWhatsAppConversation: ResolverTypeWrapper<
@@ -5712,6 +5769,11 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminUser: GqlSAdminUser;
     AdminUserCreate: GqlSAdminUserCreate;
     AdminUserCriterion: GqlSAdminUserCriterion;
+    AdminUserInsights: GqlSAdminUserInsights;
+    AdminUserLocaleStat: GqlSAdminUserLocaleStat;
+    AdminUserPreferredCommunicationStat: GqlSAdminUserPreferredCommunicationStat;
+    AdminUserTimeZoneStat: GqlSAdminUserTimeZoneStat;
+    AdminUserUpcomingBirthday: GqlSAdminUserUpcomingBirthday;
     AdminWebPage: GqlSAdminWebPage;
     AdminWebPageUpdate: GqlSAdminWebPageUpdate;
     AdminWhatsAppConversation: Omit<GqlSAdminWhatsAppConversation, 'messages'> & {
@@ -6088,7 +6150,12 @@ export type GqlSAdminResolvers<
         ContextType,
         RequireFields<GqlSAdminBookingRequestOfferArgs, 'bookingRequestOfferId'>
     >;
-    bookingRequestOfferEconomics?: Resolver<GqlSResolversTypes['AdminBookingRequestOfferEconomics'], ParentType, ContextType>;
+    bookingRequestOfferEconomics?: Resolver<
+        GqlSResolversTypes['AdminBookingRequestOfferEconomics'],
+        ParentType,
+        ContextType,
+        Partial<GqlSAdminBookingRequestOfferEconomicsArgs>
+    >;
     bookingRequestOffers?: Resolver<
         Array<GqlSResolversTypes['AdminBookingRequestOffer']>,
         ParentType,
@@ -6400,8 +6467,15 @@ export type GqlSAdminResolvers<
         ContextType,
         RequireFields<GqlSAdminSupportRequestsCountsArgs, 'criteria'>
     >;
+    upcomingBirthdays?: Resolver<
+        Array<GqlSResolversTypes['AdminUserUpcomingBirthday']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminUpcomingBirthdaysArgs, 'take'>
+    >;
     user?: Resolver<Maybe<GqlSResolversTypes['AdminUser']>, ParentType, ContextType, RequireFields<GqlSAdminUserArgs, 'userId'>>;
     userCounts?: Resolver<Array<GqlSResolversTypes['Int']>, ParentType, ContextType, RequireFields<GqlSAdminUserCountsArgs, 'criteria'>>;
+    userInsights?: Resolver<GqlSResolversTypes['AdminUserInsights'], ParentType, ContextType>;
     userRegistrations?: Resolver<
         Array<GqlSResolversTypes['AdminTimeBucket']>,
         ParentType,
@@ -6709,6 +6783,10 @@ export type GqlSAdminBookingRequestOfferEconomicsResolvers<
     averageOffersPerRequest?: Resolver<GqlSResolversTypes['Float'], ParentType, ContextType>;
     averagePaidCustomerTotalCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     averagePaidPlatformRevenueCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    rangeTotalPaidCustomerTotalCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    rangeTotalPaidPlatformRevenueCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    totalPaidCustomerTotalCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    totalPaidPlatformRevenueCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminCallCookStatResolvers<
@@ -6820,6 +6898,7 @@ export type GqlSAdminCookResolvers<
     stripeAccountActive?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     stripeAccountActiveWasReset?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     stripeAccountId?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    stripeAccountUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     stripeStatus?: Resolver<GqlSResolversTypes['CookStripeStatus'], ParentType, ContextType>;
     travelExpensesAmount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     user?: Resolver<GqlSResolversTypes['AdminUser'], ParentType, ContextType>;
@@ -7858,6 +7937,54 @@ export type GqlSAdminUserResolvers<
     status?: Resolver<GqlSResolversTypes['UserStatus'], ParentType, ContextType>;
     timeZone?: Resolver<GqlSResolversTypes['TimeZone'], ParentType, ContextType>;
     types?: Resolver<Array<GqlSResolversTypes['AdminUserType']>, ParentType, ContextType>;
+    userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminUserInsightsResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminUserInsights'] = GqlSResolversParentTypes['AdminUserInsights'],
+> = ResolversObject<{
+    accountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    averageAge?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    birthDateSampleSize?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    locales?: Resolver<Array<GqlSResolversTypes['AdminUserLocaleStat']>, ParentType, ContextType>;
+    preferredCommunication?: Resolver<Array<GqlSResolversTypes['AdminUserPreferredCommunicationStat']>, ParentType, ContextType>;
+    timeZones?: Resolver<Array<GqlSResolversTypes['AdminUserTimeZoneStat']>, ParentType, ContextType>;
+}>;
+
+export type GqlSAdminUserLocaleStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminUserLocaleStat'] = GqlSResolversParentTypes['AdminUserLocaleStat'],
+> = ResolversObject<{
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    locale?: Resolver<GqlSResolversTypes['Locale'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminUserPreferredCommunicationStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminUserPreferredCommunicationStat'] =
+        GqlSResolversParentTypes['AdminUserPreferredCommunicationStat'],
+> = ResolversObject<{
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    preferredCommunication?: Resolver<Maybe<GqlSResolversTypes['UserPreferredCommunication']>, ParentType, ContextType>;
+}>;
+
+export type GqlSAdminUserTimeZoneStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminUserTimeZoneStat'] = GqlSResolversParentTypes['AdminUserTimeZoneStat'],
+> = ResolversObject<{
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    timeZone?: Resolver<GqlSResolversTypes['TimeZone'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminUserUpcomingBirthdayResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminUserUpcomingBirthday'] = GqlSResolversParentTypes['AdminUserUpcomingBirthday'],
+> = ResolversObject<{
+    birthDate?: Resolver<GqlSResolversTypes['Date'], ParentType, ContextType>;
+    firstName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    lastName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    nextBirthday?: Resolver<GqlSResolversTypes['Date'], ParentType, ContextType>;
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
 }>;
 
@@ -10470,6 +10597,11 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminTestimonial?: GqlSAdminTestimonialResolvers<ContextType>;
     AdminTimeBucket?: GqlSAdminTimeBucketResolvers<ContextType>;
     AdminUser?: GqlSAdminUserResolvers<ContextType>;
+    AdminUserInsights?: GqlSAdminUserInsightsResolvers<ContextType>;
+    AdminUserLocaleStat?: GqlSAdminUserLocaleStatResolvers<ContextType>;
+    AdminUserPreferredCommunicationStat?: GqlSAdminUserPreferredCommunicationStatResolvers<ContextType>;
+    AdminUserTimeZoneStat?: GqlSAdminUserTimeZoneStatResolvers<ContextType>;
+    AdminUserUpcomingBirthday?: GqlSAdminUserUpcomingBirthdayResolvers<ContextType>;
     AdminWebPage?: GqlSAdminWebPageResolvers<ContextType>;
     AdminWhatsAppConversation?: GqlSAdminWhatsAppConversationResolvers<ContextType>;
     AuthEmailOtp?: GqlSAuthEmailOtpResolvers<ContextType>;

@@ -1,10 +1,14 @@
+import { stripeDashboardConnectAccountUrl, stripeDashboardIsTestMode } from '../../shared';
 import type { Cook } from '../db/schema';
 import { cookCanCreateOffersDerive, cookStripeStatusDerive } from '../domain/cook';
 import type { UserStatus } from '../domain/user';
+import { environmentVariables } from '../env/environmentVariablesCreate';
 import type { GqlSAdminCook, GqlSAdminUser } from '../graphql/generated';
 import { toGqlCookTravelOriginAddress } from './toGqlCook';
 
 export function toGqlAdminCook(row: Cook, userStatus: UserStatus): GqlSAdminCook {
+    const stripeAccountId = row.stripeAccountId ?? null;
+    const testMode = stripeDashboardIsTestMode(environmentVariables.stripeSecretKey);
     return {
         cookId: row.cookId,
         // Populated by `AdminCook.user` field resolver (or hydrated by booking queries).
@@ -13,7 +17,8 @@ export function toGqlAdminCook(row: Cook, userStatus: UserStatus): GqlSAdminCook
         isApprovedByAdmin: row.isApprovedByAdmin,
         canCreateOffers: cookCanCreateOffersDerive(row, userStatus),
         stripeStatus: cookStripeStatusDerive(row),
-        stripeAccountId: row.stripeAccountId ?? null,
+        stripeAccountId,
+        stripeAccountUrl: stripeAccountId ? stripeDashboardConnectAccountUrl(stripeAccountId, testMode) : null,
         stripeAccountActive: row.stripeAccountActive,
         stripeAccountActiveWasReset: row.stripeAccountActiveWasReset,
         exactTravelOriginAddress: row.exactTravelOriginAddress ? toGqlCookTravelOriginAddress(row.exactTravelOriginAddress) : null,

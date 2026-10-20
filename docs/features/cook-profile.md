@@ -154,7 +154,7 @@ changes. Customers still only see city, never the pin or street.
   Attention + Getting started on cook home (`profilePageCookOverview`, `ProfilePage` with upcoming-call window variables)
 - Cook GraphQL: `mealsCounts` / `menusCounts` (`CookMealCriterion` / `CookMenuCriterion`);
   `callSlotBookings(criterion: CookCallSlotBookingCriterion)` for status + `startAt` window
-- Admin: pending-approval queue on `/admin`; cook-profile tab (approval, visibility, travel, bio/tags); meals/menus create on user detail;
-  users list unapproved filter
+- Admin: pending-approval queue on `/admin`; cook-profile tab (read-only + approval/visibility; edit at
+  `/admin/users/<userId>/cook-profile/edit`); meals/menus create on user detail; users list unapproved filter
 
 See [cook-shell.md](./cook-shell.md), [admin-users.md](./admin-users.md), [stripe-payment.md](../architecture/stripe-payment.md).

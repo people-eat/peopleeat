@@ -7,6 +7,7 @@ import { isAssistantFullscreenPath } from '../../chat/isAssistantFullscreenPath'
 import { AdminSidebar } from '../../components/AdminSidebar';
 import { SidebarInset, SidebarProvider, useSidebar } from '../../components/base/sidebar';
 import type { GqlCAdminPageQuery } from '../../graphql/generated';
+import { FeatureToggleAdminShellProvider, FeatureToggleKeysProvider } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { DEFAULT_LOCALE } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
@@ -51,16 +52,21 @@ export function AdminLayout({ loaderData }: { loaderData: GqlCAdminPageQuery }) 
     const supportUnreadCount = loaderData.currentSession.user?.admin?.unreadSupportRequestsCounts[0] ?? 0;
     const offerChatReviewCount = loaderData.currentSession.user?.admin?.pendingOfferChatReviewsCounts[0] ?? 0;
     const whatsAppUnreadCount = loaderData.currentSession.user?.admin?.whatsAppConversationsAdminUnreadCount ?? 0;
+    const activeFeatureToggleKeys = loaderData.currentSession.activeFeatureToggleKeys;
 
     return (
-        <SidebarProvider style={{ '--sidebar-width': '19rem' } as CSSProperties}>
-            <AdminSidebar
-                supportUnreadCount={supportUnreadCount}
-                offerChatReviewCount={offerChatReviewCount}
-                whatsAppUnreadCount={whatsAppUnreadCount}
-            />
-            <AdminAssistantPane />
-        </SidebarProvider>
+        <FeatureToggleAdminShellProvider value={true}>
+            <FeatureToggleKeysProvider value={activeFeatureToggleKeys}>
+                <SidebarProvider style={{ '--sidebar-width': '19rem' } as CSSProperties}>
+                    <AdminSidebar
+                        supportUnreadCount={supportUnreadCount}
+                        offerChatReviewCount={offerChatReviewCount}
+                        whatsAppUnreadCount={whatsAppUnreadCount}
+                    />
+                    <AdminAssistantPane />
+                </SidebarProvider>
+            </FeatureToggleKeysProvider>
+        </FeatureToggleAdminShellProvider>
     );
 }
 
