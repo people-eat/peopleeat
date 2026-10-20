@@ -4,7 +4,7 @@ import { useMutation } from 'urql';
 
 import { StatusBadge } from '../../components/base/status-badge';
 import { SupportRequestChat } from '../../components/SupportRequestChat';
-import type { GqlCHumanChatMessageFieldsFragment, GqlCProfileCustomerSupportRequestPageQuery } from '../../graphql/generated';
+import type { GqlCProfileCustomerSupportRequestPageQuery } from '../../graphql/generated';
 import {
     ProfileCustomerSupportRequestPageUpdatesDocument,
     ProfileSupportRequestMessageCreateDocument,
@@ -92,7 +92,7 @@ export function ProfileCustomerSupportRequestPage({
 
             <SupportRequestChat
                 className="-mx-4 min-h-0 flex-1 overflow-hidden border-t px-4 pt-4"
-                messages={supportRequest.messages as GqlCHumanChatMessageFieldsFragment[]}
+                messages={supportRequest.messages}
                 canSend
                 resolved={supportRequest.status === 'RESOLVED'}
                 peerDisplay={{ de: 'peopleeat Support', en: 'peopleeat Support' }[locale]}

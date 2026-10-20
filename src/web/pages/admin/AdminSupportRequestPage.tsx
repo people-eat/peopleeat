@@ -8,11 +8,7 @@ import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Button } from '../../components/base/button';
 import { StatusBadge } from '../../components/base/status-badge';
 import { SupportRequestChat } from '../../components/SupportRequestChat';
-import type {
-    GqlCAdminSupportRequestDetailFieldsFragment,
-    GqlCAdminSupportRequestPageQuery,
-    GqlCHumanChatMessageFieldsFragment,
-} from '../../graphql/generated';
+import type { GqlCAdminSupportRequestDetailFieldsFragment, GqlCAdminSupportRequestPageQuery } from '../../graphql/generated';
 import {
     AdminSupportRequestMessageCreateDocument,
     AdminSupportRequestPageUpdatesDocument,
@@ -131,7 +127,7 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
 
                 <SupportRequestChat
                     className="min-h-0 flex-1 overflow-hidden border-t pt-4"
-                    messages={supportRequest.messages as GqlCHumanChatMessageFieldsFragment[]}
+                    messages={supportRequest.messages}
                     canSend
                     resolved={supportRequest.status === 'RESOLVED'}
                     peerDisplay={userDisplayName(supportRequest.customer)}

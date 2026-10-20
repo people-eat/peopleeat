@@ -15,31 +15,7 @@ fragment ProfileCustomerSupportRequestPageUser on User {
             dateTime
         }
         messages {
-            ... on ChatMessageUser {
-                __typename
-                chatMessageId
-                body
-                isOwn
-                showCopyButton
-                collapseLongBody
-                hiddenByAdmin
-                canHardDelete
-                createdAt
-                author {
-                    display
-                    createdAt
-                    profilePicture {
-                        url
-                    }
-                }
-                attachments {
-                    fileUploadId
-                    filename
-                    mediaType
-                    size
-                    url
-                }
-            }
+            ...HumanChatMessageFields
         }
     }
 }

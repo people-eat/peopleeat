@@ -73,6 +73,8 @@ lifecycle emails; ops Slack threading.
   attachments; presence header scrolls below `md`, static from `md` — same as offer chat); nav badges
 - Admin UI: overview + list live via admin updates; nav badge; pinned bottom pagination (`page` / `pageSize`); detail viewport-locked like
   offer chat
+- Message selection: admin + customer detail queries use shared `HumanChatMessageFields` (includes `reactions`, even though support always
+  returns `[]`) so `ChatMessageUserView` matches offer / WhatsApp chat
 
 Download peer auth: [file-storage.md](../architecture/file-storage.md).
 

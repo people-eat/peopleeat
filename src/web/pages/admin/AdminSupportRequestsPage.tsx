@@ -197,7 +197,7 @@ export function AdminSupportRequestsPage({
                 {supportRequests.length === 0 ? (
                     <p className="text-sm text-muted-foreground">{{ de: 'Keine Support-Anfragen.', en: 'No support requests.' }[locale]}</p>
                 ) : (
-                    <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    <ul className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {supportRequests.map((request) => (
                             <li key={request.supportRequestId} className="min-w-0">
                                 <SupportRequestSummaryCard

@@ -14089,19 +14089,31 @@ export type GqlCAdminSupportRequestDetailFieldsFragment = {
     customer: { userId: string; firstName: string; lastName: string };
     messages: Array<
         | {
+              __typename: 'ChatMessageBookingRequestOfferEvent';
+              chatMessageId: string;
+              type: Schema.GqlCChatMessageBookingRequestOfferEventType;
+              payload: unknown;
+              createdAt: string;
+          }
+        | {
               __typename: 'ChatMessageUser';
               chatMessageId: string;
               body: string;
+              createdAt: string;
               isOwn: boolean;
               showCopyButton: boolean;
               collapseLongBody: boolean;
               hiddenByAdmin: boolean;
               canHardDelete: boolean;
-              createdAt: string;
-              author: { display: string; createdAt: string; profilePicture: { url: string } | null };
+              deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+              reactions: Array<{ emoji: string; isOwn: boolean }>;
+              author: {
+                  display: string;
+                  createdAt: string;
+                  profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
+              };
               attachments: Array<{ fileUploadId: string; filename: string; mediaType: string; size: number; url: string }>;
           }
-        | Record<PropertyKey, never>
     >;
 };
 
@@ -14126,19 +14138,37 @@ export type GqlCAdminSupportRequestPageQuery = {
                     customer: { userId: string; firstName: string; lastName: string };
                     messages: Array<
                         | {
+                              __typename: 'ChatMessageBookingRequestOfferEvent';
+                              chatMessageId: string;
+                              type: Schema.GqlCChatMessageBookingRequestOfferEventType;
+                              payload: unknown;
+                              createdAt: string;
+                          }
+                        | {
                               __typename: 'ChatMessageUser';
                               chatMessageId: string;
                               body: string;
+                              createdAt: string;
                               isOwn: boolean;
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               hiddenByAdmin: boolean;
                               canHardDelete: boolean;
-                              createdAt: string;
-                              author: { display: string; createdAt: string; profilePicture: { url: string } | null };
+                              deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                              reactions: Array<{ emoji: string; isOwn: boolean }>;
+                              author: {
+                                  display: string;
+                                  createdAt: string;
+                                  profilePicture: {
+                                      fileUploadId: string;
+                                      filename: string;
+                                      mediaType: string;
+                                      size: number;
+                                      url: string;
+                                  } | null;
+                              };
                               attachments: Array<{ fileUploadId: string; filename: string; mediaType: string; size: number; url: string }>;
                           }
-                        | Record<PropertyKey, never>
                     >;
                 } | null;
             } | null;
@@ -14164,19 +14194,31 @@ export type GqlCAdminSupportRequestPageUpdatesSubscription = {
             customer: { userId: string; firstName: string; lastName: string };
             messages: Array<
                 | {
+                      __typename: 'ChatMessageBookingRequestOfferEvent';
+                      chatMessageId: string;
+                      type: Schema.GqlCChatMessageBookingRequestOfferEventType;
+                      payload: unknown;
+                      createdAt: string;
+                  }
+                | {
                       __typename: 'ChatMessageUser';
                       chatMessageId: string;
                       body: string;
+                      createdAt: string;
                       isOwn: boolean;
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       hiddenByAdmin: boolean;
                       canHardDelete: boolean;
-                      createdAt: string;
-                      author: { display: string; createdAt: string; profilePicture: { url: string } | null };
+                      deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                      reactions: Array<{ emoji: string; isOwn: boolean }>;
+                      author: {
+                          display: string;
+                          createdAt: string;
+                          profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
+                      };
                       attachments: Array<{ fileUploadId: string; filename: string; mediaType: string; size: number; url: string }>;
                   }
-                | Record<PropertyKey, never>
             >;
         } | null;
     };
@@ -19173,19 +19215,31 @@ export type GqlCProfileCustomerSupportRequestPageUserFragment = {
         bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
         messages: Array<
             | {
+                  __typename: 'ChatMessageBookingRequestOfferEvent';
+                  chatMessageId: string;
+                  type: Schema.GqlCChatMessageBookingRequestOfferEventType;
+                  payload: unknown;
+                  createdAt: string;
+              }
+            | {
                   __typename: 'ChatMessageUser';
                   chatMessageId: string;
                   body: string;
+                  createdAt: string;
                   isOwn: boolean;
                   showCopyButton: boolean;
                   collapseLongBody: boolean;
                   hiddenByAdmin: boolean;
                   canHardDelete: boolean;
-                  createdAt: string;
-                  author: { display: string; createdAt: string; profilePicture: { url: string } | null };
+                  deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                  reactions: Array<{ emoji: string; isOwn: boolean }>;
+                  author: {
+                      display: string;
+                      createdAt: string;
+                      profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
+                  };
                   attachments: Array<{ fileUploadId: string; filename: string; mediaType: string; size: number; url: string }>;
               }
-            | Record<PropertyKey, never>
         >;
     } | null;
 };
@@ -19208,19 +19262,37 @@ export type GqlCProfileCustomerSupportRequestPageQuery = {
                 bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
                 messages: Array<
                     | {
+                          __typename: 'ChatMessageBookingRequestOfferEvent';
+                          chatMessageId: string;
+                          type: Schema.GqlCChatMessageBookingRequestOfferEventType;
+                          payload: unknown;
+                          createdAt: string;
+                      }
+                    | {
                           __typename: 'ChatMessageUser';
                           chatMessageId: string;
                           body: string;
+                          createdAt: string;
                           isOwn: boolean;
                           showCopyButton: boolean;
                           collapseLongBody: boolean;
                           hiddenByAdmin: boolean;
                           canHardDelete: boolean;
-                          createdAt: string;
-                          author: { display: string; createdAt: string; profilePicture: { url: string } | null };
+                          deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                          reactions: Array<{ emoji: string; isOwn: boolean }>;
+                          author: {
+                              display: string;
+                              createdAt: string;
+                              profilePicture: {
+                                  fileUploadId: string;
+                                  filename: string;
+                                  mediaType: string;
+                                  size: number;
+                                  url: string;
+                              } | null;
+                          };
                           attachments: Array<{ fileUploadId: string; filename: string; mediaType: string; size: number; url: string }>;
                       }
-                    | Record<PropertyKey, never>
                 >;
             } | null;
         } | null;
@@ -19244,19 +19316,31 @@ export type GqlCProfileCustomerSupportRequestPageUpdatesSubscription = {
             bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
             messages: Array<
                 | {
+                      __typename: 'ChatMessageBookingRequestOfferEvent';
+                      chatMessageId: string;
+                      type: Schema.GqlCChatMessageBookingRequestOfferEventType;
+                      payload: unknown;
+                      createdAt: string;
+                  }
+                | {
                       __typename: 'ChatMessageUser';
                       chatMessageId: string;
                       body: string;
+                      createdAt: string;
                       isOwn: boolean;
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       hiddenByAdmin: boolean;
                       canHardDelete: boolean;
-                      createdAt: string;
-                      author: { display: string; createdAt: string; profilePicture: { url: string } | null };
+                      deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
+                      reactions: Array<{ emoji: string; isOwn: boolean }>;
+                      author: {
+                          display: string;
+                          createdAt: string;
+                          profilePicture: { fileUploadId: string; filename: string; mediaType: string; size: number; url: string } | null;
+                      };
                       attachments: Array<{ fileUploadId: string; filename: string; mediaType: string; size: number; url: string }>;
                   }
-                | Record<PropertyKey, never>
             >;
         } | null;
     };
@@ -26393,44 +26477,57 @@ export const AdminSupportRequestDetailFieldsFragmentDoc = {
                         name: { kind: 'Name', value: 'messages' },
                         selectionSet: {
                             kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'HumanChatMessageFields' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'HumanChatMessageFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'HumanChatMessage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
                             selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 {
-                                    kind: 'InlineFragment',
-                                    typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'author' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'display' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'author' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'display' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'profilePicture' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'attachments' },
+                                                name: { kind: 'Name', value: 'profilePicture' },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
                                                     selections: [
@@ -26445,6 +26542,33 @@ export const AdminSupportRequestDetailFieldsFragmentDoc = {
                                         ],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'attachments' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'size' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageBookingRequestOfferEvent' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'payload' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                             ],
                         },
                     },
@@ -30965,63 +31089,101 @@ export const ProfileCustomerSupportRequestPageUserFragmentDoc = {
                                     name: { kind: 'Name', value: 'messages' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'HumanChatMessageFields' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'HumanChatMessageFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'HumanChatMessage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
                                         selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'author' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
-                                                kind: 'InlineFragment',
-                                                typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'profilePicture' },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
                                                     selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'author' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'display' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                                                    {
-                                                                        kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'profilePicture' },
-                                                                        selectionSet: {
-                                                                            kind: 'SelectionSet',
-                                                                            selections: [
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
-                                                                            ],
-                                                                        },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'attachments' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'size' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'url' } },
-                                                                ],
-                                                            },
-                                                        },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'size' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
                                                     ],
                                                 },
                                             },
                                         ],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'attachments' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'size' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageBookingRequestOfferEvent' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'payload' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                             ],
                         },
                     },
@@ -58518,6 +58680,98 @@ export const AdminSupportRequestPageDocument = {
         },
         {
             kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'HumanChatMessageFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'HumanChatMessage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'author' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'profilePicture' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'size' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'attachments' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'size' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageBookingRequestOfferEvent' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'payload' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
             name: { kind: 'Name', value: 'AdminSupportRequestDetailFields' },
             typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminSupportRequest' } },
             selectionSet: {
@@ -58558,59 +58812,7 @@ export const AdminSupportRequestPageDocument = {
                         name: { kind: 'Name', value: 'messages' },
                         selectionSet: {
                             kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'InlineFragment',
-                                    typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'author' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'display' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'profilePicture' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'attachments' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'size' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'HumanChatMessageFields' } }],
                         },
                     },
                 ],
@@ -58667,6 +58869,98 @@ export const AdminSupportRequestPageUpdatesDocument = {
         },
         {
             kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'HumanChatMessageFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'HumanChatMessage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'author' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'profilePicture' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'size' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'attachments' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'size' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageBookingRequestOfferEvent' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'payload' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
             name: { kind: 'Name', value: 'AdminSupportRequestDetailFields' },
             typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminSupportRequest' } },
             selectionSet: {
@@ -58707,59 +59001,7 @@ export const AdminSupportRequestPageUpdatesDocument = {
                         name: { kind: 'Name', value: 'messages' },
                         selectionSet: {
                             kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'InlineFragment',
-                                    typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'author' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'display' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'profilePicture' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'attachments' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'size' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'HumanChatMessageFields' } }],
                         },
                     },
                 ],
@@ -75383,137 +75625,90 @@ export const ProfileCustomerSupportRequestPageDocument = {
         },
         {
             kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ProfileCustomerSupportRequestPageUser' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            name: { kind: 'Name', value: 'HumanChatMessageFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'HumanChatMessage' } },
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
                     {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'supportRequest' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'supportRequestId' },
-                                value: { kind: 'Variable', name: { kind: 'Name', value: 'supportRequestId' } },
-                            },
-                        ],
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'supportRequestId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'subject' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'userUnreadNotificationCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'body' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'resolvedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'bookingRequest' },
+                                    name: { kind: 'Name', value: 'reactions' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
                                         ],
                                     },
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'messages' },
+                                    name: { kind: 'Name', value: 'author' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
-                                                kind: 'InlineFragment',
-                                                typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'profilePicture' },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
                                                     selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'author' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'display' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                                                    {
-                                                                        kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'profilePicture' },
-                                                                        selectionSet: {
-                                                                            kind: 'SelectionSet',
-                                                                            selections: [
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
-                                                                            ],
-                                                                        },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'attachments' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'size' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'url' } },
-                                                                ],
-                                                            },
-                                                        },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'size' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
                                                     ],
                                                 },
                                             },
                                         ],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'attachments' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'size' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileCustomerSupportRequestPageQuery, GqlCProfileCustomerSupportRequestPageQueryVariables>;
-export const ProfileCustomerSupportRequestPageUpdatesDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'subscription',
-            name: { kind: 'Name', value: 'ProfileCustomerSupportRequestPageUpdates' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'supportRequestId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
                     {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'userUpdates' },
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageBookingRequestOfferEvent' } },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCustomerSupportRequestPageUser' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'payload' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                             ],
                         },
                     },
@@ -75564,61 +75759,184 @@ export const ProfileCustomerSupportRequestPageUpdatesDocument = {
                                     name: { kind: 'Name', value: 'messages' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'HumanChatMessageFields' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCustomerSupportRequestPageQuery, GqlCProfileCustomerSupportRequestPageQueryVariables>;
+export const ProfileCustomerSupportRequestPageUpdatesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'subscription',
+            name: { kind: 'Name', value: 'ProfileCustomerSupportRequestPageUpdates' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'supportRequestId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'userUpdates' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCustomerSupportRequestPageUser' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'HumanChatMessageFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'HumanChatMessage' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'reactions' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
                                         selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'emoji' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'author' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             {
-                                                kind: 'InlineFragment',
-                                                typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageUser' } },
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'profilePicture' },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
                                                     selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'isOwn' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'author' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'display' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                                                    {
-                                                                        kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'profilePicture' },
-                                                                        selectionSet: {
-                                                                            kind: 'SelectionSet',
-                                                                            selections: [
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
-                                                                            ],
-                                                                        },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'attachments' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'size' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'url' } },
-                                                                ],
-                                                            },
-                                                        },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'size' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
                                                     ],
                                                 },
                                             },
                                         ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'attachments' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'size' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ChatMessageBookingRequestOfferEvent' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'chatMessageId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'payload' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCustomerSupportRequestPageUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'supportRequest' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'supportRequestId' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'supportRequestId' } },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'supportRequestId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'subject' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'userUnreadNotificationCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'resolvedAt' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequest' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'messages' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'HumanChatMessageFields' } }],
                                     },
                                 },
                             ],

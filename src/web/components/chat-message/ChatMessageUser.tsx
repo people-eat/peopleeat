@@ -93,7 +93,8 @@ export function ChatMessageUserView({
     const deleteLabel = { de: 'Dauerhaft löschen', en: 'Delete permanently' }[locale];
     const hiddenLabel = { de: 'Vor Gast und Koch verborgen', en: 'Hidden from customer and cook' }[locale];
     const reactLabel = { de: 'Reagieren', en: 'React' }[locale];
-    const ownReactionEmoji = message.reactions.find((reaction) => reaction.isOwn)?.emoji;
+    const reactions = message.reactions ?? [];
+    const ownReactionEmoji = reactions.find((reaction) => reaction.isOwn)?.emoji;
 
     useEffect(() => {
         if (editOpen) setEditDraft(message.body);
@@ -443,12 +444,12 @@ export function ChatMessageUserView({
         ) : null;
 
     const reactionBadges =
-        message.reactions.length > 0 ? (
+        reactions.length > 0 ? (
             <div
                 className={cn('z-10 -mt-2 flex flex-wrap gap-0.5', isOwn ? 'mr-1 justify-end' : 'ml-8 justify-start')}
                 aria-label={{ de: 'Reaktionen', en: 'Reactions' }[locale]}
             >
-                {message.reactions.map((reaction) => (
+                {reactions.map((reaction) => (
                     <span
                         key={`${reaction.emoji}-${reaction.isOwn ? 'own' : 'peer'}`}
                         className="inline-flex min-h-6 min-w-6 items-center justify-center rounded-full border border-border/80 bg-background px-1.5 text-sm leading-none shadow-sm"

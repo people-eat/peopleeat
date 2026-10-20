@@ -52,7 +52,7 @@ export function SupportRequestSummaryCard({
             to={to}
             params={params}
             className={cn(
-                'relative flex flex-col gap-3 rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm transition hover:border-muted-foreground/40',
+                'relative flex h-full flex-col gap-3 rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm transition hover:border-muted-foreground/40',
             )}
         >
             <NotificationBadge
@@ -64,15 +64,15 @@ export function SupportRequestSummaryCard({
                     }[locale]
                 }
             />
-            <div className="grid gap-2 pr-6">
+            <div className="grid min-h-0 flex-1 content-start gap-2 pr-6">
                 <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge tone={statusTone(request.status)}>{statusLabel}</StatusBadge>
                     <span className="text-xs text-muted-foreground">{createdLabel}</span>
                 </div>
-                <p className="font-medium text-foreground">{request.subject}</p>
-                {customerLabel.length > 0 ? <p className="text-sm text-muted-foreground">{customerLabel}</p> : null}
+                <p className="line-clamp-2 font-medium text-foreground">{request.subject}</p>
+                {customerLabel.length > 0 ? <p className="truncate text-sm text-muted-foreground">{customerLabel}</p> : null}
                 {request.bookingRequest ? (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="line-clamp-2 text-sm text-muted-foreground">
                         {request.bookingRequest.occasion}
                         {' · '}
                         {format(parseISO(request.bookingRequest.dateTime), 'PP', { locale: dateLocale })}

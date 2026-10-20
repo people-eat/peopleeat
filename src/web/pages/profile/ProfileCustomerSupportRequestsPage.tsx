@@ -83,7 +83,7 @@ export function ProfileCustomerSupportRequestsPage({ data }: { data: GqlCProfile
                             }[locale]
                         }
                     </StatusAlert>
-                    <ul className="grid grid-cols-1 gap-4 @2xl:grid-cols-2 @6xl:grid-cols-3">
+                    <ul className="grid grid-cols-1 items-stretch gap-4 @2xl:grid-cols-2 @6xl:grid-cols-3">
                         {supportRequests.map((request) => (
                             <li key={request.supportRequestId} className="min-w-0">
                                 <SupportRequestSummaryCard
