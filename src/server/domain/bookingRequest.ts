@@ -13,7 +13,7 @@ export type BookingRequestExactEventAddress = CookTravelOriginAddress;
 /** Billing address on the request — same shape as gift-card invoice address. */
 export type BookingRequestInvoiceAddress = GiftCardInvoiceAddress;
 
-/** Slack ops thread root — predecessor `references` JSONB shape. */
+/** Slack ops thread root — `{ slackTs, slackChannelId }` JSONB shape. */
 export type BookingRequestReferences = {
     slackTs?: string;
     slackChannelId?: string;
@@ -53,7 +53,7 @@ const bookingRequestStatuses = [
 ] as const;
 export type BookingRequestStatus = (typeof bookingRequestStatuses)[number];
 
-/** Statuses where a customer may still cancel (mirrors predecessor cancelable set). */
+/** Statuses where a customer may still cancel. */
 export const bookingRequestCancelableStatuses: ReadonlySet<BookingRequestStatus> = new Set([
     'WAITING_FOR_OFFERS',
     'OFFERS_WAITING_FOR_REVIEW',

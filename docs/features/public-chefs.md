@@ -43,7 +43,8 @@ URL sharing is gated on visibility.
 **Visibility**
 
 Public listing requires cook visibility and admin approval and an active user account (not banned or anonymized). Street addresses and
-payout fields never appear — only city from travel origin, falling back to imported `legacyCityName` when the exact origin city is empty.
+payout fields never appear — only city from travel origin, falling back to import-preserved `legacyCityName` when the exact origin city is
+empty.
 
 **City, partner, and occasion pages**
 

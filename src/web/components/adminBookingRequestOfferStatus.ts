@@ -15,7 +15,7 @@ export type AdminBookingRequestOfferStatusKey =
     | 'CANCELED'
     | string;
 
-/** Neutral admin wording (not customer/cook “you”-centric). Predecessor copy. */
+/** Neutral admin wording (not customer/cook “you”-centric). */
 export function adminBookingRequestOfferStatusLabel(status: AdminBookingRequestOfferStatusKey, locale: Locale): string {
     switch (status) {
         case 'USER_NEEDS_TO_ACCEPT':

@@ -43,7 +43,7 @@ messages also enter the post-hoc admin review pipeline — [admin-offer-chat-rev
 | ------------------------------------------------------ | --------------------------------------------------------------------------- |
 | Dedicated offer timeline (domain events + messages)    | **Chosen** — negotiation is booking-domain state, not LLM assistant history |
 | Store offer chat in the shared Chat / assistant tables | Rejected — would pollute assistant replay                                   |
-| Passive concierge presence only                        | **Chosen** for go-live — sets expectation without a tagging product         |
+| Passive concierge presence only                        | **Chosen** — sets expectation without a tagging product                     |
 | No phone-number policy                                 | Rejected — fee avoidance via phone exchange is a real marketplace risk      |
 | Immediate email on every message                       | Rejected — debounce coalesces rapid back-and-forth                          |
 | Emoji reactions always on                              | Rejected — ship behind `BOOKING_REQUEST_OFFER_CHAT_REACTIONS`               |

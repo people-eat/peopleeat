@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-// Predecessor production measurement ID (public).
+// Production GA measurement ID (public).
 const GOOGLE_ANALYTICS_MEASUREMENT_ID = 'G-165LKCGVJJ';
 
 declare global {

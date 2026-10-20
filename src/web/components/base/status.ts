@@ -13,7 +13,7 @@ export const statusIcons = {
     error: CircleXIcon,
 } as const;
 
-/** Soft circular chip behind the Lucide glyph — predecessor `messageIconMap` palette. */
+/** Soft circular chip behind the Lucide glyph — shared status palette. */
 export const statusIconToneClass: Record<StatusTone, string> = {
     info: 'bg-blue-200 text-blue-600',
     success: 'bg-green-200 text-green-600',
@@ -29,7 +29,7 @@ export const statusBadgeToneClass: Record<StatusTone, string> = {
     error: 'border-red-300 bg-red-100 text-foreground',
 };
 
-/** Full-width alert / banner surfaces — predecessor `PEMessageBanner` palette. */
+/** Full-width alert / banner surfaces — shared status palette. */
 export const statusAlertToneClass: Record<StatusTone, string> = {
     info: 'border-blue-400 bg-blue-100 text-foreground *:data-[slot=alert-description]:text-muted-foreground',
     success: 'border-green-400 bg-green-100 text-foreground *:data-[slot=alert-description]:text-muted-foreground',

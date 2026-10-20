@@ -76,7 +76,7 @@ Return and refresh URLs are distinct. Status sync alone does not replace an expi
 | JSON payout-methods array        | Rejected — fragile vs flat Connect account columns                                            |
 | SSR mutate on every wallet visit | Rejected — re-fires on every load                                                             |
 | Same URL for return and refresh  | Rejected — refresh must mint a new account link                                               |
-| Denormalized city / coordinates  | Rejected — public city derives from travel origin, with `legacyCityName` fallback for imports |
+| Denormalized city / coordinates  | Rejected — public city derives from travel origin, with import-preserved city fallback when origin city is empty |
 | Free-text cuisine / philosophy   | Rejected — fixed catalogs via comboboxes                                                      |
 
 ### Chosen
@@ -104,11 +104,11 @@ changes. Customers still only see city, never the pin or street.
 ## Implementation
 
 - Schema: `Cooks` in `src/server/db/schema.ts` (`logoFileUploadId` → `FileUploads`; optional `stageName` public display name;
-  `lastModifiedAt` bumped on cook-row writes; import-only `legacyCityName` / `legacyLatitude` / `legacyLongitude` from predecessor city
-  fields — `legacyCityName` falls back for public cook city when exact origin city is empty; lat/lng stay storage-only); domain helpers
+  `lastModifiedAt` bumped on cook-row writes; import-preserved `legacyCityName` / `legacyLatitude` / `legacyLongitude` —
+  `legacyCityName` falls back for public cook city when exact origin city is empty; lat/lng stay storage-only); domain helpers
   `src/server/domain/cook.ts`
 - Stage name: `Cook.stageName` / `PublicCook.stageName` / `AdminCook.stageName`; `CookUpdate.stageName` (null / blank clears). Public
-  `PublicCook.user.display` prefers a non-empty stage name over first name. Predecessor `rank` is not imported.
+  `PublicCook.user.display` prefers a non-empty stage name over first name.
 - Additional picture (API: logo): `Cook.logo` / `PublicCook.logo` (`FileUpload`); `CookUpdate.logoFileUploadId` (null clears); public GET
   when referenced as current cook picture; UI `CookLogoEditor` on `/profile/public` (beside visibility; copy: Zusätzliches Bild / Additional
   picture) + `CookAboutBenefitsFallback` on About when unset; crop `IMAGE_CROP_ASPECT.logo` = 16/9

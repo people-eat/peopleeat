@@ -101,7 +101,7 @@ Wired today:
 | Option                                        | Notes                                                           |
 | --------------------------------------------- | --------------------------------------------------------------- |
 | Free-form string keys + admin create          | Easy typos; no compile-time catalog                             |
-| Percentage / A-B activity levels              | Predecessor had them; only 0% / 100% were ever used in practice |
+| Percentage / A-B activity levels              | Extra complexity; we only need on/off plus per-user overrides   |
 | Seed all keys on migrate                      | Ghost merge keeps defaults clear without seed noise             |
 | Fixed GraphQL enum + create-on-write (chosen) | Keys require a code change anyway; admin always sees all keys   |
 | Allowlist-only when global off                | Cannot force off a user when global is on                       |
@@ -115,7 +115,7 @@ present.
 
 ## Ideas
 
-- Percentage rollout or sticky A/B bucketing (predecessor `activityLevel`) if gradual exposure is needed later.
+- Percentage rollout or sticky A/B bucketing if gradual exposure is needed later.
 - ~~Wire remaining key: AI menu evaluation~~ — wired; see [ai-menu-evaluation.md](./ai-menu-evaluation.md).
 - ~~Override counts on the global feature-toggles page~~ — shipped with per-key override list + add/clear.
 

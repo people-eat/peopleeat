@@ -212,16 +212,6 @@ Postgres) while leaving the `drizzle` schema — including `__drizzle_migrations
 npm run db:wipe -- --confirm
 ```
 
-### Go-live import from predecessor (people-eat)
-
-One-shot MySQL → Postgres ETL (nanoId passthrough + HTTP file fetch from `https://people-eat.com`) lives at `scripts/migrateFromPeopleEat/`.
-See [features/go-live-data-migration.md](./features/go-live-data-migration.md).
-
-```bash
-npm run db:migrate-from-people-eat -- --dry-run
-npm run db:migrate-from-people-eat
-```
-
 ## Continuous Integration & Deployment (GitHub Actions)
 
 CI and CD live in a single workflow: `.github/workflows/pipeline.yml`. Gate jobs run in parallel on every pull request and push to `main` or

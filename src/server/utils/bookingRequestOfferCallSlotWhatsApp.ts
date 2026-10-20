@@ -133,7 +133,7 @@ async function recipientSend(
     const dateLabel = formatCallSlotDate(args.context.startAt, user.locale, user.timeZone);
     const timeLabel = formatCallSlotTime(args.context.startAt, user.locale, user.timeZone);
     const bookingRequestDateLabel = formatCallSlotDate(args.context.bookingRequestDateTime, user.locale, user.timeZone);
-    // Predecessor Meta templates: create uses 6 body params; confirm/reminder/cancel have no URL button.
+    // Meta templates: create uses 6 body params; confirm/reminder/cancel have no URL button.
     const bodyParameters =
         args.purpose === 'CALL_SLOT_BOOKING_CANCEL'
             ? [user.firstName, args.senderFirstName, args.reason ?? '']

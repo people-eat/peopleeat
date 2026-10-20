@@ -14,7 +14,7 @@ export type NotificationBadgeProps = Omit<ComponentProps<'span'>, 'children'> & 
 };
 
 /**
- * Unread-count bubble (predecessor `PENotificationBadge`).
+ * Unread-count bubble (red disc + white bold numeral).
  * Returns null when `count` is zero or negative.
  * Cards use the full disc; sidebar (`inline`) uses a quieter compact size.
  */

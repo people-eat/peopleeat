@@ -32,17 +32,19 @@ cook fields. Gift-card purchase registers with name only.
 
 ### Alternatives considered
 
-| Option                               | Notes                                   |
-| ------------------------------------ | --------------------------------------- |
-| Third-party auth libraries           | Extra layer on existing cookie sessions |
-| Passwords                            | Out of scope for v1                     |
-| Auto-create user on OTP verify       | Placeholders and incomplete profiles    |
-| Verified email stored on session row | Duplicates OTP session state            |
-| Custom GraphQL + email + WebAuthn    | Fits existing session binding           |
+| Option                               | Notes                                                                                         |
+| ------------------------------------ | --------------------------------------------------------------------------------------------- |
+| Email + password                     | Rejected — forgotten-password / reset complexity; credential reuse risk; see auth ADR below   |
+| Third-party auth libraries           | Extra layer on existing cookie sessions; OAuth can layer later (Google / Apple next steps)    |
+| Auto-create user on OTP verify       | Placeholders and incomplete profiles                                                          |
+| Verified email stored on session row | Duplicates OTP session state                                                                  |
+| Custom GraphQL + email + WebAuthn    | Fits existing session binding                                                                 |
 
 ### Chosen
 
-Custom GraphQL mutations, transactional email, and SimpleWebAuthn on the existing session model — no separate auth framework.
+Custom GraphQL mutations, transactional email, and SimpleWebAuthn on the existing session model — no separate auth framework. Passwordless
+email OTP is the primary path; passkeys for returning users; optional TOTP. Full rationale (including unused imported password hashes):
+[architecture/authentication.md](../architecture/authentication.md#why-passwordless-not-email--password).
 
 ## Next steps
 

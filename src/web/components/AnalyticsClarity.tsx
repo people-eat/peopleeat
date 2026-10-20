@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-// Predecessor production project ID (public).
+// Production Clarity project ID (public).
 const MICROSOFT_CLARITY_PROJECT_ID = 'l6qxwo5j7v';
 
 declare global {

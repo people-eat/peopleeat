@@ -9,7 +9,7 @@ Admins create city pages with German and English names, URL slug, and a **mandat
 Public visitors browse `/cities` and `/cities/$pathName` (and English paths). Unpublished pages are hidden; slug changes redirect
 permanently to the current slug.
 
-Public city detail section order (predecessor parity):
+Public city detail section order:
 
 1. **Hero** — bilingual headline/subheadline. Missing hero upload uses the stock fine-dining fallback image.
 2. **Chef for any occasion** — bilingual first-section headline and body, optional image (stock chef-preparing fallback when unset), and the

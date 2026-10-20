@@ -119,7 +119,6 @@ export default [
             'scripts/migrationsCheck.ts',
             'scripts/migrationsReconcile.ts',
             'scripts/databaseWipe.ts',
-            'scripts/migrateFromPeopleEat/**/*.{ts,tsx}',
             'e2e/**/*.{ts,tsx}',
             'playwright.config.ts',
         ],

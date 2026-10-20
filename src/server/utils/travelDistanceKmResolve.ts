@@ -4,7 +4,7 @@ import type { Places } from '../places/Places';
 
 /**
  * Preferred travel distance for booking fees: Google Routes driving km when
- * available, otherwise haversine. Same fallback chain as the predecessor.
+ * available, otherwise haversine.
  */
 export async function travelDistanceKmResolve(places: Places, origin: GeoCoordinates, destination: GeoCoordinates): Promise<number> {
     const drivingKm = await places.drivingDistanceKm({ origin, destination });

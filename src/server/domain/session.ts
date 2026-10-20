@@ -1,4 +1,4 @@
-/** Geo payload imported from predecessor people-eat `Sessions.geoInformation`. */
+/** Import-preserved session geo payload (`Sessions.geoInformation`). */
 export type SessionGeoInformation = {
     continent: {
         code: string;

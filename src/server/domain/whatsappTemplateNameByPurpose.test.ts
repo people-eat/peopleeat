@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { whatsappTemplateNameByPurpose } from './whatsapp';
 
 describe('whatsappTemplateNameByPurpose', () => {
-    it('uses predecessor Meta-approved template names', () => {
+    it('uses Meta-approved template names', () => {
         expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_CREATED).toBe('user_booking_request_create__for_user');
         expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_COOK_NOTIFY).toBe('user_booking_request_create__for_cook');
         expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_UPDATED_COOK).toBe('user_booking_request_update__for_cook');

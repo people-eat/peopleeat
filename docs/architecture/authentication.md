@@ -50,7 +50,9 @@ consent is not the HttpOnly session cookie — see [cookie-consent.md](../featur
 ## Alternatives Considered
 
 - **JWT tokens**: Stateless but harder to revoke, no server-side session state for real-time tracking
-- **Third-party auth (OAuth providers)**: Adds external dependency; can be layered on top of sessions later
+- **Third-party auth (OAuth providers)**: Adds external dependency; can be layered on top of sessions later (Google / Apple on the product
+  roadmap)
+- **Email + password**: Rejected for runtime log-on — see [Why passwordless](#why-passwordless-not-email--password)
 
 ## Consequences
 
@@ -58,14 +60,25 @@ consent is not the HttpOnly session cookie — see [cookie-consent.md](../featur
 - Sessions start anonymous, so user identity requires a separate linking step
 - Soft-delete means the sessions table grows over time — may need a cleanup job eventually
 
-## Legacy password hashes (import only)
-
-`Users.legacyPasswordHash` stores predecessor bcrypt hashes from the people-eat cutover. Runtime log-on does **not** verify this column —
-email OTP / passkeys / TOTP remain the only paths. See [go-live-data-migration.md](../features/go-live-data-migration.md).
-
 ## User sign-in (email OTP + passkeys)
 
 Anonymous sessions become authenticated when a sign-in mutation binds `Sessions.userId`.
+
+### Why passwordless (not email + password)
+
+We previously supported email + password (with reset and confirmation edge cases). Runtime log-on is now **email OTP**, plus **passkeys** for
+returning users and optional **TOTP** as a second factor.
+
+| Why we switched                         | Detail                                                                                          |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Fewer credential leaks                  | No long-lived password database to steal or reuse across sites                                  |
+| No forgotten-password flow              | OTP request / verify replaces reset email, unconfirmed-email traps, and “no password” states    |
+| Same session model                      | Bind `Sessions.userId` after verify; no separate password credential store on the hot path      |
+| Better fit for marketplace embeds       | Booking form, gift-card purchase, and chef sign-up reuse one identity gate without password UI  |
+
+Imported accounts may still carry `Users.legacyPasswordHash` (bcrypt). That column is **not** verified at log-on — OTP / passkeys / TOTP are
+the only runtime paths. We **keep** the column so email+password can be re-enabled later without another data recovery. Product surface:
+[sign-in.md](../features/sign-in.md).
 
 ### Email OTP (passwordless)
 
@@ -91,7 +104,7 @@ Anonymous sessions become authenticated when a sign-in mutation binds `Sessions.
    `userKlaviyoProfileSync` so the marketing audience stays current — see [klaviyo-profile-sync.md](../features/klaviyo-profile-sync.md).
    Transactional OTP mail remains on Resend.
 
-Public surface: `/log-on` (legacy `/sign-in` redirects). Shared client gate: `src/web/components/auth/AuthIdentityGate`
+Public surface: `/log-on` (`/sign-in` redirects there for old bookmarks). Shared client gate: `src/web/components/auth/AuthIdentityGate`
 (`requireProfileDetails` defaults true; gift-card purchase sets false).
 
 ### Passkeys (WebAuthn)

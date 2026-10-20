@@ -17,7 +17,7 @@ export type BookingRequestOfferStatusKey =
 
 export type BookingRequestOfferStatusDisplayFor = 'customer' | 'cook';
 
-/** Predecessor palette — booking lifecycle pills only. See `docs/styles/status-messaging.md`. */
+/** Booking lifecycle pill palette only. See `docs/styles/status-messaging.md`. */
 export function bookingRequestOfferStatusClassName(status: BookingRequestOfferStatusKey): string {
     switch (status) {
         case 'USER_NEEDS_TO_ACCEPT':

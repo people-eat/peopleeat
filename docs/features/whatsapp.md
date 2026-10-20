@@ -36,7 +36,7 @@ threads in the admin inbox, including media, quick-reply reactions, and emoji re
 ### Ops prerequisite
 
 Before `WHATSAPP_TRANSPORT=meta` in Coolify: subscribe the Meta app webhook to `messages` + `message_statuses`, confirm Meta template
-**names** match `whatsappTemplateNameByPurpose` in `src/server/domain/whatsapp.ts` (predecessor keys such as
+**names** match `whatsappTemplateNameByPurpose` in `src/server/domain/whatsapp.ts` (approved Manager keys such as
 `user_booking_request_create__for_user`, not reinvented slugs), and set secrets (including Slack WhatsApp channel when
 `SLACK_TRANSPORT=slack`). Local/dev uses `console` (no phone delivery). Purposes mapped to `null` are intentionally not sent until a Meta
 template exists.
@@ -69,7 +69,7 @@ Meta Cloud API + audit table + Concierge inbox, mirroring outbound-email / suppo
 ## Ideas
 
 - Admin outbound media attach
-- Richer AdminAssistant-style tooling on the Concierge surface (history import from ExternalMessages ships via go-live ETL)
+- Richer AdminAssistant-style tooling on the Concierge surface
 - WhatsApp contact avatars (not available via Meta Cloud API; peopleeat profile pictures only)
 
 ## Implementation

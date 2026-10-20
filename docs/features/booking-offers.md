@@ -80,7 +80,7 @@ offer, admins can patch that snapshot (title, description, courses/meals) withou
 | Show other cooks’ offer forms / prices to cooks                     | Rejected — harms cook trust and platform fee integrity                                                               |
 | Menu required on cook offer create (UI)                             | **Chosen** — create page requires ≥1 complete menu; server still allows empty for ops/admin                          |
 | Menu required on every offer (server)                               | Rejected — API still accepts empty `suggestedMenuIds`                                                                |
-| Customer comparison board (side-by-side matrix)                     | Rejected for go-live — sequential offer cards on request detail; board can return later                              |
+| Customer comparison board (side-by-side matrix)                     | Rejected for now — sequential offer cards on request detail; board can return later                                  |
 | Cook-only offer create                                              | **Chosen** for the default path; admins may also create offers for ops                                               |
 | Admin-only authored offers                                          | Rejected as the sole path — cooks must own pricing and menus                                                         |
 | Open / Accepted API unions mirroring old dialogs                    | Rejected — derived status enum drives UI                                                                             |

@@ -8,7 +8,7 @@ export type BookingStatusPillProps = Omit<ComponentProps<'span'>, 'children'> & 
 
 /**
  * Colored lifecycle pill for booking request / offer statuses.
- * Uses the predecessor yellow/blue/green/purple/red palette — see
+ * Uses the booking lifecycle yellow/blue/green/purple/red palette — see
  * `bookingRequestStatusClassName` / `bookingRequestOfferStatusClassName`.
  */
 export function BookingStatusPill({ children, className, ...props }: BookingStatusPillProps) {

@@ -50,7 +50,7 @@ Same workflow as above — modify the table definition in `schema.ts`, then gene
 
 ### Entity ids (nanoId)
 
-Persisted primary keys and foreign keys are **20-character nanoIds** (same alphabet/length as predecessor people-eat), declared via the
+Persisted primary keys and foreign keys are **20-character nanoIds** (URL-safe alphabet, compact in APIs and logs), declared via the
 `nanoId()` helper in `src/server/db/schema.ts` (`varchar(20)`). Create new ids with `idCreate()` from `src/shared/idCreate.ts`. Zod
 validators use `zNanoId` from the same module. **Do not** use `crypto.randomUUID()` for entity ids. That shared module is imported by web
 code — keep it free of Node builtins (`node:crypto`, etc.). Test-only helpers such as `phoneNumberCreate` live in

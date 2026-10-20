@@ -234,7 +234,7 @@ export async function cookBookingRequestOfferSuggestedMenusUpdateWhatsAppSend(
     });
 }
 
-/** No approved Meta template (predecessor never sent WA on customer accept confirm). */
+/** No approved Meta template for customer accept confirm. */
 export async function userBookingRequestOfferAcceptWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; cookFirstName: string },

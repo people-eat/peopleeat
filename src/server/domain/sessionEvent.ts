@@ -58,10 +58,9 @@ type SessionEventLegacyPasswordResetPayload = {
 };
 
 /**
- * people-eat keys that still appear in imported rows but are **not** emitted by
- * peopleeat (password auth, phone confirm, etc.). Kept in the type map so
- * timelines/import stay typed. Newsletter keys are emitted again. See
- * docs/architecture/session-events.md.
+ * Historical keys that still appear in imported rows but are **not** emitted by
+ * peopleeat (password auth, phone confirm, etc.). Kept in the type map so admin
+ * timelines stay typed. See docs/architecture/session-events.md.
  */
 export const sessionEventKeysNoLongerProduced = [
     'SIGN_IN_FAILED',
@@ -87,9 +86,9 @@ export type SessionEventKeyNoLongerProduced = (typeof sessionEventKeysNoLongerPr
  * Typed session-event taxonomy. Keys are stable strings (varchar in DB) so new
  * types do not require a Postgres enum migration.
  *
- * - Legacy people-eat keys are included for import + admin humanization.
+ * - Historical keys remain for admin humanization of imported rows.
  * - `sessionEventKeysNoLongerProduced` lists keys peopleeat never emits.
- * - New `AUTH_*` keys cover email OTP / passkey / TOTP (password SIGN_IN_* are legacy).
+ * - `AUTH_*` keys cover email OTP / passkey / TOTP (password `SIGN_IN_*` are historical).
  */
 const sessionEventKeyDataMap = {
     WEB_PAGE_VISITED: {} as SessionEventWebPageVisitedPayload,

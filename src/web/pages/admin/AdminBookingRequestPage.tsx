@@ -71,7 +71,7 @@ function isAdminBookingRequestTab(value: unknown): value is AdminBookingRequestT
 }
 
 export function parseAdminBookingRequestSearch(search: Record<string, unknown>): AdminBookingRequestSearch {
-    // Predecessor / old links used `accepted-offer` — fold into the offers funnel.
+    // Older links used `accepted-offer` — fold into the offers funnel.
     if (search.tab === 'accepted-offer') {
         return { tab: 'offers' };
     }

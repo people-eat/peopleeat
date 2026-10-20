@@ -1,7 +1,7 @@
 /**
  * Soft price-class guidance for cook/admin offer pricing (integer cents per person).
  * Soft min/max are UX-only; `minOfferAmountHardCents` is a customer-total floor from promo codes.
- * See docs/architecture/booking.md and predecessor `toCookBookingRequest`.
+ * See docs/architecture/booking.md.
  */
 
 export type BookingRequestOfferPriceClassType = 'LOW' | 'MEDIUM' | 'HIGH';

@@ -33,7 +33,7 @@ export type WhatsAppMessageKind = 'TEXT' | 'TEMPLATE' | 'MEDIA' | 'BUTTON_REPLY'
 
 /**
  * Meta Cloud API template name per purpose.
- * Names must match templates already approved in WhatsApp Manager (predecessor people-eat keys).
+ * Names must match templates already approved in WhatsApp Manager.
  * `null` = no approved template yet — outbound send skips Meta (email still goes).
  */
 export const whatsappTemplateNameByPurpose: Record<Exclude<OutboundWhatsAppPurpose, 'CONCIERGE_SESSION_REPLY'>, string | null> = {
@@ -42,16 +42,16 @@ export const whatsappTemplateNameByPurpose: Record<Exclude<OutboundWhatsAppPurpo
     BOOKING_REQUEST_UPDATED_COOK: 'user_booking_request_update__for_cook',
     BOOKING_REQUEST_OFFER_CREATED: 'cook_booking_request_offer_create__for_user',
     BOOKING_REQUEST_OFFER_MENU_UPDATED: 'cook_menu_courses_update_with_relation_to_offer__for_user',
-    // Customer-facing accept confirm was never a Meta template in the predecessor.
+    // No Meta-approved customer accept-confirm template yet.
     BOOKING_REQUEST_OFFER_ACCEPTED: null,
     BOOKING_REQUEST_OFFER_ACCEPTED_COOK: 'user_booking_request_offer_accept__for_cook',
     BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED: null,
     BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT: null,
     BOOKING_REQUEST_CANCELED: null,
     BOOKING_REQUEST_CANCELED_COOK: null,
-    // Cook wrote → notify customer (predecessor cook_* template).
+    // Cook wrote → notify customer.
     BOOKING_REQUEST_OFFER_CHAT_UNREAD_CUSTOMER: 'cook_booking_request_offer_unread_notifications',
-    // Customer wrote → notify cook (predecessor user_* template).
+    // Customer wrote → notify cook.
     BOOKING_REQUEST_OFFER_CHAT_UNREAD_COOK: 'user_booking_request_offer_unread_notifications',
     BOOKING_REQUEST_REACTION_REMINDER: 'user_booking_request_reaction_reminder',
     CALL_SLOT_BOOKING_CREATE: 'call_slot_booking_create',
@@ -60,7 +60,7 @@ export const whatsappTemplateNameByPurpose: Record<Exclude<OutboundWhatsAppPurpo
     CALL_SLOT_BOOKING_REMINDER: 'call_slot_booking_reminder_60_min_before',
 };
 
-/** Quick-reply labels from the predecessor reaction-reminder template (DE). */
+/** Quick-reply labels for the DE reaction-reminder Meta template. */
 export const WHATSAPP_BOOKING_REQUEST_REACTION_LABELS = new Set([
     'Ich hatte ein niedrigeres Budget erwartet',
     'Ich hatte andere Menüs erwartet',

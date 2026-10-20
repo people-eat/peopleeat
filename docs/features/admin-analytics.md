@@ -23,7 +23,7 @@ time series.
 7. **Cook offer funnel** (cook × booking-request grain)
    - **Cohort** — `BookingRequestCooks` rows with `notifiedAt` in range (admins excluded).
    - **KPIs** — notified, opened, declined (decline without create-UI path), offers created, conversion notified→offer.
-   - **Opened** — `firstOpenedAt`, or inferred when the row later declined / started create / has an offer (legacy rows often lack
+   - **Opened** — `firstOpenedAt`, or inferred when the row later declined / started create / has an offer (older imported rows often lack
      `firstOpenedAt`).
    - **Steps** — `notified` → `opened` → either `declined` **or** `offer_create` → `menus` → `price` → `created`. Early/terminal steps from
      `BookingRequestCooks` / `BookingRequestOffers`; create-UI mid-steps from `WEB_PAGE_INTERACTION` with `area: cook_booking_request_offer`
@@ -42,9 +42,9 @@ time series.
   without structured completions).
 - Empty Sankey copy distinguishes: no structured completions yet; completions but no multi-step transitions; or no data at all.
 - Booking-form funnel aggregation only counts the structured `{ area: booking_request_form, interaction: { type, step } }` shape (plus
-  `BOOKING_REQUEST_CREATED`). The go-live ETL reshapes known predecessor booking-form Next / Send clicks into `step_completed`; unmatched
-  free-form clicks still do not appear. Migrated rows have no `step_entered`, so the Reached column is omitted until live instrumentation
-  produces entered events.
+  `BOOKING_REQUEST_CREATED`). Imported historical clicks were reshaped into `step_completed` where mapping was known; unmatched free-form
+  clicks still do not appear. Migrated rows have no `step_entered`, so the Reached column is omitted until live instrumentation produces
+  entered events.
 - Cook create-UI mid-steps (`offer_create` / `menus` / `price`) only appear after live instrumentation; historical cohorts still show
   notified / opened / declined / created from DB timestamps.
 
@@ -58,7 +58,7 @@ and [admin-users.md](./admin-users.md)).
 | Option                                    | Notes                                                            |
 | ----------------------------------------- | ---------------------------------------------------------------- |
 | Nest analytics under `/admin/sessions`    | Rejected — different job (aggregates vs session triage)          |
-| Dedicated `/admin/analytics` hub (chosen) | Matches predecessor Admin Analytics surface                      |
+| Dedicated `/admin/analytics` hub (chosen) | Aggregates and funnels need their own surface, not session triage |
 | Metabase only                             | External; no in-product funnel                                   |
 | Cook funnel per browser session           | Rejected — notify has no cook session; conversion is per request |
 

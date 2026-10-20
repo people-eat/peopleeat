@@ -58,7 +58,7 @@ separate section stack per entity.
 5. **Publish** — unified nullable `publishedAt` on all four entities (`null` = draft; public requires `publishedAt <= now()`). Admin detail
    editor exposes status (Draft / Published / Scheduled). Primary actions are **Save** and **Publish** (draft / scheduled only; confirm
    dialog, persists immediately). Secondary actions live in an ellipsis overflow menu: **Public page** (opens the public detail route in a
-   new tab), **Schedule…** (go-live [`DatePicker`](../../src/web/components/base/date-picker.tsx); draft / scheduled only), **Unpublish**,
+   new tab), **Schedule…** ([`DatePicker`](../../src/web/components/base/date-picker.tsx); draft / scheduled only), **Unpublish**,
    and confirmed **Delete**. Delete is detail-only (not on list views).
 6. **Slugs** — unique `pathName` + `previousPathNames` for 301 redirects on rename.
 7. **Media** — hero and section images reference `FileUploads`; download auth allows owner, published content references, or admin + any

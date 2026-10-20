@@ -39,10 +39,10 @@ customer-service window, and every send must be auditable.
 7. **Template buttons** — `sendTemplate` may pass a URL button dynamic path segment (`buttonUrlParameter`) for deep links approved in
    WhatsApp Manager.
 
-Template **names** in `whatsappTemplateNameByPurpose` (`src/server/domain/whatsapp.ts`) must match Meta-approved keys from the predecessor
-WhatsApp integration (e.g. `user_booking_request_create__for_user`, `call_slot_booking_reminder_60_min_before`). Do not invent snake_case
-purpose slugs. Purposes without an approved template map to `null` and are skipped at send time (email still goes). Bodies and button URL
-segments must match the approved Meta variable order.
+Template **names** in `whatsappTemplateNameByPurpose` (`src/server/domain/whatsapp.ts`) must match keys already approved in WhatsApp Manager
+(e.g. `user_booking_request_create__for_user`, `call_slot_booking_reminder_60_min_before`). Do not invent snake_case purpose slugs —
+Meta rejects unknown names. Purposes without an approved template map to `null` and are skipped at send time (email still goes). Bodies and
+button URL segments must match the approved Meta variable order.
 
 ## Alternatives considered
 
@@ -64,7 +64,5 @@ segments must match the approved Meta variable order.
 - Public `wa.me` marketing CTAs remain; they open the same business number.
 - Ops must keep Meta names in sync with WhatsApp Manager for DE (and EN when ready). Until EN templates are approved, leave
   `WHATSAPP_ENGLISH_TEMPLATES` off so EN recipients still send with Meta language `de`.
-- History migration from the predecessor `ExternalMessages` store ships via the go-live ETL
-  ([go-live-data-migration.md](../features/go-live-data-migration.md)); WhatsApp channel rows map into `WhatsApp*`, other channels archive.
 
 See [features/whatsapp.md](../features/whatsapp.md) and [infrastructure.md](../infrastructure.md).

@@ -7,7 +7,7 @@ Transactional mail stays on Resend.
 
 - Public footer form collects email + locale; mutation is session-scoped (anonymous OK).
 - Duplicate emails return success (idempotent) with a session event.
-- Go-live ETL imports predecessor `NewsletterSubscriptions` with `source = IMPORT`.
+- Rows with `source = IMPORT` are historical imports; footer subscribe creates new rows with the live source.
 - When `KLAVIYO_NEWSLETTER_LIST_ID` is set, subscribe also calls Klaviyo profile-subscription bulk create for that list. When unset, the row
   is still stored locally.
 
@@ -27,7 +27,6 @@ Transactional mail stays on Resend.
 - GraphQL: `Mutation.sessionNewsletterSubscriptionCreate`
 - UI: footer form in `Footer.tsx` + `FooterNewsletter.graphql`
 - Klaviyo: `klaviyo.newsletterSubscribe` in `klaviyoCreate.ts`
-- ETL: `scripts/migrateFromPeopleEat/importDomains.ts`
 - Env: optional `KLAVIYO_NEWSLETTER_LIST_ID` — see [infrastructure.md](../infrastructure.md)
 
-See [klaviyo-profile-sync.md](./klaviyo-profile-sync.md), [go-live-data-migration.md](./go-live-data-migration.md).
+See [klaviyo-profile-sync.md](./klaviyo-profile-sync.md).

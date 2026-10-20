@@ -67,8 +67,6 @@ docs/
 │   ├── how-to-become-a-chef.md   # Public chef recruitment page
 │   ├── gift-card-purchase.md     # Gift-card purchase (Stripe + reCAPTCHA)
 │   ├── admin-gift-cards.md       # Admin gift-card overview + list + detail
-│   ├── go-live-data-migration.md # people-eat → peopleeat freeze cutover ETL
-│   ├── go-live-cutover-gaps.md   # Last pre-DNS gaps / takeovers beyond ETL
 │   ├── admin-file-store.md       # Admin Garage/S3 object browse (`/admin/file-store`)
 │   ├── admin-jobs.md             # Global pending scheduled jobs (`/admin/jobs`)
 │   ├── admin-users.md
@@ -157,8 +155,15 @@ Omit **Next steps** or **Ideas** when empty. Do not invent a Decisions block for
 assistants.
 
 Features are different from architecture: architecture describes structural decisions that affect many features; features describe specific
-end-to-end functionality built on top of that architecture. Write peopleeat as a standalone product — do not justify choices by citing a
-predecessor or “old app.”
+end-to-end functionality built on top of that architecture.
+
+**Standalone product voice:** Document peopleeat on its own terms. Decisions and alternatives must explain *why this product works this
+way* (UX, ops, security, cost). Do not justify a choice by citing a predecessor, “old app,” or “parity with people-eat.”
+
+Historical evolution is welcome when it explains a real product change — name what we used to do, what we do now, and why we switched. Example
+(auth): “We previously used email + password; we switched to email OTP (plus passkeys / optional TOTP) because …” Import-preserved columns
+and historical SessionEvents stay factual (“import-preserved,” “no longer produced”) without using an old product as the reason for current
+design.
 
 Chat is split across foundation ([architecture/chat.md](./architecture/chat.md)), persistence
 ([architecture/chat-persistence.md](./architecture/chat-persistence.md)), presentation ([styles/chat.md](./styles/chat.md)), and satellites

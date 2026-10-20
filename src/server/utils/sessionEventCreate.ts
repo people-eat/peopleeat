@@ -8,8 +8,9 @@ import type { SessionEventKeyEmitted, SessionEventPayload } from '../domain/sess
  * Typed insert for `SessionEvents`. Never insert into `sessionEvents` directly —
  * this helper keeps key ↔ payload coupling compile-time safe.
  *
- * Only accepts keys peopleeat still emits (`SessionEventKeyEmitted`). Legacy
- * import rows use raw SQL in `scripts/migrateFromPeopleEat/`.
+ * Only accepts keys peopleeat still emits (`SessionEventKeyEmitted`). Historical
+ * keys in `sessionEventKeysNoLongerProduced` stay in the taxonomy for admin
+ * timelines but are never written here.
  */
 export async function sessionEventCreate<TKey extends SessionEventKeyEmitted>(
     serverRuntime: ServerRuntime,

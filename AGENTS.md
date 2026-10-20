@@ -90,8 +90,6 @@ in `docs/styles/`.
 | Persistent logging                    | [`logging.md`](./docs/architecture/logging.md)                             |
 | Observability (OTel / Langfuse / APM) | [`observability.md`](./docs/architecture/observability.md)                 |
 | Session events (analytics)            | [`session-events.md`](./docs/architecture/session-events.md)               |
-| Go-live data migration                | [`go-live-data-migration.md`](./docs/features/go-live-data-migration.md)   |
-| Go-live cutover gaps                  | [`go-live-cutover-gaps.md`](./docs/features/go-live-cutover-gaps.md)       |
 | SEO                                   | [`discovery-seo.md`](./docs/architecture/discovery-seo.md)                 |
 | AI-search (GEO)                       | [`discovery-geo.md`](./docs/architecture/discovery-geo.md)                 |
 | Content model                         | [`content-model.md`](./docs/architecture/content-model.md)                 |

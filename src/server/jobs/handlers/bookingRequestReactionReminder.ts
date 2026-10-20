@@ -10,8 +10,7 @@ interface BookingRequestReactionReminderData {
 
 /**
  * 48h customer WhatsApp nudge when offers exist, remain unread/unaccepted, and
- * the customer has not messaged or requested menu changes. Predecessor
- * `USER_BOOKING_REQUEST_REACTION_REMINDER`.
+ * the customer has not messaged or requested menu changes.
  */
 export const bookingRequestReactionReminder: QueuedJobDefinition<BookingRequestReactionReminderData> = {
     kind: 'queued',

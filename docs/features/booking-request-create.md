@@ -8,7 +8,7 @@ Customers create booking requests; the platform publishes them to cooks (or hold
    (when `BOOKING_REQUEST_RESTRICTIONS` is on) dietary restrictions per guest → message (optional redeem code). On the venue step, signed-in
    customers with prior requests see up to five distinct previous event addresses as quick-select chips (newest first); they can still enter
    a new address via the Combobox. On the datetime step, a success banner praises early booking when the selected date is more than 3 weeks
-   out (Europe/Berlin calendar days), matching the predecessor form. Time uses `TimePicker`: native `type="time"` on small viewports; from
+   out (Europe/Berlin calendar days). Time uses `TimePicker`: native `type="time"` on small viewports; from
    `md` up, hour (8–23) and minute (`:00` / `:15` / `:30` / `:45`) dropdowns. Draft answers survive refresh and auth redirects via the URL
    (restriction selections stay in form state only). Cooks are redirected to `/profile` (header **Send request** CTA is already hidden for
    them); `UserMutation.bookingRequestCreate` also rejects cook callers.

@@ -67,7 +67,7 @@ import type {
     WhatsAppMessageKind,
 } from '../domain/whatsapp';
 
-/** Entity PK/FK column — 20-char nanoId (same shape as predecessor people-eat). */
+/** Entity PK/FK column — 20-char URL-safe nanoId. */
 function nanoId() {
     return varchar({ length: NANO_ID_LENGTH });
 }
@@ -86,7 +86,7 @@ export const sessions = pgTable(
     {
         sessionId: nanoId().primaryKey(),
         userId: nanoId(),
-        // Predecessor session chain (people-eat `previousSessionId`).
+        // Import-preserved prior-session link (runtime no longer writes this).
         previousSessionId: nanoId(),
         lastInteractionAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
         wasTerminatedAt: timestamp({ withTimezone: true }),
@@ -104,7 +104,7 @@ export const sessions = pgTable(
         // First path the visitor hit (`x-landing-path` from the SSR route
         // loader). Same sticky-on-create rule as `referrer`.
         landingPath: varchar(),
-        // Predecessor geo blob (imported; runtime no longer writes this).
+        // Import-preserved geo blob (runtime no longer writes this).
         geoInformation: jsonb().$type<SessionGeoInformation>(),
         // Derived from `userAgent` via `isbot` on every upsert so bot vs human
         // classification stays current if the UA string changes.
@@ -331,8 +331,8 @@ export const users = pgTable(
         lastName: varchar().notNull(),
         status: varchar().$type<UserStatus>().notNull().default('ACTIVE'),
         phoneNumber: varchar(),
-        // Predecessor bcrypt hash (people-eat `Users.password`). Not used by
-        // OTP/passkey log-on; retained for a possible future email+password path.
+        // Import-preserved bcrypt hash. Unused at runtime (OTP / passkeys / TOTP).
+        // Kept so email+password can be re-enabled later without recovering hashes.
         legacyPasswordHash: varchar(),
         adminNote: text().notNull().default(''),
         birthDate: date({ mode: 'string' }),
@@ -426,9 +426,9 @@ export const cooks = pgTable(
         stripeAccountId: varchar(),
         stripeAccountActive: boolean().notNull().default(false),
         stripeAccountActiveWasReset: boolean().notNull().default(false),
-        // Predecessor people-eat city/geo (import-preserved). `legacyCityName` falls
-        // back for public cook city when `exactTravelOriginAddress.city` is empty;
-        // lat/lng stay storage-only (not used for travel radius).
+        // Import-preserved city/geo. `legacyCityName` falls back for public cook
+        // city when `exactTravelOriginAddress.city` is empty; lat/lng stay
+        // storage-only (not used for travel radius).
         legacyCityName: varchar(),
         legacyLatitude: doublePrecision(),
         legacyLongitude: doublePrecision(),
@@ -1476,7 +1476,7 @@ export const bookingRequests = pgTable(
         publicationStatus: varchar().$type<BookingRequestPublicationStatus>().notNull(),
         preferences: jsonb().$type<string[]>().notNull(),
         invoiceAddress: jsonb().$type<BookingRequestInvoiceAddress>(),
-        // Slack ops thread root — predecessor shape `{ slackTs, slackChannelId }`.
+        // Slack ops thread root — `{ slackTs, slackChannelId }`.
         // See docs/features/slack-notifications.md.
         references: jsonb().$type<BookingRequestReferences>(),
         createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
@@ -2450,7 +2450,7 @@ export const newsletterSubscriptions = pgTable(
 export type NewsletterSubscription = typeof newsletterSubscriptions.$inferSelect;
 export type NewsletterSubscriptionCreate = typeof newsletterSubscriptions.$inferInsert;
 
-/** Catch-all for predecessor rows/fields with no product home after go-live import. */
+/** Catch-all for imported rows/fields with no product home. */
 export const migrationArchives = pgTable(
     'MigrationArchive',
     {

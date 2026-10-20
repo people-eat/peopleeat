@@ -3,7 +3,7 @@ import type { GqlCBookingRequestStatus } from '../graphql/generated';
 
 export type BookingRequestStatusDisplayFor = 'admin' | 'customer';
 
-/** Predecessor palette — booking lifecycle pills only. See `docs/styles/status-messaging.md`. */
+/** Booking lifecycle pill palette only. See `docs/styles/status-messaging.md`. */
 export function bookingRequestStatusClassName(status: GqlCBookingRequestStatus): string {
     switch (status) {
         case 'WAITING_FOR_OFFERS':

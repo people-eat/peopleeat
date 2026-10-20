@@ -12,8 +12,7 @@
         ".vscode",
         ".husky/_",
         ".env*",
-        ".claude",
-        "scripts/migrateFromPeopleEat/legal"
+        ".claude"
     ],
     "import": ["@cspell/dict-de-de/cspell-ext.json"],
     "words": [

@@ -3,8 +3,8 @@
 ## Context
 
 peopleeat is a private-chef marketplace. Customers post **booking requests**; cooks in range (or invited) submit **offers**; both sides
-negotiate via an offer timeline; after dual acceptance the platform collects payment (Stripe Connect) and later pays the cook. The go-live
-product loop needs a complete persistence spine: requests, cook affinity, offers, negotiation events, call slots, and fee/payment columns.
+negotiate via an offer timeline; after dual acceptance the platform collects payment (Stripe Connect) and later pays the cook. The product
+loop needs a complete persistence spine: requests, cook affinity, offers, negotiation events, call slots, and fee/payment columns.
 
 ## Decision
 
@@ -23,7 +23,7 @@ Postgres / Drizzle tables with project conventions (UUID PKs, `*Cents` money int
 | `CookCallSlotBookings`                           | Discovery-call request / confirm / decline / cancel tied to an offer                                        |
 | `Menus.bookingRequestOfferId` (+ `copyOfMenuId`) | Optional offer-scoped **copies** of cook inventory menus                                                    |
 
-**Deferred** relative to go-live:
+**Deferred:**
 
 - Intake-chat tables for `/booking-request/chat` — form path first; see [booking-request-create.md](../features/booking-request-create.md)
 
@@ -165,7 +165,7 @@ Drive UI with `status` + field presence.
 | Skip payment columns until charge ships           | Booking without fee/payment shape forces a painful second migration  |
 | Require menus on every offer                      | Product allows price-only offers                                     |
 | Open \| Accepted cook union as default API        | Over-fit to dialog-era shapes; status enum already encodes lifecycle |
-| Intake chat tables now                            | Not needed for go-live; form path first                              |
+| Intake chat tables now                            | Not needed yet; form path first                                      |
 
 ## Consequences
 

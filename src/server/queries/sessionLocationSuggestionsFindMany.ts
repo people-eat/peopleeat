@@ -15,7 +15,7 @@ export async function sessionLocationSuggestionsFindMany(
         });
         return suggestions.map(toGqlLocationSuggestion);
     } catch (error) {
-        // Match predecessor: never fail the page over Places — empty list + log.
+        // Never fail the page over Places — empty list + log.
         serverRuntime.log.error(error, requestingSession);
         return [];
     }

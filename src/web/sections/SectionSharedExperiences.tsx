@@ -1,7 +1,7 @@
 import { Reveal } from '../components/Reveal';
 import { useLocale } from '../hooks/useLocale';
 
-/** Full-bleed quote band over lifestyle photography (predecessor `EmptySection`). */
+/** Full-bleed quote band over lifestyle photography. */
 export function SectionSharedExperiences() {
     const locale = useLocale();
 

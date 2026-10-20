@@ -17,9 +17,9 @@ urgency.
 | `warning` | Incomplete, action still required, recoverable attention | `TriangleAlertIcon` | `bg-yellow-100 border-yellow-400` | `bg-yellow-200 text-yellow-600` |
 | `error`   | Failure, blocking problem, destructive outcome           | `CircleXIcon`       | `bg-red-100 border-red-400`       | `bg-red-200 text-red-600`       |
 
-Palette matches the predecessor `PEMessageBanner` / `messageIconMap` (people-eat). Keep these Tailwind stops in
-`src/web/components/base/status.ts` — do not remap status messaging through brand `--accent` / `--info` / `--success` tokens (those remain
-available for other UI). Brand orange stays for emphasis and focus rings; status yellow is the attention hue for banners and chips.
+Keep these Tailwind stops in `src/web/components/base/status.ts` — do not remap status messaging through brand `--accent` / `--info` /
+`--success` tokens (those remain available for other UI). Brand orange stays for emphasis and focus rings; status yellow is the attention
+hue for banners and chips. Separating status hues from brand tokens keeps “needs attention” readable next to primary chrome.
 
 ## Components
 
@@ -27,7 +27,7 @@ available for other UI). Brand orange stays for emphasis and focus rings; status
 | ------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
 | `StatusIcon`        | `src/web/components/base/status-icon.tsx`        | Circular soft chip; building block for the other two                                               |
 | `StatusBadge`       | `src/web/components/base/status-badge.tsx`       | Compact: nav attention (icon-only + `label`) or list/card labels (icon + short text)               |
-| `NotificationBadge` | `src/web/components/base/notification-badge.tsx` | Unread count bubble (predecessor `PENotificationBadge`: red disc + white bold numeral)             |
+| `NotificationBadge` | `src/web/components/base/notification-badge.tsx` | Unread count bubble (red disc + white bold numeral)                                                |
 | `StatusAlert`       | `src/web/components/base/status-alert.tsx`       | Section / page banners with optional title, body, and action slot                                  |
 | `Alert`             | `src/web/components/base/alert.tsx`              | Low-level shadcn primitive; variants `info` / `success` / `warning` / `error` share the same tones |
 | `BookingStatusPill` | `src/web/components/BookingStatusPill.tsx`       | Booking request / offer lifecycle labels only — soft yellow/blue/green/purple/red palette          |
@@ -57,8 +57,8 @@ or brand `--accent` into unread bubbles — use `NotificationBadge`.
 ## Rules
 
 - Always pair icon-only badges with an accessible `label`.
-- Status surfaces use the shared maps in `status.ts` (predecessor blue / green / yellow / red stops). Do not invent one-off status colours
-  outside those maps. Booking lifecycle pills keep their own soft palette (see below) — similar hues, separate maps.
+- Status surfaces use the shared maps in `status.ts` (blue / green / yellow / red). Do not invent one-off status colours outside those maps.
+  Booking lifecycle pills keep their own soft palette (see below) — similar hues, separate maps.
 - StatusIcon / StatusBadge / NotificationBadge colours are owned by the component. When nesting inside `SidebarMenuBadge`, neutralize the
   host text colour (`bg-transparent … peer-data-[active=true]/menu-button:text-transparent`) so peer active styles cannot wash out the chip
   or red unread disc.
@@ -110,7 +110,7 @@ Only statuses that exist in peopleeat’s derived booking enums are mapped.
 
 - Charcoal primary pill with a white / inherited `!`
 - One-off bordered cards that reinvent banner layout
-- Remapping status banners through brand `--accent` orange (warning is yellow, matching predecessor)
+- Remapping status banners through brand `--accent` orange (warning stays yellow so attention is distinct from brand emphasis)
 - Accent / destructive `Badge` for unread counts (use `NotificationBadge`)
 - Inventing ad-hoc booking status colours outside the maps above — extend the shared maps instead
 - Using `StatusBadge` / `StatusTone` for booking lifecycle colours (use `BookingStatusPill` instead)

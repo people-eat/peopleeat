@@ -1,7 +1,7 @@
 import { customAlphabet } from 'nanoid';
 import { z } from 'zod';
 
-/** Same alphabet + length as predecessor people-eat `createNanoId`. */
+/** 20-character URL-safe nanoId (entity PKs / FKs). */
 const NANO_ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 export const NANO_ID_LENGTH = 20;
 

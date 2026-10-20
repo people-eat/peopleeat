@@ -22,7 +22,7 @@ These map onto shadcn CSS variables in `src/styles.css` (`--foreground`, `--back
 `src/styles.css` excludes `docs/` from Tailwind's class scanner (`@source not "../docs"`) so editing these docs — which mention utility
 names like `bg-primary` — does not rebuild CSS or trigger Vite HMR. `vite.config.ts` also ignores `**/docs/**` in `server.watch`.
 
-Status banners, badges, and icons follow [`status-messaging.md`](./status-messaging.md) (predecessor blue / green / yellow / red palette in
+Status banners, badges, and icons follow [`status-messaging.md`](./status-messaging.md) (shared blue / green / yellow / red maps in
 `status.ts`). Booking lifecycle pills use a related soft palette documented there — do not invent one-off status colours outside those maps.
 
 Cook cuisine style / cooking philosophy chips use `CookProfileTags` (`bg-muted` fill). Do not use `Badge variant="secondary"` for those —
