@@ -40,9 +40,10 @@ interface BubbleProps extends PropsWithChildren {
     /** Cut the corner toward the speaker (default). Pass false for mid-streak
      *  peer bubbles that sit above a later avatar-bearing row. */
     tail?: boolean;
+    className?: string;
 }
 
-export function Bubble({ tone, tail = true, children }: BubbleProps) {
+export function Bubble({ tone, tail = true, className, children }: BubbleProps) {
     return (
         <div
             data-slot="chat-message-bubble"
@@ -51,6 +52,7 @@ export function Bubble({ tone, tail = true, children }: BubbleProps) {
                 'max-w-[80%] rounded-2xl px-4 py-2 text-sm/relaxed shadow-sm',
                 tone === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
                 tail && (tone === 'user' ? 'rounded-br-sm' : 'rounded-bl-sm'),
+                className,
             )}
         >
             {children}

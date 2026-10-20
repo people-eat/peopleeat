@@ -127,8 +127,8 @@ export function ChatVoiceMessagePlayer({
             <span id={labelId} className="sr-only">
                 {{ de: 'Sprachnachricht', en: 'Voice message' }[locale]}
             </span>
-            <div className="relative size-10 shrink-0">
-                <Avatar className="size-10">
+            <div className="relative row-span-2 size-12 shrink-0">
+                <Avatar className="size-12">
                     {author.profilePicture != null ? <AvatarImage src={author.profilePicture.url} alt="" /> : null}
                     <AvatarFallback className="bg-foreground/10 text-xs font-semibold text-foreground/75">
                         {initialsFromName(author.display)}
@@ -173,7 +173,7 @@ export function ChatVoiceMessagePlayer({
                 aria-valuenow={Math.floor(currentSec)}
                 aria-valuetext={formatVoiceDuration(displaySec)}
                 aria-label={{ de: 'Wiedergabeposition', en: 'Playback position' }[locale]}
-                className="relative flex h-7 min-w-0 cursor-pointer items-center touch-none"
+                className="relative flex h-4 min-w-0 cursor-pointer items-center touch-none"
                 onPointerDown={(event) => {
                     event.currentTarget.setPointerCapture(event.pointerId);
                     setDragging(true);
@@ -236,7 +236,7 @@ export function ChatVoiceMessagePlayer({
             </div>
 
             <div className="col-start-3 flex items-center justify-between gap-2">
-                <span className={cn('text-[10px]/none tabular-nums', metaFg)}>{formatVoiceDuration(displaySec)}</span>
+                <span className={cn('text-[10px] leading-none tabular-nums', metaFg)}>{formatVoiceDuration(displaySec)}</span>
                 {meta}
             </div>
         </div>

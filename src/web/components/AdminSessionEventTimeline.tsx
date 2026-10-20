@@ -3,6 +3,8 @@ import { Link } from '@tanstack/react-router';
 import { formatDateTime } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
+import { Badge } from './base/badge';
+import { Button } from './base/button';
 
 export type AdminSessionEventTimelineItem = {
     sessionEventId: string;
@@ -19,13 +21,11 @@ function EventDeepLink({ link }: { link: string }) {
     const bookingMatch = /^\/admin\/booking-requests\/([^/]+)$/.exec(link);
     if (!bookingMatch?.[1]) return null;
     return (
-        <Link
-            to="/{-$locale}/admin/booking-requests/$bookingRequestId"
-            params={{ bookingRequestId: bookingMatch[1] }}
-            className="text-foreground underline"
-        >
-            {{ de: 'Öffnen', en: 'Open' }[locale]}
-        </Link>
+        <Button type="button" variant="ghost" size="sm" asChild>
+            <Link to="/{-$locale}/admin/booking-requests/$bookingRequestId" params={{ bookingRequestId: bookingMatch[1] }}>
+                {{ de: 'Öffnen', en: 'Open' }[locale]}
+            </Link>
+        </Button>
     );
 }
 
@@ -40,34 +40,37 @@ export function AdminSessionEventTimeline({
 }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
+    const sessionLabel = { de: 'Sitzung', en: 'Session' }[locale];
 
     if (events.length === 0) {
         return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
     }
 
     return (
-        <ol className="grid gap-4">
+        <ol className="divide-y divide-border overflow-hidden rounded-xl border">
             {events.map((event) => {
                 const description = locale === 'de' ? event.descriptionDe : event.descriptionEn;
                 return (
-                    <li key={event.sessionEventId} className="grid gap-1 border-b border-border pb-4 last:border-b-0 last:pb-0">
-                        <div className="flex flex-wrap items-baseline justify-between gap-2">
-                            <span className="font-mono text-xs text-muted-foreground">{event.type}</span>
-                            <time className="text-xs text-muted-foreground">
-                                {formatDateTime(event.createdAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}
-                            </time>
+                    <li key={event.sessionEventId} className="flex items-center justify-between gap-4 px-4 py-3">
+                        <div className="grid min-w-0 gap-0.5">
+                            <p className="truncate text-sm font-medium text-foreground">{description}</p>
+                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                <Badge variant="outline" className="font-mono">
+                                    {event.type}
+                                </Badge>
+                                <time className="tabular-nums">
+                                    {formatDateTime(event.createdAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}
+                                </time>
+                            </div>
                         </div>
-                        <p className="text-sm text-foreground">{description}</p>
-                        <div className="flex flex-wrap gap-3 text-sm">
+                        <div className="flex shrink-0 items-center gap-2">
                             {event.link ? <EventDeepLink link={event.link} /> : null}
                             {showSessionLink ? (
-                                <Link
-                                    to="/{-$locale}/admin/sessions/$sessionId"
-                                    params={{ sessionId: event.sessionId }}
-                                    className="text-muted-foreground underline"
-                                >
-                                    {{ de: 'Sitzung', en: 'Session' }[locale]}
-                                </Link>
+                                <Button type="button" variant="ghost" size="sm" asChild>
+                                    <Link to="/{-$locale}/admin/sessions/$sessionId" params={{ sessionId: event.sessionId }}>
+                                        {sessionLabel}
+                                    </Link>
+                                </Button>
                             ) : null}
                         </div>
                     </li>

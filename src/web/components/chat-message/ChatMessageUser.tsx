@@ -307,11 +307,15 @@ export function ChatMessageUserView({
             </div>
         ) : null;
 
+    const bubbleClassName = voiceAttachment ? 'py-4' : undefined;
+
     if (isOwn) {
         return (
             <MessageRow side={side}>
                 <div className="group/msg flex w-full max-w-full flex-col items-end">
-                    <Bubble tone={tone}>{bubbleInner}</Bubble>
+                    <Bubble tone={tone} className={bubbleClassName}>
+                        {bubbleInner}
+                    </Bubble>
                     {reactionBadges}
                     {preview}
                     {editDialog}
@@ -340,7 +344,7 @@ export function ChatMessageUserView({
                             <span className="size-6" />
                         )}
                     </div>
-                    <Bubble tone={tone} tail={showAuthorAvatar}>
+                    <Bubble tone={tone} tail={showAuthorAvatar} className={bubbleClassName}>
                         {bubbleInner}
                     </Bubble>
                     {reactionPicker}
