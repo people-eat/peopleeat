@@ -236,7 +236,7 @@ export function ChatVoiceMessagePlayer({
             </div>
 
             <div className="col-start-3 flex items-center justify-between gap-2">
-                <span className={cn('text-[10px] leading-none tabular-nums', metaFg)}>{formatVoiceDuration(displaySec)}</span>
+                <span className={cn('text-[10px]/none tabular-nums', metaFg)}>{formatVoiceDuration(displaySec)}</span>
                 {meta}
             </div>
         </div>
