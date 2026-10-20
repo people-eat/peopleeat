@@ -39,7 +39,7 @@ const TOOL_DISPLAY: Record<string, ToolDisplayEntry> = {
     },
     productDocsRead: {
         Icon: FileTextIcon,
-        label: { de: 'Lese Produktdoku…', en: 'Reading product docs…' },
+        label: { de: 'Lese Produktdokumentation…', en: 'Reading product docs…' },
     },
     adminBookingRequestsFindMany: {
         Icon: ClipboardListIcon,

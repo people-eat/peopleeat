@@ -13,8 +13,7 @@ Customers open support cases with optional booking context; admins reply, resolv
 - Accepted-offer page **Support** tab — Same create/summary pattern for post-accept customers.
 
 Summary cards open `/profile/support-requests/<id>` for the chat. At most **one** support case per booking request; many general (or
-booking-linked) cases per user. Create and reply accept optional attachments. Resolved chats show a short note that a reply reopens the
-case. Transcript scroll uses **human** mode (open/stick at bottom —
+booking-linked) cases per user. Create and reply accept optional attachments. Transcript scroll uses **human** mode (open/stick at bottom —
 [styles/chat.md — Human transcript mode](../styles/chat.md#human-transcript-mode)).
 
 Customer replies on a resolved case reopen it to open. Opening chat clears that side’s unread counter. Sidebar badges sum customer unread
@@ -23,7 +22,9 @@ across cases.
 ### Admin
 
 - `/admin/support-requests` — Filterable list (all / open / unread / resolved), live updates, unread-first ordering.
-- `/admin/support-requests/<id>` — Chat, mark resolved, links to customer and booking.
+- `/admin/support-requests/<id>` — Condensed chat chrome (crumbs + presence avatar linking to the customer, customer name above status,
+  booking as an outlined button beside mark-resolved). Resolve is icon-only below `md`, labeled on desktop, and confirms closed-case email
+  plus reopen-on-customer-message.
 - `/admin` overview queue lists **open** cases (live), unread-first.
 - Sidebar badge counts cases with admin unread.
 
@@ -73,7 +74,7 @@ lifecycle emails; ops Slack threading.
 - Customer UI: catalog slug `support-requests`; `SupportRequestCreateForm`, `SupportRequestSummaryCard`, `SupportRequestChat` (composer
   attachments; presence header scrolls below `md`, static from `md` — same as offer chat); nav badges
 - Admin UI: overview + list live via admin updates; nav badge; pinned bottom pagination (`page` / `pageSize`); detail viewport-locked like
-  offer chat
+  WhatsApp chat (`AdminPinnedFooterLayout` + `SupportRequestChat` presence avatar / user link)
 - Message selection: admin + customer detail queries use shared `HumanChatMessageFields` (includes `reactions`, even though support always
   returns `[]`) so `ChatMessageUserView` matches offer / WhatsApp chat
 

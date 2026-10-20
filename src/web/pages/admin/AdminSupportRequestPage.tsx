@@ -1,12 +1,25 @@
 import { Link, notFound } from '@tanstack/react-router';
+import { CheckIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
+import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '../../components/base/alert-dialog';
 import { Button } from '../../components/base/button';
 import { StatusBadge } from '../../components/base/status-badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import { SupportRequestChat } from '../../components/SupportRequestChat';
 import type { GqlCAdminSupportRequestDetailFieldsFragment, GqlCAdminSupportRequestPageQuery } from '../../graphql/generated';
 import {
@@ -42,6 +55,7 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
     const [, resetUnread] = useMutation(AdminSupportRequestUnreadNotificationCountResetDocument);
     const [, resolveRequest] = useMutation(AdminSupportRequestResolveDocument);
     const [resolveBusy, setResolveBusy] = useState(false);
+    const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
     const resetDone = useRef(false);
 
     useEffect(() => {
@@ -67,8 +81,20 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
         void resetUnread({ supportRequestId });
     }, [resetUnread, supportRequest.adminUnreadNotificationCount, supportRequestId]);
 
+    const peerDisplay = userDisplayName(supportRequest.customer);
     const statusLabel =
         supportRequest.status === 'RESOLVED' ? { de: 'Erledigt', en: 'Resolved' }[locale] : { de: 'Offen', en: 'Open' }[locale];
+    const markResolvedLabel = { de: 'Als erledigt markieren', en: 'Mark resolved' }[locale];
+
+    async function onResolveConfirm() {
+        setResolveBusy(true);
+        try {
+            await resolveRequest({ supportRequestId });
+            setResolveDialogOpen(false);
+        } finally {
+            setResolveBusy(false);
+        }
+    }
 
     return (
         <AdminPageChrome
@@ -78,65 +104,103 @@ export function AdminSupportRequestPage({ data, supportRequestId }: { data: GqlC
             ]}
             contentClassName="min-h-0 overflow-hidden gap-0 pb-0"
         >
-            <main id="main-content" data-workspace-fill="" className="flex min-h-0 w-full min-w-0 flex-1 flex-col gap-4 overflow-hidden">
-                <div className="flex shrink-0 flex-wrap items-start justify-between gap-3">
-                    <div className="grid gap-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <h1 className="font-serif text-2xl/tight text-foreground">{supportRequest.subject}</h1>
-                            <StatusBadge tone={supportRequest.status === 'RESOLVED' ? 'success' : 'warning'}>{statusLabel}</StatusBadge>
-                        </div>
-                        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-                            <Link
-                                to="/{-$locale}/admin/users/$userId"
-                                params={{ userId: supportRequest.customer.userId }}
-                                className="underline-offset-4 hover:underline"
-                            >
-                                {userDisplayName(supportRequest.customer)}
-                            </Link>
-                            {supportRequest.bookingRequest ? (
-                                <Link
-                                    to="/{-$locale}/admin/booking-requests/$bookingRequestId"
-                                    params={{ bookingRequestId: supportRequest.bookingRequest.bookingRequestId }}
-                                    className="underline-offset-4 hover:underline"
-                                >
-                                    {supportRequest.bookingRequest.occasion}
-                                </Link>
-                            ) : (
-                                <span>{{ de: 'Allgemeine Anfrage', en: 'General request' }[locale]}</span>
-                            )}
-                        </div>
-                    </div>
-                    {supportRequest.status !== 'RESOLVED' ? (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            disabled={resolveBusy}
-                            onClick={async () => {
-                                setResolveBusy(true);
-                                try {
-                                    await resolveRequest({ supportRequestId });
-                                } finally {
-                                    setResolveBusy(false);
-                                }
-                            }}
-                        >
-                            {{ de: 'Als erledigt markieren', en: 'Mark resolved' }[locale]}
-                        </Button>
-                    ) : null}
-                </div>
-
+            <AdminPinnedFooterLayout contentScroll={false} contentClassName="flex w-full min-w-0 flex-col pb-0">
                 <SupportRequestChat
-                    className="min-h-0 flex-1 overflow-hidden border-t pt-4"
+                    className="min-h-0 min-w-0 flex-1 overflow-hidden"
                     messages={supportRequest.messages}
                     canSend
-                    resolved={supportRequest.status === 'RESOLVED'}
-                    peerDisplay={userDisplayName(supportRequest.customer)}
+                    peerDisplay={peerDisplay}
+                    profilePictureUrl={supportRequest.customer.profilePicture?.url ?? null}
+                    customerUserId={supportRequest.customer.userId}
+                    subtitle={null}
+                    context={
+                        <>
+                            <span className="text-sm font-semibold text-foreground">{peerDisplay}</span>
+                            <StatusBadge tone={supportRequest.status === 'RESOLVED' ? 'success' : 'warning'}>{statusLabel}</StatusBadge>
+                            {supportRequest.bookingRequest ? null : (
+                                <span className="text-sm text-muted-foreground">
+                                    {{ de: 'Allgemeine Anfrage', en: 'General request' }[locale]}
+                                </span>
+                            )}
+                        </>
+                    }
+                    trailing={
+                        <>
+                            {supportRequest.bookingRequest ? (
+                                <Button type="button" variant="outline" size="sm" className="max-w-40 sm:max-w-56" asChild>
+                                    <Link
+                                        to="/{-$locale}/admin/booking-requests/$bookingRequestId"
+                                        params={{ bookingRequestId: supportRequest.bookingRequest.bookingRequestId }}
+                                    >
+                                        <span className="truncate">{supportRequest.bookingRequest.occasion}</span>
+                                    </Link>
+                                </Button>
+                            ) : null}
+                            {supportRequest.status !== 'RESOLVED' ? (
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="max-md:size-8 max-md:gap-0 max-md:px-0"
+                                            disabled={resolveBusy}
+                                            aria-label={markResolvedLabel}
+                                            onClick={() => setResolveDialogOpen(true)}
+                                        >
+                                            <CheckIcon data-icon="inline-start" aria-hidden />
+                                            <span className="max-md:sr-only">{markResolvedLabel}</span>
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="md:hidden">{markResolvedLabel}</TooltipContent>
+                                </Tooltip>
+                            ) : null}
+                        </>
+                    }
                     onSend={async (message, fileUploadIds) => {
                         const result = await sendMessage({ supportRequestId, message, fileUploadIds });
                         return Boolean(result.data?.admin.supportRequestMessageCreate.success);
                     }}
                 />
-            </main>
+            </AdminPinnedFooterLayout>
+
+            <AlertDialog
+                open={resolveDialogOpen}
+                onOpenChange={(open) => {
+                    if (resolveBusy) return;
+                    setResolveDialogOpen(open);
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {{ de: 'Anfrage als erledigt markieren?', en: 'Mark this request as resolved?' }[locale]}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {
+                                {
+                                    de: 'Die Anfrage verschwindet aus dem offenen Posteingang und der Kunde erhält eine Abschluss-E-Mail. Eine neue Nachricht vom Kunden öffnet sie wieder.',
+                                    en: 'The request leaves the open inbox and the customer gets a closed-case email. A new message from the customer reopens it.',
+                                }[locale]
+                            }
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={resolveBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogAction
+                            disabled={resolveBusy}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                void onResolveConfirm();
+                            }}
+                        >
+                            {resolveBusy
+                                ? { de: 'Wird erledigt…', en: 'Resolving…' }[locale]
+                                : { de: 'Als erledigt markieren', en: 'Mark resolved' }[locale]}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </AdminPageChrome>
     );
 }

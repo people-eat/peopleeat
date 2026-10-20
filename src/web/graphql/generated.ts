@@ -14110,7 +14110,7 @@ export type GqlCAdminSupportRequestDetailFieldsFragment = {
     createdAt: string;
     resolvedAt: string | null;
     bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
-    customer: { userId: string; firstName: string; lastName: string };
+    customer: { userId: string; firstName: string; lastName: string; profilePicture: { fileUploadId: string; url: string } | null };
     messages: Array<
         | {
               __typename: 'ChatMessageBookingRequestOfferEvent';
@@ -14159,7 +14159,12 @@ export type GqlCAdminSupportRequestPageQuery = {
                     createdAt: string;
                     resolvedAt: string | null;
                     bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
-                    customer: { userId: string; firstName: string; lastName: string };
+                    customer: {
+                        userId: string;
+                        firstName: string;
+                        lastName: string;
+                        profilePicture: { fileUploadId: string; url: string } | null;
+                    };
                     messages: Array<
                         | {
                               __typename: 'ChatMessageBookingRequestOfferEvent';
@@ -14215,7 +14220,7 @@ export type GqlCAdminSupportRequestPageUpdatesSubscription = {
             createdAt: string;
             resolvedAt: string | null;
             bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
-            customer: { userId: string; firstName: string; lastName: string };
+            customer: { userId: string; firstName: string; lastName: string; profilePicture: { fileUploadId: string; url: string } | null };
             messages: Array<
                 | {
                       __typename: 'ChatMessageBookingRequestOfferEvent';
@@ -26501,6 +26506,17 @@ export const AdminSupportRequestDetailFieldsFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -58885,6 +58901,17 @@ export const AdminSupportRequestPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -59074,6 +59101,17 @@ export const AdminSupportRequestPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },

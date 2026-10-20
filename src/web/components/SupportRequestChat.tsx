@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 
 import { groupMessagesByDate, peerUserMessageStreak } from '../chat/chatTranscript';
@@ -5,35 +7,66 @@ import { useComposerFileAttachments } from '../chat/useComposerFileAttachments';
 import type { GqlCHumanChatMessageFieldsFragment } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
+import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { ChatTranscriptShell } from './base/chat-transcript-shell';
 import { MessageScrollerItem } from './base/message-scroller';
 import { HumanChatMessage } from './chat-message';
 import { ChatDateMarker } from './chat-message/ChatDateMarker';
 import { MessageComposer } from './MessageComposer';
 
-function SupportPresenceBanner({ peerDisplay, resolved, className }: { peerDisplay: string; resolved: boolean; className?: string }) {
+function initialsFromName(name: string): string {
+    const parts = name.trim().split(/\s+/u).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+    return `${parts[0]!.slice(0, 1)}${parts[1]!.slice(0, 1)}`.toUpperCase();
+}
+
+function SupportPresenceBanner({
+    peerDisplay,
+    profilePictureUrl,
+    customerUserId,
+    subtitle,
+    context,
+    trailing,
+    className,
+}: {
+    peerDisplay: string;
+    profilePictureUrl: string | null;
+    customerUserId: string | null;
+    subtitle: ReactNode;
+    context?: ReactNode;
+    trailing?: ReactNode;
+    className?: string;
+}) {
     const locale = useLocale();
+    const openUserLabel = { de: 'Nutzer öffnen', en: 'Open user' }[locale];
+
+    const avatar = (
+        <Avatar size="lg" className="size-12">
+            {profilePictureUrl ? <AvatarImage src={profilePictureUrl} alt={peerDisplay} /> : null}
+            <AvatarFallback>{initialsFromName(peerDisplay)}</AvatarFallback>
+        </Avatar>
+    );
+
     return (
-        <div className={cn('mb-2 flex shrink-0 flex-col gap-0.5 p-1 sm:px-2', className)}>
-            <span className="text-sm font-semibold text-foreground">{peerDisplay}</span>
-            <span className="text-sm text-muted-foreground">
-                {
-                    {
-                        de: 'Support-Chat mit dem peopleeat Team.',
-                        en: 'Support chat with the peopleeat team.',
-                    }[locale]
-                }
-            </span>
-            {resolved ? (
-                <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            de: 'Diese Anfrage ist erledigt. Eine neue Nachricht öffnet sie wieder.',
-                            en: 'This request is resolved. Sending a new message reopens it.',
-                        }[locale]
-                    }
-                </p>
-            ) : null}
+        <div className={cn('mb-2 flex shrink-0 items-center gap-3 p-1 sm:px-2', className)}>
+            {customerUserId ? (
+                <Link
+                    to="/{-$locale}/admin/users/$userId"
+                    params={{ userId: customerUserId }}
+                    aria-label={openUserLabel}
+                    className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                    {avatar}
+                </Link>
+            ) : (
+                <span className="shrink-0">{avatar}</span>
+            )}
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                {subtitle ? <span className="text-sm text-muted-foreground">{subtitle}</span> : null}
+                {context ? <div className="flex min-w-0 flex-col items-start gap-0.5">{context}</div> : null}
+            </div>
+            {trailing ? <div className="flex shrink-0 items-center gap-2 self-start">{trailing}</div> : null}
         </div>
     );
 }
@@ -43,15 +76,24 @@ export function SupportRequestChat({
     canSend,
     onSend,
     peerDisplay,
+    profilePictureUrl = null,
+    customerUserId = null,
+    subtitle,
+    context,
+    trailing,
     className,
-    resolved = false,
 }: {
     messages: ReadonlyArray<GqlCHumanChatMessageFieldsFragment>;
     canSend: boolean;
     onSend: (message: string, fileUploadIds: string[]) => Promise<boolean>;
     peerDisplay: string;
+    profilePictureUrl?: string | null;
+    customerUserId?: string | null;
+    /** Presence intro line. Pass `null` to omit (admin detail uses status / booking context instead). */
+    subtitle?: ReactNode | null;
+    context?: ReactNode;
+    trailing?: ReactNode;
     className?: string;
-    resolved?: boolean;
 }) {
     const locale = useLocale();
     const [draft, setDraft] = useState('');
@@ -60,9 +102,23 @@ export function SupportRequestChat({
         useComposerFileAttachments();
     const groupedMessages = groupMessagesByDate(messages);
 
+    const resolvedSubtitle =
+        subtitle === undefined
+            ? { de: 'Support-Chat mit dem peopleeat Team.', en: 'Support chat with the peopleeat team.' }[locale]
+            : subtitle;
+
+    const presenceProps = {
+        peerDisplay,
+        profilePictureUrl,
+        customerUserId,
+        subtitle: resolvedSubtitle,
+        context,
+        trailing,
+    };
+
     return (
         <div className={cn('grid min-h-0 flex-1 grid-rows-[1fr_auto] md:grid-rows-[auto_1fr_auto]', className)}>
-            <SupportPresenceBanner peerDisplay={peerDisplay} resolved={resolved} className="hidden md:flex" />
+            <SupportPresenceBanner {...presenceProps} className="hidden md:flex" />
             <ChatTranscriptShell
                 mode="human"
                 jumpToLatestLabel={{ de: 'Zum neuesten springen', en: 'Jump to latest' }[locale]}
@@ -71,7 +127,7 @@ export function SupportRequestChat({
                 viewportClassName="px-1 sm:px-2"
             >
                 <MessageScrollerItem className="md:hidden">
-                    <SupportPresenceBanner peerDisplay={peerDisplay} resolved={resolved} className="mb-0 px-0 sm:px-0" />
+                    <SupportPresenceBanner {...presenceProps} className="mb-0 px-0 sm:px-0" />
                 </MessageScrollerItem>
                 {messages.length === 0 ? (
                     <MessageScrollerItem>

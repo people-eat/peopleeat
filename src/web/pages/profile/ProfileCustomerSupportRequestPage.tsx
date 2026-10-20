@@ -94,7 +94,6 @@ export function ProfileCustomerSupportRequestPage({
                 className="-mx-4 min-h-0 flex-1 overflow-hidden border-t px-4 pt-4"
                 messages={supportRequest.messages}
                 canSend
-                resolved={supportRequest.status === 'RESOLVED'}
                 peerDisplay={{ de: 'peopleeat Support', en: 'peopleeat Support' }[locale]}
                 onSend={async (message, fileUploadIds) => {
                     const result = await sendMessage({ supportRequestId, message, fileUploadIds });

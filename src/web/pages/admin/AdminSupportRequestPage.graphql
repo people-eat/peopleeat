@@ -16,6 +16,10 @@ fragment AdminSupportRequestDetailFields on AdminSupportRequest {
         userId
         firstName
         lastName
+        profilePicture {
+            fileUploadId
+            url
+        }
     }
     messages {
         ...HumanChatMessageFields
