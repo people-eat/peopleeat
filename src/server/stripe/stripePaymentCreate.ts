@@ -9,6 +9,7 @@ import type {
     StripeAccountBalanceTransactionsFindMany,
     StripeAccountCreate,
     StripeAccountCreateResult,
+    StripeAccountPayoutsFindMany,
     StripeAccountRequirements,
     StripeBalanceTransaction,
     StripeCustomerInput,
@@ -17,6 +18,7 @@ import type {
     StripePaymentIntentCreateFromPaymentMethodWithSplit,
     StripePaymentIntentCreateResult,
     StripePaymentIntentCreateWithSplit,
+    StripePayout,
     StripePayoutCreate,
     StripePayoutCreateResult,
     StripeSetupIntentCreate,
@@ -27,6 +29,7 @@ import type {
     StripeWebhookEvent,
     StripeWebhookEventConstruct,
 } from './StripePayment';
+import { stripePayoutStatusFromStripe } from './stripePayoutStatus';
 import { stripeDisabledReasonFromStripe, stripeRequirementCategoriesFromKeys } from './stripeRequirementCategories';
 import { stripeSearchQuote } from './stripeSearchQuote';
 
@@ -527,6 +530,18 @@ export function stripePaymentCreate({
             const stripe = clientRequire();
             const payout = await stripe.payouts.create({ amount, currency }, { stripeAccount: destinationAccountId });
             return { payoutId: payout.id };
+        },
+
+        async accountPayoutsFindMany({ accountId, limit = 20 }: StripeAccountPayoutsFindMany): Promise<StripePayout[]> {
+            const stripe = clientRequire();
+            const page = await stripe.payouts.list({ limit }, { stripeAccount: accountId });
+            return page.data.map((payout) => ({
+                id: payout.id,
+                amountCents: payout.amount,
+                status: stripePayoutStatusFromStripe(payout.status),
+                createdAt: new Date(payout.created * 1000),
+                arrivalDate: new Date(payout.arrival_date * 1000),
+            }));
         },
 
         webhookEventConstruct({ payload, signatureHeader }: StripeWebhookEventConstruct): StripeWebhookEvent {

@@ -1290,6 +1290,7 @@ export interface GqlSAdminMutation {
     bookingRequestOfferConfiguredMenuUpdate: GqlSMutationResult;
     bookingRequestOfferCreate: GqlSMutationResult;
     bookingRequestOfferHandover: GqlSMutationResult;
+    bookingRequestOfferPayoutAlreadyTookPlaceCheck: GqlSMutationResult;
     bookingRequestOfferPayoutMarkOutOfSystem: GqlSMutationResult;
     bookingRequestOfferPayoutRelease: GqlSMutationResult;
     bookingRequestOfferUpdate: GqlSMutationResult;
@@ -1440,6 +1441,10 @@ export type GqlSAdminMutationBookingRequestOfferCreateArgs = {
 
 export type GqlSAdminMutationBookingRequestOfferHandoverArgs = {
     input: GqlSAdminBookingRequestOfferHandover;
+};
+
+export type GqlSAdminMutationBookingRequestOfferPayoutAlreadyTookPlaceCheckArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
 };
 
 export type GqlSAdminMutationBookingRequestOfferPayoutMarkOutOfSystemArgs = {
@@ -7304,6 +7309,12 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationBookingRequestOfferHandoverArgs, 'input'>
+    >;
+    bookingRequestOfferPayoutAlreadyTookPlaceCheck?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationBookingRequestOfferPayoutAlreadyTookPlaceCheckArgs, 'bookingRequestOfferId'>
     >;
     bookingRequestOfferPayoutMarkOutOfSystem?: Resolver<
         GqlSResolversTypes['MutationResult'],

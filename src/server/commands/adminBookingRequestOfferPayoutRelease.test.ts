@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { idCreate } from '../../shared/idCreate';
 import { admins, bookingRequestOffers, bookingRequests, cooks } from '../db/schema';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
+import { adminBookingRequestOfferPayoutAlreadyTookPlaceCheck } from './adminBookingRequestOfferPayoutAlreadyTookPlaceCheck';
 import { adminBookingRequestOfferPayoutMarkOutOfSystem } from './adminBookingRequestOfferPayoutMarkOutOfSystem';
 import { adminBookingRequestOfferPayoutRelease } from './adminBookingRequestOfferPayoutRelease';
 
@@ -187,5 +188,108 @@ describe('adminBookingRequestOfferPayoutMarkOutOfSystem', () => {
         expect(offer?.paymentStatus).toBe('PAYED_OUT_OF_SYSTEM');
         expect(offer?.payoutDateTime).toBeInstanceOf(Date);
         expect(admin.serverRuntime.stripe.payoutCreate).not.toHaveBeenCalled();
+    });
+});
+
+describe('adminBookingRequestOfferPayoutAlreadyTookPlaceCheck', () => {
+    it('sets TRANSFERRED without creating a payout when Stripe shows a matching payout', async () => {
+        const admin = await setupAdmin();
+        const { bookingRequestOfferId, cookId } = await insertDuePayedOffer();
+        vi.mocked(admin.serverRuntime.stripe.accountPayoutsFindMany).mockResolvedValue([
+            {
+                id: 'po_manual_1',
+                amountCents: 18_400,
+                status: 'PAID',
+                createdAt: new Date(),
+                arrivalDate: new Date(),
+            },
+        ]);
+
+        const result = await adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
+            adminMutationParent(admin.user.userId),
+            { bookingRequestOfferId },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(result).toEqual({ success: true, referenceId: bookingRequestOfferId });
+        expect(admin.serverRuntime.stripe.payoutCreate).not.toHaveBeenCalled();
+        expect(admin.serverRuntime.stripe.accountPayoutsFindMany).toHaveBeenCalledWith({
+            accountId: 'acct_test_payout',
+            limit: 100,
+        });
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.paymentStatus).toBe('TRANSFERRED');
+        expect(offer?.payoutDateTime).toBeInstanceOf(Date);
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalled();
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookId });
+    });
+
+    it('returns success false and leaves PAYED when Stripe has no matching payout', async () => {
+        const admin = await setupAdmin();
+        const { bookingRequestOfferId } = await insertDuePayedOffer();
+        vi.mocked(admin.serverRuntime.stripe.accountPayoutsFindMany).mockResolvedValue([
+            {
+                id: 'po_other',
+                amountCents: 9_999,
+                status: 'PAID',
+                createdAt: new Date(),
+                arrivalDate: new Date(),
+            },
+        ]);
+
+        const result = await adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
+            adminMutationParent(admin.user.userId),
+            { bookingRequestOfferId },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(result).toEqual({ success: false, referenceId: bookingRequestOfferId });
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.paymentStatus).toBe('PAYED');
+        expect(offer?.payoutDateTime).toBeNull();
+        expect(admin.serverRuntime.stripe.payoutCreate).not.toHaveBeenCalled();
+    });
+
+    it('rejects when cook has no Stripe account', async () => {
+        const admin = await setupAdmin();
+        const { bookingRequestOfferId } = await insertDuePayedOffer({ stripeAccountId: null });
+
+        await expect(
+            adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
+                adminMutationParent(admin.user.userId),
+                { bookingRequestOfferId },
+                admin.requestingSession,
+                admin.serverRuntime,
+            ),
+        ).rejects.toThrow(/cook has no Stripe account/);
+
+        expect(admin.serverRuntime.stripe.accountPayoutsFindMany).not.toHaveBeenCalled();
+    });
+
+    it('is idempotent when already transferred', async () => {
+        const admin = await setupAdmin();
+        const { bookingRequestOfferId } = await insertDuePayedOffer({
+            paymentStatus: 'TRANSFERRED',
+            payoutDateTime: new Date('2024-01-15T12:00:00.000Z'),
+        });
+
+        const result = await adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
+            adminMutationParent(admin.user.userId),
+            { bookingRequestOfferId },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        expect(admin.serverRuntime.stripe.accountPayoutsFindMany).not.toHaveBeenCalled();
     });
 });

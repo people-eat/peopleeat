@@ -1293,6 +1293,7 @@ export interface GqlCAdminMutation {
     bookingRequestOfferConfiguredMenuUpdate: GqlCMutationResult;
     bookingRequestOfferCreate: GqlCMutationResult;
     bookingRequestOfferHandover: GqlCMutationResult;
+    bookingRequestOfferPayoutAlreadyTookPlaceCheck: GqlCMutationResult;
     bookingRequestOfferPayoutMarkOutOfSystem: GqlCMutationResult;
     bookingRequestOfferPayoutRelease: GqlCMutationResult;
     bookingRequestOfferUpdate: GqlCMutationResult;
@@ -1443,6 +1444,10 @@ export type GqlCAdminMutationBookingRequestOfferCreateArgs = {
 
 export type GqlCAdminMutationBookingRequestOfferHandoverArgs = {
     input: GqlCAdminBookingRequestOfferHandover;
+};
+
+export type GqlCAdminMutationBookingRequestOfferPayoutAlreadyTookPlaceCheckArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
 };
 
 export type GqlCAdminMutationBookingRequestOfferPayoutMarkOutOfSystemArgs = {
@@ -10239,6 +10244,14 @@ export type GqlCAdminBookingRequestOfferPayoutMarkOutOfSystemMutationVariables =
 
 export type GqlCAdminBookingRequestOfferPayoutMarkOutOfSystemMutation = {
     admin: { bookingRequestOfferPayoutMarkOutOfSystem: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCAdminBookingRequestOfferPayoutAlreadyTookPlaceCheckMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+}>;
+
+export type GqlCAdminBookingRequestOfferPayoutAlreadyTookPlaceCheckMutation = {
+    admin: { bookingRequestOfferPayoutAlreadyTookPlaceCheck: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCAdminBookingRequestOfferHandoverMutationVariables = Exact<{
@@ -45488,6 +45501,58 @@ export const AdminBookingRequestOfferPayoutMarkOutOfSystemDocument = {
 } as unknown as DocumentNode<
     GqlCAdminBookingRequestOfferPayoutMarkOutOfSystemMutation,
     GqlCAdminBookingRequestOfferPayoutMarkOutOfSystemMutationVariables
+>;
+export const AdminBookingRequestOfferPayoutAlreadyTookPlaceCheckDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminBookingRequestOfferPayoutAlreadyTookPlaceCheck' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferPayoutAlreadyTookPlaceCheck' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminBookingRequestOfferPayoutAlreadyTookPlaceCheckMutation,
+    GqlCAdminBookingRequestOfferPayoutAlreadyTookPlaceCheckMutationVariables
 >;
 export const AdminBookingRequestOfferHandoverDocument = {
     kind: 'Document',

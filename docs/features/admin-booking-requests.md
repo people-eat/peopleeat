@@ -89,7 +89,9 @@ events are not copied. New offers skip the usual request-message seed when chat 
 Money: unpaid teardown + re-prepare; `PAYED` reverse Connect transfer(s) then transfer to the new cook; `PAYED_OUT_OF_SYSTEM` after explicit
 confirm; `TRANSFERRED` blocked. See [stripe-payment.md](../architecture/stripe-payment.md).
 
-Payout release (Stripe) and mark paid out-of-system when due; gates on Connect readiness.
+Payout actions when due (each with a confirmation dialog): **release** via Stripe Connect payout (gates on Connect readiness), **check if
+payout already took place** (asks Stripe for a matching Connect payout; marks `TRANSFERRED` only when found, otherwise leaves the offer
+unchanged), and **mark paid out-of-system** (`PAYED_OUT_OF_SYSTEM`, no Stripe call).
 
 ### Calls hub — `/admin/calls`
 
@@ -112,7 +114,7 @@ Publication approve on overview when blocked (picker over radius cooks). Post-ap
 | Search       | Occasion, message, venue, customer identity           |
 | Publication  | Approve on detail/overview with cook picker           |
 | Ops edit     | Dedicated admin patch (not customer update)           |
-| Payouts      | Admin-gated release / out-of-system on due queue      |
+| Payouts      | Admin-gated release / Stripe check / out-of-system    |
 | Admin create | Dedicated create with customer id + selected cook ids |
 
 ### Chosen
@@ -129,13 +131,13 @@ estimated travel expenses and soft suggested menu price total (same guidance as 
 
 ## Implementation
 
-| Area     | Notes                                                                                                                                                                      |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pages    | Overview, list (grid/table), create, edit, detail, offer (+ create/edit), calls overview/list                                                                              |
-| Queries  | Request/offer finders, counts, creations, occasion/month stats, average participants, offer economics, cook offer stats, calls, call traffic, cook stats                   |
-| Commands | Create/update/cancel request; discount apply/clear; create/update/handover offer; configured-menu update; publication approve; cook notify; payout release / out-of-system |
-| Nav      | `adminBookingRequests.ts`, `adminCalls.ts`, sidebar subs                                                                                                                   |
-| Routes   | Under `src/routes/{-$locale}/admin/` for booking-requests and calls                                                                                                        |
+| Area     | Notes                                                                                                                                                                                                 |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pages    | Overview, list (grid/table), create, edit, detail, offer (+ create/edit), calls overview/list                                                                                                         |
+| Queries  | Request/offer finders, counts, creations, occasion/month stats, average participants, offer economics, cook offer stats, calls, call traffic, cook stats                                              |
+| Commands | Create/update/cancel request; discount apply/clear; create/update/handover offer; configured-menu update; publication approve; cook notify; payout release / already-took-place check / out-of-system |
+| Nav      | `adminBookingRequests.ts`, `adminCalls.ts`, sidebar subs                                                                                                                                              |
+| Routes   | Under `src/routes/{-$locale}/admin/` for booking-requests and calls                                                                                                                                   |
 
 GraphQL (admin): `bookingRequests` / counts / creations / occasion stats / creation-month stats / average participants /
 `bookingRequestOfferEconomics(range)` / `bookingRequestCookOfferStats` / single request; `bookingRequestOffers` / counts / single offer;

@@ -253,6 +253,7 @@ function stripePaymentStubCreate(): StripePayment {
         transferCreate: vi.fn(unused('transferCreate')),
         transferReverse: vi.fn(unused('transferReverse')),
         payoutCreate: vi.fn(unused('payoutCreate')),
+        accountPayoutsFindMany: vi.fn(unused('accountPayoutsFindMany')),
         webhookEventConstruct: vi.fn(() => {
             throw new Error('stripe.webhookEventConstruct not used');
         }),

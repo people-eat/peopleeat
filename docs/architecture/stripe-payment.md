@@ -50,9 +50,11 @@ success check). Creating the top-up transfer before confirmation would debit pla
 Express connected accounts are created with `payouts.schedule.interval: 'manual'`. Destination charges (and optional top-up transfers)
 credit the cook Connect **balance** at customer payment time (`paymentStatus: PAYED`). Moving that balance to the cook’s bank is a separate
 **admin-gated** Stripe Payout via `payoutCreate({ destinationAccountId, amount })` after `plannedPayoutDateTime` — see
-[admin-booking-requests.md](../features/admin-booking-requests.md) (`bookingRequestOfferPayoutRelease`). `accountPayoutsEnabledCheck`
-surfaces readiness before the admin CTA. Callers that hydrate admin offer lists wrap that check so a Stripe retrieve failure (stale or
-fixture `acct_…` id) marks the cook not payout-ready rather than crashing the page.
+[admin-booking-requests.md](../features/admin-booking-requests.md) (`bookingRequestOfferPayoutRelease`). Ops can also run
+`bookingRequestOfferPayoutAlreadyTookPlaceCheck`: it lists recent Connect payouts via `accountPayoutsFindMany` and sets `TRANSFERRED` only
+when a matching amount is found (no `payoutCreate`). `accountPayoutsEnabledCheck` surfaces readiness before the release CTA. Callers that
+hydrate admin offer lists wrap that check so a Stripe retrieve failure (stale or fixture `acct_…` id) marks the cook not payout-ready rather
+than crashing the page.
 
 ### Concierge offer handover money
 
@@ -97,7 +99,8 @@ built from stored `paymentData` ids via `stripeDashboardUrls` helpers; test vs l
 `available` / `pending` into integer cents. `accountBalanceTransactionsFindMany({ accountId, limit })` lists recent Balance Transactions on
 that account (newest first) and maps Stripe `type` / `status` to cook-facing enums (`PAYMENT` / `PAYOUT` / …, `AVAILABLE` / `PENDING`). Used
 by `Cook.stripeWallet` on `/profile/wallet` when `COOK_WALLET_STRIPE_BALANCE` is enabled for the cook — same ownership + failure-null
-pattern as requirements; never on `userUpdates`.
+pattern as requirements; never on `userUpdates`. `accountPayoutsFindMany({ accountId, limit })` lists recent Connect **Payouts** (newest
+first) for admin reconcile of Dashboard-created bank payouts.
 
 ### Webhooks — Dashboard setup
 
@@ -173,6 +176,7 @@ Attention lane — see [cook-profile.md](../features/cook-profile.md).
 - `src/server/stripe/stripeIdempotencyMismatchError.ts` — detect idempotency key / parameter mismatch for Connect create recovery
 - `src/server/stripe/stripeRequirementCategories.ts` — map Account `requirements.*` keys → cook-facing categories / disabled reasons
 - `src/server/stripe/stripeBalanceTransactionKind.ts` — map Balance Transaction `type` / `status` → cook-facing enums
+- `src/server/stripe/stripePayoutStatus.ts` — map Payout `status` → cook/ops-facing enums
 - `src/server/stripe/stripeSearchQuote.ts` — Search query escaping
 - `src/routes/api/webhooks/stripe.ts` — HTTP entry (signature verify + dispatch)
 - `src/server/commands/stripeWebhookApply.ts` — event type dispatch

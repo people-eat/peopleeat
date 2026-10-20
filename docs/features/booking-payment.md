@@ -11,9 +11,10 @@ After dual acceptance, the customer pays (or completes a €0 path); later an ad
    sibling cooks who were not chosen. The chosen cook can read the checkout **invoice address** on the offer Request tab (for their own
    invoicing).
 4. For pull/charge-later paths, the customer receives an announcement email before the card is charged.
-5. After the event, **cook bank payout** is admin-gated: due payouts surface on the admin overview; an admin releases Connect payout or
-   marks out-of-system. Cooks do not self-trigger payout. On completed offers, the cook Offer tab shows an info banner with the invoice
-   amount (menu + travel before the platform fee) and notes that the fee was deducted at payout.
+5. After the event, **cook bank payout** is admin-gated: due payouts surface on the admin overview; an admin releases a Connect payout,
+   checks whether a Stripe payout already took place, or marks out-of-system. Cooks do not self-trigger payout. On completed offers, the
+   cook Offer tab shows an info banner with the invoice amount (menu + travel before the platform fee) and notes that the fee was deducted
+   at payout.
 
 Stripe Connect setup for cooks: [cook-profile.md](./cook-profile.md). Fee structure:
 [architecture/stripe-payment.md](../architecture/stripe-payment.md) and [architecture/booking.md](../architecture/booking.md). Admin payout
@@ -52,7 +53,8 @@ finalize via client `giftCardPay` (not the booking webhook path).
   `paymentStatus: FAILED`. Event catalog + Dashboard setup: [stripe-payment.md](../architecture/stripe-payment.md#webhooks--dashboard-setup)
 - Jobs: `booking-request-offer-pull-payment`, `booking-request-offer-pull-payment-announcement` (emails
   `BookingRequestOfferPullPaymentAnnouncementForCustomerEmail`)
-- Admin: `bookingRequestOfferPayoutRelease` / `bookingRequestOfferPayoutMarkOutOfSystem` (due queue on `/admin`)
+- Admin: `bookingRequestOfferPayoutRelease` / `bookingRequestOfferPayoutAlreadyTookPlaceCheck` / `bookingRequestOfferPayoutMarkOutOfSystem`
+  (due queue on `/admin`)
 - Lifecycle emails: accept (+ not-chosen) / payment confirm / pull announcement — `src/server/utils/bookingRequestLifecycleEmails.ts`
 
 ### Key files

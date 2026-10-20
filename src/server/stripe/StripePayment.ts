@@ -82,6 +82,22 @@ export interface StripePayoutCreateResult {
     payoutId: string;
 }
 
+export type StripePayoutStatus = 'PAID' | 'PENDING' | 'IN_TRANSIT' | 'CANCELED' | 'FAILED' | 'OTHER';
+
+export interface StripePayout {
+    id: string;
+    amountCents: number;
+    status: StripePayoutStatus;
+    createdAt: Date;
+    arrivalDate: Date;
+}
+
+export interface StripeAccountPayoutsFindMany {
+    accountId: string;
+    // Stripe max 100; admin manual-payout reconcile uses a recent window.
+    limit?: number;
+}
+
 export interface StripeAccountCreate {
     cookId: string;
     emailAddress: string;
@@ -203,6 +219,8 @@ export interface StripePayment {
     transferReverse: (options: StripeTransferReverse) => Promise<void>;
     // Manual Express schedule: move Connect balance to the cook's bank.
     payoutCreate: (options: StripePayoutCreate) => Promise<StripePayoutCreateResult>;
+    // Recent Connect payouts (newest first) for reconciling Dashboard-created payouts.
+    accountPayoutsFindMany: (options: StripeAccountPayoutsFindMany) => Promise<StripePayout[]>;
 
     webhookEventConstruct: (options: StripeWebhookEventConstruct) => StripeWebhookEvent;
 }

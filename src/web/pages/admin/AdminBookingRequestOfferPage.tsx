@@ -31,6 +31,16 @@ import { AdminBookingRequestOfferTestimonialsSection } from '../../components/Ad
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { AdminQueuedJobsSection } from '../../components/AdminQueuedJobsSection';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '../../components/base/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/base/avatar';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
@@ -65,6 +75,7 @@ import {
     AdminBookingRequestOfferChatMessageUpdateDocument,
     AdminBookingRequestOfferChatMessageVisibilityUpdateDocument,
     AdminBookingRequestOfferPageUpdatesDocument,
+    AdminBookingRequestOfferPayoutAlreadyTookPlaceCheckDocument,
     AdminBookingRequestOfferPayoutMarkOutOfSystemDocument,
     AdminBookingRequestOfferPayoutReleaseDocument,
 } from '../../graphql/generated';
@@ -952,6 +963,8 @@ function OfferMetaTabPanel({
     );
 }
 
+type PayoutConfirmAction = 'release' | 'outOfSystem' | 'alreadyTookPlaceCheck';
+
 function CostsTabPanel({
     offer,
     request,
@@ -965,13 +978,16 @@ function CostsTabPanel({
 }) {
     const [, payoutRelease] = useMutation(AdminBookingRequestOfferPayoutReleaseDocument);
     const [, payoutMarkOutOfSystem] = useMutation(AdminBookingRequestOfferPayoutMarkOutOfSystemDocument);
+    const [, payoutAlreadyTookPlaceCheck] = useMutation(AdminBookingRequestOfferPayoutAlreadyTookPlaceCheckDocument);
     const [payoutBusy, setPayoutBusy] = useState(false);
+    const [payoutConfirm, setPayoutConfirm] = useState<PayoutConfirmAction | null>(null);
 
     const due = offerPayoutDue(offer);
     const done = offerPayoutDone(offer);
     const empty = { de: '—', en: '—' }[locale];
     const platformWinCents = offer.platformFeeCentsCook + offer.platformFeeCentsCustomer;
     const customerTotalCents = offer.totalCentsCustomer ?? offer.totalWithoutDiscountsCentsCustomer;
+    const payoutAmountLabel = money(offer.payoutCentsCook, locale);
 
     async function onPayoutRelease() {
         if (payoutBusy || !due || !offer.cookPayoutReady) return;
@@ -982,6 +998,7 @@ function CostsTabPanel({
                 throw new Error('payout release failed');
             }
             toast.success({ de: 'Auszahlung ausgelöst.', en: 'Payout released.' }[locale]);
+            setPayoutConfirm(null);
         } catch {
             toast.error({ de: 'Auszahlung fehlgeschlagen.', en: 'Could not release the payout.' }[locale]);
         } finally {
@@ -998,8 +1015,45 @@ function CostsTabPanel({
                 throw new Error('payout mark out of system failed');
             }
             toast.success({ de: 'Als außerbetrieblich ausgezahlt markiert.', en: 'Marked as paid out of system.' }[locale]);
+            setPayoutConfirm(null);
         } catch {
             toast.error({ de: 'Markierung fehlgeschlagen.', en: 'Could not mark as paid out of system.' }[locale]);
+        } finally {
+            setPayoutBusy(false);
+        }
+    }
+
+    async function onPayoutAlreadyTookPlaceCheck() {
+        if (payoutBusy || !due) return;
+        setPayoutBusy(true);
+        try {
+            const result = await payoutAlreadyTookPlaceCheck({ bookingRequestOfferId: offer.bookingRequestOfferId });
+            if (result.error) {
+                throw new Error('payout already took place check failed');
+            }
+            if (!result.data?.admin.bookingRequestOfferPayoutAlreadyTookPlaceCheck.success) {
+                toast.error(
+                    {
+                        de: 'Keine passende Stripe-Auszahlung gefunden.',
+                        en: 'No matching Stripe payout found.',
+                    }[locale],
+                );
+                return;
+            }
+            toast.success(
+                {
+                    de: 'Passende Stripe-Auszahlung gefunden. Als ausgezahlt markiert.',
+                    en: 'Matching Stripe payout found. Marked as paid out.',
+                }[locale],
+            );
+            setPayoutConfirm(null);
+        } catch {
+            toast.error(
+                {
+                    de: 'Prüfung fehlgeschlagen.',
+                    en: 'Could not check whether the payout already took place.',
+                }[locale],
+            );
         } finally {
             setPayoutBusy(false);
         }
@@ -1025,8 +1079,8 @@ function CostsTabPanel({
                         <CardDescription>
                             {
                                 {
-                                    de: `Fällig seit ${offer.plannedPayoutDateTime ? formatDate(offer.plannedPayoutDateTime, { locale, timeZone, dateStyle: 'medium' }) : '—'} · ${money(offer.payoutCentsCook, locale)}`,
-                                    en: `Due since ${offer.plannedPayoutDateTime ? formatDate(offer.plannedPayoutDateTime, { locale, timeZone, dateStyle: 'medium' }) : '—'} · ${money(offer.payoutCentsCook, locale)}`,
+                                    de: `Fällig seit ${offer.plannedPayoutDateTime ? formatDate(offer.plannedPayoutDateTime, { locale, timeZone, dateStyle: 'medium' }) : '—'} · ${payoutAmountLabel}`,
+                                    en: `Due since ${offer.plannedPayoutDateTime ? formatDate(offer.plannedPayoutDateTime, { locale, timeZone, dateStyle: 'medium' }) : '—'} · ${payoutAmountLabel}`,
                                 }[locale]
                             }
                         </CardDescription>
@@ -1042,9 +1096,7 @@ function CostsTabPanel({
                                 type="button"
                                 size="sm"
                                 disabled={payoutBusy || !offer.cookPayoutReady}
-                                onClick={() => {
-                                    void onPayoutRelease();
-                                }}
+                                onClick={() => setPayoutConfirm('release')}
                             >
                                 {{ de: 'Auszahlung freigeben', en: 'Release payout' }[locale]}
                             </Button>
@@ -1053,9 +1105,21 @@ function CostsTabPanel({
                                 size="sm"
                                 variant="outline"
                                 disabled={payoutBusy}
-                                onClick={() => {
-                                    void onPayoutMarkOutOfSystem();
-                                }}
+                                onClick={() => setPayoutConfirm('alreadyTookPlaceCheck')}
+                            >
+                                {
+                                    {
+                                        de: 'Prüfen, ob Auszahlung bereits erfolgt',
+                                        en: 'Check if payout already took place',
+                                    }[locale]
+                                }
+                            </Button>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                disabled={payoutBusy}
+                                onClick={() => setPayoutConfirm('outOfSystem')}
                             >
                                 {{ de: 'Außerhalb von Stripe markieren', en: 'Mark paid out of system' }[locale]}
                             </Button>
@@ -1079,6 +1143,82 @@ function CostsTabPanel({
                     }
                 </StatusAlert>
             ) : null}
+
+            <AlertDialog
+                open={payoutConfirm != null}
+                onOpenChange={(open) => {
+                    if (!open && !payoutBusy) setPayoutConfirm(null);
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {
+                                (
+                                    {
+                                        release: {
+                                            de: 'Auszahlung wirklich freigeben?',
+                                            en: 'Really release this payout?',
+                                        },
+                                        alreadyTookPlaceCheck: {
+                                            de: 'Prüfen, ob Auszahlung bereits erfolgt?',
+                                            en: 'Check if payout already took place?',
+                                        },
+                                        outOfSystem: {
+                                            de: 'Außerhalb von Stripe markieren?',
+                                            en: 'Mark as paid out of system?',
+                                        },
+                                    } as const
+                                )[payoutConfirm ?? 'release'][locale]
+                            }
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {
+                                (
+                                    {
+                                        release: {
+                                            de: `Es wird eine Stripe-Auszahlung über ${payoutAmountLabel} an den Koch ausgelöst.`,
+                                            en: `This creates a Stripe bank payout of ${payoutAmountLabel} to the cook.`,
+                                        },
+                                        alreadyTookPlaceCheck: {
+                                            de: `Wir fragen Stripe nach einer passenden Auszahlung über ${payoutAmountLabel}. Wird eine gefunden, markieren wir das Angebot als ausgezahlt. Es wird keine neue Auszahlung erstellt.`,
+                                            en: `We ask Stripe for a matching payout of ${payoutAmountLabel}. If one is found, we mark the offer as paid out. No new payout is created.`,
+                                        },
+                                        outOfSystem: {
+                                            de: `Keine Stripe-Auszahlung. Wir markieren ${payoutAmountLabel} als außerhalb von Stripe ausgezahlt (z. B. Überweisung oder Bargeld).`,
+                                            en: `No Stripe payout. We mark ${payoutAmountLabel} as paid outside Stripe (for example wire or cash).`,
+                                        },
+                                    } as const
+                                )[payoutConfirm ?? 'release'][locale]
+                            }
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={payoutBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogAction
+                            disabled={payoutBusy || (payoutConfirm === 'release' && !offer.cookPayoutReady)}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                if (payoutConfirm === 'release') void onPayoutRelease();
+                                else if (payoutConfirm === 'alreadyTookPlaceCheck') void onPayoutAlreadyTookPlaceCheck();
+                                else if (payoutConfirm === 'outOfSystem') void onPayoutMarkOutOfSystem();
+                            }}
+                        >
+                            {payoutBusy
+                                ? payoutConfirm === 'alreadyTookPlaceCheck'
+                                    ? { de: 'Wird geprüft…', en: 'Checking…' }[locale]
+                                    : { de: 'Wird gespeichert…', en: 'Saving…' }[locale]
+                                : (
+                                      {
+                                          release: { de: 'Auszahlung freigeben', en: 'Release payout' },
+                                          alreadyTookPlaceCheck: { de: 'Prüfen', en: 'Check' },
+                                          outOfSystem: { de: 'Außerhalb markieren', en: 'Mark out of system' },
+                                      } as const
+                                  )[payoutConfirm ?? 'release'][locale]}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <div className="grid gap-4 @2xl:grid-cols-2">
                 <Card className="gap-4 py-4">

@@ -342,6 +342,15 @@ mutation AdminBookingRequestOfferPayoutMarkOutOfSystem($bookingRequestOfferId: I
     }
 }
 
+mutation AdminBookingRequestOfferPayoutAlreadyTookPlaceCheck($bookingRequestOfferId: ID!) {
+    admin {
+        bookingRequestOfferPayoutAlreadyTookPlaceCheck(bookingRequestOfferId: $bookingRequestOfferId) {
+            success
+            referenceId
+        }
+    }
+}
+
 mutation AdminBookingRequestOfferHandover($input: AdminBookingRequestOfferHandover!) {
     admin {
         bookingRequestOfferHandover(input: $input) {

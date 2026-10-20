@@ -26,6 +26,7 @@ import { adminBookingRequestOfferChatReviewAcknowledge } from '../commands/admin
 import { adminBookingRequestOfferConfiguredMenuUpdate } from '../commands/adminBookingRequestOfferConfiguredMenuUpdate';
 import { adminBookingRequestOfferCreate } from '../commands/adminBookingRequestOfferCreate';
 import { adminBookingRequestOfferHandover } from '../commands/adminBookingRequestOfferHandover';
+import { adminBookingRequestOfferPayoutAlreadyTookPlaceCheck } from '../commands/adminBookingRequestOfferPayoutAlreadyTookPlaceCheck';
 import { adminBookingRequestOfferPayoutMarkOutOfSystem } from '../commands/adminBookingRequestOfferPayoutMarkOutOfSystem';
 import { adminBookingRequestOfferPayoutRelease } from '../commands/adminBookingRequestOfferPayoutRelease';
 import { adminBookingRequestOfferUpdate } from '../commands/adminBookingRequestOfferUpdate';
@@ -490,6 +491,7 @@ import type {
     GqlSAdminMutationBookingRequestOfferConfiguredMenuUpdateArgs,
     GqlSAdminMutationBookingRequestOfferCreateArgs,
     GqlSAdminMutationBookingRequestOfferHandoverArgs,
+    GqlSAdminMutationBookingRequestOfferPayoutAlreadyTookPlaceCheckArgs,
     GqlSAdminMutationBookingRequestOfferPayoutMarkOutOfSystemArgs,
     GqlSAdminMutationBookingRequestOfferPayoutReleaseArgs,
     GqlSAdminMutationBookingRequestOfferUpdateArgs,
@@ -2159,6 +2161,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return adminBookingRequestOfferPayoutMarkOutOfSystem(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferPayoutAlreadyTookPlaceCheck(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationBookingRequestOfferPayoutAlreadyTookPlaceCheckArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestOfferChatMessageCreate(
                 parent: GqlSAdminMutation,

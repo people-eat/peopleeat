@@ -4100,6 +4100,13 @@ type AdminMutation {
     # when already transferred / out-of-system / `payoutDateTime` set.
     # Returns `bookingRequestOfferId` as `referenceId`.
     bookingRequestOfferPayoutMarkOutOfSystem(bookingRequestOfferId: ID!): MutationResult!
+    # Checks Stripe for a matching Connect bank payout on a due PAYED offer.
+    # When found, sets `TRANSFERRED` + `payoutDateTime` without calling
+    # `payoutCreate`. When none matches, returns `success: false` and leaves
+    # the offer unchanged. Requires cook `stripeAccountId`. Idempotent when
+    # already transferred / out-of-system / `payoutDateTime` set.
+    # Returns `bookingRequestOfferId` as `referenceId`.
+    bookingRequestOfferPayoutAlreadyTookPlaceCheck(bookingRequestOfferId: ID!): MutationResult!
     # Append a free-text negotiation message (`ADMIN_MESSAGE_SIMPLE` event).
     # `referenceId` is the new `bookingRequestOfferEventId`.
     bookingRequestOfferChatMessageCreate(bookingRequestOfferId: ID!, message: String!, fileUploadIds: [ID!]): MutationResult!
