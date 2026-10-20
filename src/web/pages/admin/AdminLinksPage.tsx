@@ -25,30 +25,75 @@ const ADMIN_IMPORTANT_LINK_GROUPS: readonly AdminImportantLinkGroup[] = [
     {
         title: { de: 'Infrastruktur', en: 'Infrastructure' },
         links: [
-            { title: 'Coolify', href: 'https://coolify.people-eat.com' },
-            { title: 'Kuma', href: 'https://kuma.people-eat.com' },
-            { title: 'Grafana', href: 'https://grafana.people-eat.com' },
-            { title: 'Langfuse', href: 'https://langfuse.people-eat.com' },
-            { title: 'IONOS', href: 'https://mein.ionos.de/' },
-            { title: 'Metabase', href: 'https://metabase.people-eat.com' },
-            { title: 'Storybook', href: 'https://storybook.people-eat.com' },
-            { title: 'Email preview', href: 'https://email.people-eat.com' },
+            {
+                title: 'Coolify',
+                href: 'https://coolify.people-eat.com',
+            },
+            {
+                title: 'Kuma',
+                href: 'https://kuma.people-eat.com',
+            },
+            {
+                title: 'Grafana',
+                href: 'https://grafana.people-eat.com',
+            },
+            {
+                title: 'Langfuse',
+                href: 'https://langfuse.people-eat.com',
+            },
+            {
+                title: 'IONOS',
+                href: 'https://mein.ionos.de/',
+            },
+            {
+                title: 'Metabase',
+                href: 'https://metabase.people-eat.com',
+            },
+            {
+                title: 'Storybook',
+                href: 'https://storybook.people-eat.com',
+            },
+            {
+                title: 'Email preview',
+                href: 'https://email-preview.people-eat.com',
+            },
             {
                 title: 'Google Search Console',
                 href: 'https://search.google.com/search-console?resource_id=sc-domain%3Apeople-eat.com&hl=de',
             },
-            { title: 'Microsoft Clarity', href: 'https://clarity.microsoft.com' },
-            { title: 'OpenAI Dashboard', href: 'https://platform.openai.com/usage' },
-            { title: 'Stripe', href: 'https://dashboard.stripe.com/dashboard' },
-            { title: 'GitHub Projects', href: 'https://github.com/people-eat/people-eat/projects?query=is%3Aopen' },
+            {
+                title: 'Microsoft Clarity',
+                href: 'https://clarity.microsoft.com',
+            },
+            {
+                title: 'OpenAI Dashboard',
+                href: 'https://platform.openai.com/usage',
+            },
+            {
+                title: 'Stripe',
+                href: 'https://dashboard.stripe.com/dashboard',
+            },
+            {
+                title: 'GitHub Projects',
+                href: 'https://github.com/people-eat/people-eat/projects?query=is%3Aopen',
+            },
         ],
     },
     {
         title: { de: 'Benachrichtigungen & Messaging', en: 'Notifications & messaging' },
         links: [
-            { title: 'Resend', href: 'https://resend.com' },
-            { title: 'Klaviyo', href: 'https://www.klaviyo.com/dashboard' },
-            { title: 'Slack', href: 'https://api.slack.com/apps/A0924QE1013' },
+            {
+                title: 'Resend',
+                href: 'https://resend.com',
+            },
+            {
+                title: 'Klaviyo',
+                href: 'https://www.klaviyo.com/dashboard',
+            },
+            {
+                title: 'Slack',
+                href: 'https://api.slack.com/apps/A0924QE1013',
+            },
             {
                 title: 'WhatsApp Manager',
                 href: 'https://business.facebook.com/latest/whatsapp_manager/overview/?asset_id=2340222286349376&business_id=347782383309722',
@@ -58,9 +103,18 @@ const ADMIN_IMPORTANT_LINK_GROUPS: readonly AdminImportantLinkGroup[] = [
     {
         title: { de: 'Social Media', en: 'Social media' },
         links: [
-            { title: 'Facebook', href: 'https://www.facebook.com/PeopleEatSharing' },
-            { title: 'Instagram', href: 'https://www.instagram.com/peopleeat_official' },
-            { title: 'LinkedIn', href: 'https://www.linkedin.com/company/peopleeat' },
+            {
+                title: 'Facebook',
+                href: 'https://www.facebook.com/PeopleEatSharing',
+            },
+            {
+                title: 'Instagram',
+                href: 'https://www.instagram.com/peopleeat_official',
+            },
+            {
+                title: 'LinkedIn',
+                href: 'https://www.linkedin.com/company/peopleeat',
+            },
         ],
     },
 ];
