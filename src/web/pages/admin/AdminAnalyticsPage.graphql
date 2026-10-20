@@ -6,6 +6,8 @@ query AdminAnalyticsPage(
     $granularity: AdminTimeBucketGranularity! = day
     $formVisitWebPageKey: WebPageKey!
     $landingVisitWebPageKey: WebPageKey!
+    $chefsVisitWebPageKey: WebPageKey!
+    $giftCardVisitWebPageKey: WebPageKey!
 ) {
     currentSession {
         sessionId
@@ -76,6 +78,27 @@ query AdminAnalyticsPage(
                     sessionsWithCompletion
                     terminalCount
                 }
+                bookingRequestCheckoutFlow(range: $range) {
+                    nodes {
+                        id
+                        labelDe
+                        labelEn
+                    }
+                    links {
+                        source
+                        target
+                        value
+                    }
+                    steps {
+                        id
+                        labelDe
+                        labelEn
+                        enteredCount
+                        completedCount
+                    }
+                    sessionsWithCompletion
+                    terminalCount
+                }
                 cookBookingRequestOfferFlow(range: $range) {
                     nodes {
                         id
@@ -105,6 +128,22 @@ query AdminAnalyticsPage(
                 }
                 landingVisits: sessionEventWebPageVisitCreations(
                     webPageKey: $landingVisitWebPageKey
+                    range: $range
+                    granularity: $granularity
+                ) {
+                    bucketStart
+                    count
+                }
+                chefsVisits: sessionEventWebPageVisitCreations(
+                    webPageKey: $chefsVisitWebPageKey
+                    range: $range
+                    granularity: $granularity
+                ) {
+                    bucketStart
+                    count
+                }
+                giftCardVisits: sessionEventWebPageVisitCreations(
+                    webPageKey: $giftCardVisitWebPageKey
                     range: $range
                     granularity: $granularity
                 ) {

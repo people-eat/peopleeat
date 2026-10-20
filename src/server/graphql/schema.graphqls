@@ -3294,6 +3294,8 @@ type Admin {
     giftCardFlow(range: DateTimeRange!): AdminAnalyticsSessionFunnelFlow!
     # Chef sign-up funnel for human non-admin sessions in `range` (cooks included).
     chefSignUpFlow(range: DateTimeRange!): AdminAnalyticsSessionFunnelFlow!
+    # Booking-request offer checkout funnel for human non-cook/non-admin sessions in `range`.
+    bookingRequestCheckoutFlow(range: DateTimeRange!): AdminAnalyticsSessionFunnelFlow!
     # Cook × booking-request offer funnel for cooks notified in `range`.
     cookBookingRequestOfferFlow(range: DateTimeRange!): AdminAnalyticsCookBookingRequestOfferFlow!
     # WEB_PAGE_VISITED time series for a fixed WebPageKey. Same bucket rules as

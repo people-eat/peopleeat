@@ -55,7 +55,16 @@ function CookRating({ rating }: { rating: SectionCookHeroRating }) {
     );
 }
 
-export function SectionCookHero({ cook, showChefsIndexLink = true }: { cook: SectionCookHeroCook; showChefsIndexLink?: boolean }) {
+export function SectionCookHero({
+    cook,
+    showChefsIndexLink = true,
+    onBookCtaClick,
+}: {
+    cook: SectionCookHeroCook;
+    showChefsIndexLink?: boolean;
+    /** Fired when the visitor clicks the booking-request CTA (public chef page). */
+    onBookCtaClick?: () => void;
+}) {
     const locale = useLocale();
 
     return (
@@ -107,7 +116,9 @@ export function SectionCookHero({ cook, showChefsIndexLink = true }: { cook: Sec
 
                     <div className="inline-grid min-w-64 justify-items-stretch gap-2 self-center pt-2 @3xl:self-start">
                         <Button asChild size="lg" className="px-8">
-                            <Link to="/{-$locale}/booking-request/form">{{ de: 'Anfrage senden', en: 'Send request' }[locale]}</Link>
+                            <Link to="/{-$locale}/booking-request/form" onClick={onBookCtaClick}>
+                                {{ de: 'Anfrage senden', en: 'Send request' }[locale]}
+                            </Link>
                         </Button>
                         <p className="text-center text-sm text-muted-foreground @3xl:text-left">
                             {

@@ -1,10 +1,11 @@
 import { Link, notFound, useNavigate } from '@tanstack/react-router';
 import { ListRestartIcon, MapPinIcon, SquareArrowOutUpRightIcon } from 'lucide-react';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { formatCurrency, toStripeCountryCode, userDisplayName } from '../../../shared';
+import { bookingRequestCheckoutFunnelArea } from '../../../shared/bookingRequestCheckoutFunnel';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/base/avatar';
 import { Button } from '../../components/base/button';
 import { StatusAlert } from '../../components/base/status-alert';
@@ -15,6 +16,7 @@ import type {
     GqlCProfileCustomerBookingRequestOfferCheckoutPageUserFragment,
 } from '../../graphql/generated';
 import {
+    BookingRequestCheckoutFunnelTrackDocument,
     ProfileCustomerBookingRequestOfferCheckoutPageUpdatesDocument,
     ProfileCustomerBookingRequestOfferPaymentStatusUpdateDocument,
 } from '../../graphql/generated';
@@ -198,6 +200,25 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
     const [paymentBusy, setPaymentBusy] = useState(false);
 
     const [, paymentStatusUpdate] = useMutation(ProfileCustomerBookingRequestOfferPaymentStatusUpdateDocument);
+    const [, trackFunnelInteraction] = useMutation(BookingRequestCheckoutFunnelTrackDocument);
+    const checkoutEnteredRef = useRef(false);
+
+    const trackCheckoutEntered = useEffectEvent(() => {
+        if (checkoutEnteredRef.current) return;
+        checkoutEnteredRef.current = true;
+        void trackFunnelInteraction({
+            input: {
+                webPageKey: 'PROFILE',
+                area: bookingRequestCheckoutFunnelArea,
+                bookingRequestId,
+                interaction: { type: 'step_entered', step: 'checkout' },
+            },
+        });
+    });
+
+    useEffect(() => {
+        trackCheckoutEntered();
+    }, []);
 
     useEffect(() => {
         if (user == null) return;
@@ -265,6 +286,14 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
             if (!result.data?.user.bookingRequestOfferPaymentStatusUpdate.success) {
                 throw new Error('payment status update failed');
             }
+            void trackFunnelInteraction({
+                input: {
+                    webPageKey: 'PROFILE',
+                    area: bookingRequestCheckoutFunnelArea,
+                    bookingRequestId,
+                    interaction: { type: 'step_completed', step: 'checkout' },
+                },
+            });
             toast.success(
                 {
                     de: liveOffer.payment?.type === 'SETUP_INTENT' ? 'Zahlungsdaten gespeichert.' : 'Zahlung erfolgreich.',

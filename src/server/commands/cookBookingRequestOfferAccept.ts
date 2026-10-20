@@ -15,6 +15,7 @@ import { slackNotifyOfferAccept } from '../slack/slackNotifyBooking';
 import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/bookingRequestOfferEventTomorrowNotifySchedule';
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
 import { scheduleTestimonialReminderJobs } from '../utils/scheduleTestimonialReminderJobs';
+import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function cookBookingRequestOfferAccept(
@@ -94,6 +95,16 @@ export async function cookBookingRequestOfferAccept(
             actor: 'cook',
             name: cookUser ? `${cookUser.firstName} ${cookUser.lastName}` : cookId,
             dualAccepted,
+        });
+
+        await sessionEventCreate(serverRuntime, {
+            sessionId: requestingSession.sessionId,
+            type: 'BOOKING_REQUEST_OFFER_ACCEPTED',
+            payload: {
+                bookingRequestId: row.bookingRequest.bookingRequestId,
+                bookingRequestOfferId,
+                actor: 'cook',
+            },
         });
 
         return { success: true, referenceId: bookingRequestOfferId };

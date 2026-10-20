@@ -2,6 +2,10 @@ import { eq } from 'drizzle-orm';
 
 import { bookingRequestOffers, bookingRequests, cooks, users } from '../../db/schema';
 import { bookingRequestOfferExtraTransferMaybeCreate } from '../../utils/bookingRequestOfferExtraTransferMaybeCreate';
+import {
+    bookingRequestOfferPaymentFailedSessionEventCreate,
+    bookingRequestOfferPaymentSucceededSessionEventCreate,
+} from '../../utils/bookingRequestOfferPaymentSessionEventCreate';
 import type { QueuedJobDefinition } from '../types';
 
 interface BookingRequestOfferPullPaymentData {
@@ -120,6 +124,12 @@ export const bookingRequestOfferPullPayment: QueuedJobDefinition<BookingRequestO
                 serverRuntime.publish.adminUpdates(),
             ]);
 
+            await bookingRequestOfferPaymentSucceededSessionEventCreate(serverRuntime, {
+                customerUserId: customer.userId,
+                bookingRequestId: bookingRequest.bookingRequestId,
+                bookingRequestOfferId: data.bookingRequestOfferId,
+            });
+
             const { scheduleTestimonialReminderJobs } = await import('../../utils/scheduleTestimonialReminderJobs');
             await scheduleTestimonialReminderJobs(serverRuntime, {
                 bookingRequestOfferId: data.bookingRequestOfferId,
@@ -150,6 +160,11 @@ export const bookingRequestOfferPullPayment: QueuedJobDefinition<BookingRequestO
                 serverRuntime.publish.userUpdates({ userId: cook.cookId }),
                 serverRuntime.publish.adminUpdates(),
             ]);
+            await bookingRequestOfferPaymentFailedSessionEventCreate(serverRuntime, {
+                customerUserId: customer.userId,
+                bookingRequestId: bookingRequest.bookingRequestId,
+                bookingRequestOfferId: data.bookingRequestOfferId,
+            });
             const { slackNotifyPaymentFailed } = await import('../../slack/slackNotifyBooking');
             await slackNotifyPaymentFailed(serverRuntime, {
                 bookingRequestId: bookingRequest.bookingRequestId,

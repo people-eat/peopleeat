@@ -6,6 +6,7 @@ describe('webPageKeyFromPath', () => {
     it('maps fixed public routes', () => {
         expect(webPageKeyFromPath('/')).toEqual({ webPageKey: 'LANDING' });
         expect(webPageKeyFromPath('/booking-request/form')).toEqual({ webPageKey: 'BOOKING_REQUEST_FORM' });
+        expect(webPageKeyFromPath('/log-on')).toEqual({ webPageKey: 'SIGN_IN' });
         expect(webPageKeyFromPath('/sign-in')).toEqual({ webPageKey: 'SIGN_IN' });
     });
 

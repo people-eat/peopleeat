@@ -1,11 +1,16 @@
+import { useMutation } from 'urql';
+
+import { chefsDiscoveryArea, chefsDiscoveryBookCtaKey } from '../../shared/chefsDiscovery';
 import { ChefProfileView } from '../components/ChefProfileView';
 import type { ChefProfileViewModel } from '../components/ChefProfileView';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import type { GqlCChefPageQuery } from '../graphql/generated';
+import { ChefsDiscoveryTrackDocument } from '../graphql/generated';
 
 export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
     const cook = data.publicCook.findOne!;
+    const [, trackDiscovery] = useMutation(ChefsDiscoveryTrackDocument);
     const view: ChefProfileViewModel = {
         displayName: cook.user.display,
         profilePictureUrl: cook.user.profilePicture?.url ?? null,
@@ -35,11 +40,21 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
         rating: cook.rating.reviewCount > 0 ? cook.rating : undefined,
     };
 
+    function onBookCtaClick() {
+        void trackDiscovery({
+            input: {
+                webPageKey: 'CHEFS',
+                area: chefsDiscoveryArea,
+                interaction: { type: 'click', key: chefsDiscoveryBookCtaKey },
+            },
+        });
+    }
+
     return (
         <>
             <Header user={data.currentSession.user} />
             <main id="main-content">
-                <ChefProfileView cook={view} />
+                <ChefProfileView cook={view} onBookCtaClick={onBookCtaClick} />
             </main>
             <Footer />
         </>

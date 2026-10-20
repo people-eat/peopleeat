@@ -21,9 +21,11 @@ import {
 import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/bookingRequestOfferEventTomorrowNotifySchedule';
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
 import { bookingRequestOfferPaymentPrepare } from '../utils/bookingRequestOfferPaymentPrepare';
+import { bookingRequestOfferPaymentSucceededSessionEventCreate } from '../utils/bookingRequestOfferPaymentSessionEventCreate';
 import { bookingRequestReactionReminderCancel } from '../utils/bookingRequestReactionReminderSchedule';
 import { cookIdsCanCreateOffersFind } from '../utils/cookIdsCanCreateOffersFind';
 import { giftCardCharge } from '../utils/giftCardCharge';
+import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
 
 /**
@@ -222,6 +224,25 @@ export async function userBookingRequestOfferAccept(
         });
 
         await bookingRequestReactionReminderCancel(serverRuntime, row.bookingRequest.bookingRequestId);
+
+        await sessionEventCreate(serverRuntime, {
+            sessionId: requestingSession.sessionId,
+            type: 'BOOKING_REQUEST_OFFER_ACCEPTED',
+            payload: {
+                bookingRequestId: row.bookingRequest.bookingRequestId,
+                bookingRequestOfferId,
+                actor: 'customer',
+            },
+        });
+
+        if (payment.paymentStatus === 'PAYED') {
+            await bookingRequestOfferPaymentSucceededSessionEventCreate(serverRuntime, {
+                sessionId: requestingSession.sessionId,
+                customerUserId: userId,
+                bookingRequestId: row.bookingRequest.bookingRequestId,
+                bookingRequestOfferId,
+            });
+        }
 
         return { success: true, referenceId: bookingRequestOfferId };
     } catch (error) {

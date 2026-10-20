@@ -207,6 +207,7 @@ import { adminAiGenerationCounts } from '../queries/adminAiGenerationCounts';
 import { adminAiGenerationCreationsFindMany } from '../queries/adminAiGenerationCreationsFindMany';
 import { adminAiGenerationFindMany } from '../queries/adminAiGenerationFindMany';
 import { adminAiGenerationFindOne } from '../queries/adminAiGenerationFindOne';
+import { adminAnalyticsBookingRequestCheckoutFlow } from '../queries/adminAnalyticsBookingRequestCheckoutFlow';
 import { adminAnalyticsBookingRequestFormFlow } from '../queries/adminAnalyticsBookingRequestFormFlow';
 import { adminAnalyticsChefSignUpFlow } from '../queries/adminAnalyticsChefSignUpFlow';
 import { adminAnalyticsCookBookingRequestOfferFlow } from '../queries/adminAnalyticsCookBookingRequestOfferFlow';
@@ -417,6 +418,7 @@ import type {
     GqlSAdminBlogPostArgs,
     GqlSAdminBookingRequest,
     GqlSAdminBookingRequestArgs,
+    GqlSAdminBookingRequestCheckoutFlowArgs,
     GqlSAdminBookingRequestCookOfferStatsArgs,
     GqlSAdminBookingRequestCreationMonthStatsArgs,
     GqlSAdminBookingRequestCreationsArgs,
@@ -1093,6 +1095,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             chefSignUpFlow(_parent: GqlSAdmin, args: GqlSAdminChefSignUpFlowArgs, requestingSession: GqlSSession) {
                 return adminAnalyticsChefSignUpFlow(args.range, requestingSession, serverRuntime);
+            },
+            bookingRequestCheckoutFlow(_parent: GqlSAdmin, args: GqlSAdminBookingRequestCheckoutFlowArgs, requestingSession: GqlSSession) {
+                return adminAnalyticsBookingRequestCheckoutFlow(args.range, requestingSession, serverRuntime);
             },
             cookBookingRequestOfferFlow(
                 _parent: GqlSAdmin,

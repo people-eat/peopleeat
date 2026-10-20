@@ -139,6 +139,7 @@ export function ChefSignUpPage({ loaderData }: { loaderData: GqlCChefSignUpPageQ
                 toast.error({ de: 'Koch-Konto konnte nicht erstellt werden.', en: 'Could not create the chef account.' }[locale]);
                 return;
             }
+            trackFunnelStep('step_completed', 'profile');
             setSuccess(true);
             toast.success({ de: 'Koch-Konto erstellt.', en: 'Chef account created.' }[locale]);
         },

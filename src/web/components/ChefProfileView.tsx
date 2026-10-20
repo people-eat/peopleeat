@@ -16,12 +16,20 @@ export type ChefProfileViewModel = SectionCookHeroCook & {
     testimonials?: SectionCookTestimonial[];
 };
 
-export function ChefProfileView({ cook, showChefsIndexLink = true }: { cook: ChefProfileViewModel; showChefsIndexLink?: boolean }) {
+export function ChefProfileView({
+    cook,
+    showChefsIndexLink = true,
+    onBookCtaClick,
+}: {
+    cook: ChefProfileViewModel;
+    showChefsIndexLink?: boolean;
+    onBookCtaClick?: () => void;
+}) {
     return (
         // Own `@container` so sections reflow with this pane (full page or cook
         // public preview), not a wider ancestor.
         <div className="@container flex w-full min-w-0 flex-col gap-16 pt-2 pb-16 @3xl:gap-24 @3xl:pt-10 @3xl:pb-24">
-            <SectionCookHero cook={cook} showChefsIndexLink={showChefsIndexLink} />
+            <SectionCookHero cook={cook} showChefsIndexLink={showChefsIndexLink} onBookCtaClick={onBookCtaClick} />
             <SectionCookMeals meals={cook.meals} />
             <SectionCookAbout biography={cook.biography} logoUrl={cook.logoUrl} />
             <SectionCookTestimonials testimonials={cook.testimonials} />

@@ -97,6 +97,7 @@ export async function userBookingRequestOfferPaymentStatusUpdate(
             customerUserId: userId,
             cookStripeAccountId: row.cook.stripeAccountId,
             invoiceAddress,
+            sessionId: requestingSession.sessionId,
         });
 
         await Promise.all([

@@ -90,4 +90,39 @@ describe('toGqlAdminSessionEvent', () => {
         expect(mapped.link).toBe('/admin/booking-requests/br-2');
         expect(mapped.descriptionEn).toContain('canceled');
     });
+
+    it('does not mark newsletter subscription as legacy', () => {
+        const mapped = toGqlAdminSessionEvent(
+            baseEvent({
+                type: 'NEWSLETTER_SUBSCRIPTION_CREATED',
+                payload: {},
+            }),
+        );
+        expect(mapped.descriptionEn).toBe('Newsletter subscribed');
+        expect(mapped.descriptionEn.toLowerCase()).not.toContain('legacy');
+    });
+
+    it('links offer accept and payment lifecycle events', () => {
+        const accepted = toGqlAdminSessionEvent(
+            baseEvent({
+                type: 'BOOKING_REQUEST_OFFER_ACCEPTED',
+                payload: {
+                    bookingRequestId: 'br-3',
+                    bookingRequestOfferId: 'offer-1',
+                    actor: 'customer',
+                },
+            }),
+        );
+        expect(accepted.link).toBe('/admin/booking-requests/br-3');
+        expect(accepted.descriptionEn).toContain('customer');
+
+        const paid = toGqlAdminSessionEvent(
+            baseEvent({
+                type: 'BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED',
+                payload: { bookingRequestId: 'br-3', bookingRequestOfferId: 'offer-1' },
+            }),
+        );
+        expect(paid.link).toBe('/admin/booking-requests/br-3');
+        expect(paid.descriptionEn).toContain('succeeded');
+    });
 });

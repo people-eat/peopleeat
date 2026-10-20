@@ -2,7 +2,7 @@ import { and, count, desc, isNotNull, ne, sql } from 'drizzle-orm';
 
 import { users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSAdminUserInsights, GqlSLocale, GqlSSession, GqlSUserPreferredCommunication } from '../graphql/generated';
+import type { GqlSAdminUserInsights, GqlSSession } from '../graphql/generated';
 
 const TIME_ZONE_STATS_TAKE = 12;
 
@@ -76,11 +76,11 @@ export async function adminUserInsightsFindOne(
             averageAge,
             birthDateSampleSize: ageRow?.birthDateSampleSize ?? 0,
             preferredCommunication: preferredCommunicationRows.map((row) => ({
-                preferredCommunication: (row.preferredCommunication ?? null) as GqlSUserPreferredCommunication | null,
+                preferredCommunication: row.preferredCommunication ?? null,
                 count: row.value,
             })),
             locales: localeRows.map((row) => ({
-                locale: row.locale as GqlSLocale,
+                locale: row.locale,
                 count: row.value,
             })),
             timeZones: timeZoneRows.map((row) => ({

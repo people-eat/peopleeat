@@ -36,6 +36,7 @@ export interface GqlSAdmin {
     blogPosts: Array<GqlSAdminBlogPost>;
     bookingRequest?: Maybe<GqlSAdminBookingRequest>;
     bookingRequestAverageParticipants: Scalars['Int']['output'];
+    bookingRequestCheckoutFlow: GqlSAdminAnalyticsSessionFunnelFlow;
     bookingRequestCookOfferStats: Array<GqlSAdminBookingRequestCookOfferStat>;
     bookingRequestCreationMonthStats: Array<GqlSAdminBookingRequestCreationMonthStat>;
     bookingRequestCreations: Array<GqlSAdminTimeBucket>;
@@ -163,6 +164,10 @@ export type GqlSAdminBlogPostArgs = {
 
 export type GqlSAdminBookingRequestArgs = {
     bookingRequestId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminBookingRequestCheckoutFlowArgs = {
+    range: GqlSDateTimeRange;
 };
 
 export type GqlSAdminBookingRequestCookOfferStatsArgs = {
@@ -6115,6 +6120,12 @@ export type GqlSAdminResolvers<
         RequireFields<GqlSAdminBookingRequestArgs, 'bookingRequestId'>
     >;
     bookingRequestAverageParticipants?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    bookingRequestCheckoutFlow?: Resolver<
+        GqlSResolversTypes['AdminAnalyticsSessionFunnelFlow'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminBookingRequestCheckoutFlowArgs, 'range'>
+    >;
     bookingRequestCookOfferStats?: Resolver<
         Array<GqlSResolversTypes['AdminBookingRequestCookOfferStat']>,
         ParentType,

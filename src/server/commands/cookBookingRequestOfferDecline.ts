@@ -12,6 +12,7 @@ import type {
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { slackNotifyOfferDecline } from '../slack/slackNotifyBooking';
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
+import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function cookBookingRequestOfferDecline(
@@ -80,6 +81,16 @@ export async function cookBookingRequestOfferDecline(
             actor: 'cook',
             name: cookUser ? `${cookUser.firstName} ${cookUser.lastName}` : cookId,
             reason,
+        });
+
+        await sessionEventCreate(serverRuntime, {
+            sessionId: requestingSession.sessionId,
+            type: 'BOOKING_REQUEST_OFFER_DECLINED',
+            payload: {
+                bookingRequestId: row.bookingRequest.bookingRequestId,
+                bookingRequestOfferId,
+                actor: 'cook',
+            },
         });
 
         return { success: true, referenceId: bookingRequestOfferId };

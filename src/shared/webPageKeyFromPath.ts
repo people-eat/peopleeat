@@ -40,7 +40,7 @@ export function webPageKeyFromPath(pathWithoutLocale: string): WebPageVisitMatch
     if (path === '/imprint') return { webPageKey: 'IMPRINT' };
     if (path === '/terms-and-conditions') return { webPageKey: 'TERMS_AND_CONDITIONS' };
     if (path === '/privacy-policy') return { webPageKey: 'PRIVACY_POLICY' };
-    if (path === '/sign-in') return { webPageKey: 'SIGN_IN' };
+    if (path === '/log-on' || path === '/sign-in') return { webPageKey: 'SIGN_IN' };
 
     // Chef detail uses a nanoId cookId in the path. Slug-based city/partner/
     // occasion/blog detail pages rely on `path` for identity (no id in URL).

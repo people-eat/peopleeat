@@ -39,6 +39,7 @@ export interface GqlCAdmin {
     blogPosts: Array<GqlCAdminBlogPost>;
     bookingRequest?: Maybe<GqlCAdminBookingRequest>;
     bookingRequestAverageParticipants: Scalars['Int']['output'];
+    bookingRequestCheckoutFlow: GqlCAdminAnalyticsSessionFunnelFlow;
     bookingRequestCookOfferStats: Array<GqlCAdminBookingRequestCookOfferStat>;
     bookingRequestCreationMonthStats: Array<GqlCAdminBookingRequestCreationMonthStat>;
     bookingRequestCreations: Array<GqlCAdminTimeBucket>;
@@ -166,6 +167,10 @@ export type GqlCAdminBlogPostArgs = {
 
 export type GqlCAdminBookingRequestArgs = {
     bookingRequestId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminBookingRequestCheckoutFlowArgs = {
+    range: GqlCDateTimeRange;
 };
 
 export type GqlCAdminBookingRequestCookOfferStatsArgs = {
@@ -7604,6 +7609,12 @@ export type GqlCChefSignUpCookCreateMutationVariables = Exact<{
 
 export type GqlCChefSignUpCookCreateMutation = { user: { cookCreate: { success: boolean; referenceId: string | null } } };
 
+export type GqlCChefsDiscoveryTrackMutationVariables = Exact<{
+    input: Schema.GqlCSessionWebPageInteractionCreateInput;
+}>;
+
+export type GqlCChefsDiscoveryTrackMutation = { sessionWebPageInteractionCreate: { success: boolean; referenceId: string | null } };
+
 export type GqlCChefsPageQueryVariables = Exact<{
     criterion?: Schema.GqlCPublicCookFindManyCriterion | null | undefined;
 }>;
@@ -8633,6 +8644,8 @@ export type GqlCAdminAnalyticsPageQueryVariables = Exact<{
     granularity?: Schema.GqlCAdminTimeBucketGranularity;
     formVisitWebPageKey: Schema.GqlCWebPageKey;
     landingVisitWebPageKey: Schema.GqlCWebPageKey;
+    chefsVisitWebPageKey: Schema.GqlCWebPageKey;
+    giftCardVisitWebPageKey: Schema.GqlCWebPageKey;
 }>;
 
 export type GqlCAdminAnalyticsPageQuery = {
@@ -8663,6 +8676,13 @@ export type GqlCAdminAnalyticsPageQuery = {
                     links: Array<{ source: string; target: string; value: number }>;
                     steps: Array<{ id: string; labelDe: string; labelEn: string; enteredCount: number; completedCount: number }>;
                 };
+                bookingRequestCheckoutFlow: {
+                    sessionsWithCompletion: number;
+                    terminalCount: number;
+                    nodes: Array<{ id: string; labelDe: string; labelEn: string }>;
+                    links: Array<{ source: string; target: string; value: number }>;
+                    steps: Array<{ id: string; labelDe: string; labelEn: string; enteredCount: number; completedCount: number }>;
+                };
                 cookBookingRequestOfferFlow: {
                     notifiedCount: number;
                     openedCount: number;
@@ -8674,6 +8694,8 @@ export type GqlCAdminAnalyticsPageQuery = {
                 };
                 formVisits: Array<{ bucketStart: string; count: number }>;
                 landingVisits: Array<{ bucketStart: string; count: number }>;
+                chefsVisits: Array<{ bucketStart: string; count: number }>;
+                giftCardVisits: Array<{ bucketStart: string; count: number }>;
             } | null;
         } | null;
     };
@@ -15486,6 +15508,14 @@ export type GqlCAdminWhatsAppChatsPageUpdatesSubscription = {
             } | null;
         }>;
     };
+};
+
+export type GqlCBookingRequestCheckoutFunnelTrackMutationVariables = Exact<{
+    input: Schema.GqlCSessionWebPageInteractionCreateInput;
+}>;
+
+export type GqlCBookingRequestCheckoutFunnelTrackMutation = {
+    sessionWebPageInteractionCreate: { success: boolean; referenceId: string | null };
 };
 
 export type GqlCCookBookingRequestOfferFunnelTrackMutationVariables = Exact<{
@@ -36478,6 +36508,49 @@ export const ChefSignUpCookCreateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCChefSignUpCookCreateMutation, GqlCChefSignUpCookCreateMutationVariables>;
+export const ChefsDiscoveryTrackDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ChefsDiscoveryTrack' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'SessionWebPageInteractionCreateInput' } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'sessionWebPageInteractionCreate' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCChefsDiscoveryTrackMutation, GqlCChefsDiscoveryTrackMutationVariables>;
 export const ChefsPageDocument = {
     kind: 'Document',
     definitions: [
@@ -40487,6 +40560,16 @@ export const AdminAnalyticsPageDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'landingVisitWebPageKey' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'chefsVisitWebPageKey' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'giftCardVisitWebPageKey' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'WebPageKey' } } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -40712,6 +40795,71 @@ export const AdminAnalyticsPageDocument = {
                                                         },
                                                         {
                                                             kind: 'Field',
+                                                            name: { kind: 'Name', value: 'bookingRequestCheckoutFlow' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'nodes' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'links' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'source' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'target' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'value' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'steps' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'enteredCount' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'completedCount' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'sessionsWithCompletion' },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'terminalCount' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
                                                             name: { kind: 'Name', value: 'cookBookingRequestOfferFlow' },
                                                             arguments: [
                                                                 {
@@ -40820,6 +40968,76 @@ export const AdminAnalyticsPageDocument = {
                                                                     value: {
                                                                         kind: 'Variable',
                                                                         name: { kind: 'Name', value: 'landingVisitWebPageKey' },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'granularity' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'granularity' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            alias: { kind: 'Name', value: 'chefsVisits' },
+                                                            name: { kind: 'Name', value: 'sessionEventWebPageVisitCreations' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'webPageKey' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'chefsVisitWebPageKey' },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'granularity' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'granularity' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            alias: { kind: 'Name', value: 'giftCardVisits' },
+                                                            name: { kind: 'Name', value: 'sessionEventWebPageVisitCreations' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'webPageKey' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'giftCardVisitWebPageKey' },
                                                                     },
                                                                 },
                                                                 {
@@ -63953,6 +64171,49 @@ export const AdminWhatsAppChatsPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminWhatsAppChatsPageUpdatesSubscription, GqlCAdminWhatsAppChatsPageUpdatesSubscriptionVariables>;
+export const BookingRequestCheckoutFunnelTrackDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'BookingRequestCheckoutFunnelTrack' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'SessionWebPageInteractionCreateInput' } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'sessionWebPageInteractionCreate' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'input' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCBookingRequestCheckoutFunnelTrackMutation, GqlCBookingRequestCheckoutFunnelTrackMutationVariables>;
 export const CookBookingRequestOfferFunnelTrackDocument = {
     kind: 'Document',
     definitions: [

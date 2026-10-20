@@ -57,8 +57,8 @@ function AdminAnalyticsSankeyNode({
 
 export const adminAnalyticsPageTitle = { de: 'Analysen', en: 'Analytics' } as const;
 export const adminAnalyticsPageDescription = {
-    de: 'Buchungsformular-, Geschenkkarten- und Koch-Funnels sowie Seitenbesuche.',
-    en: 'Booking form, gift card, and chef funnels, plus page visits.',
+    de: 'Buchungsformular-, Geschenkkarten-, Checkout- und Koch-Funnels sowie Seitenbesuche.',
+    en: 'Booking form, gift card, checkout, and chef funnels, plus page visits.',
 } as const;
 
 export function adminAnalyticsPageVariables(search: AdminOverviewRangeSearch = {}) {
@@ -66,6 +66,8 @@ export function adminAnalyticsPageVariables(search: AdminOverviewRangeSearch = {
         ...adminOverviewRangeToGraphQlVariables(adminOverviewRangeResolve(search)),
         formVisitWebPageKey: 'BOOKING_REQUEST_FORM' as const,
         landingVisitWebPageKey: 'LANDING' as const,
+        chefsVisitWebPageKey: 'CHEFS' as const,
+        giftCardVisitWebPageKey: 'GIFT_CARD' as const,
     };
 }
 
@@ -133,9 +135,12 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
     const flow = admin?.bookingRequestFormFlow;
     const giftCardFlow = admin?.giftCardFlow;
     const chefSignUpFlow = admin?.chefSignUpFlow;
+    const bookingCheckoutFlow = admin?.bookingRequestCheckoutFlow;
     const cookOfferFlow = admin?.cookBookingRequestOfferFlow;
     const formVisits = admin?.formVisits ?? [];
     const landingVisits = admin?.landingVisits ?? [];
+    const chefsVisits = admin?.chefsVisits ?? [];
+    const giftCardVisits = admin?.giftCardVisits ?? [];
 
     const formVisitCount = formVisits.reduce((sum, bucket) => sum + bucket.count, 0);
     const sessionsWithCompletion = flow?.sessionsWithCompletion ?? 0;
@@ -180,6 +185,7 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
     const sankeyData = sankeyFromFlow(flow, locale);
     const giftCardSankeyData = sankeyFromFlow(giftCardFlow, locale);
     const chefSignUpSankeyData = sankeyFromFlow(chefSignUpFlow, locale);
+    const bookingCheckoutSankeyData = sankeyFromFlow(bookingCheckoutFlow, locale);
     const cookSankeyData = sankeyFromFlow(cookOfferFlow, locale);
 
     const giftCardSteps = giftCardFlow?.steps ?? [];
@@ -190,6 +196,9 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
     const chefSignUpSteps = chefSignUpFlow?.steps ?? [];
     const chefSignUpStepsWithActivity = chefSignUpSteps.filter((step) => step.enteredCount > 0 || step.completedCount > 0);
     const showChefSignUpReachedColumn = chefSignUpStepsWithActivity.some((step) => step.enteredCount > 0 && step.id !== 'created');
+    const bookingCheckoutSteps = bookingCheckoutFlow?.steps ?? [];
+    const bookingCheckoutStepsWithActivity = bookingCheckoutSteps.filter((step) => step.enteredCount > 0 || step.completedCount > 0);
+    const showBookingCheckoutReachedColumn = bookingCheckoutStepsWithActivity.some((step) => step.enteredCount > 0 && step.id !== 'paid');
 
     const sankeyEmptyCopy = (() => {
         if (hasStepActivity && flow && flow.nodes.length > 0 && flow.links.length === 0) {
@@ -458,6 +467,107 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
 
                 <section className="grid gap-3">
                     <h2 className="font-serif text-2xl text-foreground">
+                        {{ de: 'Buchungs-Checkout-Funnel', en: 'Booking checkout funnel' }[locale]}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Menschliche Nicht-Admin-/Nicht-Koch-Sitzungen. Ende = Angebotszahlung erfolgreich.',
+                                en: 'Human non-admin/non-cook sessions. End = offer payment succeeded.',
+                            }[locale]
+                        }
+                    </p>
+                    <dl className="grid gap-3 sm:grid-cols-2">
+                        <AdminOverviewStatCard
+                            label={{ de: 'Sitzungen mit Abschluss', en: 'Sessions with completion' }[locale]}
+                            value={bookingCheckoutFlow?.sessionsWithCompletion ?? 0}
+                        />
+                        <AdminOverviewStatCard
+                            label={{ de: 'Bezahlt', en: 'Paid' }[locale]}
+                            value={bookingCheckoutFlow?.terminalCount ?? 0}
+                        />
+                    </dl>
+                    {bookingCheckoutStepsWithActivity.length > 0 ? (
+                        <Card>
+                            <CardContent className="pt-4">
+                                <Table aria-label={{ de: 'Checkout-Schritte', en: 'Checkout steps' }[locale]}>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>{{ de: 'Schritt', en: 'Step' }[locale]}</TableHead>
+                                            {showBookingCheckoutReachedColumn ? (
+                                                <TableHead className="text-right">{{ de: 'Erreicht', en: 'Reached' }[locale]}</TableHead>
+                                            ) : null}
+                                            <TableHead className="text-right">{{ de: 'Abgeschlossen', en: 'Completed' }[locale]}</TableHead>
+                                            <TableHead className="text-right">{{ de: 'Abfall %', en: 'Drop-off %' }[locale]}</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {bookingCheckoutStepsWithActivity.map((step, index) => {
+                                            const previous = bookingCheckoutStepsWithActivity[index - 1];
+                                            const dropOff =
+                                                previous == null ? null : dropOffPercent(previous.completedCount, step.completedCount);
+                                            return (
+                                                <TableRow key={step.id}>
+                                                    <TableCell className="font-medium">
+                                                        {locale === 'de' ? step.labelDe : step.labelEn}
+                                                    </TableCell>
+                                                    {showBookingCheckoutReachedColumn ? (
+                                                        <TableCell className="text-right tabular-nums">
+                                                            {step.id === 'paid' ? '-' : step.enteredCount}
+                                                        </TableCell>
+                                                    ) : null}
+                                                    <TableCell className="text-right tabular-nums">{step.completedCount}</TableCell>
+                                                    <TableCell className="text-right tabular-nums text-muted-foreground">
+                                                        {dropOff == null ? '-' : `${dropOff}%`}
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    ) : null}
+                    {bookingCheckoutSankeyData ? (
+                        <Card>
+                            <CardContent className="pt-4">
+                                <div
+                                    className="w-full"
+                                    style={{ height: SANKEY_HEIGHT }}
+                                    aria-label={{ de: 'Buchungs-Checkout Sankey', en: 'Booking checkout Sankey' }[locale]}
+                                >
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height={SANKEY_HEIGHT}
+                                        initialDimension={{ width: 640, height: SANKEY_HEIGHT }}
+                                    >
+                                        <Sankey
+                                            data={bookingCheckoutSankeyData}
+                                            nodePadding={24}
+                                            margin={{ top: 12, right: 160, bottom: 12, left: 12 }}
+                                            link={{ stroke: 'var(--foreground)', strokeOpacity: 0.2 }}
+                                            node={AdminAnalyticsSankeyNode}
+                                        >
+                                            <Tooltip />
+                                        </Sankey>
+                                    </ResponsiveContainer>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">
+                            {
+                                {
+                                    de: 'Keine Checkout-Funnel-Daten im gewählten Zeitraum.',
+                                    en: 'No checkout funnel data in the selected range.',
+                                }[locale]
+                            }
+                        </p>
+                    )}
+                </section>
+
+                <section className="grid gap-3">
+                    <h2 className="font-serif text-2xl text-foreground">
                         {{ de: 'Koch-Registrierungs-Funnel', en: 'Chef sign-up funnel' }[locale]}
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -681,6 +791,30 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                         locale={locale}
                         timeZone={timeZone}
                         ariaLabel={{ de: 'Besuche Startseite', en: 'Landing page visits' }[locale]}
+                    />
+                </section>
+
+                <section className="grid gap-3">
+                    <h2 className="font-serif text-2xl text-foreground">
+                        {{ de: 'Seitenbesuche Köche', en: 'Chefs page visits' }[locale]}
+                    </h2>
+                    <AdminOverviewBarChart
+                        data={chefsVisits}
+                        locale={locale}
+                        timeZone={timeZone}
+                        ariaLabel={{ de: 'Besuche Köche', en: 'Chefs page visits' }[locale]}
+                    />
+                </section>
+
+                <section className="grid gap-3">
+                    <h2 className="font-serif text-2xl text-foreground">
+                        {{ de: 'Seitenbesuche Geschenkkarte', en: 'Gift card page visits' }[locale]}
+                    </h2>
+                    <AdminOverviewBarChart
+                        data={giftCardVisits}
+                        locale={locale}
+                        timeZone={timeZone}
+                        ariaLabel={{ de: 'Besuche Geschenkkarte', en: 'Gift card page visits' }[locale]}
                     />
                 </section>
             </main>

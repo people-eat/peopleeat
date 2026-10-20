@@ -15,8 +15,8 @@ Admin GraphQL exposes humanized timelines and a booking-form Sankey.
 Cookie consent continues to gate **third-party** analytics only. Session events are product telemetry on the existing session cookie.
 
 Historical keys from imported rows remain in the taxonomy so admin timelines stay typed. Keys listed in `sessionEventKeysNoLongerProduced`
-are **never** accepted by `sessionEventCreate` (password sign-in, newsletter, phone confirm, unconfirmed-email user create, …). Current auth
-emits `AUTH_*` keys (email OTP, passkey, TOTP).
+are **never** accepted by `sessionEventCreate` (password sign-in, phone confirm, unconfirmed-email user create, …). Current auth emits
+`AUTH_*` keys (email OTP, passkey, TOTP). Newsletter subscription events remain live.
 
 ## Event taxonomy
 
@@ -28,6 +28,10 @@ emits `AUTH_*` keys (email OTP, passkey, TOTP).
 | `WEB_PAGE_INTERACTION`                               | Booking form / cook offer create → `sessionWebPageInteractionCreate` | `webPageKey`, `area`, optional `bookingRequestId`, structured `interaction` |
 | `BOOKING_REQUEST_CREATED`                            | `userBookingRequestCreate`                                           | `bookingRequestId`                                                          |
 | `BOOKING_REQUEST_CANCELED`                           | `userBookingRequestCancel`                                           | `bookingRequestId`                                                          |
+| `BOOKING_REQUEST_OFFER_ACCEPTED`                     | `userBookingRequestOfferAccept` / `cookBookingRequestOfferAccept`    | `bookingRequestId`, `bookingRequestOfferId`, `actor`: `customer` \| `cook`  |
+| `BOOKING_REQUEST_OFFER_DECLINED`                     | `userBookingRequestOfferDecline` / `cookBookingRequestOfferDecline`  | `bookingRequestId`, `bookingRequestOfferId`, `actor`: `customer` \| `cook`  |
+| `BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED`            | payment finalize / immediate €0 accept                               | `bookingRequestId`, `bookingRequestOfferId`                                 |
+| `BOOKING_REQUEST_OFFER_PAYMENT_FAILED`               | `bookingRequestOfferPaymentFailedApply`                              | `bookingRequestId`, `bookingRequestOfferId`                                 |
 | `GIFT_CARD_CREATED`                                  | `giftCardCreate`                                                     | `giftCardId`                                                                |
 | `GIFT_CARD_PAYED`                                    | `giftCardPay`                                                        | `giftCardId`                                                                |
 | `COOK_CREATED`                                       | `userCookCreate`                                                     | empty                                                                       |
@@ -44,13 +48,18 @@ emits `AUTH_*` keys (email OTP, passkey, TOTP).
 | `AUTH_TOTP_CHALLENGE_PENDING`                        | `sessionPrimaryAuthComplete`                                         | empty                                                                       |
 | `AUTH_TOTP_VERIFY_SUCCEEDED`                         | `authTotpVerify`                                                     | `via`: `code` \| `recovery`                                                 |
 | `AUTH_TOTP_VERIFY_FAILED`                            | `authTotpVerify`                                                     | empty                                                                       |
+| `NEWSLETTER_SUBSCRIPTION_CREATED`                    | `sessionNewsletterSubscriptionCreate`                                | empty                                                                       |
+| `NEWSLETTER_SUBSCRIPTION_FAILED`                     | `sessionNewsletterSubscriptionCreate`                                | empty                                                                       |
+| `NEWSLETTER_SUBSCRIPTION_ALREADY_EXISTS`             | `sessionNewsletterSubscriptionCreate`                                | empty                                                                       |
 
 Booking-form funnel interactions use stable step ids from `src/shared/bookingRequestFormFunnel.ts` (`step_entered` / `step_completed`), not
 UI label strings. Cook offer create-UI steps use `src/shared/cookBookingRequestOfferFunnel.ts` (`area: cook_booking_request_offer`, client
 steps `offer_create` / `menus` / `price`) and require `bookingRequestId` on the payload for cook × request aggregation. Gift-card funnel:
 `src/shared/giftCardFunnel.ts` (`area: gift_card`, client steps `configure` / `auth` / `checkout`; terminals `created` / `paid` from
 lifecycle events). Chef sign-up funnel: `src/shared/chefSignUpFunnel.ts` (`area: chef_sign_up`, client steps `auth` / `profile`; terminal
-`created` from `COOK_CREATED`).
+`created` from `COOK_CREATED`). Booking checkout funnel: `src/shared/bookingRequestCheckoutFunnel.ts` (`area: booking_request_checkout`,
+client step `checkout`; terminal `paid` from `BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED`). Discovery interactions on chefs pages use
+`area: chefs` with `change` (`searchText`) and `click` (`book_cta`).
 
 ### Historical (imported only; no longer produced)
 
@@ -61,7 +70,6 @@ lifecycle events). Chef sign-up funnel: `src/shared/chefSignUpFunnel.ts` (`area:
 | `USER_CREATE_USER_WITH_UNCONFIRMED_EMAIL_ADDRESS_ALREADY_EXISTS` | Registration when an unconfirmed email already existed                                                                            |
 | `USER_EMAIL_ADDRESS_UPDATE_CONFIRMATION_*`                       | Email confirm succeeded/failed                                                                                                    |
 | `USER_PHONE_NUMBER_UPDATE_CONFIRMATION_*`                        | Phone confirm succeeded/failed                                                                                                    |
-| `NEWSLETTER_SUBSCRIPTION_*`                                      | Created / failed / already exists                                                                                                 |
 
 Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 
@@ -83,27 +91,29 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 - Admin descriptions are bilingual (`descriptionDe` / `descriptionEn`); raw payload stays off the GraphQL surface unless a deep link is
   needed (`link`).
 - Historical keys stay in the domain map so imported timelines remain typed.
+- Webhook payment paths attach lifecycle events to the customer’s latest non-terminated session when no requesting session exists.
 
 ## How it works
 
 1. Client route tracker maps locale-stripped paths → `WebPageKey` (`webPageKeyFromPath`) and calls `sessionWebPageVisitCreate` (skips
-   `/admin/*`, `/profile/*`).
-2. Booking form emits funnel interactions; cook pool detail / offer create emit cook offer funnel interactions; create/cancel commands emit
-   booking lifecycle events.
+   `/admin/*`, `/profile/*`). `/log-on` and legacy `/sign-in` both map to `SIGN_IN`.
+2. Booking form emits funnel interactions; cook pool detail / offer create emit cook offer funnel interactions; create/cancel and
+   marketplace accept/decline/payment commands emit booking lifecycle events. Booking checkout UI emits checkout funnel interactions.
 3. Auth commands emit `AUTH_*` (and user-create / legal-accept) events.
 4. Inserts go through `sessionEventCreate` only (typed to `SessionEventKeyEmitted`).
-5. Admin: session/user timelines via `Admin.sessionEvents` / `Admin.sessionEventsCounts`; booking-form funnel via
-   `Admin.bookingRequestFormFlow`; cook offer funnel via `Admin.cookBookingRequestOfferFlow`; visit buckets via
-   `Admin.sessionEventWebPageVisitCreations`.
+5. Admin: session/user timelines via `Admin.sessionEvents` / `Admin.sessionEventsCounts`; booking-form / gift-card / chef sign-up /
+   booking-checkout funnels via the matching `Admin.*Flow` fields; cook offer funnel via `Admin.cookBookingRequestOfferFlow`; visit buckets
+   via `Admin.sessionEventWebPageVisitCreations`.
 
 ## Key files
 
 - Domain: `src/server/domain/sessionEvent.ts`
 - Shared funnels: `src/shared/bookingRequestFormFunnel.ts`, `src/shared/cookBookingRequestOfferFunnel.ts`, `src/shared/giftCardFunnel.ts`,
-  `src/shared/chefSignUpFunnel.ts`
+  `src/shared/chefSignUpFunnel.ts`, `src/shared/bookingRequestCheckoutFunnel.ts`
 - Path map: `src/shared/webPageKeyFromPath.ts`
-- Helper: `src/server/utils/sessionEventCreate.ts`
+- Helper: `src/server/utils/sessionEventCreate.ts`, `src/server/utils/sessionIdForUserLatestFind.ts`
 - Commands: `sessionWebPageVisitCreate`, `sessionWebPageInteractionCreate`, auth / user-create / legal / booking lifecycle emitters
-- Queries: `adminSessionEventFindMany`, `adminSessionEventCounts`, `adminAnalyticsBookingRequestFormFlow`,
-  `adminAnalyticsCookBookingRequestOfferFlow`, `adminSessionEventWebPageVisitCreationsFindMany`
+- Queries: `adminSessionEventFindMany`, `adminSessionEventCounts`, `adminAnalyticsBookingRequestFormFlow`, `adminAnalyticsGiftCardFlow`,
+  `adminAnalyticsChefSignUpFlow`, `adminAnalyticsBookingRequestCheckoutFlow`, `adminAnalyticsCookBookingRequestOfferFlow`,
+  `adminSessionEventWebPageVisitCreationsFindMany`
 - Feature UI: [admin-analytics.md](../features/admin-analytics.md)

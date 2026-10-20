@@ -1,12 +1,15 @@
 import { useNavigate } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useMutation } from 'urql';
 
+import { chefsDiscoveryArea, chefsDiscoverySearchKey } from '../../shared/chefsDiscovery';
 import { SITE_NAME } from '../../shared/siteBranding';
 import { Input } from '../components/base/input';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import { PublicCookCard } from '../components/PublicCookCard';
 import type { GqlCChefsPageQuery } from '../graphql/generated';
+import { ChefsDiscoveryTrackDocument } from '../graphql/generated';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
 import { SectionChefForAnyOccasion } from '../sections/SectionChefForAnyOccasion';
@@ -36,9 +39,23 @@ export function ChefsPage({ data, search }: { data: GqlCChefsPageQuery; search: 
     const locale = useLocale();
     const navigate = useNavigate({ from: '/{-$locale}/chefs' });
     const cooks = data.publicCook.findMany;
+    const [, trackDiscovery] = useMutation(ChefsDiscoveryTrackDocument);
+    const lastTrackedSearchRef = useRef<string | undefined>(undefined);
 
     const [draftQ, setDraftQ] = useState(search.q ?? '');
     const debouncedQ = useDebouncedValue(draftQ, 300);
+
+    const trackSearch = useEffectEvent((value: string) => {
+        if (lastTrackedSearchRef.current === value) return;
+        lastTrackedSearchRef.current = value;
+        void trackDiscovery({
+            input: {
+                webPageKey: 'CHEFS',
+                area: chefsDiscoveryArea,
+                interaction: { type: 'change', key: chefsDiscoverySearchKey, value },
+            },
+        });
+    });
 
     useEffect(() => {
         setDraftQ(search.q ?? '');
@@ -49,6 +66,11 @@ export function ChefsPage({ data, search }: { data: GqlCChefsPageQuery; search: 
         if (nextQ === search.q) return;
         void navigate({ search: { q: nextQ }, replace: true });
     }, [debouncedQ, navigate, search.q]);
+
+    useEffect(() => {
+        if (!search.q) return;
+        trackSearch(search.q);
+    }, [search.q]);
 
     return (
         <div className="@container w-full min-w-0">

@@ -119,7 +119,15 @@ export function GiftCardCheckoutPage({
                 );
                 setConfirmPayment(false);
                 setBusy(false);
+                return;
             }
+            void trackFunnelInteraction({
+                input: {
+                    webPageKey: 'GIFT_CARD',
+                    area: giftCardFunnelArea,
+                    interaction: { type: 'step_completed', step: 'checkout' },
+                },
+            });
         } catch {
             toast.error(
                 {

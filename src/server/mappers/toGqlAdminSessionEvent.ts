@@ -1,3 +1,4 @@
+import { bookingRequestCheckoutFunnelArea } from '../../shared/bookingRequestCheckoutFunnel';
 import { bookingRequestFormFunnelArea } from '../../shared/bookingRequestFormFunnel';
 import { chefSignUpFunnelArea } from '../../shared/chefSignUpFunnel';
 import { cookBookingRequestOfferFunnelArea } from '../../shared/cookBookingRequestOfferFunnel';
@@ -12,6 +13,10 @@ const STATIC_DESCRIPTIONS = {
     WEB_PAGE_INTERACTION: { de: 'Seiteninteraktion', en: 'Page interaction' },
     BOOKING_REQUEST_CREATED: { de: 'Buchungsanfrage erstellt', en: 'Booking request created' },
     BOOKING_REQUEST_CANCELED: { de: 'Buchungsanfrage storniert', en: 'Booking request canceled' },
+    BOOKING_REQUEST_OFFER_ACCEPTED: { de: 'Angebot akzeptiert', en: 'Offer accepted' },
+    BOOKING_REQUEST_OFFER_DECLINED: { de: 'Angebot abgelehnt', en: 'Offer declined' },
+    BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED: { de: 'Angebotszahlung erfolgreich', en: 'Offer payment succeeded' },
+    BOOKING_REQUEST_OFFER_PAYMENT_FAILED: { de: 'Angebotszahlung fehlgeschlagen', en: 'Offer payment failed' },
     GIFT_CARD_CREATED: { de: 'Geschenkkarte erstellt', en: 'Gift card created' },
     GIFT_CARD_PAYED: { de: 'Geschenkkarte bezahlt', en: 'Gift card paid' },
     COOK_CREATED: { de: 'Koch-Konto erstellt', en: 'Chef account created' },
@@ -80,16 +85,16 @@ const STATIC_DESCRIPTIONS = {
         en: 'Phone confirmation failed (legacy)',
     },
     NEWSLETTER_SUBSCRIPTION_CREATED: {
-        de: 'Newsletter abonniert (Legacy)',
-        en: 'Newsletter subscribed (legacy)',
+        de: 'Newsletter abonniert',
+        en: 'Newsletter subscribed',
     },
     NEWSLETTER_SUBSCRIPTION_FAILED: {
-        de: 'Newsletter-Abo fehlgeschlagen (Legacy)',
-        en: 'Newsletter subscription failed (legacy)',
+        de: 'Newsletter-Abo fehlgeschlagen',
+        en: 'Newsletter subscription failed',
     },
     NEWSLETTER_SUBSCRIPTION_ALREADY_EXISTS: {
-        de: 'Newsletter bereits abonniert (Legacy)',
-        en: 'Newsletter already subscribed (legacy)',
+        de: 'Newsletter bereits abonniert',
+        en: 'Newsletter already subscribed',
     },
 } as const satisfies Record<SessionEventKey, { de: string; en: string }>;
 
@@ -108,6 +113,7 @@ function interactionDescription(payload: SessionEventPayload<'WEB_PAGE_INTERACTI
         const isCookOfferFunnel = payload.area === cookBookingRequestOfferFunnelArea;
         const isGiftCardFunnel = payload.area === giftCardFunnelArea;
         const isChefSignUpFunnel = payload.area === chefSignUpFunnelArea;
+        const isBookingCheckoutFunnel = payload.area === bookingRequestCheckoutFunnelArea;
         const verb =
             interaction.type === 'step_entered'
                 ? isCookOfferFunnel
@@ -116,18 +122,27 @@ function interactionDescription(payload: SessionEventPayload<'WEB_PAGE_INTERACTI
                       ? { de: 'Geschenkkarten-Schritt betreten', en: 'Entered gift card step' }
                       : isChefSignUpFunnel
                         ? { de: 'Koch-Registrierungs-Schritt betreten', en: 'Entered chef sign-up step' }
-                        : { de: 'Formularschritt betreten', en: 'Entered form step' }
+                        : isBookingCheckoutFunnel
+                          ? { de: 'Checkout-Schritt betreten', en: 'Entered checkout step' }
+                          : { de: 'Formularschritt betreten', en: 'Entered form step' }
                 : isCookOfferFunnel
                   ? { de: 'Angebots-Funnel-Schritt abgeschlossen', en: 'Completed offer funnel step' }
                   : isGiftCardFunnel
                     ? { de: 'Geschenkkarten-Schritt abgeschlossen', en: 'Completed gift card step' }
                     : isChefSignUpFunnel
                       ? { de: 'Koch-Registrierungs-Schritt abgeschlossen', en: 'Completed chef sign-up step' }
-                      : { de: 'Formularschritt abgeschlossen', en: 'Completed form step' };
+                      : isBookingCheckoutFunnel
+                        ? { de: 'Checkout-Schritt abgeschlossen', en: 'Completed checkout step' }
+                        : { de: 'Formularschritt abgeschlossen', en: 'Completed form step' };
         const knownFunnelArea =
-            payload.area === bookingRequestFormFunnelArea || isCookOfferFunnel || isGiftCardFunnel || isChefSignUpFunnel;
+            payload.area === bookingRequestFormFunnelArea ||
+            isCookOfferFunnel ||
+            isGiftCardFunnel ||
+            isChefSignUpFunnel ||
+            isBookingCheckoutFunnel;
         const areaNote = knownFunnelArea ? '' : ` [${payload.area}]`;
-        const requestNote = isCookOfferFunnel && payload.bookingRequestId != null ? ` (${payload.bookingRequestId})` : '';
+        const requestNote =
+            (isCookOfferFunnel || isBookingCheckoutFunnel) && payload.bookingRequestId != null ? ` (${payload.bookingRequestId})` : '';
         return {
             de: `${verb.de}: ${interaction.step}${requestNote}${areaNote}`,
             en: `${verb.en}: ${interaction.step}${requestNote}${areaNote}`,
@@ -165,6 +180,44 @@ function bookingCanceledDescription(payload: SessionEventPayload<'BOOKING_REQUES
     return {
         de: `Buchungsanfrage storniert (${payload.bookingRequestId})`,
         en: `Booking request canceled (${payload.bookingRequestId})`,
+        link: `/admin/booking-requests/${payload.bookingRequestId}`,
+    };
+}
+
+function bookingOfferActorDescription(
+    payload: SessionEventPayload<'BOOKING_REQUEST_OFFER_ACCEPTED'> | SessionEventPayload<'BOOKING_REQUEST_OFFER_DECLINED'>,
+    kind: 'accepted' | 'declined',
+): { de: string; en: string; link: string } {
+    const actorDe = payload.actor === 'cook' ? 'Koch' : 'Kunde';
+    const actorEn = payload.actor === 'cook' ? 'cook' : 'customer';
+    if (kind === 'accepted') {
+        return {
+            de: `Angebot akzeptiert (${actorDe}, ${payload.bookingRequestOfferId})`,
+            en: `Offer accepted (${actorEn}, ${payload.bookingRequestOfferId})`,
+            link: `/admin/booking-requests/${payload.bookingRequestId}`,
+        };
+    }
+    return {
+        de: `Angebot abgelehnt (${actorDe}, ${payload.bookingRequestOfferId})`,
+        en: `Offer declined (${actorEn}, ${payload.bookingRequestOfferId})`,
+        link: `/admin/booking-requests/${payload.bookingRequestId}`,
+    };
+}
+
+function bookingOfferPaymentDescription(
+    payload: SessionEventPayload<'BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED'> | SessionEventPayload<'BOOKING_REQUEST_OFFER_PAYMENT_FAILED'>,
+    kind: 'succeeded' | 'failed',
+): { de: string; en: string; link: string } {
+    if (kind === 'succeeded') {
+        return {
+            de: `Angebotszahlung erfolgreich (${payload.bookingRequestOfferId})`,
+            en: `Offer payment succeeded (${payload.bookingRequestOfferId})`,
+            link: `/admin/booking-requests/${payload.bookingRequestId}`,
+        };
+    }
+    return {
+        de: `Angebotszahlung fehlgeschlagen (${payload.bookingRequestOfferId})`,
+        en: `Offer payment failed (${payload.bookingRequestOfferId})`,
         link: `/admin/booking-requests/${payload.bookingRequestId}`,
     };
 }
@@ -258,6 +311,46 @@ export function toGqlAdminSessionEvent(event: SessionEvent): GqlSAdminSessionEve
             }
             case 'BOOKING_REQUEST_CANCELED': {
                 const copy = bookingCanceledDescription(event.payload as SessionEventPayload<'BOOKING_REQUEST_CANCELED'>);
+                descriptionDe = copy.de;
+                descriptionEn = copy.en;
+                link = copy.link;
+                break;
+            }
+            case 'BOOKING_REQUEST_OFFER_ACCEPTED': {
+                const copy = bookingOfferActorDescription(
+                    event.payload as SessionEventPayload<'BOOKING_REQUEST_OFFER_ACCEPTED'>,
+                    'accepted',
+                );
+                descriptionDe = copy.de;
+                descriptionEn = copy.en;
+                link = copy.link;
+                break;
+            }
+            case 'BOOKING_REQUEST_OFFER_DECLINED': {
+                const copy = bookingOfferActorDescription(
+                    event.payload as SessionEventPayload<'BOOKING_REQUEST_OFFER_DECLINED'>,
+                    'declined',
+                );
+                descriptionDe = copy.de;
+                descriptionEn = copy.en;
+                link = copy.link;
+                break;
+            }
+            case 'BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED': {
+                const copy = bookingOfferPaymentDescription(
+                    event.payload as SessionEventPayload<'BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED'>,
+                    'succeeded',
+                );
+                descriptionDe = copy.de;
+                descriptionEn = copy.en;
+                link = copy.link;
+                break;
+            }
+            case 'BOOKING_REQUEST_OFFER_PAYMENT_FAILED': {
+                const copy = bookingOfferPaymentDescription(
+                    event.payload as SessionEventPayload<'BOOKING_REQUEST_OFFER_PAYMENT_FAILED'>,
+                    'failed',
+                );
                 descriptionDe = copy.de;
                 descriptionEn = copy.en;
                 link = copy.link;

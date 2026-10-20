@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 
+import { bookingRequestCheckoutFunnelArea, isBookingRequestCheckoutFunnelClientStep } from '../../shared/bookingRequestCheckoutFunnel';
 import { bookingRequestFormFunnelArea, isBookingRequestFormFunnelStep } from '../../shared/bookingRequestFormFunnel';
 import { chefSignUpFunnelArea, isChefSignUpFunnelClientStep } from '../../shared/chefSignUpFunnel';
 import { cookBookingRequestOfferFunnelArea, isCookBookingRequestOfferFunnelClientStep } from '../../shared/cookBookingRequestOfferFunnel';
@@ -27,6 +28,9 @@ function parseInteraction(raw: unknown): SessionEventWebPageInteractionPayload['
             return { type, step: record.step };
         }
         if (isChefSignUpFunnelClientStep(record.step)) {
+            return { type, step: record.step };
+        }
+        if (isBookingRequestCheckoutFunnelClientStep(record.step)) {
             return { type, step: record.step };
         }
         return null;
@@ -103,6 +107,13 @@ export async function sessionWebPageInteractionCreate(
             } else if (area === chefSignUpFunnelArea) {
                 if (!isChefSignUpFunnelClientStep(interaction.step)) {
                     throw new Error('sessionWebPageInteractionCreate: chef sign-up funnel step invalid for area');
+                }
+            } else if (area === bookingRequestCheckoutFunnelArea) {
+                if (!isBookingRequestCheckoutFunnelClientStep(interaction.step)) {
+                    throw new Error('sessionWebPageInteractionCreate: booking checkout funnel step invalid for area');
+                }
+                if (bookingRequestId == null) {
+                    throw new Error('sessionWebPageInteractionCreate: booking checkout funnel requires bookingRequestId');
                 }
             } else {
                 throw new Error('sessionWebPageInteractionCreate: funnel steps require a known funnel area');

@@ -1,3 +1,4 @@
+import type { BookingRequestCheckoutFunnelInteraction } from '../../shared/bookingRequestCheckoutFunnel';
 import type { BookingRequestFormFunnelInteraction } from '../../shared/bookingRequestFormFunnel';
 import type { ChefSignUpFunnelInteraction } from '../../shared/chefSignUpFunnel';
 import type { CookBookingRequestOfferFunnelInteraction } from '../../shared/cookBookingRequestOfferFunnel';
@@ -27,6 +28,7 @@ export type SessionEventWebPageInteractionPayload = {
         | CookBookingRequestOfferFunnelInteraction
         | GiftCardFunnelInteraction
         | ChefSignUpFunnelInteraction
+        | BookingRequestCheckoutFunnelInteraction
         | { type: 'click'; key: string }
         | { type: 'change'; key: string; value: string };
 };
@@ -37,6 +39,17 @@ type SessionEventBookingRequestCreatedPayload = {
 
 type SessionEventBookingRequestCanceledPayload = {
     bookingRequestId: string;
+};
+
+type SessionEventBookingRequestOfferActorPayload = {
+    bookingRequestId: string;
+    bookingRequestOfferId: string;
+    actor: 'customer' | 'cook';
+};
+
+type SessionEventBookingRequestOfferPaymentPayload = {
+    bookingRequestId: string;
+    bookingRequestOfferId: string;
 };
 
 type SessionEventGiftCardPayload = {
@@ -96,6 +109,10 @@ const sessionEventKeyDataMap = {
 
     BOOKING_REQUEST_CREATED: {} as SessionEventBookingRequestCreatedPayload,
     BOOKING_REQUEST_CANCELED: {} as SessionEventBookingRequestCanceledPayload,
+    BOOKING_REQUEST_OFFER_ACCEPTED: {} as SessionEventBookingRequestOfferActorPayload,
+    BOOKING_REQUEST_OFFER_DECLINED: {} as SessionEventBookingRequestOfferActorPayload,
+    BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED: {} as SessionEventBookingRequestOfferPaymentPayload,
+    BOOKING_REQUEST_OFFER_PAYMENT_FAILED: {} as SessionEventBookingRequestOfferPaymentPayload,
 
     GIFT_CARD_CREATED: {} as SessionEventGiftCardPayload,
     GIFT_CARD_PAYED: {} as SessionEventGiftCardPayload,

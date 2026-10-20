@@ -17,6 +17,7 @@ import {
     bookingRequestOfferPullPaymentDueDate,
     bookingRequestOfferShouldAnnouncePull,
 } from './bookingRequestOfferPaymentPrepare';
+import { bookingRequestOfferPaymentSucceededSessionEventCreate } from './bookingRequestOfferPaymentSessionEventCreate';
 
 async function paymentDataWithTransferId(
     serverRuntime: Pick<ServerRuntime, 'stripe'>,
@@ -36,6 +37,8 @@ export type BookingRequestOfferPaymentFinalizeInput = {
     customerUserId: string;
     cookStripeAccountId: string;
     invoiceAddress?: BookingRequestInvoiceAddress | null;
+    /** Prefer GraphQL requesting session when available. */
+    sessionId?: string | null;
 };
 
 /**
@@ -47,7 +50,7 @@ export async function bookingRequestOfferPaymentFinalize(
     serverRuntime: ServerRuntime,
     input: BookingRequestOfferPaymentFinalizeInput,
 ): Promise<{ advanced: boolean }> {
-    const { offer, bookingRequest, customerUserId, cookStripeAccountId, invoiceAddress } = input;
+    const { offer, bookingRequest, customerUserId, cookStripeAccountId, invoiceAddress, sessionId } = input;
 
     if (!(offer.userAccepted === true && offer.cookAccepted === true) || !offer.paymentData) {
         throw new Error('bookingRequestOfferPaymentFinalize: offer not dual-accepted or missing paymentData');
@@ -152,6 +155,12 @@ export async function bookingRequestOfferPaymentFinalize(
             bookingRequestId: bookingRequest.bookingRequestId,
             bookingRequestOfferId: offer.bookingRequestOfferId,
             eventDate: bookingRequest.dateTime,
+        });
+        await bookingRequestOfferPaymentSucceededSessionEventCreate(serverRuntime, {
+            sessionId,
+            customerUserId,
+            bookingRequestId: bookingRequest.bookingRequestId,
+            bookingRequestOfferId: offer.bookingRequestOfferId,
         });
     }
 

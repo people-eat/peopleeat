@@ -3,6 +3,7 @@ import { eq, sql } from 'drizzle-orm';
 import { bookingRequestOffers, bookingRequests } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { slackNotifyPaymentFailed } from '../slack/slackNotifyBooking';
+import { bookingRequestOfferPaymentFailedSessionEventCreate } from '../utils/bookingRequestOfferPaymentSessionEventCreate';
 
 const TERMINAL_PAID = new Set(['PAYED', 'PAYED_OUT_OF_SYSTEM', 'TRANSFERRED']);
 
@@ -54,6 +55,12 @@ export async function bookingRequestOfferPaymentFailedApply(
         serverRuntime.publish.userUpdates({ userId: row.offer.cookId }),
         serverRuntime.publish.adminUpdates(),
     ]);
+
+    await bookingRequestOfferPaymentFailedSessionEventCreate(serverRuntime, {
+        customerUserId: row.bookingRequest.userId,
+        bookingRequestId: row.bookingRequest.bookingRequestId,
+        bookingRequestOfferId: row.offer.bookingRequestOfferId,
+    });
 
     await slackNotifyPaymentFailed(serverRuntime, {
         bookingRequestId: row.bookingRequest.bookingRequestId,
