@@ -86,7 +86,7 @@ export async function bookingRequestOfferChatMessageNotifyEmailSend(
     }
 
     const peerMessageType = args.audience === 'CUSTOMER' ? 'COOK_MESSAGE_SIMPLE' : 'USER_MESSAGE_SIMPLE';
-    const [latestPeerMessage] = await serverRuntime.db
+    const peerMessages = await serverRuntime.db
         .select({ payload: bookingRequestOfferEvents.payload })
         .from(bookingRequestOfferEvents)
         .where(
@@ -96,7 +96,11 @@ export async function bookingRequestOfferChatMessageNotifyEmailSend(
             ),
         )
         .orderBy(desc(bookingRequestOfferEvents.createdAt))
-        .limit(1);
+        .limit(100);
+    const latestPeerMessage = peerMessages.find((message) => {
+        const payload = message.payload as { hiddenByAdmin?: boolean };
+        return payload.hiddenByAdmin !== true;
+    });
 
     const webPageUrl = environmentVariables.webPageUrl;
 

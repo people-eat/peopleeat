@@ -126,7 +126,7 @@ async function seedSourceChat(bookingRequestOfferId: string, customerUserId: str
             bookingRequestOfferEventId: adminMessageId,
             bookingRequestOfferId,
             type: 'ADMIN_MESSAGE_SIMPLE' as const,
-            payload: { messageBody: 'Concierge note' },
+            payload: { messageBody: 'Concierge note', hiddenByAdmin: true },
             createdAt: t2,
         },
         {
@@ -308,7 +308,7 @@ describe('adminBookingRequestOfferHandover', () => {
 
     it('copies MESSAGE_SIMPLE events with cook provenance and attachment re-links when copyChatMessages is true', async () => {
         const { admin, cookA, cookB, customer, bookingRequestOfferId } = await setupHandoverFixture('PAYED_OUT_OF_SYSTEM');
-        const { cookMessageId, fileUploadId, t0, t1 } = await seedSourceChat(bookingRequestOfferId, customer.user.userId);
+        const { cookMessageId, fileUploadId, t0, t1, t2 } = await seedSourceChat(bookingRequestOfferId, customer.user.userId);
 
         const result = await adminBookingRequestOfferHandover(
             adminMutationParent(admin.user.userId),
@@ -364,6 +364,13 @@ describe('adminBookingRequestOfferHandover', () => {
                 cookDisplayName: 'Chef Alpha',
                 sourceEventId: cookMessageId,
             },
+        });
+
+        const adminCopy = messageEvents.find((event) => event.type === 'ADMIN_MESSAGE_SIMPLE');
+        expect(adminCopy?.payload).toMatchObject({
+            messageBody: 'Concierge note',
+            hiddenByAdmin: true,
+            originalCreatedAt: t2.toISOString(),
         });
 
         const userCopy = messageEvents.find((event) => event.type === 'USER_MESSAGE_SIMPLE');

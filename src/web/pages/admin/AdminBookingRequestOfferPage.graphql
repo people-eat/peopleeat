@@ -274,6 +274,27 @@ mutation AdminBookingRequestOfferChatMessageUpdate($bookingRequestOfferEventId: 
     }
 }
 
+mutation AdminBookingRequestOfferChatMessageVisibilityUpdate($bookingRequestOfferEventId: ID!, $hiddenByAdmin: Boolean!) {
+    admin {
+        bookingRequestOfferChatMessageVisibilityUpdate(
+            bookingRequestOfferEventId: $bookingRequestOfferEventId
+            hiddenByAdmin: $hiddenByAdmin
+        ) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferChatMessageDelete($bookingRequestOfferEventId: ID!) {
+    admin {
+        bookingRequestOfferChatMessageDelete(bookingRequestOfferEventId: $bookingRequestOfferEventId) {
+            success
+            referenceId
+        }
+    }
+}
+
 mutation AdminBookingRequestOfferCallCreate($bookingRequestOfferId: ID!) {
     admin {
         bookingRequestOfferCallCreate(bookingRequestOfferId: $bookingRequestOfferId) {

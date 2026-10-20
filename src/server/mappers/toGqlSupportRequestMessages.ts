@@ -38,6 +38,8 @@ export function toGqlSupportRequestMessages(input: {
             isOwn,
             showCopyButton: false,
             collapseLongBody: false,
+            hiddenByAdmin: false,
+            canHardDelete: false,
             body: message.body,
             attachments: attachments.map(toGqlFileUpload),
             deliveryStatus: null,

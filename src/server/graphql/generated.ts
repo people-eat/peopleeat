@@ -1246,8 +1246,10 @@ export interface GqlSAdminMutation {
     bookingRequestOfferCallJoin: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlSMutationResult;
     bookingRequestOfferChatMessageCreate: GqlSMutationResult;
+    bookingRequestOfferChatMessageDelete: GqlSMutationResult;
     bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
     bookingRequestOfferChatMessageUpdate: GqlSMutationResult;
+    bookingRequestOfferChatMessageVisibilityUpdate: GqlSMutationResult;
     bookingRequestOfferChatReviewAcknowledge: GqlSAdminBookingRequestOfferChatReviewAcknowledgeResult;
     bookingRequestOfferConfiguredMenuUpdate: GqlSMutationResult;
     bookingRequestOfferCreate: GqlSMutationResult;
@@ -1367,6 +1369,10 @@ export type GqlSAdminMutationBookingRequestOfferChatMessageCreateArgs = {
     message: Scalars['String']['input'];
 };
 
+export type GqlSAdminMutationBookingRequestOfferChatMessageDeleteArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
+};
+
 export type GqlSAdminMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
     bookingRequestOfferEventId: Scalars['ID']['input'];
     emoji: Scalars['String']['input'];
@@ -1375,6 +1381,11 @@ export type GqlSAdminMutationBookingRequestOfferChatMessageReactionUpsertArgs = 
 export type GqlSAdminMutationBookingRequestOfferChatMessageUpdateArgs = {
     bookingRequestOfferEventId: Scalars['ID']['input'];
     message: Scalars['String']['input'];
+};
+
+export type GqlSAdminMutationBookingRequestOfferChatMessageVisibilityUpdateArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
+    hiddenByAdmin: Scalars['Boolean']['input'];
 };
 
 export type GqlSAdminMutationBookingRequestOfferChatReviewAcknowledgeArgs = {
@@ -2544,10 +2555,12 @@ export interface GqlSChatMessageUser {
     attachments: Array<GqlSFileUpload>;
     author: GqlSPublicUser;
     body: Scalars['String']['output'];
+    canHardDelete: Scalars['Boolean']['output'];
     chatMessageId: Scalars['ID']['output'];
     collapseLongBody: Scalars['Boolean']['output'];
     createdAt: Scalars['DateTime']['output'];
     deliveryStatus?: Maybe<GqlSChatMessageDeliveryStatus>;
+    hiddenByAdmin: Scalars['Boolean']['output'];
     isOwn: Scalars['Boolean']['output'];
     reactions: Array<GqlSChatMessageReaction>;
     showCopyButton: Scalars['Boolean']['output'];
@@ -7089,6 +7102,12 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationBookingRequestOfferChatMessageCreateArgs, 'bookingRequestOfferId' | 'message'>
     >;
+    bookingRequestOfferChatMessageDelete?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationBookingRequestOfferChatMessageDeleteArgs, 'bookingRequestOfferEventId'>
+    >;
     bookingRequestOfferChatMessageReactionUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -7100,6 +7119,12 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationBookingRequestOfferChatMessageUpdateArgs, 'bookingRequestOfferEventId' | 'message'>
+    >;
+    bookingRequestOfferChatMessageVisibilityUpdate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationBookingRequestOfferChatMessageVisibilityUpdateArgs, 'bookingRequestOfferEventId' | 'hiddenByAdmin'>
     >;
     bookingRequestOfferChatReviewAcknowledge?: Resolver<
         GqlSResolversTypes['AdminBookingRequestOfferChatReviewAcknowledgeResult'],
@@ -8222,10 +8247,12 @@ export type GqlSChatMessageUserResolvers<
     attachments?: Resolver<Array<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
     author?: Resolver<GqlSResolversTypes['PublicUser'], ParentType, ContextType>;
     body?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    canHardDelete?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     chatMessageId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     collapseLongBody?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     deliveryStatus?: Resolver<Maybe<GqlSResolversTypes['ChatMessageDeliveryStatus']>, ParentType, ContextType>;
+    hiddenByAdmin?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     isOwn?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     reactions?: Resolver<Array<GqlSResolversTypes['ChatMessageReaction']>, ParentType, ContextType>;
     showCopyButton?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;

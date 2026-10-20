@@ -10,7 +10,8 @@ Post-hoc monitoring of customer–cook offer chats: admins review full threads, 
    oldest pending offer’s full transcript; if the queue is clear, a success empty state is shown.
 3. On the review page, admins see customer, cook, occasion, and event time, and the full negotiation chat (including system milestones). The
    transcript scrolls in the pane; the pinned footer holds the message composer (when chat is open) above **Bestätigen und weiter** /
-   **Acknowledge and next**. Admins can reply or edit message text as on the normal admin offer chat. There is no delete action.
+   **Acknowledge and next**. Admins can reply, edit, soft-hide / unhide, or (for admin messages) permanently delete as on the normal admin
+   offer chat — [booking-offer-chat.md](./booking-offer-chat.md).
 4. **Bestätigen und weiter** / **Acknowledge and next** clears that offer from the queue and opens the next pending offer, or returns to the
    empty state when none remain. New peer messages after acknowledge put the offer back in the queue.
 5. `/admin` shows a fifth action queue (KPI + capped list) for pending offer-chat reviews, deep-linking into the review page. The Messaging

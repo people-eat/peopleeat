@@ -22,6 +22,7 @@ type MessageSimplePayload = {
         cookDisplayName: string;
         sourceEventId: string;
     };
+    hiddenByAdmin?: boolean;
 };
 
 export async function adminBookingRequestOfferChatMessageUpdate(

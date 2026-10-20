@@ -12,6 +12,10 @@ interface HumanChatMessageProps {
     showAuthorAvatar?: boolean;
     /** When set, simple user bubbles expose an edit control (admin offer chat). */
     onEditUserMessage?: (chatMessageId: string, body: string) => Promise<boolean>;
+    /** Soft-hide / unhide (admin offer chat). */
+    onVisibilityChangeUserMessage?: (chatMessageId: string, hiddenByAdmin: boolean) => Promise<boolean>;
+    /** Hard-delete admin messages (admin offer chat). */
+    onDeleteUserMessage?: (chatMessageId: string) => Promise<boolean>;
     /** When set, peer bubbles expose a reaction picker (WhatsApp Concierge). */
     onReactUserMessage?: (chatMessageId: string, emoji: string) => Promise<boolean>;
 }
@@ -22,6 +26,8 @@ export function HumanChatMessage({
     showAuthorName = true,
     showAuthorAvatar = true,
     onEditUserMessage,
+    onVisibilityChangeUserMessage,
+    onDeleteUserMessage,
     onReactUserMessage,
 }: HumanChatMessageProps) {
     switch (message.__typename) {
@@ -32,6 +38,12 @@ export function HumanChatMessage({
                     showAuthorName={showAuthorName}
                     showAuthorAvatar={showAuthorAvatar}
                     onEdit={onEditUserMessage ? (body) => onEditUserMessage(message.chatMessageId, body) : undefined}
+                    onVisibilityChange={
+                        onVisibilityChangeUserMessage
+                            ? (hiddenByAdmin) => onVisibilityChangeUserMessage(message.chatMessageId, hiddenByAdmin)
+                            : undefined
+                    }
+                    onDelete={onDeleteUserMessage ? () => onDeleteUserMessage(message.chatMessageId) : undefined}
                     onReact={onReactUserMessage ? (emoji) => onReactUserMessage(message.chatMessageId, emoji) : undefined}
                 />
             );
@@ -68,6 +80,8 @@ export function ChatMessage({ message, chatTurnId, onApprovalRespond, onPromptUs
                     isOwn: true,
                     showCopyButton: false,
                     collapseLongBody: true,
+                    hiddenByAdmin: false,
+                    canHardDelete: false,
                     author: { display: 'You', createdAt: message.createdAt, profilePicture: null },
                     attachments: message.attachments,
                     reactions: [],

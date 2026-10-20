@@ -59,6 +59,10 @@ export async function bookingRequestOfferChatMessageReactionUpsert(
         if (!MESSAGE_SIMPLE_TYPES.has(row.event.type)) {
             throw new Error('bookingRequestOfferChatMessageReactionUpsert: can only react to free-text messages');
         }
+        const payload = row.event.payload as { hiddenByAdmin?: boolean };
+        if (payload.hiddenByAdmin === true) {
+            throw new Error('bookingRequestOfferChatMessageReactionUpsert: cannot react to a hidden message');
+        }
 
         switch (input.reactorRole) {
             case 'USER':

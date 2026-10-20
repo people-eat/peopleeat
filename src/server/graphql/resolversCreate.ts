@@ -19,7 +19,9 @@ import { adminBookingRequestOfferCallCreate } from '../commands/adminBookingRequ
 import { adminBookingRequestOfferCallJoin } from '../commands/adminBookingRequestOfferCallJoin';
 import { adminBookingRequestOfferCallLeave } from '../commands/adminBookingRequestOfferCallLeave';
 import { adminBookingRequestOfferChatMessageCreate } from '../commands/adminBookingRequestOfferChatMessageCreate';
+import { adminBookingRequestOfferChatMessageDelete } from '../commands/adminBookingRequestOfferChatMessageDelete';
 import { adminBookingRequestOfferChatMessageUpdate } from '../commands/adminBookingRequestOfferChatMessageUpdate';
+import { adminBookingRequestOfferChatMessageVisibilityUpdate } from '../commands/adminBookingRequestOfferChatMessageVisibilityUpdate';
 import { adminBookingRequestOfferChatReviewAcknowledge } from '../commands/adminBookingRequestOfferChatReviewAcknowledge';
 import { adminBookingRequestOfferConfiguredMenuUpdate } from '../commands/adminBookingRequestOfferConfiguredMenuUpdate';
 import { adminBookingRequestOfferCreate } from '../commands/adminBookingRequestOfferCreate';
@@ -471,8 +473,10 @@ import type {
     GqlSAdminMutationBookingRequestOfferCallJoinArgs,
     GqlSAdminMutationBookingRequestOfferCallLeaveArgs,
     GqlSAdminMutationBookingRequestOfferChatMessageCreateArgs,
+    GqlSAdminMutationBookingRequestOfferChatMessageDeleteArgs,
     GqlSAdminMutationBookingRequestOfferChatMessageReactionUpsertArgs,
     GqlSAdminMutationBookingRequestOfferChatMessageUpdateArgs,
+    GqlSAdminMutationBookingRequestOfferChatMessageVisibilityUpdateArgs,
     GqlSAdminMutationBookingRequestOfferChatReviewAcknowledgeArgs,
     GqlSAdminMutationBookingRequestOfferConfiguredMenuUpdateArgs,
     GqlSAdminMutationBookingRequestOfferCreateArgs,
@@ -2148,6 +2152,20 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return adminBookingRequestOfferChatMessageUpdate(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferChatMessageVisibilityUpdate(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationBookingRequestOfferChatMessageVisibilityUpdateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestOfferChatMessageVisibilityUpdate(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferChatMessageDelete(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationBookingRequestOfferChatMessageDeleteArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestOfferChatMessageDelete(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestOfferChatReviewAcknowledge(
                 parent: GqlSAdminMutation,

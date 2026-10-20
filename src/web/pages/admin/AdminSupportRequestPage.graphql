@@ -25,6 +25,8 @@ fragment AdminSupportRequestDetailFields on AdminSupportRequest {
             isOwn
             showCopyButton
             collapseLongBody
+            hiddenByAdmin
+            canHardDelete
             createdAt
             author {
                 display

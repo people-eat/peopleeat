@@ -52,6 +52,14 @@ type ChatMessageUser {
     # `true` by assistant chat mappers and `false` by offer/support mappers.
     # See docs/architecture/chat.md.
     collapseLongBody: Boolean!
+    # Soft-hide flag from offer-chat `*_MESSAGE_SIMPLE` payloads. Stamped from
+    # payload for admin viewers; peers never receive hidden rows in `messages`.
+    # Other chat surfaces (assistant / support / WhatsApp) always stamp `false`.
+    # See docs/features/booking-offer-chat.md.
+    hiddenByAdmin: Boolean!
+    # Wire-only. True when the viewer is admin and this bubble is an
+    # `ADMIN_MESSAGE_SIMPLE` (hard-delete allowed). Always `false` elsewhere.
+    canHardDelete: Boolean!
     body: String!
     # Files the user attached to this message, in send-order. Empty list when
     # the message was a plain-text send. The bytes are not exposed inline —
@@ -3979,6 +3987,14 @@ type AdminMutation {
     # the event already has attachments. Phone numbers rejected. Allowed even
     # when chat send is closed (ops / moderation). `referenceId` is the event id.
     bookingRequestOfferChatMessageUpdate(bookingRequestOfferEventId: ID!, message: String!): MutationResult!
+    # Soft-hide / unhide a `*_MESSAGE_SIMPLE` offer-chat event for customer and
+    # cook. Admin still sees the bubble. Allowed when chat send is closed.
+    # `referenceId` is the event id. See docs/features/booking-offer-chat.md.
+    bookingRequestOfferChatMessageVisibilityUpdate(bookingRequestOfferEventId: ID!, hiddenByAdmin: Boolean!): MutationResult!
+    # Permanently delete an `ADMIN_MESSAGE_SIMPLE` offer-chat event (attachments
+    # / reactions cascade). Irreversible. Other simple-message types must use
+    # visibility update instead. `referenceId` is the deleted event id.
+    bookingRequestOfferChatMessageDelete(bookingRequestOfferEventId: ID!): MutationResult!
     # Clears `adminChatReviewPendingCount` and sets `adminChatReviewedAt` for the
     # offer-chat review pipeline. Returns the acknowledged id plus the next
     # pending offer (oldest-first) when any remain. See

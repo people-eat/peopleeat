@@ -136,12 +136,15 @@ async function bookingRequestOfferChatMessagesCopy(
         const sourcePayload = sourceEvent.payload as {
             messageBody: string;
             mediaUrls?: string[];
+            hiddenByAdmin?: boolean;
         };
+        const hiddenByAdminFields = sourcePayload.hiddenByAdmin === true ? ({ hiddenByAdmin: true } as const) : ({} as const);
         const payload: BookingRequestOfferEventPayload =
             sourceEvent.type === 'COOK_MESSAGE_SIMPLE'
                 ? {
                       messageBody: sourcePayload.messageBody,
                       ...(sourcePayload.mediaUrls ? { mediaUrls: sourcePayload.mediaUrls } : {}),
+                      ...hiddenByAdminFields,
                       originalCreatedAt: sourceEvent.createdAt.toISOString(),
                       handedOverFrom: {
                           cookId: input.sourceCookId,
@@ -152,6 +155,7 @@ async function bookingRequestOfferChatMessagesCopy(
                 : {
                       messageBody: sourcePayload.messageBody,
                       ...(sourcePayload.mediaUrls ? { mediaUrls: sourcePayload.mediaUrls } : {}),
+                      ...hiddenByAdminFields,
                       originalCreatedAt: sourceEvent.createdAt.toISOString(),
                   };
 

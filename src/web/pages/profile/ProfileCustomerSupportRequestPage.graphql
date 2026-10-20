@@ -22,6 +22,8 @@ fragment ProfileCustomerSupportRequestPageUser on User {
                 isOwn
                 showCopyButton
                 collapseLongBody
+                hiddenByAdmin
+                canHardDelete
                 createdAt
                 author {
                     display

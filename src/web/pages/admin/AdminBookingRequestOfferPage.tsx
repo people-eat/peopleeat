@@ -46,8 +46,10 @@ import {
     AdminBookingRequestOfferCallJoinDocument,
     AdminBookingRequestOfferCallLeaveDocument,
     AdminBookingRequestOfferChatMessageCreateDocument,
+    AdminBookingRequestOfferChatMessageDeleteDocument,
     AdminBookingRequestOfferChatMessageReactionUpsertDocument,
     AdminBookingRequestOfferChatMessageUpdateDocument,
+    AdminBookingRequestOfferChatMessageVisibilityUpdateDocument,
     AdminBookingRequestOfferPageUpdatesDocument,
     AdminBookingRequestOfferPayoutMarkOutOfSystemDocument,
     AdminBookingRequestOfferPayoutReleaseDocument,
@@ -259,6 +261,8 @@ export function AdminBookingRequestOfferPage({
     const [, sendChatMessage] = useMutation(AdminBookingRequestOfferChatMessageCreateDocument);
     const [, upsertOfferChatReaction] = useMutation(AdminBookingRequestOfferChatMessageReactionUpsertDocument);
     const [, updateChatMessage] = useMutation(AdminBookingRequestOfferChatMessageUpdateDocument);
+    const [, updateChatMessageVisibility] = useMutation(AdminBookingRequestOfferChatMessageVisibilityUpdateDocument);
+    const [, deleteChatMessage] = useMutation(AdminBookingRequestOfferChatMessageDeleteDocument);
 
     const showSchedule = offer != null && (offer.cook.callSchedulingEnabled || offer.callBookings.length > 0);
     const showTestimonialTab =
@@ -518,6 +522,45 @@ export function AdminBookingRequestOfferPage({
                                                     {
                                                         de: 'Nachricht konnte nicht gespeichert werden.',
                                                         en: 'Could not save the message.',
+                                                    }[locale],
+                                                );
+                                                return false;
+                                            }
+                                            return true;
+                                        }}
+                                        onVisibilityChangeMessage={async (chatMessageId, hiddenByAdmin) => {
+                                            const result = await updateChatMessageVisibility({
+                                                bookingRequestOfferEventId: chatMessageId,
+                                                hiddenByAdmin,
+                                            });
+                                            if (
+                                                result.error ||
+                                                !result.data?.admin.bookingRequestOfferChatMessageVisibilityUpdate.success
+                                            ) {
+                                                toast.error(
+                                                    hiddenByAdmin
+                                                        ? {
+                                                              de: 'Nachricht konnte nicht verborgen werden.',
+                                                              en: 'Could not hide the message.',
+                                                          }[locale]
+                                                        : {
+                                                              de: 'Nachricht konnte nicht wieder angezeigt werden.',
+                                                              en: 'Could not show the message again.',
+                                                          }[locale],
+                                                );
+                                                return false;
+                                            }
+                                            return true;
+                                        }}
+                                        onDeleteMessage={async (chatMessageId) => {
+                                            const result = await deleteChatMessage({
+                                                bookingRequestOfferEventId: chatMessageId,
+                                            });
+                                            if (result.error || !result.data?.admin.bookingRequestOfferChatMessageDelete.success) {
+                                                toast.error(
+                                                    {
+                                                        de: 'Nachricht konnte nicht gelöscht werden.',
+                                                        en: 'Could not delete the message.',
                                                     }[locale],
                                                 );
                                                 return false;

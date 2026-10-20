@@ -122,6 +122,8 @@ fragment HumanChatMessageFields on HumanChatMessage {
         isOwn
         showCopyButton
         collapseLongBody
+        hiddenByAdmin
+        canHardDelete
         deliveryStatus
         reactions {
             emoji

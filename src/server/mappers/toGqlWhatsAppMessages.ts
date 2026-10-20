@@ -47,6 +47,8 @@ export function toGqlWhatsAppMessages(input: {
             isOwn: !isInbound,
             showCopyButton: false,
             collapseLongBody: false,
+            hiddenByAdmin: false,
+            canHardDelete: false,
             body: message.body,
             attachments,
             deliveryStatus: deliveryStatusResolve(message),

@@ -1,4 +1,4 @@
-import { ChevronDownIcon, PencilIcon, SmilePlusIcon } from 'lucide-react';
+import { ChevronDownIcon, EyeIcon, EyeOffIcon, MoreHorizontalIcon, PencilIcon, SmilePlusIcon, Trash2Icon } from 'lucide-react';
 import type { TransitionEvent } from 'react';
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { containsPhoneNumber } from '../../../shared';
@@ -6,9 +6,20 @@ import { isVoiceNoteMessage, voiceNoteCaption } from '../../chat/chatVoiceMessag
 import type { GqlCChatMessageUser } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '../base/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '../base/avatar';
 import { Button } from '../base/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../base/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../base/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '../base/popover';
 import { StatusAlert } from '../base/status-alert';
 import { Textarea } from '../base/textarea';
@@ -33,6 +44,8 @@ export function ChatMessageUserView({
     showAuthorName = true,
     showAuthorAvatar = true,
     onEdit,
+    onVisibilityChange,
+    onDelete,
     onReact,
 }: {
     message: GqlCChatMessageUser;
@@ -42,6 +55,10 @@ export function ChatMessageUserView({
     showAuthorAvatar?: boolean;
     /** When set, shows an edit control that saves a new body via this callback. */
     onEdit?: (body: string) => Promise<boolean>;
+    /** Soft-hide / unhide for offer-chat admin moderation. */
+    onVisibilityChange?: (hiddenByAdmin: boolean) => Promise<boolean>;
+    /** Hard-delete (admin messages only when `message.canHardDelete`). */
+    onDelete?: () => Promise<boolean>;
     /**
      * When set on peer messages, shows a reaction picker. Pass `''` to clear the
      * viewer's reaction. Clicking the current emoji again clears it.
@@ -58,14 +75,23 @@ export function ChatMessageUserView({
     const [editOpen, setEditOpen] = useState(false);
     const [editDraft, setEditDraft] = useState(message.body);
     const [editBusy, setEditBusy] = useState(false);
+    const [confirmAction, setConfirmAction] = useState<'hide' | 'unhide' | 'delete' | null>(null);
+    const [confirmBusy, setConfirmBusy] = useState(false);
     const [reactOpen, setReactOpen] = useState(false);
     const [reactBusy, setReactBusy] = useState(false);
     const isOwn = message.isOwn;
     const side = isOwn ? 'user' : 'assistant';
     const tone = isOwn ? 'user' : 'assistant';
+    const hiddenByAdmin = message.hiddenByAdmin;
+    const showModerationMenu = onEdit != null || onVisibilityChange != null || (onDelete != null && message.canHardDelete);
     const editContainsPhoneNumber = containsPhoneNumber(editDraft);
     const editEmptyBlocked = editDraft.trim().length === 0 && !hasAttachments;
     const editLabel = { de: 'Nachricht bearbeiten', en: 'Edit message' }[locale];
+    const moreLabel = { de: 'Nachrichtenaktionen', en: 'Message actions' }[locale];
+    const hideLabel = { de: 'Vor Teilnehmern verbergen', en: 'Hide from participants' }[locale];
+    const unhideLabel = { de: 'Wieder für Teilnehmer zeigen', en: 'Show to participants' }[locale];
+    const deleteLabel = { de: 'Dauerhaft löschen', en: 'Delete permanently' }[locale];
+    const hiddenLabel = { de: 'Vor Gast und Koch verborgen', en: 'Hidden from customer and cook' }[locale];
     const reactLabel = { de: 'Reagieren', en: 'React' }[locale];
     const ownReactionEmoji = message.reactions.find((reaction) => reaction.isOwn)?.emoji;
 
@@ -87,6 +113,24 @@ export function ChatMessageUserView({
             onIndexChange={setPreviewIndex}
         />
     ) : null;
+
+    const runConfirmAction = async () => {
+        if (confirmAction == null || confirmBusy) return;
+        setConfirmBusy(true);
+        try {
+            let ok = false;
+            if (confirmAction === 'hide' && onVisibilityChange != null) {
+                ok = await onVisibilityChange(true);
+            } else if (confirmAction === 'unhide' && onVisibilityChange != null) {
+                ok = await onVisibilityChange(false);
+            } else if (confirmAction === 'delete' && onDelete != null) {
+                ok = await onDelete();
+            }
+            if (ok) setConfirmAction(null);
+        } finally {
+            setConfirmBusy(false);
+        }
+    };
 
     const editDialog =
         onEdit != null ? (
@@ -141,6 +185,126 @@ export function ChatMessageUserView({
             </Dialog>
         ) : null;
 
+    const confirmDialog =
+        confirmAction != null ? (
+            <AlertDialog open onOpenChange={(open) => !open && !confirmBusy && setConfirmAction(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {
+                                {
+                                    hide: { de: 'Nachricht verbergen?', en: 'Hide this message?' },
+                                    unhide: { de: 'Nachricht wieder zeigen?', en: 'Show this message again?' },
+                                    delete: { de: 'Nachricht dauerhaft löschen?', en: 'Delete this message permanently?' },
+                                }[confirmAction][locale]
+                            }
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {
+                                {
+                                    hide: {
+                                        de: 'Gast und Koch sehen diese Nachricht nicht mehr. Du kannst sie später wieder einblenden.',
+                                        en: 'The customer and cook will no longer see this message. You can show it again later.',
+                                    },
+                                    unhide: {
+                                        de: 'Gast und Koch sehen diese Nachricht wieder im Chat.',
+                                        en: 'The customer and cook will see this message in the chat again.',
+                                    },
+                                    delete: {
+                                        de: 'Diese Admin-Nachricht wird unwiderruflich gelöscht, inklusive Anhänge und Reaktionen.',
+                                        en: 'This admin message will be permanently deleted, including attachments and reactions.',
+                                    },
+                                }[confirmAction][locale]
+                            }
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={confirmBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogAction
+                            disabled={confirmBusy}
+                            variant={confirmAction === 'delete' || confirmAction === 'hide' ? 'destructive' : 'default'}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                void runConfirmAction();
+                            }}
+                        >
+                            {
+                                {
+                                    hide: { de: 'Verbergen', en: 'Hide' },
+                                    unhide: { de: 'Wieder zeigen', en: 'Show again' },
+                                    delete: { de: 'Dauerhaft löschen', en: 'Delete permanently' },
+                                }[confirmAction][locale]
+                            }
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        ) : null;
+
+    const moderationMenu = showModerationMenu ? (
+        <DropdownMenu>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-xs"
+                            aria-label={moreLabel}
+                            className="mb-0.5 shrink-0 opacity-70 hover:opacity-100"
+                        >
+                            <MoreHorizontalIcon aria-hidden />
+                        </Button>
+                    </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>{moreLabel}</TooltipContent>
+            </Tooltip>
+            <DropdownMenuContent align={isOwn ? 'end' : 'start'}>
+                {onEdit != null ? (
+                    <DropdownMenuItem
+                        onSelect={() => {
+                            setEditOpen(true);
+                        }}
+                    >
+                        <PencilIcon aria-hidden />
+                        {editLabel}
+                    </DropdownMenuItem>
+                ) : null}
+                {onVisibilityChange != null && !hiddenByAdmin ? (
+                    <DropdownMenuItem
+                        onSelect={() => {
+                            setConfirmAction('hide');
+                        }}
+                    >
+                        <EyeOffIcon aria-hidden />
+                        {hideLabel}
+                    </DropdownMenuItem>
+                ) : null}
+                {onVisibilityChange != null && hiddenByAdmin ? (
+                    <DropdownMenuItem
+                        onSelect={() => {
+                            setConfirmAction('unhide');
+                        }}
+                    >
+                        <EyeIcon aria-hidden />
+                        {unhideLabel}
+                    </DropdownMenuItem>
+                ) : null}
+                {onDelete != null && message.canHardDelete ? (
+                    <DropdownMenuItem
+                        variant="destructive"
+                        onSelect={() => {
+                            setConfirmAction('delete');
+                        }}
+                    >
+                        <Trash2Icon aria-hidden />
+                        {deleteLabel}
+                    </DropdownMenuItem>
+                ) : null}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    ) : null;
+
     const messageMeta = (
         <span
             className={cn(
@@ -164,32 +328,21 @@ export function ChatMessageUserView({
                 </span>
             ) : null}
             {message.showCopyButton && message.body.length > 0 ? <CopyButton text={message.body} /> : null}
-            {onEdit != null ? (
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-xs"
-                            aria-label={editLabel}
-                            onClick={() => setEditOpen(true)}
-                            className={cn(
-                                'opacity-70 hover:opacity-100',
-                                tone === 'user' &&
-                                    'text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground',
-                            )}
-                        >
-                            <PencilIcon aria-hidden />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>{editLabel}</TooltipContent>
-                </Tooltip>
-            ) : null}
         </span>
     );
 
     const bubbleInner = (
         <>
+            {hiddenByAdmin ? (
+                <p
+                    className={cn(
+                        'mb-1 text-[11px] leading-tight font-medium',
+                        tone === 'user' ? 'text-primary-foreground/80' : 'text-muted-foreground',
+                    )}
+                >
+                    {hiddenLabel}
+                </p>
+            ) : null}
             {!isOwn && showAuthorName ? (
                 <p className="mb-0.5 truncate text-[11px] leading-tight font-semibold text-primary">{message.author.display}</p>
             ) : null}
@@ -307,18 +460,22 @@ export function ChatMessageUserView({
             </div>
         ) : null;
 
-    const bubbleClassName = voiceAttachment ? 'py-4' : undefined;
+    const bubbleClassName = cn(voiceAttachment && 'py-4', hiddenByAdmin && 'opacity-60');
 
     if (isOwn) {
         return (
             <MessageRow side={side}>
                 <div className="group/msg flex w-full max-w-full flex-col items-end">
-                    <Bubble tone={tone} className={bubbleClassName}>
-                        {bubbleInner}
-                    </Bubble>
+                    <div className="flex items-end gap-2">
+                        {moderationMenu}
+                        <Bubble tone={tone} className={bubbleClassName}>
+                            {bubbleInner}
+                        </Bubble>
+                    </div>
                     {reactionBadges}
                     {preview}
                     {editDialog}
+                    {confirmDialog}
                 </div>
             </MessageRow>
         );
@@ -347,11 +504,13 @@ export function ChatMessageUserView({
                     <Bubble tone={tone} tail={showAuthorAvatar} className={bubbleClassName}>
                         {bubbleInner}
                     </Bubble>
+                    {moderationMenu}
                     {reactionPicker}
                 </div>
                 {reactionBadges}
                 {preview}
                 {editDialog}
+                {confirmDialog}
             </div>
         </MessageRow>
     );

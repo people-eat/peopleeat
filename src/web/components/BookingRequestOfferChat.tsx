@@ -68,6 +68,8 @@ export function BookingRequestOfferChat({
     canSend,
     onSend,
     onEditMessage,
+    onVisibilityChangeMessage,
+    onDeleteMessage,
     onReactMessage,
     peers,
     viewerRole,
@@ -80,6 +82,10 @@ export function BookingRequestOfferChat({
     onSend: (message: string, fileUploadIds: string[]) => Promise<boolean>;
     /** Admin-only: edit a `*_MESSAGE_SIMPLE` body by chat message id. */
     onEditMessage?: (chatMessageId: string, message: string) => Promise<boolean>;
+    /** Admin-only: soft-hide / unhide a `*_MESSAGE_SIMPLE` for customer and cook. */
+    onVisibilityChangeMessage?: (chatMessageId: string, hiddenByAdmin: boolean) => Promise<boolean>;
+    /** Admin-only: permanently delete an `ADMIN_MESSAGE_SIMPLE`. */
+    onDeleteMessage?: (chatMessageId: string) => Promise<boolean>;
     /** When set and `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` is on, peer bubbles get a reaction picker. */
     onReactMessage?: (chatMessageId: string, emoji: string) => Promise<boolean>;
     peers: ReadonlyArray<BookingRequestOfferChatPeer>;
@@ -209,6 +215,8 @@ export function BookingRequestOfferChat({
                                         showAuthorName={streak.showName}
                                         showAuthorAvatar={streak.showAvatar}
                                         onEditUserMessage={onEditMessage}
+                                        onVisibilityChangeUserMessage={onVisibilityChangeMessage}
+                                        onDeleteUserMessage={onDeleteMessage}
                                         onReactUserMessage={
                                             reactionsEnabled && onReactMessage
                                                 ? (chatMessageId, emoji) => onReactMessage(chatMessageId, emoji)

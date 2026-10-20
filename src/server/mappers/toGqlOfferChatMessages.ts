@@ -37,11 +37,23 @@ type MessageSimplePayload = {
         cookDisplayName: string;
         sourceEventId: string;
     };
+    hiddenByAdmin?: boolean;
 };
+
+function messageSimpleIsHiddenByAdmin(event: BookingRequestOfferEvent): boolean {
+    if (!MESSAGE_SIMPLE_TYPES.has(event.type)) return false;
+    const payload = event.payload as MessageSimplePayload;
+    return payload.hiddenByAdmin === true;
+}
 
 /** Project offer timeline events onto the human chat message union. */
 export function toGqlOfferChatMessages(input: ToGqlOfferChatMessagesInput): GqlSHumanChatMessage[] {
-    return input.events.map((event) => toGqlOfferChatMessage(event, input));
+    return input.events.flatMap((event) => {
+        if (input.viewerRole !== 'admin' && messageSimpleIsHiddenByAdmin(event)) {
+            return [];
+        }
+        return [toGqlOfferChatMessage(event, input)];
+    });
 }
 
 function toGqlOfferChatMessage(event: BookingRequestOfferEvent, input: ToGqlOfferChatMessagesInput): GqlSHumanChatMessage {
@@ -85,6 +97,8 @@ function toGqlOfferChatMessageUser(event: BookingRequestOfferEvent, input: ToGql
     const payload = event.payload as MessageSimplePayload;
     const { author, isOwn } = authorAndIsOwnForMessageSimple(event.type, payload, input);
     const attachments = input.attachmentsByEventId?.get(event.bookingRequestOfferEventId) ?? [];
+    const hiddenByAdmin = payload.hiddenByAdmin === true;
+    const canHardDelete = input.viewerRole === 'admin' && event.type === 'ADMIN_MESSAGE_SIMPLE';
     return {
         gqlTypeName: 'ChatMessageUser',
         chatMessageId: event.bookingRequestOfferEventId,
@@ -92,6 +106,8 @@ function toGqlOfferChatMessageUser(event: BookingRequestOfferEvent, input: ToGql
         isOwn,
         showCopyButton: false,
         collapseLongBody: false,
+        hiddenByAdmin,
+        canHardDelete,
         body: payload.messageBody,
         attachments: attachments.map(toGqlFileUpload),
         deliveryStatus: null,

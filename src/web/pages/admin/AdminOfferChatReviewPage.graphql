@@ -98,3 +98,24 @@ mutation AdminOfferChatReviewChatMessageUpdate($bookingRequestOfferEventId: ID!,
         }
     }
 }
+
+mutation AdminOfferChatReviewChatMessageVisibilityUpdate($bookingRequestOfferEventId: ID!, $hiddenByAdmin: Boolean!) {
+    admin {
+        bookingRequestOfferChatMessageVisibilityUpdate(
+            bookingRequestOfferEventId: $bookingRequestOfferEventId
+            hiddenByAdmin: $hiddenByAdmin
+        ) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminOfferChatReviewChatMessageDelete($bookingRequestOfferEventId: ID!) {
+    admin {
+        bookingRequestOfferChatMessageDelete(bookingRequestOfferEventId: $bookingRequestOfferEventId) {
+            success
+            referenceId
+        }
+    }
+}

@@ -399,6 +399,7 @@ type BookingRequestOfferEventPayloadByType = {
     // (not in payload). Optional legacy `mediaUrls` may exist on old rows.
     // `handedOverFrom` / `originalCreatedAt` are set only on chat copies made
     // during admin offer handover (see adminBookingRequestOfferHandover).
+    // `hiddenByAdmin` soft-hides the bubble from customer/cook (admin still sees it).
     USER_MESSAGE_SIMPLE: {
         messageBody: string;
         mediaUrls?: string[];
@@ -408,6 +409,7 @@ type BookingRequestOfferEventPayloadByType = {
             cookDisplayName: string;
             sourceEventId: string;
         };
+        hiddenByAdmin?: boolean;
     };
     COOK_MESSAGE_SIMPLE: {
         messageBody: string;
@@ -418,6 +420,7 @@ type BookingRequestOfferEventPayloadByType = {
             cookDisplayName: string;
             sourceEventId: string;
         };
+        hiddenByAdmin?: boolean;
     };
     ADMIN_MESSAGE_SIMPLE: {
         messageBody: string;
@@ -428,6 +431,7 @@ type BookingRequestOfferEventPayloadByType = {
             cookDisplayName: string;
             sourceEventId: string;
         };
+        hiddenByAdmin?: boolean;
     };
     COOK_ACCEPTED: Record<string, never>;
     COOK_DECLINED: Record<string, never>;
