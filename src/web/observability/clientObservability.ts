@@ -1,6 +1,7 @@
 import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
 import type { Metric } from 'web-vitals';
 
+import { isBenignClientNetworkErrorMessage } from '../../shared/isBenignClientNetworkErrorMessage';
 import type { GqlCClientObservabilityReportInput, GqlCClientWebVitalName } from '../graphql/generated';
 import { pathWithoutLocale } from '../utils/locale';
 
@@ -64,6 +65,7 @@ export function clientObservabilityWebVitalsStart(): void {
 
 export function clientObservabilityGraphqlErrorReport(operationName: string | undefined, message: string): void {
     if (operationName === REPORT_OPERATION) return;
+    if (isBenignClientNetworkErrorMessage(message)) return;
     report({
         kind: 'GRAPHQL_ERROR',
         operationName: operationName?.trim() || 'anonymous',

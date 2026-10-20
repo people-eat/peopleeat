@@ -150,7 +150,11 @@ Key files: [`clientConnectionAbortPlugin.ts`](../../src/server/nitro/clientConne
   [`src/web/observability/`](../../src/web/observability/) report Web Vitals (`web-vitals`), URQL operation failures, and `RouteError`
   mounts. Server records OTel metrics (`client.web_vital.duration` / `.score`, `client.graphql.errors`, `client.route.errors`) via
   [`clientMetrics.ts`](../../src/server/observability/clientMetrics.ts). GraphQL / route errors also write `Logs` rows (message prefix
-  `client graphql:` / `client route:`). Web Vitals are metrics-only (not persisted to Logs or SessionEvents).
+  `client graphql:` / `client route:`). Web Vitals are metrics-only (not persisted to Logs or SessionEvents). Benign browser network
+  failures (Safari `Load failed`, Chromium `Failed to fetch`, abort / offline wording on long-lived SSE) are dropped client-side and again
+  on ingest via [`isBenignClientNetworkErrorMessage`](../../src/shared/isBenignClientNetworkErrorMessage.ts) so they do not inflate `Logs`
+  or `client.graphql.errors` — same intent as server
+  [`isClientConnectionAbortError`](../../src/server/utils/isClientConnectionAbortError.ts).
 
 Grafana Explore: Tempo filter `ingress.provider` or span name `ingress stripe`; Prometheus `http.ingress.duration`,
 `graphql.operation.duration`, `graphql.subscription.duration`, `client.web_vital.duration`, `client.graphql.errors`.

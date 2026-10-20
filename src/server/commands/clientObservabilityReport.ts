@@ -1,3 +1,4 @@
+import { isBenignClientNetworkErrorMessage } from '../../shared/isBenignClientNetworkErrorMessage';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
     GqlSClientObservabilityReportInput,
@@ -52,6 +53,9 @@ export async function clientObservabilityReport(
         if (input.kind === 'GRAPHQL_ERROR') {
             const operationName = truncate(input.operationName, OPERATION_NAME_MAX) ?? 'anonymous';
             const message = truncate(input.message, MESSAGE_MAX) ?? 'GraphQL error';
+            if (isBenignClientNetworkErrorMessage(message)) {
+                return { success: true, referenceId: null };
+            }
             clientGraphqlErrorRecord(operationName);
             serverRuntime.log.error(
                 new Error(`client graphql: ${operationName}${path ? ` path=${path}` : ''}: ${message}`),
