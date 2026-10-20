@@ -33,13 +33,11 @@ test('admin creates city draft then publishes to public', async ({ browser }) =>
 
         const createDialog = admin.page.getByRole('dialog', { name: 'New city' });
         await createDialog.getByLabel('Name (DE)').fill(cityName);
-        // Combobox list is portaled outside the dialog; pointer clicks hit the
-        // dialog surface. Select the stubbed suggestion via keyboard instead.
         const centerInput = createDialog.getByPlaceholder('Search city…');
         await centerInput.fill('Berlin');
-        await expect(admin.page.getByRole('option', { name: berlinCityCenterSuggestion.displayText })).toBeVisible();
-        await centerInput.press('ArrowDown');
-        await centerInput.press('Enter');
+        const suggestion = admin.page.getByRole('option', { name: berlinCityCenterSuggestion.displayText });
+        await expect(suggestion).toBeVisible();
+        await suggestion.click();
         await expect(createDialog.getByText(`${berlinCityCenterSuggestion.latitude.toFixed(5)}`)).toBeVisible();
 
         await clickUntil(createDialog.getByRole('button', { name: 'Create' }), async () => {

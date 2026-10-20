@@ -19,9 +19,10 @@ session id omitted from list. Row or chevron → detail.
 
 ### Detail — `/admin/sessions/<sessionId>`
 
-Attribution and lifecycle fields; linked account name and email when signed in. Chronological **Events** timeline from first-party
-`SessionEvents` (page visits, booking-form steps, booking lifecycle, auth / account events, plus imported legacy keys). See
-[session-events.md](../architecture/session-events.md) and [admin-analytics.md](./admin-analytics.md).
+Two tabs (URL `tab`): **overview** (default) and **events**. Overview shows attribution and lifecycle fields with copy buttons; signed-in
+accounts show avatar + display name (no email) and an explicit link to the user page. Events is a paginated list (`page` / `pageSize`;
+default 25) of first-party `SessionEvents` (page visits, booking-form steps, booking lifecycle, auth / account events, plus imported legacy
+keys). See [session-events.md](../architecture/session-events.md) and [admin-analytics.md](./admin-analytics.md).
 
 ### Related
 
@@ -60,7 +61,8 @@ list layout.
 - Nav: `adminSessions.ts` — [admin-shell.md](./admin-shell.md)
 
 GraphQL: `sessions(criterion)` — search, kinds, optional user ids, sort (including by user last name), paginate; `sessionCounts`;
-`sessionCreations`; `session(id)`; detail also loads `sessionEvents(criterion: { sessionIds })`. Kinds: human (`isBot` false), bot true.
-Writes: `AdminMutation.terminateSessions` (any session ids; publishes `userUpdates` + `adminUpdates`). Command: `adminSessionTerminateMany`.
+`sessionCreations`; `session(id)`; detail events tab loads `sessionEvents(criterion: { sessionIds, skip, take })` + `sessionEventsCounts`.
+Kinds: human (`isBot` false), bot true. Writes: `AdminMutation.terminateSessions` (any session ids; publishes `userUpdates` +
+`adminUpdates`). Command: `adminSessionTerminateMany`.
 
 Gate: [authorization-admin.md](../architecture/authorization-admin.md).

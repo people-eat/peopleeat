@@ -78,7 +78,8 @@ In-app overview with KPIs, step table, Sankey + visit buckets; event store docum
 
 - SDL: `AdminSessionEvent`, `AdminAnalyticsBookingRequestFormFlow`, `AdminAnalyticsSessionFunnelFlow`,
   `AdminAnalyticsCookBookingRequestOfferFlow`, `AdminAnalyticsFunnelStepStats`, `Admin.bookingRequestFormFlow`, `Admin.giftCardFlow`,
-  `Admin.chefSignUpFlow`, `Admin.cookBookingRequestOfferFlow`, `Admin.sessionEventWebPageVisitCreations`, `Admin.sessionEvents`
+  `Admin.chefSignUpFlow`, `Admin.cookBookingRequestOfferFlow`, `Admin.sessionEventWebPageVisitCreations`, `Admin.sessionEvents`,
+  `Admin.sessionEventsCounts`
 - Queries: `adminAnalyticsBookingRequestFormFlow`, `adminAnalyticsGiftCardFlow`, `adminAnalyticsChefSignUpFlow`,
   `adminAnalyticsCookBookingRequestOfferFlow`, `adminSessionEventWebPageVisitCreationsFindMany`, `adminSessionEventFindMany`
 - Mapper: `toGqlAdminSessionEvent`

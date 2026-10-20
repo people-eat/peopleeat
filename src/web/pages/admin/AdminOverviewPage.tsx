@@ -123,6 +123,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
     const timeZone = useTimeZone();
     const client = useClient();
     const seedAdmin = data.currentSession.user?.admin ?? null;
+    const name = data.currentSession.user?.firstName.trim() ?? '';
     const [admin, setAdmin] = useState<GqlCAdminOverviewPageAdminFragment | null>(seedAdmin);
     const variables = adminOverviewPageVariables();
 
@@ -165,14 +166,11 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
         <AdminPathPageChrome>
             <main id="main-content" className="mx-auto grid w-full max-w-6xl content-start gap-8">
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-4xl/tight text-foreground">{adminOverviewPageTitle[locale]}</h1>
+                    <h1 className="font-serif text-4xl/tight text-foreground">
+                        {{ de: `Hallo ${name},`, en: `Hello ${name},` }[locale]}
+                    </h1>
                     <p className="text-muted-foreground">
-                        {
-                            {
-                                de: 'Offene Aufgaben im Überblick.',
-                                en: 'Open tasks at a glance.',
-                            }[locale]
-                        }
+                        {{ de: 'Hier siehst du, was als Nächstes ansteht.', en: 'Here is what to do next.' }[locale]}
                     </p>
                 </div>
 

@@ -2,9 +2,9 @@ import { useForm, useSelector } from '@tanstack/react-form';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { de as dateFnsDe, enUS as dateFnsEn } from 'date-fns/locale';
-import { LogInIcon } from 'lucide-react';
+import { CheckIcon, CopyIcon, LogInIcon, MailIcon, PhoneIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
@@ -25,6 +25,7 @@ import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { DatePicker } from '../../components/base/date-picker';
 import { Input } from '../../components/base/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import { PreferredCommunicationField } from '../../components/PreferredCommunicationField';
 import { ProfilePictureEditor } from '../../components/ProfilePictureEditor';
 import { TimeZoneField } from '../../components/TimeZoneField';
@@ -98,11 +99,97 @@ function initialsFromName(name: string): string {
     return `${parts[0]!.slice(0, 1)}${parts[parts.length - 1]!.slice(0, 1)}`.toUpperCase();
 }
 
-function DetailField({ label, value, mono }: { label: string; value: ReactNode; mono?: boolean }) {
+function CopyValueButton({ text }: { text: string }) {
+    const locale = useLocale();
+    const [copied, setCopied] = useState(false);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const idleLabel = { de: 'Kopieren', en: 'Copy' }[locale];
+    const ariaLabel = copied ? { de: 'Kopiert', en: 'Copied' }[locale] : idleLabel;
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) clearTimeout(timerRef.current);
+        };
+    }, []);
+
+    const onCopy = useCallback(async () => {
+        try {
+            await navigator.clipboard.writeText(text);
+            toast.success({ de: 'In die Zwischenablage kopiert', en: 'Copied to clipboard' }[locale]);
+        } catch {
+            toast.error({ de: 'Kopieren in die Zwischenablage fehlgeschlagen', en: 'Could not copy to clipboard' }[locale]);
+        }
+        setCopied(true);
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => setCopied(false), 1500);
+    }, [text, locale]);
+
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label={ariaLabel}
+                    onClick={() => void onCopy()}
+                    className="opacity-70 hover:opacity-100"
+                >
+                    {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
+                </Button>
+            </TooltipTrigger>
+            <TooltipContent>{ariaLabel}</TooltipContent>
+        </Tooltip>
+    );
+}
+
+function DetailActionLink({ href, label, children }: { href: string; label: string; children: ReactNode }) {
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Button type="button" variant="ghost" size="icon-xs" asChild className="opacity-70 hover:opacity-100">
+                    <a href={href} aria-label={label}>
+                        {children}
+                    </a>
+                </Button>
+            </TooltipTrigger>
+            <TooltipContent>{label}</TooltipContent>
+        </Tooltip>
+    );
+}
+
+function DetailField({
+    label,
+    value,
+    mono,
+    copyText,
+    actions,
+}: {
+    label: string;
+    value: ReactNode;
+    mono?: boolean;
+    copyText?: string;
+    actions?: ReactNode;
+}) {
+    const hasActions = copyText != null || actions != null;
     return (
         <div className="grid gap-1">
             <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</dt>
-            <dd className={mono ? 'font-mono text-sm break-all text-foreground' : 'text-sm text-foreground'}>{value}</dd>
+            <dd className="flex min-w-0 items-start gap-1">
+                <div
+                    className={
+                        mono ? 'min-w-0 flex-1 font-mono text-sm break-all text-foreground' : 'min-w-0 flex-1 text-sm text-foreground'
+                    }
+                >
+                    {value}
+                </div>
+                {hasActions ? (
+                    <div className="flex shrink-0 items-center gap-0.5">
+                        {actions}
+                        {copyText != null ? <CopyValueButton text={copyText} /> : null}
+                    </div>
+                ) : null}
+            </dd>
         </div>
     );
 }
@@ -425,7 +512,7 @@ export function AdminUserGeneralSection({
                             label={{ de: 'Registriert', en: 'Registered' }[locale]}
                             value={formatDate(user.createdAt, { locale, timeZone, dateStyle: 'medium' })}
                         />
-                        <DetailField label={{ de: 'Nutzer-ID', en: 'User ID' }[locale]} value={user.userId} mono />
+                        <DetailField label={{ de: 'Nutzer-ID', en: 'User ID' }[locale]} value={user.userId} mono copyText={user.userId} />
                     </dl>
                 </div>
             </aside>
@@ -576,8 +663,30 @@ export function AdminUserGeneralSection({
                                     ) : null}
                                 </div>
                             }
+                            copyText={user.emailAddress?.trim() || undefined}
+                            actions={
+                                user.emailAddress?.trim() ? (
+                                    <DetailActionLink
+                                        href={`mailto:${user.emailAddress.trim()}`}
+                                        label={{ de: 'E-Mail schreiben', en: 'Write email' }[locale]}
+                                    >
+                                        <MailIcon aria-hidden />
+                                    </DetailActionLink>
+                                ) : undefined
+                            }
                         />
-                        <DetailField label={{ de: 'Telefon', en: 'Phone' }[locale]} value={user.phoneNumber?.trim() || empty} />
+                        <DetailField
+                            label={{ de: 'Telefon', en: 'Phone' }[locale]}
+                            value={user.phoneNumber?.trim() || empty}
+                            copyText={user.phoneNumber?.trim() || undefined}
+                            actions={
+                                user.phoneNumber?.trim() ? (
+                                    <DetailActionLink href={`tel:${user.phoneNumber.trim()}`} label={{ de: 'Anrufen', en: 'Call' }[locale]}>
+                                        <PhoneIcon aria-hidden />
+                                    </DetailActionLink>
+                                ) : undefined
+                            }
+                        />
                         <DetailField
                             label={{ de: 'Geburtsdatum', en: 'Date of birth' }[locale]}
                             value={user.birthDate ? formatDate(user.birthDate, { locale, dateStyle: 'long' }) : empty}

@@ -1,9 +1,11 @@
 import { XIcon } from 'lucide-react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
+import { useState } from 'react';
 import type { ComponentProps } from 'react';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
 import { Button } from './button';
+import { PortalContainerProvider } from './portal-container';
 
 function Dialog({ ...props }: ComponentProps<typeof DialogPrimitive.Root>) {
     return <DialogPrimitive.Root data-slot="dialog" {...props} />;
@@ -44,6 +46,8 @@ function DialogContent({
 }) {
     const locale = useLocale();
     const closeLabel = { de: 'Schließen', en: 'Close' }[locale];
+    // Absolute + zero size so the host does not take a grid track (`gap-4`).
+    const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(null);
     return (
         <DialogPortal data-slot="dialog-portal">
             <DialogOverlay />
@@ -55,16 +59,19 @@ function DialogContent({
                 )}
                 {...props}
             >
-                {children}
-                {showCloseButton && (
-                    <DialogPrimitive.Close
-                        data-slot="dialog-close"
-                        className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-                    >
-                        <XIcon />
-                        <span className="sr-only">{closeLabel}</span>
-                    </DialogPrimitive.Close>
-                )}
+                <PortalContainerProvider container={portalContainer}>
+                    {children}
+                    {showCloseButton && (
+                        <DialogPrimitive.Close
+                            data-slot="dialog-close"
+                            className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+                        >
+                            <XIcon />
+                            <span className="sr-only">{closeLabel}</span>
+                        </DialogPrimitive.Close>
+                    )}
+                    <div ref={setPortalContainer} data-slot="dialog-portal-container" className="absolute top-0 left-0 z-50 size-0" />
+                </PortalContainerProvider>
             </DialogPrimitive.Content>
         </DialogPortal>
     );

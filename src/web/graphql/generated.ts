@@ -107,6 +107,7 @@ export interface GqlCAdmin {
     sessionCreations: Array<GqlCAdminTimeBucket>;
     sessionEventWebPageVisitCreations: Array<GqlCAdminTimeBucket>;
     sessionEvents: Array<GqlCAdminSessionEvent>;
+    sessionEventsCounts: Array<Scalars['Int']['output']>;
     sessions: Array<GqlCAdminSession>;
     supportRequest?: Maybe<GqlCAdminSupportRequest>;
     supportRequests: Array<GqlCAdminSupportRequest>;
@@ -397,6 +398,10 @@ export type GqlCAdminSessionEventWebPageVisitCreationsArgs = {
 
 export type GqlCAdminSessionEventsArgs = {
     criterion: GqlCAdminSessionEventCriterion;
+};
+
+export type GqlCAdminSessionEventsCountsArgs = {
+    criteria: Array<GqlCAdminSessionEventCriterion>;
 };
 
 export type GqlCAdminSessionsArgs = {
@@ -13315,6 +13320,7 @@ export type GqlCAdminOverviewPageQuery = {
         sessionId: string;
         user: {
             userId: string;
+            firstName: string;
             admin: {
                 adminId: string;
                 pendingCooksCounts: Array<number>;
@@ -13923,6 +13929,7 @@ export type GqlCAdminPromoCodesPageQuery = {
 
 export type GqlCAdminSessionPageQueryVariables = Exact<{
     sessionId: string;
+    includeEvents: boolean;
     eventsCriterion: Schema.GqlCAdminSessionEventCriterion;
 }>;
 
@@ -13933,6 +13940,7 @@ export type GqlCAdminSessionPageQuery = {
             userId: string;
             admin: {
                 adminId: string;
+                sessionEventsCounts?: Array<number>;
                 session: {
                     sessionId: string;
                     userId: string | null;
@@ -13945,9 +13953,9 @@ export type GqlCAdminSessionPageQuery = {
                     landingPath: string | null;
                     isBot: boolean;
                     createdAt: string;
-                    user: { userId: string; firstName: string; lastName: string; emailAddress: string | null } | null;
+                    user: { userId: string; firstName: string; lastName: string; profilePicture: { url: string } | null } | null;
                 } | null;
-                sessionEvents: Array<{
+                sessionEvents?: Array<{
                     sessionEventId: string;
                     sessionId: string;
                     type: string;
@@ -14439,6 +14447,7 @@ export type GqlCAdminUserPageQuery = {
             userId: string;
             admin: {
                 adminId: string;
+                sessionEventsCounts?: Array<number>;
                 featureToggles?: Array<{
                     featureToggleKey: Schema.GqlCFeatureToggleKey;
                     enabled: boolean;
@@ -55201,6 +55210,7 @@ export const AdminOverviewPageDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'admin' },
@@ -57686,6 +57696,11 @@ export const AdminSessionPageDocument = {
                 },
                 {
                     kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeEvents' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'eventsCriterion' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminSessionEventCriterion' } } },
                 },
@@ -57746,7 +57761,16 @@ export const AdminSessionPageDocument = {
                                                                                 },
                                                                                 {
                                                                                     kind: 'Field',
-                                                                                    name: { kind: 'Name', value: 'emailAddress' },
+                                                                                    name: { kind: 'Name', value: 'profilePicture' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'url' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
                                                                                 },
                                                                             ],
                                                                         },
@@ -57776,6 +57800,22 @@ export const AdminSessionPageDocument = {
                                                                     },
                                                                 },
                                                             ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeEvents' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
@@ -57788,6 +57828,41 @@ export const AdminSessionPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'link' } },
                                                                 ],
                                                             },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'sessionEventsCounts' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'criteria' },
+                                                                    value: {
+                                                                        kind: 'ListValue',
+                                                                        values: [
+                                                                            {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'eventsCriterion' },
+                                                                            },
+                                                                        ],
+                                                                    },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeEvents' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
                                                         },
                                                     ],
                                                 },
@@ -59866,6 +59941,41 @@ export const AdminUserPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'link' } },
                                                                 ],
                                                             },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'sessionEventsCounts' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'criteria' },
+                                                                    value: {
+                                                                        kind: 'ListValue',
+                                                                        values: [
+                                                                            {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'sessionEventsCriterion' },
+                                                                            },
+                                                                        ],
+                                                                    },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeSessionEvents' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
                                                         },
                                                         {
                                                             kind: 'Field',

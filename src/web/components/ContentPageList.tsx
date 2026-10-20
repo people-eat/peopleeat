@@ -38,7 +38,7 @@ export function ContentPageList({
     }
 
     return (
-        <ul className="grid gap-8 @sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-8 @md:grid-cols-2">
             {items.map((item) => {
                 const title = contentLocaleText(item.titleDe, item.titleEn, locale);
                 const description = contentLocaleText(item.descriptionDe, item.descriptionEn, locale);

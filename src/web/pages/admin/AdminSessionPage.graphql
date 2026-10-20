@@ -1,7 +1,9 @@
 # Admin session detail. Loaded by `/admin/sessions/$sessionId`.
-# See `docs/features/admin-sessions.md`.
+# See `docs/features/admin-sessions.md`. URL `tab` selects overview vs events;
+# events load only for the events tab via `@include` (loaderDeps on `tab`, plus
+# `page` / `pageSize` for pagination).
 
-query AdminSessionPage($sessionId: ID!, $eventsCriterion: AdminSessionEventCriterion!) {
+query AdminSessionPage($sessionId: ID!, $includeEvents: Boolean!, $eventsCriterion: AdminSessionEventCriterion!) {
     currentSession {
         sessionId
         user {
@@ -15,7 +17,9 @@ query AdminSessionPage($sessionId: ID!, $eventsCriterion: AdminSessionEventCrite
                         userId
                         firstName
                         lastName
-                        emailAddress
+                        profilePicture {
+                            url
+                        }
                     }
                     lastInteractionAt
                     wasTerminatedAt
@@ -27,7 +31,7 @@ query AdminSessionPage($sessionId: ID!, $eventsCriterion: AdminSessionEventCrite
                     isBot
                     createdAt
                 }
-                sessionEvents(criterion: $eventsCriterion) {
+                sessionEvents(criterion: $eventsCriterion) @include(if: $includeEvents) {
                     sessionEventId
                     sessionId
                     type
@@ -36,6 +40,7 @@ query AdminSessionPage($sessionId: ID!, $eventsCriterion: AdminSessionEventCrite
                     createdAt
                     link
                 }
+                sessionEventsCounts(criteria: [$eventsCriterion]) @include(if: $includeEvents)
             }
         }
     }

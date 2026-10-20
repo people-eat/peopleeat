@@ -6,6 +6,7 @@ import type { ComponentPropsWithRef } from 'react';
 import { cn } from '../../utils/cn';
 import { Button } from './button';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './input-group';
+import { usePortalContainer } from './portal-container';
 
 const Combobox = ComboboxPrimitive.Root;
 
@@ -80,10 +81,16 @@ function ComboboxContent({
     align = 'start',
     alignOffset = 0,
     anchor,
+    container,
     ...props
-}: ComboboxPrimitive.Popup.Props & Pick<ComboboxPrimitive.Positioner.Props, 'side' | 'align' | 'sideOffset' | 'alignOffset' | 'anchor'>) {
+}: ComboboxPrimitive.Popup.Props &
+    Pick<ComboboxPrimitive.Positioner.Props, 'side' | 'align' | 'sideOffset' | 'alignOffset' | 'anchor'> &
+    Pick<ComboboxPrimitive.Portal.Props, 'container'>) {
+    // Prefer an explicit container; otherwise nest inside Dialog (etc.) so Radix
+    // modal pointer-events / dismiss do not swallow option clicks.
+    const portalContainer = usePortalContainer();
     return (
-        <ComboboxPrimitive.Portal>
+        <ComboboxPrimitive.Portal container={container ?? portalContainer ?? undefined}>
             <ComboboxPrimitive.Positioner
                 side={side}
                 sideOffset={sideOffset}

@@ -104,6 +104,7 @@ export interface GqlSAdmin {
     sessionCreations: Array<GqlSAdminTimeBucket>;
     sessionEventWebPageVisitCreations: Array<GqlSAdminTimeBucket>;
     sessionEvents: Array<GqlSAdminSessionEvent>;
+    sessionEventsCounts: Array<Scalars['Int']['output']>;
     sessions: Array<GqlSAdminSession>;
     supportRequest?: Maybe<GqlSAdminSupportRequest>;
     supportRequests: Array<GqlSAdminSupportRequest>;
@@ -394,6 +395,10 @@ export type GqlSAdminSessionEventWebPageVisitCreationsArgs = {
 
 export type GqlSAdminSessionEventsArgs = {
     criterion: GqlSAdminSessionEventCriterion;
+};
+
+export type GqlSAdminSessionEventsCountsArgs = {
+    criteria: Array<GqlSAdminSessionEventCriterion>;
 };
 
 export type GqlSAdminSessionsArgs = {
@@ -6335,6 +6340,12 @@ export type GqlSAdminResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminSessionEventsArgs, 'criterion'>
+    >;
+    sessionEventsCounts?: Resolver<
+        Array<GqlSResolversTypes['Int']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminSessionEventsCountsArgs, 'criteria'>
     >;
     sessions?: Resolver<
         Array<GqlSResolversTypes['AdminSession']>,

@@ -15,9 +15,12 @@ import { localeFromParam } from '../../../web/utils/locale';
 
 export const Route = createFileRoute('/{-$locale}/admin/users_/$userId')({
     validateSearch: (search: Record<string, unknown>) => parseAdminUserSearch(search),
-    loaderDeps: ({ search }) => ({ tab: search.tab }),
-    loader: ({ params, deps }) =>
-        routeLoaderGraphqlClient(AdminUserPageDocument, adminUserPageVariables(params.userId, { tab: deps.tab }))(),
+    loaderDeps: ({ search }) => ({
+        tab: search.tab,
+        page: search.tab === 'session-events' ? search.page : undefined,
+        pageSize: search.tab === 'session-events' ? search.pageSize : undefined,
+    }),
+    loader: ({ params, deps }) => routeLoaderGraphqlClient(AdminUserPageDocument, adminUserPageVariables(params.userId, deps))(),
     staleTime: 0,
     head: ({ params }) => {
         const locale = localeFromParam(params);

@@ -293,6 +293,7 @@ import { adminQueuedJobsFindMany } from '../queries/adminQueuedJobsFindMany';
 import { adminResendUsage } from '../queries/adminResendUsage';
 import { adminSessionCounts } from '../queries/adminSessionCounts';
 import { adminSessionCreationsFindMany } from '../queries/adminSessionCreationsFindMany';
+import { adminSessionEventCounts } from '../queries/adminSessionEventCounts';
 import { adminSessionEventFindMany } from '../queries/adminSessionEventFindMany';
 import { adminSessionEventWebPageVisitCreationsFindMany } from '../queries/adminSessionEventWebPageVisitCreationsFindMany';
 import { adminSessionFindMany } from '../queries/adminSessionFindMany';
@@ -560,6 +561,7 @@ import type {
     GqlSAdminSessionCountsArgs,
     GqlSAdminSessionCreationsArgs,
     GqlSAdminSessionEventsArgs,
+    GqlSAdminSessionEventsCountsArgs,
     GqlSAdminSessionEventWebPageVisitCreationsArgs,
     GqlSAdminSessionsArgs,
     GqlSAdminSupportRequest,
@@ -1061,6 +1063,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             sessionEvents(_parent: GqlSAdmin, args: GqlSAdminSessionEventsArgs, requestingSession: GqlSSession) {
                 return adminSessionEventFindMany(args.criterion, requestingSession, serverRuntime);
+            },
+            sessionEventsCounts(_parent: GqlSAdmin, args: GqlSAdminSessionEventsCountsArgs, requestingSession: GqlSSession) {
+                return adminSessionEventCounts(args, requestingSession, serverRuntime);
             },
             bookingRequestFormFlow(_parent: GqlSAdmin, args: GqlSAdminBookingRequestFormFlowArgs, requestingSession: GqlSSession) {
                 return adminAnalyticsBookingRequestFormFlow(args.range, requestingSession, serverRuntime);

@@ -1,8 +1,9 @@
 # Admin user detail. Loaded by `/admin/users/$userId`.
 # See `docs/features/admin-users.md`. URL `tab` selects the section (customer + optional cook tabs);
-# emails / whatsapp / sessions / meals / menus / booking-requests / offers / assistant-chats load only
-# for their tab via `@include` (loaderDeps on `tab`). Assistant chats use `Admin.assistantChats` with
-# `userIds: [userId]` — see `docs/features/admin-assistant-chats.md`.
+# emails / whatsapp / sessions / session-events / meals / menus / booking-requests / offers /
+# assistant-chats load only for their tab via `@include` (loaderDeps on `tab`, plus `page` /
+# `pageSize` for session-events). Assistant chats use `Admin.assistantChats` with `userIds: [userId]`
+# — see `docs/features/admin-assistant-chats.md`.
 
 fragment AdminUserCook on AdminCook {
     cookId
@@ -138,6 +139,7 @@ query AdminUserPage(
                     createdAt
                     link
                 }
+                sessionEventsCounts(criteria: [$sessionEventsCriterion]) @include(if: $includeSessionEvents)
                 cookMeals(criterion: $mealsCriterion) @include(if: $includeMeals) {
                     mealId
                     cookId

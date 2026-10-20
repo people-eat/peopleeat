@@ -3005,6 +3005,9 @@ type AdminSessionEvent {
     link: String
 }
 
+# Filter + pagination for `Admin.sessionEvents` / `Admin.sessionEventsCounts`.
+# At least one of `sessionIds` / `userIds` is required. `skip` / `take` are
+# ignored by `sessionEventsCounts`.
 input AdminSessionEventCriterion {
     sessionIds: [ID!]
     userIds: [ID!]
@@ -3187,6 +3190,9 @@ type Admin {
     # First-party session events across sessions/users. Sorted newest first.
     # See `AdminSessionEventCriterion` and docs/architecture/session-events.md.
     sessionEvents(criterion: AdminSessionEventCriterion!): [AdminSessionEvent!]!
+    # One count per criterion, same order. List / detail pages pass a single
+    # criterion. `skip` / `take` ignored. Empty criteria rejected; max 20.
+    sessionEventsCounts(criteria: [AdminSessionEventCriterion!]!): [Int!]!
     # Booking-request form funnel (Sankey transitions + per-step entered/completed
     # counts + KPIs) for human non-cook/non-admin sessions in `range`. See
     # docs/features/admin-analytics.md.

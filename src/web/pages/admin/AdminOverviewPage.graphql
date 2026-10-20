@@ -101,6 +101,7 @@ query AdminOverviewPage(
         sessionId
         user {
             userId
+            firstName
             admin {
                 ...AdminOverviewPageAdmin
             }

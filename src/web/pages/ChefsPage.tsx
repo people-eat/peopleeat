@@ -87,7 +87,7 @@ export function ChefsPage({ data, search }: { data: GqlCChefsPageQuery; search: 
                                     : { de: 'Noch keine Köche veröffentlicht.', en: 'No chefs published yet.' }[locale]}
                             </p>
                         ) : (
-                            <ul className="grid grid-cols-1 gap-4 @sm:grid-cols-2 @md:grid-cols-3 @lg:grid-cols-4">
+                            <ul className="grid grid-cols-1 gap-4 @md:grid-cols-2 @lg:grid-cols-3 @xl:grid-cols-4">
                                 {cooks.map((cook) => (
                                     <li key={cook.cookId}>
                                         <PublicCookCard cook={cook} />

@@ -103,8 +103,9 @@ The freeze-cutover ETL (`scripts/migrateFromPeopleEat/`) imports predecessor row
    booking lifecycle events.
 3. Auth commands emit `AUTH_*` (and user-create / legal-accept) events.
 4. Inserts go through `sessionEventCreate` only (typed to `SessionEventKeyEmitted`).
-5. Admin: session/user timelines via `Admin.sessionEvents`; booking-form funnel via `Admin.bookingRequestFormFlow`; cook offer funnel via
-   `Admin.cookBookingRequestOfferFlow`; visit buckets via `Admin.sessionEventWebPageVisitCreations`.
+5. Admin: session/user timelines via `Admin.sessionEvents` / `Admin.sessionEventsCounts`; booking-form funnel via
+   `Admin.bookingRequestFormFlow`; cook offer funnel via `Admin.cookBookingRequestOfferFlow`; visit buckets via
+   `Admin.sessionEventWebPageVisitCreations`.
 
 ## Key files
 
@@ -114,6 +115,6 @@ The freeze-cutover ETL (`scripts/migrateFromPeopleEat/`) imports predecessor row
 - Path map: `src/shared/webPageKeyFromPath.ts`
 - Helper: `src/server/utils/sessionEventCreate.ts`
 - Commands: `sessionWebPageVisitCreate`, `sessionWebPageInteractionCreate`, auth / user-create / legal / booking lifecycle emitters
-- Queries: `adminSessionEventFindMany`, `adminAnalyticsBookingRequestFormFlow`, `adminAnalyticsCookBookingRequestOfferFlow`,
-  `adminSessionEventWebPageVisitCreationsFindMany`
+- Queries: `adminSessionEventFindMany`, `adminSessionEventCounts`, `adminAnalyticsBookingRequestFormFlow`,
+  `adminAnalyticsCookBookingRequestOfferFlow`, `adminSessionEventWebPageVisitCreationsFindMany`
 - Feature UI: [admin-analytics.md](../features/admin-analytics.md)

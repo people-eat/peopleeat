@@ -23,6 +23,7 @@ import { useMutation } from 'urql';
 import { formatDate, userDisplayName } from '../../../shared';
 import { AdminBookingRequestListCard } from '../../components/AdminBookingRequestListCard';
 import { AdminBookingRequestOfferCard } from '../../components/AdminBookingRequestOfferCard';
+import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { AdminSessionEventTimeline } from '../../components/AdminSessionEventTimeline';
@@ -54,6 +55,15 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import type { Locale } from '../../utils/locale';
 import { adminAssistantChatTitle, adminChatSurfaceLabel } from './adminAssistantChats';
+import {
+    adminListPageCount,
+    adminListPageSize,
+    adminListPaginationForUrl,
+    adminListSkipTake,
+    parseAdminListPage,
+    parseAdminListPageSize,
+} from './adminListPaginationSearch';
+import type { AdminListPageSize } from './adminListPaginationSearch';
 import { adminOutboundEmailPurposeLabel } from './adminOutboundEmailsColumns';
 import { AdminUserCookProfileSection } from './AdminUserCookProfileSection';
 import { AdminUserFeatureTogglesSection } from './AdminUserFeatureTogglesSection';
@@ -85,6 +95,8 @@ export type AdminUserTab = AdminUserCustomerTab | AdminUserCookTab;
 
 export type AdminUserSearch = {
     tab?: AdminUserTab;
+    page?: number;
+    pageSize?: AdminListPageSize;
 };
 
 const ALL_TABS: readonly AdminUserTab[] = [...CUSTOMER_TABS, ...COOK_TABS];
@@ -93,9 +105,22 @@ function isAdminUserTab(value: unknown): value is AdminUserTab {
     return typeof value === 'string' && (ALL_TABS as readonly string[]).includes(value);
 }
 
+function adminUserSearchForUrl(search: AdminUserSearch) {
+    const tab = search.tab && search.tab !== 'general' ? search.tab : undefined;
+    return {
+        tab,
+        ...(tab === 'session-events' ? adminListPaginationForUrl(search) : {}),
+    };
+}
+
 export function parseAdminUserSearch(search: Record<string, unknown>): AdminUserSearch {
     const tab = isAdminUserTab(search.tab) ? search.tab : undefined;
-    return { tab };
+    const page = parseAdminListPage(search);
+    const pageSize = parseAdminListPageSize(search);
+    return {
+        tab,
+        ...(tab === 'session-events' ? { page, pageSize } : {}),
+    };
 }
 
 const ADMIN_USER_EMAIL_PURPOSES: GqlCAdminOutboundEmailPurpose[] = [
@@ -107,6 +132,7 @@ const ADMIN_USER_SESSION_KINDS: GqlCAdminSessionKind[] = ['human', 'bot'];
 
 export function adminUserPageVariables(userId: string, search: AdminUserSearch) {
     const tab = search.tab ?? 'general';
+    const sessionEventsPagination = tab === 'session-events' ? adminListSkipTake(search) : { skip: 0, take: 25 };
     return {
         userId,
         includeFeatureToggles: tab === 'feature-toggles',
@@ -121,8 +147,7 @@ export function adminUserPageVariables(userId: string, search: AdminUserSearch) 
         includeAssistantChats: tab === 'assistant-chats',
         sessionEventsCriterion: {
             userIds: [userId],
-            skip: 0,
-            take: 100,
+            ...sessionEventsPagination,
         },
         emailsCriterion: {
             skip: 0,
@@ -235,11 +260,12 @@ function resolveAdminUserTab(tab: AdminUserTab | undefined, isCook: boolean): Ad
 export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPageQuery; search: AdminUserSearch; userId: string }) {
     const locale = useLocale();
     const router = useRouter();
+    const navigate = useNavigate({ from: '/{-$locale}/admin/users/$userId' });
     const [, terminateSessions] = useMutation(AdminUserTerminateSessionsDocument);
     const [terminateBusy, setTerminateBusy] = useState(false);
-    const [generalFooter, setGeneralFooter] = useState<ReactNode>();
-    const onGeneralFooterChange = useCallback((footer: ReactNode | undefined) => {
-        setGeneralFooter(footer);
+    const [panelFooter, setPanelFooter] = useState<ReactNode>();
+    const onPanelFooterChange = useCallback((footer: ReactNode | undefined) => {
+        setPanelFooter(footer);
     }, []);
     const admin = data.currentSession.user?.admin;
     const user = admin?.user ?? null;
@@ -248,6 +274,7 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
     const whatsAppConversations = admin?.whatsAppConversations ?? [];
     const sessions = admin?.sessions ?? [];
     const sessionEvents = admin?.sessionEvents ?? [];
+    const sessionEventsTotal = admin?.sessionEventsCounts?.[0] ?? 0;
     const meals = admin?.cookMeals ?? [];
     const menus = admin?.cookMenus ?? [];
     const bookingRequests = admin?.bookingRequests ?? [];
@@ -257,6 +284,15 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
     const tab = resolveAdminUserTab(search.tab, isCook);
     const visibleTabs = ADMIN_USER_TABS.filter((entry) => !entry.cookOnly || isCook);
     const activeSessionIds = sessions.filter((session) => session.wasTerminatedAt == null).map((session) => session.sessionId);
+    const sessionEventsPage = search.page ?? 1;
+    const sessionEventsPageSize = adminListPageSize(search);
+    const sessionEventsPageCount = adminListPageCount(sessionEventsTotal, sessionEventsPageSize);
+
+    function updateSearch(next: AdminUserSearch) {
+        void navigate({
+            search: adminUserSearchForUrl(next),
+        });
+    }
 
     async function onTerminateAllActiveSessions() {
         if (activeSessionIds.length === 0) return;
@@ -275,21 +311,39 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
     }
 
     useEffect(() => {
-        if (tab !== 'general') setGeneralFooter(undefined);
+        if (tab !== 'general' && tab !== 'notes') setPanelFooter(undefined);
     }, [tab]);
 
     const footer =
-        tab === 'general'
-            ? generalFooter
-            : adminUserTabFooter({
-                  tab,
-                  userId,
-                  cookId: user?.cook?.cookId,
-                  locale,
-                  activeSessionIds,
-                  terminateBusy,
-                  onTerminateAllActiveSessions,
-              });
+        tab === 'general' || tab === 'notes' ? (
+            panelFooter
+        ) : tab === 'session-events' ? (
+            <AdminListPaginationBar
+                page={sessionEventsPage}
+                pageCount={sessionEventsPageCount}
+                pageSize={sessionEventsPageSize}
+                total={sessionEventsTotal}
+                onPageChange={(nextPage) => updateSearch({ ...search, tab, page: nextPage })}
+                onPageSizeChange={(nextPageSize) =>
+                    updateSearch({
+                        ...search,
+                        tab,
+                        page: undefined,
+                        pageSize: nextPageSize,
+                    })
+                }
+            />
+        ) : (
+            adminUserTabFooter({
+                tab,
+                userId,
+                cookId: user?.cook?.cookId,
+                locale,
+                activeSessionIds,
+                terminateBusy,
+                onTerminateAllActiveSessions,
+            })
+        );
 
     return (
         <AdminPageChrome
@@ -308,7 +362,7 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
                                     <Link
                                         to="/{-$locale}/admin/users/$userId"
                                         params={{ userId }}
-                                        search={{ tab: id === 'general' ? undefined : id }}
+                                        search={adminUserSearchForUrl({ tab: id })}
                                         replace
                                     >
                                         <Icon aria-hidden />
@@ -332,7 +386,7 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
                         bookingRequests={bookingRequests}
                         bookingRequestOffers={bookingRequestOffers}
                         assistantChats={assistantChats}
-                        onGeneralFooterChange={onGeneralFooterChange}
+                        onPanelFooterChange={onPanelFooterChange}
                     />
                 </AdminPinnedFooterLayout>
             ) : (
@@ -488,7 +542,7 @@ function AdminUserTabPanel({
     bookingRequests,
     bookingRequestOffers,
     assistantChats,
-    onGeneralFooterChange,
+    onPanelFooterChange,
 }: {
     tab: AdminUserTab;
     user: AdminUserRow;
@@ -502,15 +556,15 @@ function AdminUserTabPanel({
     bookingRequests: AdminUserBookingRequest[];
     bookingRequestOffers: AdminUserBookingRequestOffer[];
     assistantChats: AdminUserAssistantChatListItem[];
-    onGeneralFooterChange: (footer: ReactNode | undefined) => void;
+    onPanelFooterChange: (footer: ReactNode | undefined) => void;
 }) {
     switch (tab) {
         case 'general':
-            return <AdminUserGeneralSection user={user} onFooterChange={onGeneralFooterChange} />;
+            return <AdminUserGeneralSection user={user} onFooterChange={onPanelFooterChange} />;
         case 'feature-toggles':
             return <AdminUserFeatureTogglesSection user={user} globalFeatureToggles={featureToggles} />;
         case 'notes':
-            return <AdminUserNotesSection user={user} />;
+            return <AdminUserNotesSection user={user} onFooterChange={onPanelFooterChange} />;
         case 'cook-profile':
             return <AdminUserCookProfileSection user={user} />;
         case 'emails':
@@ -643,7 +697,13 @@ function AdminUserBookingRequestOffersSection({ offers }: { offers: AdminUserBoo
     );
 }
 
-function AdminUserNotesSection({ user }: { user: AdminUserRow }) {
+function AdminUserNotesSection({
+    user,
+    onFooterChange,
+}: {
+    user: AdminUserRow;
+    onFooterChange: (footer: ReactNode | undefined) => void;
+}) {
     const locale = useLocale();
     const [, noteUpdate] = useMutation(AdminUserAdminNoteUpdateDocument);
     const [adminNote, setAdminNote] = useState(user.adminNote);
@@ -651,49 +711,52 @@ function AdminUserNotesSection({ user }: { user: AdminUserRow }) {
     const [busy, setBusy] = useState(false);
     const dirty = adminNote !== savedNote;
 
-    async function onSave() {
-        setBusy(true);
-        try {
-            const result = await noteUpdate({ userId: user.userId, adminNote });
-            if (result.error || !result.data?.admin.userAdminNoteUpdate.success) {
-                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
-                return;
+    useEffect(() => {
+        async function onSave() {
+            setBusy(true);
+            try {
+                const result = await noteUpdate({ userId: user.userId, adminNote });
+                if (result.error || !result.data?.admin.userAdminNoteUpdate.success) {
+                    toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                    return;
+                }
+                setSavedNote(adminNote.trim());
+                setAdminNote(adminNote.trim());
+                toast.success({ de: 'Notiz gespeichert.', en: 'Note saved.' }[locale]);
+            } finally {
+                setBusy(false);
             }
-            setSavedNote(adminNote.trim());
-            setAdminNote(adminNote.trim());
-            toast.success({ de: 'Notiz gespeichert.', en: 'Note saved.' }[locale]);
-        } finally {
-            setBusy(false);
         }
-    }
+
+        onFooterChange(
+            <Button type="button" disabled={busy || !dirty} onClick={() => void onSave()}>
+                {{ de: 'Speichern', en: 'Save' }[locale]}
+            </Button>,
+        );
+        return () => onFooterChange(undefined);
+    }, [adminNote, busy, dirty, locale, noteUpdate, onFooterChange, user.userId]);
 
     return (
-        <div className="grid max-w-2xl gap-4">
-            <div className="grid gap-1.5">
-                <label htmlFor="admin-user-note" className="text-sm font-medium">
-                    {{ de: 'Interne Notiz', en: 'Internal note' }[locale]}
-                </label>
-                <p className="text-sm text-muted-foreground">
+        <div className="grid w-full gap-1.5">
+            <label htmlFor="admin-user-note" className="text-sm font-medium">
+                {{ de: 'Interne Notiz', en: 'Internal note' }[locale]}
+            </label>
+            <p className="text-sm text-muted-foreground">
+                {
                     {
-                        {
-                            de: 'Nur für Admins sichtbar. Wird nicht an den Nutzer gesendet.',
-                            en: 'Visible to admins only. Never sent to the user.',
-                        }[locale]
-                    }
-                </p>
-                <Textarea
-                    id="admin-user-note"
-                    rows={8}
-                    value={adminNote}
-                    onChange={(event) => setAdminNote(event.target.value)}
-                    placeholder={{ de: 'Notiz hinzufügen…', en: 'Add a note…' }[locale]}
-                />
-            </div>
-            <div>
-                <Button type="button" disabled={busy || !dirty} onClick={() => void onSave()}>
-                    {{ de: 'Speichern', en: 'Save' }[locale]}
-                </Button>
-            </div>
+                        de: 'Nur für Admins sichtbar. Wird nicht an den Nutzer gesendet.',
+                        en: 'Visible to admins only. Never sent to the user.',
+                    }[locale]
+                }
+            </p>
+            <Textarea
+                id="admin-user-note"
+                rows={8}
+                className="w-full"
+                value={adminNote}
+                onChange={(event) => setAdminNote(event.target.value)}
+                placeholder={{ de: 'Notiz hinzufügen…', en: 'Add a note…' }[locale]}
+            />
         </div>
     );
 }
@@ -701,6 +764,7 @@ function AdminUserNotesSection({ user }: { user: AdminUserRow }) {
 function AdminUserEmailsSection({ emails }: { emails: AdminUserOutboundEmail[] }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
+    const detailsLabel = { de: 'Details', en: 'Details' }[locale];
 
     if (emails.length === 0) {
         return (
@@ -711,20 +775,26 @@ function AdminUserEmailsSection({ emails }: { emails: AdminUserOutboundEmail[] }
     }
 
     return (
-        <ul className="grid gap-3">
+        <ul className="divide-y divide-border overflow-hidden rounded-xl border">
             {emails.map((email) => (
-                <li key={email.outboundEmailId} className="grid gap-1 border-b border-border/60 pb-3 last:border-b-0">
-                    <Link
-                        to="/{-$locale}/admin/outbound-emails/$outboundEmailId"
-                        params={{ outboundEmailId: email.outboundEmailId }}
-                        className="font-medium text-foreground hover:underline"
-                    >
-                        {email.subject || email.outboundEmailId}
-                    </Link>
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                        <Badge variant="secondary">{adminOutboundEmailPurposeLabel(email.purpose, locale)}</Badge>
-                        <span>{email.toEmail}</span>
-                        <span className="tabular-nums">{formatDate(email.createdAt, { locale, timeZone, dateStyle: 'medium' })}</span>
+                <li key={email.outboundEmailId} className="flex items-center justify-between gap-4 px-4 py-3">
+                    <div className="grid min-w-0 gap-0.5">
+                        <p className="truncate text-sm font-medium text-foreground">{email.subject || email.outboundEmailId}</p>
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            <Badge variant="outline">{adminOutboundEmailPurposeLabel(email.purpose, locale)}</Badge>
+                            <span className="truncate">{email.toEmail}</span>
+                            <span className="tabular-nums">{formatDate(email.createdAt, { locale, timeZone, dateStyle: 'medium' })}</span>
+                        </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                        <Button type="button" variant="ghost" size="sm" asChild>
+                            <Link
+                                to="/{-$locale}/admin/outbound-emails/$outboundEmailId"
+                                params={{ outboundEmailId: email.outboundEmailId }}
+                            >
+                                {detailsLabel}
+                            </Link>
+                        </Button>
                     </div>
                 </li>
             ))}
@@ -735,6 +805,7 @@ function AdminUserEmailsSection({ emails }: { emails: AdminUserOutboundEmail[] }
 function AdminUserWhatsAppSection({ conversations }: { conversations: AdminUserWhatsAppConversation[] }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
+    const detailsLabel = { de: 'Details', en: 'Details' }[locale];
 
     if (conversations.length === 0) {
         return (
@@ -745,25 +816,31 @@ function AdminUserWhatsAppSection({ conversations }: { conversations: AdminUserW
     }
 
     return (
-        <ul className="grid gap-3">
+        <ul className="divide-y divide-border overflow-hidden rounded-xl border">
             {conversations.map((conversation) => (
-                <li key={conversation.whatsAppConversationId} className="grid gap-1 border-b border-border/60 pb-3 last:border-b-0">
-                    <Link
-                        to="/{-$locale}/admin/whats-app-chats/$whatsAppConversationId"
-                        params={{ whatsAppConversationId: conversation.whatsAppConversationId }}
-                        className="font-medium text-foreground hover:underline"
-                    >
-                        {conversation.phoneNumber}
-                    </Link>
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                        {conversation.adminUnreadCount > 0 ? (
-                            <Badge variant="secondary">
-                                {conversation.adminUnreadCount} {{ de: 'ungelesen', en: 'unread' }[locale]}
-                            </Badge>
-                        ) : null}
-                        <span className="tabular-nums">
-                            {formatDate(conversation.lastMessageAt, { locale, timeZone, dateStyle: 'medium' })}
-                        </span>
+                <li key={conversation.whatsAppConversationId} className="flex items-center justify-between gap-4 px-4 py-3">
+                    <div className="grid min-w-0 gap-0.5">
+                        <p className="truncate text-sm font-medium text-foreground">{conversation.phoneNumber}</p>
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            {conversation.adminUnreadCount > 0 ? (
+                                <Badge variant="outline">
+                                    {conversation.adminUnreadCount} {{ de: 'ungelesen', en: 'unread' }[locale]}
+                                </Badge>
+                            ) : null}
+                            <span className="tabular-nums">
+                                {formatDate(conversation.lastMessageAt, { locale, timeZone, dateStyle: 'medium' })}
+                            </span>
+                        </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                        <Button type="button" variant="ghost" size="sm" asChild>
+                            <Link
+                                to="/{-$locale}/admin/whats-app-chats/$whatsAppConversationId"
+                                params={{ whatsAppConversationId: conversation.whatsAppConversationId }}
+                            >
+                                {detailsLabel}
+                            </Link>
+                        </Button>
                     </div>
                 </li>
             ))}
@@ -774,6 +851,7 @@ function AdminUserWhatsAppSection({ conversations }: { conversations: AdminUserW
 function AdminUserAssistantChatsSection({ chats }: { chats: AdminUserAssistantChatListItem[] }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
+    const detailsLabel = { de: 'Details', en: 'Details' }[locale];
 
     if (chats.length === 0) {
         return (
@@ -784,20 +862,23 @@ function AdminUserAssistantChatsSection({ chats }: { chats: AdminUserAssistantCh
     }
 
     return (
-        <ul className="grid gap-3">
+        <ul className="divide-y divide-border overflow-hidden rounded-xl border">
             {chats.map((row) => (
-                <li key={row.chatId} className="grid gap-1 border-b border-border/60 pb-3 last:border-b-0">
-                    <Link
-                        to="/{-$locale}/admin/assistant-chats/$chatId"
-                        params={{ chatId: row.chatId }}
-                        className="font-medium text-foreground hover:underline"
-                    >
-                        {adminAssistantChatTitle(row.title, locale)}
-                    </Link>
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                        <Badge variant="secondary">{adminChatSurfaceLabel(row.surface, locale)}</Badge>
-                        {row.deletedAt ? <Badge variant="outline">{{ de: 'Gelöscht', en: 'Deleted' }[locale]}</Badge> : null}
-                        <span className="tabular-nums">{formatDate(row.lastModifiedAt, { locale, timeZone, dateStyle: 'medium' })}</span>
+                <li key={row.chatId} className="flex items-center justify-between gap-4 px-4 py-3">
+                    <div className="grid min-w-0 gap-0.5">
+                        <p className="truncate text-sm font-medium text-foreground">{adminAssistantChatTitle(row.title, locale)}</p>
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                            <Badge variant="outline">{adminChatSurfaceLabel(row.surface, locale)}</Badge>
+                            {row.deletedAt ? <Badge variant="outline">{{ de: 'Gelöscht', en: 'Deleted' }[locale]}</Badge> : null}
+                            <span className="tabular-nums">{formatDate(row.lastModifiedAt, { locale, timeZone, dateStyle: 'medium' })}</span>
+                        </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                        <Button type="button" variant="ghost" size="sm" asChild>
+                            <Link to="/{-$locale}/admin/assistant-chats/$chatId" params={{ chatId: row.chatId }}>
+                                {detailsLabel}
+                            </Link>
+                        </Button>
                     </div>
                 </li>
             ))}
@@ -843,10 +924,10 @@ function AdminUserSessionsSection({ sessions }: { sessions: AdminUserSession[] }
     return (
         <ul className="divide-y divide-border overflow-hidden rounded-xl border">
             {sessions.map((session) => {
-                const badges: string[] = [];
-                if (session.isBot) badges.push(botLabel);
-                if (session.connectionActive) badges.push(activeLabel);
-                if (session.wasTerminatedAt) badges.push(terminatedLabel);
+                const badges: { label: string; variant: 'secondary' | 'outline' }[] = [];
+                if (session.isBot) badges.push({ label: botLabel, variant: 'secondary' });
+                if (session.connectionActive) badges.push({ label: activeLabel, variant: 'secondary' });
+                if (session.wasTerminatedAt) badges.push({ label: terminatedLabel, variant: 'outline' });
                 const canTerminate = session.wasTerminatedAt == null;
 
                 return (
@@ -854,8 +935,8 @@ function AdminUserSessionsSection({ sessions }: { sessions: AdminUserSession[] }
                         <div className="grid min-w-0 gap-0.5">
                             <p className="truncate text-sm font-medium text-foreground">{session.userAgent ?? noUserAgent}</p>
                             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                {badges.map((label) => (
-                                    <Badge key={label} variant="secondary">
+                                {badges.map(({ label, variant }) => (
+                                    <Badge key={label} variant={variant}>
                                         {label}
                                     </Badge>
                                 ))}
@@ -865,11 +946,6 @@ function AdminUserSessionsSection({ sessions }: { sessions: AdminUserSession[] }
                             </div>
                         </div>
                         <div className="flex shrink-0 items-center gap-2">
-                            <Button type="button" variant="ghost" size="sm" asChild>
-                                <Link to="/{-$locale}/admin/sessions/$sessionId" params={{ sessionId: session.sessionId }}>
-                                    {detailsLabel}
-                                </Link>
-                            </Button>
                             {canTerminate ? (
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
@@ -906,8 +982,13 @@ function AdminUserSessionsSection({ sessions }: { sessions: AdminUserSession[] }
                                     </AlertDialogContent>
                                 </AlertDialog>
                             ) : (
-                                <span className="text-xs text-muted-foreground">{terminatedLabel}</span>
+                                <Badge variant="outline">{terminatedLabel}</Badge>
                             )}
+                            <Button type="button" variant="ghost" size="sm" asChild>
+                                <Link to="/{-$locale}/admin/sessions/$sessionId" params={{ sessionId: session.sessionId }}>
+                                    {detailsLabel}
+                                </Link>
+                            </Button>
                         </div>
                     </li>
                 );
