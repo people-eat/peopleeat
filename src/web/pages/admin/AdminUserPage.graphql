@@ -1,9 +1,10 @@
 # Admin user detail. Loaded by `/admin/users/$userId`.
 # See `docs/features/admin-users.md`. URL `tab` selects the section (customer + optional cook tabs);
 # emails / whatsapp / sessions / session-events / meals / menus / booking-requests / offers /
-# assistant-chats / calls / testimonials / pool load only for their tab via `@include`
-# (loaderDeps on `tab`, plus `page` / `pageSize` for session-events). Assistant chats use
-# `Admin.assistantChats` with `userIds: [userId]` — see `docs/features/admin-assistant-chats.md`.
+# assistant-chats / calls / testimonials / pool / cook finances (live Stripe) load only for their
+# tab via `@include` (loaderDeps on `tab`, plus `page` / `pageSize` for session-events).
+# Assistant chats use `Admin.assistantChats` with `userIds: [userId]` — see
+# `docs/features/admin-assistant-chats.md`.
 
 fragment AdminUserCook on AdminCook {
     cookId
@@ -76,6 +77,7 @@ query AdminUserPage(
     $includeCalls: Boolean!
     $includeTestimonials: Boolean!
     $includePool: Boolean!
+    $includeCookFinances: Boolean!
     $emailsCriterion: AdminOutboundEmailCriterion!
     $whatsAppCriterion: AdminWhatsAppConversationCriterion!
     $sessionsCriterion: AdminSessionCriterion!
@@ -129,6 +131,28 @@ query AdminUserPage(
                     }
                     cook {
                         ...AdminUserCook
+                        stripeAccountDetails @include(if: $includeCookFinances) {
+                            detailsSubmitted
+                            chargesEnabled
+                            payoutsEnabled
+                            disabledReason
+                            currentlyDue
+                            pastDue
+                            pendingVerification
+                        }
+                        stripeWallet @include(if: $includeCookFinances) {
+                            availableCents
+                            pendingCents
+                            transactions {
+                                balanceTransactionId
+                                kind
+                                status
+                                netCents
+                                createdAt
+                                availableOn
+                                description
+                            }
+                        }
                     }
                 }
                 outboundEmails(criterion: $emailsCriterion) @include(if: $includeEmails) {

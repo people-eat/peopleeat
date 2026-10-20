@@ -7,6 +7,7 @@ import { useMutation } from 'urql';
 
 import { formatCurrency, formatDate } from '../../../shared';
 import { formatMinuteOfDay } from '../../../shared/cookCallAvailability';
+import { AdminCookStripeFinances } from '../../components/AdminCookStripeFinances';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -482,6 +483,12 @@ function AdminUserCookProfileBody({
                     </dd>
                 </div>
             </dl>
+
+            <AdminCookStripeFinances
+                stripeStatus={cook.stripeStatus}
+                stripeAccountDetails={cook.stripeAccountDetails}
+                stripeWallet={cook.stripeWallet}
+            />
 
             <div className="grid gap-4 @2xl:grid-cols-2">
                 <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4">

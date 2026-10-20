@@ -52,9 +52,9 @@ credit the cook Connect **balance** at customer payment time (`paymentStatus: PA
 **admin-gated** Stripe Payout via `payoutCreate({ destinationAccountId, amount })` after `plannedPayoutDateTime` — see
 [admin-booking-requests.md](../features/admin-booking-requests.md) (`bookingRequestOfferPayoutRelease`). Ops can also run
 `bookingRequestOfferPayoutAlreadyTookPlaceCheck`: it lists recent Connect payouts via `accountPayoutsFindMany` and sets `TRANSFERRED` only
-when a matching amount is found (no `payoutCreate`). `accountPayoutsEnabledCheck` surfaces readiness before the release CTA. Callers that
-hydrate admin offer lists wrap that check so a Stripe retrieve failure (stale or fixture `acct_…` id) marks the cook not payout-ready rather
-than crashing the page.
+when a matching amount is found (no `payoutCreate`). The same check can upgrade `PAYED_OUT_OF_SYSTEM` when ops marked out-of-system by
+accident. `accountPayoutsEnabledCheck` surfaces readiness before the release CTA. Callers that hydrate admin offer lists wrap that check so
+a Stripe retrieve failure (stale or fixture `acct_…` id) marks the cook not payout-ready rather than crashing the page.
 
 ### Concierge offer handover money
 

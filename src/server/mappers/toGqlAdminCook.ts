@@ -21,6 +21,9 @@ export function toGqlAdminCook(row: Cook, userStatus: UserStatus): GqlSAdminCook
         stripeAccountUrl: stripeAccountId ? stripeDashboardConnectAccountUrl(stripeAccountId, testMode) : null,
         stripeAccountActive: row.stripeAccountActive,
         stripeAccountActiveWasReset: row.stripeAccountActiveWasReset,
+        // Field resolvers load live Stripe snapshots (cook-profile tab only).
+        stripeAccountDetails: null,
+        stripeWallet: null,
         exactTravelOriginAddress: row.exactTravelOriginAddress ? toGqlCookTravelOriginAddress(row.exactTravelOriginAddress) : null,
         biography: row.biography,
         biographySummary: row.biographySummary,

@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 
 import { bookingRequestOffers, cooks } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -9,7 +9,6 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { bookingRequestOfferPayoutAlreadyDone } from '../utils/bookingRequestOfferPayoutAlreadyDone';
 import { bookingRequestOfferPayoutDueAssert } from '../utils/bookingRequestOfferPayoutDueAssert';
 
 function isMatchingManualPayoutStatus(status: string): boolean {
@@ -17,10 +16,11 @@ function isMatchingManualPayoutStatus(status: string): boolean {
 }
 
 /**
- * Checks Stripe for a matching Connect bank payout on a due PAYED offer. When
- * found, sets `TRANSFERRED` + `payoutDateTime` without calling `payoutCreate`.
- * When none matches, returns `{ success: false }` and leaves the offer unchanged.
- * Idempotent when already paid out.
+ * Checks Stripe for a matching Connect bank payout. Eligible when the offer is
+ * due `PAYED`, or already `PAYED_OUT_OF_SYSTEM` (ops may have marked that by
+ * accident). When found, sets `TRANSFERRED` + `payoutDateTime` without calling
+ * `payoutCreate`. When none matches, returns `{ success: false }` and leaves
+ * the offer unchanged. Idempotent when already `TRANSFERRED`.
  */
 export async function adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
     { adminId }: GqlSAdminMutation,
@@ -46,11 +46,14 @@ export async function adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
             throw new Error('adminBookingRequestOfferPayoutAlreadyTookPlaceCheck: offer not found');
         }
 
-        if (bookingRequestOfferPayoutAlreadyDone(offer)) {
+        if (offer.paymentStatus === 'TRANSFERRED') {
             return { success: true, referenceId: bookingRequestOfferId };
         }
 
-        bookingRequestOfferPayoutDueAssert(offer, 'adminBookingRequestOfferPayoutAlreadyTookPlaceCheck');
+        const outOfSystem = offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM';
+        if (!outOfSystem) {
+            bookingRequestOfferPayoutDueAssert(offer, 'adminBookingRequestOfferPayoutAlreadyTookPlaceCheck');
+        }
 
         const [cook] = await serverRuntime.db.select().from(cooks).where(eq(cooks.cookId, offer.cookId)).limit(1);
         if (!cook) {
@@ -85,10 +88,13 @@ export async function adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
             .update(bookingRequestOffers)
             .set({
                 paymentStatus: 'TRANSFERRED',
-                payoutDateTime: new Date(),
+                payoutDateTime: offer.payoutDateTime ?? new Date(),
             })
             .where(
-                and(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId), eq(bookingRequestOffers.paymentStatus, 'PAYED')),
+                and(
+                    eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId),
+                    inArray(bookingRequestOffers.paymentStatus, ['PAYED', 'PAYED_OUT_OF_SYSTEM']),
+                ),
             );
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId: offer.cookId }), serverRuntime.publish.adminUpdates()]);

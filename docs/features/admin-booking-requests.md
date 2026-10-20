@@ -91,7 +91,8 @@ confirm; `TRANSFERRED` blocked. See [stripe-payment.md](../architecture/stripe-p
 
 Payout actions when due (each with a confirmation dialog): **release** via Stripe Connect payout (gates on Connect readiness), **check if
 payout already took place** (asks Stripe for a matching Connect payout; marks `TRANSFERRED` only when found, otherwise leaves the offer
-unchanged), and **mark paid out-of-system** (`PAYED_OUT_OF_SYSTEM`, no Stripe call).
+unchanged), and **mark paid out-of-system** (`PAYED_OUT_OF_SYSTEM`, no Stripe call). The Stripe check is also available on
+`PAYED_OUT_OF_SYSTEM` offers so an accidental out-of-system mark can be corrected when Stripe already paid out.
 
 ### Calls hub — `/admin/calls`
 

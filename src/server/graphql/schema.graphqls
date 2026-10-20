@@ -2729,6 +2729,14 @@ type AdminCook {
     stripeAccountUrl: String
     stripeAccountActive: Boolean!
     stripeAccountActiveWasReset: Boolean!
+    # Live Stripe requirements (same shape as `Cook.stripeAccountDetails`). Null
+    # without an account id or when Stripe retrieve fails. Request only on the
+    # admin cook-profile tab — hits Stripe.
+    stripeAccountDetails: CookStripeAccountDetails
+    # Live Connect balance + recent transactions (same shape as `Cook.stripeWallet`).
+    # Not gated by `COOK_WALLET_STRIPE_BALANCE`. Null without an account id or when
+    # Stripe retrieve fails. Request only on the admin cook-profile tab — hits Stripe.
+    stripeWallet: CookStripeWallet
     exactTravelOriginAddress: CookTravelOriginAddress
     biography: String!
     biographySummary: String!
@@ -4151,12 +4159,12 @@ type AdminMutation {
     # when already transferred / out-of-system / `payoutDateTime` set.
     # Returns `bookingRequestOfferId` as `referenceId`.
     bookingRequestOfferPayoutMarkOutOfSystem(bookingRequestOfferId: ID!): MutationResult!
-    # Checks Stripe for a matching Connect bank payout on a due PAYED offer.
+    # Checks Stripe for a matching Connect bank payout on a due PAYED offer, or
+    # on a `PAYED_OUT_OF_SYSTEM` offer (ops may have marked that by accident).
     # When found, sets `TRANSFERRED` + `payoutDateTime` without calling
     # `payoutCreate`. When none matches, returns `success: false` and leaves
     # the offer unchanged. Requires cook `stripeAccountId`. Idempotent when
-    # already transferred / out-of-system / `payoutDateTime` set.
-    # Returns `bookingRequestOfferId` as `referenceId`.
+    # already `TRANSFERRED`. Returns `bookingRequestOfferId` as `referenceId`.
     bookingRequestOfferPayoutAlreadyTookPlaceCheck(bookingRequestOfferId: ID!): MutationResult!
     # Append a free-text negotiation message (`ADMIN_MESSAGE_SIMPLE` event).
     # `referenceId` is the new `bookingRequestOfferEventId`.

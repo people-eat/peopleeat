@@ -981,9 +981,11 @@ export interface GqlSAdminCook {
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountActive: Scalars['Boolean']['output'];
     stripeAccountActiveWasReset: Scalars['Boolean']['output'];
+    stripeAccountDetails?: Maybe<GqlSCookStripeAccountDetails>;
     stripeAccountId?: Maybe<Scalars['String']['output']>;
     stripeAccountUrl?: Maybe<Scalars['String']['output']>;
     stripeStatus: GqlSCookStripeStatus;
+    stripeWallet?: Maybe<GqlSCookStripeWallet>;
     travelExpensesAmount: Scalars['Int']['output'];
     user: GqlSAdminUser;
 }
@@ -7020,9 +7022,11 @@ export type GqlSAdminCookResolvers<
     stageName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     stripeAccountActive?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     stripeAccountActiveWasReset?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    stripeAccountDetails?: Resolver<Maybe<GqlSResolversTypes['CookStripeAccountDetails']>, ParentType, ContextType>;
     stripeAccountId?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     stripeAccountUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     stripeStatus?: Resolver<GqlSResolversTypes['CookStripeStatus'], ParentType, ContextType>;
+    stripeWallet?: Resolver<Maybe<GqlSResolversTypes['CookStripeWallet']>, ParentType, ContextType>;
     travelExpensesAmount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     user?: Resolver<GqlSResolversTypes['AdminUser'], ParentType, ContextType>;
 }>;

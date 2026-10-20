@@ -59,16 +59,18 @@ user’s `Users.locale`, and navigates to `/profile` (or `/en/profile`) in that 
 
 **Cook profile** defaults to a read-only detail: approval/visibility/Stripe-active badges, optional rating summary, stage name, travel,
 Stripe account + Dashboard link, call scheduling + weekly windows, About logo, tags, biography/summary (with generating hint), public chef
-link when approved + visible, featured city/partner/occasion landings, and created/last-modified timestamps; confirm-gated approve/revoke
-and public-visibility actions sit at the bottom. Legacy price/participant columns stay on `AdminCook` / `CookUpdate` but are not shown here
-(unused in product matching). Live Stripe wallet/requirements are not fetched on this page. **Edit** in the pinned footer opens
-`/admin/users/<userId>/cook-profile/edit`, where admins patch stage name, biography, biography summary, cuisine/philosophy catalogs, and
-travel fields via `AdminMutation.cookUpdate` (legal acceptance asserted on the admin, not the cook). The About logo uses `CookLogoEditor`
-and saves immediately via `logoFileUploadId`. Admin can edit biography and summary manually. **Write with AI / Improve with AI** opens a
-side-by-side review; **Accept** fills the biography field (save still required; no auto summary job). The suggest mutation is gated by
-`COOK_BIOGRAPHY_AI_WRITE` (admin UI stays visible for ops; server rejects when off). **Generate summary** fills the summary field via AI
-without persisting until Save and is **not** feature-toggled. Unlike cook self-serve saves, admin biography saves do **not** auto-regenerate
-the summary. **Cancel** / successful **Save** return to the cook-profile tab.
+link when approved + visible, featured city/partner/occasion landings, and created/last-modified timestamps; then a **Finances** block with
+live Stripe requirements checklist + Connect available/pending balance and recent balance transactions (same data as the cook wallet page
+when `COOK_WALLET_STRIPE_BALANCE` is on — admin always loads it, not gated by that toggle; fetched only on this tab). Confirm-gated
+approve/revoke and public-visibility actions sit at the bottom. Legacy price/participant columns stay on `AdminCook` / `CookUpdate` but are
+not shown here (unused in product matching). **Edit** in the pinned footer opens `/admin/users/<userId>/cook-profile/edit`, where admins
+patch stage name, biography, biography summary, cuisine/philosophy catalogs, and travel fields via `AdminMutation.cookUpdate` (legal
+acceptance asserted on the admin, not the cook). The About logo uses `CookLogoEditor` and saves immediately via `logoFileUploadId`. Admin
+can edit biography and summary manually. **Write with AI / Improve with AI** opens a side-by-side review; **Accept** fills the biography
+field (save still required; no auto summary job). The suggest mutation is gated by `COOK_BIOGRAPHY_AI_WRITE` (admin UI stays visible for
+ops; server rejects when off). **Generate summary** fills the summary field via AI without persisting until Save and is **not**
+feature-toggled. Unlike cook self-serve saves, admin biography saves do **not** auto-regenerate the summary. **Cancel** / successful
+**Save** return to the cook-profile tab.
 
 Non-admins never reach admin routes; the layout gates on admin membership.
 
@@ -106,7 +108,8 @@ detail with URL tabs; manual create with optional admin and cook payloads.
   `Admin.sessionEventsCounts` with pinned `AdminListPaginationBar`; `AdminUserGeneralSection`, `AdminUserCookProfileSection`,
   `AdminUserCookProfileEditPage`; booking-requests / pool / offers tabs reuse `AdminBookingRequestListCard` /
   `AdminBookingRequestOfferCard`; testimonials tab reuses `AdminTestimonialListCard`; calls tab uses a compact `callTraffic` list
-- `AdminCook` field resolvers: `logo`, `rating`, `callAvailabilityRules`, `featuredOn` (city/partner/occasion reverse index)
+- `AdminCook` field resolvers: `logo`, `rating`, `callAvailabilityRules`, `featuredOn` (city/partner/occasion reverse index),
+  `stripeAccountDetails` / `stripeWallet` (live Stripe; admin loaders, not cook ownership / balance toggle)
 - `Admin.customerTestimonials` / `cookTestimonials` accept optional criterion (`cookIds`, skip/take); omit criterion = full catalog
 - `AdminBookingRequestCriterion.cookIds` + `notifiedOnly` filter via `BookingRequestCooks`
 - Routes: `users.tsx`, `users_.list.tsx`, `users_.create.tsx`, `users_.$userId.tsx`, `users_.$userId_.cook-profile_.edit.tsx`

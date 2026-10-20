@@ -292,4 +292,61 @@ describe('adminBookingRequestOfferPayoutAlreadyTookPlaceCheck', () => {
         expect(result.success).toBe(true);
         expect(admin.serverRuntime.stripe.accountPayoutsFindMany).not.toHaveBeenCalled();
     });
+
+    it('upgrades PAYED_OUT_OF_SYSTEM to TRANSFERRED when Stripe shows a matching payout', async () => {
+        const admin = await setupAdmin();
+        const payoutDateTime = new Date('2024-02-01T10:00:00.000Z');
+        const { bookingRequestOfferId } = await insertDuePayedOffer({
+            paymentStatus: 'PAYED_OUT_OF_SYSTEM',
+            payoutDateTime,
+        });
+        vi.mocked(admin.serverRuntime.stripe.accountPayoutsFindMany).mockResolvedValue([
+            {
+                id: 'po_manual_2',
+                amountCents: 18_400,
+                status: 'IN_TRANSIT',
+                createdAt: new Date(),
+                arrivalDate: new Date(),
+            },
+        ]);
+
+        const result = await adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
+            adminMutationParent(admin.user.userId),
+            { bookingRequestOfferId },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(result).toEqual({ success: true, referenceId: bookingRequestOfferId });
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.paymentStatus).toBe('TRANSFERRED');
+        expect(offer?.payoutDateTime?.toISOString()).toBe(payoutDateTime.toISOString());
+        expect(admin.serverRuntime.stripe.payoutCreate).not.toHaveBeenCalled();
+    });
+
+    it('keeps PAYED_OUT_OF_SYSTEM when Stripe has no matching payout', async () => {
+        const admin = await setupAdmin();
+        const { bookingRequestOfferId } = await insertDuePayedOffer({
+            paymentStatus: 'PAYED_OUT_OF_SYSTEM',
+            payoutDateTime: new Date('2024-02-01T10:00:00.000Z'),
+        });
+        vi.mocked(admin.serverRuntime.stripe.accountPayoutsFindMany).mockResolvedValue([]);
+
+        const result = await adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
+            adminMutationParent(admin.user.userId),
+            { bookingRequestOfferId },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(result).toEqual({ success: false, referenceId: bookingRequestOfferId });
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.paymentStatus).toBe('PAYED_OUT_OF_SYSTEM');
+    });
 });

@@ -177,6 +177,7 @@ export function adminUserPageVariables(userId: string, search: AdminUserSearch) 
         includeCalls: tab === 'calls',
         includeTestimonials: tab === 'testimonials',
         includePool: tab === 'pool',
+        includeCookFinances: tab === 'cook-profile',
         sessionEventsCriterion: {
             userIds: [userId],
             ...sessionEventsPagination,

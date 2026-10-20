@@ -984,9 +984,11 @@ export interface GqlCAdminCook {
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountActive: Scalars['Boolean']['output'];
     stripeAccountActiveWasReset: Scalars['Boolean']['output'];
+    stripeAccountDetails?: Maybe<GqlCCookStripeAccountDetails>;
     stripeAccountId?: Maybe<Scalars['String']['output']>;
     stripeAccountUrl?: Maybe<Scalars['String']['output']>;
     stripeStatus: GqlCCookStripeStatus;
+    stripeWallet?: Maybe<GqlCCookStripeWallet>;
     travelExpensesAmount: Scalars['Int']['output'];
     user: GqlCAdminUser;
 }
@@ -14860,6 +14862,7 @@ export type GqlCAdminUserPageQueryVariables = Exact<{
     includeCalls: boolean;
     includeTestimonials: boolean;
     includePool: boolean;
+    includeCookFinances: boolean;
     emailsCriterion: Schema.GqlCAdminOutboundEmailCriterion;
     whatsAppCriterion: Schema.GqlCAdminWhatsAppConversationCriterion;
     sessionsCriterion: Schema.GqlCAdminSessionCriterion;
@@ -14933,6 +14936,28 @@ export type GqlCAdminUserPageQuery = {
                         callDurationMinutes: number;
                         createdAt: string;
                         lastModifiedAt: string;
+                        stripeAccountDetails?: {
+                            detailsSubmitted: boolean;
+                            chargesEnabled: boolean;
+                            payoutsEnabled: boolean;
+                            disabledReason: Schema.GqlCCookStripeDisabledReason | null;
+                            currentlyDue: Array<Schema.GqlCCookStripeRequirementCategory>;
+                            pastDue: Array<Schema.GqlCCookStripeRequirementCategory>;
+                            pendingVerification: Array<Schema.GqlCCookStripeRequirementCategory>;
+                        } | null;
+                        stripeWallet?: {
+                            availableCents: number;
+                            pendingCents: number;
+                            transactions: Array<{
+                                balanceTransactionId: string;
+                                kind: Schema.GqlCCookStripeBalanceTransactionKind;
+                                status: Schema.GqlCCookStripeBalanceTransactionStatus;
+                                netCents: number;
+                                createdAt: string;
+                                availableOn: string;
+                                description: string | null;
+                            }>;
+                        } | null;
                         exactTravelOriginAddress: {
                             displayText: string;
                             latitude: number;
@@ -61492,6 +61517,11 @@ export const AdminUserPageDocument = {
                 },
                 {
                     kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeCookFinances' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'emailsCriterion' } },
                     type: {
                         kind: 'NonNullType',
@@ -61727,6 +61757,183 @@ export const AdminUserPageDocument = {
                                                                                 {
                                                                                     kind: 'FragmentSpread',
                                                                                     name: { kind: 'Name', value: 'AdminUserCook' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'stripeAccountDetails' },
+                                                                                    directives: [
+                                                                                        {
+                                                                                            kind: 'Directive',
+                                                                                            name: { kind: 'Name', value: 'include' },
+                                                                                            arguments: [
+                                                                                                {
+                                                                                                    kind: 'Argument',
+                                                                                                    name: { kind: 'Name', value: 'if' },
+                                                                                                    value: {
+                                                                                                        kind: 'Variable',
+                                                                                                        name: {
+                                                                                                            kind: 'Name',
+                                                                                                            value: 'includeCookFinances',
+                                                                                                        },
+                                                                                                    },
+                                                                                                },
+                                                                                            ],
+                                                                                        },
+                                                                                    ],
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'detailsSubmitted',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'chargesEnabled',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'payoutsEnabled',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'disabledReason',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'currentlyDue',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'pastDue' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'pendingVerification',
+                                                                                                },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'stripeWallet' },
+                                                                                    directives: [
+                                                                                        {
+                                                                                            kind: 'Directive',
+                                                                                            name: { kind: 'Name', value: 'include' },
+                                                                                            arguments: [
+                                                                                                {
+                                                                                                    kind: 'Argument',
+                                                                                                    name: { kind: 'Name', value: 'if' },
+                                                                                                    value: {
+                                                                                                        kind: 'Variable',
+                                                                                                        name: {
+                                                                                                            kind: 'Name',
+                                                                                                            value: 'includeCookFinances',
+                                                                                                        },
+                                                                                                    },
+                                                                                                },
+                                                                                            ],
+                                                                                        },
+                                                                                    ],
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'availableCents',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'pendingCents',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'transactions',
+                                                                                                },
+                                                                                                selectionSet: {
+                                                                                                    kind: 'SelectionSet',
+                                                                                                    selections: [
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'balanceTransactionId',
+                                                                                                            },
+                                                                                                        },
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'kind',
+                                                                                                            },
+                                                                                                        },
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'status',
+                                                                                                            },
+                                                                                                        },
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'netCents',
+                                                                                                            },
+                                                                                                        },
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'createdAt',
+                                                                                                            },
+                                                                                                        },
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'availableOn',
+                                                                                                            },
+                                                                                                        },
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'description',
+                                                                                                            },
+                                                                                                        },
+                                                                                                    ],
+                                                                                                },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
                                                                                 },
                                                                             ],
                                                                         },

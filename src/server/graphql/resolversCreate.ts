@@ -253,6 +253,8 @@ import { adminCookMenuCounts } from '../queries/adminCookMenuCounts';
 import { adminCookMenuFindMany } from '../queries/adminCookMenuFindMany';
 import { adminCookMenuFindOne } from '../queries/adminCookMenuFindOne';
 import { adminCooksInTravelRadiusPreviewFindMany } from '../queries/adminCooksInTravelRadiusPreviewFindMany';
+import { adminCookStripeAccountDetailsFindOne } from '../queries/adminCookStripeAccountDetailsFindOne';
+import { adminCookStripeWalletFindOne } from '../queries/adminCookStripeWalletFindOne';
 import { adminCookTestimonialCookFindOne } from '../queries/adminCookTestimonialCookFindOne';
 import { adminCookTestimonialFindOne } from '../queries/adminCookTestimonialFindOne';
 import { adminCookTestimonialFindOneByOfferId } from '../queries/adminCookTestimonialFindOneByOfferId';
@@ -1845,6 +1847,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             featuredOn(parent: GqlSAdminCook) {
                 return adminCookFeaturedLandingsFindMany(parent.cookId, serverRuntime);
+            },
+            stripeAccountDetails(parent: GqlSAdminCook, _: unknown, requestingSession: GqlSSession) {
+                return adminCookStripeAccountDetailsFindOne(parent, requestingSession, serverRuntime);
+            },
+            stripeWallet(parent: GqlSAdminCook, _: unknown, requestingSession: GqlSSession) {
+                return adminCookStripeWalletFindOne(parent, requestingSession, serverRuntime);
             },
         },
         AdminMutation: {

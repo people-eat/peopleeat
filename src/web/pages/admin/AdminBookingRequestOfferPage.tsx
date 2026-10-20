@@ -308,6 +308,10 @@ function offerPayoutDone(offer: GqlCAdminBookingRequestOfferPageOfferFragment): 
     return offer.paymentStatus === 'TRANSFERRED' || offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM';
 }
 
+function offerPayoutAlreadyTookPlaceCheckable(offer: GqlCAdminBookingRequestOfferPageOfferFragment): boolean {
+    return offerPayoutDue(offer) || offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM';
+}
+
 function canHandOverOffer(
     offer: GqlCAdminBookingRequestOfferPageOfferFragment,
     request: GqlCAdminBookingRequestOfferPageRequestFragment | null,
@@ -984,6 +988,8 @@ function CostsTabPanel({
 
     const due = offerPayoutDue(offer);
     const done = offerPayoutDone(offer);
+    const alreadyTookPlaceCheckable = offerPayoutAlreadyTookPlaceCheckable(offer);
+    const outOfSystem = offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM';
     const empty = { de: '—', en: '—' }[locale];
     const platformWinCents = offer.platformFeeCentsCook + offer.platformFeeCentsCustomer;
     const customerTotalCents = offer.totalCentsCustomer ?? offer.totalWithoutDiscountsCentsCustomer;
@@ -1024,7 +1030,7 @@ function CostsTabPanel({
     }
 
     async function onPayoutAlreadyTookPlaceCheck() {
-        if (payoutBusy || !due) return;
+        if (payoutBusy || !alreadyTookPlaceCheckable) return;
         setPayoutBusy(true);
         try {
             const result = await payoutAlreadyTookPlaceCheck({ bookingRequestOfferId: offer.bookingRequestOfferId });
@@ -1041,10 +1047,15 @@ function CostsTabPanel({
                 return;
             }
             toast.success(
-                {
-                    de: 'Passende Stripe-Auszahlung gefunden. Als ausgezahlt markiert.',
-                    en: 'Matching Stripe payout found. Marked as paid out.',
-                }[locale],
+                outOfSystem
+                    ? {
+                          de: 'Passende Stripe-Auszahlung gefunden. Status von außerbetrieblich auf Stripe-Auszahlung korrigiert.',
+                          en: 'Matching Stripe payout found. Corrected from out-of-system to Stripe payout.',
+                      }[locale]
+                    : {
+                          de: 'Passende Stripe-Auszahlung gefunden. Als ausgezahlt markiert.',
+                          en: 'Matching Stripe payout found. Marked as paid out.',
+                      }[locale],
             );
             setPayoutConfirm(null);
         } catch {
@@ -1128,17 +1139,36 @@ function CostsTabPanel({
                 </Card>
             ) : null}
             {done ? (
-                <StatusAlert tone="success" title={{ de: 'Auszahlung erledigt', en: 'Payout completed' }[locale]}>
+                <StatusAlert
+                    tone="success"
+                    title={{ de: 'Auszahlung erledigt', en: 'Payout completed' }[locale]}
+                    action={
+                        outOfSystem ? (
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                disabled={payoutBusy}
+                                onClick={() => setPayoutConfirm('alreadyTookPlaceCheck')}
+                            >
+                                {
+                                    {
+                                        de: 'Prüfen, ob Auszahlung bereits erfolgt',
+                                        en: 'Check if payout already took place',
+                                    }[locale]
+                                }
+                            </Button>
+                        ) : undefined
+                    }
+                >
                     {
                         {
-                            de:
-                                offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM'
-                                    ? 'Als außerbetrieblich ausgezahlt markiert.'
-                                    : 'Stripe-Auszahlung auf das Koch-Konto ausgelöst.',
-                            en:
-                                offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM'
-                                    ? 'Marked as paid out of system.'
-                                    : 'Stripe bank payout to the cook was released.',
+                            de: outOfSystem
+                                ? 'Als außerbetrieblich ausgezahlt markiert. Optional prüfen, ob Stripe bereits ausgezahlt hat.'
+                                : 'Stripe-Auszahlung auf das Koch-Konto ausgelöst.',
+                            en: outOfSystem
+                                ? 'Marked as paid out of system. Optionally check whether Stripe already paid out.'
+                                : 'Stripe bank payout to the cook was released.',
                         }[locale]
                     }
                 </StatusAlert>
@@ -1180,10 +1210,15 @@ function CostsTabPanel({
                                             de: `Es wird eine Stripe-Auszahlung über ${payoutAmountLabel} an den Koch ausgelöst.`,
                                             en: `This creates a Stripe bank payout of ${payoutAmountLabel} to the cook.`,
                                         },
-                                        alreadyTookPlaceCheck: {
-                                            de: `Wir fragen Stripe nach einer passenden Auszahlung über ${payoutAmountLabel}. Wird eine gefunden, markieren wir das Angebot als ausgezahlt. Es wird keine neue Auszahlung erstellt.`,
-                                            en: `We ask Stripe for a matching payout of ${payoutAmountLabel}. If one is found, we mark the offer as paid out. No new payout is created.`,
-                                        },
+                                        alreadyTookPlaceCheck: outOfSystem
+                                            ? {
+                                                  de: `Wir fragen Stripe nach einer passenden Auszahlung über ${payoutAmountLabel}. Wird eine gefunden, korrigieren wir den Status von außerbetrieblich auf Stripe-Auszahlung. Es wird keine neue Auszahlung erstellt.`,
+                                                  en: `We ask Stripe for a matching payout of ${payoutAmountLabel}. If one is found, we correct the status from out-of-system to Stripe payout. No new payout is created.`,
+                                              }
+                                            : {
+                                                  de: `Wir fragen Stripe nach einer passenden Auszahlung über ${payoutAmountLabel}. Wird eine gefunden, markieren wir das Angebot als ausgezahlt. Es wird keine neue Auszahlung erstellt.`,
+                                                  en: `We ask Stripe for a matching payout of ${payoutAmountLabel}. If one is found, we mark the offer as paid out. No new payout is created.`,
+                                              },
                                         outOfSystem: {
                                             de: `Keine Stripe-Auszahlung. Wir markieren ${payoutAmountLabel} als außerhalb von Stripe ausgezahlt (z. B. Überweisung oder Bargeld).`,
                                             en: `No Stripe payout. We mark ${payoutAmountLabel} as paid outside Stripe (for example wire or cash).`,
