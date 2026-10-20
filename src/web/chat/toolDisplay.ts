@@ -7,6 +7,7 @@
 import {
     BookOpenIcon,
     ClipboardListIcon,
+    FileTextIcon,
     GiftIcon,
     HammerIcon,
     LifeBuoyIcon,
@@ -35,6 +36,10 @@ const TOOL_DISPLAY: Record<string, ToolDisplayEntry> = {
     cookUpdate: {
         Icon: HammerIcon,
         label: { de: 'Profil aktualisieren…', en: 'Updating your chef profile…' },
+    },
+    productDocsRead: {
+        Icon: FileTextIcon,
+        label: { de: 'Lese Produktdoku…', en: 'Reading product docs…' },
     },
     adminBookingRequestsFindMany: {
         Icon: ClipboardListIcon,

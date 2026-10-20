@@ -102,8 +102,9 @@ display name and true send time, and are never `isOwn` for the new cook. Peer ch
 
 Shared UI: `BookingRequestOfferChat` — concierge row + `containsPhoneNumber` on client and all three create commands; optional
 `onEditMessage` / `onVisibilityChangeMessage` / `onDeleteMessage` (admin pages) → ellipsis menu + confirm dialogs on `ChatMessageUserView`;
-optional `onReactMessage` when `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` is active (`useFeatureToggleActive`). Mutations:
-`bookingRequestOfferChatMessageReactionUpsert` on User / Cook / Admin.
+optional `onReactMessage` when `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` is active (`useFeatureToggleActive`). On admin peer bubbles the
+ellipsis and smile controls stack beside the bubble (ellipsis above, smile below). Mutations: `bookingRequestOfferChatMessageReactionUpsert`
+on User / Cook / Admin.
 
 ### Offer-chat message emails
 

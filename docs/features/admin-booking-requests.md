@@ -60,16 +60,20 @@ dialog, including after send is closed), **offer** (cook / customer / accept met
 **testimonial** (when relevant). Legacy `?tab=schedule` still resolves to **call**. Planned: concierge tags surface on admin home —
 [booking-offer-chat.md](./booking-offer-chat.md). Card sections use the shared base `Card`.
 
-**Offer** holds people and lifecycle metadata: cook + customer cards, accept flags, decline reasons, created time, offer id. Hand over lives
-here.
+**Offer** holds people and lifecycle metadata: cook + customer cards (avatar + name/email, outline role badge top-right, outline **Nutzer
+öffnen** to `/admin/users/$userId`; cook cuisine tags below when present), an **Angebotsstatus** block (title above card; 2-column grid:
+offer id with copy, long created date-time, then accept `StatusBadge`s; decline reasons full-width below when present), and pending
+`queuedJobs`. Hand over lives here (footer). Offer status pill sits top-right above the tabs (no payment-status pill in that chrome).
 
 **Costs** is the ops economics surface: labeled cook/customer platform fees with stored percents, payment-provider fee, menu / travel /
 payout / customer totals, and **Plattformgewinn / Platform profit** (`platformFeeCentsCook + platformFeeCentsCustomer`) highlighted in the
-Economics card. Stripe Dashboard deep links (`stripePaymentIntentUrl` / `stripeSetupIntentUrl` when `paymentData` has those ids; test vs
-live from `STRIPE_SECRET_KEY`), payout release actions, and dual cost views. **Customer view** mirrors the customer `costBreakdown` (promo /
-gift line items + total via `CostBreakdownPanel`, muted travel-included footer). **Cook view** reuses `BookingRequestOfferCostOverviewPanel`
-(`viewer: admin`) with **stored** offer fee amounts (not a live recalculation), so migrated or historical fee snapshots stay honest. Fee
-create/edit still only takes menu price + travel; percents/amounts are always recalculated on write.
+untitled economics card (no “Wirtschaftlichkeit” heading). Stripe Dashboard deep links (`stripePaymentIntentUrl` / `stripeSetupIntentUrl`
+when `paymentData` has those ids; test vs live from `STRIPE_SECRET_KEY`), payout release actions, and dual cost views with **Kundensicht /
+Kochsicht** titles above, columns top-aligned. **Customer view** sits in a card around `CostBreakdownPanel` (promo / gift line items +
+total, muted travel-included footer). **Cook view** renders `BookingRequestOfferCostOverviewPanel` (`viewer: admin`) without an extra card
+wrapper (panel already has bordered sections) using **stored** offer fee amounts (not a live recalculation), so migrated or historical fee
+snapshots stay honest. Fee create/edit still only takes menu price + travel; percents/amounts are always recalculated on write. Edit-price
+CTA lives on this tab’s footer only.
 
 **Menu** holds only configured / suggested menus (`OfferMenuConfigured` or `CookMenuCard` grid to `/admin/menus/$menuId`) — no cook/customer
 header. When a customer has frozen a configured menu, admins can open `.../edit-configured-menu` to replace title, description, and

@@ -1,7 +1,18 @@
 import { Link, useRouter } from '@tanstack/react-router';
 import type { LucideIcon } from 'lucide-react';
-import { BanknoteIcon, ExternalLinkIcon, FileTextIcon, MessageSquareIcon, StarIcon, UtensilsCrossedIcon, VideoIcon } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import {
+    BanknoteIcon,
+    CheckIcon,
+    CopyIcon,
+    ExternalLinkIcon,
+    FileTextIcon,
+    MessageSquareIcon,
+    StarIcon,
+    UtensilsCrossedIcon,
+    VideoIcon,
+} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
@@ -11,6 +22,7 @@ import {
     bookingRequestPaidParticipants,
     formatCurrency,
     formatDate,
+    formatDateTime,
     userDisplayName,
 } from '../../../shared';
 import { AdminBookingRequestOfferCallRecordingsSection } from '../../components/AdminBookingRequestOfferCallRecordingsSection';
@@ -19,12 +31,15 @@ import { AdminBookingRequestOfferTestimonialsSection } from '../../components/Ad
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { AdminQueuedJobsSection } from '../../components/AdminQueuedJobsSection';
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/base/avatar';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/base/card';
 import { Separator } from '../../components/base/separator';
 import { StatusAlert } from '../../components/base/status-alert';
+import { StatusBadge } from '../../components/base/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/base/tabs';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import { BookingRequestOfferAttentionBanner } from '../../components/BookingRequestOfferAttentionBanner';
 import { BookingRequestOfferCallTab } from '../../components/BookingRequestOfferCallTab';
 import { BookingRequestOfferChat } from '../../components/BookingRequestOfferChat';
@@ -115,13 +130,80 @@ export function adminBookingRequestOfferPageVariables(bookingRequestId: string, 
     return { bookingRequestId, bookingRequestOfferId };
 }
 
-function DetailField({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function CopyValueButton({ text }: { text: string }) {
+    const locale = useLocale();
+    const [copied, setCopied] = useState(false);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const idleLabel = { de: 'Kopieren', en: 'Copy' }[locale];
+    const ariaLabel = copied ? { de: 'Kopiert', en: 'Copied' }[locale] : idleLabel;
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) clearTimeout(timerRef.current);
+        };
+    }, []);
+
+    const onCopy = useCallback(async () => {
+        try {
+            await navigator.clipboard.writeText(text);
+            toast.success({ de: 'In die Zwischenablage kopiert', en: 'Copied to clipboard' }[locale]);
+        } catch {
+            toast.error({ de: 'Kopieren in die Zwischenablage fehlgeschlagen', en: 'Could not copy to clipboard' }[locale]);
+        }
+        setCopied(true);
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => setCopied(false), 1500);
+    }, [text, locale]);
+
+    return (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label={ariaLabel}
+                    onClick={() => void onCopy()}
+                    className="opacity-70 hover:opacity-100"
+                >
+                    {copied ? <CheckIcon aria-hidden /> : <CopyIcon aria-hidden />}
+                </Button>
+            </TooltipTrigger>
+            <TooltipContent>{ariaLabel}</TooltipContent>
+        </Tooltip>
+    );
+}
+
+function DetailField({ label, value, mono, copyText }: { label: string; value: ReactNode; mono?: boolean; copyText?: string }) {
     return (
         <div className="grid gap-1">
             <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</dt>
-            <dd className={`text-sm text-foreground ${mono ? 'font-mono text-xs break-all' : ''}`}>{value}</dd>
+            <dd className="flex min-w-0 items-start gap-1">
+                <div
+                    className={
+                        mono ? 'min-w-0 flex-1 font-mono text-xs break-all text-foreground' : 'min-w-0 flex-1 text-sm text-foreground'
+                    }
+                >
+                    {value}
+                </div>
+                {copyText != null ? (
+                    <div className="flex shrink-0 items-center gap-0.5">
+                        <CopyValueButton text={copyText} />
+                    </div>
+                ) : null}
+            </dd>
         </div>
     );
+}
+
+function AcceptStatusBadge({ value, locale }: { value: boolean | null | undefined; locale: Locale }) {
+    if (value == null) {
+        return <StatusBadge tone="info">{{ de: 'Offen', en: 'Open' }[locale]}</StatusBadge>;
+    }
+    if (value) {
+        return <StatusBadge tone="success">{{ de: 'Ja', en: 'Yes' }[locale]}</StatusBadge>;
+    }
+    return <StatusBadge tone="error">{{ de: 'Nein', en: 'No' }[locale]}</StatusBadge>;
 }
 
 function OfferCostViews({
@@ -140,57 +222,48 @@ function OfferCostViews({
     const showCookView = paid > 0 && offer.menuPriceCents > 0;
 
     return (
-        <div className="grid gap-4 @3xl:grid-cols-2">
-            <Card className="gap-4 py-4">
-                <CardHeader className="px-4 pb-0">
-                    <CardTitle className="text-sm">{{ de: 'Kundensicht', en: 'Customer view' }[locale]}</CardTitle>
-                </CardHeader>
-                <CardContent className="px-4">
-                    <CostBreakdownPanel
-                        locale={locale}
-                        lineItems={offer.costBreakdown.lineItems}
-                        total={offer.costBreakdown.total}
-                        footer={
-                            {
-                                de: 'Die An- und Abreise sind im Gesamtpreis inkludiert',
-                                en: 'Travel to and from the venue is included in the total price',
-                            }[locale]
-                        }
-                    />
-                </CardContent>
-            </Card>
-            {showCookView ? (
+        <div className="grid items-start gap-4 @3xl:grid-cols-2">
+            <div className="grid gap-3">
+                <h2 className="text-sm font-medium text-foreground">{{ de: 'Kundensicht', en: 'Customer view' }[locale]}</h2>
                 <Card className="gap-4 py-4">
-                    <CardHeader className="px-4 pb-0">
-                        <CardTitle className="text-sm">{{ de: 'Kochsicht', en: 'Cook view' }[locale]}</CardTitle>
-                    </CardHeader>
                     <CardContent className="px-4">
-                        <BookingRequestOfferCostOverviewPanel
+                        <CostBreakdownPanel
                             locale={locale}
-                            viewer="admin"
-                            participantsAdult={adults}
-                            participantsDiscounted={discounted}
-                            pricePerPersonCents={pricePerPersonCents}
-                            travelExpensesCents={offer.travelExpensesCents}
-                            menuPriceCents={offer.menuPriceCents}
-                            storedPrice={{
-                                platformFeeCentsCook: offer.platformFeeCentsCook,
-                                platformFeeCentsCustomer: offer.platformFeeCentsCustomer,
-                                paymentProviderFeeCents: offer.paymentProviderFeeCents,
-                                payoutCentsCook: offer.payoutCentsCook,
-                                totalWithoutDiscountsCentsCustomer: offer.totalWithoutDiscountsCentsCustomer,
-                            }}
+                            lineItems={offer.costBreakdown.lineItems}
+                            total={offer.costBreakdown.total}
+                            footer={
+                                {
+                                    de: 'Die An- und Abreise sind im Gesamtpreis inkludiert',
+                                    en: 'Travel to and from the venue is included in the total price',
+                                }[locale]
+                            }
                         />
                     </CardContent>
                 </Card>
+            </div>
+            {showCookView ? (
+                <div className="grid gap-3">
+                    <h2 className="text-sm font-medium text-foreground">{{ de: 'Kochsicht', en: 'Cook view' }[locale]}</h2>
+                    <BookingRequestOfferCostOverviewPanel
+                        locale={locale}
+                        viewer="admin"
+                        participantsAdult={adults}
+                        participantsDiscounted={discounted}
+                        pricePerPersonCents={pricePerPersonCents}
+                        travelExpensesCents={offer.travelExpensesCents}
+                        menuPriceCents={offer.menuPriceCents}
+                        storedPrice={{
+                            platformFeeCentsCook: offer.platformFeeCentsCook,
+                            platformFeeCentsCustomer: offer.platformFeeCentsCustomer,
+                            paymentProviderFeeCents: offer.paymentProviderFeeCents,
+                            payoutCentsCook: offer.payoutCentsCook,
+                            totalWithoutDiscountsCentsCustomer: offer.totalWithoutDiscountsCentsCustomer,
+                        }}
+                    />
+                </div>
             ) : null}
         </div>
     );
-}
-
-function boolLabel(value: boolean | null | undefined, locale: Locale): string {
-    if (value == null) return { de: '—', en: '—' }[locale];
-    return value ? { de: 'Ja', en: 'Yes' }[locale] : { de: 'Nein', en: 'No' }[locale];
 }
 
 function cookPayoutBlockedReasonMessage(reason: GqlCAdminCookPayoutBlockedReason | null | undefined, locale: Locale): string {
@@ -333,7 +406,7 @@ export function AdminBookingRequestOfferPage({
                     contentScroll={false}
                     contentClassName="flex w-full min-w-0 flex-col pb-0"
                     footer={
-                        offer && (tab === 'offer' || tab === 'costs' || tab === 'menu') ? (
+                        offer && ((tab === 'offer' && canHandover) || tab === 'costs' || (tab === 'menu' && offer.configuredMenu)) ? (
                             <>
                                 {tab === 'offer' && canHandover ? (
                                     <Button type="button" variant="outline" onClick={() => setHandoverOpen(true)}>
@@ -350,7 +423,7 @@ export function AdminBookingRequestOfferPage({
                                         </Link>
                                     </Button>
                                 ) : null}
-                                {tab === 'offer' || tab === 'costs' ? (
+                                {tab === 'costs' ? (
                                     <Button type="button" asChild>
                                         <Link
                                             to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit"
@@ -367,13 +440,10 @@ export function AdminBookingRequestOfferPage({
                     {offer ? (
                         <>
                             <div className="grid shrink-0 gap-2 px-4 pb-1">
-                                <div className="flex flex-wrap items-center justify-between gap-3">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <BookingStatusPill className={bookingRequestOfferStatusClassName(offer.status)}>
-                                            {adminBookingRequestOfferStatusLabel(offer.status, locale)}
-                                        </BookingStatusPill>
-                                        <Badge variant="outline">{offer.paymentStatus}</Badge>
-                                    </div>
+                                <div className="flex flex-wrap items-center justify-end gap-3">
+                                    <BookingStatusPill className={bookingRequestOfferStatusClassName(offer.status)}>
+                                        {adminBookingRequestOfferStatusLabel(offer.status, locale)}
+                                    </BookingStatusPill>
                                 </div>
                                 {pendingCall && showSchedule ? (
                                     <BookingRequestOfferAttentionBanner
@@ -708,6 +778,13 @@ function money(cents: number, locale: Locale): string {
     return formatCurrency(cents, { locale });
 }
 
+function initialsFromName(name: string): string {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+    return `${parts[0]!.slice(0, 1)}${parts[parts.length - 1]!.slice(0, 1)}`.toUpperCase();
+}
+
 function EconomicsRow({
     label,
     value,
@@ -751,71 +828,130 @@ function OfferMetaTabPanel({
     locale: Locale;
     timeZone: string;
 }) {
-    const cookCity = offer.cook.exactTravelOriginAddress?.city.trim() || null;
+    const cookDisplayName = userDisplayName(offer.cook.user);
+    const cookProfilePictureUrl = offer.cook.user.profilePicture?.url ?? null;
+    const customerDisplayName = request ? adminBookingRequestCustomerLabel(request.customer) : null;
+    const customerProfilePictureUrl = request?.customer.profilePicture?.url ?? null;
+    const openUserLabel = { de: 'Nutzer öffnen', en: 'Open user' }[locale];
 
     return (
         <div className="@container grid max-w-3xl gap-4">
-            <div className="grid gap-4 @2xl:grid-cols-2">
-                <Card className="gap-4 py-4">
-                    <CardHeader className="px-4 pb-0">
-                        <CardTitle className="text-sm">{{ de: 'Koch', en: 'Cook' }[locale]}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="grid gap-2 px-4">
-                        <Link
-                            to="/{-$locale}/admin/users/$userId"
-                            params={{ userId: offer.cook.user.userId }}
-                            className="font-medium text-foreground hover:underline"
-                        >
-                            {userDisplayName(offer.cook.user)}
-                            {cookCity ? ` · ${cookCity}` : ''}
-                        </Link>
-                        <p className="text-sm text-muted-foreground">{offer.cook.user.emailAddress}</p>
+            <div className="grid items-start gap-4 @2xl:grid-cols-2">
+                <Card className="gap-0 py-4">
+                    <CardContent className="grid gap-3 px-4">
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="flex min-w-0 items-start gap-3">
+                                <Avatar className="size-12 shrink-0">
+                                    {cookProfilePictureUrl ? (
+                                        <AvatarImage src={cookProfilePictureUrl} alt="" className="object-cover" />
+                                    ) : null}
+                                    <AvatarFallback>{initialsFromName(cookDisplayName)}</AvatarFallback>
+                                </Avatar>
+                                <div className="grid min-w-0 flex-1 gap-0.5">
+                                    <p className="truncate font-medium text-foreground">{cookDisplayName}</p>
+                                    <p className="truncate text-sm text-muted-foreground">{offer.cook.user.emailAddress}</p>
+                                </div>
+                            </div>
+                            <Badge variant="outline" className="shrink-0">
+                                {{ de: 'Koch', en: 'Cook' }[locale]}
+                            </Badge>
+                        </div>
+                        <div>
+                            <Button type="button" variant="outline" size="sm" asChild>
+                                <Link to="/{-$locale}/admin/users/$userId" params={{ userId: offer.cook.user.userId }}>
+                                    <ExternalLinkIcon data-icon="inline-start" />
+                                    {openUserLabel}
+                                </Link>
+                            </Button>
+                        </div>
                         <CookProfileTags cuisineStyle={offer.cook.cuisineStyle} />
                     </CardContent>
                 </Card>
-                {request ? (
-                    <Card className="gap-4 py-4">
-                        <CardHeader className="px-4 pb-0">
-                            <CardTitle className="text-sm">{{ de: 'Kunde', en: 'Customer' }[locale]}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="grid gap-1 px-4">
-                            <p className="font-medium text-foreground">{adminBookingRequestCustomerLabel(request.customer)}</p>
-                            <p className="text-sm text-muted-foreground">{request.customer.emailAddress}</p>
+                {request && customerDisplayName ? (
+                    <Card className="gap-0 py-4">
+                        <CardContent className="grid gap-3 px-4">
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="flex min-w-0 items-start gap-3">
+                                    <Avatar className="size-12 shrink-0">
+                                        {customerProfilePictureUrl ? (
+                                            <AvatarImage src={customerProfilePictureUrl} alt="" className="object-cover" />
+                                        ) : null}
+                                        <AvatarFallback>{initialsFromName(customerDisplayName)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="grid min-w-0 flex-1 gap-0.5">
+                                        <p className="truncate font-medium text-foreground">{customerDisplayName}</p>
+                                        <p className="truncate text-sm text-muted-foreground">{request.customer.emailAddress}</p>
+                                    </div>
+                                </div>
+                                <Badge variant="outline" className="shrink-0">
+                                    {{ de: 'Kunde', en: 'Customer' }[locale]}
+                                </Badge>
+                            </div>
+                            <div>
+                                <Button type="button" variant="outline" size="sm" asChild>
+                                    <Link to="/{-$locale}/admin/users/$userId" params={{ userId: request.customer.userId }}>
+                                        <ExternalLinkIcon data-icon="inline-start" />
+                                        {openUserLabel}
+                                    </Link>
+                                </Button>
+                            </div>
                         </CardContent>
                     </Card>
                 ) : null}
             </div>
 
+            <div className="grid gap-3">
+                <h2 className="text-sm font-medium text-foreground">{{ de: 'Angebotsstatus', en: 'Offer status' }[locale]}</h2>
+                <Card className="gap-0 py-4">
+                    <CardContent className="grid gap-4 px-4">
+                        <dl className="grid gap-4 @sm:grid-cols-2">
+                            <DetailField
+                                label={{ de: 'Angebots-ID', en: 'Offer ID' }[locale]}
+                                value={offer.bookingRequestOfferId}
+                                mono
+                                copyText={offer.bookingRequestOfferId}
+                            />
+                            <DetailField
+                                label={{ de: 'Erstellt', en: 'Created' }[locale]}
+                                value={formatDateTime(offer.createdAt, {
+                                    locale,
+                                    timeZone,
+                                    dateStyle: 'long',
+                                    timeStyle: 'short',
+                                })}
+                            />
+                            <DetailField
+                                label={{ de: 'Kunde akzeptiert', en: 'Customer accepted' }[locale]}
+                                value={<AcceptStatusBadge value={offer.userAccepted} locale={locale} />}
+                            />
+                            <DetailField
+                                label={{ de: 'Koch akzeptiert', en: 'Cook accepted' }[locale]}
+                                value={<AcceptStatusBadge value={offer.cookAccepted} locale={locale} />}
+                            />
+                        </dl>
+                        {offer.userDeclinationReason || offer.cookDeclinationReason ? (
+                            <dl className="grid gap-4 border-t border-border pt-4">
+                                {offer.userDeclinationReason ? (
+                                    <DetailField
+                                        label={{ de: 'Ablehnungsgrund Kunde', en: 'Customer decline reason' }[locale]}
+                                        value={offer.userDeclinationReason}
+                                    />
+                                ) : null}
+                                {offer.cookDeclinationReason ? (
+                                    <DetailField
+                                        label={{ de: 'Ablehnungsgrund Koch', en: 'Cook decline reason' }[locale]}
+                                        value={offer.cookDeclinationReason}
+                                    />
+                                ) : null}
+                            </dl>
+                        ) : null}
+                    </CardContent>
+                </Card>
+            </div>
+
             <Card className="gap-4 py-4">
-                <CardHeader className="px-4 pb-0">
-                    <CardTitle className="text-sm">{{ de: 'Angebotsstatus', en: 'Offer status' }[locale]}</CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-3 px-4">
-                    <DetailField
-                        label={{ de: 'Kunde akzeptiert', en: 'Customer accepted' }[locale]}
-                        value={boolLabel(offer.userAccepted, locale)}
-                    />
-                    <DetailField
-                        label={{ de: 'Koch akzeptiert', en: 'Cook accepted' }[locale]}
-                        value={boolLabel(offer.cookAccepted, locale)}
-                    />
-                    {offer.userDeclinationReason ? (
-                        <DetailField
-                            label={{ de: 'Ablehnungsgrund Kunde', en: 'Customer decline reason' }[locale]}
-                            value={offer.userDeclinationReason}
-                        />
-                    ) : null}
-                    {offer.cookDeclinationReason ? (
-                        <DetailField
-                            label={{ de: 'Ablehnungsgrund Koch', en: 'Cook decline reason' }[locale]}
-                            value={offer.cookDeclinationReason}
-                        />
-                    ) : null}
-                    <DetailField
-                        label={{ de: 'Erstellt', en: 'Created' }[locale]}
-                        value={formatDate(offer.createdAt, { locale, timeZone, dateStyle: 'medium' })}
-                    />
-                    <DetailField label={{ de: 'Angebots-ID', en: 'Offer ID' }[locale]} value={offer.bookingRequestOfferId} mono />
+                <CardContent className="px-4">
+                    <AdminQueuedJobsSection jobs={offer.queuedJobs} />
                 </CardContent>
             </Card>
         </div>
@@ -833,13 +969,13 @@ function CostsTabPanel({
     locale: Locale;
     timeZone: string;
 }) {
-    const empty = { de: '—', en: '—' }[locale];
     const [, payoutRelease] = useMutation(AdminBookingRequestOfferPayoutReleaseDocument);
     const [, payoutMarkOutOfSystem] = useMutation(AdminBookingRequestOfferPayoutMarkOutOfSystemDocument);
     const [payoutBusy, setPayoutBusy] = useState(false);
 
     const due = offerPayoutDue(offer);
     const done = offerPayoutDone(offer);
+    const empty = { de: '—', en: '—' }[locale];
     const platformWinCents = offer.platformFeeCentsCook + offer.platformFeeCentsCustomer;
     const customerTotalCents = offer.totalCentsCustomer ?? offer.totalWithoutDiscountsCentsCustomer;
 
@@ -952,9 +1088,6 @@ function CostsTabPanel({
 
             <div className="grid gap-4 @2xl:grid-cols-2">
                 <Card className="gap-4 py-4">
-                    <CardHeader className="px-4 pb-0">
-                        <CardTitle className="text-sm">{{ de: 'Wirtschaftlichkeit', en: 'Economics' }[locale]}</CardTitle>
-                    </CardHeader>
                     <CardContent className="px-4">
                         <dl className="grid gap-3">
                             <EconomicsRow
@@ -1081,18 +1214,7 @@ function CostsTabPanel({
                 </Card>
             </div>
 
-            <div className="grid gap-3">
-                <h2 className="text-sm font-medium text-foreground">
-                    {{ de: 'Ansichten für Kunde und Koch', en: 'Customer and cook views' }[locale]}
-                </h2>
-                <OfferCostViews offer={offer} request={request} locale={locale} />
-            </div>
-
-            <Card className="gap-4 py-4">
-                <CardContent className="px-4">
-                    <AdminQueuedJobsSection jobs={offer.queuedJobs} />
-                </CardContent>
-            </Card>
+            <OfferCostViews offer={offer} request={request} locale={locale} />
         </div>
     );
 }

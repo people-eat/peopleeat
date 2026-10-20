@@ -466,8 +466,8 @@ export function ChatMessageUserView({
     if (isOwn) {
         return (
             <MessageRow side={side}>
-                <div className="group/msg flex w-full max-w-full flex-col items-end">
-                    <div className="flex items-end gap-2">
+                <div className="group/msg flex w-full max-w-full flex-col">
+                    <div className="flex items-end justify-end gap-2">
                         {moderationMenu}
                         <Bubble tone={tone} className={bubbleClassName}>
                             {bubbleInner}
@@ -505,8 +505,12 @@ export function ChatMessageUserView({
                     <Bubble tone={tone} tail={showAuthorAvatar} className={bubbleClassName}>
                         {bubbleInner}
                     </Bubble>
-                    {moderationMenu}
-                    {reactionPicker}
+                    {moderationMenu != null || reactionPicker != null ? (
+                        <div className="flex shrink-0 flex-col items-center gap-0.5 self-end">
+                            {moderationMenu}
+                            {reactionPicker}
+                        </div>
+                    ) : null}
                 </div>
                 {reactionBadges}
                 {preview}
