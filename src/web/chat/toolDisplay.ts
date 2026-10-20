@@ -1,10 +1,10 @@
 // Friendly display for tool-call rows in the transcript. The raw tool id
-// (`promptUserForInput`, `writeToConsole`, `toolItemsUpsert`) is an internal
-// name; showing it in the conversation reads as technical noise. This maps
-// curated ids to a human, bilingual label + icon. Everything else falls back to
-// a mechanical label derived from the tool name.
+// (`promptUserForInput`, `toolItemsUpsert`) is an internal name; showing it in
+// the conversation reads as technical noise. This maps curated ids to a human,
+// bilingual label + icon. Everything else falls back to a mechanical label
+// derived from the tool name.
 
-import { BookOpenIcon, ClipboardListIcon, HammerIcon, MessageSquareIcon, SoupIcon, TerminalIcon, UsersIcon } from 'lucide-react';
+import { BookOpenIcon, ClipboardListIcon, HammerIcon, MessageSquareIcon, SoupIcon, UsersIcon } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Locale } from '../utils/locale';
 
@@ -17,10 +17,6 @@ const TOOL_DISPLAY: Record<string, ToolDisplayEntry> = {
     promptUserForInput: {
         Icon: MessageSquareIcon,
         label: { de: 'Fragt nach den Zutaten…', en: 'Asking for a few details…' },
-    },
-    writeToConsole: {
-        Icon: TerminalIcon,
-        label: { de: 'Notiert in der Küchenlog…', en: 'Jotting in the kitchen log…' },
     },
     cookMealCreate: {
         Icon: HammerIcon,
@@ -112,7 +108,6 @@ const TOOL_WORD_DE: Record<string, string> = {
     documents: 'Dokumente',
     upsert: 'anlegen/aktualisieren',
     write: 'schreiben',
-    console: 'Konsole',
     delegate: 'delegieren',
 };
 

@@ -10,7 +10,6 @@ import { toolAdminCookMenusFindMany } from '../queries/adminCookMenuFindMany';
 import { toolAdminUsersFindMany } from '../queries/adminUserFindMany';
 import { agentUserFacingWritingRules, currentDateForAgent, googleAgentProviderOptionsFor } from './agentScaffolding';
 import { toolPromptUserForInput } from './toolPromptUserForInput';
-import { toolWriteToConsole } from './toolWriteToConsole';
 
 interface AgentAdminCreateOptions {
     serverRuntime: ServerRuntime;
@@ -22,16 +21,15 @@ interface AgentAdminCreateOptions {
 
 /**
  * Admin personal assistant. Booking-request / user / meal / menu list tools
- * plus HITL demo tools.
+ * plus promptUserForInput for clarifying filters.
  *
  * Gemini cannot combine `Output.object` (JSON mime type) with function calling,
  * so final answers are plain markdown while tools remain available. Rich list
  * cards are persisted as admin `*.List` data parts from tool output (see
  * `chatMessageAiAdapter`).
  */
-export async function agentAdminCreate({ serverRuntime, assistantOptions, session, modelId, onStepEnd }: AgentAdminCreateOptions) {
+export async function agentAdminCreate({ serverRuntime, session, modelId, onStepEnd }: AgentAdminCreateOptions) {
     const resolvedModelId = modelId ?? 'gemini-2.5-flash';
-    const toolApproval = assistantOptions.requireToolCallApprovals ? { writeToConsole: 'user-approval' as const } : undefined;
     return new ToolLoopAgent({
         id: 'admin-assistant',
         model: serverRuntime.ai.adminAssistantModel(resolvedModelId),
@@ -52,10 +50,8 @@ export async function agentAdminCreate({ serverRuntime, assistantOptions, sessio
             'Reply in clear markdown. Prefer short paragraphs and lists over walls of text.',
             agentUserFacingWritingRules(),
         ].join('\n'),
-        toolApproval,
         tools: {
             promptUserForInput: toolPromptUserForInput(),
-            writeToConsole: toolWriteToConsole(),
             adminBookingRequestsFindMany: toolAdminBookingRequestsFindMany({
                 requestingSession: session,
                 serverRuntime,

@@ -11,8 +11,8 @@ Each surface gets an assistant matched to the job:
 - **Admin rail** — Help with users, approvals, and support context while working in admin.
 - **Booking request form** — Conversational help while filling or refining a request (when wired).
 
-`chatTurnAgentCreate` dispatches by `Chat.surface`. Admin ships booking-request / user / meal / menu list tools + HITL demo tools. Cook
-ships meal create / profile update tools with a cook state snapshot in the system prompt. Customer remains scaffolded. Tool-loop agents
+`chatTurnAgentCreate` dispatches by `Chat.surface`. Admin ships booking-request / user / meal / menu list tools plus `promptUserForInput`.
+Cook ships meal create / profile update tools with a cook state snapshot in the system prompt. Customer remains scaffolded. Tool-loop agents
 reply in markdown — Gemini cannot combine `Output.object` (JSON mime type) with function calling. Admin list cards are persisted as
 `admin.bookingRequestList` / `admin.userList` / `admin.mealList` / `admin.menuList` data parts from the matching tool result. Each list tool
 accepts an optional primary-key id array (`bookingRequestIds` / `userIds` / `mealIds` / `menuIds`) for follow-up drill-in on the same tool —
@@ -29,12 +29,12 @@ no separate find-one tools.
 
 ### Factory status
 
-| Factory                     | File                                             | Intended surface      | Status                                                                        |
-| --------------------------- | ------------------------------------------------ | --------------------- | ----------------------------------------------------------------------------- |
-| `agentCustomerCreate`       | `src/server/agents/agentCustomerCreate.ts`       | Customer profile rail | **Scaffold** — empty tools                                                    |
-| `agentCookCreate`           | `src/server/agents/agentCookCreate.ts`           | Cook profile rail     | **Wired** — `cookMealCreate`, `cookUpdate`, snapshot                          |
-| `agentAdminCreate`          | `src/server/agents/agentAdminCreate.ts`          | Admin rail            | **Wired** — booking-request / user / meal / menu list tools + HITL demo tools |
-| `agentBookingRequestCreate` | `src/server/agents/agentBookingRequestCreate.ts` | Booking request form  | **Scaffold** — empty tools                                                    |
+| Factory                     | File                                             | Intended surface      | Status                                                                             |
+| --------------------------- | ------------------------------------------------ | --------------------- | ---------------------------------------------------------------------------------- |
+| `agentCustomerCreate`       | `src/server/agents/agentCustomerCreate.ts`       | Customer profile rail | **Scaffold** — empty tools                                                         |
+| `agentCookCreate`           | `src/server/agents/agentCookCreate.ts`           | Cook profile rail     | **Wired** — `cookMealCreate`, `cookUpdate`, snapshot                               |
+| `agentAdminCreate`          | `src/server/agents/agentAdminCreate.ts`          | Admin rail            | **Wired** — booking-request / user / meal / menu list tools + `promptUserForInput` |
+| `agentBookingRequestCreate` | `src/server/agents/agentBookingRequestCreate.ts` | Booking request form  | **Scaffold** — empty tools                                                         |
 
 Dispatch: `src/server/lib/chatTurnAgentCreate.ts`.
 
