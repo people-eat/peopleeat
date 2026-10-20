@@ -166,9 +166,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
         <AdminPathPageChrome>
             <main id="main-content" className="mx-auto grid w-full max-w-6xl content-start gap-8">
                 <div className="grid gap-2">
-                    <h1 className="font-serif text-4xl/tight text-foreground">
-                        {{ de: `Hallo ${name},`, en: `Hello ${name},` }[locale]}
-                    </h1>
+                    <h1 className="font-serif text-4xl/tight text-foreground">{{ de: `Hallo ${name},`, en: `Hello ${name},` }[locale]}</h1>
                     <p className="text-muted-foreground">
                         {{ de: 'Hier siehst du, was als Nächstes ansteht.', en: 'Here is what to do next.' }[locale]}
                     </p>

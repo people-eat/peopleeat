@@ -26,13 +26,12 @@ shows the legal gate — [admin-legal.md](./admin-legal.md).
 ### Detail — `/admin/users/<userId>`
 
 Tabs via URL: **general**, **notes** (full-width editable operator note; **Save** in pinned footer), **sessions** (list with Details +
-revoke; terminate-all in pinned footer),
-**emails**, **assistant-chats**, **booking-requests** (customer-sent requests as `AdminBookingRequestListCard` grid; create in pinned footer
-→ `/admin/booking-requests/create?userId=`), **cook-profile** (approve/revoke, visibility, travel, biography/tags —
-[cook-profile.md](./cook-profile.md)), **meals** / **menus** (browse + create draft), **offers** (cook-created offers as
-`AdminBookingRequestOfferCard` grid), **whatsapp** (conversations for that user), **session-events** (first-party analytics timeline across
-the user’s sessions; pinned bottom pagination with `page` / `pageSize` in the URL, default 25). Lazy-loaded tab data where noted in
-implementation. Tab actions use `AdminPinnedFooterLayout` so more tabs can grow footers over time.
+revoke; terminate-all in pinned footer), **emails**, **assistant-chats**, **booking-requests** (customer-sent requests as
+`AdminBookingRequestListCard` grid; create in pinned footer → `/admin/booking-requests/create?userId=`), **cook-profile** (approve/revoke,
+visibility, travel, biography/tags — [cook-profile.md](./cook-profile.md)), **meals** / **menus** (browse + create draft), **offers**
+(cook-created offers as `AdminBookingRequestOfferCard` grid), **whatsapp** (conversations for that user), **session-events** (first-party
+analytics timeline across the user’s sessions; pinned bottom pagination with `page` / `pageSize` in the URL, default 25). Lazy-loaded tab
+data where noted in implementation. Tab actions use `AdminPinnedFooterLayout` so more tabs can grow footers over time.
 
 **General** defaults to a read-only detail on a full-width two-column desktop layout: sticky identity aside (avatar, name, status, types,
 registered, user id with copy) plus a fluid main column that fills the remaining width (no `max-w-*`). View mode lays contact fields in a

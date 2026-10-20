@@ -697,13 +697,7 @@ function AdminUserBookingRequestOffersSection({ offers }: { offers: AdminUserBoo
     );
 }
 
-function AdminUserNotesSection({
-    user,
-    onFooterChange,
-}: {
-    user: AdminUserRow;
-    onFooterChange: (footer: ReactNode | undefined) => void;
-}) {
+function AdminUserNotesSection({ user, onFooterChange }: { user: AdminUserRow; onFooterChange: (footer: ReactNode | undefined) => void }) {
     const locale = useLocale();
     const [, noteUpdate] = useMutation(AdminUserAdminNoteUpdateDocument);
     const [adminNote, setAdminNote] = useState(user.adminNote);
@@ -870,7 +864,9 @@ function AdminUserAssistantChatsSection({ chats }: { chats: AdminUserAssistantCh
                         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                             <Badge variant="outline">{adminChatSurfaceLabel(row.surface, locale)}</Badge>
                             {row.deletedAt ? <Badge variant="outline">{{ de: 'Gelöscht', en: 'Deleted' }[locale]}</Badge> : null}
-                            <span className="tabular-nums">{formatDate(row.lastModifiedAt, { locale, timeZone, dateStyle: 'medium' })}</span>
+                            <span className="tabular-nums">
+                                {formatDate(row.lastModifiedAt, { locale, timeZone, dateStyle: 'medium' })}
+                            </span>
                         </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
