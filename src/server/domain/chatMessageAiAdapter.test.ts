@@ -3,13 +3,19 @@ import { describe, expect, it } from 'vitest';
 import { assistantPresentationNormalize, chatAssistantTextLooksLikeStructuredOutput } from '../agents/assistantPresentationOutput';
 import {
     CHAT_DATA_TYPE_ADMIN_BOOKING_REQUEST_LIST,
+    CHAT_DATA_TYPE_ADMIN_GIFT_CARD_LIST,
     CHAT_DATA_TYPE_ADMIN_MEAL_LIST,
     CHAT_DATA_TYPE_ADMIN_MENU_LIST,
+    CHAT_DATA_TYPE_ADMIN_SUPPORT_REQUEST_LIST,
+    CHAT_DATA_TYPE_ADMIN_TESTIMONIAL_LIST,
     CHAT_DATA_TYPE_ADMIN_USER_LIST,
     CHAT_DATA_TYPE_CHEF_CARD_LIST,
     CHAT_TOOL_ADMIN_BOOKING_REQUESTS_FIND_MANY,
     CHAT_TOOL_ADMIN_COOK_MEALS_FIND_MANY,
     CHAT_TOOL_ADMIN_COOK_MENUS_FIND_MANY,
+    CHAT_TOOL_ADMIN_GIFT_CARDS_FIND_MANY,
+    CHAT_TOOL_ADMIN_SUPPORT_REQUESTS_FIND_MANY,
+    CHAT_TOOL_ADMIN_TESTIMONIALS_FIND_MANY,
     CHAT_TOOL_ADMIN_USERS_FIND_MANY,
 } from '../db/chatPayloadTypes';
 import { expandAdminListToolParts } from './chatMessageAiAdapter';
@@ -144,6 +150,72 @@ describe('assistant presentation → chat parts', () => {
             { type: 'data', dataType: CHAT_DATA_TYPE_ADMIN_MEAL_LIST, data: { meals: [{ mealId: 'meal1', title: 'Soup' }] } },
             parts[2],
             { type: 'data', dataType: CHAT_DATA_TYPE_ADMIN_MENU_LIST, data: { menus: [{ menuId: 'menu1', title: 'Tasting' }] } },
+        ]);
+    });
+
+    it('materializes support / gift-card / testimonial list data parts', () => {
+        const parts: ChatMessagePart[] = [
+            {
+                type: 'tool',
+                toolCallId: 's1',
+                toolName: CHAT_TOOL_ADMIN_SUPPORT_REQUESTS_FIND_MANY,
+                state: 'outputAvailable',
+                input: { detail: 'evidence' },
+                output: {
+                    count: 1,
+                    detail: 'evidence',
+                    supportRequestIds: ['sr1'],
+                    supportRequests: [{ supportRequestId: 'sr1', subject: 'Help', customerName: 'Ada' }],
+                },
+            },
+            {
+                type: 'tool',
+                toolCallId: 'g1',
+                toolName: CHAT_TOOL_ADMIN_GIFT_CARDS_FIND_MANY,
+                state: 'outputAvailable',
+                input: { detail: 'evidence' },
+                output: {
+                    count: 1,
+                    detail: 'evidence',
+                    giftCardIds: ['gc1'],
+                    giftCards: [{ giftCardId: 'gc1', occasion: 'Birthday' }],
+                },
+            },
+            {
+                type: 'tool',
+                toolCallId: 'tm1',
+                toolName: CHAT_TOOL_ADMIN_TESTIMONIALS_FIND_MANY,
+                state: 'outputAvailable',
+                input: { detail: 'evidence' },
+                output: {
+                    count: 1,
+                    detail: 'evidence',
+                    customerTestimonialIds: ['ct1'],
+                    cookTestimonialIds: [],
+                    testimonials: [{ kind: 'customer', testimonialId: 'ct1', displayAuthorName: 'Ada' }],
+                },
+            },
+        ];
+        const expanded = expandAdminListToolParts(parts);
+        expect(expanded).toEqual([
+            parts[0],
+            {
+                type: 'data',
+                dataType: CHAT_DATA_TYPE_ADMIN_SUPPORT_REQUEST_LIST,
+                data: { supportRequests: [{ supportRequestId: 'sr1', subject: 'Help', customerName: 'Ada' }] },
+            },
+            parts[1],
+            {
+                type: 'data',
+                dataType: CHAT_DATA_TYPE_ADMIN_GIFT_CARD_LIST,
+                data: { giftCards: [{ giftCardId: 'gc1', occasion: 'Birthday' }] },
+            },
+            parts[2],
+            {
+                type: 'data',
+                dataType: CHAT_DATA_TYPE_ADMIN_TESTIMONIAL_LIST,
+                data: { testimonials: [{ kind: 'customer', testimonialId: 'ct1', displayAuthorName: 'Ada' }] },
+            },
         ]);
     });
 });

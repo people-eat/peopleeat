@@ -1154,6 +1154,7 @@ export interface GqlSAdminGiftCard {
 }
 
 export type GqlSAdminGiftCardCriterion = {
+    giftCardIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     paymentStatuses: Array<GqlSGiftCardPaymentStatus>;
     searchText?: InputMaybe<Scalars['String']['input']>;
     skip?: Scalars['Int']['input'];
@@ -2045,6 +2046,7 @@ export type GqlSAdminSupportRequestCriterion = {
     searchText?: InputMaybe<Scalars['String']['input']>;
     skip?: Scalars['Int']['input'];
     statuses?: InputMaybe<Array<GqlSSupportRequestStatus>>;
+    supportRequestIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     take?: Scalars['Int']['input'];
 };
 
@@ -11542,6 +11544,7 @@ export function GqlSAdminCustomerTestimonialUpdateSchema(): z.ZodObject<Properti
 
 export function GqlSAdminGiftCardCriterionSchema(): z.ZodType<GqlSAdminGiftCardCriterion> {
     return z.object({
+        giftCardIds: z.array(z.string()).nullish(),
         paymentStatuses: z.array(GqlSGiftCardPaymentStatusSchema),
         searchText: z.string().nullish(),
         skip: z.number().default(0),
@@ -11646,6 +11649,7 @@ export function GqlSAdminSupportRequestCriterionSchema(): z.ZodType<GqlSAdminSup
         searchText: z.string().nullish(),
         skip: z.number().default(0),
         statuses: z.array(GqlSSupportRequestStatusSchema).nullish(),
+        supportRequestIds: z.array(z.string()).nullish(),
         take: z.number().default(25),
     });
 }

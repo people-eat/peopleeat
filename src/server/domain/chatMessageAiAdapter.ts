@@ -5,19 +5,28 @@ import { adminListDetailFromToolPart, adminListToolOutputForModel } from '../age
 import { assistantPresentationNormalize, chatAssistantTextLooksLikeStructuredOutput } from '../agents/assistantPresentationOutput';
 import {
     CHAT_DATA_TYPE_ADMIN_BOOKING_REQUEST_LIST,
+    CHAT_DATA_TYPE_ADMIN_GIFT_CARD_LIST,
     CHAT_DATA_TYPE_ADMIN_MEAL_LIST,
     CHAT_DATA_TYPE_ADMIN_MENU_LIST,
+    CHAT_DATA_TYPE_ADMIN_SUPPORT_REQUEST_LIST,
+    CHAT_DATA_TYPE_ADMIN_TESTIMONIAL_LIST,
     CHAT_DATA_TYPE_ADMIN_USER_LIST,
     CHAT_DATA_TYPE_CHEF_CARD_LIST,
     CHAT_TOOL_ADMIN_BOOKING_REQUESTS_FIND_MANY,
     CHAT_TOOL_ADMIN_COOK_MEALS_FIND_MANY,
     CHAT_TOOL_ADMIN_COOK_MENUS_FIND_MANY,
+    CHAT_TOOL_ADMIN_GIFT_CARDS_FIND_MANY,
+    CHAT_TOOL_ADMIN_SUPPORT_REQUESTS_FIND_MANY,
+    CHAT_TOOL_ADMIN_TESTIMONIALS_FIND_MANY,
     CHAT_TOOL_ADMIN_USERS_FIND_MANY,
 } from '../db/chatPayloadTypes';
 import type {
     ChatAdminBookingRequestListItem,
+    ChatAdminGiftCardListItem,
     ChatAdminMealListItem,
     ChatAdminMenuListItem,
+    ChatAdminSupportRequestListItem,
+    ChatAdminTestimonialListItem,
     ChatAdminUserListItem,
 } from '../db/chatPayloadTypes';
 import type { ChatMessageBody, ChatMessagePart, ChatToolApproval, ChatToolState } from './chatMessageBody';
@@ -208,12 +217,43 @@ function isAdminMenuListItem(item: unknown): item is ChatAdminMenuListItem {
     );
 }
 
+function isAdminSupportRequestListItem(item: unknown): item is ChatAdminSupportRequestListItem {
+    return (
+        item != null &&
+        typeof item === 'object' &&
+        typeof (item as ChatAdminSupportRequestListItem).supportRequestId === 'string' &&
+        typeof (item as ChatAdminSupportRequestListItem).subject === 'string'
+    );
+}
+
+function isAdminGiftCardListItem(item: unknown): item is ChatAdminGiftCardListItem {
+    return (
+        item != null &&
+        typeof item === 'object' &&
+        typeof (item as ChatAdminGiftCardListItem).giftCardId === 'string' &&
+        typeof (item as ChatAdminGiftCardListItem).occasion === 'string'
+    );
+}
+
+function isAdminTestimonialListItem(item: unknown): item is ChatAdminTestimonialListItem {
+    return (
+        item != null &&
+        typeof item === 'object' &&
+        ((item as ChatAdminTestimonialListItem).kind === 'customer' || (item as ChatAdminTestimonialListItem).kind === 'cook') &&
+        typeof (item as ChatAdminTestimonialListItem).testimonialId === 'string' &&
+        typeof (item as ChatAdminTestimonialListItem).displayAuthorName === 'string'
+    );
+}
+
 function isAdminListFindManyToolName(toolName: string): boolean {
     return (
         toolName === CHAT_TOOL_ADMIN_BOOKING_REQUESTS_FIND_MANY ||
         toolName === CHAT_TOOL_ADMIN_USERS_FIND_MANY ||
         toolName === CHAT_TOOL_ADMIN_COOK_MEALS_FIND_MANY ||
-        toolName === CHAT_TOOL_ADMIN_COOK_MENUS_FIND_MANY
+        toolName === CHAT_TOOL_ADMIN_COOK_MENUS_FIND_MANY ||
+        toolName === CHAT_TOOL_ADMIN_SUPPORT_REQUESTS_FIND_MANY ||
+        toolName === CHAT_TOOL_ADMIN_GIFT_CARDS_FIND_MANY ||
+        toolName === CHAT_TOOL_ADMIN_TESTIMONIALS_FIND_MANY
     );
 }
 
@@ -261,6 +301,31 @@ export function expandAdminListToolParts(parts: ChatMessagePart[]): ChatMessageP
             const menus = listItemsFromToolOutput(part.output, 'menus', isAdminMenuListItem);
             if (menus) {
                 expanded.push({ type: 'data', dataType: CHAT_DATA_TYPE_ADMIN_MENU_LIST, data: { menus } });
+            }
+            continue;
+        }
+        if (part.toolName === CHAT_TOOL_ADMIN_SUPPORT_REQUESTS_FIND_MANY) {
+            const supportRequests = listItemsFromToolOutput(part.output, 'supportRequests', isAdminSupportRequestListItem);
+            if (supportRequests) {
+                expanded.push({
+                    type: 'data',
+                    dataType: CHAT_DATA_TYPE_ADMIN_SUPPORT_REQUEST_LIST,
+                    data: { supportRequests },
+                });
+            }
+            continue;
+        }
+        if (part.toolName === CHAT_TOOL_ADMIN_GIFT_CARDS_FIND_MANY) {
+            const giftCards = listItemsFromToolOutput(part.output, 'giftCards', isAdminGiftCardListItem);
+            if (giftCards) {
+                expanded.push({ type: 'data', dataType: CHAT_DATA_TYPE_ADMIN_GIFT_CARD_LIST, data: { giftCards } });
+            }
+            continue;
+        }
+        if (part.toolName === CHAT_TOOL_ADMIN_TESTIMONIALS_FIND_MANY) {
+            const testimonials = listItemsFromToolOutput(part.output, 'testimonials', isAdminTestimonialListItem);
+            if (testimonials) {
+                expanded.push({ type: 'data', dataType: CHAT_DATA_TYPE_ADMIN_TESTIMONIAL_LIST, data: { testimonials } });
             }
         }
     }

@@ -1822,6 +1822,9 @@ input AdminSupportRequestCriterion {
     skip: Int! = 0
     take: Int! = 25
     searchText: String
+    # Primary-key filter (`IN`); omit or empty = no id filter. Used by admin
+    # assistant drill-in (same list tool with one or more support request ids).
+    supportRequestIds: [ID!]
     statuses: [SupportRequestStatus!]
     hasAdminUnread: Boolean
 }
@@ -3531,6 +3534,9 @@ input AdminGiftCardCriterion {
     skip: Int! = 0
     take: Int! = 25
     searchText: String
+    # Primary-key filter (`IN`); omit or empty = no id filter. Used by admin
+    # assistant drill-in (same list tool with one or more gift card ids).
+    giftCardIds: [ID!]
     paymentStatuses: [GiftCardPaymentStatus!]!
     sortField: AdminGiftCardSortField
     sortDirection: SortDirection

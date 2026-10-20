@@ -130,6 +130,56 @@ describe('adminGiftCardFindMany', () => {
         expect(rows).toEqual([]);
     });
 
+    it('filters by giftCardIds', async () => {
+        // Arrange
+        const { requestingSession, serverRuntime } = await commandSetup.withUser();
+        const token = `ids-${idCreate().slice(0, 8)}`;
+        const match = await insertGiftCard(requestingSession.sessionId, {
+            occasion: `${token}-match`,
+            buyerEmail: `${token}-match@example.com`,
+        });
+        const other = await insertGiftCard(requestingSession.sessionId, {
+            occasion: `${token}-other`,
+            buyerEmail: `${token}-other@example.com`,
+        });
+
+        // Act
+        const byId = await adminGiftCardFindMany(
+            { criterion: { skip: 0, take: 100, giftCardIds: [match.giftCardId], paymentStatuses: [...ALL_STATUSES] } },
+            requestingSession,
+            serverRuntime,
+        );
+        const unknown = await adminGiftCardFindMany(
+            { criterion: { skip: 0, take: 100, giftCardIds: [idCreate()], paymentStatuses: [...ALL_STATUSES] } },
+            requestingSession,
+            serverRuntime,
+        );
+        const emptyIds = await adminGiftCardFindMany(
+            { criterion: { skip: 0, take: 100, giftCardIds: [], searchText: token, paymentStatuses: [...ALL_STATUSES] } },
+            requestingSession,
+            serverRuntime,
+        );
+        const andSearch = await adminGiftCardFindMany(
+            {
+                criterion: {
+                    skip: 0,
+                    take: 100,
+                    giftCardIds: [match.giftCardId, other.giftCardId],
+                    searchText: `${token}-match`,
+                    paymentStatuses: [...ALL_STATUSES],
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        // Assert
+        expect(byId.map((row) => row.giftCardId)).toEqual([match.giftCardId]);
+        expect(unknown).toEqual([]);
+        expect(emptyIds.map((row) => row.giftCardId).sort()).toEqual([match.giftCardId, other.giftCardId].sort());
+        expect(andSearch.map((row) => row.giftCardId)).toEqual([match.giftCardId]);
+    });
+
     it('filters by paymentStatus membership', async () => {
         // Arrange
         const { requestingSession, serverRuntime } = await commandSetup.withUser();

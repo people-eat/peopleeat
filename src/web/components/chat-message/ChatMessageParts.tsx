@@ -9,6 +9,10 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { AdminBookingRequestListCard } from '../AdminBookingRequestListCard';
 import type { AdminBookingRequestListCardRequest } from '../AdminBookingRequestListCard';
+import { AdminGiftCardListCard } from '../AdminGiftCardListCard';
+import type { AdminGiftCardListCardGiftCard } from '../AdminGiftCardListCard';
+import { AdminTestimonialListCard } from '../AdminTestimonialListCard';
+import type { AdminTestimonialListCardTestimonial } from '../AdminTestimonialListCard';
 import { AdminUserListCard } from '../AdminUserListCard';
 import type { AdminUserListCardUser } from '../AdminUserListCard';
 import { AssistantMarkdown } from '../AssistantMarkdown';
@@ -16,6 +20,8 @@ import { AssistantPendingStatus } from '../AssistantPendingStatus';
 import { AssistantReasoning } from '../AssistantReasoning';
 import { CookMealCard } from '../CookMealCard';
 import { CookMenuCard } from '../CookMenuCard';
+import { SupportRequestSummaryCard } from '../SupportRequestSummaryCard';
+import type { SupportRequestSummaryCardRequest } from '../SupportRequestSummaryCard';
 import { ChatArtifactCard } from './ChatArtifactCard';
 import { ChatCardList } from './ChatCardList';
 import { ToolArgumentsButton } from './shared';
@@ -28,6 +34,14 @@ const ADMIN_BOOKING_REQUEST_LIST = 'admin.bookingRequestList';
 const ADMIN_USER_LIST = 'admin.userList';
 const ADMIN_MEAL_LIST = 'admin.mealList';
 const ADMIN_MENU_LIST = 'admin.menuList';
+const ADMIN_SUPPORT_REQUEST_LIST = 'admin.supportRequestList';
+const ADMIN_GIFT_CARD_LIST = 'admin.giftCardList';
+const ADMIN_TESTIMONIAL_LIST = 'admin.testimonialList';
+
+type ChatAdminSupportRequestListItem = SupportRequestSummaryCardRequest & {
+    customerName: string;
+    adminUnreadNotificationCount: number;
+};
 
 type ChatAdminMealListItem = {
     mealId: string;
@@ -293,6 +307,51 @@ function ChatMessageDataPartView({ part }: { part: Extract<Part, { __typename: '
                                 </>
                             }
                         />
+                    </li>
+                ))}
+            </ChatCardList>
+        );
+    }
+    if (part.dataType === ADMIN_SUPPORT_REQUEST_LIST && part.data && typeof part.data === 'object') {
+        const supportRequests = (part.data as { supportRequests?: ChatAdminSupportRequestListItem[] }).supportRequests ?? [];
+        if (supportRequests.length === 0) return null;
+        return (
+            <ChatCardList>
+                {supportRequests.map((request) => (
+                    <li key={request.supportRequestId} className="min-h-0 min-w-0">
+                        <SupportRequestSummaryCard
+                            request={request}
+                            unreadCount={request.adminUnreadNotificationCount}
+                            customerName={request.customerName}
+                            to="/{-$locale}/admin/support-requests/$supportRequestId"
+                            params={{ supportRequestId: request.supportRequestId }}
+                        />
+                    </li>
+                ))}
+            </ChatCardList>
+        );
+    }
+    if (part.dataType === ADMIN_GIFT_CARD_LIST && part.data && typeof part.data === 'object') {
+        const giftCards = (part.data as { giftCards?: AdminGiftCardListCardGiftCard[] }).giftCards ?? [];
+        if (giftCards.length === 0) return null;
+        return (
+            <ChatCardList>
+                {giftCards.map((giftCard) => (
+                    <li key={giftCard.giftCardId} className="min-h-0 min-w-0">
+                        <AdminGiftCardListCard giftCard={giftCard} />
+                    </li>
+                ))}
+            </ChatCardList>
+        );
+    }
+    if (part.dataType === ADMIN_TESTIMONIAL_LIST && part.data && typeof part.data === 'object') {
+        const testimonials = (part.data as { testimonials?: AdminTestimonialListCardTestimonial[] }).testimonials ?? [];
+        if (testimonials.length === 0) return null;
+        return (
+            <ChatCardList>
+                {testimonials.map((testimonial) => (
+                    <li key={`${testimonial.kind}-${testimonial.testimonialId}`} className="min-h-0 min-w-0">
+                        <AdminTestimonialListCard testimonial={testimonial} />
                     </li>
                 ))}
             </ChatCardList>

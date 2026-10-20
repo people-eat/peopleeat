@@ -1157,6 +1157,7 @@ export interface GqlCAdminGiftCard {
 }
 
 export type GqlCAdminGiftCardCriterion = {
+    giftCardIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     paymentStatuses: Array<GqlCGiftCardPaymentStatus>;
     searchText?: InputMaybe<Scalars['String']['input']>;
     skip?: Scalars['Int']['input'];
@@ -2048,6 +2049,7 @@ export type GqlCAdminSupportRequestCriterion = {
     searchText?: InputMaybe<Scalars['String']['input']>;
     skip?: Scalars['Int']['input'];
     statuses?: InputMaybe<Array<GqlCSupportRequestStatus>>;
+    supportRequestIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     take?: Scalars['Int']['input'];
 };
 

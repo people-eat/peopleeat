@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export type AdminListDetail = 'summary' | 'evidence';
 
-const ADMIN_LIST_CARD_KEYS = ['requests', 'users', 'meals', 'menus'] as const;
+const ADMIN_LIST_CARD_KEYS = ['requests', 'users', 'meals', 'menus', 'supportRequests', 'giftCards', 'testimonials'] as const;
 
 const ADMIN_LIST_DETAIL_DESCRIBE = [
     '`summary` (default): return count and ids for the model; the UI still shows list cards.',

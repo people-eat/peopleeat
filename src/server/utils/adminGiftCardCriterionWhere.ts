@@ -8,7 +8,7 @@ import { likeContainsPattern } from './likeContainsPattern';
 /** Shared `WHERE` for `adminGiftCardFindMany` / `adminGiftCardCounts`. Returns
  * `false` when `paymentStatuses` is empty (match nothing). */
 export function adminGiftCardCriterionWhere(
-    criterion: Pick<GqlSAdminGiftCardCriterion, 'searchText' | 'paymentStatuses'>,
+    criterion: Pick<GqlSAdminGiftCardCriterion, 'searchText' | 'giftCardIds' | 'paymentStatuses'>,
 ): SQL | undefined | false {
     if (criterion.paymentStatuses.length === 0) {
         return false;
@@ -24,5 +24,8 @@ export function adminGiftCardCriterionWhere(
           )
         : undefined;
 
-    return and(inArray(giftCards.paymentStatus, criterion.paymentStatuses), searchClause);
+    const giftCardIdsClause =
+        criterion.giftCardIds && criterion.giftCardIds.length > 0 ? inArray(giftCards.giftCardId, criterion.giftCardIds) : undefined;
+
+    return and(inArray(giftCards.paymentStatus, criterion.paymentStatuses), giftCardIdsClause, searchClause);
 }

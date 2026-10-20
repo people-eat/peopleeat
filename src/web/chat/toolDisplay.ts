@@ -4,7 +4,17 @@
 // bilingual label + icon. Everything else falls back to a mechanical label
 // derived from the tool name.
 
-import { BookOpenIcon, ClipboardListIcon, HammerIcon, MessageSquareIcon, SoupIcon, UsersIcon } from 'lucide-react';
+import {
+    BookOpenIcon,
+    ClipboardListIcon,
+    GiftIcon,
+    HammerIcon,
+    LifeBuoyIcon,
+    MessageSquareIcon,
+    SoupIcon,
+    StarIcon,
+    UsersIcon,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { Locale } from '../utils/locale';
 
@@ -41,6 +51,18 @@ const TOOL_DISPLAY: Record<string, ToolDisplayEntry> = {
     adminCookMenusFindMany: {
         Icon: BookOpenIcon,
         label: { de: 'Lade Menüs…', en: 'Loading menus…' },
+    },
+    adminSupportRequestsFindMany: {
+        Icon: LifeBuoyIcon,
+        label: { de: 'Lade Support-Anfragen…', en: 'Loading support requests…' },
+    },
+    adminGiftCardsFindMany: {
+        Icon: GiftIcon,
+        label: { de: 'Lade Geschenkkarten…', en: 'Loading gift cards…' },
+    },
+    adminTestimonialsFindMany: {
+        Icon: StarIcon,
+        label: { de: 'Lade Bewertungen…', en: 'Loading testimonials…' },
     },
 };
 

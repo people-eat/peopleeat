@@ -64,9 +64,12 @@ union ChatMessagePart =
   - `admin.bookingRequestList` ← `adminBookingRequestsFindMany` → `AdminBookingRequestListCard`
   - `admin.userList` ← `adminUsersFindMany` → `AdminUserListCard`
   - `admin.mealList` ← `adminCookMealsFindMany` → `CookMealCard` (`ChatCardList` upToTwo: 1 → 2 @ 36rem)
-  - `admin.menuList` ← `adminCookMenusFindMany` → `CookMenuCard` (`ChatCardList` upToTwo: 1 → 2 @ 36rem) Booking / user / chef grids use
-    responsive `ChatCardList` (1 → 2 @ 28rem → 3 @ 42rem). Tool input/output JSON is never inline; it lives behind `ToolArgumentsButton`
-    (hover-revealed args icon → Input/Output dialog). Admins always receive tool `debug` on turns.
+  - `admin.menuList` ← `adminCookMenusFindMany` → `CookMenuCard` (`ChatCardList` upToTwo: 1 → 2 @ 36rem)
+  - `admin.supportRequestList` ← `adminSupportRequestsFindMany` → `SupportRequestSummaryCard`
+  - `admin.giftCardList` ← `adminGiftCardsFindMany` → `AdminGiftCardListCard`
+  - `admin.testimonialList` ← `adminTestimonialsFindMany` → `AdminTestimonialListCard` Booking / user / chef / support / gift-card /
+    testimonial grids use responsive `ChatCardList` (1 → 2 @ 28rem → 3 @ 42rem). Tool input/output JSON is never inline; it lives behind
+    `ToolArgumentsButton` (hover-revealed args icon → Input/Output dialog). Admins always receive tool `debug` on turns.
 - Step-start parts may exist in storage for model-history adapters but are not exposed on GraphQL.
 
 Domain types: `src/server/domain/chatMessageBody.ts`, `chatTurn.ts`. Runtime: `chatTurnRun` / `chatTurnRecover` /

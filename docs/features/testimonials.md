@@ -61,7 +61,8 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 - Tables: `CustomerTestimonials`, `CookTestimonials`, `CityTestimonials`, `PartnerTestimonials`
 - Domain: `src/server/domain/testimonial.ts`
 - GraphQL: public and admin types, offer fields, city/partner curation, user/cook create mutations
-- Commands / queries: `*Testimonial*` under commands and queries
+- Commands / queries: `*Testimonial*` under commands and queries; admin assistant list tool `adminTestimonialsFindMany` (customer + cook,
+  in-process filters) → `admin.testimonialList` cards
 - Utils: publication from rating, offer fallbacks, image URLs from file uploads, junction cleanup
 - Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials`, `ContentPageTestimonialsEditor`
 - Capture UI: `BookingRequestOfferTestimonialPanel`, rating input/stars — Review tab on customer, cook, and admin offer pages

@@ -54,8 +54,9 @@ Overview hub with paid purchase time series, all-time average purchase value, an
 - Routes: `gift-cards.tsx`, `gift-cards_.list.tsx`, `gift-cards_.$giftCardId.tsx`
 - Nav: `adminGiftCards.ts` — [admin-shell.md](./admin-shell.md)
 
-GraphQL: `giftCards(criterion)` — search, payment statuses, sort, paginate; `giftCardsCounts`; `giftCardCreations` (PAYED, zero-filled
-buckets, picker `range`); `giftCardOccasionStats` / `giftCardSalesMonthStats` (PAYED; omit `range` for all-time, take 3);
-`giftCardPaidPurchaseAverageCents` (PAYED all-time); `giftCard(id)`.
+GraphQL: `giftCards(criterion)` — search, optional `giftCardIds`, payment statuses, sort, paginate; `giftCardsCounts`; `giftCardCreations`
+(PAYED, zero-filled buckets, picker `range`); `giftCardOccasionStats` / `giftCardSalesMonthStats` (PAYED; omit `range` for all-time, take
+3); `giftCardPaidPurchaseAverageCents` (PAYED all-time); `giftCard(id)`. Admin assistant list tool `adminGiftCardsFindMany` →
+`admin.giftCardList` cards.
 
 Gate: [authorization-admin.md](../architecture/authorization-admin.md).

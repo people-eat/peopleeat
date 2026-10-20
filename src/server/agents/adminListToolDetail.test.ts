@@ -61,4 +61,25 @@ describe('adminListToolDetail', () => {
             value: { count: 0, detail: 'summary', mealIds: [] },
         });
     });
+
+    it('summary omits support / gift-card / testimonial card arrays', () => {
+        expect(
+            adminListToolOutputForModel(
+                {
+                    count: 1,
+                    supportRequestIds: ['sr1'],
+                    supportRequests: [{ supportRequestId: 'sr1' }],
+                    giftCardIds: ['gc1'],
+                    giftCards: [{ giftCardId: 'gc1' }],
+                    testimonials: [{ testimonialId: 't1' }],
+                },
+                'summary',
+            ),
+        ).toEqual({
+            count: 1,
+            detail: 'summary',
+            supportRequestIds: ['sr1'],
+            giftCardIds: ['gc1'],
+        });
+    });
 });

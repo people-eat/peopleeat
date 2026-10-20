@@ -95,6 +95,62 @@ export const CHAT_DATA_TYPE_ADMIN_MENU_LIST = 'admin.menuList' as const;
 
 export const CHAT_TOOL_ADMIN_COOK_MENUS_FIND_MANY = 'adminCookMenusFindMany' as const;
 
+/** One support-request card snapshot for `admin.supportRequestList`. */
+export type ChatAdminSupportRequestListItem = {
+    supportRequestId: string;
+    subject: string;
+    status: string;
+    adminUnreadNotificationCount: number;
+    createdAt: string;
+    customerName: string;
+    bookingRequest: {
+        bookingRequestId: string;
+        occasion: string;
+        dateTime: string;
+    } | null;
+};
+
+export const CHAT_DATA_TYPE_ADMIN_SUPPORT_REQUEST_LIST = 'admin.supportRequestList' as const;
+
+export const CHAT_TOOL_ADMIN_SUPPORT_REQUESTS_FIND_MANY = 'adminSupportRequestsFindMany' as const;
+
+/** One gift-card card snapshot for `admin.giftCardList`. */
+export type ChatAdminGiftCardListItem = {
+    giftCardId: string;
+    buyerEmail: string;
+    occasion: string;
+    recipientName: string;
+    originalBalanceCents: number;
+    balanceCents: number;
+    redeemCode: string;
+    paymentStatus: string;
+    expiresAt: string;
+    createdAt: string;
+};
+
+export const CHAT_DATA_TYPE_ADMIN_GIFT_CARD_LIST = 'admin.giftCardList' as const;
+
+export const CHAT_TOOL_ADMIN_GIFT_CARDS_FIND_MANY = 'adminGiftCardsFindMany' as const;
+
+/** One testimonial card snapshot for `admin.testimonialList`. */
+export type ChatAdminTestimonialListItem = {
+    kind: 'customer' | 'cook';
+    testimonialId: string;
+    displayAuthorName: string;
+    displayLocation: string | null;
+    displayOccasion: string | null;
+    body: string | null;
+    rating: number | null;
+    publicationStatus: string;
+    publishedAt: string | null;
+    createdAt: string;
+    imageUrl: string | null;
+};
+
+export const CHAT_DATA_TYPE_ADMIN_TESTIMONIAL_LIST = 'admin.testimonialList' as const;
+
+export const CHAT_TOOL_ADMIN_TESTIMONIALS_FIND_MANY = 'adminTestimonialsFindMany' as const;
+
 /** Provider grounding / citation sources (UI-only; also `sourceUrl` parts). */
 export interface ChatMessageSource {
     title: string;

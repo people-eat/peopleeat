@@ -7,9 +7,13 @@ import { likeContainsPattern } from './likeContainsPattern';
 
 /** Shared `WHERE` for `adminSupportRequestFindMany` / `adminSupportRequestCounts`. */
 export function adminSupportRequestCriterionWhere(
-    criterion: Pick<GqlSAdminSupportRequestCriterion, 'searchText' | 'statuses' | 'hasAdminUnread'>,
+    criterion: Pick<GqlSAdminSupportRequestCriterion, 'searchText' | 'supportRequestIds' | 'statuses' | 'hasAdminUnread'>,
 ): SQL | undefined {
     const parts: SQL[] = [];
+
+    if (criterion.supportRequestIds && criterion.supportRequestIds.length > 0) {
+        parts.push(inArray(supportRequests.supportRequestId, criterion.supportRequestIds));
+    }
 
     if (criterion.statuses && criterion.statuses.length > 0) {
         parts.push(inArray(supportRequests.status, criterion.statuses));

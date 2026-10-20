@@ -68,7 +68,8 @@ lifecycle emails; ops Slack threading.
 - Slack: `supportRequestSlack.ts` root/thread; wired from create / message / resolve
 - Commands: user create (optional attachments), message create, unread reset (cancels pending reply job), admin resolve
 - Job: `supportRequestCustomerReplyNotify` — ~1m debounce for admin→customer reply email
-- Queries: user list/one, booking-request field, admin criterion list/counts/one (unread-first), messages with attachments
+- Queries: user list/one, booking-request field, admin criterion list/counts/one (unread-first; optional `supportRequestIds`), messages with
+  attachments; admin assistant list tool `adminSupportRequestsFindMany` → `admin.supportRequestList` cards
 - Customer UI: catalog slug `support-requests`; `SupportRequestCreateForm`, `SupportRequestSummaryCard`, `SupportRequestChat` (composer
   attachments; presence header scrolls below `md`, static from `md` — same as offer chat); nav badges
 - Admin UI: overview + list live via admin updates; nav badge; pinned bottom pagination (`page` / `pageSize`); detail viewport-locked like
