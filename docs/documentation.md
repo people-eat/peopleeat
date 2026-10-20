@@ -157,13 +157,13 @@ assistants.
 Features are different from architecture: architecture describes structural decisions that affect many features; features describe specific
 end-to-end functionality built on top of that architecture.
 
-**Standalone product voice:** Document peopleeat on its own terms. Decisions and alternatives must explain *why this product works this
-way* (UX, ops, security, cost). Do not justify a choice by citing a predecessor, “old app,” or “parity with people-eat.”
+**Standalone product voice:** Document peopleeat on its own terms. Decisions and alternatives must explain _why this product works this way_
+(UX, ops, security, cost). Do not justify a choice by citing a predecessor, “old app,” or “parity with people-eat.”
 
-Historical evolution is welcome when it explains a real product change — name what we used to do, what we do now, and why we switched. Example
-(auth): “We previously used email + password; we switched to email OTP (plus passkeys / optional TOTP) because …” Import-preserved columns
-and historical SessionEvents stay factual (“import-preserved,” “no longer produced”) without using an old product as the reason for current
-design.
+Historical evolution is welcome when it explains a real product change — name what we used to do, what we do now, and why we switched.
+Example (auth): “We previously used email + password; we switched to email OTP (plus passkeys / optional TOTP) because …” Import-preserved
+columns and historical SessionEvents stay factual (“import-preserved,” “no longer produced”) without using an old product as the reason for
+current design.
 
 Chat is split across foundation ([architecture/chat.md](./architecture/chat.md)), persistence
 ([architecture/chat-persistence.md](./architecture/chat-persistence.md)), presentation ([styles/chat.md](./styles/chat.md)), and satellites

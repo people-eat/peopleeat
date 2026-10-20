@@ -71,13 +71,13 @@ Return and refresh URLs are distinct. Status sync alone does not replace an expi
 
 ### Alternatives considered
 
-| Option                           | Notes                                                                                         |
-| -------------------------------- | --------------------------------------------------------------------------------------------- |
-| JSON payout-methods array        | Rejected — fragile vs flat Connect account columns                                            |
-| SSR mutate on every wallet visit | Rejected — re-fires on every load                                                             |
-| Same URL for return and refresh  | Rejected — refresh must mint a new account link                                               |
+| Option                           | Notes                                                                                                            |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| JSON payout-methods array        | Rejected — fragile vs flat Connect account columns                                                               |
+| SSR mutate on every wallet visit | Rejected — re-fires on every load                                                                                |
+| Same URL for return and refresh  | Rejected — refresh must mint a new account link                                                                  |
 | Denormalized city / coordinates  | Rejected — public city derives from travel origin, with import-preserved city fallback when origin city is empty |
-| Free-text cuisine / philosophy   | Rejected — fixed catalogs via comboboxes                                                      |
+| Free-text cuisine / philosophy   | Rejected — fixed catalogs via comboboxes                                                                         |
 
 ### Chosen
 
@@ -104,9 +104,8 @@ changes. Customers still only see city, never the pin or street.
 ## Implementation
 
 - Schema: `Cooks` in `src/server/db/schema.ts` (`logoFileUploadId` → `FileUploads`; optional `stageName` public display name;
-  `lastModifiedAt` bumped on cook-row writes; import-preserved `legacyCityName` / `legacyLatitude` / `legacyLongitude` —
-  `legacyCityName` falls back for public cook city when exact origin city is empty; lat/lng stay storage-only); domain helpers
-  `src/server/domain/cook.ts`
+  `lastModifiedAt` bumped on cook-row writes; import-preserved `legacyCityName` / `legacyLatitude` / `legacyLongitude` — `legacyCityName`
+  falls back for public cook city when exact origin city is empty; lat/lng stay storage-only); domain helpers `src/server/domain/cook.ts`
 - Stage name: `Cook.stageName` / `PublicCook.stageName` / `AdminCook.stageName`; `CookUpdate.stageName` (null / blank clears). Public
   `PublicCook.user.display` prefers a non-empty stage name over first name.
 - Additional picture (API: logo): `Cook.logo` / `PublicCook.logo` (`FileUpload`); `CookUpdate.logoFileUploadId` (null clears); public GET

@@ -14,9 +14,9 @@ Admin GraphQL exposes humanized timelines and a booking-form Sankey.
 
 Cookie consent continues to gate **third-party** analytics only. Session events are product telemetry on the existing session cookie.
 
-Historical keys from imported rows remain in the taxonomy so admin timelines stay typed. Keys listed in
-`sessionEventKeysNoLongerProduced` are **never** accepted by `sessionEventCreate` (password sign-in, newsletter, phone confirm,
-unconfirmed-email user create, …). Current auth emits `AUTH_*` keys (email OTP, passkey, TOTP).
+Historical keys from imported rows remain in the taxonomy so admin timelines stay typed. Keys listed in `sessionEventKeysNoLongerProduced`
+are **never** accepted by `sessionEventCreate` (password sign-in, newsletter, phone confirm, unconfirmed-email user create, …). Current auth
+emits `AUTH_*` keys (email OTP, passkey, TOTP).
 
 ## Event taxonomy
 
@@ -67,13 +67,13 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 
 ## Alternatives considered
 
-| Option                                     | Why rejected                                       |
-| ------------------------------------------ | -------------------------------------------------- |
-| Logs table for product analytics           | Wrong semantics; ops/debug vs product journey      |
-| Third-party only (GA)                      | Consent-gated; weak admin funnel; no session join  |
-| Postgres enum for `type`                   | Every new event needs a migration                  |
-| Free-form funnel click labels in payloads  | Brittle Sankey coupling; prefer stable step ids    |
-| Reuse password `SIGN_IN_*` for OTP/passkey | Misleading; current auth is OTP / passkey / TOTP   |
+| Option                                     | Why rejected                                      |
+| ------------------------------------------ | ------------------------------------------------- |
+| Logs table for product analytics           | Wrong semantics; ops/debug vs product journey     |
+| Third-party only (GA)                      | Consent-gated; weak admin funnel; no session join |
+| Postgres enum for `type`                   | Every new event needs a migration                 |
+| Free-form funnel click labels in payloads  | Brittle Sankey coupling; prefer stable step ids   |
+| Reuse password `SIGN_IN_*` for OTP/passkey | Misleading; current auth is OTP / passkey / TOTP  |
 
 ## Consequences
 

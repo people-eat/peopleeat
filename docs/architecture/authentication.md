@@ -66,15 +66,15 @@ Anonymous sessions become authenticated when a sign-in mutation binds `Sessions.
 
 ### Why passwordless (not email + password)
 
-We previously supported email + password (with reset and confirmation edge cases). Runtime log-on is now **email OTP**, plus **passkeys** for
-returning users and optional **TOTP** as a second factor.
+We previously supported email + password (with reset and confirmation edge cases). Runtime log-on is now **email OTP**, plus **passkeys**
+for returning users and optional **TOTP** as a second factor.
 
-| Why we switched                         | Detail                                                                                          |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Fewer credential leaks                  | No long-lived password database to steal or reuse across sites                                  |
-| No forgotten-password flow              | OTP request / verify replaces reset email, unconfirmed-email traps, and “no password” states    |
-| Same session model                      | Bind `Sessions.userId` after verify; no separate password credential store on the hot path      |
-| Better fit for marketplace embeds       | Booking form, gift-card purchase, and chef sign-up reuse one identity gate without password UI  |
+| Why we switched                   | Detail                                                                                         |
+| --------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Fewer credential leaks            | No long-lived password database to steal or reuse across sites                                 |
+| No forgotten-password flow        | OTP request / verify replaces reset email, unconfirmed-email traps, and “no password” states   |
+| Same session model                | Bind `Sessions.userId` after verify; no separate password credential store on the hot path     |
+| Better fit for marketplace embeds | Booking form, gift-card purchase, and chef sign-up reuse one identity gate without password UI |
 
 Imported accounts may still carry `Users.legacyPasswordHash` (bcrypt). That column is **not** verified at log-on — OTP / passkeys / TOTP are
 the only runtime paths. We **keep** the column so email+password can be re-enabled later without another data recovery. Product surface:

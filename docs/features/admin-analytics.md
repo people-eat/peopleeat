@@ -55,12 +55,12 @@ and [admin-users.md](./admin-users.md)).
 
 ### Alternatives considered
 
-| Option                                    | Notes                                                            |
-| ----------------------------------------- | ---------------------------------------------------------------- |
-| Nest analytics under `/admin/sessions`    | Rejected — different job (aggregates vs session triage)          |
+| Option                                    | Notes                                                             |
+| ----------------------------------------- | ----------------------------------------------------------------- |
+| Nest analytics under `/admin/sessions`    | Rejected — different job (aggregates vs session triage)           |
 | Dedicated `/admin/analytics` hub (chosen) | Aggregates and funnels need their own surface, not session triage |
-| Metabase only                             | External; no in-product funnel                                   |
-| Cook funnel per browser session           | Rejected — notify has no cook session; conversion is per request |
+| Metabase only                             | External; no in-product funnel                                    |
+| Cook funnel per browser session           | Rejected — notify has no cook session; conversion is per request  |
 
 ### Chosen
 

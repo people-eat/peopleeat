@@ -32,13 +32,13 @@ cook fields. Gift-card purchase registers with name only.
 
 ### Alternatives considered
 
-| Option                               | Notes                                                                                         |
-| ------------------------------------ | --------------------------------------------------------------------------------------------- |
-| Email + password                     | Rejected — forgotten-password / reset complexity; credential reuse risk; see auth ADR below   |
-| Third-party auth libraries           | Extra layer on existing cookie sessions; OAuth can layer later (Google / Apple next steps)    |
-| Auto-create user on OTP verify       | Placeholders and incomplete profiles                                                          |
-| Verified email stored on session row | Duplicates OTP session state                                                                  |
-| Custom GraphQL + email + WebAuthn    | Fits existing session binding                                                                 |
+| Option                               | Notes                                                                                       |
+| ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| Email + password                     | Rejected — forgotten-password / reset complexity; credential reuse risk; see auth ADR below |
+| Third-party auth libraries           | Extra layer on existing cookie sessions; OAuth can layer later (Google / Apple next steps)  |
+| Auto-create user on OTP verify       | Placeholders and incomplete profiles                                                        |
+| Verified email stored on session row | Duplicates OTP session state                                                                |
+| Custom GraphQL + email + WebAuthn    | Fits existing session binding                                                               |
 
 ### Chosen
 

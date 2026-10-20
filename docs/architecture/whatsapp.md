@@ -40,8 +40,8 @@ customer-service window, and every send must be auditable.
    WhatsApp Manager.
 
 Template **names** in `whatsappTemplateNameByPurpose` (`src/server/domain/whatsapp.ts`) must match keys already approved in WhatsApp Manager
-(e.g. `user_booking_request_create__for_user`, `call_slot_booking_reminder_60_min_before`). Do not invent snake_case purpose slugs —
-Meta rejects unknown names. Purposes without an approved template map to `null` and are skipped at send time (email still goes). Bodies and
+(e.g. `user_booking_request_create__for_user`, `call_slot_booking_reminder_60_min_before`). Do not invent snake_case purpose slugs — Meta
+rejects unknown names. Purposes without an approved template map to `null` and are skipped at send time (email still goes). Bodies and
 button URL segments must match the approved Meta variable order.
 
 ## Alternatives considered

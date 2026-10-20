@@ -98,14 +98,14 @@ Wired today:
 
 ### Alternatives considered
 
-| Option                                        | Notes                                                           |
-| --------------------------------------------- | --------------------------------------------------------------- |
-| Free-form string keys + admin create          | Easy typos; no compile-time catalog                             |
-| Percentage / A-B activity levels              | Extra complexity; we only need on/off plus per-user overrides   |
-| Seed all keys on migrate                      | Ghost merge keeps defaults clear without seed noise             |
-| Fixed GraphQL enum + create-on-write (chosen) | Keys require a code change anyway; admin always sees all keys   |
-| Allowlist-only when global off                | Cannot force off a user when global is on                       |
-| Global + per-user overrides (chosen)          | Early access and exclusions without percentage rollout          |
+| Option                                        | Notes                                                         |
+| --------------------------------------------- | ------------------------------------------------------------- |
+| Free-form string keys + admin create          | Easy typos; no compile-time catalog                           |
+| Percentage / A-B activity levels              | Extra complexity; we only need on/off plus per-user overrides |
+| Seed all keys on migrate                      | Ghost merge keeps defaults clear without seed noise           |
+| Fixed GraphQL enum + create-on-write (chosen) | Keys require a code change anyway; admin always sees all keys |
+| Allowlist-only when global off                | Cannot force off a user when global is on                     |
+| Global + per-user overrides (chosen)          | Early access and exclusions without percentage rollout        |
 
 ### Chosen
 

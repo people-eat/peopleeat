@@ -17,8 +17,8 @@ peopleeat is a private-chef booking marketplace that connects hosts with cooks w
   gift-card purchase.
 - Identity and profiles: passwordless log-on, account settings, cook vs customer profile shells, meals, menus, chef profile, call
   availability, wallet.
-- **Booking path**: request form and publication rules, cook pool, offer create and dual accept, offer chat with concierge, Stripe
-  checkout and cook payout, discovery calls, and admin booking operations — see [booking.md](./booking.md) and
+- **Booking path**: request form and publication rules, cook pool, offer create and dual accept, offer chat with concierge, Stripe checkout
+  and cook payout, discovery calls, and admin booking operations — see [booking.md](./booking.md) and
   [admin-booking-requests.md](./admin-booking-requests.md).
 - Gift cards and admin promo catalog.
 - Testimonials tied to completed paid offers; public display on chefs, cities, partners, and occasions.

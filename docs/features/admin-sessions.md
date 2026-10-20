@@ -21,8 +21,8 @@ session id omitted from list. Row or chevron → detail.
 
 Two tabs (URL `tab`): **overview** (default) and **events**. Overview shows attribution and lifecycle fields with copy buttons; signed-in
 accounts show avatar + display name (no email) and an explicit link to the user page. Events is a paginated list (`page` / `pageSize`;
-default 25) of first-party `SessionEvents` (page visits, booking-form steps, booking lifecycle, auth / account events, plus historical imported
-keys). See [session-events.md](../architecture/session-events.md) and [admin-analytics.md](./admin-analytics.md).
+default 25) of first-party `SessionEvents` (page visits, booking-form steps, booking lifecycle, auth / account events, plus historical
+imported keys). See [session-events.md](../architecture/session-events.md) and [admin-analytics.md](./admin-analytics.md).
 
 ### Related
 
