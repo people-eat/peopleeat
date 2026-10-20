@@ -86,7 +86,7 @@ meal is its only active option.
 
 - Schema: `Meals` in `src/server/db/schema.ts`
 - SDL: `CookMeal`, relationships, `CookMutation`, `AdminCookMeal` (`imageFileUploadId`, `relationships`), `AdminCookMealCriterion`
-  (`status`, `imageFilter`, broader `searchText`) in `schema.graphqls`
+  (`status`, `imageFilter`, broader `searchText`, optional `mealIds` for primary-key drill-in) in `schema.graphqls`
 - Commands: `cookMealCreate`, `cookMealUpdate`, `cookMealDelete` (soft; refuses when relationships block); admin `cookMealCreate` /
   `cookMealUpdate` / `cookMealDelete` (image uploads owned by admin then reassigned to cook)
 - Queries: cook find many/one (active only); `Cook.mealsCounts(criteria: [CookMealCriterion!]!)` (soft-deleted never counted; optional

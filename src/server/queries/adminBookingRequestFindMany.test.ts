@@ -94,6 +94,73 @@ describe('adminBookingRequestFindMany', () => {
         expect(rows.map((row) => row.bookingRequestId)).toEqual([matchId]);
     });
 
+    it('filters by bookingRequestIds', async () => {
+        // Arrange
+        const { requestingSession, serverRuntime, user } = await commandSetup.withUser({
+            firstName: 'Ada',
+            lastName: 'ById',
+            emailAddress: `by-id-${idCreate().slice(0, 8)}@example.com`,
+        });
+        const token = `br-ids-${idCreate().slice(0, 8)}`;
+        const matchId = idCreate();
+        const otherId = idCreate();
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId: matchId,
+            userId: user.userId,
+            occasion: `${token}-match`,
+            dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            exactEventAddress: berlin,
+            originalMessage: 'Looking for a chef',
+            publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+            preferences: [],
+        });
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId: otherId,
+            userId: user.userId,
+            occasion: `${token}-other`,
+            dateTime: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            exactEventAddress: berlin,
+            originalMessage: 'Other request',
+            publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+            preferences: [],
+        });
+
+        // Act
+        const byId = await adminBookingRequestFindMany(
+            { criterion: { skip: 0, take: 100, bookingRequestIds: [matchId] } },
+            requestingSession,
+            serverRuntime,
+        );
+        const unknown = await adminBookingRequestFindMany(
+            { criterion: { skip: 0, take: 100, bookingRequestIds: [idCreate()] } },
+            requestingSession,
+            serverRuntime,
+        );
+        const emptyIds = await adminBookingRequestFindMany(
+            { criterion: { skip: 0, take: 100, bookingRequestIds: [], searchText: token } },
+            requestingSession,
+            serverRuntime,
+        );
+        const andSearch = await adminBookingRequestFindMany(
+            {
+                criterion: {
+                    skip: 0,
+                    take: 100,
+                    bookingRequestIds: [matchId, otherId],
+                    searchText: `${token}-match`,
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        // Assert
+        expect(byId.map((row) => row.bookingRequestId)).toEqual([matchId]);
+        expect(unknown).toEqual([]);
+        expect(emptyIds.map((row) => row.bookingRequestId).sort()).toEqual([matchId, otherId].sort());
+        expect(andSearch.map((row) => row.bookingRequestId)).toEqual([matchId]);
+    });
+
     it('filters by searchText', async () => {
         // Arrange
         const { requestingSession, serverRuntime, user } = await commandSetup.withUser({

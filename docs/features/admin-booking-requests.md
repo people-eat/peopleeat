@@ -139,8 +139,9 @@ GraphQL (admin): `bookingRequests` / counts / creations / occasion stats / creat
 approve; cooks notify; payout mutations; `calls`, `callTraffic`, slot/room creations, cook stats. Overview rankings and economics omit chart
 `range` for all-time (same pattern as gift-card overview). Paid revenue averages use `PAYED` / `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM`.
 Conversions are dual-accepted offers. `AdminBookingRequest` exposes applied `promoCode` / `giftCard` snapshots.
-`AdminBookingRequestCriterion` supports optional `statuses` (derived lifecycle SQL, same rules as `bookingRequestStatusDerive`), and
-`createdAtFrom` / `createdAtTo` (used by the admin assistant “past X days” list tool and available to the list API).
+`AdminBookingRequestCriterion` supports optional `statuses` (derived lifecycle SQL, same rules as `bookingRequestStatusDerive`),
+`createdAtFrom` / `createdAtTo` (used by the admin assistant “past X days” list tool and available to the list API), and `bookingRequestIds`
+(`IN`; omit or empty = no id filter — admin assistant drill-in on the same list tool).
 
 UI building blocks: `AdminBookingRequestListCard` (list page + admin user detail booking-requests tab + admin assistant chat via
 `admin.bookingRequestList` data parts), `AdminBookingRequestOfferCard` (request-detail offers funnel + admin user detail cook offers tab:

@@ -1,7 +1,7 @@
 /**
  * Booking-request offer fee breakdown (integer cents).
  * Platform: 18% cook / 4% customer on menu price. Stripe-style gross-up:
- * (menu + customer fee + travel + 25¢) / (1 − 1.5%).
+ * (menu + customer fee + travel + 25¢) / (1 - 1.5%).
  * See docs/features/booking-payment.md and docs/features/booking-offers.md.
  */
 

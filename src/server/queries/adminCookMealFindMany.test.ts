@@ -79,6 +79,50 @@ describe('adminCookMealFindMany', () => {
         expect(byCook.map((row) => row.mealId)).toEqual([match.mealId]);
     });
 
+    it('filters by mealIds', async () => {
+        // Arrange
+        const setup = await setupCookWithMeals();
+        const token = `ids-${idCreate().slice(0, 8)}`;
+        const match = await insertMeal(setup.user.userId, { title: `${token}-match` });
+        const other = await insertMeal(setup.user.userId, { title: `${token}-other` });
+
+        // Act
+        const byId = await adminCookMealFindMany(
+            { criterion: { skip: 0, take: 100, mealIds: [match.mealId], includeDeleted: true } },
+            setup.requestingSession,
+            setup.serverRuntime,
+        );
+        const unknown = await adminCookMealFindMany(
+            { criterion: { skip: 0, take: 100, mealIds: [idCreate()], includeDeleted: true } },
+            setup.requestingSession,
+            setup.serverRuntime,
+        );
+        const emptyIds = await adminCookMealFindMany(
+            { criterion: { skip: 0, take: 100, mealIds: [], searchText: token, includeDeleted: true } },
+            setup.requestingSession,
+            setup.serverRuntime,
+        );
+        const andSearch = await adminCookMealFindMany(
+            {
+                criterion: {
+                    skip: 0,
+                    take: 100,
+                    mealIds: [match.mealId, other.mealId],
+                    searchText: `${token}-match`,
+                    includeDeleted: true,
+                },
+            },
+            setup.requestingSession,
+            setup.serverRuntime,
+        );
+
+        // Assert
+        expect(byId.map((row) => row.mealId)).toEqual([match.mealId]);
+        expect(unknown).toEqual([]);
+        expect(emptyIds.map((row) => row.mealId).sort()).toEqual([match.mealId, other.mealId].sort());
+        expect(andSearch.map((row) => row.mealId)).toEqual([match.mealId]);
+    });
+
     it('excludes soft-deleted meals when includeDeleted is false', async () => {
         // Arrange
         const setup = await setupCookWithMeals();

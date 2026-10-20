@@ -113,6 +113,56 @@ describe('adminUserFindMany', () => {
         expect(rows).toEqual([]);
     });
 
+    it('filters by userIds', async () => {
+        // Arrange
+        const match = await commandSetup.withUser({ firstName: 'id-match', lastName: 'User' });
+        const other = await commandSetup.withUser({ firstName: 'id-other', lastName: 'User' });
+
+        // Act
+        const byId = await adminUserFindMany(
+            { criterion: { skip: 0, take: 100, types: [...allTypes], userIds: [match.user.userId] } },
+            match.requestingSession,
+            match.serverRuntime,
+        );
+        const unknown = await adminUserFindMany(
+            { criterion: { skip: 0, take: 100, types: [...allTypes], userIds: [idCreate()] } },
+            match.requestingSession,
+            match.serverRuntime,
+        );
+        const emptyIds = await adminUserFindMany(
+            {
+                criterion: {
+                    skip: 0,
+                    take: 100,
+                    types: [...allTypes],
+                    searchText: 'id-match',
+                    userIds: [],
+                },
+            },
+            match.requestingSession,
+            match.serverRuntime,
+        );
+        const andSearch = await adminUserFindMany(
+            {
+                criterion: {
+                    skip: 0,
+                    take: 100,
+                    types: [...allTypes],
+                    userIds: [match.user.userId, other.user.userId],
+                    searchText: 'id-match',
+                },
+            },
+            match.requestingSession,
+            match.serverRuntime,
+        );
+
+        // Assert
+        expect(byId.map((row) => row.userId)).toEqual([match.user.userId]);
+        expect(unknown).toEqual([]);
+        expect(emptyIds.some((row) => row.userId === match.user.userId)).toBe(true);
+        expect(andSearch.map((row) => row.userId)).toEqual([match.user.userId]);
+    });
+
     it('filters by AdminUserType membership', async () => {
         // Arrange
         const token = `type-${idCreate().slice(0, 8)}`;

@@ -655,6 +655,7 @@ export interface GqlSAdminBookingRequestCreationMonthStat {
 }
 
 export type GqlSAdminBookingRequestCriterion = {
+    bookingRequestIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     createdAtFrom?: InputMaybe<Scalars['DateTime']['input']>;
     createdAtTo?: InputMaybe<Scalars['DateTime']['input']>;
     promoCodeId?: InputMaybe<Scalars['ID']['input']>;
@@ -969,6 +970,7 @@ export type GqlSAdminCookMealCriterion = {
     cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     imageFilter?: InputMaybe<GqlSAdminCookMealImageFilter>;
     includeDeleted?: Scalars['Boolean']['input'];
+    mealIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     searchText?: InputMaybe<Scalars['String']['input']>;
     skip?: Scalars['Int']['input'];
     sortDirection?: InputMaybe<GqlSSortDirection>;
@@ -1010,6 +1012,7 @@ export interface GqlSAdminCookMenuCourse {
 export type GqlSAdminCookMenuCriterion = {
     cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     includeDeleted?: Scalars['Boolean']['input'];
+    menuIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     searchText?: InputMaybe<Scalars['String']['input']>;
     skip?: Scalars['Int']['input'];
     sortDirection?: InputMaybe<GqlSSortDirection>;
@@ -2098,6 +2101,7 @@ export type GqlSAdminUserCriterion = {
     status?: InputMaybe<GqlSUserStatus>;
     take?: Scalars['Int']['input'];
     types: Array<GqlSAdminUserType>;
+    userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export type GqlSAdminUserSortField = 'createdAt' | 'emailAddress' | 'firstName' | 'lastName';
@@ -11340,6 +11344,7 @@ export function GqlSAdminBookingRequestCreateSchema(): z.ZodObject<Properties<Gq
 
 export function GqlSAdminBookingRequestCriterionSchema(): z.ZodType<GqlSAdminBookingRequestCriterion> {
     return z.object({
+        bookingRequestIds: z.array(z.string()).nullish(),
         createdAtFrom: z.date().nullish(),
         createdAtTo: z.date().nullish(),
         promoCodeId: z.string().nullish(),
@@ -11465,6 +11470,7 @@ export function GqlSAdminCookMealCriterionSchema(): z.ZodType<GqlSAdminCookMealC
         cookIds: z.array(z.string()).nullish(),
         imageFilter: GqlSAdminCookMealImageFilterSchema.nullish(),
         includeDeleted: z.boolean().default(true),
+        mealIds: z.array(z.string()).nullish(),
         searchText: z.string().nullish(),
         skip: z.number().default(0),
         sortDirection: GqlSSortDirectionSchema.nullish(),
@@ -11478,6 +11484,7 @@ export function GqlSAdminCookMenuCriterionSchema(): z.ZodType<GqlSAdminCookMenuC
     return z.object({
         cookIds: z.array(z.string()).nullish(),
         includeDeleted: z.boolean().default(true),
+        menuIds: z.array(z.string()).nullish(),
         searchText: z.string().nullish(),
         skip: z.number().default(0),
         sortDirection: GqlSSortDirectionSchema.nullish(),
@@ -11668,6 +11675,7 @@ export function GqlSAdminUserCriterionSchema(): z.ZodType<GqlSAdminUserCriterion
         status: GqlSUserStatusSchema.nullish(),
         take: z.number().default(25),
         types: z.array(GqlSAdminUserTypeSchema),
+        userIds: z.array(z.string()).nullish(),
     });
 }
 

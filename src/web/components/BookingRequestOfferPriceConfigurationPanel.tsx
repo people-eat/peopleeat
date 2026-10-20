@@ -139,7 +139,7 @@ export function BookingRequestOfferCostOverviewPanel({
                         </div>
                         <div className="flex justify-between gap-4">
                             <dt>{{ de: 'Servicegebühren', en: 'Service fees' }[locale]}</dt>
-                            <dd>−{formatCurrency(priceCalculation.platformFeeCentsCook, { locale })}</dd>
+                            <dd>-{formatCurrency(priceCalculation.platformFeeCentsCook, { locale })}</dd>
                         </div>
                     </dl>
                 ) : null}

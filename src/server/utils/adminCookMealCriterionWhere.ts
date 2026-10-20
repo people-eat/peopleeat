@@ -7,12 +7,16 @@ import { likeContainsPattern } from './likeContainsPattern';
 
 /** Shared `WHERE` for `adminCookMealFindMany` / `adminCookMealCounts` (expects users join). */
 export function adminCookMealCriterionWhere(
-    criterion: Pick<GqlSAdminCookMealCriterion, 'cookIds' | 'searchText' | 'includeDeleted' | 'status' | 'imageFilter'>,
+    criterion: Pick<GqlSAdminCookMealCriterion, 'cookIds' | 'mealIds' | 'searchText' | 'includeDeleted' | 'status' | 'imageFilter'>,
 ): SQL | undefined {
     const parts: SQL[] = [];
 
     if (criterion.cookIds && criterion.cookIds.length > 0) {
         parts.push(inArray(meals.cookId, criterion.cookIds));
+    }
+
+    if (criterion.mealIds && criterion.mealIds.length > 0) {
+        parts.push(inArray(meals.mealId, criterion.mealIds));
     }
 
     if (criterion.status === 'PUBLISHED') {

@@ -14,7 +14,9 @@ Each surface gets an assistant matched to the job:
 `chatTurnAgentCreate` dispatches by `Chat.surface`. Admin ships booking-request / user / meal / menu list tools + HITL demo tools. Cook
 ships meal create / profile update tools with a cook state snapshot in the system prompt. Customer remains scaffolded. Tool-loop agents
 reply in markdown — Gemini cannot combine `Output.object` (JSON mime type) with function calling. Admin list cards are persisted as
-`admin.bookingRequestList` / `admin.userList` / `admin.mealList` / `admin.menuList` data parts from the matching tool result.
+`admin.bookingRequestList` / `admin.userList` / `admin.mealList` / `admin.menuList` data parts from the matching tool result. Each list tool
+accepts an optional primary-key id array (`bookingRequestIds` / `userIds` / `mealIds` / `menuIds`) for follow-up drill-in on the same tool —
+no separate find-one tools.
 
 ## Next steps
 

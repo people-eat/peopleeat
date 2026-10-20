@@ -62,6 +62,50 @@ describe('adminCookMenuFindMany', () => {
         expect(rows[olderIdx]?.courseMealOptionImages).toEqual([]);
     });
 
+    it('filters by menuIds', async () => {
+        // Arrange
+        const setup = await setupCook();
+        const token = `ids-${idCreate().slice(0, 8)}`;
+        const match = await insertMenu(setup.user.userId, { title: `${token}-match` });
+        const other = await insertMenu(setup.user.userId, { title: `${token}-other` });
+
+        // Act
+        const byId = await adminCookMenuFindMany(
+            { criterion: { skip: 0, take: 100, menuIds: [match.menuId], includeDeleted: true } },
+            setup.requestingSession,
+            setup.serverRuntime,
+        );
+        const unknown = await adminCookMenuFindMany(
+            { criterion: { skip: 0, take: 100, menuIds: [idCreate()], includeDeleted: true } },
+            setup.requestingSession,
+            setup.serverRuntime,
+        );
+        const emptyIds = await adminCookMenuFindMany(
+            { criterion: { skip: 0, take: 100, menuIds: [], searchText: token, includeDeleted: true } },
+            setup.requestingSession,
+            setup.serverRuntime,
+        );
+        const andSearch = await adminCookMenuFindMany(
+            {
+                criterion: {
+                    skip: 0,
+                    take: 100,
+                    menuIds: [match.menuId, other.menuId],
+                    searchText: `${token}-match`,
+                    includeDeleted: true,
+                },
+            },
+            setup.requestingSession,
+            setup.serverRuntime,
+        );
+
+        // Assert
+        expect(byId.map((row) => row.menuId)).toEqual([match.menuId]);
+        expect(unknown).toEqual([]);
+        expect(emptyIds.map((row) => row.menuId).sort()).toEqual([match.menuId, other.menuId].sort());
+        expect(andSearch.map((row) => row.menuId)).toEqual([match.menuId]);
+    });
+
     it('returns courseMealOptionImages in course then option order, deduped', async () => {
         // Arrange
         const setup = await setupCook();

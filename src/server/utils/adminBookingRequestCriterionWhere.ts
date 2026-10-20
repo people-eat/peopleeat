@@ -11,7 +11,14 @@ import { likeContainsPattern } from './likeContainsPattern';
 export function adminBookingRequestCriterionWhere(
     criterion: Pick<
         GqlSAdminBookingRequestCriterion,
-        'searchText' | 'userIds' | 'publicationStatuses' | 'statuses' | 'promoCodeId' | 'createdAtFrom' | 'createdAtTo'
+        | 'searchText'
+        | 'userIds'
+        | 'bookingRequestIds'
+        | 'publicationStatuses'
+        | 'statuses'
+        | 'promoCodeId'
+        | 'createdAtFrom'
+        | 'createdAtTo'
     >,
     db: ServerRuntime['db'],
     now: Date = new Date(),
@@ -20,6 +27,10 @@ export function adminBookingRequestCriterionWhere(
 
     if (criterion.promoCodeId) {
         parts.push(eq(bookingRequests.promoCodeId, criterion.promoCodeId));
+    }
+
+    if (criterion.bookingRequestIds && criterion.bookingRequestIds.length > 0) {
+        parts.push(inArray(bookingRequests.bookingRequestId, criterion.bookingRequestIds));
     }
 
     if (criterion.userIds && criterion.userIds.length > 0) {

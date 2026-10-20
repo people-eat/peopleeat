@@ -81,7 +81,7 @@ User, cook, and admin offer hydrates batch-load call slot bookings onto `callBoo
 
 ### Jobs
 
-- `booking-request-offer-call-slot-reminder` — queued, T−60m email to both parties
+- `booking-request-offer-call-slot-reminder` — queued, T-60m email to both parties
 - `booking-request-offer-call-slots-complete` — recurring — completed / cancel stale pending
 - `booking-request-offer-call-rooms-sweep` — recurring — non-webhook room end
 
@@ -96,7 +96,7 @@ body components where markup matches.
 | Confirm  | Requester               | Slot confirmed |
 | Decline  | Requester               | Slot declined  |
 | Cancel   | Counterparty            | Slot cancelled |
-| Reminder | Both (T−60m, confirmed) | Upcoming call  |
+| Reminder | Both (T-60m, confirmed) | Upcoming call  |
 
 Sends via dedicated email helpers or reminder job. Email failure does not roll back booking writes. Sibling auto-cancels when another slot
 is confirmed do **not** send cancel mail. CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’s `Users.timeZone`.

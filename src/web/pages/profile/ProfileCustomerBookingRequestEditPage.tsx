@@ -125,14 +125,14 @@ function signedKmLabel(deltaKm: number, locale: Locale): string {
     const rounded = Math.round(deltaKm * 10) / 10;
     const abs = Math.abs(rounded).toFixed(1);
     if (rounded > 0) return `+${abs} km`;
-    if (rounded < 0) return `−${abs} km`;
+    if (rounded < 0) return `-${abs} km`;
     return { de: '±0 km', en: '±0 km' }[locale];
 }
 
 function signedTravelExpenseLabel(deltaCents: number, locale: Locale): string {
     const abs = formatCurrency(Math.abs(deltaCents), { locale });
     if (deltaCents > 0) return `+${abs}`;
-    if (deltaCents < 0) return `−${abs}`;
+    if (deltaCents < 0) return `-${abs}`;
     return { de: '±0 €', en: '±€0' }[locale];
 }
 

@@ -90,11 +90,11 @@ detail with URL tabs; manual create with optional admin and cook payloads.
 - Routes: `users.tsx`, `users_.list.tsx`, `users_.create.tsx`, `users_.$userId.tsx`
 - Nav: `adminUsers.ts`, sidebar subs — [admin-shell.md](./admin-shell.md)
 
-GraphQL: `users(criterion)` / `userCounts(criteria)` — search, types filter, optional `status`, sort, paginate; `userRegistrations(range)`;
-`user(id)`; `userCreate`, `userUpdate`, `userEmailAddressUpdate`, `userAdminNoteUpdate`, `userStatusUpdate`, `sessionUserBind`,
-`userAnonymize`, `terminateSessions`, `cookUpdate`, `cookBiographySuggest`, `cookBiographySummarySuggest`, `cookMealCreate`,
-`cookMenuCreate`. Type labels: admin (admins row), cook (cooks row), customer (no cook row); combinations allowed. `AdminUser.status`
-exposes `UserStatus`.
+GraphQL: `users(criterion)` / `userCounts(criteria)` — search, types filter, optional `status`, optional `userIds` (`IN`; omit or empty = no
+id filter — admin assistant drill-in), sort, paginate; `userRegistrations(range)`; `user(id)`; `userCreate`, `userUpdate`,
+`userEmailAddressUpdate`, `userAdminNoteUpdate`, `userStatusUpdate`, `sessionUserBind`, `userAnonymize`, `terminateSessions`, `cookUpdate`,
+`cookBiographySuggest`, `cookBiographySummarySuggest`, `cookMealCreate`, `cookMenuCreate`. Type labels: admin (admins row), cook (cooks
+row), customer (no cook row); combinations allowed. `AdminUser.status` exposes `UserStatus`.
 
 Gate: [authorization-admin.md](../architecture/authorization-admin.md).
 

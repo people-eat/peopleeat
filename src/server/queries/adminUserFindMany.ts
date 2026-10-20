@@ -65,6 +65,10 @@ function adminUserListCardSnapshot(rows: GqlSAdminUser[]): ChatAdminUserListItem
 }
 
 const toolAdminUsersFindManyInputSchema = z.object({
+    userIds: z
+        .array(z.string())
+        .optional()
+        .describe('Primary-key filter. Use for follow-up drill-in from prior tool results (typically one id). Do not invent ids.'),
     searchText: z.string().optional().describe('Optional name or email search (case-insensitive contains).'),
     types: z.array(GqlSAdminUserTypeSchema).optional().describe('Membership filter. Omit to include customer, cook, and admin.'),
     status: GqlSUserStatusSchema.optional().describe('Optional account status filter (ACTIVE / BANNED / ANONYMIZED).'),
@@ -101,6 +105,7 @@ export function toolAdminUsersFindMany({
             'List admin users matching a criterion.',
             'Use when the operator asks to show / list / find users, customers, cooks, or admins.',
             'Optionally narrow with searchText, types, status, or isApprovedByAdmin.',
+            'For a specific known user (follow-up drill-in), pass userIds from a prior tool result.',
             'After the tool returns, summarize the count briefly in markdown — the UI renders the user cards.',
             'Do not invent user ids or details not present in the tool result.',
         ].join(' '),
@@ -113,6 +118,7 @@ export function toolAdminUsersFindMany({
                     criterion: {
                         skip: 0,
                         take,
+                        userIds: input.userIds,
                         searchText: input.searchText,
                         types,
                         status: input.status,

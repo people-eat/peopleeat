@@ -113,13 +113,17 @@ function parseOptionalDateTime(value: string | undefined, field: string): Date |
 }
 
 const toolAdminBookingRequestsFindManyInputSchema = z.object({
+    bookingRequestIds: z
+        .array(z.string())
+        .optional()
+        .describe('Primary-key filter. Use for follow-up drill-in from prior tool results (typically one id). Do not invent ids.'),
     days: z.coerce
         .number()
         .int()
         .min(1)
         .max(TOOL_DAYS_MAX)
         .optional()
-        .describe('Created within the past N calendar days (sets createdAtFrom = now − N days). Prefer this for “past X days”.'),
+        .describe('Created within the past N calendar days (sets createdAtFrom = now - N days). Prefer this for “past X days”.'),
     createdAtFrom: z.string().optional().describe('ISO DateTime lower bound for BookingRequests.createdAt. Ignored when `days` is set.'),
     createdAtTo: z
         .string()
@@ -161,6 +165,7 @@ export function toolAdminBookingRequestsFindMany({
             'List admin booking requests matching a criterion.',
             'Use when the operator asks to show / list / find booking requests (especially “past X days”).',
             'Pass `days` for relative recency; optionally narrow with searchText or publicationStatuses.',
+            'For a specific known booking request (follow-up drill-in), pass bookingRequestIds from a prior tool result.',
             'After the tool returns, summarize the count briefly in markdown — the UI renders the request cards.',
             'Do not invent booking request ids or details not present in the tool result.',
         ].join(' '),
@@ -184,6 +189,7 @@ export function toolAdminBookingRequestsFindMany({
                     criterion: {
                         skip: 0,
                         take,
+                        bookingRequestIds: input.bookingRequestIds,
                         searchText: input.searchText,
                         publicationStatuses: input.publicationStatuses,
                         createdAtFrom,

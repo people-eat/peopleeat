@@ -112,7 +112,7 @@ item’s full height while a `DragOverlay` follows the pointer on the vertical a
 - `Cook.menu(menuId)` returns library or offer-scoped rows; soft-deleted still hidden
 - SDL: `CookMenu` (+ `bookingRequestOfferId`, `offerContext`), `PublicCookMenu`, `AdminCookMenu` (+ `courses` as `AdminCookMenuCourse` with
   nested `AdminCookMeal`; each exposes `courseMealOptionImages: [String!]!` — meal-option photo URLs in course/option order, deduped),
-  `AdminCookMenuCriterion` / shared `AdminCookInventoryStatus`, courses, suggestion types
+  `AdminCookMenuCriterion` (optional `menuIds` for primary-key drill-in) / shared `AdminCookInventoryStatus`, courses, suggestion types
 - Commands: create (locale-aware draft title + default course titles via `cookMenuDraftDefaults` from cook `Users.locale`), update (offer
   rows: no `publishedAt`; editable only while negotiable), delete (soft, inventory-only), copy (inventory source), `menuSyncToTemplate`
   (offer → living inventory `copyOfMenuId`), `menuSuggestionFromText`, `menuTitleDescriptionSuggest` (menu-level AI suggestion mutations

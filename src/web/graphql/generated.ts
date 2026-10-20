@@ -658,6 +658,7 @@ export interface GqlCAdminBookingRequestCreationMonthStat {
 }
 
 export type GqlCAdminBookingRequestCriterion = {
+    bookingRequestIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     createdAtFrom?: InputMaybe<Scalars['DateTime']['input']>;
     createdAtTo?: InputMaybe<Scalars['DateTime']['input']>;
     promoCodeId?: InputMaybe<Scalars['ID']['input']>;
@@ -972,6 +973,7 @@ export type GqlCAdminCookMealCriterion = {
     cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     imageFilter?: InputMaybe<GqlCAdminCookMealImageFilter>;
     includeDeleted?: Scalars['Boolean']['input'];
+    mealIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     searchText?: InputMaybe<Scalars['String']['input']>;
     skip?: Scalars['Int']['input'];
     sortDirection?: InputMaybe<GqlCSortDirection>;
@@ -1013,6 +1015,7 @@ export interface GqlCAdminCookMenuCourse {
 export type GqlCAdminCookMenuCriterion = {
     cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     includeDeleted?: Scalars['Boolean']['input'];
+    menuIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     searchText?: InputMaybe<Scalars['String']['input']>;
     skip?: Scalars['Int']['input'];
     sortDirection?: InputMaybe<GqlCSortDirection>;
@@ -2101,6 +2104,7 @@ export type GqlCAdminUserCriterion = {
     status?: InputMaybe<GqlCUserStatus>;
     take?: Scalars['Int']['input'];
     types: Array<GqlCAdminUserType>;
+    userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export type GqlCAdminUserSortField = 'createdAt' | 'emailAddress' | 'firstName' | 'lastName';

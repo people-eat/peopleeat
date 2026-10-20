@@ -112,7 +112,7 @@ answers one question:
 | State       | User's question                    | Visual                                                                                                                                                    |
 | ----------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Focus**   | "Am I in the right field?"         | Same ring as `Input` / `Textarea` / `InputGroup`: `border-ring` + `ring-[3px] ring-ring/50` on the `InputGroup` (also used for drag-over).                |
-| **Ready**   | "Did it notice I typed something?" | Send button lifts `−1px` and fades from muted to full opacity (`enabled:-translate-y-px`, 200 ms). Stops when the draft is empty again.                   |
+| **Ready**   | "Did it notice I typed something?" | Send button lifts `-1px` and fades from muted to full opacity (`enabled:-translate-y-px`, 200 ms). Stops when the draft is empty again.                   |
 | **Sending** | "Did it hear me?"                  | `SendIcon` crossfades to a `Spinner` (150 ms) inside the Send button.                                                                                     |
 | **Sent**    | "Did it land?"                     | `CheckIcon` flashes in the Send button slot for 700 ms when `onSubmit` resolves `true` (may overlap a still-busy generation), then reverts to `SendIcon`. |
 

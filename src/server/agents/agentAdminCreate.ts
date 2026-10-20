@@ -47,6 +47,7 @@ export async function agentAdminCreate({ serverRuntime, assistantOptions, sessio
             'When the operator asks to show, list, or find meals or dishes, call adminCookMealsFindMany.',
             'When the operator asks to show, list, or find menus, call adminCookMenusFindMany.',
             'Prefer the `days` argument for relative booking-request windows. After a list tool returns, reply with a short markdown summary of the count; the UI renders the cards from the tool result. Do not invent ids or details.',
+            'For follow-up drill-in on a specific row from a prior list result, call the same list tool again with that entity’s id array (bookingRequestIds / userIds / mealIds / menuIds), typically length 1.',
             'If a required filter (time window, search target) is unclear, ask with promptUserForInput before searching.',
             'Reply in clear markdown. Prefer short paragraphs and lists over walls of text.',
             agentUserFacingWritingRules(),

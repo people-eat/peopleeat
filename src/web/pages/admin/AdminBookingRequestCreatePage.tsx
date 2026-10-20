@@ -1055,7 +1055,7 @@ function ParticipantCountField({
                     variant="outline"
                     size="icon"
                     disabled={disabled || value <= min}
-                    aria-label={`− ${label}`}
+                    aria-label={`- ${label}`}
                     onClick={() => onChange(Math.max(min, value - 1))}
                 >
                     <MinusIcon className="size-4" />

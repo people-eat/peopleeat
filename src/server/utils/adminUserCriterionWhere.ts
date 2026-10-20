@@ -1,4 +1,4 @@
-import { and, eq, exists, ilike, notExists, or } from 'drizzle-orm';
+import { and, eq, exists, ilike, inArray, notExists, or } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
 import { admins, cooks, users } from '../db/schema';
@@ -9,7 +9,7 @@ import { likeContainsPattern } from './likeContainsPattern';
 /** Shared `WHERE` for `adminUserFindMany` / `adminUserCounts`. Returns `false`
  * when `types` is empty (match nothing), matching `AdminLogCriterion.levels`. */
 export function adminUserCriterionWhere(
-    criterion: Pick<GqlSAdminUserCriterion, 'searchText' | 'types' | 'isApprovedByAdmin' | 'status'>,
+    criterion: Pick<GqlSAdminUserCriterion, 'searchText' | 'types' | 'userIds' | 'isApprovedByAdmin' | 'status'>,
     db: ServerRuntime['db'],
 ): SQL | undefined | false {
     if (criterion.types.length === 0) {
@@ -32,6 +32,8 @@ export function adminUserCriterionWhere(
         ? or(ilike(users.firstName, pattern), ilike(users.lastName, pattern), ilike(users.emailAddress, pattern))
         : undefined;
 
+    const userIdsClause = criterion.userIds && criterion.userIds.length > 0 ? inArray(users.userId, criterion.userIds) : undefined;
+
     const approvalClause =
         criterion.isApprovedByAdmin === null || criterion.isApprovedByAdmin === undefined
             ? undefined
@@ -44,5 +46,5 @@ export function adminUserCriterionWhere(
 
     const statusClause = criterion.status === null || criterion.status === undefined ? undefined : eq(users.status, criterion.status);
 
-    return and(or(...typeClauses), searchClause, approvalClause, statusClause);
+    return and(or(...typeClauses), userIdsClause, searchClause, approvalClause, statusClause);
 }

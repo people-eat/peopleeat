@@ -290,7 +290,7 @@
 
 /* Assistant header trigger — one-shot accent shimmer along the real border
  * perimeter on mount (SVG stroke-dashoffset in AssistantTriggerButton). Uses
- * pathLength=100 so dashoffset −100 is exactly one lap at constant arc-length
+ * pathLength=100 so dashoffset -100 is exactly one lap at constant arc-length
  * speed. A single round-capped dash travels; the SVG fades out at the end.
  * Answers “Is this the smart AI entry?” then settles to the static accent pill.
  * Duration (~1.8s) is a documented exception in docs/styles/motion.md. */

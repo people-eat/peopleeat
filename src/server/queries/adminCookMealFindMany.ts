@@ -63,6 +63,10 @@ function adminCookMealListCardSnapshot(rows: GqlSAdminCookMeal[]): ChatAdminMeal
 }
 
 const toolAdminCookMealsFindManyInputSchema = z.object({
+    mealIds: z
+        .array(z.string())
+        .optional()
+        .describe('Primary-key filter. Use for follow-up drill-in from prior tool results (typically one id). Do not invent ids.'),
     searchText: z.string().optional().describe('Optional title, description, or cook name search.'),
     cookIds: z.array(z.string()).optional().describe('Optional cook user ids to scope the list.'),
     status: GqlSAdminCookInventoryStatusSchema.optional().describe('Optional lifecycle filter (PUBLISHED / DRAFT / DELETED).'),
@@ -97,6 +101,7 @@ export function toolAdminCookMealsFindMany({
             'List admin cook meals (dishes) matching a criterion.',
             'Use when the operator asks to show / list / find meals or dishes.',
             'Optionally narrow with searchText, cookIds, status, or imageFilter.',
+            'For a specific known meal (follow-up drill-in), pass mealIds from a prior tool result.',
             'After the tool returns, summarize the count briefly in markdown — the UI renders the meal cards.',
             'Do not invent meal ids or details not present in the tool result.',
         ].join(' '),
@@ -108,6 +113,7 @@ export function toolAdminCookMealsFindMany({
                     criterion: {
                         skip: 0,
                         take,
+                        mealIds: input.mealIds,
                         searchText: input.searchText,
                         cookIds: input.cookIds,
                         status: input.status,

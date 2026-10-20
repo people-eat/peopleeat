@@ -107,6 +107,10 @@ function adminCookMenuListCardSnapshot(rows: GqlSAdminCookMenu[]): ChatAdminMenu
 }
 
 const toolAdminCookMenusFindManyInputSchema = z.object({
+    menuIds: z
+        .array(z.string())
+        .optional()
+        .describe('Primary-key filter. Use for follow-up drill-in from prior tool results (typically one id). Do not invent ids.'),
     searchText: z.string().optional().describe('Optional title, description, or cook name search.'),
     cookIds: z.array(z.string()).optional().describe('Optional cook user ids to scope the list.'),
     status: GqlSAdminCookInventoryStatusSchema.optional().describe('Optional lifecycle filter (PUBLISHED / DRAFT / DELETED).'),
@@ -140,6 +144,7 @@ export function toolAdminCookMenusFindMany({
             'List admin cook menus matching a criterion (inventory only, not offer copies).',
             'Use when the operator asks to show / list / find menus.',
             'Optionally narrow with searchText, cookIds, or status.',
+            'For a specific known menu (follow-up drill-in), pass menuIds from a prior tool result.',
             'After the tool returns, summarize the count briefly in markdown — the UI renders the menu cards.',
             'Do not invent menu ids or details not present in the tool result.',
         ].join(' '),
@@ -151,6 +156,7 @@ export function toolAdminCookMenusFindMany({
                     criterion: {
                         skip: 0,
                         take,
+                        menuIds: input.menuIds,
                         searchText: input.searchText,
                         cookIds: input.cookIds,
                         status: input.status,
