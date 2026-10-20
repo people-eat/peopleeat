@@ -2148,6 +2148,13 @@ input AdminBookingRequestCriterion {
     # Primary-key filter (`IN`); omit or empty = no id filter. Used by admin
     # assistant drill-in (same list tool with one or more booking request ids).
     bookingRequestIds: [ID!]
+    # Pool / outreach filter: requests with a `BookingRequestCooks` row for these
+    # cooks (`IN`). Omit or empty = no cook-pool filter. Orthogonal to `userIds`
+    # (customer). Admin user-detail pool tab passes one cook id.
+    cookIds: [ID!]
+    # When true with non-empty `cookIds`, only rows whose pool stamp has
+    # `notifiedAt` set. Ignored when `cookIds` is omitted or empty.
+    notifiedOnly: Boolean
     publicationStatuses: [BookingRequestPublicationStatus!]
     statuses: [BookingRequestStatus!]
     # Filter to requests that currently apply this promo (`BookingRequests.promoCodeId`).
@@ -2728,8 +2735,12 @@ type AdminCook {
     # True while a pending cook-biography-summary-generate job exists for this
     # cook (created|retry|active). Derived from pg-boss via payload cookId — not a Cooks column.
     biographySummaryGenerating: Boolean!
+    # Landscape brand mark for the public chef About section. Null → marketing benefits fallback.
+    logo: FileUpload
     cuisineStyle: String
     cookingPhilosophy: String
+    # Same aggregate as `PublicCook.rating` — published customer reviews on completed offers.
+    rating: PublicCookRating!
     travelExpensesAmount: Int!
     maximumTravelDistance: Int
     minimumPriceAmount: Int
@@ -2738,10 +2749,29 @@ type AdminCook {
     maximumParticipants: Int
     callSchedulingEnabled: Boolean!
     callDurationMinutes: Int!
+    # Recurring weekly discovery-call windows (read-only on admin user detail).
+    callAvailabilityRules: [CookCallAvailabilityRule!]!
+    # City / partner / occasion landings that currently feature this cook.
+    featuredOn: [AdminCookFeaturedLanding!]!
     # Optional public display name; when set, public surfaces prefer it over firstName.
     stageName: String
     createdAt: DateTime!
     lastModifiedAt: DateTime!
+}
+
+enum AdminCookFeaturedLandingKind {
+    CITY
+    PARTNER
+    OCCASION
+}
+
+# Reverse index: landings that curate this cook. `id` is cityId / partnerId / occasionId.
+type AdminCookFeaturedLanding {
+    kind: AdminCookFeaturedLandingKind!
+    id: ID!
+    titleDe: String!
+    titleEn: String!
+    pathName: String!
 }
 
 # --- Testimonials (admin) -------------------------------------------------------
@@ -2800,6 +2830,25 @@ type AdminCookTestimonial {
 }
 
 union AdminTestimonial = AdminCustomerTestimonial | AdminCookTestimonial
+
+# Filter + pagination for `Admin.customerTestimonials`. Optional `cookIds` scopes
+# to testimonials on offers by those cooks (`IN` via BookingRequestOffers).
+# Omit criterion (or empty cookIds) = no cook filter. `skip` / `take` apply only
+# when a criterion object is passed; omit criterion for the full unsorted-limit
+# catalog used by the testimonials list and curation pickers.
+input AdminCustomerTestimonialCriterion {
+    skip: Int! = 0
+    take: Int! = 100
+    cookIds: [ID!]
+}
+
+# Filter + pagination for `Admin.cookTestimonials`. Optional `cookIds` scopes to
+# those cooks (`IN`). Omit criterion (or empty cookIds) = no cook filter.
+input AdminCookTestimonialCriterion {
+    skip: Int! = 0
+    take: Int! = 100
+    cookIds: [ID!]
+}
 
 # Curated, ordered testimonial on the city editor.
 type AdminCityTestimonial {
@@ -3521,9 +3570,11 @@ type Admin {
     featureToggles: [AdminFeatureToggle!]!
 
     # Testimonial catalogs (draft + published). See docs/architecture/testimonials.md.
-    customerTestimonials: [AdminCustomerTestimonial!]!
+    # Omit `criterion` for the full catalog (admin list / curation pickers). Pass
+    # `cookIds` to scope to a cook (user-detail testimonials tab).
+    customerTestimonials(criterion: AdminCustomerTestimonialCriterion): [AdminCustomerTestimonial!]!
     customerTestimonial(customerTestimonialId: ID!): AdminCustomerTestimonial
-    cookTestimonials: [AdminCookTestimonial!]!
+    cookTestimonials(criterion: AdminCookTestimonialCriterion): [AdminCookTestimonial!]!
     cookTestimonial(cookTestimonialId: ID!): AdminCookTestimonial
 
     # Shared Garage/S3 object store browse. Capability-optional: when

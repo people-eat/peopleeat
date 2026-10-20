@@ -4,8 +4,13 @@
 
 fragment AdminUserCookProfileEditCook on AdminCook {
     cookId
+    stageName
     biography
     biographySummary
+    logo {
+        fileUploadId
+        url
+    }
     cuisineStyle
     cookingPhilosophy
     exactTravelOriginAddress {

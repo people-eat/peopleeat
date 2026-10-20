@@ -245,6 +245,7 @@ import { adminCityCooksFindMany } from '../queries/adminCityCooksFindMany';
 import { adminCityFindMany } from '../queries/adminCityFindMany';
 import { adminCityFindOne } from '../queries/adminCityFindOne';
 import { adminCityTestimonialsFindMany } from '../queries/adminCityTestimonialsFindMany';
+import { adminCookFeaturedLandingsFindMany } from '../queries/adminCookFeaturedLandingsFindMany';
 import { adminCookMealCounts } from '../queries/adminCookMealCounts';
 import { adminCookMealFindMany } from '../queries/adminCookMealFindMany';
 import { adminCookMealFindOne } from '../queries/adminCookMealFindOne';
@@ -454,8 +455,10 @@ import type {
     GqlSAdminCooksInTravelRadiusArgs,
     GqlSAdminCookTestimonial,
     GqlSAdminCookTestimonialArgs,
+    GqlSAdminCookTestimonialsArgs,
     GqlSAdminCustomerTestimonial,
     GqlSAdminCustomerTestimonialArgs,
+    GqlSAdminCustomerTestimonialsArgs,
     GqlSAdminDatabaseSlowStatementsArgs,
     GqlSAdminFeatureToggle,
     GqlSAdminFeatureToggleUserOverride,
@@ -1359,14 +1362,14 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             featureToggles() {
                 return adminFeatureToggleFindMany(serverRuntime);
             },
-            customerTestimonials(_parent: GqlSAdmin, __: unknown, requestingSession: GqlSSession) {
-                return adminCustomerTestimonialsFindMany(requestingSession, serverRuntime);
+            customerTestimonials(_parent: GqlSAdmin, args: GqlSAdminCustomerTestimonialsArgs, requestingSession: GqlSSession) {
+                return adminCustomerTestimonialsFindMany(requestingSession, serverRuntime, args.criterion);
             },
             customerTestimonial(_parent: GqlSAdmin, args: GqlSAdminCustomerTestimonialArgs, requestingSession: GqlSSession) {
                 return adminCustomerTestimonialFindOne(args, requestingSession, serverRuntime);
             },
-            cookTestimonials(_parent: GqlSAdmin, __: unknown, requestingSession: GqlSSession) {
-                return adminCookTestimonialsFindMany(requestingSession, serverRuntime);
+            cookTestimonials(_parent: GqlSAdmin, args: GqlSAdminCookTestimonialsArgs, requestingSession: GqlSSession) {
+                return adminCookTestimonialsFindMany(requestingSession, serverRuntime, args.criterion);
             },
             cookTestimonial(_parent: GqlSAdmin, args: GqlSAdminCookTestimonialArgs, requestingSession: GqlSSession) {
                 return adminCookTestimonialFindOne(args, requestingSession, serverRuntime);
@@ -1830,6 +1833,18 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             biographySummaryGenerating(parent: GqlSAdminCook) {
                 return cookBiographySummaryGenerating(serverRuntime, parent.cookId);
+            },
+            logo(parent: GqlSAdminCook) {
+                return cookLogoFindOne(parent.cookId, serverRuntime);
+            },
+            rating(parent: GqlSAdminCook) {
+                return publicCookCustomerTestimonialRatingSummary(parent.cookId, serverRuntime);
+            },
+            callAvailabilityRules(parent: GqlSAdminCook, _: unknown, requestingSession: GqlSSession) {
+                return cookCallAvailabilityRuleFindMany(parent, requestingSession, serverRuntime);
+            },
+            featuredOn(parent: GqlSAdminCook) {
+                return adminCookFeaturedLandingsFindMany(parent.cookId, serverRuntime);
             },
         },
         AdminMutation: {

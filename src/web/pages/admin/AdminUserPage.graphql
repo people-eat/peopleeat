@@ -1,9 +1,9 @@
 # Admin user detail. Loaded by `/admin/users/$userId`.
 # See `docs/features/admin-users.md`. URL `tab` selects the section (customer + optional cook tabs);
 # emails / whatsapp / sessions / session-events / meals / menus / booking-requests / offers /
-# assistant-chats load only for their tab via `@include` (loaderDeps on `tab`, plus `page` /
-# `pageSize` for session-events). Assistant chats use `Admin.assistantChats` with `userIds: [userId]`
-# — see `docs/features/admin-assistant-chats.md`.
+# assistant-chats / calls / testimonials / pool load only for their tab via `@include`
+# (loaderDeps on `tab`, plus `page` / `pageSize` for session-events). Assistant chats use
+# `Admin.assistantChats` with `userIds: [userId]` — see `docs/features/admin-assistant-chats.md`.
 
 fragment AdminUserCook on AdminCook {
     cookId
@@ -15,6 +15,7 @@ fragment AdminUserCook on AdminCook {
     stripeAccountUrl
     stripeAccountActive
     stripeAccountActiveWasReset
+    stageName
     exactTravelOriginAddress {
         displayText
         latitude
@@ -29,17 +30,35 @@ fragment AdminUserCook on AdminCook {
     biography
     biographySummary
     biographySummaryGenerating
+    logo {
+        fileUploadId
+        url
+    }
     cuisineStyle
     cookingPhilosophy
+    rating {
+        averageRating
+        reviewCount
+    }
     travelExpensesAmount
     maximumTravelDistance
-    minimumPriceAmount
-    maximumPriceAmount
-    minimumParticipants
-    maximumParticipants
     callSchedulingEnabled
     callDurationMinutes
+    callAvailabilityRules {
+        cookCallAvailabilityRuleId
+        dayOfWeek
+        startMinuteOfDay
+        endMinuteOfDay
+    }
+    featuredOn {
+        kind
+        id
+        titleDe
+        titleEn
+        pathName
+    }
     createdAt
+    lastModifiedAt
 }
 
 query AdminUserPage(
@@ -54,6 +73,9 @@ query AdminUserPage(
     $includeBookingRequests: Boolean!
     $includeOffers: Boolean!
     $includeAssistantChats: Boolean!
+    $includeCalls: Boolean!
+    $includeTestimonials: Boolean!
+    $includePool: Boolean!
     $emailsCriterion: AdminOutboundEmailCriterion!
     $whatsAppCriterion: AdminWhatsAppConversationCriterion!
     $sessionsCriterion: AdminSessionCriterion!
@@ -63,6 +85,10 @@ query AdminUserPage(
     $bookingRequestsCriterion: AdminBookingRequestCriterion!
     $bookingRequestOffersCriterion: AdminBookingRequestOfferCriterion!
     $assistantChatsCriterion: AdminAssistantChatCriterion!
+    $callTrafficCriterion: AdminCallTrafficCriterion!
+    $customerTestimonialsCriterion: AdminCustomerTestimonialCriterion!
+    $cookTestimonialsCriterion: AdminCookTestimonialCriterion!
+    $poolBookingRequestsCriterion: AdminBookingRequestCriterion!
 ) {
     currentSession {
         sessionId
@@ -201,6 +227,94 @@ query AdminUserPage(
                         lastName
                         emailAddress
                     }
+                }
+                poolBookingRequests: bookingRequests(criterion: $poolBookingRequestsCriterion) @include(if: $includePool) {
+                    bookingRequestId
+                    status
+                    occasion
+                    dateTime
+                    publicationStatus
+                    createdAt
+                    exactEventAddress {
+                        city
+                        displayText
+                    }
+                    participants {
+                        type
+                    }
+                    offers {
+                        bookingRequestOfferId
+                        status
+                        createdAt
+                        userUnreadNotificationCount
+                        cookUnreadNotificationCount
+                        cook {
+                            cookId
+                            user {
+                                userId
+                                firstName
+                                lastName
+                            }
+                        }
+                    }
+                    customer {
+                        userId
+                        firstName
+                        lastName
+                        emailAddress
+                    }
+                }
+                callTraffic(criterion: $callTrafficCriterion) @include(if: $includeCalls) {
+                    kind
+                    bookingRequestId
+                    bookingRequestOfferId
+                    cookId
+                    customerUserId
+                    cookDisplayName
+                    customerDisplayName
+                    occasion
+                    callRoom {
+                        bookingRequestOfferCallRoomId
+                        startedAt
+                        endedAt
+                        status
+                    }
+                    callSlotBooking {
+                        cookCallSlotBookingId
+                        startAt
+                        endAt
+                        status
+                        initiator
+                        declineReason
+                        canceledBy
+                        canceledReason
+                        createdAt
+                        videoCallRoomId
+                    }
+                }
+                customerTestimonials(criterion: $customerTestimonialsCriterion) @include(if: $includeTestimonials) {
+                    customerTestimonialId
+                    displayAuthorName
+                    displayLocation
+                    displayOccasion
+                    body
+                    rating
+                    publicationStatus
+                    publishedAt
+                    createdAt
+                    imageUrls
+                }
+                cookTestimonials(criterion: $cookTestimonialsCriterion) @include(if: $includeTestimonials) {
+                    cookTestimonialId
+                    displayAuthorName
+                    displayLocation
+                    displayOccasion
+                    body
+                    rating
+                    publicationStatus
+                    publishedAt
+                    createdAt
+                    imageUrls
                 }
                 bookingRequestOffers(criterion: $bookingRequestOffersCriterion) @include(if: $includeOffers) {
                     bookingRequestOfferId

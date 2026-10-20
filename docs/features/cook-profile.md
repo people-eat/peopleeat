@@ -50,8 +50,8 @@ Signed-in cooks manage these areas under `/profile/*`:
 6. **Calls** (`/profile/calls`) toggles call scheduling and duration, weekly windows, and date exceptions — see
    [cook-call-availability.md](./cook-call-availability.md). Live call booking happens from the offer Call tab, not here.
 7. Admins manage cooks on the user admin surface: approve/revoke with a confirm dialog (approve sends a transactional email with a CTA to
-   `/profile`; revoke does not email), toggle public visibility with a confirm dialog, edit travel / biography / cuisine catalogs, and
-   create draft meals/menus. See [admin-users.md](./admin-users.md).
+   `/profile`; revoke does not email), toggle public visibility with a confirm dialog, edit stage name / About logo / travel / biography /
+   cuisine catalogs, and create draft meals/menus. See [admin-users.md](./admin-users.md).
 
 **Membership:** new cooks can sign up on `/chef-sign-up` (account + cook in one step) or existing customers can upgrade. Create requires
 travel origin, expenses, and max distance; biography fields are optional and filled later. Signed-in cooks who open `/chef-sign-up` redirect
@@ -87,7 +87,7 @@ suggestions and driving distance; wallet page owns one-shot return/refresh handl
 ## Ideas
 
 - On public profile, show when the cook is featured on city or partner landing pages.
-- Cook profile UI to edit `stageName` (API + public display already support it).
+- Cook self-serve UI to edit `stageName` (API + public display already support it; admins can edit on user detail).
 
 ### Cook scrape on sign-up (planned)
 

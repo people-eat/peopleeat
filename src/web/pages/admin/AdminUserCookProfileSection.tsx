@@ -1,11 +1,12 @@
-import { useRouter } from '@tanstack/react-router';
+import { Link, useRouter } from '@tanstack/react-router';
 import { CheckIcon, CopyIcon, ExternalLinkIcon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { formatCurrency } from '../../../shared';
+import { formatCurrency, formatDate } from '../../../shared';
+import { formatMinuteOfDay } from '../../../shared/cookCallAvailability';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -21,11 +22,15 @@ import { Button } from '../../components/base/button';
 import { Switch } from '../../components/base/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import { CookProfileTags } from '../../components/CookProfileTags';
-import type { GqlCAdminUserPageQuery } from '../../graphql/generated';
+import { TestimonialRatingStars } from '../../components/TestimonialRatingStars';
+import type { GqlCAdminCookFeaturedLandingKind, GqlCAdminUserPageQuery } from '../../graphql/generated';
 import { AdminCookApprovalUpdateDocument, AdminUserCookUpdateDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 
 type AdminUserRow = NonNullable<NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['user']>;
+type AdminCookRow = NonNullable<AdminUserRow['cook']>;
 
 function CopyValueButton({ text }: { text: string }) {
     const locale = useLocale();
@@ -124,8 +129,39 @@ function DetailField({
     );
 }
 
+function weekdayLabel(dayOfWeek: number, locale: Locale): string {
+    const labels =
+        locale === 'de'
+            ? ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag']
+            : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return labels[dayOfWeek] ?? String(dayOfWeek);
+}
+
+function featuredLandingKindLabel(kind: GqlCAdminCookFeaturedLandingKind, locale: Locale): string {
+    switch (kind) {
+        case 'CITY':
+            return { de: 'Stadt', en: 'City' }[locale];
+        case 'PARTNER':
+            return { de: 'Partner', en: 'Partner' }[locale];
+        case 'OCCASION':
+            return { de: 'Anlass', en: 'Occasion' }[locale];
+    }
+}
+
+function featuredLandingTo(kind: GqlCAdminCookFeaturedLandingKind, id: string) {
+    switch (kind) {
+        case 'CITY':
+            return { to: '/{-$locale}/admin/cities/$cityId' as const, params: { cityId: id } };
+        case 'PARTNER':
+            return { to: '/{-$locale}/admin/partners/$partnerId' as const, params: { partnerId: id } };
+        case 'OCCASION':
+            return { to: '/{-$locale}/admin/occasions/$occasionId' as const, params: { occasionId: id } };
+    }
+}
+
 export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
     const locale = useLocale();
+    const timeZone = useTimeZone();
     const router = useRouter();
     const cook = user.cook;
     const [, approvalUpdate] = useMutation(AdminCookApprovalUpdateDocument);
@@ -151,54 +187,105 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
         );
     }
 
-    const cookId = cook.cookId;
+    return (
+        <AdminUserCookProfileBody
+            cook={cook}
+            approved={approved}
+            visible={visible}
+            approvalBusy={approvalBusy}
+            visibilityBusy={visibilityBusy}
+            pendingApproved={pendingApproved}
+            pendingVisible={pendingVisible}
+            empty={empty}
+            locale={locale}
+            timeZone={timeZone}
+            onPendingApproved={setPendingApproved}
+            onPendingVisible={setPendingVisible}
+            onConfirmApproval={async () => {
+                if (pendingApproved == null) return;
+                const next = pendingApproved;
+                setApprovalBusy(true);
+                try {
+                    const result = await approvalUpdate({ cookId: cook.cookId, isApprovedByAdmin: next });
+                    if (result.error || !result.data?.admin.cookApprovalUpdate.success) {
+                        toast.error({ de: 'Freischaltung fehlgeschlagen.', en: 'Could not update approval.' }[locale]);
+                        return;
+                    }
+                    setApproved(next);
+                    setPendingApproved(null);
+                    toast.success(
+                        next
+                            ? { de: 'Koch freigeschaltet.', en: 'Cook approved.' }[locale]
+                            : { de: 'Freischaltung entzogen.', en: 'Approval revoked.' }[locale],
+                    );
+                    await router.invalidate();
+                } finally {
+                    setApprovalBusy(false);
+                }
+            }}
+            onConfirmVisibility={async () => {
+                if (pendingVisible == null) return;
+                const nextVisible = pendingVisible;
+                setVisibilityBusy(true);
+                try {
+                    const result = await cookUpdate({ cookId: cook.cookId, input: { isVisible: nextVisible } });
+                    if (result.error || !result.data?.admin.cookUpdate.success) {
+                        toast.error({ de: 'Sichtbarkeit konnte nicht geändert werden.', en: 'Could not update visibility.' }[locale]);
+                        return;
+                    }
+                    setVisible(nextVisible);
+                    setPendingVisible(null);
+                    toast.success(
+                        nextVisible
+                            ? { de: 'Profil öffentlich.', en: 'Profile public.' }[locale]
+                            : { de: 'Profil verborgen.', en: 'Profile hidden.' }[locale],
+                    );
+                    await router.invalidate();
+                } finally {
+                    setVisibilityBusy(false);
+                }
+            }}
+        />
+    );
+}
+
+function AdminUserCookProfileBody({
+    cook,
+    approved,
+    visible,
+    approvalBusy,
+    visibilityBusy,
+    pendingApproved,
+    pendingVisible,
+    empty,
+    locale,
+    timeZone,
+    onPendingApproved,
+    onPendingVisible,
+    onConfirmApproval,
+    onConfirmVisibility,
+}: {
+    cook: AdminCookRow;
+    approved: boolean;
+    visible: boolean;
+    approvalBusy: boolean;
+    visibilityBusy: boolean;
+    pendingApproved: boolean | null;
+    pendingVisible: boolean | null;
+    empty: string;
+    locale: Locale;
+    timeZone: string;
+    onPendingApproved: (next: boolean | null) => void;
+    onPendingVisible: (next: boolean | null) => void;
+    onConfirmApproval: () => void | Promise<void>;
+    onConfirmVisibility: () => void | Promise<void>;
+}) {
     const stripeAccountId = cook.stripeAccountId?.trim() || null;
-
-    async function onConfirmApproval() {
-        if (pendingApproved == null) return;
-        const next = pendingApproved;
-        setApprovalBusy(true);
-        try {
-            const result = await approvalUpdate({ cookId, isApprovedByAdmin: next });
-            if (result.error || !result.data?.admin.cookApprovalUpdate.success) {
-                toast.error({ de: 'Freischaltung fehlgeschlagen.', en: 'Could not update approval.' }[locale]);
-                return;
-            }
-            setApproved(next);
-            setPendingApproved(null);
-            toast.success(
-                next
-                    ? { de: 'Koch freigeschaltet.', en: 'Cook approved.' }[locale]
-                    : { de: 'Freischaltung entzogen.', en: 'Approval revoked.' }[locale],
-            );
-            await router.invalidate();
-        } finally {
-            setApprovalBusy(false);
-        }
-    }
-
-    async function onConfirmVisibility() {
-        if (pendingVisible == null) return;
-        const nextVisible = pendingVisible;
-        setVisibilityBusy(true);
-        try {
-            const result = await cookUpdate({ cookId, input: { isVisible: nextVisible } });
-            if (result.error || !result.data?.admin.cookUpdate.success) {
-                toast.error({ de: 'Sichtbarkeit konnte nicht geändert werden.', en: 'Could not update visibility.' }[locale]);
-                return;
-            }
-            setVisible(nextVisible);
-            setPendingVisible(null);
-            toast.success(
-                nextVisible
-                    ? { de: 'Profil öffentlich.', en: 'Profile public.' }[locale]
-                    : { de: 'Profil verborgen.', en: 'Profile hidden.' }[locale],
-            );
-            await router.invalidate();
-        } finally {
-            setVisibilityBusy(false);
-        }
-    }
+    const stageName = cook.stageName?.trim() || null;
+    const publicProfileLive = approved && visible;
+    const hasRating = cook.rating.reviewCount > 0 && cook.rating.averageRating != null;
+    const callRules = cook.callAvailabilityRules;
+    const featuredOn = cook.featuredOn;
 
     return (
         <div className="@container grid w-full min-w-0 gap-8">
@@ -214,10 +301,24 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
                 {cook.canCreateOffers ? (
                     <Badge variant="outline">{{ de: 'Kann Angebote erstellen', en: 'Can create offers' }[locale]}</Badge>
                 ) : null}
+                {cook.stripeAccountActive ? <Badge variant="secondary">{{ de: 'Stripe aktiv', en: 'Stripe active' }[locale]}</Badge> : null}
+                {cook.stripeAccountActiveWasReset ? (
+                    <Badge variant="outline">{{ de: 'Stripe zurückgesetzt', en: 'Stripe reset' }[locale]}</Badge>
+                ) : null}
+                {hasRating ? (
+                    <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <TestimonialRatingStars rating={Math.round(cook.rating.averageRating!)} />
+                        <span>
+                            {cook.rating.averageRating!.toFixed(1)} · {cook.rating.reviewCount}{' '}
+                            {{ de: 'Bewertungen', en: 'reviews' }[locale]}
+                        </span>
+                    </span>
+                ) : null}
             </div>
 
             <dl className="grid gap-6">
                 <div className="grid gap-x-8 gap-y-5 @2xl:grid-cols-2 @6xl:grid-cols-3">
+                    <DetailField label={{ de: 'Künstlername', en: 'Stage name' }[locale]} value={stageName ?? empty} />
                     <DetailField
                         label={{ de: 'Reiseadresse', en: 'Travel origin' }[locale]}
                         value={cook.exactTravelOriginAddress?.displayText?.trim() || empty}
@@ -255,7 +356,54 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
                                 : { de: 'Inaktiv', en: 'Off' }[locale]
                         }
                     />
+                    <DetailField
+                        label={{ de: 'Erstellt', en: 'Created' }[locale]}
+                        value={formatDate(cook.createdAt, { locale, timeZone, dateStyle: 'medium' })}
+                    />
+                    <DetailField
+                        label={{ de: 'Zuletzt geändert', en: 'Last modified' }[locale]}
+                        value={formatDate(cook.lastModifiedAt, { locale, timeZone, dateStyle: 'medium' })}
+                    />
+                    <DetailField
+                        label={{ de: 'Öffentliches Profil', en: 'Public profile' }[locale]}
+                        value={
+                            publicProfileLive ? (
+                                <Link
+                                    to="/{-$locale}/chefs/$cookId"
+                                    params={{ cookId: cook.cookId }}
+                                    target="_blank"
+                                    className="inline-flex items-center gap-1 text-sm text-foreground underline-offset-4 hover:underline"
+                                >
+                                    {{ de: 'Öffnen', en: 'Open' }[locale]}
+                                    <ExternalLinkIcon className="size-3.5" aria-hidden />
+                                </Link>
+                            ) : (
+                                {
+                                    de: 'Nicht live (Freischaltung und Sichtbarkeit erforderlich).',
+                                    en: 'Not live (approval and visibility required).',
+                                }[locale]
+                            )
+                        }
+                    />
                 </div>
+
+                <div className="grid gap-1">
+                    <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                        {{ de: 'Zusätzliches Bild (About)', en: 'Additional picture (About)' }[locale]}
+                    </dt>
+                    <dd>
+                        {cook.logo?.url ? (
+                            <img
+                                src={cook.logo.url}
+                                alt=""
+                                className="aspect-video max-w-xs rounded-lg border border-border object-cover"
+                            />
+                        ) : (
+                            <p className="text-sm text-muted-foreground">{empty}</p>
+                        )}
+                    </dd>
+                </div>
+
                 <div className="grid gap-1">
                     <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                         {{ de: 'Küchenstil und Philosophie', en: 'Cuisine style and philosophy' }[locale]}
@@ -271,8 +419,68 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
                 <DetailField label={{ de: 'Biografie', en: 'Biography' }[locale]} value={cook.biography.trim() ? cook.biography : empty} />
                 <DetailField
                     label={{ de: 'Biografie-Kurzfassung', en: 'Biography summary' }[locale]}
-                    value={cook.biographySummary.trim() ? cook.biographySummary : empty}
+                    value={
+                        cook.biographySummaryGenerating
+                            ? { de: 'Wird erzeugt…', en: 'Generating…' }[locale]
+                            : cook.biographySummary.trim()
+                              ? cook.biographySummary
+                              : empty
+                    }
                 />
+
+                <div className="grid gap-1">
+                    <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                        {{ de: 'Wöchentliche Anrufzeiten', en: 'Weekly call windows' }[locale]}
+                    </dt>
+                    <dd>
+                        {callRules.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">{empty}</p>
+                        ) : (
+                            <ul className="grid gap-1 text-sm text-foreground">
+                                {callRules.map((rule) => (
+                                    <li key={rule.cookCallAvailabilityRuleId}>
+                                        {weekdayLabel(rule.dayOfWeek, locale)} · {formatMinuteOfDay(rule.startMinuteOfDay)}–
+                                        {formatMinuteOfDay(rule.endMinuteOfDay)}
+                                        {locale === 'de' ? ' Uhr' : ''}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </dd>
+                </div>
+
+                <div className="grid gap-1">
+                    <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                        {{ de: 'Vorgestellt auf', en: 'Featured on' }[locale]}
+                    </dt>
+                    <dd>
+                        {featuredOn.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                                {{ de: 'Auf keiner Landing Page.', en: 'Not featured on any landing page.' }[locale]}
+                            </p>
+                        ) : (
+                            <ul className="grid gap-2">
+                                {featuredOn.map((landing) => {
+                                    const link = featuredLandingTo(landing.kind, landing.id);
+                                    const title = locale === 'de' ? landing.titleDe : landing.titleEn || landing.titleDe;
+                                    return (
+                                        <li key={`${landing.kind}-${landing.id}`}>
+                                            <Link
+                                                to={link.to}
+                                                params={link.params}
+                                                className="inline-flex flex-wrap items-center gap-2 text-sm text-foreground underline-offset-4 hover:underline"
+                                            >
+                                                <Badge variant="outline">{featuredLandingKindLabel(landing.kind, locale)}</Badge>
+                                                <span>{title}</span>
+                                                <span className="text-muted-foreground">/{landing.pathName}</span>
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        )}
+                    </dd>
+                </div>
             </dl>
 
             <div className="grid gap-4 @2xl:grid-cols-2">
@@ -296,7 +504,7 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
                         type="button"
                         variant={approved ? 'outline' : 'default'}
                         disabled={approvalBusy}
-                        onClick={() => setPendingApproved(!approved)}
+                        onClick={() => onPendingApproved(!approved)}
                     >
                         {approved
                             ? { de: 'Freischaltung entziehen', en: 'Revoke approval' }[locale]
@@ -319,13 +527,13 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
                     <Switch
                         checked={visible}
                         disabled={visibilityBusy}
-                        onCheckedChange={(next) => setPendingVisible(next)}
+                        onCheckedChange={(next) => onPendingVisible(next)}
                         aria-label={{ de: 'Öffentliche Sichtbarkeit', en: 'Public visibility' }[locale]}
                     />
                 </div>
             </div>
 
-            <AlertDialog open={pendingApproved != null} onOpenChange={(open) => !open && setPendingApproved(null)}>
+            <AlertDialog open={pendingApproved != null} onOpenChange={(open) => !open && onPendingApproved(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
@@ -358,7 +566,7 @@ export function AdminUserCookProfileSection({ user }: { user: AdminUserRow }) {
                 </AlertDialogContent>
             </AlertDialog>
 
-            <AlertDialog open={pendingVisible != null} onOpenChange={(open) => !open && setPendingVisible(null)}>
+            <AlertDialog open={pendingVisible != null} onOpenChange={(open) => !open && onPendingVisible(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>

@@ -284,6 +284,10 @@ export type GqlSAdminCookTestimonialArgs = {
     cookTestimonialId: Scalars['ID']['input'];
 };
 
+export type GqlSAdminCookTestimonialsArgs = {
+    criterion?: InputMaybe<GqlSAdminCookTestimonialCriterion>;
+};
+
 export type GqlSAdminCooksInTravelRadiusArgs = {
     excludeUserId?: InputMaybe<Scalars['ID']['input']>;
     latitude: Scalars['Latitude']['input'];
@@ -292,6 +296,10 @@ export type GqlSAdminCooksInTravelRadiusArgs = {
 
 export type GqlSAdminCustomerTestimonialArgs = {
     customerTestimonialId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminCustomerTestimonialsArgs = {
+    criterion?: InputMaybe<GqlSAdminCustomerTestimonialCriterion>;
 };
 
 export type GqlSAdminDatabaseSlowStatementsArgs = {
@@ -683,8 +691,10 @@ export interface GqlSAdminBookingRequestCreationMonthStat {
 
 export type GqlSAdminBookingRequestCriterion = {
     bookingRequestIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     createdAtFrom?: InputMaybe<Scalars['DateTime']['input']>;
     createdAtTo?: InputMaybe<Scalars['DateTime']['input']>;
+    notifiedOnly?: InputMaybe<Scalars['Boolean']['input']>;
     promoCodeId?: InputMaybe<Scalars['ID']['input']>;
     publicationStatuses?: InputMaybe<Array<GqlSBookingRequestPublicationStatus>>;
     searchText?: InputMaybe<Scalars['String']['input']>;
@@ -948,6 +958,7 @@ export interface GqlSAdminCook {
     biography: Scalars['String']['output'];
     biographySummary: Scalars['String']['output'];
     biographySummaryGenerating: Scalars['Boolean']['output'];
+    callAvailabilityRules: Array<GqlSCookCallAvailabilityRule>;
     callDurationMinutes: Scalars['Int']['output'];
     callSchedulingEnabled: Scalars['Boolean']['output'];
     canCreateOffers: Scalars['Boolean']['output'];
@@ -956,14 +967,17 @@ export interface GqlSAdminCook {
     createdAt: Scalars['DateTime']['output'];
     cuisineStyle?: Maybe<Scalars['String']['output']>;
     exactTravelOriginAddress?: Maybe<GqlSCookTravelOriginAddress>;
+    featuredOn: Array<GqlSAdminCookFeaturedLanding>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
     isVisible: Scalars['Boolean']['output'];
     lastModifiedAt: Scalars['DateTime']['output'];
+    logo?: Maybe<GqlSFileUpload>;
     maximumParticipants?: Maybe<Scalars['Int']['output']>;
     maximumPriceAmount?: Maybe<Scalars['Int']['output']>;
     maximumTravelDistance?: Maybe<Scalars['Int']['output']>;
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
+    rating: GqlSPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountActive: Scalars['Boolean']['output'];
     stripeAccountActiveWasReset: Scalars['Boolean']['output'];
@@ -973,6 +987,17 @@ export interface GqlSAdminCook {
     travelExpensesAmount: Scalars['Int']['output'];
     user: GqlSAdminUser;
 }
+
+export interface GqlSAdminCookFeaturedLanding {
+    __typename?: 'AdminCookFeaturedLanding';
+    id: Scalars['ID']['output'];
+    kind: GqlSAdminCookFeaturedLandingKind;
+    pathName: Scalars['String']['output'];
+    titleDe: Scalars['String']['output'];
+    titleEn: Scalars['String']['output'];
+}
+
+export type GqlSAdminCookFeaturedLandingKind = 'CITY' | 'OCCASION' | 'PARTNER';
 
 export interface GqlSAdminCookInTravelRadiusPreview {
     __typename?: 'AdminCookInTravelRadiusPreview';
@@ -1090,6 +1115,12 @@ export type GqlSAdminCookTestimonialCreate = {
     rating?: InputMaybe<Scalars['Int']['input']>;
 };
 
+export type GqlSAdminCookTestimonialCriterion = {
+    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    skip?: Scalars['Int']['input'];
+    take?: Scalars['Int']['input'];
+};
+
 export type GqlSAdminCookTestimonialUpdate = {
     authorName?: InputMaybe<Scalars['String']['input']>;
     body?: InputMaybe<Scalars['String']['input']>;
@@ -1127,6 +1158,12 @@ export type GqlSAdminCustomerTestimonialCreate = {
     occasion?: InputMaybe<Scalars['String']['input']>;
     rating?: InputMaybe<Scalars['Int']['input']>;
     userId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminCustomerTestimonialCriterion = {
+    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    skip?: Scalars['Int']['input'];
+    take?: Scalars['Int']['input'];
 };
 
 export type GqlSAdminCustomerTestimonialUpdate = {
@@ -5181,6 +5218,8 @@ export type GqlSResolversTypes = ResolversObject<{
         Omit<GqlSAdminCityTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['AdminTestimonial'] }
     >;
     AdminCook: ResolverTypeWrapper<GqlSAdminCook>;
+    AdminCookFeaturedLanding: ResolverTypeWrapper<GqlSAdminCookFeaturedLanding>;
+    AdminCookFeaturedLandingKind: GqlSAdminCookFeaturedLandingKind;
     AdminCookInTravelRadiusPreview: ResolverTypeWrapper<GqlSAdminCookInTravelRadiusPreview>;
     AdminCookInventoryStatus: GqlSAdminCookInventoryStatus;
     AdminCookMeal: ResolverTypeWrapper<GqlSAdminCookMeal>;
@@ -5194,9 +5233,11 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminCookPayoutBlockedReason: GqlSAdminCookPayoutBlockedReason;
     AdminCookTestimonial: ResolverTypeWrapper<GqlSAdminCookTestimonial>;
     AdminCookTestimonialCreate: GqlSAdminCookTestimonialCreate;
+    AdminCookTestimonialCriterion: GqlSAdminCookTestimonialCriterion;
     AdminCookTestimonialUpdate: GqlSAdminCookTestimonialUpdate;
     AdminCustomerTestimonial: ResolverTypeWrapper<GqlSAdminCustomerTestimonial>;
     AdminCustomerTestimonialCreate: GqlSAdminCustomerTestimonialCreate;
+    AdminCustomerTestimonialCriterion: GqlSAdminCustomerTestimonialCriterion;
     AdminCustomerTestimonialUpdate: GqlSAdminCustomerTestimonialUpdate;
     AdminDatabaseSlowStatement: ResolverTypeWrapper<GqlSAdminDatabaseSlowStatement>;
     AdminFeatureToggle: ResolverTypeWrapper<GqlSAdminFeatureToggle>;
@@ -5742,6 +5783,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminCityCook: GqlSAdminCityCook;
     AdminCityTestimonial: Omit<GqlSAdminCityTestimonial, 'testimonial'> & { testimonial: GqlSResolversParentTypes['AdminTestimonial'] };
     AdminCook: GqlSAdminCook;
+    AdminCookFeaturedLanding: GqlSAdminCookFeaturedLanding;
     AdminCookInTravelRadiusPreview: GqlSAdminCookInTravelRadiusPreview;
     AdminCookMeal: GqlSAdminCookMeal;
     AdminCookMealCriterion: GqlSAdminCookMealCriterion;
@@ -5750,9 +5792,11 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminCookMenuCriterion: GqlSAdminCookMenuCriterion;
     AdminCookTestimonial: GqlSAdminCookTestimonial;
     AdminCookTestimonialCreate: GqlSAdminCookTestimonialCreate;
+    AdminCookTestimonialCriterion: GqlSAdminCookTestimonialCriterion;
     AdminCookTestimonialUpdate: GqlSAdminCookTestimonialUpdate;
     AdminCustomerTestimonial: GqlSAdminCustomerTestimonial;
     AdminCustomerTestimonialCreate: GqlSAdminCustomerTestimonialCreate;
+    AdminCustomerTestimonialCriterion: GqlSAdminCustomerTestimonialCriterion;
     AdminCustomerTestimonialUpdate: GqlSAdminCustomerTestimonialUpdate;
     AdminDatabaseSlowStatement: GqlSAdminDatabaseSlowStatement;
     AdminFeatureToggle: GqlSAdminFeatureToggle;
@@ -6320,7 +6364,12 @@ export type GqlSAdminResolvers<
         ContextType,
         RequireFields<GqlSAdminCookTestimonialArgs, 'cookTestimonialId'>
     >;
-    cookTestimonials?: Resolver<Array<GqlSResolversTypes['AdminCookTestimonial']>, ParentType, ContextType>;
+    cookTestimonials?: Resolver<
+        Array<GqlSResolversTypes['AdminCookTestimonial']>,
+        ParentType,
+        ContextType,
+        Partial<GqlSAdminCookTestimonialsArgs>
+    >;
     cooksInTravelRadius?: Resolver<
         Array<GqlSResolversTypes['AdminCookInTravelRadiusPreview']>,
         ParentType,
@@ -6333,7 +6382,12 @@ export type GqlSAdminResolvers<
         ContextType,
         RequireFields<GqlSAdminCustomerTestimonialArgs, 'customerTestimonialId'>
     >;
-    customerTestimonials?: Resolver<Array<GqlSResolversTypes['AdminCustomerTestimonial']>, ParentType, ContextType>;
+    customerTestimonials?: Resolver<
+        Array<GqlSResolversTypes['AdminCustomerTestimonial']>,
+        ParentType,
+        ContextType,
+        Partial<GqlSAdminCustomerTestimonialsArgs>
+    >;
     databaseSlowStatements?: Resolver<
         Array<GqlSResolversTypes['AdminDatabaseSlowStatement']>,
         ParentType,
@@ -6943,6 +6997,7 @@ export type GqlSAdminCookResolvers<
     biography?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     biographySummary?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     biographySummaryGenerating?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    callAvailabilityRules?: Resolver<Array<GqlSResolversTypes['CookCallAvailabilityRule']>, ParentType, ContextType>;
     callDurationMinutes?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     callSchedulingEnabled?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     canCreateOffers?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
@@ -6951,14 +7006,17 @@ export type GqlSAdminCookResolvers<
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     cuisineStyle?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     exactTravelOriginAddress?: Resolver<Maybe<GqlSResolversTypes['CookTravelOriginAddress']>, ParentType, ContextType>;
+    featuredOn?: Resolver<Array<GqlSResolversTypes['AdminCookFeaturedLanding']>, ParentType, ContextType>;
     isApprovedByAdmin?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     isVisible?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     lastModifiedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    logo?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
     maximumParticipants?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     maximumPriceAmount?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     maximumTravelDistance?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     minimumParticipants?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     minimumPriceAmount?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
+    rating?: Resolver<GqlSResolversTypes['PublicCookRating'], ParentType, ContextType>;
     stageName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     stripeAccountActive?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     stripeAccountActiveWasReset?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
@@ -6967,6 +7025,17 @@ export type GqlSAdminCookResolvers<
     stripeStatus?: Resolver<GqlSResolversTypes['CookStripeStatus'], ParentType, ContextType>;
     travelExpensesAmount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     user?: Resolver<GqlSResolversTypes['AdminUser'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminCookFeaturedLandingResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminCookFeaturedLanding'] = GqlSResolversParentTypes['AdminCookFeaturedLanding'],
+> = ResolversObject<{
+    id?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    kind?: Resolver<GqlSResolversTypes['AdminCookFeaturedLandingKind'], ParentType, ContextType>;
+    pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminCookInTravelRadiusPreviewResolvers<
@@ -10653,6 +10722,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminCityCook?: GqlSAdminCityCookResolvers<ContextType>;
     AdminCityTestimonial?: GqlSAdminCityTestimonialResolvers<ContextType>;
     AdminCook?: GqlSAdminCookResolvers<ContextType>;
+    AdminCookFeaturedLanding?: GqlSAdminCookFeaturedLandingResolvers<ContextType>;
     AdminCookInTravelRadiusPreview?: GqlSAdminCookInTravelRadiusPreviewResolvers<ContextType>;
     AdminCookMeal?: GqlSAdminCookMealResolvers<ContextType>;
     AdminCookMenu?: GqlSAdminCookMenuResolvers<ContextType>;
@@ -10919,6 +10989,12 @@ export const GqlSAdminCallListItemKindSchema: z.ZodType<
 export const GqlSAdminCallTrafficSortFieldSchema: z.ZodType<'createdAt' | 'occurredAt', 'createdAt' | 'occurredAt'> = z.enum([
     'createdAt',
     'occurredAt',
+]);
+
+export const GqlSAdminCookFeaturedLandingKindSchema: z.ZodType<'CITY' | 'OCCASION' | 'PARTNER', 'CITY' | 'OCCASION' | 'PARTNER'> = z.enum([
+    'CITY',
+    'OCCASION',
+    'PARTNER',
 ]);
 
 export const GqlSAdminCookInventoryStatusSchema: z.ZodType<'DELETED' | 'DRAFT' | 'PUBLISHED', 'DELETED' | 'DRAFT' | 'PUBLISHED'> = z.enum([
@@ -11578,8 +11654,10 @@ export function GqlSAdminBookingRequestCreateSchema(): z.ZodObject<Properties<Gq
 export function GqlSAdminBookingRequestCriterionSchema(): z.ZodType<GqlSAdminBookingRequestCriterion> {
     return z.object({
         bookingRequestIds: z.array(z.string()).nullish(),
+        cookIds: z.array(z.string()).nullish(),
         createdAtFrom: z.date().nullish(),
         createdAtTo: z.date().nullish(),
+        notifiedOnly: z.boolean().nullish(),
         promoCodeId: z.string().nullish(),
         publicationStatuses: z.array(GqlSBookingRequestPublicationStatusSchema).nullish(),
         searchText: z.string().nullish(),
@@ -11740,6 +11818,14 @@ export function GqlSAdminCookTestimonialCreateSchema(): z.ZodObject<Properties<G
     });
 }
 
+export function GqlSAdminCookTestimonialCriterionSchema(): z.ZodType<GqlSAdminCookTestimonialCriterion> {
+    return z.object({
+        cookIds: z.array(z.string()).nullish(),
+        skip: z.number().default(0),
+        take: z.number().default(100),
+    });
+}
+
 export function GqlSAdminCookTestimonialUpdateSchema(): z.ZodObject<Properties<GqlSAdminCookTestimonialUpdate>> {
     return z.object({
         authorName: z.string().nullish(),
@@ -11760,6 +11846,14 @@ export function GqlSAdminCustomerTestimonialCreateSchema(): z.ZodObject<Properti
         occasion: z.string().nullish(),
         rating: z.number().nullish(),
         userId: z.string(),
+    });
+}
+
+export function GqlSAdminCustomerTestimonialCriterionSchema(): z.ZodType<GqlSAdminCustomerTestimonialCriterion> {
+    return z.object({
+        cookIds: z.array(z.string()).nullish(),
+        skip: z.number().default(0),
+        take: z.number().default(100),
     });
 }
 

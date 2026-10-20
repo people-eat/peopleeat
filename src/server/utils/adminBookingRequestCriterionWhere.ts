@@ -1,7 +1,7 @@
-import { and, eq, exists, gte, ilike, inArray, lte, or, sql } from 'drizzle-orm';
+import { and, eq, exists, gte, ilike, inArray, isNotNull, lte, or, sql } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
-import { bookingRequests, users } from '../db/schema';
+import { bookingRequestCooks, bookingRequests, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminBookingRequestCriterion } from '../graphql/generated';
 import { adminBookingRequestStatusWhere } from './adminBookingRequestStatusWhere';
@@ -14,6 +14,8 @@ export function adminBookingRequestCriterionWhere(
         | 'searchText'
         | 'userIds'
         | 'bookingRequestIds'
+        | 'cookIds'
+        | 'notifiedOnly'
         | 'publicationStatuses'
         | 'statuses'
         | 'promoCodeId'
@@ -35,6 +37,24 @@ export function adminBookingRequestCriterionWhere(
 
     if (criterion.userIds && criterion.userIds.length > 0) {
         parts.push(inArray(bookingRequests.userId, criterion.userIds));
+    }
+
+    if (criterion.cookIds && criterion.cookIds.length > 0) {
+        const poolParts: SQL[] = [
+            eq(bookingRequestCooks.bookingRequestId, bookingRequests.bookingRequestId),
+            inArray(bookingRequestCooks.cookId, criterion.cookIds),
+        ];
+        if (criterion.notifiedOnly === true) {
+            poolParts.push(isNotNull(bookingRequestCooks.notifiedAt));
+        }
+        parts.push(
+            exists(
+                db
+                    .select({ bookingRequestId: bookingRequestCooks.bookingRequestId })
+                    .from(bookingRequestCooks)
+                    .where(and(...poolParts)),
+            ),
+        );
     }
 
     if (criterion.publicationStatuses && criterion.publicationStatuses.length > 0) {

@@ -11,6 +11,9 @@ import {
     MailsIcon,
     MessageSquareIcon,
     NotebookPenIcon,
+    PhoneIcon,
+    RadarIcon,
+    StarIcon,
     ToggleRightIcon,
     UserIcon,
     UtensilsIcon,
@@ -27,6 +30,8 @@ import { AdminListPaginationBar } from '../../components/AdminListPaginationBar'
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { AdminSessionEventTimeline } from '../../components/AdminSessionEventTimeline';
+import { AdminTestimonialListCard } from '../../components/AdminTestimonialListCard';
+import type { AdminTestimonialListCardTestimonial } from '../../components/AdminTestimonialListCard';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -55,6 +60,7 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import type { Locale } from '../../utils/locale';
 import { adminAssistantChatTitle, adminChatSurfaceLabel } from './adminAssistantChats';
+import { adminCallKindLabel } from './AdminCallsAttentionBoard';
 import {
     adminListPageCount,
     adminListPageSize,
@@ -87,7 +93,7 @@ const CUSTOMER_TABS = [
     'assistant-chats',
 ] as const;
 
-const COOK_TABS = ['cook-profile', 'offers', 'meals', 'menus'] as const;
+const COOK_TABS = ['cook-profile', 'offers', 'meals', 'menus', 'pool', 'calls', 'testimonials'] as const;
 
 type AdminUserCustomerTab = (typeof CUSTOMER_TABS)[number];
 type AdminUserCookTab = (typeof COOK_TABS)[number];
@@ -103,6 +109,9 @@ const COOK_TAB_ORDER = [
     'offers',
     'meals',
     'menus',
+    'pool',
+    'calls',
+    'testimonials',
     'feature-toggles',
     'session-events',
     'sessions',
@@ -165,6 +174,9 @@ export function adminUserPageVariables(userId: string, search: AdminUserSearch) 
         includeBookingRequests: tab === 'booking-requests',
         includeOffers: tab === 'offers',
         includeAssistantChats: tab === 'assistant-chats',
+        includeCalls: tab === 'calls',
+        includeTestimonials: tab === 'testimonials',
+        includePool: tab === 'pool',
         sessionEventsCriterion: {
             userIds: [userId],
             ...sessionEventsPagination,
@@ -213,6 +225,27 @@ export function adminUserPageVariables(userId: string, search: AdminUserSearch) 
             take: 100,
             userIds: [userId],
         },
+        callTrafficCriterion: {
+            skip: 0,
+            take: 50,
+            cookIds: [userId],
+        },
+        customerTestimonialsCriterion: {
+            skip: 0,
+            take: 100,
+            cookIds: [userId],
+        },
+        cookTestimonialsCriterion: {
+            skip: 0,
+            take: 100,
+            cookIds: [userId],
+        },
+        poolBookingRequestsCriterion: {
+            skip: 0,
+            take: 100,
+            cookIds: [userId],
+            notifiedOnly: true,
+        },
     };
 }
 
@@ -259,6 +292,9 @@ const ADMIN_USER_TABS: readonly AdminUserTabDef[] = [
     { id: 'offers', label: { de: 'Angebote', en: 'Offers' }, Icon: FileTextIcon, cookOnly: true },
     { id: 'meals', label: { de: 'Gerichte', en: 'Meals' }, Icon: UtensilsIcon, cookOnly: true },
     { id: 'menus', label: { de: 'Menüs', en: 'Menus' }, Icon: HandPlatterIcon, cookOnly: true },
+    { id: 'pool', label: { de: 'Pool', en: 'Pool' }, Icon: RadarIcon, cookOnly: true },
+    { id: 'calls', label: { de: 'Anrufe', en: 'Calls' }, Icon: PhoneIcon, cookOnly: true },
+    { id: 'testimonials', label: { de: 'Bewertungen', en: 'Testimonials' }, Icon: StarIcon, cookOnly: true },
     { id: 'booking-requests', label: { de: 'Buchungsanfragen', en: 'Booking requests' }, Icon: FileInputIcon },
     { id: 'feature-toggles', label: { de: 'Feature Toggles', en: 'Feature toggles' }, Icon: ToggleRightIcon },
     { id: 'session-events', label: { de: 'Sitzungsereignisse', en: 'Session events' }, Icon: LayersIcon },
@@ -307,6 +343,10 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
     const bookingRequests = admin?.bookingRequests ?? [];
     const bookingRequestOffers = admin?.bookingRequestOffers ?? [];
     const assistantChats = admin?.assistantChats ?? [];
+    const callTraffic = admin?.callTraffic ?? [];
+    const poolBookingRequests = admin?.poolBookingRequests ?? [];
+    const customerTestimonials = admin?.customerTestimonials ?? [];
+    const cookTestimonials = admin?.cookTestimonials ?? [];
     const isCook = user?.types.includes('cook') ?? false;
     const tab = resolveAdminUserTab(search.tab, isCook);
     const visibleTabs = visibleAdminUserTabs(isCook);
@@ -413,6 +453,10 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
                         bookingRequests={bookingRequests}
                         bookingRequestOffers={bookingRequestOffers}
                         assistantChats={assistantChats}
+                        callTraffic={callTraffic}
+                        poolBookingRequests={poolBookingRequests}
+                        customerTestimonials={customerTestimonials}
+                        cookTestimonials={cookTestimonials}
                         onPanelFooterChange={onPanelFooterChange}
                     />
                 </AdminPinnedFooterLayout>
@@ -555,6 +599,14 @@ function adminUserTabFooter({
             return cookId ? <AdminUserCreateMealFooter cookId={cookId} locale={locale} /> : undefined;
         case 'menus':
             return cookId ? <AdminUserCreateMenuFooter cookId={cookId} locale={locale} /> : undefined;
+        case 'calls':
+            return (
+                <Button type="button" variant="outline" asChild>
+                    <Link to="/{-$locale}/admin/calls/list" search={{ cookId: userId }}>
+                        {{ de: 'Vollständige Anrufliste', en: 'Open full calls list' }[locale]}
+                    </Link>
+                </Button>
+            );
         default:
             return undefined;
     }
@@ -562,6 +614,18 @@ function adminUserTabFooter({
 
 type AdminUserSessionEvent = NonNullable<
     NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['sessionEvents']
+>[number];
+
+type AdminUserCallTrafficItem = NonNullable<
+    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['callTraffic']
+>[number];
+
+type AdminUserCustomerTestimonial = NonNullable<
+    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['customerTestimonials']
+>[number];
+
+type AdminUserCookTestimonial = NonNullable<
+    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['cookTestimonials']
 >[number];
 
 function AdminUserTabPanel({
@@ -577,6 +641,10 @@ function AdminUserTabPanel({
     bookingRequests,
     bookingRequestOffers,
     assistantChats,
+    callTraffic,
+    poolBookingRequests,
+    customerTestimonials,
+    cookTestimonials,
     onPanelFooterChange,
 }: {
     tab: AdminUserTab;
@@ -591,6 +659,10 @@ function AdminUserTabPanel({
     bookingRequests: AdminUserBookingRequest[];
     bookingRequestOffers: AdminUserBookingRequestOffer[];
     assistantChats: AdminUserAssistantChatListItem[];
+    callTraffic: AdminUserCallTrafficItem[];
+    poolBookingRequests: AdminUserBookingRequest[];
+    customerTestimonials: AdminUserCustomerTestimonial[];
+    cookTestimonials: AdminUserCookTestimonial[];
     onPanelFooterChange: (footer: ReactNode | undefined) => void;
 }) {
     switch (tab) {
@@ -620,6 +692,12 @@ function AdminUserTabPanel({
             return <AdminUserBookingRequestOffersSection offers={bookingRequestOffers} />;
         case 'assistant-chats':
             return <AdminUserAssistantChatsSection chats={assistantChats} />;
+        case 'calls':
+            return <AdminUserCallsSection items={callTraffic} />;
+        case 'pool':
+            return <AdminUserPoolSection bookingRequests={poolBookingRequests} />;
+        case 'testimonials':
+            return <AdminUserTestimonialsSection customerTestimonials={customerTestimonials} cookTestimonials={cookTestimonials} />;
     }
 }
 
@@ -706,6 +784,165 @@ function AdminUserBookingRequestsSection({ bookingRequests }: { bookingRequests:
             {bookingRequests.map((request) => (
                 <li key={request.bookingRequestId} className="min-h-0">
                     <AdminBookingRequestListCard request={request} />
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+function AdminUserPoolSection({ bookingRequests }: { bookingRequests: AdminUserBookingRequest[] }) {
+    const locale = useLocale();
+
+    if (bookingRequests.length === 0) {
+        return (
+            <div className="grid gap-2">
+                <p className="text-sm text-muted-foreground">
+                    {
+                        {
+                            de: 'Keine benachrichtigten Pool-Anfragen für diesen Koch.',
+                            en: 'No notified pool requests for this cook.',
+                        }[locale]
+                    }
+                </p>
+                <p className="text-sm text-muted-foreground">
+                    {
+                        {
+                            de: 'Hier erscheinen Buchungsanfragen, bei denen der Koch im Reise-Pool benachrichtigt wurde. Kundenseitige Anfragen liegen unter Buchungsanfragen.',
+                            en: 'Requests where this cook was notified in the travel pool appear here. Customer-sent requests stay under Booking requests.',
+                        }[locale]
+                    }
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="grid gap-4">
+            <p className="text-sm text-muted-foreground">
+                {
+                    {
+                        de: 'Benachrichtigte Pool-Anfragen (nicht kundenseitig gesendet).',
+                        en: 'Notified pool requests (not customer-sent).',
+                    }[locale]
+                }
+            </p>
+            <ul className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                {bookingRequests.map((request) => (
+                    <li key={request.bookingRequestId} className="min-h-0">
+                        <AdminBookingRequestListCard request={request} />
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
+function AdminUserCallsSection({ items }: { items: AdminUserCallTrafficItem[] }) {
+    const locale = useLocale();
+    const timeZone = useTimeZone();
+
+    if (items.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">
+                {{ de: 'Keine Anrufe für diesen Koch.', en: 'No calls for this cook.' }[locale]}
+            </p>
+        );
+    }
+
+    return (
+        <ul className="divide-y divide-border overflow-hidden rounded-xl border">
+            {items.map((item) => {
+                const occurredAt = item.callRoom?.startedAt ?? item.callSlotBooking?.startAt ?? item.callSlotBooking?.createdAt ?? null;
+                return (
+                    <li
+                        key={`${item.kind}-${item.bookingRequestOfferId}-${item.callRoom?.bookingRequestOfferCallRoomId ?? item.callSlotBooking?.cookCallSlotBookingId ?? 'row'}`}
+                        className="flex items-center justify-between gap-4 px-4 py-3"
+                    >
+                        <div className="grid min-w-0 gap-0.5">
+                            <p className="truncate text-sm font-medium text-foreground">
+                                {item.occasion || item.customerDisplayName || item.bookingRequestOfferId}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                                <Badge variant={item.kind === 'LIVE' || item.kind === 'PENDING' ? 'default' : 'outline'}>
+                                    {adminCallKindLabel(item.kind, locale)}
+                                </Badge>
+                                <span className="truncate">{item.customerDisplayName}</span>
+                                {occurredAt ? (
+                                    <span className="tabular-nums">
+                                        {formatDate(occurredAt, { locale, timeZone, dateStyle: 'medium' })}
+                                    </span>
+                                ) : null}
+                            </div>
+                        </div>
+                        <Button type="button" variant="ghost" size="sm" asChild>
+                            <Link
+                                to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
+                                params={{
+                                    bookingRequestId: item.bookingRequestId,
+                                    bookingRequestOfferId: item.bookingRequestOfferId,
+                                }}
+                                search={{ tab: 'call' }}
+                            >
+                                {{ de: 'Angebot', en: 'Offer' }[locale]}
+                            </Link>
+                        </Button>
+                    </li>
+                );
+            })}
+        </ul>
+    );
+}
+
+function AdminUserTestimonialsSection({
+    customerTestimonials,
+    cookTestimonials,
+}: {
+    customerTestimonials: AdminUserCustomerTestimonial[];
+    cookTestimonials: AdminUserCookTestimonial[];
+}) {
+    const locale = useLocale();
+    const rows: AdminTestimonialListCardTestimonial[] = [
+        ...customerTestimonials.map((testimonial) => ({
+            kind: 'customer' as const,
+            testimonialId: testimonial.customerTestimonialId,
+            displayAuthorName: testimonial.displayAuthorName,
+            displayLocation: testimonial.displayLocation ?? null,
+            displayOccasion: testimonial.displayOccasion ?? null,
+            body: testimonial.body,
+            rating: testimonial.rating ?? null,
+            publicationStatus: testimonial.publicationStatus,
+            publishedAt: testimonial.publishedAt ?? null,
+            createdAt: testimonial.createdAt,
+            imageUrl: testimonial.imageUrls[0] ?? null,
+        })),
+        ...cookTestimonials.map((testimonial) => ({
+            kind: 'cook' as const,
+            testimonialId: testimonial.cookTestimonialId,
+            displayAuthorName: testimonial.displayAuthorName,
+            displayLocation: testimonial.displayLocation ?? null,
+            displayOccasion: testimonial.displayOccasion ?? null,
+            body: testimonial.body ?? null,
+            rating: testimonial.rating ?? null,
+            publicationStatus: testimonial.publicationStatus,
+            publishedAt: testimonial.publishedAt ?? null,
+            createdAt: testimonial.createdAt,
+            imageUrl: testimonial.imageUrls[0] ?? null,
+        })),
+    ].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+
+    if (rows.length === 0) {
+        return (
+            <p className="text-sm text-muted-foreground">
+                {{ de: 'Keine Bewertungen für diesen Koch.', en: 'No testimonials for this cook.' }[locale]}
+            </p>
+        );
+    }
+
+    return (
+        <ul className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {rows.map((testimonial) => (
+                <li key={`${testimonial.kind}-${testimonial.testimonialId}`} className="min-h-0">
+                    <AdminTestimonialListCard testimonial={testimonial} />
                 </li>
             ))}
         </ul>

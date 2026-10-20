@@ -287,6 +287,10 @@ export type GqlCAdminCookTestimonialArgs = {
     cookTestimonialId: Scalars['ID']['input'];
 };
 
+export type GqlCAdminCookTestimonialsArgs = {
+    criterion?: InputMaybe<GqlCAdminCookTestimonialCriterion>;
+};
+
 export type GqlCAdminCooksInTravelRadiusArgs = {
     excludeUserId?: InputMaybe<Scalars['ID']['input']>;
     latitude: Scalars['Latitude']['input'];
@@ -295,6 +299,10 @@ export type GqlCAdminCooksInTravelRadiusArgs = {
 
 export type GqlCAdminCustomerTestimonialArgs = {
     customerTestimonialId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminCustomerTestimonialsArgs = {
+    criterion?: InputMaybe<GqlCAdminCustomerTestimonialCriterion>;
 };
 
 export type GqlCAdminDatabaseSlowStatementsArgs = {
@@ -686,8 +694,10 @@ export interface GqlCAdminBookingRequestCreationMonthStat {
 
 export type GqlCAdminBookingRequestCriterion = {
     bookingRequestIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     createdAtFrom?: InputMaybe<Scalars['DateTime']['input']>;
     createdAtTo?: InputMaybe<Scalars['DateTime']['input']>;
+    notifiedOnly?: InputMaybe<Scalars['Boolean']['input']>;
     promoCodeId?: InputMaybe<Scalars['ID']['input']>;
     publicationStatuses?: InputMaybe<Array<GqlCBookingRequestPublicationStatus>>;
     searchText?: InputMaybe<Scalars['String']['input']>;
@@ -951,6 +961,7 @@ export interface GqlCAdminCook {
     biography: Scalars['String']['output'];
     biographySummary: Scalars['String']['output'];
     biographySummaryGenerating: Scalars['Boolean']['output'];
+    callAvailabilityRules: Array<GqlCCookCallAvailabilityRule>;
     callDurationMinutes: Scalars['Int']['output'];
     callSchedulingEnabled: Scalars['Boolean']['output'];
     canCreateOffers: Scalars['Boolean']['output'];
@@ -959,14 +970,17 @@ export interface GqlCAdminCook {
     createdAt: Scalars['DateTime']['output'];
     cuisineStyle?: Maybe<Scalars['String']['output']>;
     exactTravelOriginAddress?: Maybe<GqlCCookTravelOriginAddress>;
+    featuredOn: Array<GqlCAdminCookFeaturedLanding>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
     isVisible: Scalars['Boolean']['output'];
     lastModifiedAt: Scalars['DateTime']['output'];
+    logo?: Maybe<GqlCFileUpload>;
     maximumParticipants?: Maybe<Scalars['Int']['output']>;
     maximumPriceAmount?: Maybe<Scalars['Int']['output']>;
     maximumTravelDistance?: Maybe<Scalars['Int']['output']>;
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
+    rating: GqlCPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountActive: Scalars['Boolean']['output'];
     stripeAccountActiveWasReset: Scalars['Boolean']['output'];
@@ -976,6 +990,17 @@ export interface GqlCAdminCook {
     travelExpensesAmount: Scalars['Int']['output'];
     user: GqlCAdminUser;
 }
+
+export interface GqlCAdminCookFeaturedLanding {
+    __typename?: 'AdminCookFeaturedLanding';
+    id: Scalars['ID']['output'];
+    kind: GqlCAdminCookFeaturedLandingKind;
+    pathName: Scalars['String']['output'];
+    titleDe: Scalars['String']['output'];
+    titleEn: Scalars['String']['output'];
+}
+
+export type GqlCAdminCookFeaturedLandingKind = 'CITY' | 'OCCASION' | 'PARTNER';
 
 export interface GqlCAdminCookInTravelRadiusPreview {
     __typename?: 'AdminCookInTravelRadiusPreview';
@@ -1093,6 +1118,12 @@ export type GqlCAdminCookTestimonialCreate = {
     rating?: InputMaybe<Scalars['Int']['input']>;
 };
 
+export type GqlCAdminCookTestimonialCriterion = {
+    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    skip?: Scalars['Int']['input'];
+    take?: Scalars['Int']['input'];
+};
+
 export type GqlCAdminCookTestimonialUpdate = {
     authorName?: InputMaybe<Scalars['String']['input']>;
     body?: InputMaybe<Scalars['String']['input']>;
@@ -1130,6 +1161,12 @@ export type GqlCAdminCustomerTestimonialCreate = {
     occasion?: InputMaybe<Scalars['String']['input']>;
     rating?: InputMaybe<Scalars['Int']['input']>;
     userId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminCustomerTestimonialCriterion = {
+    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    skip?: Scalars['Int']['input'];
+    take?: Scalars['Int']['input'];
 };
 
 export type GqlCAdminCustomerTestimonialUpdate = {
@@ -14649,12 +14686,14 @@ export type GqlCAdminCookTestimonialCreateMutation = { admin: { cookTestimonialC
 
 export type GqlCAdminUserCookProfileEditCookFragment = {
     cookId: string;
+    stageName: string | null;
     biography: string;
     biographySummary: string;
     cuisineStyle: string | null;
     cookingPhilosophy: string | null;
     travelExpensesAmount: number;
     maximumTravelDistance: number | null;
+    logo: { fileUploadId: string; url: string } | null;
     exactTravelOriginAddress: {
         displayText: string;
         latitude: number;
@@ -14683,12 +14722,14 @@ export type GqlCAdminUserCookProfileEditPageQuery = {
                     lastName: string;
                     cook: {
                         cookId: string;
+                        stageName: string | null;
                         biography: string;
                         biographySummary: string;
                         cuisineStyle: string | null;
                         cookingPhilosophy: string | null;
                         travelExpensesAmount: number;
                         maximumTravelDistance: number | null;
+                        logo: { fileUploadId: string; url: string } | null;
                         exactTravelOriginAddress: {
                             displayText: string;
                             latitude: number;
@@ -14770,6 +14811,7 @@ export type GqlCAdminUserCookFragment = {
     stripeAccountUrl: string | null;
     stripeAccountActive: boolean;
     stripeAccountActiveWasReset: boolean;
+    stageName: string | null;
     biography: string;
     biographySummary: string;
     biographySummaryGenerating: boolean;
@@ -14777,13 +14819,10 @@ export type GqlCAdminUserCookFragment = {
     cookingPhilosophy: string | null;
     travelExpensesAmount: number;
     maximumTravelDistance: number | null;
-    minimumPriceAmount: number | null;
-    maximumPriceAmount: number | null;
-    minimumParticipants: number | null;
-    maximumParticipants: number | null;
     callSchedulingEnabled: boolean;
     callDurationMinutes: number;
     createdAt: string;
+    lastModifiedAt: string;
     exactTravelOriginAddress: {
         displayText: string;
         latitude: number;
@@ -14795,6 +14834,15 @@ export type GqlCAdminUserCookFragment = {
         state: string;
         country: string;
     } | null;
+    logo: { fileUploadId: string; url: string } | null;
+    rating: { averageRating: number | null; reviewCount: number };
+    callAvailabilityRules: Array<{
+        cookCallAvailabilityRuleId: string;
+        dayOfWeek: number;
+        startMinuteOfDay: number;
+        endMinuteOfDay: number;
+    }>;
+    featuredOn: Array<{ kind: Schema.GqlCAdminCookFeaturedLandingKind; id: string; titleDe: string; titleEn: string; pathName: string }>;
 };
 
 export type GqlCAdminUserPageQueryVariables = Exact<{
@@ -14809,6 +14857,9 @@ export type GqlCAdminUserPageQueryVariables = Exact<{
     includeBookingRequests: boolean;
     includeOffers: boolean;
     includeAssistantChats: boolean;
+    includeCalls: boolean;
+    includeTestimonials: boolean;
+    includePool: boolean;
     emailsCriterion: Schema.GqlCAdminOutboundEmailCriterion;
     whatsAppCriterion: Schema.GqlCAdminWhatsAppConversationCriterion;
     sessionsCriterion: Schema.GqlCAdminSessionCriterion;
@@ -14818,6 +14869,10 @@ export type GqlCAdminUserPageQueryVariables = Exact<{
     bookingRequestsCriterion: Schema.GqlCAdminBookingRequestCriterion;
     bookingRequestOffersCriterion: Schema.GqlCAdminBookingRequestOfferCriterion;
     assistantChatsCriterion: Schema.GqlCAdminAssistantChatCriterion;
+    callTrafficCriterion: Schema.GqlCAdminCallTrafficCriterion;
+    customerTestimonialsCriterion: Schema.GqlCAdminCustomerTestimonialCriterion;
+    cookTestimonialsCriterion: Schema.GqlCAdminCookTestimonialCriterion;
+    poolBookingRequestsCriterion: Schema.GqlCAdminBookingRequestCriterion;
 }>;
 
 export type GqlCAdminUserPageQuery = {
@@ -14866,6 +14921,7 @@ export type GqlCAdminUserPageQuery = {
                         stripeAccountUrl: string | null;
                         stripeAccountActive: boolean;
                         stripeAccountActiveWasReset: boolean;
+                        stageName: string | null;
                         biography: string;
                         biographySummary: string;
                         biographySummaryGenerating: boolean;
@@ -14873,13 +14929,10 @@ export type GqlCAdminUserPageQuery = {
                         cookingPhilosophy: string | null;
                         travelExpensesAmount: number;
                         maximumTravelDistance: number | null;
-                        minimumPriceAmount: number | null;
-                        maximumPriceAmount: number | null;
-                        minimumParticipants: number | null;
-                        maximumParticipants: number | null;
                         callSchedulingEnabled: boolean;
                         callDurationMinutes: number;
                         createdAt: string;
+                        lastModifiedAt: string;
                         exactTravelOriginAddress: {
                             displayText: string;
                             latitude: number;
@@ -14891,6 +14944,21 @@ export type GqlCAdminUserPageQuery = {
                             state: string;
                             country: string;
                         } | null;
+                        logo: { fileUploadId: string; url: string } | null;
+                        rating: { averageRating: number | null; reviewCount: number };
+                        callAvailabilityRules: Array<{
+                            cookCallAvailabilityRuleId: string;
+                            dayOfWeek: number;
+                            startMinuteOfDay: number;
+                            endMinuteOfDay: number;
+                        }>;
+                        featuredOn: Array<{
+                            kind: Schema.GqlCAdminCookFeaturedLandingKind;
+                            id: string;
+                            titleDe: string;
+                            titleEn: string;
+                            pathName: string;
+                        }>;
                     } | null;
                 } | null;
                 outboundEmails?: Array<{
@@ -14971,6 +15039,77 @@ export type GqlCAdminUserPageQuery = {
                         cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
                     }>;
                     customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
+                }>;
+                poolBookingRequests?: Array<{
+                    bookingRequestId: string;
+                    status: Schema.GqlCBookingRequestStatus;
+                    occasion: string;
+                    dateTime: string;
+                    publicationStatus: Schema.GqlCBookingRequestPublicationStatus;
+                    createdAt: string;
+                    exactEventAddress: { city: string; displayText: string };
+                    participants: Array<{ type: Schema.GqlCBookingRequestParticipantType }>;
+                    offers: Array<{
+                        bookingRequestOfferId: string;
+                        status: Schema.GqlCBookingRequestOfferStatus;
+                        createdAt: string;
+                        userUnreadNotificationCount: number;
+                        cookUnreadNotificationCount: number;
+                        cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
+                    }>;
+                    customer: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
+                }>;
+                callTraffic?: Array<{
+                    kind: Schema.GqlCAdminCallListItemKind;
+                    bookingRequestId: string;
+                    bookingRequestOfferId: string;
+                    cookId: string;
+                    customerUserId: string;
+                    cookDisplayName: string;
+                    customerDisplayName: string;
+                    occasion: string;
+                    callRoom: {
+                        bookingRequestOfferCallRoomId: string;
+                        startedAt: string;
+                        endedAt: string | null;
+                        status: Schema.GqlCBookingRequestOfferCallRoomStatus;
+                    } | null;
+                    callSlotBooking: {
+                        cookCallSlotBookingId: string;
+                        startAt: string;
+                        endAt: string;
+                        status: Schema.GqlCCookCallSlotBookingStatus;
+                        initiator: Schema.GqlCCookCallSlotBookingActor;
+                        declineReason: string | null;
+                        canceledBy: Schema.GqlCCookCallSlotBookingActor | null;
+                        canceledReason: string | null;
+                        createdAt: string;
+                        videoCallRoomId: string | null;
+                    } | null;
+                }>;
+                customerTestimonials?: Array<{
+                    customerTestimonialId: string;
+                    displayAuthorName: string;
+                    displayLocation: string | null;
+                    displayOccasion: string | null;
+                    body: string;
+                    rating: number | null;
+                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                    publishedAt: string | null;
+                    createdAt: string;
+                    imageUrls: Array<string>;
+                }>;
+                cookTestimonials?: Array<{
+                    cookTestimonialId: string;
+                    displayAuthorName: string;
+                    displayLocation: string | null;
+                    displayOccasion: string | null;
+                    body: string | null;
+                    rating: number | null;
+                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                    publishedAt: string | null;
+                    createdAt: string;
+                    imageUrls: Array<string>;
                 }>;
                 bookingRequestOffers?: Array<{
                     bookingRequestOfferId: string;
@@ -27042,8 +27181,20 @@ export const AdminUserCookProfileEditCookFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'logo' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     {
@@ -27090,6 +27241,7 @@ export const AdminUserCookFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountActive' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountActiveWasReset' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'exactTravelOriginAddress' },
@@ -27111,17 +27263,63 @@ export const AdminUserCookFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'logo' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesAmount' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'maximumTravelDistance' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumParticipants' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumParticipants' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'callSchedulingEnabled' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'callDurationMinutes' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'callAvailabilityRules' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookCallAvailabilityRuleId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'dayOfWeek' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'startMinuteOfDay' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'endMinuteOfDay' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'featuredOn' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastModifiedAt' } },
                 ],
             },
         },
@@ -60873,8 +61071,20 @@ export const AdminUserCookProfileEditPageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'logo' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     {
@@ -61267,6 +61477,21 @@ export const AdminUserPageDocument = {
                 },
                 {
                     kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeCalls' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeTestimonials' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includePool' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'emailsCriterion' } },
                     type: {
                         kind: 'NonNullType',
@@ -61323,6 +61548,35 @@ export const AdminUserPageDocument = {
                     type: {
                         kind: 'NonNullType',
                         type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminAssistantChatCriterion' } },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'callTrafficCriterion' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCallTrafficCriterion' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'customerTestimonialsCriterion' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCustomerTestimonialCriterion' } },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookTestimonialsCriterion' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonialCriterion' } },
+                    },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'poolBookingRequestsCriterion' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminBookingRequestCriterion' } },
                     },
                 },
             ],
@@ -61946,6 +62200,370 @@ export const AdminUserPageDocument = {
                                                         },
                                                         {
                                                             kind: 'Field',
+                                                            alias: { kind: 'Name', value: 'poolBookingRequests' },
+                                                            name: { kind: 'Name', value: 'bookingRequests' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'criterion' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'poolBookingRequestsCriterion' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includePool' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'exactEventAddress' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'displayText' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'participants' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'offers' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'createdAt' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'userUnreadNotificationCount',
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'cookUnreadNotificationCount',
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'cook' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'cookId' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'user' },
+                                                                                                selectionSet: {
+                                                                                                    kind: 'SelectionSet',
+                                                                                                    selections: [
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'userId',
+                                                                                                            },
+                                                                                                        },
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'firstName',
+                                                                                                            },
+                                                                                                        },
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'lastName',
+                                                                                                            },
+                                                                                                        },
+                                                                                                    ],
+                                                                                                },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'customer' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'firstName' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'lastName' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'emailAddress' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'callTraffic' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'criterion' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'callTrafficCriterion' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeCalls' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'customerUserId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'cookDisplayName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'customerDisplayName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'callRoom' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'bookingRequestOfferCallRoomId',
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'startedAt' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'endedAt' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'callSlotBooking' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'cookCallSlotBookingId' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'startAt' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'endAt' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'initiator' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'declineReason' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'canceledBy' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'canceledReason' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'createdAt' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'videoCallRoomId' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'customerTestimonials' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'criterion' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'customerTestimonialsCriterion' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeTestimonials' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'customerTestimonialId' },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayAuthorName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayLocation' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'cookTestimonials' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'criterion' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'cookTestimonialsCriterion' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            directives: [
+                                                                {
+                                                                    kind: 'Directive',
+                                                                    name: { kind: 'Name', value: 'include' },
+                                                                    arguments: [
+                                                                        {
+                                                                            kind: 'Argument',
+                                                                            name: { kind: 'Name', value: 'if' },
+                                                                            value: {
+                                                                                kind: 'Variable',
+                                                                                name: { kind: 'Name', value: 'includeTestimonials' },
+                                                                            },
+                                                                        },
+                                                                    ],
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayAuthorName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayLocation' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
                                                             name: { kind: 'Name', value: 'bookingRequestOffers' },
                                                             arguments: [
                                                                 {
@@ -62182,6 +62800,7 @@ export const AdminUserPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountActive' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripeAccountActiveWasReset' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'exactTravelOriginAddress' },
@@ -62203,17 +62822,63 @@ export const AdminUserPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummary' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'logo' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesAmount' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'maximumTravelDistance' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumPriceAmount' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minimumParticipants' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maximumParticipants' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'callSchedulingEnabled' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'callDurationMinutes' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'callAvailabilityRules' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookCallAvailabilityRuleId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'dayOfWeek' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'startMinuteOfDay' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'endMinuteOfDay' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'featuredOn' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'id' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'lastModifiedAt' } },
                 ],
             },
         },

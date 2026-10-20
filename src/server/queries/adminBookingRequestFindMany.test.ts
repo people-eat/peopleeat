@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { bookingRequests } from '../db/schema';
+import { bookingRequestCooks, bookingRequests, cooks } from '../db/schema';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { adminBookingRequestFindMany } from './adminBookingRequestFindMany';
 
@@ -498,5 +498,78 @@ describe('adminBookingRequestFindMany', () => {
         // Assert
         expect(rows.map((row) => row.bookingRequestId)).toEqual([recentId]);
         expect(rows.map((row) => row.bookingRequestId)).not.toContain(oldId);
+    });
+
+    it('filters by cookIds with notifiedOnly', async () => {
+        // Arrange
+        const customer = await commandSetup.withUser({
+            firstName: 'Customer',
+            lastName: 'Pool',
+            emailAddress: `pool-c-${idCreate().slice(0, 8)}@example.com`,
+        });
+        const cook = await commandSetup.withUser({
+            firstName: 'Cook',
+            lastName: 'Pool',
+            emailAddress: `pool-k-${idCreate().slice(0, 8)}@example.com`,
+        });
+        await testDb.insert(cooks).values({ cookId: cook.user.userId });
+        const notifiedId = idCreate();
+        const pendingNotifyId = idCreate();
+        await testDb.insert(bookingRequests).values([
+            {
+                bookingRequestId: notifiedId,
+                userId: customer.user.userId,
+                occasion: 'Notified dinner',
+                dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                exactEventAddress: berlin,
+                originalMessage: 'Notified',
+                publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+                preferences: [],
+            },
+            {
+                bookingRequestId: pendingNotifyId,
+                userId: customer.user.userId,
+                occasion: 'Pending notify dinner',
+                dateTime: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+                exactEventAddress: berlin,
+                originalMessage: 'Pending notify',
+                publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+                preferences: [],
+            },
+        ]);
+        await testDb.insert(bookingRequestCooks).values([
+            { cookId: cook.user.userId, bookingRequestId: notifiedId, notifiedAt: new Date() },
+            { cookId: cook.user.userId, bookingRequestId: pendingNotifyId, notifiedAt: null },
+        ]);
+
+        // Act
+        const notifiedOnly = await adminBookingRequestFindMany(
+            {
+                criterion: {
+                    skip: 0,
+                    take: 100,
+                    cookIds: [cook.user.userId],
+                    notifiedOnly: true,
+                },
+            },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+        const allPool = await adminBookingRequestFindMany(
+            {
+                criterion: {
+                    skip: 0,
+                    take: 100,
+                    cookIds: [cook.user.userId],
+                    notifiedOnly: false,
+                },
+            },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+
+        // Assert
+        expect(notifiedOnly.map((row) => row.bookingRequestId)).toEqual([notifiedId]);
+        expect(allPool.map((row) => row.bookingRequestId).sort()).toEqual([notifiedId, pendingNotifyId].sort());
     });
 });

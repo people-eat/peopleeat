@@ -1,5 +1,5 @@
 import { useForm, useSelector } from '@tanstack/react-form';
-import { Link, notFound, useNavigate } from '@tanstack/react-router';
+import { Link, notFound, useNavigate, useRouter } from '@tanstack/react-router';
 import { SparklesIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -17,6 +17,7 @@ import { Separator } from '../../components/base/separator';
 import { Spinner } from '../../components/base/spinner';
 import { Textarea } from '../../components/base/textarea';
 import { BiographySuggestionReview } from '../../components/BiographySuggestionReview';
+import { CookLogoEditor } from '../../components/CookLogoEditor';
 import type { GqlCAdminUserCookProfileEditPageQuery, GqlCLocationSuggestion } from '../../graphql/generated';
 import {
     AdminUserCookProfileEditBiographySuggestDocument,
@@ -32,8 +33,8 @@ export const adminUserCookProfileEditPageTitle = {
     en: 'Edit cook profile',
 } as const;
 export const adminUserCookProfileEditPageDescription = {
-    de: 'Biografie, Tags und Reiseeinstellungen eines Kochs bearbeiten.',
-    en: 'Edit a cook biography, tags, and travel settings.',
+    de: 'Biografie, Künstlername, About-Bild, Tags und Reiseeinstellungen eines Kochs bearbeiten.',
+    en: 'Edit a cook biography, stage name, About picture, tags, and travel settings.',
 } as const;
 
 export function adminUserCookProfileEditPageVariables(userId: string) {
@@ -50,6 +51,7 @@ const TRAVEL_DISTANCE_OPTIONS = ['50', '100', '150', '200'] as const;
 const COOK_PROFILE_EDIT_FORM_ID = 'admin-user-cook-profile-edit-form';
 
 type CookFormValues = {
+    stageName: string;
     biography: string;
     biographySummary: string;
     cuisineStyle: string;
@@ -75,6 +77,7 @@ function euroTextToCents(value: string): number | null {
 
 function formFromCook(cook: AdminCookRow): CookFormValues {
     return {
+        stageName: cook.stageName ?? '',
         biography: cook.biography,
         biographySummary: cook.biographySummary,
         cuisineStyle: cook.cuisineStyle ?? '',
@@ -149,6 +152,7 @@ function CatalogCombobox({
 export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdminUserCookProfileEditPageQuery; userId: string }) {
     const locale = useLocale();
     const navigate = useNavigate();
+    const router = useRouter();
     const user = data.currentSession.user?.admin?.user ?? null;
     const cook = user?.cook ?? null;
     if (!user || !cook) throw notFound();
@@ -158,6 +162,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
     const [{ fetching: biographySuggestFetching }, biographySuggest] = useMutation(AdminUserCookProfileEditBiographySuggestDocument);
     const [{ fetching: summarySuggestFetching }, summarySuggest] = useMutation(AdminUserCookProfileEditBiographySummarySuggestDocument);
     const [biographySuggestion, setBiographySuggestion] = useState<string | null>(null);
+    const [logoBusy, setLogoBusy] = useState(false);
     const displayName = userDisplayName(user);
 
     const form = useForm({
@@ -187,6 +192,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
             const result = await cookUpdate({
                 cookId,
                 input: {
+                    stageName: value.stageName.trim() || null,
                     biography: value.biography,
                     biographySummary: value.biographySummary,
                     cuisineStyle: value.cuisineStyle.trim() || null,
@@ -216,7 +222,23 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
     const biographyValue = useSelector(form.store, (state) => state.values.biography);
     const reviewingSuggestion = biographySuggestion != null;
     const aiBusy = biographySuggestFetching || summarySuggestFetching;
-    const formBusy = isSubmitting || aiBusy || reviewingSuggestion;
+    const formBusy = isSubmitting || aiBusy || reviewingSuggestion || logoBusy;
+
+    async function onLogoLink(fileUploadId: string) {
+        const result = await cookUpdate({ cookId, input: { logoFileUploadId: fileUploadId } });
+        if (result.error || !result.data?.admin.cookUpdate.success) {
+            throw result.error ?? new Error('Could not save.');
+        }
+        await router.invalidate();
+    }
+
+    async function onLogoClear() {
+        const result = await cookUpdate({ cookId, input: { logoFileUploadId: null } });
+        if (result.error || !result.data?.admin.cookUpdate.success) {
+            throw result.error ?? new Error('Could not save.');
+        }
+        await router.invalidate();
+    }
 
     async function onBiographySuggest(currentBiography: string) {
         const result = await biographySuggest({ cookId, currentBiography });
@@ -305,6 +327,54 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                         void form.handleSubmit();
                     }}
                 >
+                    <form.Field name="stageName">
+                        {(field) => (
+                            <div className="grid gap-2">
+                                <label htmlFor="admin-cook-stage-name" className="text-sm font-medium">
+                                    {{ de: 'Künstlername', en: 'Stage name' }[locale]}
+                                </label>
+                                <p className="text-sm text-muted-foreground">
+                                    {
+                                        {
+                                            de: 'Optional. Wenn gesetzt, bevorzugen öffentliche Flächen diesen Namen statt des Vornamens.',
+                                            en: 'Optional. When set, public surfaces prefer this name over the first name.',
+                                        }[locale]
+                                    }
+                                </p>
+                                <Input
+                                    id="admin-cook-stage-name"
+                                    value={field.state.value}
+                                    disabled={formBusy}
+                                    onBlur={field.handleBlur}
+                                    onChange={(event) => field.handleChange(event.target.value)}
+                                />
+                            </div>
+                        )}
+                    </form.Field>
+
+                    <div className="grid gap-2">
+                        <p className="text-sm font-medium">
+                            {{ de: 'Zusätzliches Bild (About)', en: 'Additional picture (About)' }[locale]}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                            {
+                                {
+                                    de: '16:9 Landschaftsbild für den öffentlichen About-Bereich. Speichert sofort.',
+                                    en: '16:9 landscape image for the public About section. Saves immediately.',
+                                }[locale]
+                            }
+                        </p>
+                        <CookLogoEditor
+                            logoUrl={cook.logo?.url ?? null}
+                            disabled={formBusy}
+                            onLink={onLogoLink}
+                            onClear={onLogoClear}
+                            onBusyChange={setLogoBusy}
+                        />
+                    </div>
+
+                    <Separator />
+
                     <form.Field name="biography">
                         {(field) => (
                             <div className="grid gap-2">

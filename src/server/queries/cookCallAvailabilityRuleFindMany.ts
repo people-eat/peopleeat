@@ -6,7 +6,7 @@ import type { GqlSCook, GqlSCookCallAvailabilityRule, GqlSSession } from '../gra
 import { toGqlCookCallAvailabilityRule } from '../mappers/toGqlCookCallAvailabilityRule';
 
 export async function cookCallAvailabilityRuleFindMany(
-    { cookId }: GqlSCook,
+    { cookId }: Pick<GqlSCook, 'cookId'>,
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSCookCallAvailabilityRule[]> {
