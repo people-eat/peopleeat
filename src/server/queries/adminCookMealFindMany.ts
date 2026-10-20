@@ -2,6 +2,7 @@ import { tool } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
+import { adminListDetailField, adminListToolOutputToModelResult, resolveAdminListDetail } from '../agents/adminListToolDetail';
 import type { ChatAdminMealListItem } from '../db/chatPayloadTypes';
 import { meals, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -79,12 +80,15 @@ const toolAdminCookMealsFindManyInputSchema = z.object({
         .max(TOOL_TAKE_MAX)
         .optional()
         .describe(`Max rows to return (default ${TOOL_TAKE_DEFAULT}, max ${TOOL_TAKE_MAX}).`),
+    detail: adminListDetailField(),
 });
 
 export type ToolAdminCookMealsFindManyInput = z.infer<typeof toolAdminCookMealsFindManyInputSchema>;
 
 export type ToolAdminCookMealsFindManyOutput = {
     count: number;
+    detail: 'summary' | 'evidence';
+    mealIds: string[];
     meals: ChatAdminMealListItem[];
 };
 
@@ -102,12 +106,15 @@ export function toolAdminCookMealsFindMany({
             'Use when the operator asks to show / list / find meals or dishes.',
             'Optionally narrow with searchText, cookIds, status, or imageFilter.',
             'For a specific known meal (follow-up drill-in), pass mealIds from a prior tool result.',
+            'Default detail is summary (count + ids for the model; UI still shows cards). Pass detail=evidence when you need row fields.',
             'After the tool returns, summarize the count briefly in markdown — the UI renders the meal cards.',
             'Do not invent meal ids or details not present in the tool result.',
         ].join(' '),
         inputSchema: toolAdminCookMealsFindManyInputSchema,
+        toModelOutput: ({ input, output }) => adminListToolOutputToModelResult(output, input.detail),
         async execute(input: ToolAdminCookMealsFindManyInput): Promise<ToolAdminCookMealsFindManyOutput> {
             const take = Math.min(Math.max(input.take ?? TOOL_TAKE_DEFAULT, 1), TOOL_TAKE_MAX);
+            const detail = resolveAdminListDetail(input.detail);
             const rows = await adminCookMealFindMany(
                 {
                     criterion: {
@@ -127,7 +134,12 @@ export function toolAdminCookMealsFindMany({
                 serverRuntime,
             );
             const mealCards = adminCookMealListCardSnapshot(rows);
-            return { count: mealCards.length, meals: mealCards };
+            return {
+                count: mealCards.length,
+                detail,
+                mealIds: mealCards.map((meal) => meal.mealId),
+                meals: mealCards,
+            };
         },
     });
 }

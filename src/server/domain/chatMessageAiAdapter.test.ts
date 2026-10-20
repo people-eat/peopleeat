@@ -43,14 +43,17 @@ describe('assistant presentation → chat parts', () => {
         expect(chatMessageBodyEmpty({ id: 'm1', role: 'assistant' }).parts).toEqual([]);
     });
 
-    it('materializes admin.bookingRequestList data parts from tool output', () => {
+    it('materializes admin.bookingRequestList data parts and leans summary tool output', () => {
         const toolPart: ChatMessagePart = {
             type: 'tool',
             toolCallId: 't1',
             toolName: CHAT_TOOL_ADMIN_BOOKING_REQUESTS_FIND_MANY,
             state: 'outputAvailable',
+            input: {},
             output: {
                 count: 1,
+                detail: 'summary',
+                bookingRequestIds: ['br1'],
                 createdAtFrom: null,
                 createdAtTo: null,
                 requests: [{ bookingRequestId: 'br1', occasion: 'Dinner' }],
@@ -58,10 +61,46 @@ describe('assistant presentation → chat parts', () => {
         };
         const expanded = expandAdminListToolParts([toolPart]);
         expect(expanded).toHaveLength(2);
+        expect(expanded[0]).toMatchObject({
+            type: 'tool',
+            toolCallId: 't1',
+            output: {
+                count: 1,
+                detail: 'summary',
+                bookingRequestIds: ['br1'],
+                createdAtFrom: null,
+                createdAtTo: null,
+            },
+        });
+        expect((expanded[0] as { output?: { requests?: unknown } }).output).not.toHaveProperty('requests');
         expect(expanded[1]).toMatchObject({
             type: 'data',
             dataType: CHAT_DATA_TYPE_ADMIN_BOOKING_REQUEST_LIST,
             data: { requests: [{ bookingRequestId: 'br1', occasion: 'Dinner' }] },
+        });
+    });
+
+    it('keeps full tool output when detail is evidence', () => {
+        const toolPart: ChatMessagePart = {
+            type: 'tool',
+            toolCallId: 't1',
+            toolName: CHAT_TOOL_ADMIN_BOOKING_REQUESTS_FIND_MANY,
+            state: 'outputAvailable',
+            input: { detail: 'evidence' },
+            output: {
+                count: 1,
+                detail: 'evidence',
+                bookingRequestIds: ['br1'],
+                createdAtFrom: null,
+                createdAtTo: null,
+                requests: [{ bookingRequestId: 'br1', occasion: 'Dinner' }],
+            },
+        };
+        const expanded = expandAdminListToolParts([toolPart]);
+        expect(expanded[0]).toEqual(toolPart);
+        expect(expanded[1]).toMatchObject({
+            type: 'data',
+            dataType: CHAT_DATA_TYPE_ADMIN_BOOKING_REQUEST_LIST,
         });
     });
 
@@ -72,21 +111,29 @@ describe('assistant presentation → chat parts', () => {
                 toolCallId: 'u1',
                 toolName: CHAT_TOOL_ADMIN_USERS_FIND_MANY,
                 state: 'outputAvailable',
-                output: { count: 1, users: [{ userId: 'u1', firstName: 'Ada' }] },
+                input: { detail: 'evidence' },
+                output: { count: 1, detail: 'evidence', userIds: ['u1'], users: [{ userId: 'u1', firstName: 'Ada' }] },
             },
             {
                 type: 'tool',
                 toolCallId: 'm1',
                 toolName: CHAT_TOOL_ADMIN_COOK_MEALS_FIND_MANY,
                 state: 'outputAvailable',
-                output: { count: 1, meals: [{ mealId: 'meal1', title: 'Soup' }] },
+                input: { detail: 'evidence' },
+                output: { count: 1, detail: 'evidence', mealIds: ['meal1'], meals: [{ mealId: 'meal1', title: 'Soup' }] },
             },
             {
                 type: 'tool',
                 toolCallId: 'n1',
                 toolName: CHAT_TOOL_ADMIN_COOK_MENUS_FIND_MANY,
                 state: 'outputAvailable',
-                output: { count: 1, menus: [{ menuId: 'menu1', title: 'Tasting' }] },
+                input: { detail: 'evidence' },
+                output: {
+                    count: 1,
+                    detail: 'evidence',
+                    menuIds: ['menu1'],
+                    menus: [{ menuId: 'menu1', title: 'Tasting' }],
+                },
             },
         ];
         const expanded = expandAdminListToolParts(parts);

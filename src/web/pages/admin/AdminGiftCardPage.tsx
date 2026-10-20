@@ -220,7 +220,13 @@ function AdminGiftCardDetailFields({ giftCard }: { giftCard: AdminGiftCardDetail
                             {{ de: 'PDFs', en: 'PDFs' }[locale]}
                         </dt>
                         <dd>
-                            <Button type="button" variant="outline" size="sm" disabled={regenerating} onClick={() => void onRegeneratePdfs()}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={regenerating}
+                                onClick={() => void onRegeneratePdfs()}
+                            >
                                 {
                                     {
                                         de: regenerating ? 'Wird erzeugt…' : 'PDFs neu erzeugen',

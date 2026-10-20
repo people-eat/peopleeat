@@ -3,6 +3,7 @@ import { and, asc, eq, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { fileUploadPublicUrl } from '../../shared/contentSection';
+import { adminListDetailField, adminListToolOutputToModelResult, resolveAdminListDetail } from '../agents/adminListToolDetail';
 import type { ChatAdminMenuListItem } from '../db/chatPayloadTypes';
 import { meals, menuCourseMealOptions, menuCourses, menus, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -122,12 +123,15 @@ const toolAdminCookMenusFindManyInputSchema = z.object({
         .max(TOOL_TAKE_MAX)
         .optional()
         .describe(`Max rows to return (default ${TOOL_TAKE_DEFAULT}, max ${TOOL_TAKE_MAX}).`),
+    detail: adminListDetailField(),
 });
 
 export type ToolAdminCookMenusFindManyInput = z.infer<typeof toolAdminCookMenusFindManyInputSchema>;
 
 export type ToolAdminCookMenusFindManyOutput = {
     count: number;
+    detail: 'summary' | 'evidence';
+    menuIds: string[];
     menus: ChatAdminMenuListItem[];
 };
 
@@ -145,12 +149,15 @@ export function toolAdminCookMenusFindMany({
             'Use when the operator asks to show / list / find menus.',
             'Optionally narrow with searchText, cookIds, or status.',
             'For a specific known menu (follow-up drill-in), pass menuIds from a prior tool result.',
+            'Default detail is summary (count + ids for the model; UI still shows cards). Pass detail=evidence when you need row fields.',
             'After the tool returns, summarize the count briefly in markdown — the UI renders the menu cards.',
             'Do not invent menu ids or details not present in the tool result.',
         ].join(' '),
         inputSchema: toolAdminCookMenusFindManyInputSchema,
+        toModelOutput: ({ input, output }) => adminListToolOutputToModelResult(output, input.detail),
         async execute(input: ToolAdminCookMenusFindManyInput): Promise<ToolAdminCookMenusFindManyOutput> {
             const take = Math.min(Math.max(input.take ?? TOOL_TAKE_DEFAULT, 1), TOOL_TAKE_MAX);
+            const detail = resolveAdminListDetail(input.detail);
             const rows = await adminCookMenuFindMany(
                 {
                     criterion: {
@@ -169,7 +176,12 @@ export function toolAdminCookMenusFindMany({
                 serverRuntime,
             );
             const menuCards = adminCookMenuListCardSnapshot(rows);
-            return { count: menuCards.length, menus: menuCards };
+            return {
+                count: menuCards.length,
+                detail,
+                menuIds: menuCards.map((menu) => menu.menuId),
+                menus: menuCards,
+            };
         },
     });
 }

@@ -171,21 +171,11 @@ export function CustomerGiftCardCard({ giftCard, className }: { giftCard: Custom
                             </a>
                         </Button>
                     ) : null}
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={regenerating}
-                        onClick={() => void onRegeneratePdfs()}
-                    >
+                    <Button type="button" variant="outline" size="sm" disabled={regenerating} onClick={() => void onRegeneratePdfs()}>
                         <RefreshCwIcon aria-hidden className={regenerating ? 'animate-spin' : undefined} />
                         {
                             {
-                                de: regenerating
-                                    ? 'Wird erzeugt…'
-                                    : missingPdf
-                                      ? 'PDFs erzeugen'
-                                      : 'PDFs neu erzeugen',
+                                de: regenerating ? 'Wird erzeugt…' : missingPdf ? 'PDFs erzeugen' : 'PDFs neu erzeugen',
                                 en: regenerating ? 'Generating…' : missingPdf ? 'Generate PDFs' : 'Regenerate PDFs',
                             }[locale]
                         }

@@ -2,6 +2,7 @@ import { tool } from 'ai';
 import { inArray } from 'drizzle-orm';
 import { z } from 'zod';
 
+import { adminListDetailField, adminListToolOutputToModelResult, resolveAdminListDetail } from '../agents/adminListToolDetail';
 import type { ChatAdminBookingRequestListItem } from '../db/chatPayloadTypes';
 import { bookingRequests, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -141,12 +142,15 @@ const toolAdminBookingRequestsFindManyInputSchema = z.object({
         .max(TOOL_TAKE_MAX)
         .optional()
         .describe(`Max rows to return (default ${TOOL_TAKE_DEFAULT}, max ${TOOL_TAKE_MAX}).`),
+    detail: adminListDetailField(),
 });
 
 export type ToolAdminBookingRequestsFindManyInput = z.infer<typeof toolAdminBookingRequestsFindManyInputSchema>;
 
 export type ToolAdminBookingRequestsFindManyOutput = {
     count: number;
+    detail: 'summary' | 'evidence';
+    bookingRequestIds: string[];
     createdAtFrom: string | null;
     createdAtTo: string | null;
     requests: ChatAdminBookingRequestListItem[];
@@ -166,10 +170,12 @@ export function toolAdminBookingRequestsFindMany({
             'Use when the operator asks to show / list / find booking requests (especially “past X days”).',
             'Pass `days` for relative recency; optionally narrow with searchText or publicationStatuses.',
             'For a specific known booking request (follow-up drill-in), pass bookingRequestIds from a prior tool result.',
+            'Default detail is summary (count + ids for the model; UI still shows cards). Pass detail=evidence when you need row fields.',
             'After the tool returns, summarize the count briefly in markdown — the UI renders the request cards.',
             'Do not invent booking request ids or details not present in the tool result.',
         ].join(' '),
         inputSchema: toolAdminBookingRequestsFindManyInputSchema,
+        toModelOutput: ({ input, output }) => adminListToolOutputToModelResult(output, input.detail),
         async execute(input: ToolAdminBookingRequestsFindManyInput): Promise<ToolAdminBookingRequestsFindManyOutput> {
             const now = new Date();
             let createdAtFrom: Date | undefined;
@@ -184,6 +190,7 @@ export function toolAdminBookingRequestsFindMany({
             }
 
             const take = Math.min(Math.max(input.take ?? TOOL_TAKE_DEFAULT, 1), TOOL_TAKE_MAX);
+            const detail = resolveAdminListDetail(input.detail);
             const rows = await adminBookingRequestFindMany(
                 {
                     criterion: {
@@ -204,6 +211,8 @@ export function toolAdminBookingRequestsFindMany({
             const requests = await adminBookingRequestListCardSnapshot(rows, serverRuntime);
             return {
                 count: requests.length,
+                detail,
+                bookingRequestIds: requests.map((request) => request.bookingRequestId),
                 createdAtFrom: createdAtFrom?.toISOString() ?? null,
                 createdAtTo: createdAtTo?.toISOString() ?? null,
                 requests,

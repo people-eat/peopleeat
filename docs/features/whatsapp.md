@@ -55,15 +55,15 @@ Feature toggles (admin `/admin/feature-toggles`, missing = off):
 
 ### Alternatives considered
 
-| Topic                      | Choice                                                                                          |
-| -------------------------- | ----------------------------------------------------------------------------------------------- |
-| Channel model              | Dedicated conversations (not SupportRequests)                                                   |
-| Send policy (pre-payment)  | Email + WhatsApp when phone is E.164                                                            |
-| Send policy (post-payment) | Email only for money / selected closures (`null` template names) — Meta sends cost money        |
-| Free-form reply            | Only inside 24h window                                                                          |
-| Cook notifies              | Included when cook has E.164 phone                                                              |
-| Media                      | Inbound → FileUploads; admin outbound text-only                                                 |
-| Emoji reactions            | Overlay on target message (not transcript rows); admin can react to inbound                     |
+| Topic                      | Choice                                                                                   |
+| -------------------------- | ---------------------------------------------------------------------------------------- |
+| Channel model              | Dedicated conversations (not SupportRequests)                                            |
+| Send policy (pre-payment)  | Email + WhatsApp when phone is E.164                                                     |
+| Send policy (post-payment) | Email only for money / selected closures (`null` template names) — Meta sends cost money |
+| Free-form reply            | Only inside 24h window                                                                   |
+| Cook notifies              | Included when cook has E.164 phone                                                       |
+| Media                      | Inbound → FileUploads; admin outbound text-only                                          |
+| Emoji reactions            | Overlay on target message (not transcript rows); admin can react to inbound              |
 
 ### Chosen
 

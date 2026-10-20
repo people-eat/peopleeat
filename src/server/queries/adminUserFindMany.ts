@@ -1,6 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 
+import { adminListDetailField, adminListToolOutputToModelResult, resolveAdminListDetail } from '../agents/adminListToolDetail';
 import type { ChatAdminUserListItem } from '../db/chatPayloadTypes';
 import { users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -83,12 +84,15 @@ const toolAdminUsersFindManyInputSchema = z.object({
         .max(TOOL_TAKE_MAX)
         .optional()
         .describe(`Max rows to return (default ${TOOL_TAKE_DEFAULT}, max ${TOOL_TAKE_MAX}).`),
+    detail: adminListDetailField(),
 });
 
 export type ToolAdminUsersFindManyInput = z.infer<typeof toolAdminUsersFindManyInputSchema>;
 
 export type ToolAdminUsersFindManyOutput = {
     count: number;
+    detail: 'summary' | 'evidence';
+    userIds: string[];
     users: ChatAdminUserListItem[];
 };
 
@@ -106,12 +110,15 @@ export function toolAdminUsersFindMany({
             'Use when the operator asks to show / list / find users, customers, cooks, or admins.',
             'Optionally narrow with searchText, types, status, or isApprovedByAdmin.',
             'For a specific known user (follow-up drill-in), pass userIds from a prior tool result.',
+            'Default detail is summary (count + ids for the model; UI still shows cards). Pass detail=evidence when you need row fields.',
             'After the tool returns, summarize the count briefly in markdown — the UI renders the user cards.',
             'Do not invent user ids or details not present in the tool result.',
         ].join(' '),
         inputSchema: toolAdminUsersFindManyInputSchema,
+        toModelOutput: ({ input, output }) => adminListToolOutputToModelResult(output, input.detail),
         async execute(input: ToolAdminUsersFindManyInput): Promise<ToolAdminUsersFindManyOutput> {
             const take = Math.min(Math.max(input.take ?? TOOL_TAKE_DEFAULT, 1), TOOL_TAKE_MAX);
+            const detail = resolveAdminListDetail(input.detail);
             const types = input.types != null && input.types.length > 0 ? input.types : [...ALL_ADMIN_USER_TYPES];
             const rows = await adminUserFindMany(
                 {
@@ -131,7 +138,12 @@ export function toolAdminUsersFindMany({
                 serverRuntime,
             );
             const userCards = adminUserListCardSnapshot(rows);
-            return { count: userCards.length, users: userCards };
+            return {
+                count: userCards.length,
+                detail,
+                userIds: userCards.map((user) => user.userId),
+                users: userCards,
+            };
         },
     });
 }

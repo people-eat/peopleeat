@@ -1,6 +1,7 @@
 import type { ModelMessage, UIMessage, UIMessageChunk, UIMessagePart, UITools } from 'ai';
 import { convertToModelMessages, getToolName, isDataUIPart, isToolUIPart, readUIMessageStream } from 'ai';
 
+import { adminListDetailFromToolPart, adminListToolOutputForModel } from '../agents/adminListToolDetail';
 import { assistantPresentationNormalize, chatAssistantTextLooksLikeStructuredOutput } from '../agents/assistantPresentationOutput';
 import {
     CHAT_DATA_TYPE_ADMIN_BOOKING_REQUEST_LIST,
@@ -207,15 +208,33 @@ function isAdminMenuListItem(item: unknown): item is ChatAdminMenuListItem {
     );
 }
 
+function isAdminListFindManyToolName(toolName: string): boolean {
+    return (
+        toolName === CHAT_TOOL_ADMIN_BOOKING_REQUESTS_FIND_MANY ||
+        toolName === CHAT_TOOL_ADMIN_USERS_FIND_MANY ||
+        toolName === CHAT_TOOL_ADMIN_COOK_MEALS_FIND_MANY ||
+        toolName === CHAT_TOOL_ADMIN_COOK_MENUS_FIND_MANY
+    );
+}
+
 /**
  * Materialize admin list `data` parts from completed find-many tool outputs so
- * the UI can render cards without relying on tool debug payloads.
+ * the UI can render cards without relying on tool debug payloads. For
+ * `detail: summary` (default), rewrite the persisted tool output to the lean
+ * model shape after copying cards into the data part.
  */
 export function expandAdminListToolParts(parts: ChatMessagePart[]): ChatMessagePart[] {
     const expanded: ChatMessagePart[] = [];
     for (const part of parts) {
-        expanded.push(part);
-        if (part.type !== 'tool' || part.state !== 'outputAvailable') continue;
+        if (part.type !== 'tool' || part.state !== 'outputAvailable' || !isAdminListFindManyToolName(part.toolName)) {
+            expanded.push(part);
+            continue;
+        }
+
+        const detail = adminListDetailFromToolPart(part);
+        const persistedTool: ChatToolPart =
+            detail === 'evidence' ? part : { ...part, output: adminListToolOutputForModel(part.output, detail) };
+        expanded.push(persistedTool);
 
         if (part.toolName === CHAT_TOOL_ADMIN_BOOKING_REQUESTS_FIND_MANY) {
             const requests = listItemsFromToolOutput(part.output, 'requests', isAdminBookingRequestListItem);

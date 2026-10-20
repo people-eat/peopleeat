@@ -1,10 +1,5 @@
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type {
-    GqlSAdminMutation,
-    GqlSAdminMutationGiftCardPdfsRegenerateArgs,
-    GqlSMutationResult,
-    GqlSSession,
-} from '../graphql/generated';
+import type { GqlSAdminMutation, GqlSAdminMutationGiftCardPdfsRegenerateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { giftCardPdfsRegenerateForPayedCard } from '../utils/giftCardPdfsCreate';
 
