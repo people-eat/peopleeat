@@ -25,7 +25,7 @@ describe('whatsappTemplateNameByPurpose', () => {
         expect(whatsappTemplateNameByPurpose.CALL_SLOT_BOOKING_REMINDER).toBe('call_slot_booking_reminder_60_min_before');
     });
 
-    it('leaves purposes without a Meta template as null', () => {
+    it('keeps post-payment and selected closure purposes email-only (null)', () => {
         expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_OFFER_ACCEPTED).toBeNull();
         expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED).toBeNull();
         expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT).toBeNull();

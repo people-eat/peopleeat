@@ -234,7 +234,7 @@ export async function cookBookingRequestOfferSuggestedMenusUpdateWhatsAppSend(
     });
 }
 
-/** No approved Meta template for customer accept confirm. */
+/** Email-only on purpose (customer accept confirm). */
 export async function userBookingRequestOfferAcceptWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; cookFirstName: string },
@@ -292,7 +292,7 @@ export async function userBookingRequestOfferAcceptCookWhatsAppSend(
     });
 }
 
-/** No approved Meta template yet. */
+/** Email-only on purpose (post-payment; Meta cost). */
 export async function bookingRequestOfferPaymentConfirmedWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; cookFirstName: string },
@@ -313,7 +313,7 @@ export async function bookingRequestOfferPaymentConfirmedWhatsAppSend(
     });
 }
 
-/** No approved Meta template yet. */
+/** Email-only on purpose (post-payment; Meta cost). */
 export async function bookingRequestOfferPullPaymentAnnouncementWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; totalLabel: string },
@@ -334,7 +334,7 @@ export async function bookingRequestOfferPullPaymentAnnouncementWhatsAppSend(
     });
 }
 
-/** No approved Meta template yet. */
+/** Email-only on purpose (closure; Meta cost). */
 export async function userBookingRequestCancelWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; customerUserId: string },
@@ -355,7 +355,7 @@ export async function userBookingRequestCancelWhatsAppSend(
     });
 }
 
-/** No approved Meta template yet. */
+/** Email-only on purpose (closure; Meta cost). */
 export async function userBookingRequestCancelCookWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; cookUserId: string; customerFirstName: string },

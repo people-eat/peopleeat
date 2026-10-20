@@ -2118,6 +2118,9 @@ input AdminBookingRequestCriterion {
     take: Int! = 25
     searchText: String
     userIds: [ID!]
+    # Primary-key filter (`IN`); omit or empty = no id filter. Used by admin
+    # assistant drill-in (same list tool with one or more booking request ids).
+    bookingRequestIds: [ID!]
     publicationStatuses: [BookingRequestPublicationStatus!]
     statuses: [BookingRequestStatus!]
     # Filter to requests that currently apply this promo (`BookingRequests.promoCodeId`).
@@ -2847,6 +2850,9 @@ input AdminCookMealCriterion {
     skip: Int! = 0
     take: Int! = 25
     cookIds: [ID!]
+    # Primary-key filter (`IN`); omit or empty = no id filter. Used by admin
+    # assistant drill-in (same list tool with one or more meal ids).
+    mealIds: [ID!]
     searchText: String
     includeDeleted: Boolean! = true
     status: AdminCookInventoryStatus
@@ -2892,6 +2898,9 @@ input AdminCookMenuCriterion {
     skip: Int! = 0
     take: Int! = 25
     cookIds: [ID!]
+    # Primary-key filter (`IN`); omit or empty = no id filter. Used by admin
+    # assistant drill-in (same list tool with one or more menu ids).
+    menuIds: [ID!]
     searchText: String
     includeDeleted: Boolean! = true
     status: AdminCookInventoryStatus
@@ -2934,6 +2943,9 @@ input AdminUserCriterion {
     take: Int! = 25
     searchText: String
     types: [AdminUserType!]!
+    # Primary-key filter (`IN`); omit or empty = no id filter. Used by admin
+    # assistant drill-in (same list tool with one or more user ids).
+    userIds: [ID!]
     # When set, requires a `Cooks` row with this approval flag (typically used
     # with `types: [cook]` to list unapproved cooks).
     isApprovedByAdmin: Boolean

@@ -14,8 +14,10 @@ customer-service window, and every send must be auditable.
 2. **`serverRuntime.whatsapp`** — `sendTemplate` / `sendText` orchestrate audit + inbox transcript; `sendReaction` applies/clears a business
    emoji on an inbound `wamid`; `downloadMedia` / `markMessageAsRead` support inbound media and Meta blue-ticks. Provider lives in
    `whatsappCreate()` (Graph API `v22.0` `/{phone-number-id}/messages`).
-3. **Always both** — for supported lifecycle events, send WhatsApp whenever the recipient `Users.phoneNumber` is valid E.164, **in addition
-   to** email. Do **not** gate on `preferredCommunication`. Cooks are included when they have a phone.
+3. **Email always; WhatsApp for supported purposes** — send WhatsApp whenever the recipient `Users.phoneNumber` is valid E.164 **and**
+   `whatsappTemplateNameByPurpose` has a non-null Meta name, **in addition to** email. Do **not** gate on `preferredCommunication`. Cooks
+   are included when they have a phone. Post-payment money events and some closures stay email-only (`null` names) to limit Meta spend —
+   see [features/whatsapp.md](../features/whatsapp.md).
 4. **Tables** — `OutboundWhatsAppMessages` (one row per send attempt; first-write-wins lifecycle + optional Meta conversation/pricing);
    `WhatsAppConversations` (unique phone; Meta / migrated inbox often omit leading `+` while `Users.phoneNumber` is E.164 with `+`, so admin
    joins and user lookups match on digits; optional `userId` / `displayName`, `adminUnreadCount`, `customerServiceWindowExpiresAt`);
@@ -41,14 +43,16 @@ customer-service window, and every send must be auditable.
 
 Template **names** in `whatsappTemplateNameByPurpose` (`src/server/domain/whatsapp.ts`) must match keys already approved in WhatsApp Manager
 (e.g. `user_booking_request_create__for_user`, `call_slot_booking_reminder_60_min_before`). Do not invent snake_case purpose slugs — Meta
-rejects unknown names. Purposes without an approved template map to `null` and are skipped at send time (email still goes). Bodies and
-button URL segments must match the approved Meta variable order.
+rejects unknown names. Purposes mapped to `null` are skipped at send time (email still goes). That is intentional for post-payment and
+selected closure events (cost), not “template missing in Manager.” Bodies and button URL segments must match the approved Meta variable
+order.
 
 ## Alternatives considered
 
 | Option                                 | Why not                                              |
 | -------------------------------------- | ---------------------------------------------------- |
-| Gate sends on `preferredCommunication` | Product decision is always-both when phone exists    |
+| Gate sends on `preferredCommunication` | Product decision is email + WhatsApp when purpose has a template |
+| WhatsApp for every lifecycle purpose   | Rejected for now — Meta cost; post-payment stays email-only      |
 | Merge into SupportRequests             | Separate admin catalog surface; Meta phone-keyed     |
 | Reuse assistant chat spine             | Pollutes LLM replay; same rejection as support/offer |
 | Silent no-op when Meta secrets unset   | Rejected — use explicit `console` transport          |

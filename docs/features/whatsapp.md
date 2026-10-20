@@ -8,11 +8,13 @@ threads in the admin inbox, including media, quick-reply reactions, and emoji re
 ### Customer / cook
 
 - Lifecycle templates when `Users.phoneNumber` is E.164 with a leading `+` / country code (normalized at send; Meta gets digits-only),
-  including deep-link URL buttons where approved:
-  - Customer: request created, new offer, menu update, offer accepted, payment confirmed, pull-payment announcement, request canceled,
-    offer-chat unread reminder, 48h reaction reminder (quick-reply template)
-  - Cook: new request notify, request updated, offer accepted, request canceled, offer-chat unread reminder
-  - Call slots (both parties): create, confirm, cancel/decline, 60‑minute reminder
+  including deep-link URL buttons where approved. WhatsApp covers **pre-payment** discovery and negotiation; **after payment**, money and
+  some closure events stay **email-only** (Meta template traffic costs money). Email still sends for every lifecycle purpose.
+  - Customer (WhatsApp): request created, new offer, menu update, offer-chat unread reminder, 48h reaction reminder (quick-reply template)
+  - Cook (WhatsApp): new request notify, request updated, offer accepted, offer-chat unread reminder
+  - Call slots (both parties, WhatsApp): create, confirm, cancel/decline, 60‑minute reminder
+  - Email only (`null` template on purpose): customer offer-accept confirm, payment confirmed, pull-payment announcement, request canceled
+    (customer and cook). May add WhatsApp later if product wants those sends.
 - Can message the business WhatsApp number (public `wa.me` CTAs and Meta Cloud API share the same number).
 - Preferred communication still collected; it does **not** turn WhatsApp off when a phone exists.
 
@@ -38,8 +40,8 @@ threads in the admin inbox, including media, quick-reply reactions, and emoji re
 Before `WHATSAPP_TRANSPORT=meta` in Coolify: subscribe the Meta app webhook to `messages` + `message_statuses`, confirm Meta template
 **names** match `whatsappTemplateNameByPurpose` in `src/server/domain/whatsapp.ts` (approved Manager keys such as
 `user_booking_request_create__for_user`, not reinvented slugs), and set secrets (including Slack WhatsApp channel when
-`SLACK_TRANSPORT=slack`). Local/dev uses `console` (no phone delivery). Purposes mapped to `null` are intentionally not sent until a Meta
-template exists.
+`SLACK_TRANSPORT=slack`). Local/dev uses `console` (no phone delivery). Purposes mapped to `null` are a product choice (email-only after
+payment / selected closures), not missing Manager entries.
 
 Feature toggles (admin `/admin/feature-toggles`, missing = off):
 
@@ -53,24 +55,27 @@ Feature toggles (admin `/admin/feature-toggles`, missing = off):
 
 ### Alternatives considered
 
-| Topic           | Choice                                                                      |
-| --------------- | --------------------------------------------------------------------------- |
-| Channel model   | Dedicated conversations (not SupportRequests)                               |
-| Send policy     | Always email + WhatsApp when phone is E.164                                 |
-| Free-form reply | Only inside 24h window                                                      |
-| Cook notifies   | Included when cook has E.164 phone                                          |
-| Media           | Inbound → FileUploads; admin outbound text-only                             |
-| Emoji reactions | Overlay on target message (not transcript rows); admin can react to inbound |
+| Topic                      | Choice                                                                                          |
+| -------------------------- | ----------------------------------------------------------------------------------------------- |
+| Channel model              | Dedicated conversations (not SupportRequests)                                                   |
+| Send policy (pre-payment)  | Email + WhatsApp when phone is E.164                                                            |
+| Send policy (post-payment) | Email only for money / selected closures (`null` template names) — Meta sends cost money        |
+| Free-form reply            | Only inside 24h window                                                                          |
+| Cook notifies              | Included when cook has E.164 phone                                                              |
+| Media                      | Inbound → FileUploads; admin outbound text-only                                                 |
+| Emoji reactions            | Overlay on target message (not transcript rows); admin can react to inbound                     |
 
 ### Chosen
 
-Meta Cloud API + audit table + Concierge inbox, mirroring outbound-email / support-request patterns.
+Meta Cloud API + audit table + Concierge inbox, mirroring outbound-email / support-request patterns. Keep expensive post-payment WhatsApp
+off until product explicitly extends those purposes.
 
 ## Ideas
 
 - Admin outbound media attach
 - Richer AdminAssistant-style tooling on the Concierge surface
 - WhatsApp contact avatars (not available via Meta Cloud API; peopleeat profile pictures only)
+- Optionally enable WhatsApp for post-payment / cancel purposes (approve Manager templates + non-null map entries)
 
 ## Implementation
 

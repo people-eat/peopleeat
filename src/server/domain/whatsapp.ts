@@ -34,7 +34,8 @@ export type WhatsAppMessageKind = 'TEXT' | 'TEMPLATE' | 'MEDIA' | 'BUTTON_REPLY'
 /**
  * Meta Cloud API template name per purpose.
  * Names must match templates already approved in WhatsApp Manager.
- * `null` = no approved template yet — outbound send skips Meta (email still goes).
+ * `null` = email-only on purpose (post-payment / selected closures; Meta sends cost money) —
+ * outbound skips WhatsApp; email still goes. See docs/features/whatsapp.md.
  */
 export const whatsappTemplateNameByPurpose: Record<Exclude<OutboundWhatsAppPurpose, 'CONCIERGE_SESSION_REPLY'>, string | null> = {
     BOOKING_REQUEST_CREATED: 'user_booking_request_create__for_user',
@@ -42,11 +43,13 @@ export const whatsappTemplateNameByPurpose: Record<Exclude<OutboundWhatsAppPurpo
     BOOKING_REQUEST_UPDATED_COOK: 'user_booking_request_update__for_cook',
     BOOKING_REQUEST_OFFER_CREATED: 'cook_booking_request_offer_create__for_user',
     BOOKING_REQUEST_OFFER_MENU_UPDATED: 'cook_menu_courses_update_with_relation_to_offer__for_user',
-    // No Meta-approved customer accept-confirm template yet.
+    // Email-only: customer accept confirm (cook accept still has a template below).
     BOOKING_REQUEST_OFFER_ACCEPTED: null,
     BOOKING_REQUEST_OFFER_ACCEPTED_COOK: 'user_booking_request_offer_accept__for_cook',
+    // Email-only after payment (cost).
     BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED: null,
     BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT: null,
+    // Email-only closures (cost).
     BOOKING_REQUEST_CANCELED: null,
     BOOKING_REQUEST_CANCELED_COOK: null,
     // Cook wrote → notify customer.
