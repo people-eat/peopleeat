@@ -47,7 +47,6 @@ import { BookingRequestOfferCostOverviewPanel } from '../../components/BookingRe
 import { bookingRequestOfferStatusClassName } from '../../components/bookingRequestOfferStatus';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import { CookMenuCard } from '../../components/CookMenuCard';
-import { CookProfileTags } from '../../components/CookProfileTags';
 import { CostBreakdownPanel } from '../../components/CostBreakdownPanel';
 import { OfferMenuConfigured } from '../../components/OfferMenuConfigured';
 import type {
@@ -864,7 +863,6 @@ function OfferMetaTabPanel({
                                 </Link>
                             </Button>
                         </div>
-                        <CookProfileTags cuisineStyle={offer.cook.cuisineStyle} />
                     </CardContent>
                 </Card>
                 {request && customerDisplayName ? (
@@ -949,11 +947,7 @@ function OfferMetaTabPanel({
                 </Card>
             </div>
 
-            <Card className="gap-4 py-4">
-                <CardContent className="px-4">
-                    <AdminQueuedJobsSection jobs={offer.queuedJobs} />
-                </CardContent>
-            </Card>
+            <AdminQueuedJobsSection jobs={offer.queuedJobs} />
         </div>
     );
 }
