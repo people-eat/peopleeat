@@ -1,19 +1,26 @@
 import { useForm, useSelector } from '@tanstack/react-form';
 import { Link, notFound, useNavigate } from '@tanstack/react-router';
+import { CakeIcon, GemIcon, HeartHandshakeIcon, HeartIcon, UsersIcon, UsersRoundIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
-import { bookingRequestParticipantsFromCounts, formatCurrency, textNormalizeTitled } from '../../../shared';
+import {
+    bookingRequestParticipantsFromCounts,
+    defaultBookingRequestOccasions,
+    defaultBookingRequestPreferences,
+    formatCurrency,
+    textNormalizeTitled,
+} from '../../../shared';
 import type { BookingRequestParticipantDraft } from '../../../shared';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { DateTimePicker } from '../../components/base/date-time-picker';
 import { Input } from '../../components/base/input';
 import { StatusAlert } from '../../components/base/status-alert';
-import { Textarea } from '../../components/base/textarea';
 import { BookingRequestParticipantsRestrictionsEditor } from '../../components/BookingRequestParticipantsRestrictionsEditor';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
+import { SelectableChip } from '../../components/SelectableChip';
 import type {
     GqlCLocationSuggestion,
     GqlCProfileCustomerBookingRequestPageQuery,
@@ -39,6 +46,16 @@ import type { Locale } from '../../utils/locale';
 
 const UPDATABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW']);
 
+const occasionIcons = [
+    <CakeIcon className="size-4" key="cake-1" />,
+    <CakeIcon className="size-4" key="cake-2" />,
+    <HeartIcon className="size-4" key="heart" />,
+    <GemIcon className="size-4" key="gem" />,
+    <UsersRoundIcon className="size-4" key="users-round" />,
+    <HeartHandshakeIcon className="size-4" key="handshake" />,
+    <UsersIcon className="size-4" key="users" />,
+];
+
 export const profileCustomerBookingRequestEditPageTitle = {
     de: 'Anfrage bearbeiten',
     en: 'Edit request',
@@ -57,7 +74,7 @@ type BookingRequestFormValues = {
     dateTime: string;
     adultCount: number;
     childCount: number;
-    preferences: string;
+    preferences: string[];
     exactEventAddress: GqlCUserBookingRequestExactEventAddressInput;
 };
 
@@ -101,7 +118,7 @@ function formFromRequest(
         dateTime: request.dateTime,
         adultCount: request.participants.filter((participant) => participant.type === 'ADULT').length || 1,
         childCount: request.participants.filter((participant) => participant.type === 'DISCOUNTED').length,
-        preferences: request.preferences.join(', '),
+        preferences: [...request.preferences],
         exactEventAddress: addressFromRequest(request.exactEventAddress),
     };
 }
@@ -283,6 +300,7 @@ export function ProfileCustomerBookingRequestEditPage({
     const canStayOnEdit = canUpdate || isParticipantAmendmentMode;
 
     const [locationSearchText, setLocationSearchText] = useState(seedRequest.exactEventAddress.displayText);
+    const [customPreferenceText, setCustomPreferenceText] = useState('');
     const [, updateRequest] = useMutation(ProfileBookingRequestUpdateDocument);
     const [, createParticipantAmendment] = useMutation(ProfileCustomerBookingRequestParticipantAmendmentCreateDocument);
     const restrictionsEnabled = useFeatureToggleActive('BOOKING_REQUEST_RESTRICTIONS');
@@ -354,9 +372,9 @@ export function ProfileCustomerBookingRequestEditPage({
             }
             try {
                 const preferences = value.preferences
-                    .split(',')
                     .map((preference) => textNormalizeTitled(preference))
-                    .filter((preference) => preference.length > 0);
+                    .filter((preference) => preference.length > 0)
+                    .slice(0, 4);
                 const result = await updateRequest({
                     bookingRequestId,
                     occasion: textNormalizeTitled(value.occasion),
@@ -382,9 +400,16 @@ export function ProfileCustomerBookingRequestEditPage({
     const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
     const isDirty = useSelector(form.store, (state) => state.isDirty);
     const occasion = useSelector(form.store, (state) => state.values.occasion);
+    const preferences = useSelector(form.store, (state) => state.values.preferences);
     const exactEventAddress = useSelector(form.store, (state) => state.values.exactEventAddress);
     const adultCount = useSelector(form.store, (state) => state.values.adultCount);
     const childCount = useSelector(form.store, (state) => state.values.childCount);
+
+    const defaultPreferences = defaultBookingRequestPreferences(locale);
+    const preferenceOptionsCustom = preferences.filter((preference) => !defaultPreferences.includes(preference));
+    const preferenceOptions = [...defaultPreferences, ...preferenceOptionsCustom].filter((option) =>
+        option.toLowerCase().includes(customPreferenceText.toLowerCase()),
+    );
 
     useEffect(() => {
         setParticipants((previous) =>
@@ -539,18 +564,38 @@ export function ProfileCustomerBookingRequestEditPage({
                     <>
                         <form.Field name="occasion">
                             {(field) => (
-                                <div className="grid gap-1.5">
-                                    <label htmlFor="booking-request-occasion" className="text-sm font-medium">
-                                        {{ de: 'Anlass', en: 'Occasion' }[locale]}
-                                    </label>
-                                    <Input
-                                        id="booking-request-occasion"
-                                        name={field.name}
-                                        value={field.state.value}
-                                        onBlur={field.handleBlur}
-                                        onChange={(event) => field.handleChange(event.target.value)}
-                                        placeholder={{ de: 'Anlass', en: 'Occasion' }[locale]}
-                                    />
+                                <div className="grid gap-4">
+                                    <div className="grid gap-1.5">
+                                        <label htmlFor="booking-request-occasion" className="text-sm font-medium">
+                                            {{ de: 'Anlass', en: 'Occasion' }[locale]}
+                                        </label>
+                                        <Input
+                                            id="booking-request-occasion"
+                                            name={field.name}
+                                            value={field.state.value}
+                                            onBlur={field.handleBlur}
+                                            onChange={(event) => field.handleChange(event.target.value)}
+                                            placeholder={
+                                                {
+                                                    de: 'z. B. Geburtstag, Firmenfeier',
+                                                    en: 'e.g. Birthday, company dinner',
+                                                }[locale]
+                                            }
+                                            disabled={isSubmitting}
+                                        />
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {defaultBookingRequestOccasions(locale).map((option, index) => (
+                                            <SelectableChip
+                                                key={option}
+                                                label={option}
+                                                icon={occasionIcons[index]}
+                                                selected={field.state.value === option}
+                                                disabled={isSubmitting}
+                                                onClick={() => field.handleChange(field.state.value === option ? '' : option)}
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </form.Field>
@@ -680,24 +725,74 @@ export function ProfileCustomerBookingRequestEditPage({
                     <PriceImpactPreview impacts={priceImpacts} fetching={priceImpactFetching} locale={locale} />
                 ) : null}
                 {!isParticipantAmendmentMode ? (
-                    <form.Field name="preferences">
-                        {(field) => (
-                            <div className="grid gap-1.5">
-                                <label htmlFor="booking-request-preferences" className="text-sm font-medium">
-                                    {{ de: 'Präferenzen', en: 'Preferences' }[locale]}
-                                </label>
-                                <Textarea
-                                    id="booking-request-preferences"
-                                    name={field.name}
-                                    value={field.state.value}
-                                    onBlur={field.handleBlur}
-                                    onChange={(event) => field.handleChange(event.target.value)}
-                                    placeholder={{ de: 'Präferenzen, durch Komma getrennt', en: 'Preferences (comma-separated)' }[locale]}
-                                    rows={3}
-                                />
-                            </div>
-                        )}
-                    </form.Field>
+                    <div className="grid gap-3">
+                        <span className="text-sm font-medium">{{ de: 'Präferenzen', en: 'Preferences' }[locale]}</span>
+                        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                            <Input
+                                value={customPreferenceText}
+                                onChange={(event) => setCustomPreferenceText(event.target.value)}
+                                placeholder={
+                                    {
+                                        de: 'Präferenz (suchen oder hier eigene eingeben)',
+                                        en: 'Select from the options below or add your own one here',
+                                    }[locale]
+                                }
+                                disabled={isSubmitting || preferences.length >= 4}
+                            />
+                            <Button
+                                type="button"
+                                className="justify-self-end"
+                                variant="default"
+                                disabled={isSubmitting || customPreferenceText.trim() === '' || preferences.length >= 4}
+                                onClick={() => {
+                                    const next = textNormalizeTitled(customPreferenceText);
+                                    if (!next) return;
+                                    form.setFieldValue('preferences', [...preferences, next]);
+                                    setCustomPreferenceText('');
+                                }}
+                            >
+                                {{ de: 'Eigene hinzufügen', en: 'Add custom' }[locale]}
+                            </Button>
+                        </div>
+                        <form.Field name="preferences">
+                            {(field) => (
+                                <div className="grid gap-3">
+                                    <div className="flex flex-wrap gap-2">
+                                        {preferenceOptions.map((option) => {
+                                            const selected = field.state.value.includes(option);
+                                            return (
+                                                <SelectableChip
+                                                    key={option}
+                                                    label={option}
+                                                    selected={selected}
+                                                    disabled={isSubmitting || (!selected && field.state.value.length >= 4)}
+                                                    onClick={() => {
+                                                        if (selected) {
+                                                            field.handleChange(field.state.value.filter((item) => item !== option));
+                                                            return;
+                                                        }
+                                                        if (field.state.value.length >= 4) return;
+                                                        field.handleChange([...field.state.value, option]);
+                                                        setCustomPreferenceText('');
+                                                    }}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                    {field.state.value.length >= 4 ? (
+                                        <StatusAlert tone="info">
+                                            {
+                                                {
+                                                    de: 'Du hast die maximale Anzahl ausgewählter Präferenzen erreicht.',
+                                                    en: 'You have reached the limit of 4 selected preferences.',
+                                                }[locale]
+                                            }
+                                        </StatusAlert>
+                                    ) : null}
+                                </div>
+                            )}
+                        </form.Field>
+                    </div>
                 ) : null}
 
                 {restrictionsEnabled && pendingAmendment == null ? (
