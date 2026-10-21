@@ -69,7 +69,6 @@ import {
     ProfileCustomerBookingRequestOfferChatMessageReactionUpsertDocument,
     ProfileCustomerBookingRequestOfferConfiguredMenuCreateDocument,
     ProfileCustomerBookingRequestOfferPageUpdatesDocument,
-    ProfileCustomerBookingRequestOfferParticipantAmendmentCreateDocument,
     ProfileCustomerBookingRequestOfferUnreadNotificationCountResetDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
@@ -726,9 +725,6 @@ function OfferTabPanel({
     onCourseSelectionsChange: (selections: OfferMenuCourseSelection[]) => void;
 }) {
     const [, updateDiscount] = useMutation(ProfileBookingRequestDiscountUpdateDocument);
-    const [{ fetching: amendmentBusy }, createParticipantAmendment] = useMutation(
-        ProfileCustomerBookingRequestOfferParticipantAmendmentCreateDocument,
-    );
     const cook = offer.cook;
     const biographyText =
         cook.biographySummary.trim().length > 0 ? cook.biographySummary : cook.biography.trim().length > 0 ? cook.biography : null;
@@ -855,33 +851,7 @@ function OfferTabPanel({
                         canRequest={offer.canRequestParticipantAmendment}
                         preparationsCompletedAt={offer.preparationsCompletedAt}
                         amendment={offer.participantAmendment}
-                        currentParticipants={request.participants}
-                        busy={amendmentBusy}
-                        onPropose={async (participants) => {
-                            const result = await createParticipantAmendment({
-                                bookingRequestOfferId,
-                                participants: participants.map((participant) => ({
-                                    type: participant.type,
-                                    name: participant.name,
-                                    restrictions: participant.restrictions,
-                                })),
-                            });
-                            if (result.error || !result.data?.user.bookingRequestOfferParticipantAmendmentCreate.success) {
-                                toast.error(
-                                    {
-                                        de: 'Die Teilnehmeränderung konnte nicht gesendet werden.',
-                                        en: 'Could not send the participant change.',
-                                    }[locale],
-                                );
-                                return;
-                            }
-                            toast.success(
-                                {
-                                    de: 'Vorschlag an den Koch gesendet.',
-                                    en: 'Proposal sent to the chef.',
-                                }[locale],
-                            );
-                        }}
+                        bookingRequestId={bookingRequestId}
                     />
 
                     {canEditDiscount || request.promoCode != null || request.giftCard != null ? (

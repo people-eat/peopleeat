@@ -662,7 +662,7 @@ export async function bookingRequestOfferParticipantAmendmentCreateEmailSend(
                 webPageUrl,
                 recipientFirstName: args.cook.firstName,
                 customerFirstName: args.customer.firstName,
-                offerUrl: bookingRequestEmailCookOfferUrl(webPageUrl, args.offer.bookingRequestOfferId),
+                offerUrl: bookingRequestEmailCookOfferUrl(webPageUrl, args.offer.bookingRequestOfferId, 'offer'),
             }),
             purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED',
             locale,

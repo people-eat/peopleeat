@@ -26,6 +26,7 @@ import {
     ProfileCustomerBookingRequestEditLocationSuggestionsDocument,
     ProfileCustomerBookingRequestEditTravelImpactDocument,
     ProfileCustomerBookingRequestPageUpdatesDocument,
+    ProfileCustomerBookingRequestParticipantAmendmentCreateDocument,
 } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
@@ -41,8 +42,8 @@ export const profileCustomerBookingRequestEditPageTitle = {
     en: 'Edit request',
 } as const;
 export const profileCustomerBookingRequestEditPageDescription = {
-    de: 'Anlass, Termin, Ort, Teilnehmer, Präferenzen und Einschränkungen bearbeiten.',
-    en: 'Edit occasion, date, location, participants, preferences, and restrictions.',
+    de: 'Anlass, Termin, Ort, Teilnehmer, Präferenzen und Einschränkungen bearbeiten. Nach Annahme nur noch die Teilnehmerzahl.',
+    en: 'Edit occasion, date, location, participants, preferences, and restrictions. After accept, only the participant count.',
 } as const;
 
 export function profileCustomerBookingRequestEditPageVariables(bookingRequestId: string) {
@@ -205,10 +206,23 @@ export function ProfileCustomerBookingRequestEditPage({
 
     const user = useUserUpdatesSeed(seedUser, ProfileCustomerBookingRequestPageUpdatesDocument, { bookingRequestId });
     const request = user?.bookingRequest ?? null;
+    const participantAmendmentEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT');
     const canUpdate = request != null && bookingRequestCanUpdate(request);
+    const amendableOffer =
+        request?.offers.find((offer) => offer.canRequestParticipantAmendment) ??
+        seedRequest.offers.find((offer) => offer.canRequestParticipantAmendment) ??
+        null;
+    const pendingAmendmentOffer =
+        request?.offers.find((offer) => offer.participantAmendment != null) ??
+        seedRequest.offers.find((offer) => offer.participantAmendment != null) ??
+        null;
+    const isParticipantAmendmentMode =
+        !canUpdate && participantAmendmentEnabled && (amendableOffer != null || pendingAmendmentOffer != null);
+    const canStayOnEdit = canUpdate || isParticipantAmendmentMode;
 
     const [locationSearchText, setLocationSearchText] = useState(seedRequest.exactEventAddress.displayText);
     const [, updateRequest] = useMutation(ProfileBookingRequestUpdateDocument);
+    const [, createParticipantAmendment] = useMutation(ProfileCustomerBookingRequestParticipantAmendmentCreateDocument);
     const restrictionsEnabled = useFeatureToggleActive('BOOKING_REQUEST_RESTRICTIONS');
     const [participants, setParticipants] = useState<BookingRequestParticipantDraft[]>(() =>
         seedRequest.participants.map((participant) => ({
@@ -221,7 +235,52 @@ export function ProfileCustomerBookingRequestEditPage({
     const form = useForm({
         defaultValues: formFromRequest(seedRequest),
         onSubmit: async ({ value }) => {
-            if (request == null || !bookingRequestCanUpdate(request)) return;
+            if (request == null) return;
+
+            const nextParticipants = bookingRequestParticipantsFromCounts({
+                adultCount: Math.max(1, value.adultCount),
+                discountedCount: Math.max(0, value.childCount),
+                locale,
+                previous: participants,
+            });
+
+            if (isParticipantAmendmentMode) {
+                const offerId = amendableOffer?.bookingRequestOfferId;
+                if (offerId == null || pendingAmendmentOffer != null) return;
+                try {
+                    const result = await createParticipantAmendment({
+                        bookingRequestOfferId: offerId,
+                        participants: nextParticipants.map((participant) => ({
+                            type: participant.type,
+                            name: participant.name,
+                            restrictions: participant.restrictions,
+                        })),
+                    });
+                    if (result.error || !result.data?.user.bookingRequestOfferParticipantAmendmentCreate.success) {
+                        throw new Error('amendment create failed');
+                    }
+                    toast.success(
+                        {
+                            de: 'Vorschlag an den Koch gesendet.',
+                            en: 'Proposal sent to the chef.',
+                        }[locale],
+                    );
+                    await navigate({
+                        to: '/{-$locale}/profile/booking-requests/$bookingRequestId',
+                        params: { bookingRequestId },
+                    });
+                } catch {
+                    toast.error(
+                        {
+                            de: 'Die Teilnehmeränderung konnte nicht gesendet werden.',
+                            en: 'Could not send the participant change.',
+                        }[locale],
+                    );
+                }
+                return;
+            }
+
+            if (!bookingRequestCanUpdate(request)) return;
             if (!value.exactEventAddress.displayText.trim()) {
                 toast.error(
                     {
@@ -232,12 +291,6 @@ export function ProfileCustomerBookingRequestEditPage({
                 return;
             }
             try {
-                const nextParticipants = bookingRequestParticipantsFromCounts({
-                    adultCount: Math.max(1, value.adultCount),
-                    discountedCount: Math.max(0, value.childCount),
-                    locale,
-                    previous: participants,
-                });
                 const preferences = value.preferences
                     .split(',')
                     .map((preference) => preference.trim())
@@ -302,7 +355,7 @@ export function ProfileCustomerBookingRequestEditPage({
 
     useEffect(() => {
         if (user == null) return;
-        if (request == null || !bookingRequestCanUpdate(request)) {
+        if (request == null || !canStayOnEdit) {
             void navigate({
                 to: '/{-$locale}/profile/booking-requests/$bookingRequestId',
                 params: { bookingRequestId },
@@ -321,11 +374,16 @@ export function ProfileCustomerBookingRequestEditPage({
                 })),
             );
         }
-    }, [bookingRequestId, form, isDirty, navigate, request, user]);
+    }, [bookingRequestId, canStayOnEdit, form, isDirty, navigate, request, user]);
 
-    if (request == null || !canUpdate) {
+    if (request == null || !canStayOnEdit) {
         return null;
     }
+
+    const pendingAmendment = pendingAmendmentOffer?.participantAmendment ?? null;
+    const amendmentSubmitDisabled = isParticipantAmendmentMode && (pendingAmendment != null || amendableOffer == null || isSubmitting);
+    const fullSubmitDisabled =
+        !isParticipantAmendmentMode && (isSubmitting || occasion.trim().length === 0 || exactEventAddress.displayText.trim().length === 0);
 
     return (
         <ProfilePinnedFooterLayout
@@ -337,25 +395,65 @@ export function ProfileCustomerBookingRequestEditPage({
                             {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
                         </Link>
                     </Button>
-                    <Button
-                        type="submit"
-                        form="booking-request-edit-form"
-                        disabled={isSubmitting || occasion.trim().length === 0 || exactEventAddress.displayText.trim().length === 0}
-                    >
-                        {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
-                    </Button>
+                    {pendingAmendment == null ? (
+                        <Button
+                            type="submit"
+                            form="booking-request-edit-form"
+                            disabled={isParticipantAmendmentMode ? amendmentSubmitDisabled : fullSubmitDisabled}
+                        >
+                            {isSubmitting
+                                ? { de: 'Senden…', en: 'Sending…' }[locale]
+                                : isParticipantAmendmentMode
+                                  ? { de: 'Vorschlag senden', en: 'Send proposal' }[locale]
+                                  : { de: 'Speichern', en: 'Save' }[locale]}
+                        </Button>
+                    ) : null}
                 </>
             }
         >
-            <StatusAlert
-                tone="warning"
-                title={
+            {isParticipantAmendmentMode ? (
+                pendingAmendment != null ? (
+                    <StatusAlert tone="info" title={{ de: 'Änderung vorgeschlagen', en: 'Change proposed' }[locale]}>
+                        {
+                            {
+                                de: 'Dein Vorschlag wartet auf die Bestätigung des Kochs. Die aktuelle Buchung bleibt unverändert, bis er annimmt oder ablehnt.',
+                                en: 'Your proposal is waiting for the chef to confirm. The current booking stays unchanged until they accept or decline.',
+                            }[locale]
+                        }
+                    </StatusAlert>
+                ) : (
+                    <StatusAlert
+                        tone="warning"
+                        title={
+                            { de: 'Koch muss die Teilnehmeränderung bestätigen', en: 'Chef must confirm the participant change' }[locale]
+                        }
+                    >
+                        {
+                            {
+                                de: 'Nach der gemeinsamen Annahme ändert sich Preis und Zahlung erst, wenn der Koch zustimmt. Weniger Personen: Erstattung. Mehr Personen: Nachzahlung. Datum, Ort und Anlass kannst du hier nicht mehr ändern.',
+                                en: 'After both sides accepted, price and payment change only when the chef agrees. Fewer guests: refund. More guests: additional charge. Date, location, and occasion can no longer be edited here.',
+                            }[locale]
+                        }
+                    </StatusAlert>
+                )
+            ) : (
+                <StatusAlert
+                    tone="warning"
+                    title={
+                        {
+                            de: 'Wesentliche Änderungen müssen vom Koch erneut bestätigt werden.',
+                            en: 'Material changes require the chef to confirm again.',
+                        }[locale]
+                    }
+                >
                     {
-                        de: 'Wesentliche Änderungen müssen vom Koch erneut bestätigt werden.',
-                        en: 'Material changes require the chef to confirm again.',
-                    }[locale]
-                }
-            />
+                        {
+                            de: 'Ändert sich die Adresse, können Fahrtkosten automatisch angepasst werden. Der Koch bestätigt danach erneut.',
+                            en: 'If the address changes, travel costs may adjust automatically. The chef confirms again afterwards.',
+                        }[locale]
+                    }
+                </StatusAlert>
+            )}
 
             <form
                 id="booking-request-edit-form"
@@ -366,103 +464,107 @@ export function ProfileCustomerBookingRequestEditPage({
                     void form.handleSubmit();
                 }}
             >
-                <form.Field name="occasion">
-                    {(field) => (
-                        <div className="grid gap-1.5">
-                            <label htmlFor="booking-request-occasion" className="text-sm font-medium">
-                                {{ de: 'Anlass', en: 'Occasion' }[locale]}
-                            </label>
-                            <Input
-                                id="booking-request-occasion"
-                                name={field.name}
-                                value={field.state.value}
-                                onBlur={field.handleBlur}
-                                onChange={(event) => field.handleChange(event.target.value)}
-                                placeholder={{ de: 'Anlass', en: 'Occasion' }[locale]}
-                            />
-                        </div>
-                    )}
-                </form.Field>
-                <form.Field name="dateTime">
-                    {(field) => (
-                        <div className="grid gap-1.5">
-                            <span className="text-sm font-medium">{{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}</span>
-                            <DateTimePicker
-                                value={new Date(field.state.value)}
-                                onValueChange={(date) => field.handleChange(date.toISOString())}
-                                placeholder={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
-                                timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
-                                locale={DATE_FNS_LOCALE[locale]}
-                                className="w-full"
-                            />
-                        </div>
-                    )}
-                </form.Field>
-                <form.Field name="exactEventAddress">
-                    {(field) => (
-                        <div className="grid gap-1.5">
-                            <span className="text-sm font-medium">{{ de: 'Veranstaltungsort', en: 'Event location' }[locale]}</span>
-                            <Combobox
-                                filter={null}
-                                items={suggestions.map((suggestion) => suggestion.displayText)}
-                                value={field.state.value.displayText || null}
-                                inputValue={locationSearchText}
-                                onValueChange={(next) => {
-                                    if (next == null) return;
-                                    const match = suggestions.find((suggestion) => suggestion.displayText === next);
-                                    if (!match) return;
-                                    const address = addressFromSuggestion(match);
-                                    if (!address) {
-                                        toast.error(
-                                            {
-                                                de: 'Bitte eine vollständige Adresse wählen.',
-                                                en: 'Please choose a full address.',
-                                            }[locale],
-                                        );
-                                        return;
-                                    }
-                                    field.handleChange(address);
-                                    setLocationSearchText(match.displayText);
-                                }}
-                                onInputValueChange={(next) => {
-                                    setLocationSearchText(next);
-                                    if (field.state.value.displayText && next !== field.state.value.displayText) {
-                                        field.handleChange({
-                                            ...field.state.value,
-                                            displayText: '',
-                                        });
-                                    }
-                                }}
-                                itemToStringLabel={(item: string) => item}
-                            >
-                                <ComboboxInput
-                                    className="w-full"
-                                    placeholder={{ de: 'Adresse suchen…', en: 'Search address…' }[locale]}
-                                    showClear={false}
-                                    disabled={isSubmitting}
-                                    required={!field.state.value.displayText}
-                                />
-                                <ComboboxContent>
-                                    <ComboboxEmpty>
-                                        {suggestionsFetching
-                                            ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                            : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
-                                    </ComboboxEmpty>
-                                    <ComboboxList>
-                                        {(item: string) => (
-                                            <ComboboxItem key={item} value={item}>
-                                                {item}
-                                            </ComboboxItem>
-                                        )}
-                                    </ComboboxList>
-                                </ComboboxContent>
-                            </Combobox>
-                            {locationChanged && hasOffers ? (
-                                <TravelImpactPreview impacts={travelImpacts} fetching={travelImpactFetching} locale={locale} />
-                            ) : null}
-                        </div>
-                    )}
-                </form.Field>
+                {!isParticipantAmendmentMode ? (
+                    <>
+                        <form.Field name="occasion">
+                            {(field) => (
+                                <div className="grid gap-1.5">
+                                    <label htmlFor="booking-request-occasion" className="text-sm font-medium">
+                                        {{ de: 'Anlass', en: 'Occasion' }[locale]}
+                                    </label>
+                                    <Input
+                                        id="booking-request-occasion"
+                                        name={field.name}
+                                        value={field.state.value}
+                                        onBlur={field.handleBlur}
+                                        onChange={(event) => field.handleChange(event.target.value)}
+                                        placeholder={{ de: 'Anlass', en: 'Occasion' }[locale]}
+                                    />
+                                </div>
+                            )}
+                        </form.Field>
+                        <form.Field name="dateTime">
+                            {(field) => (
+                                <div className="grid gap-1.5">
+                                    <span className="text-sm font-medium">{{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}</span>
+                                    <DateTimePicker
+                                        value={new Date(field.state.value)}
+                                        onValueChange={(date) => field.handleChange(date.toISOString())}
+                                        placeholder={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
+                                        timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                                        locale={DATE_FNS_LOCALE[locale]}
+                                        className="w-full"
+                                    />
+                                </div>
+                            )}
+                        </form.Field>
+                        <form.Field name="exactEventAddress">
+                            {(field) => (
+                                <div className="grid gap-1.5">
+                                    <span className="text-sm font-medium">{{ de: 'Veranstaltungsort', en: 'Event location' }[locale]}</span>
+                                    <Combobox
+                                        filter={null}
+                                        items={suggestions.map((suggestion) => suggestion.displayText)}
+                                        value={field.state.value.displayText || null}
+                                        inputValue={locationSearchText}
+                                        onValueChange={(next) => {
+                                            if (next == null) return;
+                                            const match = suggestions.find((suggestion) => suggestion.displayText === next);
+                                            if (!match) return;
+                                            const address = addressFromSuggestion(match);
+                                            if (!address) {
+                                                toast.error(
+                                                    {
+                                                        de: 'Bitte eine vollständige Adresse wählen.',
+                                                        en: 'Please choose a full address.',
+                                                    }[locale],
+                                                );
+                                                return;
+                                            }
+                                            field.handleChange(address);
+                                            setLocationSearchText(match.displayText);
+                                        }}
+                                        onInputValueChange={(next) => {
+                                            setLocationSearchText(next);
+                                            if (field.state.value.displayText && next !== field.state.value.displayText) {
+                                                field.handleChange({
+                                                    ...field.state.value,
+                                                    displayText: '',
+                                                });
+                                            }
+                                        }}
+                                        itemToStringLabel={(item: string) => item}
+                                    >
+                                        <ComboboxInput
+                                            className="w-full"
+                                            placeholder={{ de: 'Adresse suchen…', en: 'Search address…' }[locale]}
+                                            showClear={false}
+                                            disabled={isSubmitting}
+                                            required={!field.state.value.displayText}
+                                        />
+                                        <ComboboxContent>
+                                            <ComboboxEmpty>
+                                                {suggestionsFetching
+                                                    ? { de: 'Suche…', en: 'Searching…' }[locale]
+                                                    : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                            </ComboboxEmpty>
+                                            <ComboboxList>
+                                                {(item: string) => (
+                                                    <ComboboxItem key={item} value={item}>
+                                                        {item}
+                                                    </ComboboxItem>
+                                                )}
+                                            </ComboboxList>
+                                        </ComboboxContent>
+                                    </Combobox>
+                                    {locationChanged && hasOffers ? (
+                                        <TravelImpactPreview impacts={travelImpacts} fetching={travelImpactFetching} locale={locale} />
+                                    ) : null}
+                                </div>
+                            )}
+                        </form.Field>
+                    </>
+                ) : null}
                 <div className="grid grid-cols-2 gap-3">
                     <form.Field name="adultCount">
                         {(field) => (
@@ -478,6 +580,7 @@ export function ProfileCustomerBookingRequestEditPage({
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(event) => field.handleChange(Number(event.target.value) || 1)}
+                                    disabled={pendingAmendment != null}
                                 />
                             </div>
                         )}
@@ -496,31 +599,34 @@ export function ProfileCustomerBookingRequestEditPage({
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(event) => field.handleChange(Number(event.target.value) || 0)}
+                                    disabled={pendingAmendment != null}
                                 />
                             </div>
                         )}
                     </form.Field>
                 </div>
-                <form.Field name="preferences">
-                    {(field) => (
-                        <div className="grid gap-1.5">
-                            <label htmlFor="booking-request-preferences" className="text-sm font-medium">
-                                {{ de: 'Präferenzen', en: 'Preferences' }[locale]}
-                            </label>
-                            <Textarea
-                                id="booking-request-preferences"
-                                name={field.name}
-                                value={field.state.value}
-                                onBlur={field.handleBlur}
-                                onChange={(event) => field.handleChange(event.target.value)}
-                                placeholder={{ de: 'Präferenzen, durch Komma getrennt', en: 'Preferences (comma-separated)' }[locale]}
-                                rows={3}
-                            />
-                        </div>
-                    )}
-                </form.Field>
+                {!isParticipantAmendmentMode ? (
+                    <form.Field name="preferences">
+                        {(field) => (
+                            <div className="grid gap-1.5">
+                                <label htmlFor="booking-request-preferences" className="text-sm font-medium">
+                                    {{ de: 'Präferenzen', en: 'Preferences' }[locale]}
+                                </label>
+                                <Textarea
+                                    id="booking-request-preferences"
+                                    name={field.name}
+                                    value={field.state.value}
+                                    onBlur={field.handleBlur}
+                                    onChange={(event) => field.handleChange(event.target.value)}
+                                    placeholder={{ de: 'Präferenzen, durch Komma getrennt', en: 'Preferences (comma-separated)' }[locale]}
+                                    rows={3}
+                                />
+                            </div>
+                        )}
+                    </form.Field>
+                ) : null}
 
-                {restrictionsEnabled ? (
+                {restrictionsEnabled && pendingAmendment == null ? (
                     <div className="grid gap-3">
                         <div className="grid gap-1">
                             <span className="text-sm font-medium">{{ de: 'Einschränkungen', en: 'Restrictions' }[locale]}</span>

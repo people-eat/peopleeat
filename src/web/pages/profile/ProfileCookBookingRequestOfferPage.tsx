@@ -25,7 +25,10 @@ import { Textarea } from '../../components/base/textarea';
 import { BookingRequestOfferAttentionBanner } from '../../components/BookingRequestOfferAttentionBanner';
 import { BookingRequestOfferCallTab } from '../../components/BookingRequestOfferCallTab';
 import { BookingRequestOfferChat } from '../../components/BookingRequestOfferChat';
-import { BookingRequestOfferParticipantAmendmentCookPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
+import {
+    BookingRequestOfferParticipantAmendmentCookPanel,
+    BookingRequestOfferParticipantAmendmentCookReview,
+} from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import { BookingRequestOfferCostOverviewPanel } from '../../components/BookingRequestOfferPriceConfigurationPanel';
 import { bookingRequestOfferStatusClassName, bookingRequestOfferStatusLabel } from '../../components/bookingRequestOfferStatus';
 import { BookingRequestOfferTestimonialPanel } from '../../components/BookingRequestOfferTestimonialPanel';
@@ -191,6 +194,8 @@ export function ProfileCookBookingRequestOfferPage({
 
     const canNegotiate = offer.status === 'USER_NEEDS_TO_ACCEPT' || offer.status === 'COOK_NEEDS_TO_ACCEPT';
     const canReAccept = offer.status === 'COOK_NEEDS_TO_ACCEPT';
+    const pendingParticipantAmendment = offer.participantAmendment;
+    const actionsBusy = busy || amendmentBusy;
 
     async function onAccept() {
         if (busy) return;
@@ -226,11 +231,65 @@ export function ProfileCookBookingRequestOfferPage({
         }
     }
 
+    async function onAcceptParticipantAmendment() {
+        const result = await acceptParticipantAmendment({ bookingRequestOfferId });
+        if (result.error || !result.data?.user.cook?.bookingRequestOfferParticipantAmendmentAccept.success) {
+            toast.error(
+                {
+                    de: 'Die Teilnehmeränderung konnte nicht angenommen werden.',
+                    en: 'Could not accept the participant change.',
+                }[locale],
+            );
+            return;
+        }
+        toast.success(
+            {
+                de: 'Teilnehmeränderung angenommen.',
+                en: 'Participant change accepted.',
+            }[locale],
+        );
+    }
+
+    async function onDeclineParticipantAmendment() {
+        const result = await declineParticipantAmendment({ bookingRequestOfferId });
+        if (result.error || !result.data?.user.cook?.bookingRequestOfferParticipantAmendmentDecline.success) {
+            toast.error(
+                {
+                    de: 'Die Teilnehmeränderung konnte nicht abgelehnt werden.',
+                    en: 'Could not decline the participant change.',
+                }[locale],
+            );
+            return;
+        }
+        toast.success(
+            {
+                de: 'Teilnehmeränderung abgelehnt.',
+                en: 'Participant change declined.',
+            }[locale],
+        );
+    }
+
     return (
         <ProfilePinnedFooterLayout
             className="@container min-w-0"
             contentScroll={false}
             contentClassName="flex w-full min-w-0 flex-col pb-0"
+            footer={
+                pendingParticipantAmendment != null ? (
+                    <>
+                        <Button type="button" variant="outline" disabled={actionsBusy} onClick={() => void onDeclineParticipantAmendment()}>
+                            {{ de: 'Ablehnen', en: 'Decline' }[locale]}
+                        </Button>
+                        <Button type="button" disabled={actionsBusy} onClick={() => void onAcceptParticipantAmendment()}>
+                            {{ de: 'Änderung annehmen', en: 'Accept change' }[locale]}
+                        </Button>
+                    </>
+                ) : canReAccept ? (
+                    <Button type="button" disabled={busy} onClick={() => void onAccept()}>
+                        {{ de: 'Änderungen bestätigen', en: 'Confirm changes' }[locale]}
+                    </Button>
+                ) : undefined
+            }
         >
             <div className="grid shrink-0 gap-2 px-4">
                 <div className="flex items-center justify-end gap-2">
@@ -265,6 +324,29 @@ export function ProfileCookBookingRequestOfferPage({
                         </DropdownMenu>
                     ) : null}
                 </div>
+                {pendingParticipantAmendment != null ? (
+                    <BookingRequestOfferParticipantAmendmentCookReview
+                        locale={locale}
+                        amendment={pendingParticipantAmendment}
+                        busy={actionsBusy}
+                        onAccept={onAcceptParticipantAmendment}
+                        onDecline={onDeclineParticipantAmendment}
+                        showActions={false}
+                    />
+                ) : null}
+                {canReAccept && pendingParticipantAmendment == null ? (
+                    <StatusAlert tone="warning" title={{ de: 'Änderungen bestätigen', en: 'Confirm changes' }[locale]}>
+                        {offer.isPriceAutoAdjusted
+                            ? {
+                                  de: 'Dein Gast hat etwas geändert und der Preis wurde automatisch angepasst (z. B. Fahrtkosten). Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
+                                  en: 'Your guest changed something and the price was adjusted automatically (for example travel costs). Confirm the changes so the booking can continue. You can still tweak the price first.',
+                              }[locale]
+                            : {
+                                  de: 'Dein Gast hat eine Änderung gewünscht. Bestätige sie, damit die Buchung weitergehen kann.',
+                                  en: 'Your guest requested a change. Confirm it so the booking can continue.',
+                              }[locale]}
+                    </StatusAlert>
+                ) : null}
                 {pendingIncomingCall ? (
                     <BookingRequestOfferAttentionBanner
                         message={
@@ -419,45 +501,9 @@ export function ProfileCookBookingRequestOfferPage({
                         bookingRequestOfferId={bookingRequestOfferId}
                         locale={locale}
                         canNegotiate={canNegotiate}
-                        canReAccept={canReAccept}
-                        busy={busy || amendmentBusy}
-                        onAccept={() => void onAccept()}
-                        onAcceptParticipantAmendment={async () => {
-                            const result = await acceptParticipantAmendment({ bookingRequestOfferId });
-                            if (result.error || !result.data?.user.cook?.bookingRequestOfferParticipantAmendmentAccept.success) {
-                                toast.error(
-                                    {
-                                        de: 'Die Teilnehmeränderung konnte nicht angenommen werden.',
-                                        en: 'Could not accept the participant change.',
-                                    }[locale],
-                                );
-                                return;
-                            }
-                            toast.success(
-                                {
-                                    de: 'Teilnehmeränderung angenommen.',
-                                    en: 'Participant change accepted.',
-                                }[locale],
-                            );
-                        }}
-                        onDeclineParticipantAmendment={async () => {
-                            const result = await declineParticipantAmendment({ bookingRequestOfferId });
-                            if (result.error || !result.data?.user.cook?.bookingRequestOfferParticipantAmendmentDecline.success) {
-                                toast.error(
-                                    {
-                                        de: 'Die Teilnehmeränderung konnte nicht abgelehnt werden.',
-                                        en: 'Could not decline the participant change.',
-                                    }[locale],
-                                );
-                                return;
-                            }
-                            toast.success(
-                                {
-                                    de: 'Teilnehmeränderung abgelehnt.',
-                                    en: 'Participant change declined.',
-                                }[locale],
-                            );
-                        }}
+                        busy={actionsBusy}
+                        onAcceptParticipantAmendment={onAcceptParticipantAmendment}
+                        onDeclineParticipantAmendment={onDeclineParticipantAmendment}
                         onPreparationsComplete={async () => {
                             const result = await completePreparations({ bookingRequestOfferId });
                             if (result.error || !result.data?.user.cook?.bookingRequestOfferPreparationsComplete.success) {
@@ -573,9 +619,7 @@ function OfferTabPanel({
     bookingRequestOfferId,
     locale,
     canNegotiate,
-    canReAccept,
     busy,
-    onAccept,
     onAcceptParticipantAmendment,
     onDeclineParticipantAmendment,
     onPreparationsComplete,
@@ -584,9 +628,7 @@ function OfferTabPanel({
     bookingRequestOfferId: string;
     locale: Locale;
     canNegotiate: boolean;
-    canReAccept: boolean;
     busy: boolean;
-    onAccept: () => void;
     onAcceptParticipantAmendment: () => Promise<void>;
     onDeclineParticipantAmendment: () => Promise<void>;
     onPreparationsComplete: () => Promise<void>;
@@ -599,28 +641,10 @@ function OfferTabPanel({
     const menusEditLabel = hasSuggestedMenus
         ? { de: 'Menüvorschlag ändern', en: 'Suggest another menu' }[locale]
         : { de: 'Menü vorschlagen', en: 'Suggest a menu' }[locale];
+    const canReAccept = offer.status === 'COOK_NEEDS_TO_ACCEPT';
 
     return (
         <div className="grid w-full min-w-0 gap-16">
-            {canReAccept ? (
-                <StatusAlert
-                    tone="info"
-                    title={{ de: 'Änderungen bestätigen', en: 'Confirm changes' }[locale]}
-                    action={
-                        <Button type="button" size="sm" disabled={busy} onClick={onAccept}>
-                            {{ de: 'Bestätigen', en: 'Confirm' }[locale]}
-                        </Button>
-                    }
-                >
-                    {
-                        {
-                            de: 'Dein Gast hat eine Änderung gewünscht. Bitte bestätige sie, damit er den Abend buchen kann.',
-                            en: 'Your guest requested a change. Please confirm it so they can book the evening.',
-                        }[locale]
-                    }
-                </StatusAlert>
-            ) : null}
-
             <BookingRequestOfferParticipantAmendmentCookPanel
                 locale={locale}
                 amendment={offer.participantAmendment}
@@ -630,6 +654,7 @@ function OfferTabPanel({
                 onAccept={onAcceptParticipantAmendment}
                 onDecline={onDeclineParticipantAmendment}
                 onPreparationsComplete={onPreparationsComplete}
+                amendmentActionsElsewhere
             />
 
             <section className="grid gap-4">
@@ -676,12 +701,12 @@ function OfferTabPanel({
             </section>
 
             <section className="grid gap-4">
-                {offer.isPriceAutoAdjusted ? (
+                {canReAccept && offer.isPriceAutoAdjusted ? (
                     <StatusAlert tone="info">
                         {
                             {
-                                de: 'Der Kunde hat ein paar Änderungen gemacht, deshalb wurde der Preis automatisch angepasst. Du kannst ihn jederzeit nochmal anpassen. Bestätige einfach kurz die Änderungen, dann geht es mit der Buchung weiter.',
-                                en: 'The customer made a few changes, so the price was adjusted automatically. Feel free to tweak it if needed. Just confirm the changes and you can proceed with the booking.',
+                                de: 'Der Preis wurde automatisch angepasst (meist Fahrtkosten nach Adressänderung). Du kannst ihn noch ändern, bevor du oben bestätigst.',
+                                en: 'The price was adjusted automatically (usually travel costs after an address change). You can still edit it before confirming above.',
                             }[locale]
                         }
                     </StatusAlert>

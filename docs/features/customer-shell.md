@@ -83,9 +83,10 @@ booking requests (full subtree), gift cards, and support. Other `/profile/*` pat
   `scrollbar-gutter-stable` — [theme.md](../styles/theme.md)). Path changes reset that pane (and pinned-footer bodies) to the top —
   [theme.md — Route scroll reset](../styles/theme.md#route-scroll-reset). Offer chat fills the pane with overflow breakout so its composer
   stays pinned to the shell bottom ([styles/chat.md](../styles/chat.md)).
-- **Pinned action footers:** booking-request detail uses `ProfilePinnedFooterLayout` for edit / cancel; booking-request edit uses it for
-  Cancel / Save; customer offer detail uses it for Accept on the Offer tab (same pattern as cook meal/menu view). Do not use CSS sticky for
-  shell action bars — see [conventions](../conventions.md#profile-pinned-action-footers).
+- **Pinned action footers:** booking-request detail uses `ProfilePinnedFooterLayout` for edit (or **Change participants** after dual accept
+  when the amendment toggle is on) / cancel; booking-request edit uses it for Cancel / Save; customer offer detail uses it for Accept on the
+  Offer tab (same pattern as cook meal/menu view). Do not use CSS sticky for shell action bars — see
+  [conventions](../conventions.md#profile-pinned-action-footers).
 - Admin footer link: `isAdmin` from the profile loader.
 - Overview model: `src/web/pages/profilePageCustomerOverview.ts` → `ProfilePageCustomer` (Next dinner uses `CustomerBookingRequestCard`).
 - Key files: `src/web/pages/profile/ProfileLayout.tsx` (`CustomerShell`, `ProfileAssistantPane`), `src/web/components/CustomerSidebar.tsx`,

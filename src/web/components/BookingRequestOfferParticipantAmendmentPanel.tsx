@@ -1,6 +1,7 @@
+import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
-import { bookingRequestParticipantsFromCounts, formatCurrency, formatParticipants } from '../../shared';
+import { formatCurrency, formatParticipants } from '../../shared';
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import type { Locale } from '../utils/locale';
 import {
@@ -14,8 +15,6 @@ import {
     AlertDialogTitle,
 } from './base/alert-dialog';
 import { Button } from './base/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './base/dialog';
-import { Input } from './base/input';
 import { StatusAlert } from './base/status-alert';
 
 type AmendmentPreview = {
@@ -29,23 +28,16 @@ type AmendmentPreview = {
     payoutCentsCookAfter: number;
 };
 
-type CurrentParticipant = { type: 'ADULT' | 'DISCOUNTED'; name: string; restrictions: string[] };
-
 export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
     locale: Locale;
     canRequest: boolean;
     preparationsCompletedAt: string | null;
     amendment: AmendmentPreview | null;
-    currentParticipants: CurrentParticipant[];
-    busy: boolean;
-    onPropose: (participants: CurrentParticipant[]) => Promise<void>;
+    bookingRequestId: string;
 }) {
     const enabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT');
-    const [open, setOpen] = useState(false);
-    const [adultCount, setAdultCount] = useState(() => props.currentParticipants.filter((p) => p.type === 'ADULT').length || 1);
-    const [childCount, setChildCount] = useState(() => props.currentParticipants.filter((p) => p.type === 'DISCOUNTED').length);
 
-    if (!enabled) return null;
+    if (!enabled && !props.amendment && !props.preparationsCompletedAt) return null;
 
     if (props.amendment) {
         const adults = props.amendment.participants.filter((p) => p.type === 'ADULT').length;
@@ -75,95 +67,76 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
         );
     }
 
-    if (!props.canRequest) return null;
+    if (!enabled || !props.canRequest) return null;
 
     return (
-        <>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground">
+                {
                     {
-                        {
-                            de: 'Du möchtest die Teilnehmerzahl nach der Annahme ändern?',
-                            en: 'Need to change the number of participants after accepting?',
-                        }[props.locale]
-                    }
-                </p>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={props.busy}
-                    onClick={() => {
-                        setAdultCount(props.currentParticipants.filter((p) => p.type === 'ADULT').length || 1);
-                        setChildCount(props.currentParticipants.filter((p) => p.type === 'DISCOUNTED').length);
-                        setOpen(true);
-                    }}
+                        de: 'Du möchtest die Teilnehmerzahl nach der Annahme ändern? Nutze die Bearbeitung der Anfrage.',
+                        en: 'Need to change the number of participants after accepting? Use Edit on the booking request.',
+                    }[props.locale]
+                }
+            </p>
+            <Button type="button" variant="outline" size="sm" asChild>
+                <Link
+                    to="/{-$locale}/profile/booking-requests/$bookingRequestId/edit"
+                    params={{ bookingRequestId: props.bookingRequestId }}
                 >
                     {{ de: 'Teilnehmer ändern', en: 'Change participants' }[props.locale]}
-                </Button>
-            </div>
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>{{ de: 'Teilnehmerzahl ändern', en: 'Change participants' }[props.locale]}</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-4">
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Dein Koch muss die Änderung bestätigen. Bei weniger Personen erfolgt eine Erstattung, bei mehr Personen eine Nachzahlung.',
-                                    en: 'Your chef must confirm the change. Fewer guests means a refund; more guests means an additional charge.',
-                                }[props.locale]
-                            }
-                        </p>
-                        <div className="grid gap-2">
-                            <label htmlFor="amendment-adults" className="text-sm font-medium">
-                                {{ de: 'Erwachsene', en: 'Adults' }[props.locale]}
-                            </label>
-                            <Input
-                                id="amendment-adults"
-                                type="number"
-                                min={1}
-                                value={adultCount}
-                                onChange={(event) => setAdultCount(Math.max(1, Number(event.target.value) || 1))}
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <label htmlFor="amendment-children" className="text-sm font-medium">
-                                {{ de: 'Kinder', en: 'Children' }[props.locale]}
-                            </label>
-                            <Input
-                                id="amendment-children"
-                                type="number"
-                                min={0}
-                                value={childCount}
-                                onChange={(event) => setChildCount(Math.max(0, Number(event.target.value) || 0))}
-                            />
-                        </div>
+                </Link>
+            </Button>
+        </div>
+    );
+}
+
+export function BookingRequestOfferParticipantAmendmentCookReview(props: {
+    locale: Locale;
+    amendment: AmendmentPreview;
+    busy: boolean;
+    onAccept: () => Promise<void>;
+    onDecline: () => Promise<void>;
+    /** When false, omit Accept/Decline (e.g. already in the page footer). */
+    showActions?: boolean;
+}) {
+    const showActions = props.showActions !== false;
+    return (
+        <StatusAlert
+            tone="warning"
+            title={{ de: 'Teilnehmeränderung prüfen', en: 'Review participant change' }[props.locale]}
+            action={
+                showActions ? (
+                    <div className="flex flex-wrap gap-2">
+                        <Button type="button" size="sm" variant="outline" disabled={props.busy} onClick={() => void props.onDecline()}>
+                            {{ de: 'Ablehnen', en: 'Decline' }[props.locale]}
+                        </Button>
+                        <Button type="button" size="sm" disabled={props.busy} onClick={() => void props.onAccept()}>
+                            {{ de: 'Annehmen', en: 'Accept' }[props.locale]}
+                        </Button>
                     </div>
-                    <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                            {{ de: 'Abbrechen', en: 'Cancel' }[props.locale]}
-                        </Button>
-                        <Button
-                            type="button"
-                            disabled={props.busy}
-                            onClick={async () => {
-                                const participants = bookingRequestParticipantsFromCounts({
-                                    adultCount,
-                                    discountedCount: childCount,
-                                    locale: props.locale,
-                                });
-                                await props.onPropose(participants);
-                                setOpen(false);
-                            }}
-                        >
-                            {{ de: 'Vorschlag senden', en: 'Send proposal' }[props.locale]}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </>
+                ) : undefined
+            }
+        >
+            {
+                {
+                    de: `Neu: ${formatParticipants(
+                        {
+                            adultCount: props.amendment.participants.filter((p) => p.type === 'ADULT').length,
+                            discountedCount: props.amendment.participants.filter((p) => p.type === 'DISCOUNTED').length,
+                        },
+                        { locale: props.locale },
+                    )}. Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. Die Buchung bleibt bestätigt; Zahlung oder Erstattung folgen automatisch nach deiner Entscheidung.`,
+                    en: `New: ${formatParticipants(
+                        {
+                            adultCount: props.amendment.participants.filter((p) => p.type === 'ADULT').length,
+                            discountedCount: props.amendment.participants.filter((p) => p.type === 'DISCOUNTED').length,
+                        },
+                        { locale: props.locale },
+                    )}. Payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. The booking stays confirmed; charge or refund runs automatically after you decide.`,
+                }[props.locale]
+            }
+        </StatusAlert>
     );
 }
 
@@ -176,55 +149,33 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
     onAccept: () => Promise<void>;
     onDecline: () => Promise<void>;
     onPreparationsComplete: () => Promise<void>;
+    /** When true, amendment Accept/Decline are rendered elsewhere (page chrome / footer). */
+    amendmentActionsElsewhere?: boolean;
 }) {
     const enabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT');
     const [preparationsConfirmOpen, setPreparationsConfirmOpen] = useState(false);
     const [preparationsConfirmBusy, setPreparationsConfirmBusy] = useState(false);
 
-    if (!enabled) return null;
+    // Pending amendments stay visible even when the rollout toggle is off.
+    if (!props.amendment && !enabled) return null;
     if (!props.amendment && !props.preparationsCompletedAt && !props.canCompletePreparations) return null;
 
     const confirmBusy = preparationsConfirmBusy || props.busy;
+    const showPrep = enabled || props.preparationsCompletedAt != null;
 
     return (
         <div className="grid gap-3">
-            {props.amendment ? (
-                <StatusAlert
-                    tone="warning"
-                    title={{ de: 'Teilnehmeränderung prüfen', en: 'Review participant change' }[props.locale]}
-                    action={
-                        <div className="flex flex-wrap gap-2">
-                            <Button type="button" size="sm" variant="outline" disabled={props.busy} onClick={() => void props.onDecline()}>
-                                {{ de: 'Ablehnen', en: 'Decline' }[props.locale]}
-                            </Button>
-                            <Button type="button" size="sm" disabled={props.busy} onClick={() => void props.onAccept()}>
-                                {{ de: 'Annehmen', en: 'Accept' }[props.locale]}
-                            </Button>
-                        </div>
-                    }
-                >
-                    {
-                        {
-                            de: `Neu: ${formatParticipants(
-                                {
-                                    adultCount: props.amendment.participants.filter((p) => p.type === 'ADULT').length,
-                                    discountedCount: props.amendment.participants.filter((p) => p.type === 'DISCOUNTED').length,
-                                },
-                                { locale: props.locale },
-                            )}. Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}.`,
-                            en: `New: ${formatParticipants(
-                                {
-                                    adultCount: props.amendment.participants.filter((p) => p.type === 'ADULT').length,
-                                    discountedCount: props.amendment.participants.filter((p) => p.type === 'DISCOUNTED').length,
-                                },
-                                { locale: props.locale },
-                            )}. Payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}.`,
-                        }[props.locale]
-                    }
-                </StatusAlert>
+            {props.amendment && !props.amendmentActionsElsewhere ? (
+                <BookingRequestOfferParticipantAmendmentCookReview
+                    locale={props.locale}
+                    amendment={props.amendment}
+                    busy={props.busy}
+                    onAccept={props.onAccept}
+                    onDecline={props.onDecline}
+                />
             ) : null}
 
-            {props.preparationsCompletedAt ? (
+            {showPrep && props.preparationsCompletedAt ? (
                 <StatusAlert
                     tone="success"
                     title={{ de: 'Einkauf und Vorbereitung erledigt', en: 'Shopping and prep marked done' }[props.locale]}
@@ -236,7 +187,9 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
                         }[props.locale]
                     }
                 </StatusAlert>
-            ) : props.canCompletePreparations ? (
+            ) : null}
+
+            {showPrep && !props.preparationsCompletedAt && props.canCompletePreparations ? (
                 <>
                     <StatusAlert
                         tone="info"

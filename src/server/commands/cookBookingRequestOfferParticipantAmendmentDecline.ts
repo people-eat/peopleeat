@@ -12,7 +12,6 @@ import type {
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { bookingRequestOfferParticipantAmendmentDeclineEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { emailAddressPresent } from '../utils/emailAddressPresent';
-import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function cookBookingRequestOfferParticipantAmendmentDecline(
@@ -27,11 +26,6 @@ export async function cookBookingRequestOfferParticipantAmendmentDecline(
     const { bookingRequestOfferId } = args;
 
     try {
-        const enabled = await featureToggleIsEnabled('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT', serverRuntime, cookId);
-        if (!enabled) {
-            throw new Error('cookBookingRequestOfferParticipantAmendmentDecline: feature is disabled');
-        }
-
         const [row] = await serverRuntime.db
             .select({
                 offer: bookingRequestOffers,

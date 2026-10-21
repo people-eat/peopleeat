@@ -5,18 +5,24 @@ refund. Cooks can lock further changes by marking groceries / preparations done.
 
 ## Behavior
 
-1. On a dual-accepted offer (payment `EMPTY` / `SETUP` / `PAYED`, event still ahead), the customer can **propose** a new adult/child count
+1. **Before dual accept**, customers still edit the booking request (occasion, date, location, participants, …). Material changes reset cook
+   acceptance (`COOK_NEEDS_TO_ACCEPT`). Address changes may **auto-adjust travel expenses** (`isPriceAutoAdjusted`); the cook confirms with
+   **Confirm changes** (not the amendment Accept flow).
+2. **After dual accept**, participant count changes use this amendment path only. Entry is the booking-request **Edit** / **Change
+   participants** control (same edit route, participants-only mode). The offer page shows status and links back to that edit path.
+3. On a dual-accepted offer (payment `EMPTY` / `SETUP` / `PAYED`, event still ahead), the customer can **propose** a new adult/child count
    when the feature toggle is on and preparations are not locked.
-2. The booking stays dual-accepted. Live participants and money stay unchanged until the cook decides.
-3. The cook sees the proposal (before/after headcount and payout / host price) and can **accept** or **decline**.
-4. On accept, the platform replaces participants, scales the locked menu total by paid-headcount, recomputes fees, and:
+4. The booking stays dual-accepted. Live participants and money stay unchanged until the cook decides.
+5. The cook sees the proposal on every offer tab (banner + pinned footer **Accept change** / **Decline**) with before/after headcount and
+   payout. Pending proposals stay actionable even if the rollout toggle is turned off mid-flight.
+6. On accept, the platform replaces participants, scales the locked menu total by paid-headcount, recomputes fees, and:
    - `SETUP` / unpaid pull path: updates offer cents only (pull job charges the new total later)
    - `EMPTY`: cancels an open PaymentIntent when present and re-prepares payment
    - `PAYED`: partial customer refund or off-session delta charge, plus Connect transfer reverse / top-up for the cook payout delta
-5. On decline, the pending proposal is cleared; the booking is unchanged.
-6. The cook can mark **shopping / preparations done** (confirmation dialog first). After that, the customer cannot open a new amendment.
+7. On decline, the pending proposal is cleared; the booking is unchanged.
+8. The cook can mark **shopping / preparations done** (confirmation dialog first). After that, the customer cannot open a new amendment.
    Admins can clear the lock for ops.
-7. Blocked when the event is past, the request is canceled, or payment is `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED`.
+9. Blocked when the event is past, the request is canceled, or payment is `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED`.
 
 ## Decisions
 
@@ -26,13 +32,16 @@ refund. Cooks can lock further changes by marking groceries / preparations done.
 | ----------------------------------------- | --------------------------------------------------------------------------------------- |
 | Auto-accept decreases with instant refund | Rejected — cooks may require a minimum headcount                                        |
 | Free customer edit after accept           | Rejected — resets acceptance / money without cook consent                               |
+| Reuse `COOK_NEEDS_TO_ACCEPT` after pay    | Rejected — would clear dual accept and break paid / pull payment state                  |
 | Change per-person price on amendment      | Rejected for v1 — scale locked menu total only                                          |
 | Restore gift-card balance on decrease     | Rejected for v1 — discount cents stay fixed; only card `totalCentsCustomer` deltas move |
 | Customer cancel of a pending amendment    | Deferred — cook decline is enough for v1                                                |
 
 ### Chosen
 
-Cook-gated amendment with preparations lock, feature-toggle rollout, and Stripe delta only on cook accept. Admin can clear the prep lock.
+Cook-gated amendment with preparations lock, feature-toggle rollout, and Stripe delta only on cook accept. Keep the booking-request edit
+route as the customer entry after accept (participants-only). Keep pre-accept **Confirm changes** (+ optional travel auto-adjust) separate
+from post-accept **Accept change**. Admin can clear the prep lock.
 
 ## Next steps
 
@@ -51,8 +60,10 @@ Cook-gated amendment with preparations lock, feature-toggle rollout, and Stripe 
   `refundId`; `paymentIntentPaymentMethodIdFindOne`
 - Commands: `userBookingRequestOfferParticipantAmendmentCreate`, `cookBookingRequestOfferParticipantAmendmentAccept` / `Decline`,
   `cookBookingRequestOfferPreparationsComplete`, `adminBookingRequestOfferPreparationsClear`
-- Emails: cook request; customer accept/decline (`BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_*` purposes)
-- UI: `BookingRequestOfferParticipantAmendmentPanel` on customer / cook / admin offer pages
+- Emails: cook request (deep link `?tab=offer`); customer accept/decline (`BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_*` purposes)
+- UI: customer propose via `ProfileCustomerBookingRequestEditPage` (amendment mode) + status on booking-request / offer pages; cook
+  Accept/Decline in offer page chrome + footer (`BookingRequestOfferParticipantAmendmentCookReview`); prep controls on cook Offer tab; admin
+  prep clear on admin offer page
 
 See [booking-payment.md](./booking-payment.md), [stripe-payment.md](../architecture/stripe-payment.md),
 [admin-feature-toggles.md](./admin-feature-toggles.md).

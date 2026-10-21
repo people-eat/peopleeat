@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { bookingRequestPriceClassLabel, formatDateTime, formatParticipants } from '../../../shared';
+import { bookingRequestPriceClassLabel, formatCurrency, formatDateTime, formatParticipants } from '../../../shared';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -39,6 +39,7 @@ import {
     ProfileBookingRequestDiscountUpdateDocument,
     ProfileCustomerBookingRequestPageUpdatesDocument,
 } from '../../graphql/generated';
+import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
@@ -135,6 +136,7 @@ export function ProfileCustomerBookingRequestPage({
 
     const [, cancelRequest] = useMutation(ProfileBookingRequestCancelDocument);
     const [, updateDiscount] = useMutation(ProfileBookingRequestDiscountUpdateDocument);
+    const participantAmendmentEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT');
 
     if (request == null || user == null) {
         return null;
@@ -142,11 +144,16 @@ export function ProfileCustomerBookingRequestPage({
 
     const canCancel = CANCELABLE_STATUSES.has(request.status) && !request.canceledAt;
     const canUpdate = UPDATABLE_STATUSES.has(request.status) && !request.canceledAt;
+    const amendableOffer = request.offers.find((offer) => offer.canRequestParticipantAmendment) ?? null;
+    const pendingAmendmentOffer = request.offers.find((offer) => offer.participantAmendment != null) ?? null;
+    const canAmendParticipants = participantAmendmentEnabled && amendableOffer != null;
+    const canEdit = canUpdate || canAmendParticipants;
     const canEditDiscount = canUpdate;
     const offers = request.offers;
     const activeTab = search.tab === 'support' || search.tab === 'discount' ? search.tab : 'overview';
     const supportRequest = request.supportRequest ?? null;
-    const showFooter = canUpdate || canCancel;
+    const showFooter = canEdit || canCancel;
+    const pendingAmendment = pendingAmendmentOffer?.participantAmendment ?? null;
     const statusForPill = request.canceledAt ? 'CANCELED' : request.status;
     const displayName = user.firstName.trim().length > 0 ? user.firstName : '?';
     const priceClassLabel = request.priceClassType != null ? bookingRequestPriceClassLabel(request.priceClassType, locale) : null;
@@ -203,10 +210,12 @@ export function ProfileCustomerBookingRequestPage({
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             ) : null}
-                            {canUpdate ? (
+                            {canEdit ? (
                                 <Button type="button" asChild>
                                     <Link to="/{-$locale}/profile/booking-requests/$bookingRequestId/edit" params={{ bookingRequestId }}>
-                                        {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                        {canUpdate
+                                            ? { de: 'Bearbeiten', en: 'Edit' }[locale]
+                                            : { de: 'Teilnehmer ändern', en: 'Change participants' }[locale]}
                                     </Link>
                                 </Button>
                             ) : null}
@@ -242,6 +251,30 @@ export function ProfileCustomerBookingRequestPage({
                     </div>
 
                     <TabsContent value="overview" className="grid gap-6">
+                        {pendingAmendment != null ? (
+                            <StatusAlert tone="info" title={{ de: 'Änderung vorgeschlagen', en: 'Change proposed' }[locale]}>
+                                {
+                                    {
+                                        de: `Dein Vorschlag (${formatParticipants(
+                                            {
+                                                adultCount: pendingAmendment.participants.filter((p) => p.type === 'ADULT').length,
+                                                discountedCount: pendingAmendment.participants.filter((p) => p.type === 'DISCOUNTED')
+                                                    .length,
+                                            },
+                                            { locale },
+                                        )}) wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
+                                        en: `Your proposal (${formatParticipants(
+                                            {
+                                                adultCount: pendingAmendment.participants.filter((p) => p.type === 'ADULT').length,
+                                                discountedCount: pendingAmendment.participants.filter((p) => p.type === 'DISCOUNTED')
+                                                    .length,
+                                            },
+                                            { locale },
+                                        )}) is waiting for the chef to confirm. New host price: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
+                                    }[locale]
+                                }
+                            </StatusAlert>
+                        ) : null}
                         <section className="grid gap-4">
                             <header className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
                                 <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Angebote', en: 'Offers' }[locale]}</h2>

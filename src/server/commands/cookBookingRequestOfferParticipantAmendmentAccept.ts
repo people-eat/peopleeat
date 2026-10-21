@@ -16,7 +16,6 @@ import {
     bookingRequestOfferParticipantAmendmentPaymentAllowed,
 } from '../utils/bookingRequestOfferParticipantAmendmentGates';
 import { emailAddressPresent } from '../utils/emailAddressPresent';
-import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function cookBookingRequestOfferParticipantAmendmentAccept(
@@ -31,11 +30,6 @@ export async function cookBookingRequestOfferParticipantAmendmentAccept(
     const { bookingRequestOfferId } = args;
 
     try {
-        const enabled = await featureToggleIsEnabled('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT', serverRuntime, cookId);
-        if (!enabled) {
-            throw new Error('cookBookingRequestOfferParticipantAmendmentAccept: feature is disabled');
-        }
-
         const [row] = await serverRuntime.db
             .select({
                 offer: bookingRequestOffers,

@@ -41,6 +41,22 @@ fragment ProfileCustomerBookingRequestPageUser on User {
             testimonialMissing
             totalWithoutDiscountsCentsCustomer
             totalCentsCustomer
+            preparationsCompletedAt
+            canRequestParticipantAmendment
+            participantAmendment {
+                requestedAt
+                participants {
+                    type
+                    name
+                    restrictions
+                }
+                menuPriceCentsBefore
+                menuPriceCentsAfter
+                totalCentsCustomerBefore
+                totalCentsCustomerAfter
+                payoutCentsCookBefore
+                payoutCentsCookAfter
+            }
             configuredMenu {
                 title
             }
@@ -161,6 +177,18 @@ mutation ProfileBookingRequestUpdate(
             participants: $participants
             exactEventAddress: $exactEventAddress
         ) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestParticipantAmendmentCreate(
+    $bookingRequestOfferId: ID!
+    $participants: [UserBookingRequestParticipantCreate!]!
+) {
+    user {
+        bookingRequestOfferParticipantAmendmentCreate(bookingRequestOfferId: $bookingRequestOfferId, participants: $participants) {
             success
             referenceId
         }

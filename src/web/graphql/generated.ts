@@ -19658,6 +19658,18 @@ export type GqlCProfileCustomerBookingRequestPageUserFragment = {
             testimonialMissing: boolean;
             totalWithoutDiscountsCentsCustomer: number;
             totalCentsCustomer: number | null;
+            preparationsCompletedAt: string | null;
+            canRequestParticipantAmendment: boolean;
+            participantAmendment: {
+                requestedAt: string;
+                menuPriceCentsBefore: number;
+                menuPriceCentsAfter: number;
+                totalCentsCustomerBefore: number;
+                totalCentsCustomerAfter: number;
+                payoutCentsCookBefore: number;
+                payoutCentsCookAfter: number;
+                participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+            } | null;
             configuredMenu: { title: string } | null;
             cook: {
                 cookId: string;
@@ -19734,6 +19746,18 @@ export type GqlCProfileCustomerBookingRequestPageQuery = {
                     testimonialMissing: boolean;
                     totalWithoutDiscountsCentsCustomer: number;
                     totalCentsCustomer: number | null;
+                    preparationsCompletedAt: string | null;
+                    canRequestParticipantAmendment: boolean;
+                    participantAmendment: {
+                        requestedAt: string;
+                        menuPriceCentsBefore: number;
+                        menuPriceCentsAfter: number;
+                        totalCentsCustomerBefore: number;
+                        totalCentsCustomerAfter: number;
+                        payoutCentsCookBefore: number;
+                        payoutCentsCookAfter: number;
+                        participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                    } | null;
                     configuredMenu: { title: string } | null;
                     cook: {
                         cookId: string;
@@ -19811,6 +19835,18 @@ export type GqlCProfileCustomerBookingRequestPageUpdatesSubscription = {
                 testimonialMissing: boolean;
                 totalWithoutDiscountsCentsCustomer: number;
                 totalCentsCustomer: number | null;
+                preparationsCompletedAt: string | null;
+                canRequestParticipantAmendment: boolean;
+                participantAmendment: {
+                    requestedAt: string;
+                    menuPriceCentsBefore: number;
+                    menuPriceCentsAfter: number;
+                    totalCentsCustomerBefore: number;
+                    totalCentsCustomerAfter: number;
+                    payoutCentsCookBefore: number;
+                    payoutCentsCookAfter: number;
+                    participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                } | null;
                 configuredMenu: { title: string } | null;
                 cook: {
                     cookId: string;
@@ -19885,6 +19921,15 @@ export type GqlCProfileBookingRequestUpdateMutationVariables = Exact<{
 }>;
 
 export type GqlCProfileBookingRequestUpdateMutation = { user: { bookingRequestUpdate: { success: boolean; referenceId: string | null } } };
+
+export type GqlCProfileCustomerBookingRequestParticipantAmendmentCreateMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+    participants: Array<Schema.GqlCUserBookingRequestParticipantCreate> | Schema.GqlCUserBookingRequestParticipantCreate;
+}>;
+
+export type GqlCProfileCustomerBookingRequestParticipantAmendmentCreateMutation = {
+    user: { bookingRequestOfferParticipantAmendmentCreate: { success: boolean; referenceId: string | null } };
+};
 
 export type GqlCProfileCustomerBookingRequestsPageUserFragment = {
     userId: string;
@@ -31810,6 +31855,36 @@ export const ProfileCustomerBookingRequestPageUserFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'testimonialMissing' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'preparationsCompletedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'canRequestParticipantAmendment' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'participantAmendment' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'participants' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'restrictions' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                    ],
+                                                },
+                                            },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'configuredMenu' },
@@ -77793,6 +77868,36 @@ export const ProfileCustomerBookingRequestPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'testimonialMissing' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'preparationsCompletedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'canRequestParticipantAmendment' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'participantAmendment' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'participants' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'restrictions' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                    ],
+                                                },
+                                            },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'configuredMenu' },
@@ -78031,6 +78136,36 @@ export const ProfileCustomerBookingRequestPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'testimonialMissing' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'preparationsCompletedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'canRequestParticipantAmendment' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'participantAmendment' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'participants' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'restrictions' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                    ],
+                                                },
+                                            },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'configuredMenu' },
@@ -78492,6 +78627,77 @@ export const ProfileBookingRequestUpdateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileBookingRequestUpdateMutation, GqlCProfileBookingRequestUpdateMutationVariables>;
+export const ProfileCustomerBookingRequestParticipantAmendmentCreateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCustomerBookingRequestParticipantAmendmentCreate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'participants' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'ListType',
+                            type: {
+                                kind: 'NonNullType',
+                                type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestParticipantCreate' } },
+                            },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferParticipantAmendmentCreate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'participants' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'participants' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCustomerBookingRequestParticipantAmendmentCreateMutation,
+    GqlCProfileCustomerBookingRequestParticipantAmendmentCreateMutationVariables
+>;
 export const ProfileCustomerBookingRequestsPageDocument = {
     kind: 'Document',
     definitions: [

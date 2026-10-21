@@ -84,9 +84,10 @@ destinations share a catalog until real pages replace them. `/profile/account` i
   [theme.md — Route scroll reset](../styles/theme.md#route-scroll-reset). Pages must not put overflow scroll on `<main>` unless they
   introduce a nested scrollport.
 - **Pinned action footers:** meal/menu view+edit, booking-request pool detail, offer create, and offer price/menus edit pages use
-  `ProfilePinnedFooterLayout` (grid body scroll + bottom action row). Cook offer detail keeps the layout for tab scrollports but has no
-  negotiate footer — edit-menus / edit-price CTAs sit end-aligned under the Offer-tab sections. Do not use CSS sticky for shell action bars.
-  Cook edit footers gate Save on dirty state (clean → single back/view CTA) — see
+  `ProfilePinnedFooterLayout` (grid body scroll + bottom action row). Cook offer detail keeps the layout for tab scrollports; the footer
+  appears for pre-accept **Confirm changes** (`COOK_NEEDS_TO_ACCEPT`) and post-accept **Accept change** / **Decline** (participant
+  amendment). Edit-menus / edit-price CTAs sit end-aligned under the Offer-tab sections. Do not use CSS sticky for shell action bars. Cook
+  edit footers gate Save on dirty state (clean → single back/view CTA) — see
   [conventions.md](../conventions.md#profile-pinned-action-footers). Offer chat keeps its own composer grid ([chat.md](../styles/chat.md)).
   Detail views are view-first; see [conventions.md](../conventions.md#view-first-entity-details).
 - Stub catalog: `src/web/pages/profile/cookCatalog.ts`; thin pages under `src/web/pages/profile/Profile*Page.tsx`; thin routes under
