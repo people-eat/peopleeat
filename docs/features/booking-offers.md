@@ -61,8 +61,10 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    cost overview. After the event (`COMPLETED`), an info banner under the cost overview tells the cook which amount to invoice (menu +
    travel, before the peopleeat fee) and that the fee was deducted at payout; the guest invoice address stays on the Request tab. They can
    also re-accept or withdraw.
-5. Negotiation continues until both sides accept (at most one dual-accepted offer per request) or someone declines / the request is
-   canceled. Customer request edits can clear cook acceptance and email cooks; menu updates email the customer.
+5. Negotiation continues until both sides accept (at most one dual-accepted offer per request) or someone declines / the request is canceled
+   / expires. Declining an offer (or a cook ban that auto-declines open offers) also declines PENDING discovery-call requests on that offer;
+   request cancel / expiry cancel those PENDING slots. Customer request edits can clear cook acceptance and email cooks; menu updates email
+   the customer.
 6. Dual acceptance moves into payment — see [booking-payment.md](./booking-payment.md). Chat rules:
    [booking-offer-chat.md](./booking-offer-chat.md). Calls: [booking-request-offer-calls.md](./booking-request-offer-calls.md).
 

@@ -13,6 +13,10 @@ import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCur
 import { slackNotifyOfferDecline } from '../slack/slackNotifyBooking';
 import { userBookingRequestOfferDeclineEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
+import {
+    bookingRequestOfferPendingCallSlotsClose,
+    bookingRequestOfferPendingCallSlotsCompleteJobsCancel,
+} from '../utils/bookingRequestOfferPendingCallSlotsClose';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
@@ -46,7 +50,8 @@ export async function userBookingRequestOfferDecline(
 
         bookingRequestOfferNegotiationAssert(row.offer);
 
-        await serverRuntime.db.transaction(async (transaction) => {
+        const now = new Date();
+        const closedCallSlotBookingIds = await serverRuntime.db.transaction(async (transaction) => {
             await transaction
                 .update(bookingRequestOffers)
                 .set({
@@ -62,7 +67,15 @@ export async function userBookingRequestOfferDecline(
                 type: 'USER_DECLINED',
                 payload: { reason },
             });
+
+            return bookingRequestOfferPendingCallSlotsClose(transaction, {
+                bookingRequestOfferIds: [bookingRequestOfferId],
+                reason: { kind: 'OFFER_DECLINED', declinedBy: 'CUSTOMER' },
+                now,
+            });
         });
+
+        await bookingRequestOfferPendingCallSlotsCompleteJobsCancel(serverRuntime, closedCallSlotBookingIds);
 
         await Promise.all([
             serverRuntime.publish.userUpdates({ userId }),

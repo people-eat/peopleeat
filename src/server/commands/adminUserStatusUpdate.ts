@@ -7,6 +7,10 @@ import type { UserStatus } from '../domain/user';
 import type { GqlSAdminMutation, GqlSAdminMutationUserStatusUpdateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
+import {
+    bookingRequestOfferPendingCallSlotsClose,
+    bookingRequestOfferPendingCallSlotsCompleteJobsCancel,
+} from '../utils/bookingRequestOfferPendingCallSlotsClose';
 
 const BAN_DECLINATION_REASON = 'Nutzer wurde gesperrt';
 
@@ -46,12 +50,13 @@ export async function adminUserStatusUpdate(
         }
 
         const affectedCustomerIds = new Set<string>();
+        const now = new Date();
 
-        await serverRuntime.db.transaction(async (transaction) => {
+        const closedCallSlotBookingIds = await serverRuntime.db.transaction(async (transaction) => {
             await transaction.update(users).set({ status: nextStatus }).where(eq(users.userId, userId));
 
             if (nextStatus !== 'BANNED') {
-                return;
+                return [] as string[];
             }
 
             const openOffers = await transaction
@@ -66,6 +71,8 @@ export async function adminUserStatusUpdate(
                         sql`NOT (${bookingRequestOffers.cookAccepted} IS TRUE AND ${bookingRequestOffers.userAccepted} IS TRUE)`,
                     ),
                 );
+
+            const closedSlotIds: string[] = [];
 
             for (const row of openOffers) {
                 bookingRequestOfferNegotiationAssert(row.offer);
@@ -86,9 +93,20 @@ export async function adminUserStatusUpdate(
                     payload: {},
                 });
 
+                const slotIds = await bookingRequestOfferPendingCallSlotsClose(transaction, {
+                    bookingRequestOfferIds: [row.offer.bookingRequestOfferId],
+                    reason: { kind: 'OFFER_DECLINED', declinedBy: 'COOK' },
+                    now,
+                });
+                closedSlotIds.push(...slotIds);
+
                 affectedCustomerIds.add(row.bookingRequest.userId);
             }
+
+            return closedSlotIds;
         });
+
+        await bookingRequestOfferPendingCallSlotsCompleteJobsCancel(serverRuntime, closedCallSlotBookingIds);
 
         const publishJobs: Array<Promise<unknown>> = [serverRuntime.publish.userUpdates({ userId }), serverRuntime.publish.adminUpdates()];
         for (const customerId of affectedCustomerIds) {

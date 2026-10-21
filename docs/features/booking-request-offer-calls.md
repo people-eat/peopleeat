@@ -11,7 +11,9 @@ On an open offer (customer, cook, or admin offer page), a single **Call** tab co
    remaining times today; past times are omitted) **or** propose any free time (same DateTimePicker path as the cook). Either party’s
    request only rejects calendar overlaps with the cook’s other PENDING/CONFIRMED bookings, not “must match a derived slot.” (Customer/admin
    hide the schedule section until scheduling is enabled or bookings exist; cooks always see it, including the enable-hours prompt when
-   scheduling is off.)
+   scheduling is off.) When the offer is declined (customer, cook, or cook ban) every PENDING call request on that offer is auto-declined
+   (no slot decline email). When the booking request expires or is canceled, PENDING slots on its offers are auto-canceled
+   (`BOOKING_REQUEST_EXPIRED` / `BOOKING_REQUEST_CANCELED`). Confirmed slots are left alone on those paths.
 2. **Ad-hoc call** — Either party (or admin) starts a live room on the offer; the peer sees a live banner and can join. Start/join lives at
    the top of the Call tab.
 3. **Scheduled join** — For a confirmed slot, join is available from 60 minutes before start through 15 minutes after end (same top CTA).
@@ -72,6 +74,8 @@ empty and delete room; recurring sweep for stale active rooms (~90s threshold). 
 - Call: `user|cook|admin` create / join / leave
 - Slots: `user|cook` request / confirm / decline / cancel
 - Confirm cancels sibling pending rows and emits matching cancelled offer events
+- Offer decline / cook ban / booking-request cancel / `booking-request-expire-notify` close PENDING slots via
+  `bookingRequestOfferPendingCallSlotsClose` (decline emails suppressed; complete jobs canceled)
 - Customer and cook request paths reject when the offer already has a confirmed slot; both accept any future `startAt` (duration from cook
   settings) subject to `cookCallSlotCalendarOverlapAssert`
 
@@ -82,7 +86,8 @@ User, cook, and admin offer hydrates batch-load call slot bookings onto `callBoo
 ### Jobs
 
 - `booking-request-offer-call-slot-reminder` — queued, T-60m email to both parties
-- `booking-request-offer-call-slots-complete` — recurring — completed / cancel stale pending
+- `booking-request-offer-call-slots-complete` — queued per slot — completed / cancel stale pending past `endAt`
+- `booking-request-expire-notify` — also cancels PENDING slots on expired requests (`BOOKING_REQUEST_EXPIRED`)
 - `booking-request-offer-call-rooms-sweep` — recurring — non-webhook room end
 
 ### Lifecycle emails
@@ -99,7 +104,8 @@ body components where markup matches.
 | Reminder | Both (T-60m, confirmed) | Upcoming call  |
 
 Sends via dedicated email helpers or reminder job. Email failure does not roll back booking writes. Sibling auto-cancels when another slot
-is confirmed do **not** send cancel mail. CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’s `Users.timeZone`.
+is confirmed, and pending-slot closes when an offer is declined / the request expires or is canceled, do **not** send decline/cancel mail.
+CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’s `Users.timeZone`.
 
 ### UI
 

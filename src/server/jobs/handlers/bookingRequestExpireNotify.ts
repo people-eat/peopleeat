@@ -1,6 +1,10 @@
 import { and, eq, sql } from 'drizzle-orm';
 
 import { bookingRequestOffers, bookingRequests } from '../../db/schema';
+import {
+    bookingRequestOfferPendingCallSlotsClose,
+    bookingRequestOfferPendingCallSlotsCompleteJobsCancel,
+} from '../../utils/bookingRequestOfferPendingCallSlotsClose';
 import type { QueuedJobDefinition } from '../types';
 
 interface BookingRequestExpireNotifyData {
@@ -8,9 +12,10 @@ interface BookingRequestExpireNotifyData {
 }
 
 /**
- * Publishes updates when a booking request crosses `expiresAt` so customer /
- * cook UIs refresh derived EXPIRED status. Status itself is derived — this
- * job only wakes subscriptions. Enqueued with `startAfter: expiresAt`.
+ * When a booking request crosses `expiresAt`, closes PENDING call slots on its
+ * offers and publishes updates so customer / cook UIs refresh derived EXPIRED
+ * status. Offer/request status itself is derived — this job wakes subscriptions
+ * and cleans slot rows. Enqueued with `startAfter: expiresAt`.
  */
 export const bookingRequestExpireNotify: QueuedJobDefinition<BookingRequestExpireNotifyData> = {
     kind: 'queued',
@@ -52,9 +57,24 @@ export const bookingRequestExpireNotify: QueuedJobDefinition<BookingRequestExpir
         }
 
         const cookRows = await serverRuntime.db
-            .select({ cookId: bookingRequestOffers.cookId })
+            .select({
+                cookId: bookingRequestOffers.cookId,
+                bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId,
+            })
             .from(bookingRequestOffers)
             .where(eq(bookingRequestOffers.bookingRequestId, row.bookingRequestId));
+
+        const offerIds = cookRows.map((cookRow) => cookRow.bookingRequestOfferId);
+        const now = new Date();
+        const closedCallSlotBookingIds = await serverRuntime.db.transaction(async (transaction) =>
+            bookingRequestOfferPendingCallSlotsClose(transaction, {
+                bookingRequestOfferIds: offerIds,
+                reason: { kind: 'BOOKING_REQUEST_EXPIRED' },
+                now,
+            }),
+        );
+
+        await bookingRequestOfferPendingCallSlotsCompleteJobsCancel(serverRuntime, closedCallSlotBookingIds);
 
         const publishUserIds = new Set<string>([row.userId]);
         for (const cookRow of cookRows) {

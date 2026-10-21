@@ -12,6 +12,10 @@ import type {
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { slackNotifyOfferDecline } from '../slack/slackNotifyBooking';
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
+import {
+    bookingRequestOfferPendingCallSlotsClose,
+    bookingRequestOfferPendingCallSlotsCompleteJobsCancel,
+} from '../utils/bookingRequestOfferPendingCallSlotsClose';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
@@ -45,7 +49,8 @@ export async function cookBookingRequestOfferDecline(
 
         bookingRequestOfferNegotiationAssert(row.offer);
 
-        await serverRuntime.db.transaction(async (transaction) => {
+        const now = new Date();
+        const closedCallSlotBookingIds = await serverRuntime.db.transaction(async (transaction) => {
             await transaction
                 .update(bookingRequestOffers)
                 .set({
@@ -61,7 +66,15 @@ export async function cookBookingRequestOfferDecline(
                 type: 'COOK_DECLINED',
                 payload: {},
             });
+
+            return bookingRequestOfferPendingCallSlotsClose(transaction, {
+                bookingRequestOfferIds: [bookingRequestOfferId],
+                reason: { kind: 'OFFER_DECLINED', declinedBy: 'COOK' },
+                now,
+            });
         });
+
+        await bookingRequestOfferPendingCallSlotsCompleteJobsCancel(serverRuntime, closedCallSlotBookingIds);
 
         await Promise.all([
             serverRuntime.publish.userUpdates({ userId: cookId }),

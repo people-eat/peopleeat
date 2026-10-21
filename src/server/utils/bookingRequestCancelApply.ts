@@ -7,6 +7,10 @@ import { bookingRequestCancelableStatuses, bookingRequestStatusDerive } from '..
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { slackNotifyBookingRequestCanceled } from '../slack/slackNotifyBooking';
 import { userBookingRequestCancelEmailSend } from './bookingRequestLifecycleEmails';
+import {
+    bookingRequestOfferPendingCallSlotsClose,
+    bookingRequestOfferPendingCallSlotsCompleteJobsCancel,
+} from './bookingRequestOfferPendingCallSlotsClose';
 import { bookingRequestOfferQueuedJobsCancel } from './bookingRequestOfferQueuedJobsCancel';
 import { bookingRequestQueuedJobsCancel } from './bookingRequestQueuedJobsCancel';
 
@@ -47,7 +51,7 @@ export async function bookingRequestCancelApply(
 
     const canceledAt = new Date();
 
-    await serverRuntime.db.transaction(async (transaction) => {
+    const closedCallSlotBookingIds = await serverRuntime.db.transaction(async (transaction) => {
         await transaction
             .update(bookingRequests)
             .set({
@@ -72,10 +76,19 @@ export async function bookingRequestCancelApply(
                 })),
             );
         }
+
+        return bookingRequestOfferPendingCallSlotsClose(transaction, {
+            bookingRequestOfferIds: offers.map((offer) => offer.bookingRequestOfferId),
+            reason: { kind: 'BOOKING_REQUEST_CANCELED' },
+            now: canceledAt,
+        });
     });
 
     await bookingRequestQueuedJobsCancel(serverRuntime, bookingRequestId);
-    await Promise.all(offers.map((offer) => bookingRequestOfferQueuedJobsCancel(serverRuntime, offer.bookingRequestOfferId)));
+    await Promise.all([
+        ...offers.map((offer) => bookingRequestOfferQueuedJobsCancel(serverRuntime, offer.bookingRequestOfferId)),
+        bookingRequestOfferPendingCallSlotsCompleteJobsCancel(serverRuntime, closedCallSlotBookingIds),
+    ]);
 
     const cookIds = [...new Set(offers.map((offer) => offer.cookId))];
     await Promise.all([
