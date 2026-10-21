@@ -142,10 +142,12 @@ function authorAndIsOwnForMessageSimple(
                         createdAt: new Date(0),
                         profilePicture: null,
                     },
-                    isOwn: false,
+                    // Prior chef stays on the cook/admin right rail; never own for the new cook.
+                    isOwn: input.viewerRole === 'admin',
                 };
             }
-            return { author: input.cook, isOwn: input.viewerRole === 'cook' };
+            // Admin viewers: cook shares the right rail with admin (customer left).
+            return { author: input.cook, isOwn: input.viewerRole === 'cook' || input.viewerRole === 'admin' };
         }
         case 'ADMIN_MESSAGE_SIMPLE':
             return { author: ADMIN_PUBLIC_USER, isOwn: input.viewerRole === 'admin' };

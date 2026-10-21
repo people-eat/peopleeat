@@ -39,22 +39,48 @@ export function transcriptRowsFromTurns(turns: ReadonlyArray<TranscriptTurn>): A
     return rows;
 }
 
-/** Peer streak chrome for consecutive human user bubbles (offer/support). */
+type PeerStreakMessage = {
+    __typename?: string;
+    isOwn?: boolean;
+    author?: { display: string };
+};
+
+function isUserMessage(message: PeerStreakMessage | undefined): message is PeerStreakMessage & {
+    __typename: 'ChatMessageUser';
+    isOwn: boolean;
+} {
+    return Boolean(message && message.__typename === 'ChatMessageUser' && typeof message.isOwn === 'boolean');
+}
+
+function sameAuthor(a: PeerStreakMessage, b: PeerStreakMessage): boolean {
+    // PublicUser has no id — display is the stable chrome key on human threads.
+    return (a.author?.display ?? '') === (b.author?.display ?? '');
+}
+
+function sameRail(a: PeerStreakMessage, b: PeerStreakMessage): boolean {
+    return a.isOwn === b.isOwn;
+}
+
+/**
+ * Streak chrome for consecutive same-author human bubbles on the same rail
+ * (offer/support/WhatsApp). Peer rail: name on first, avatar on last. Own rail:
+ * name flags only (avatars stay off in the bubble view).
+ */
 export function peerUserMessageStreak(
-    messages: ReadonlyArray<{ __typename?: string; isOwn?: boolean }>,
+    messages: ReadonlyArray<PeerStreakMessage>,
     index: number,
 ): { showName: boolean; showAvatar: boolean; continued: boolean } {
     const current = messages[index];
-    if (!current || current.__typename !== 'ChatMessageUser' || current.isOwn) {
+    if (!isUserMessage(current)) {
         return { showName: true, showAvatar: true, continued: false };
     }
     const prev = messages[index - 1];
     const next = messages[index + 1];
-    const continued = Boolean(prev && prev.__typename === 'ChatMessageUser' && prev.isOwn === false);
-    const followed = Boolean(next && next.__typename === 'ChatMessageUser' && next.isOwn === false);
+    const continued = isUserMessage(prev) && sameRail(prev, current) && sameAuthor(prev, current);
+    const followed = isUserMessage(next) && sameRail(next, current) && sameAuthor(next, current);
     return {
         showName: !continued,
-        showAvatar: !followed,
+        showAvatar: current.isOwn ? false : !followed,
         continued,
     };
 }

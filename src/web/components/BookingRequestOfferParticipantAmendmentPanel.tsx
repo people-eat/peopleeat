@@ -3,6 +3,16 @@ import { useState } from 'react';
 import { bookingRequestParticipantsFromCounts, formatCurrency, formatParticipants } from '../../shared';
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import type { Locale } from '../utils/locale';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from './base/alert-dialog';
 import { Button } from './base/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './base/dialog';
 import { Input } from './base/input';
@@ -168,8 +178,13 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
     onPreparationsComplete: () => Promise<void>;
 }) {
     const enabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT');
+    const [preparationsConfirmOpen, setPreparationsConfirmOpen] = useState(false);
+    const [preparationsConfirmBusy, setPreparationsConfirmBusy] = useState(false);
+
     if (!enabled) return null;
     if (!props.amendment && !props.preparationsCompletedAt && !props.canCompletePreparations) return null;
+
+    const confirmBusy = preparationsConfirmBusy || props.busy;
 
     return (
         <div className="grid gap-3">
@@ -210,34 +225,87 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
             ) : null}
 
             {props.preparationsCompletedAt ? (
-                <StatusAlert tone="info" title={{ de: 'Einkauf markiert', en: 'Shopping marked done' }[props.locale]}>
+                <StatusAlert
+                    tone="success"
+                    title={{ de: 'Einkauf und Vorbereitung erledigt', en: 'Shopping and prep marked done' }[props.locale]}
+                >
                     {
                         {
-                            de: 'Du hast den Einkauf bzw. die Vorbereitung als erledigt markiert. Der Gast kann die Teilnehmerzahl nicht mehr ändern.',
-                            en: 'You marked grocery shopping or preparations as done. The guest can no longer change the number of participants.',
+                            de: 'Der Gast kann die Teilnehmerzahl für diesen Auftrag nicht mehr ändern. Support kann die Sperre bei Bedarf aufheben.',
+                            en: 'The guest can no longer change the participant count for this booking. Support can clear the lock if needed.',
                         }[props.locale]
                     }
                 </StatusAlert>
             ) : props.canCompletePreparations ? (
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm text-muted-foreground">
+                <>
+                    <StatusAlert
+                        tone="info"
+                        title={{ de: 'Einkauf und Vorbereitung', en: 'Shopping and prep' }[props.locale]}
+                        action={
+                            <Button type="button" size="sm" disabled={props.busy} onClick={() => setPreparationsConfirmOpen(true)}>
+                                {{ de: 'Als erledigt markieren', en: 'Mark as done' }[props.locale]}
+                            </Button>
+                        }
+                    >
                         {
                             {
-                                de: 'Einkauf oder Vorbereitung für die aktuelle Personenzahl erledigt?',
-                                en: 'Finished shopping or prep for the current headcount?',
+                                de: 'Sobald du den Einkauf oder die Vorbereitung für die aktuelle Personenzahl erledigt hast, markiere es hier. Danach kann der Gast die Teilnehmerzahl nicht mehr ändern.',
+                                en: 'Once you have finished shopping or prep for the current headcount, mark it here. After that, the guest can no longer change the number of participants.',
                             }[props.locale]
                         }
-                    </p>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={props.busy}
-                        onClick={() => void props.onPreparationsComplete()}
+                    </StatusAlert>
+                    <AlertDialog
+                        open={preparationsConfirmOpen}
+                        onOpenChange={(open) => {
+                            if (!confirmBusy) setPreparationsConfirmOpen(open);
+                        }}
                     >
-                        {{ de: 'Einkauf erledigt', en: 'Mark shopping done' }[props.locale]}
-                    </Button>
-                </div>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                    {
+                                        {
+                                            de: 'Einkauf und Vorbereitung als erledigt markieren?',
+                                            en: 'Mark shopping and prep as done?',
+                                        }[props.locale]
+                                    }
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    {
+                                        {
+                                            de: 'Danach kann der Gast die Teilnehmerzahl nicht mehr ändern. Nutze das erst, wenn du für die aktuelle Personenzahl eingekauft oder vorbereitet hast.',
+                                            en: 'After this, the guest can no longer change the participant count. Only do this once you have shopped or prepared for the current headcount.',
+                                        }[props.locale]
+                                    }
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel disabled={confirmBusy}>
+                                    {{ de: 'Abbrechen', en: 'Cancel' }[props.locale]}
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                    disabled={confirmBusy}
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        void (async () => {
+                                            setPreparationsConfirmBusy(true);
+                                            try {
+                                                await props.onPreparationsComplete();
+                                                setPreparationsConfirmOpen(false);
+                                            } finally {
+                                                setPreparationsConfirmBusy(false);
+                                            }
+                                        })();
+                                    }}
+                                >
+                                    {confirmBusy
+                                        ? { de: 'Wird markiert…', en: 'Marking…' }[props.locale]
+                                        : { de: 'Ja, als erledigt markieren', en: 'Yes, mark as done' }[props.locale]}
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </>
             ) : null}
         </div>
     );

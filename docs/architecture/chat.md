@@ -85,7 +85,9 @@ Offer free-text and support messages project to `ChatMessageUser`. Offer timelin
 Domain fields keep `messages: [HumanChatMessage!]!` — not `ChatTurn`.
 
 `ChatMessageUser` carries `author`, `isOwn`, wire-only `showCopyButton` / `collapseLongBody`, `attachments`, and `reactions` (emoji
-overlays; WhatsApp Concierge today, empty elsewhere). Attachments still use the shared [`FileUploads`](./file-storage.md) store.
+overlays; WhatsApp Concierge today, empty elsewhere). On admin offer chat, `isOwn` also puts cook on the right rail with admin (customer
+left) — see [booking-offer-chat.md](../features/booking-offer-chat.md). Attachments still use the shared [`FileUploads`](./file-storage.md)
+store.
 
 ### Mutations (assistant)
 

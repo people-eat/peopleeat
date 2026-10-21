@@ -14,8 +14,8 @@ refund. Cooks can lock further changes by marking groceries / preparations done.
    - `EMPTY`: cancels an open PaymentIntent when present and re-prepares payment
    - `PAYED`: partial customer refund or off-session delta charge, plus Connect transfer reverse / top-up for the cook payout delta
 5. On decline, the pending proposal is cleared; the booking is unchanged.
-6. The cook can mark **shopping / preparations done**. After that, the customer cannot open a new amendment. Admins can clear the lock for
-   ops.
+6. The cook can mark **shopping / preparations done** (confirmation dialog first). After that, the customer cannot open a new amendment.
+   Admins can clear the lock for ops.
 7. Blocked when the event is past, the request is canceled, or payment is `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED`.
 
 ## Decisions

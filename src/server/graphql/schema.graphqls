@@ -38,9 +38,11 @@ type ChatMessageUser {
     chatMessageId: ID!
     # Lean public identity — no email / last name / phone. See `PublicUser`.
     author: PublicUser!
-    # Viewer-relative: true when this message was authored by the requesting
+    # Viewer-relative rail: true when this message was authored by the requesting
     # user (assistant chats) or by the viewer's party on an offer thread
-    # (customer / cook / admin). Stamped at map time — `PublicUser` has no id.
+    # (customer / cook / admin). Admin offer chat also stamps cook messages
+    # `true` so guest stays left and cook + admin share the right rail. Stamped
+    # at map time — `PublicUser` has no id.
     isOwn: Boolean!
     # Wire-only affordance (not persisted). Always `false` today; reserved so
     # admin / inspector surfaces can opt into an in-bubble copy control later

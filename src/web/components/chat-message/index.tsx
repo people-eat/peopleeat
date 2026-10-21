@@ -10,6 +10,8 @@ interface HumanChatMessageProps {
     message: HumanMessage;
     showAuthorName?: boolean;
     showAuthorAvatar?: boolean;
+    /** Admin offer chat: label cook + admin on the shared right rail. */
+    labelOwnAuthors?: boolean;
     /** When set, simple user bubbles expose an edit control (admin offer chat). */
     onEditUserMessage?: (chatMessageId: string, body: string) => Promise<boolean>;
     /** Soft-hide / unhide (admin offer chat). */
@@ -25,6 +27,7 @@ export function HumanChatMessage({
     message,
     showAuthorName = true,
     showAuthorAvatar = true,
+    labelOwnAuthors = false,
     onEditUserMessage,
     onVisibilityChangeUserMessage,
     onDeleteUserMessage,
@@ -37,6 +40,7 @@ export function HumanChatMessage({
                     message={message}
                     showAuthorName={showAuthorName}
                     showAuthorAvatar={showAuthorAvatar}
+                    labelOwnAuthors={labelOwnAuthors}
                     onEdit={onEditUserMessage ? (body) => onEditUserMessage(message.chatMessageId, body) : undefined}
                     onVisibilityChange={
                         onVisibilityChangeUserMessage

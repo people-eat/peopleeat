@@ -214,6 +214,7 @@ export function BookingRequestOfferChat({
                                         message={message}
                                         showAuthorName={streak.showName}
                                         showAuthorAvatar={streak.showAvatar}
+                                        labelOwnAuthors={viewerRole === 'admin'}
                                         onEditUserMessage={onEditMessage}
                                         onVisibilityChangeUserMessage={onVisibilityChangeMessage}
                                         onDeleteUserMessage={onDeleteMessage}
