@@ -68,19 +68,6 @@ mutation AdminBookingRequestOfferChatReviewAcknowledge($bookingRequestOfferId: I
     }
 }
 
-mutation AdminOfferChatReviewChatMessageCreate($bookingRequestOfferId: ID!, $message: String!, $fileUploadIds: [ID!]) {
-    admin {
-        bookingRequestOfferChatMessageCreate(
-            bookingRequestOfferId: $bookingRequestOfferId
-            message: $message
-            fileUploadIds: $fileUploadIds
-        ) {
-            success
-            referenceId
-        }
-    }
-}
-
 mutation AdminOfferChatReviewChatMessageReactionUpsert($bookingRequestOfferEventId: ID!, $emoji: String!) {
     admin {
         bookingRequestOfferChatMessageReactionUpsert(bookingRequestOfferEventId: $bookingRequestOfferEventId, emoji: $emoji) {

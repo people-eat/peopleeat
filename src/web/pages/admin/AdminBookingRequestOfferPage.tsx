@@ -577,12 +577,14 @@ export function AdminBookingRequestOfferPage({
                                                       {
                                                           display: adminBookingRequestCustomerLabel(request.customer),
                                                           profilePictureUrl: request.customer.profilePicture?.url,
+                                                          userId: request.customer.userId,
                                                       },
                                                   ]
                                                 : []),
                                             {
                                                 display: userDisplayName(offer.cook.user),
                                                 profilePictureUrl: offer.cook.user.profilePicture?.url,
+                                                userId: offer.cook.user.userId,
                                             },
                                         ]}
                                         viewerRole="admin"

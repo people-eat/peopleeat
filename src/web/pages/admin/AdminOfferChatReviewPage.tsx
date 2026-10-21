@@ -1,11 +1,11 @@
 import { Link, notFound, useNavigate } from '@tanstack/react-router';
-import { CheckIcon, ExternalLinkIcon } from 'lucide-react';
+import { CheckIcon, MessageSquareIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { bookingRequestOfferChatCanSend, formatDateTime, userDisplayName } from '../../../shared';
+import { formatDateTime, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
@@ -13,7 +13,6 @@ import { BookingRequestOfferChat } from '../../components/BookingRequestOfferCha
 import type { GqlCAdminOfferChatReviewPageOfferFragment, GqlCAdminOfferChatReviewPageQuery } from '../../graphql/generated';
 import {
     AdminBookingRequestOfferChatReviewAcknowledgeDocument,
-    AdminOfferChatReviewChatMessageCreateDocument,
     AdminOfferChatReviewChatMessageDeleteDocument,
     AdminOfferChatReviewChatMessageReactionUpsertDocument,
     AdminOfferChatReviewChatMessageUpdateDocument,
@@ -54,9 +53,7 @@ export function AdminOfferChatReviewPage({
 
     const [offer, setOffer] = useState<GqlCAdminOfferChatReviewPageOfferFragment>(seedOffer);
     const [acknowledging, setAcknowledging] = useState(false);
-    const [composerHost, setComposerHost] = useState<HTMLDivElement | null>(null);
     const [, acknowledge] = useMutation(AdminBookingRequestOfferChatReviewAcknowledgeDocument);
-    const [, sendChatMessage] = useMutation(AdminOfferChatReviewChatMessageCreateDocument);
     const [, upsertOfferChatReaction] = useMutation(AdminOfferChatReviewChatMessageReactionUpsertDocument);
     const [, updateChatMessage] = useMutation(AdminOfferChatReviewChatMessageUpdateDocument);
     const [, updateChatMessageVisibility] = useMutation(AdminOfferChatReviewChatMessageVisibilityUpdateDocument);
@@ -81,7 +78,6 @@ export function AdminOfferChatReviewPage({
     const request = offer.bookingRequest;
     const customerLabel = adminBookingRequestCustomerLabel(request.customer);
     const cookLabel = userDisplayName(offer.cook.user);
-    const canSend = bookingRequestOfferChatCanSend(offer.status);
     const pendingCount = offer.adminChatReviewPendingCount;
 
     async function onAcknowledge() {
@@ -127,6 +123,9 @@ export function AdminOfferChatReviewPage({
                   en: 'No pending messages. You can still acknowledge and continue.',
               }[locale];
 
+    const respondInOfferLabel = { de: 'Im Angebot antworten', en: 'Respond in offer' }[locale];
+    const confirmLabel = { de: 'Bestätigen', en: 'Confirm' }[locale];
+
     return (
         <AdminPageChrome
             crumbs={[{ label: adminOfferChatReviewsPageTitle[locale], to: '/{-$locale}/admin/offer-chat-reviews' }, { label: cookLabel }]}
@@ -136,40 +135,8 @@ export function AdminOfferChatReviewPage({
                 contentScroll={false}
                 contentClassName="flex w-full min-w-0 flex-col pb-0"
                 footer={
-                    <div className="grid w-full gap-3">
-                        {canSend ? <div ref={setComposerHost} className="min-w-0" /> : null}
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                            <p className="text-sm text-muted-foreground">{pendingHint}</p>
-                            <Button type="button" onClick={() => void onAcknowledge()} disabled={acknowledging}>
-                                <CheckIcon data-icon="inline-start" />
-                                {{ de: 'Bestätigen und weiter', en: 'Acknowledge and next' }[locale]}
-                            </Button>
-                        </div>
-                    </div>
-                }
-            >
-                <div className="grid shrink-0 gap-2 px-4 pb-1">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="grid min-w-0 gap-1">
-                            <h1 className="font-serif text-2xl/tight text-foreground">{adminOfferChatReviewPageTitle[locale]}</h1>
-                            <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                                <span>{customerLabel}</span>
-                                <span aria-hidden>·</span>
-                                <span>{cookLabel}</span>
-                                <span aria-hidden>·</span>
-                                <span>{request.occasion}</span>
-                                <span aria-hidden>·</span>
-                                <span>
-                                    {formatDateTime(request.dateTime, {
-                                        locale,
-                                        timeZone,
-                                        dateStyle: 'medium',
-                                        timeStyle: 'short',
-                                    })}
-                                </span>
-                            </div>
-                        </div>
-                        <Button variant="outline" size="sm" asChild>
+                    <div className="flex w-full gap-3 md:justify-end">
+                        <Button type="button" variant="outline" className="flex-1 md:flex-initial" asChild>
                             <Link
                                 to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
                                 params={{
@@ -178,43 +145,60 @@ export function AdminOfferChatReviewPage({
                                 }}
                                 search={{ tab: 'chat' }}
                             >
-                                <ExternalLinkIcon data-icon="inline-start" />
-                                {{ de: 'Angebot öffnen', en: 'Open offer' }[locale]}
+                                <MessageSquareIcon data-icon="inline-start" />
+                                {respondInOfferLabel}
                             </Link>
                         </Button>
+                        <Button
+                            type="button"
+                            className="flex-1 md:flex-initial"
+                            onClick={() => void onAcknowledge()}
+                            disabled={acknowledging}
+                        >
+                            <CheckIcon data-icon="inline-start" />
+                            {confirmLabel}
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="grid shrink-0 gap-2 px-4 pb-1">
+                    <div className="grid min-w-0 gap-1">
+                        <h1 className="font-serif text-2xl/tight text-foreground">{adminOfferChatReviewPageTitle[locale]}</h1>
+                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                            <span>{request.occasion}</span>
+                            <span aria-hidden>·</span>
+                            <span>
+                                {formatDateTime(request.dateTime, {
+                                    locale,
+                                    timeZone,
+                                    dateStyle: 'medium',
+                                    timeStyle: 'short',
+                                })}
+                            </span>
+                            <span aria-hidden>·</span>
+                            <span>{pendingHint}</span>
+                        </div>
                     </div>
                 </div>
 
                 <BookingRequestOfferChat
                     className="min-h-0 min-w-0 flex-1"
                     messages={offer.messages}
-                    canSend={canSend}
-                    externalComposer
-                    composerHost={composerHost}
+                    canSend={false}
                     peers={[
                         {
                             display: customerLabel,
                             profilePictureUrl: request.customer.profilePicture?.url,
+                            userId: request.customer.userId,
                         },
                         {
                             display: cookLabel,
                             profilePictureUrl: offer.cook.user.profilePicture?.url,
+                            userId: offer.cook.user.userId,
                         },
                     ]}
                     viewerRole="admin"
-                    onSend={async (message, fileUploadIds) => {
-                        const result = await sendChatMessage({ bookingRequestOfferId, message, fileUploadIds });
-                        if (result.error || !result.data?.admin.bookingRequestOfferChatMessageCreate.success) {
-                            toast.error(
-                                {
-                                    de: 'Nachricht konnte nicht gesendet werden.',
-                                    en: 'Could not send the message.',
-                                }[locale],
-                            );
-                            return false;
-                        }
-                        return true;
-                    }}
+                    onSend={async () => false}
                     onEditMessage={async (chatMessageId, message) => {
                         const result = await updateChatMessage({
                             bookingRequestOfferEventId: chatMessageId,

@@ -13561,16 +13561,6 @@ export type GqlCAdminBookingRequestOfferChatReviewAcknowledgeMutation = {
     admin: { bookingRequestOfferChatReviewAcknowledge: { acknowledgedOfferId: string; nextOfferId: string | null } };
 };
 
-export type GqlCAdminOfferChatReviewChatMessageCreateMutationVariables = Exact<{
-    bookingRequestOfferId: string;
-    message: string;
-    fileUploadIds?: Array<string> | string | null | undefined;
-}>;
-
-export type GqlCAdminOfferChatReviewChatMessageCreateMutation = {
-    admin: { bookingRequestOfferChatMessageCreate: { success: boolean; referenceId: string | null } };
-};
-
 export type GqlCAdminOfferChatReviewChatMessageReactionUpsertMutationVariables = Exact<{
     bookingRequestOfferEventId: string;
     emoji: string;
@@ -56551,78 +56541,6 @@ export const AdminBookingRequestOfferChatReviewAcknowledgeDocument = {
     GqlCAdminBookingRequestOfferChatReviewAcknowledgeMutation,
     GqlCAdminBookingRequestOfferChatReviewAcknowledgeMutationVariables
 >;
-export const AdminOfferChatReviewChatMessageCreateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminOfferChatReviewChatMessageCreate' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'message' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'fileUploadIds' } },
-                    type: {
-                        kind: 'ListType',
-                        type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                    },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'bookingRequestOfferChatMessageCreate' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                        },
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'message' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'message' } },
-                                        },
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'fileUploadIds' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'fileUploadIds' } },
-                                        },
-                                    ],
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCAdminOfferChatReviewChatMessageCreateMutation, GqlCAdminOfferChatReviewChatMessageCreateMutationVariables>;
 export const AdminOfferChatReviewChatMessageReactionUpsertDocument = {
     kind: 'Document',
     definitions: [

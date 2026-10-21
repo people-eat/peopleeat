@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { createPortal } from 'react-dom';
+import { Link } from '@tanstack/react-router';
+import { Fragment, useState } from 'react';
 
 import { containsPhoneNumber } from '../../shared';
 import { groupMessagesByDate, peerUserMessageStreak } from '../chat/chatTranscript';
@@ -21,6 +21,8 @@ export type BookingRequestOfferChatViewerRole = 'customer' | 'cook' | 'admin';
 export type BookingRequestOfferChatPeer = {
     display: string;
     profilePictureUrl?: string | null;
+    /** When set (admin surfaces), the presence avatar links to the user page. */
+    userId?: string | null;
 };
 
 function peerInitials(display: string): string {
@@ -41,15 +43,33 @@ function ConciergePresenceBanner({
     body: string;
     className?: string;
 }) {
+    const locale = useLocale();
+    const openUserLabel = { de: 'Nutzer öffnen', en: 'Open user' }[locale];
+
     return (
         <div className={cn('mb-2 flex shrink-0 items-center gap-3 p-1 sm:px-2', className)}>
             <AvatarGroup className="shrink-0">
-                {peers.map((peer, index) => (
-                    <Avatar key={`${peer.display}-${index}`} size="lg" className="size-12">
-                        {peer.profilePictureUrl ? <AvatarImage src={peer.profilePictureUrl} alt={peer.display} /> : null}
-                        <AvatarFallback>{peerInitials(peer.display)}</AvatarFallback>
-                    </Avatar>
-                ))}
+                {peers.map((peer, index) => {
+                    const key = `${peer.display}-${index}`;
+                    const avatar = (
+                        <Avatar size="lg" className="size-12">
+                            {peer.profilePictureUrl ? <AvatarImage src={peer.profilePictureUrl} alt={peer.display} /> : null}
+                            <AvatarFallback>{peerInitials(peer.display)}</AvatarFallback>
+                        </Avatar>
+                    );
+                    if (!peer.userId) return <Fragment key={key}>{avatar}</Fragment>;
+                    return (
+                        <Link
+                            key={key}
+                            to="/{-$locale}/admin/users/$userId"
+                            params={{ userId: peer.userId }}
+                            aria-label={`${openUserLabel}: ${peer.display}`}
+                            className="rounded-full focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                        >
+                            {avatar}
+                        </Link>
+                    );
+                })}
                 <Avatar size="lg" className="size-12">
                     <AvatarImage src="/concierge-juliana.png" alt="Concierge Juliana" />
                     <AvatarFallback>J</AvatarFallback>
@@ -74,8 +94,6 @@ export function BookingRequestOfferChat({
     peers,
     viewerRole,
     className,
-    externalComposer = false,
-    composerHost = null,
 }: {
     messages: ReadonlyArray<GqlCHumanChatMessageFieldsFragment>;
     canSend: boolean;
@@ -91,12 +109,6 @@ export function BookingRequestOfferChat({
     peers: ReadonlyArray<BookingRequestOfferChatPeer>;
     viewerRole: BookingRequestOfferChatViewerRole;
     className?: string;
-    /**
-     * When true, the composer is not rendered inline. Pass `composerHost` to
-     * portal it into a pinned footer (or other shell chrome) instead.
-     */
-    externalComposer?: boolean;
-    composerHost?: Element | null;
 }) {
     const locale = useLocale();
     const reactionsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_CHAT_REACTIONS', { gateInAdminShell: true });
@@ -106,8 +118,6 @@ export function BookingRequestOfferChat({
         useComposerFileAttachments();
     const groupedMessages = groupMessagesByDate(messages);
     const draftContainsPhoneNumber = containsPhoneNumber(draft);
-    const showInlineComposer = canSend && !externalComposer;
-    const showPortaledComposer = canSend && externalComposer && composerHost != null;
 
     const presenceTitle = `${peers.map((peer) => peer.display).join(', ')} & Concierge Juliana`;
     const presenceBody = {
@@ -125,57 +135,11 @@ export function BookingRequestOfferChat({
         },
     }[viewerRole][locale];
 
-    const composer = canSend ? (
-        <div className={cn('flex flex-col gap-2', externalComposer ? 'min-w-0' : 'px-1 pt-3 pb-(--chat-composer-pb) sm:px-2')}>
-            {draftContainsPhoneNumber ? (
-                <StatusAlert tone="warning">
-                    {
-                        {
-                            de: 'Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.',
-                            en: 'Sharing phone numbers is not allowed. Please keep arrangements in this chat.',
-                        }[locale]
-                    }
-                </StatusAlert>
-            ) : null}
-            <MessageComposer
-                value={draft}
-                onValueChange={setDraft}
-                busy={busy}
-                sendDisabled={draftContainsPhoneNumber}
-                showDisclaimer={false}
-                ariaLabel={{ de: 'Nachricht an Angebot', en: 'Offer message' }[locale]}
-                attachments={attachments}
-                onAttachmentsAdd={onAttachmentsAdd}
-                onAttachmentRemove={onAttachmentRemove}
-                onSubmit={async () => {
-                    const text = draft.trim();
-                    if ((!text && !hasUploaded) || busy) return false;
-                    if (text.length > 0 && containsPhoneNumber(text)) return false;
-                    const sentAttachments = attachments;
-                    const fileUploadIds = uploadedFileUploadIds;
-                    setBusy(true);
-                    setDraft('');
-                    clearAttachments();
-                    try {
-                        const ok = await onSend(text, fileUploadIds);
-                        if (!ok) {
-                            setDraft(text);
-                            restoreAttachments(sentAttachments);
-                        }
-                        return ok;
-                    } finally {
-                        setBusy(false);
-                    }
-                }}
-            />
-        </div>
-    ) : null;
-
     return (
         <div
             className={cn(
                 'grid min-h-0 flex-1',
-                showInlineComposer ? 'grid-rows-[1fr_auto] md:grid-rows-[auto_1fr_auto]' : 'grid-rows-[1fr] md:grid-rows-[auto_1fr]',
+                canSend ? 'grid-rows-[1fr_auto] md:grid-rows-[auto_1fr_auto]' : 'grid-rows-[1fr] md:grid-rows-[auto_1fr]',
                 className,
             )}
         >
@@ -194,10 +158,15 @@ export function BookingRequestOfferChat({
                     <MessageScrollerItem>
                         <p className="flex min-h-48 flex-1 items-center justify-center px-4 text-center text-sm text-muted-foreground">
                             {
-                                {
-                                    de: 'Noch keine Nachrichten. Schreibe die erste Nachricht.',
-                                    en: 'No messages yet. Send the first message.',
-                                }[locale]
+                                (canSend
+                                    ? {
+                                          de: 'Noch keine Nachrichten. Schreibe die erste Nachricht.',
+                                          en: 'No messages yet. Send the first message.',
+                                      }
+                                    : {
+                                          de: 'Noch keine Nachrichten.',
+                                          en: 'No messages yet.',
+                                      })[locale]
                             }
                         </p>
                     </MessageScrollerItem>
@@ -229,8 +198,51 @@ export function BookingRequestOfferChat({
                     ])
                 )}
             </ChatTranscriptShell>
-            {showInlineComposer ? composer : null}
-            {showPortaledComposer && composerHost ? createPortal(composer, composerHost) : null}
+            {canSend ? (
+                <div className="flex flex-col gap-2 px-1 pt-3 pb-(--chat-composer-pb) sm:px-2">
+                    {draftContainsPhoneNumber ? (
+                        <StatusAlert tone="warning">
+                            {
+                                {
+                                    de: 'Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.',
+                                    en: 'Sharing phone numbers is not allowed. Please keep arrangements in this chat.',
+                                }[locale]
+                            }
+                        </StatusAlert>
+                    ) : null}
+                    <MessageComposer
+                        value={draft}
+                        onValueChange={setDraft}
+                        busy={busy}
+                        sendDisabled={draftContainsPhoneNumber}
+                        showDisclaimer={false}
+                        ariaLabel={{ de: 'Nachricht an Angebot', en: 'Offer message' }[locale]}
+                        attachments={attachments}
+                        onAttachmentsAdd={onAttachmentsAdd}
+                        onAttachmentRemove={onAttachmentRemove}
+                        onSubmit={async () => {
+                            const text = draft.trim();
+                            if ((!text && !hasUploaded) || busy) return false;
+                            if (text.length > 0 && containsPhoneNumber(text)) return false;
+                            const sentAttachments = attachments;
+                            const fileUploadIds = uploadedFileUploadIds;
+                            setBusy(true);
+                            setDraft('');
+                            clearAttachments();
+                            try {
+                                const ok = await onSend(text, fileUploadIds);
+                                if (!ok) {
+                                    setDraft(text);
+                                    restoreAttachments(sentAttachments);
+                                }
+                                return ok;
+                            } finally {
+                                setBusy(false);
+                            }
+                        }}
+                    />
+                </div>
+            ) : null}
         </div>
     );
 }
