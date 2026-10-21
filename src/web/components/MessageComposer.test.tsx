@@ -140,4 +140,18 @@ describe('MessageComposer', () => {
 
         expect(focus).not.toHaveBeenCalled();
     });
+
+    it('appends a Shift+Enter hint to the desktop placeholder', () => {
+        render(composer(false, false));
+
+        expect(screen.getByPlaceholderText('Type a message… (Shift+Enter for new line)')).toBeTruthy();
+    });
+
+    it('keeps the short placeholder on mobile', () => {
+        mocks.isMobile = true;
+        render(composer(false, false));
+
+        expect(screen.getByPlaceholderText('Type a message…')).toBeTruthy();
+        expect(screen.queryByPlaceholderText('Type a message… (Shift+Enter for new line)')).toBeNull();
+    });
 });

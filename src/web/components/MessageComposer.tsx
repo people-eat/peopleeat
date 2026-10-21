@@ -57,7 +57,10 @@ export function MessageComposer({
     const [showSent, setShowSent] = useState(false);
     const sending = submitting ?? busy;
     const attachLabel = { de: 'Datei anhängen', en: 'Attach file' }[locale];
-    const defaultPlaceholder = { de: 'Nachricht eingeben…', en: 'Type a message…' }[locale];
+    const basePlaceholder = placeholder ?? { de: 'Nachricht eingeben…', en: 'Type a message…' }[locale];
+    const resolvedPlaceholder = isMobile
+        ? basePlaceholder
+        : `${basePlaceholder} (${{ de: 'Shift+Enter für neue Zeile', en: 'Shift+Enter for new line' }[locale]})`;
     let sendLabel = { de: 'Senden', en: 'Send' }[locale];
     if (sending) {
         sendLabel = { de: 'Wird gesendet', en: 'Sending' }[locale];
@@ -243,7 +246,7 @@ export function MessageComposer({
                     onPaste={onPaste}
                     onKeyDown={(event) => handleTextareaKeyDown(event, isMobile, submit)}
                     enterKeyHint={isMobile ? 'enter' : 'send'}
-                    placeholder={placeholder ?? defaultPlaceholder}
+                    placeholder={resolvedPlaceholder}
                     aria-label={ariaLabel}
                     disabled={inputsLocked}
                     rows={rows}
