@@ -5,6 +5,7 @@ import type { SubmitEventHandler } from 'react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { phoneNumberNormalize } from '../../../shared/phoneNumber';
 import { textNormalizeTitled } from '../../../shared/textNormalize';
 import { userBirthDatePickerBounds } from '../../../shared/userBirthDate';
 import type { GqlCCookCreate, GqlCUserPreferredCommunication } from '../../graphql/generated';
@@ -99,6 +100,11 @@ export function UserProfileForm({
         de: 'Bitte wähle, wie wir dich erreichen sollen.',
         en: 'Please choose how we should reach you.',
     }[locale];
+    const phoneInvalidMessage = {
+        de: 'Bitte mit Ländervorwahl eingeben (z. B. +4915123456789).',
+        en: 'Please include the country code (e.g. +4915123456789).',
+    }[locale];
+    const normalizedPhoneNumber = phoneNumberNormalize(phoneNumber);
 
     const errors: Partial<Record<FieldKey, string>> = {};
     if (showErrors) {
@@ -106,6 +112,7 @@ export function UserProfileForm({
         if (lastName.trim().length === 0) errors.lastName = requiredMessage;
         if (requireProfileDetails) {
             if (phoneNumber.trim().length === 0) errors.phoneNumber = requiredMessage;
+            else if (!normalizedPhoneNumber) errors.phoneNumber = phoneInvalidMessage;
             if (!birthDate) errors.birthDate = requiredMessage;
             if (!preferredCommunication) errors.preferredCommunication = preferredMessage;
         }
@@ -125,7 +132,7 @@ export function UserProfileForm({
         if (firstName.trim().length === 0) nextErrors.push('firstName');
         if (lastName.trim().length === 0) nextErrors.push('lastName');
         if (requireProfileDetails) {
-            if (phoneNumber.trim().length === 0) nextErrors.push('phoneNumber');
+            if (phoneNumber.trim().length === 0 || !normalizedPhoneNumber) nextErrors.push('phoneNumber');
             if (!birthDate) nextErrors.push('birthDate');
             if (!preferredCommunication) nextErrors.push('preferredCommunication');
         }
@@ -184,9 +191,9 @@ export function UserProfileForm({
         void onSubmit({
             firstName: textNormalizeTitled(firstName),
             lastName: textNormalizeTitled(lastName),
-            ...(requireProfileDetails
+            ...(requireProfileDetails && normalizedPhoneNumber
                 ? {
-                      phoneNumber: phoneNumber.trim(),
+                      phoneNumber: normalizedPhoneNumber,
                       birthDate: format(birthDate!, 'yyyy-MM-dd'),
                       preferredCommunication: preferredCommunication as GqlCUserPreferredCommunication,
                   }
@@ -236,7 +243,7 @@ export function UserProfileForm({
                                 autoComplete="tel"
                                 value={phoneNumber}
                                 onChange={(event) => setPhoneNumber(event.target.value)}
-                                placeholder={{ de: 'Telefonnummer', en: 'Phone number' }[locale]}
+                                placeholder={{ de: 'Telefonnummer (+49…)', en: 'Phone number (+49…)' }[locale]}
                                 disabled={busy}
                                 aria-invalid={errors.phoneNumber ? true : undefined}
                             />

@@ -63,9 +63,10 @@ Keep identity keyed by email; layer OAuth on the current model. TOTP 2FA is live
   stored code again.
 - Registration ticket: `verifiedAt` for new emails; `consumedAt` when binding an existing user or after user create.
 - Self-serve create requires name; phone, birth date, preferred communication optional on schema. When phone is provided it must be E.164
-  with country code (`+49…`); commands run `phoneNumberAssert`. Log-on, booking, and chef sign-up collect them via `AuthIdentityGate` /
-  `UserProfileForm` (`requireProfileDetails`, default true). Gift card omits them. Admin create requires full profile. Optional nested cook
-  create or `UserMutation.cookCreate`. Minimum age **18** when birth date present (`src/shared/userBirthDate.ts`).
+  with country code (`+49…`); `UserProfileForm` validates with shared `phoneNumberNormalize` before submit, and commands still run
+  `phoneNumberAssert`. Log-on, booking, and chef sign-up collect them via `AuthIdentityGate` / `UserProfileForm` (`requireProfileDetails`,
+  default true). Gift card omits them. Admin create requires full profile. Optional nested cook create or `UserMutation.cookCreate`. Minimum
+  age **18** when birth date present (`src/shared/userBirthDate.ts`).
 - Shared UI: `src/web/components/auth/` (`AuthIdentityGate`, `AuthEmailOtpFlow`, `AuthEmailOtpSpamHint`, `AuthPasskeyLogOn`,
   `AuthTotpChallenge`, `UserProfileForm`, `sessionAuthPhase`). `PreferredCommunicationField` on account. Terms + privacy checkboxes required
   on register. Email step uses TanStack Form with `z.email()`; OTP dialog supports Enter, paste, and auto-submit at six digits, with a
