@@ -57,6 +57,7 @@ docs/
 │   ├── admin-offer-chat-review.md # Post-hoc admin review pipeline for offer chats
 │   ├── booking-payment.md        # Checkout, pull payment, cook payout
 │   ├── booking-offer-participant-amendment.md # Post-accept headcount change + prep lock
+│   ├── cook-arrival-identity-verification.md # QR host check when cook arrives (idea)
 │   ├── booking-request-offer-calls.md # LiveKit discovery calls + slots
 │   ├── call-recordings.md        # Call audio egress + transcripts (Garage + admin UI)
 │   ├── assistants.md             # Audience agent factories (scaffolds; wiring pending)

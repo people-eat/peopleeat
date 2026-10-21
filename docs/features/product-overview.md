@@ -26,6 +26,7 @@ peopleeat is a private-chef booking marketplace that connects hosts with cooks w
 **Not yet**
 
 - AI-assisted booking intake at `/booking-request/chat` remains deferred.
+- QR cook arrival identity check at the host’s door — see [cook-arrival-identity-verification.md](./cook-arrival-identity-verification.md).
 
 ## Decisions
 
