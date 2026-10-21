@@ -40,7 +40,7 @@ function ConciergePresenceBanner({
 }: {
     peers: ReadonlyArray<BookingRequestOfferChatPeer>;
     title: string;
-    body: string;
+    body?: string | null;
     className?: string;
 }) {
     const locale = useLocale();
@@ -77,7 +77,7 @@ function ConciergePresenceBanner({
             </AvatarGroup>
             <div className="flex min-w-0 flex-col gap-0.5">
                 <span className="text-sm font-semibold text-foreground">{title}</span>
-                <span className="text-sm text-muted-foreground">{body}</span>
+                {body ? <span className="text-sm text-muted-foreground">{body}</span> : null}
             </div>
         </div>
     );
@@ -120,29 +120,22 @@ export function BookingRequestOfferChat({
     const draftContainsPhoneNumber = containsPhoneNumber(draft);
 
     const presenceTitle = `${peers.map((peer) => peer.display).join(', ')} & Concierge Juliana`;
-    const presenceBody = {
-        customer: {
-            de: 'Ihr seid direkt mit eurem Koch im Chat. Juliana unterstützt euch zusätzlich bei besonderen Anliegen oder Fragen.',
-            en: 'You’re chatting directly with your chef. Juliana also supports you with special requests or questions.',
-        },
-        cook: {
-            de: 'Ihr seid direkt mit eurem Gast im Chat. Juliana unterstützt euch zusätzlich bei besonderen Anliegen oder Fragen.',
-            en: 'You’re chatting directly with your guest. Juliana also supports you with special requests or questions.',
-        },
-        admin: {
-            de: 'Juliana ist mit im Chat und begleitet das Gespräch zwischen Gast und Koch.',
-            en: 'Juliana is also in this chat and follows the conversation between guest and chef.',
-        },
-    }[viewerRole][locale];
+    const presenceBody =
+        viewerRole === 'admin'
+            ? null
+            : {
+                  customer: {
+                      de: 'Ihr seid direkt mit eurem Koch im Chat. Juliana unterstützt euch zusätzlich bei besonderen Anliegen oder Fragen.',
+                      en: 'You’re chatting directly with your chef. Juliana also supports you with special requests or questions.',
+                  },
+                  cook: {
+                      de: 'Ihr seid direkt mit eurem Gast im Chat. Juliana unterstützt euch zusätzlich bei besonderen Anliegen oder Fragen.',
+                      en: 'You’re chatting directly with your guest. Juliana also supports you with special requests or questions.',
+                  },
+              }[viewerRole][locale];
 
     return (
-        <div
-            className={cn(
-                'grid min-h-0 flex-1',
-                canSend ? 'grid-rows-[1fr_auto] md:grid-rows-[auto_1fr_auto]' : 'grid-rows-[1fr] md:grid-rows-[auto_1fr]',
-                className,
-            )}
-        >
+        <div className={cn('grid min-h-0 flex-1 grid-rows-[1fr_auto] md:grid-rows-[auto_1fr_auto]', className)}>
             <ConciergePresenceBanner peers={peers} title={presenceTitle} body={presenceBody} className="hidden md:flex" />
             <ChatTranscriptShell
                 mode="human"
@@ -242,7 +235,10 @@ export function BookingRequestOfferChat({
                         }}
                     />
                 </div>
-            ) : null}
+            ) : (
+                // Match the composer’s `pt-3` gap when there is no send bar (e.g. admin review above a pinned footer).
+                <div className="pt-3" aria-hidden />
+            )}
         </div>
     );
 }

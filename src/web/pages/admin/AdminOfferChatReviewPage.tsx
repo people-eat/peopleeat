@@ -161,28 +161,23 @@ export function AdminOfferChatReviewPage({
                     </div>
                 }
             >
-                <div className="grid shrink-0 gap-2 px-4 pb-1">
-                    <div className="grid min-w-0 gap-1">
-                        <h1 className="font-serif text-2xl/tight text-foreground">{adminOfferChatReviewPageTitle[locale]}</h1>
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                            <span>{request.occasion}</span>
-                            <span aria-hidden>·</span>
-                            <span>
-                                {formatDateTime(request.dateTime, {
-                                    locale,
-                                    timeZone,
-                                    dateStyle: 'medium',
-                                    timeStyle: 'short',
-                                })}
-                            </span>
-                            <span aria-hidden>·</span>
-                            <span>{pendingHint}</span>
-                        </div>
-                    </div>
+                <div className="flex shrink-0 flex-wrap gap-x-3 gap-y-1 px-4 pb-1 text-sm text-muted-foreground">
+                    <span>{request.occasion}</span>
+                    <span aria-hidden>·</span>
+                    <span>
+                        {formatDateTime(request.dateTime, {
+                            locale,
+                            timeZone,
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                        })}
+                    </span>
+                    <span aria-hidden>·</span>
+                    <span>{pendingHint}</span>
                 </div>
 
                 <BookingRequestOfferChat
-                    className="min-h-0 min-w-0 flex-1"
+                    className="min-h-0 min-w-0 flex-1 overflow-hidden"
                     messages={offer.messages}
                     canSend={false}
                     peers={[

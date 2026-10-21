@@ -8,11 +8,12 @@ Post-hoc monitoring of customer–cook offer chats: admins review full threads, 
    instantly to the other party; nothing is held for approval.
 2. Admins open **Angebots-Chats** / **Offer chats** under Messaging (`/admin/offer-chat-reviews`). If work is waiting, they land on the
    oldest pending offer’s full transcript; if the queue is clear, a success empty state is shown.
-3. On the review page, admins see occasion, event time, and pending-message context, plus the full negotiation chat (including system
-   milestones). Customer and cook are reached via linked presence avatars (and via the offer). The transcript scrolls in the pane; the
-   pinned footer is two actions only: **Im Angebot antworten** / **Respond in offer** (opens the admin offer chat tab for concierge replies)
-   and **Bestätigen** / **Confirm**. Admins can still edit, soft-hide / unhide, react, or (for admin messages) permanently delete on the
-   review surface — [booking-offer-chat.md](./booking-offer-chat.md).
+3. On the review page, crumbs plus a compact meta line (occasion, event time, pending-message context) frame the full negotiation chat
+   (including system milestones). No page title H1. Customer and cook are reached via linked presence avatars (and via the offer); the admin
+   presence banner omits the Juliana intro subtitle. The transcript keeps the same bottom breathing room as composer surfaces; the pinned
+   footer is two actions only: **Im Angebot antworten** / **Respond in offer** (opens the admin offer chat tab for concierge replies) and
+   **Bestätigen** / **Confirm**. Admins can still edit, soft-hide / unhide, react, or (for admin messages) permanently delete on the review
+   surface — [booking-offer-chat.md](./booking-offer-chat.md).
 4. **Bestätigen** / **Confirm** clears that offer from the queue and opens the next pending offer, or returns to the empty state when none
    remain. New peer messages after acknowledge put the offer back in the queue.
 5. `/admin` shows a fifth action queue (KPI + capped list) for pending offer-chat reviews, deep-linking into the review page. The Messaging
