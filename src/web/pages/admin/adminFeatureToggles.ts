@@ -23,10 +23,6 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
     PUBLICATION_MEALS: { de: 'Veröffentlichung: Gerichte', en: 'Publication: meals' },
     PUBLICATION_MENUS: { de: 'Veröffentlichung: Menüs', en: 'Publication: menus' },
     WHATSAPP_ENGLISH_TEMPLATES: { de: 'WhatsApp: Englische Vorlagen', en: 'WhatsApp: English templates' },
-    WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION: {
-        de: 'WhatsApp: Webhook-Signaturprüfung',
-        en: 'WhatsApp: webhook signature validation',
-    },
 };
 
 const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, string>> = {
@@ -35,7 +31,7 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
         en: 'Controls whether cooks can open, refresh, and apply AI menu evaluations.',
     },
     AI_BOOKING_REQUEST_MESSAGE: {
-        de: 'Schreibt die Buchungsanfrage-Nachricht nach dem Anlegen kochseitig per KI um.',
+        de: 'Schreibt die Buchungsanfrage-Nachricht nach dem Anlegen für den Koch per KI um.',
         en: 'Rewrites the booking-request message with AI for cooks after create.',
     },
     COOK_BIOGRAPHY_AI_WRITE: {
@@ -77,10 +73,6 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     WHATSAPP_ENGLISH_TEMPLATES: {
         de: 'Wenn an, erhalten englische Empfänger englische Meta-Vorlagen. Wenn aus, werden deutsche Sprachcodes verwendet.',
         en: 'When on, English recipients get English Meta templates. When off, German language codes are used.',
-    },
-    WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION: {
-        de: 'Wenn an, werden Meta-Webhooks mit ungültiger Signatur abgelehnt. Wenn aus, wird die Signatur nicht geprüft.',
-        en: 'When on, Meta webhooks with an invalid signature are rejected. When off, signature checks are skipped.',
     },
 };
 

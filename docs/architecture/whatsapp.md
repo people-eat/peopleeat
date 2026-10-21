@@ -24,9 +24,8 @@ customer-service window, and every send must be auditable.
    `WhatsAppMessages` (inbound/outbound transcript with `messageKind`, delivery stamps, FK to outbound audit); `WhatsAppMessageAttachments`
    → `FileUploads`; `WhatsAppMessageReactions` (current emoji per party on a transcript message; Meta `type: reaction`, not a transcript
    row; null `emoji` tombstone when cleared).
-5. **Webhook** — `GET`/`POST` `/api/webhooks/whatsapp` (Meta challenge + optional `X-Hub-Signature-256`). Signature verification is gated by
-   feature toggle `WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION` (missing/off skips the check; enable once Meta app secret is confirmed). A wrong
-   `WHATSAPP_APP_SECRET` with the toggle on rejects every Meta POST with `400` and no transcript/status updates — the route logs
+5. **Webhook** — `GET`/`POST` `/api/webhooks/whatsapp` (Meta challenge + `X-Hub-Signature-256` when `WHATSAPP_TRANSPORT=meta`). A wrong
+   `WHATSAPP_APP_SECRET` rejects every Meta POST with `400` and no transcript/status updates — the route logs
    `whatsapp webhook: POST rejected (invalid signature…)`. Happy-path applies (statuses + inbound) are silent; `log.warn` only for
    unexpected/unhandled inputs (invalid JSON/signature, unknown status, unsupported message type, non-E.164 `from`, reaction target missing)
    and `log.error` when the handler throws. Inbound upserts conversation/message (conflict-safe on phone), downloads media into

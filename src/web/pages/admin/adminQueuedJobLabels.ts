@@ -118,7 +118,7 @@ export function adminQueuedJobDescription(name: string, locale: Locale): string 
             en: 'Posts a Slack alert when there is still no offer after 24 or 48 hours.',
         },
         'booking-request-adjusted-message-generate': {
-            de: 'Erzeugt per KI die kochseitige Nachricht (ohne personenbezogene Daten).',
+            de: 'Erzeugt per KI die Nachricht für den Koch (ohne personenbezogene Daten).',
             en: 'Uses AI to write the cook-facing request message without personal data.',
         },
         'booking-request-reaction-reminder': {

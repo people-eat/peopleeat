@@ -8,7 +8,7 @@ import { bookingRequestAdjustedMessageGenerateScheduleIfEnabled } from './bookin
 
 describe('bookingRequestAdjustedMessageGenerateScheduleIfEnabled', () => {
     it('enqueues when the toggle is on and the message is non-empty', async () => {
-        const setup = await commandSetup.withUser({ firstName: 'Sched', lastName: 'On' });
+        const setup = await commandSetup.withUser({ firstName: 'Schedule', lastName: 'On' });
         await testDb
             .insert(featureToggles)
             .values({ featureToggleKey: 'AI_BOOKING_REQUEST_MESSAGE', enabled: true })
@@ -31,7 +31,7 @@ describe('bookingRequestAdjustedMessageGenerateScheduleIfEnabled', () => {
     });
 
     it('does not enqueue when the toggle is off', async () => {
-        const setup = await commandSetup.withUser({ firstName: 'Sched', lastName: 'Off' });
+        const setup = await commandSetup.withUser({ firstName: 'Schedule', lastName: 'Off' });
         await testDb
             .insert(featureToggles)
             .values({ featureToggleKey: 'AI_BOOKING_REQUEST_MESSAGE', enabled: false })
@@ -51,7 +51,7 @@ describe('bookingRequestAdjustedMessageGenerateScheduleIfEnabled', () => {
     });
 
     it('does not enqueue when the message is empty', async () => {
-        const setup = await commandSetup.withUser({ firstName: 'Sched', lastName: 'Empty' });
+        const setup = await commandSetup.withUser({ firstName: 'Schedule', lastName: 'Empty' });
         await testDb
             .insert(featureToggles)
             .values({ featureToggleKey: 'AI_BOOKING_REQUEST_MESSAGE', enabled: true })

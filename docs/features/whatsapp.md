@@ -47,9 +47,10 @@ Feature toggles (admin `/admin/feature-toggles`, missing = off):
 
 - `WHATSAPP_ENGLISH_TEMPLATES` — enable only after EN templates are approved in WhatsApp Manager; until then EN recipients fall back to Meta
   language `de`
-- `WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION` — enable once Meta `X-Hub-Signature-256` / app secret is confirmed; while off, POST webhooks skip
-  signature verification. If this is on and `WHATSAPP_APP_SECRET` does not match the Meta app secret, Meta POSTs return `400` and inbound
-  never lands in admin (look for `whatsapp webhook: POST rejected (invalid signature…)` in Admin Logs / Coolify logs)
+
+Webhook signature validation (`X-Hub-Signature-256`) is always on when `WHATSAPP_TRANSPORT=meta`. If `WHATSAPP_APP_SECRET` does not match
+the Meta app secret, Meta POSTs return `400` and inbound never lands in admin (look for
+`whatsapp webhook: POST rejected (invalid signature…)` in Admin Logs / Coolify logs).
 
 ## Decisions
 

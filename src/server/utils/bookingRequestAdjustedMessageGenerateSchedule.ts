@@ -31,7 +31,7 @@ export async function bookingRequestAdjustedMessageGenerateCancel(serverRuntime:
 }
 
 /** Cancel any pending adjusted-message job for this request, then enqueue a fresh one. */
-export async function bookingRequestAdjustedMessageGenerateSchedule(serverRuntime: ServerRuntime, bookingRequestId: string): Promise<void> {
+async function bookingRequestAdjustedMessageGenerateSchedule(serverRuntime: ServerRuntime, bookingRequestId: string): Promise<void> {
     await bookingRequestAdjustedMessageGenerateCancel(serverRuntime, bookingRequestId);
     await serverRuntime.jobs.enqueue(bookingRequestAdjustedMessageGenerate, { bookingRequestId });
 }

@@ -3869,8 +3869,7 @@ export type GqlSFeatureToggleKey =
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
-    | 'WHATSAPP_ENGLISH_TEMPLATES'
-    | 'WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION';
+    | 'WHATSAPP_ENGLISH_TEMPLATES';
 
 export interface GqlSFileUpload {
     __typename?: 'FileUpload';
@@ -11839,8 +11838,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
-    | 'WHATSAPP_ENGLISH_TEMPLATES'
-    | 'WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION',
+    | 'WHATSAPP_ENGLISH_TEMPLATES',
     | 'AI_BOOKING_REQUEST_MESSAGE'
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
@@ -11853,7 +11851,6 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
     | 'WHATSAPP_ENGLISH_TEMPLATES'
-    | 'WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION'
 > = z.enum([
     'AI_BOOKING_REQUEST_MESSAGE',
     'AI_MENU_EVALUATION',
@@ -11867,7 +11864,6 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'PUBLICATION_MEALS',
     'PUBLICATION_MENUS',
     'WHATSAPP_ENGLISH_TEMPLATES',
-    'WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION',
 ]);
 
 export const GqlSGiftCardPaymentStatusSchema: z.ZodType<'PAYED' | 'PREPARED', 'PAYED' | 'PREPARED'> = z.enum(['PAYED', 'PREPARED']);

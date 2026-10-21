@@ -25,9 +25,8 @@ Keys today:
 - Meal publication
 - Menu publication
 - WhatsApp English templates (when off, EN recipients get DE Meta template language codes)
-- WhatsApp webhook signature validation (when off, Meta `X-Hub-Signature-256` is not checked)
 
-Calls and scheduling stay always on and are not toggles.
+Calls, scheduling, and WhatsApp webhook signature validation stay always on and are not toggles.
 
 ### Resolution (global + per-user)
 
@@ -109,9 +108,6 @@ Wired today:
 - **AI menu evaluation** (`AI_MENU_EVALUATION`) — cook open / refresh / apply gates use the cook `userId`
 - **WhatsApp English templates** (`WHATSAPP_ENGLISH_TEMPLATES`) — when off (default until approved EN templates exist), lifecycle template
   sends use Meta language `de` even when the recipient locale is `en`; when on, EN locale maps to Meta language `en`
-- **WhatsApp webhook signature validation** (`WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION`) — when off (temporary default), Meta POST webhooks
-  skip `X-Hub-Signature-256` verification; when on, invalid signatures return 400. Global-only (no per-user override needed for the webhook
-  path)
 
 ## Decisions
 

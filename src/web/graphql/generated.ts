@@ -3872,8 +3872,7 @@ export type GqlCFeatureToggleKey =
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
-    | 'WHATSAPP_ENGLISH_TEMPLATES'
-    | 'WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION';
+    | 'WHATSAPP_ENGLISH_TEMPLATES';
 
 export interface GqlCFileUpload {
     __typename?: 'FileUpload';

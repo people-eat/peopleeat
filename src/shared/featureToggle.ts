@@ -15,7 +15,6 @@ export const featureToggleKeys = [
     'PUBLICATION_MEALS',
     'PUBLICATION_MENUS',
     'WHATSAPP_ENGLISH_TEMPLATES',
-    'WHATSAPP_WEBHOOK_SIGNATURE_VALIDATION',
 ] as const;
 
 export type FeatureToggleKey = (typeof featureToggleKeys)[number];

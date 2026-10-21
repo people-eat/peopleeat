@@ -16,8 +16,8 @@ die unseren Köchen automatisiert angezeigt wird. Aus Datenschutz- und Geschäft
 sichergestellt sein, dass darin keine personenbezogenen Daten, wie Telefonnummer, E-Mail Adresse
 oder geografische Adresse vorkommen. Es soll genügend Kontext für Köche bereitgestellt werden, dass
 sie wissen, auf welche Art von Anlass sie sich bei diesen Event ein lassen.
-Bitte passe die Nachricht mit möglichst wenigen Änderungen an, Formuliere sie gegenenfalls besser aus,
-korrigiere Rechtschreib- und Grammatik Fehler. In der geänderten Nachricht sollte nicht explitzit betont
+Bitte passe die Nachricht mit möglichst wenigen Änderungen an, Formuliere sie gegebenenfalls besser aus,
+korrigiere Rechtschreib- und Grammatik Fehler. In der geänderten Nachricht sollte nicht explizit betont
 sein, dass Daten nicht mit angegeben wurden.
 Versuche der Nachricht allerdings nicht ihre Persönlichkeit zu nehmen, das heißt Smileys etc. sollten erhalten bleiben.
 Du erhältst den Anlass, sowie die aktuelle Nachricht. Bitte antworte mit der angepassten Nachricht.
