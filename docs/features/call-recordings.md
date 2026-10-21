@@ -12,10 +12,11 @@ When a LiveKit discovery call starts on an open offer:
    production-facing flows.
 3. When the room ends, a background job waits for recording to finish, downloads the audio, runs speech-to-text into structured segments,
    then generates a short **AI summary** for admin review.
-4. Admins review a call on **`/admin/calls/$bookingRequestOfferCallRoomId`** (`AdminCallPage`): sticky waveform player, summary first,
-   optional chat-like transcript (collapsed by default; segment click seeks). Audio streams through an admin-authenticated API route. The
-   offer Call tab shows compact recording cards that deep-link to that page. `/admin/calls` list and attention board open the call page when
-   a room id is present; slot-only rows still open the offer Call tab.
+4. Admins review a call on **`/admin/calls/$bookingRequestOfferCallRoomId`** (`AdminCallPage`): condensed header (occasion, status, time,
+   cook/customer cards shared with the offer tab), sticky waveform player, summary first, optional chat-like transcript (collapsed by
+   default; segment click seeks). Audio streams through an admin-authenticated API route. The offer Call tab shows compact recording cards
+   that deep-link to that page. `/admin/calls` list and attention board open the call page when a room id is present; slot-only rows still
+   open the offer Call tab.
 5. **FAILED** recordings show the error and allow admin **delete** (Garage object + DB row; the call room remains).
 
 Customers and cooks do **not** see recordings or transcripts in v1.
@@ -65,15 +66,18 @@ working without recording.
 
 ### GraphQL / commands
 
-- `Admin.call(bookingRequestOfferCallRoomId)` → `adminCallFindOne` (`AdminCall` + optional recording)
+- `Admin.call(bookingRequestOfferCallRoomId)` → `adminCallFindOne` (`AdminCall` + `AdminCallParty` cook/customer + optional recording)
 - `AdminMutation.bookingRequestOfferCallRecordingSummaryGenerate` — regenerate summary
 - `AdminMutation.bookingRequestOfferCallRecordingDelete` — FAILED only
 
 ### Admin UI
 
-- `AdminCallPage` — `/admin/calls/$bookingRequestOfferCallRoomId` (summary-first, optional chat transcript, delete failed)
+- `AdminCallPage` — `/admin/calls/$bookingRequestOfferCallRoomId` (condensed header + `AdminOfferPartyCards`, summary-first, optional chat
+  transcript, delete failed)
+- `AdminOfferPartyCards` — cook/customer identity cards shared with the admin offer tab (`OfferMetaTabPanel`)
 - `AdminBookingRequestOfferCallRecordingsSection` — compact cards on the offer Call tab linking to `AdminCallPage`
-- `AudioWaveformPlayer` — shared scrub/waveform control (`tone="neutral"` + phone chrome on call review)
+- `AudioWaveformPlayer` — shared scrub/waveform control (`tone="neutral"` + phone chrome on call review); bars flex to fill the track so the
+  seek thumb stays on the waveform
 - Waveform helpers: `formatAudioDuration` / `audioWaveformBars` in `src/web/utils/audioWaveform.ts`
 
 ### Env

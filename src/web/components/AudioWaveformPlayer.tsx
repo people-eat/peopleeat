@@ -259,7 +259,7 @@ export const AudioWaveformPlayer = forwardRef<AudioWaveformPlayerHandle, AudioWa
                         return (
                             <span
                                 key={index}
-                                className={cn('w-full max-w-[3px] min-w-[2px] rounded-full', played ? barPlayed : barIdle)}
+                                className={cn('min-w-px flex-1 rounded-full', played ? barPlayed : barIdle)}
                                 style={{ height: `${Math.round(height * 100)}%` }}
                             />
                         );

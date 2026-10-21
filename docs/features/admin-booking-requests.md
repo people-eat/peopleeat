@@ -61,8 +61,9 @@ dialog, including after send is closed), **offer** (cook / customer / accept met
 **testimonial** (when relevant). Legacy `?tab=schedule` still resolves to **call**. Planned: concierge tags surface on admin home —
 [booking-offer-chat.md](./booking-offer-chat.md). Card sections use the shared base `Card`.
 
-**Offer** holds people and lifecycle metadata: cook + customer cards (avatar + name/email, outline role badge top-right, outline **Nutzer
-öffnen** to `/admin/users/$userId`; cook cuisine tags below when present), an **Angebotsstatus** block (title above card; 2-column grid:
+**Offer** holds people and lifecycle metadata: cook + customer cards via shared `AdminOfferPartyCards` (avatar + name/email, outline role
+badge top-right, outline **Nutzer öffnen** to `/admin/users/$userId`; also used on `AdminCallPage`), an **Angebotsstatus** block (title
+above card; 2-column grid:
 offer id with copy, long created date-time, then accept `StatusBadge`s; decline reasons full-width below when present), and pending
 `queuedJobs`. Hand over lives here (footer). Offer status pill sits top-right above the tabs (no payment-status pill in that chrome).
 

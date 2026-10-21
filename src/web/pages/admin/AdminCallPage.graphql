@@ -20,6 +20,24 @@ query AdminCallPage($bookingRequestOfferCallRoomId: ID!) {
                     customerUserId
                     cookDisplayName
                     customerDisplayName
+                    cook {
+                        userId
+                        displayName
+                        emailAddress
+                        profilePicture {
+                            fileUploadId
+                            url
+                        }
+                    }
+                    customer {
+                        userId
+                        displayName
+                        emailAddress
+                        profilePicture {
+                            fileUploadId
+                            url
+                        }
+                    }
                     recording {
                         bookingRequestOfferCallRecordingId
                         bookingRequestOfferCallRoomId

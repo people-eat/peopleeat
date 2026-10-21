@@ -28,6 +28,7 @@ import {
 import { AdminBookingRequestOfferCallRecordingsSection } from '../../components/AdminBookingRequestOfferCallRecordingsSection';
 import { adminBookingRequestOfferStatusLabel } from '../../components/adminBookingRequestOfferStatus';
 import { AdminBookingRequestOfferTestimonialsSection } from '../../components/AdminBookingRequestOfferTestimonialsSection';
+import { AdminOfferPartyCards } from '../../components/AdminOfferPartyCards';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { AdminQueuedJobsSection } from '../../components/AdminQueuedJobsSection';
@@ -41,8 +42,6 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '../../components/base/alert-dialog';
-import { Avatar, AvatarFallback, AvatarImage } from '../../components/base/avatar';
-import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/base/card';
 import { Separator } from '../../components/base/separator';
@@ -798,13 +797,6 @@ function money(cents: number, locale: Locale): string {
     return formatCurrency(cents, { locale });
 }
 
-function initialsFromName(name: string): string {
-    const parts = name.trim().split(/\s+/).filter(Boolean);
-    if (parts.length === 0) return '?';
-    if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
-    return `${parts[0]!.slice(0, 1)}${parts[parts.length - 1]!.slice(0, 1)}`.toUpperCase();
-}
-
 function EconomicsRow({
     label,
     value,
@@ -850,10 +842,7 @@ function OfferMetaTabPanel({
 }) {
     const [{ fetching: preparationsClearBusy }, clearPreparations] = useMutation(AdminBookingRequestOfferPreparationsClearDocument);
     const cookDisplayName = userDisplayName(offer.cook.user);
-    const cookProfilePictureUrl = offer.cook.user.profilePicture?.url ?? null;
     const customerDisplayName = request ? adminBookingRequestCustomerLabel(request.customer) : null;
-    const customerProfilePictureUrl = request?.customer.profilePicture?.url ?? null;
-    const openUserLabel = { de: 'Nutzer öffnen', en: 'Open user' }[locale];
 
     return (
         <div className="@container grid max-w-3xl gap-4">
@@ -881,68 +870,25 @@ function OfferMetaTabPanel({
                     );
                 }}
             />
-            <div className="grid items-start gap-4 @2xl:grid-cols-2">
-                <Card className="gap-0 py-4">
-                    <CardContent className="grid gap-3 px-4">
-                        <div className="flex items-start justify-between gap-3">
-                            <div className="flex min-w-0 items-start gap-3">
-                                <Avatar className="size-12 shrink-0">
-                                    {cookProfilePictureUrl ? (
-                                        <AvatarImage src={cookProfilePictureUrl} alt="" className="object-cover" />
-                                    ) : null}
-                                    <AvatarFallback>{initialsFromName(cookDisplayName)}</AvatarFallback>
-                                </Avatar>
-                                <div className="grid min-w-0 flex-1 gap-0.5">
-                                    <p className="truncate font-medium text-foreground">{cookDisplayName}</p>
-                                    <p className="truncate text-sm text-muted-foreground">{offer.cook.user.emailAddress}</p>
-                                </div>
-                            </div>
-                            <Badge variant="outline" className="shrink-0">
-                                {{ de: 'Koch', en: 'Cook' }[locale]}
-                            </Badge>
-                        </div>
-                        <div>
-                            <Button type="button" variant="outline" size="sm" asChild>
-                                <Link to="/{-$locale}/admin/users/$userId" params={{ userId: offer.cook.user.userId }}>
-                                    <ExternalLinkIcon data-icon="inline-start" />
-                                    {openUserLabel}
-                                </Link>
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-                {request && customerDisplayName ? (
-                    <Card className="gap-0 py-4">
-                        <CardContent className="grid gap-3 px-4">
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="flex min-w-0 items-start gap-3">
-                                    <Avatar className="size-12 shrink-0">
-                                        {customerProfilePictureUrl ? (
-                                            <AvatarImage src={customerProfilePictureUrl} alt="" className="object-cover" />
-                                        ) : null}
-                                        <AvatarFallback>{initialsFromName(customerDisplayName)}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="grid min-w-0 flex-1 gap-0.5">
-                                        <p className="truncate font-medium text-foreground">{customerDisplayName}</p>
-                                        <p className="truncate text-sm text-muted-foreground">{request.customer.emailAddress}</p>
-                                    </div>
-                                </div>
-                                <Badge variant="outline" className="shrink-0">
-                                    {{ de: 'Kunde', en: 'Customer' }[locale]}
-                                </Badge>
-                            </div>
-                            <div>
-                                <Button type="button" variant="outline" size="sm" asChild>
-                                    <Link to="/{-$locale}/admin/users/$userId" params={{ userId: request.customer.userId }}>
-                                        <ExternalLinkIcon data-icon="inline-start" />
-                                        {openUserLabel}
-                                    </Link>
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ) : null}
-            </div>
+            <AdminOfferPartyCards
+                locale={locale}
+                cook={{
+                    userId: offer.cook.user.userId,
+                    displayName: cookDisplayName,
+                    emailAddress: offer.cook.user.emailAddress,
+                    profilePictureUrl: offer.cook.user.profilePicture?.url ?? null,
+                }}
+                customer={
+                    request && customerDisplayName
+                        ? {
+                              userId: request.customer.userId,
+                              displayName: customerDisplayName,
+                              emailAddress: request.customer.emailAddress,
+                              profilePictureUrl: request.customer.profilePicture?.url ?? null,
+                          }
+                        : null
+                }
+            />
 
             <div className="grid gap-3">
                 <h2 className="text-sm font-medium text-foreground">{{ de: 'Angebotsstatus', en: 'Offer status' }[locale]}</h2>

@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { useMutation } from 'urql';
 
 import { formatDate, formatTime } from '../../../shared';
+import { AdminOfferPartyCards } from '../../components/AdminOfferPartyCards';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AudioWaveformPlayer } from '../../components/AudioWaveformPlayer';
 import type { AudioWaveformPlayerHandle } from '../../components/AudioWaveformPlayer';
@@ -93,12 +94,7 @@ export function AdminCallPage({
                 { label: crumbLabel },
             ]}
         >
-            <main id="main-content" className="grid w-full content-start gap-8">
-                <div className="grid gap-2">
-                    <h1 className="font-serif text-4xl/tight text-foreground">{adminCallPageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{adminCallPageDescription[locale]}</p>
-                </div>
-
+            <main id="main-content" className="grid w-full content-start gap-6">
                 {call ? (
                     <AdminCallDetailBody call={call} />
                 ) : (
@@ -124,9 +120,9 @@ function AdminCallDetailBody({ call }: { call: AdminCallDetail }) {
     }`;
 
     return (
-        <div className="grid gap-8">
-            <section className="grid gap-3">
-                <div className="flex flex-wrap items-center gap-2">
+        <div className="@container grid gap-6">
+            <section className="grid gap-4">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                     <Badge variant={call.status === 'ACTIVE' ? 'default' : 'outline'}>
                         {
                             {
@@ -135,40 +131,10 @@ function AdminCallDetailBody({ call }: { call: AdminCallDetail }) {
                             }[call.status][locale]
                         }
                     </Badge>
+                    <p className="min-w-0 flex-1 text-base font-medium text-foreground">
+                        {call.occasion || { de: 'Ohne Anlass', en: 'No occasion' }[locale]}
+                    </p>
                     <span className="text-sm text-muted-foreground tabular-nums">{when}</span>
-                </div>
-                <p className="text-lg font-medium text-foreground">{call.occasion || { de: 'Ohne Anlass', en: 'No occasion' }[locale]}</p>
-                <dl className="grid gap-2 text-sm sm:grid-cols-2">
-                    <div className="grid gap-0.5">
-                        <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                            {{ de: 'Koch', en: 'Cook' }[locale]}
-                        </dt>
-                        <dd>
-                            <Link
-                                to="/{-$locale}/admin/users/$userId"
-                                params={{ userId: call.cookId }}
-                                className="text-foreground hover:underline"
-                            >
-                                {call.cookDisplayName}
-                            </Link>
-                        </dd>
-                    </div>
-                    <div className="grid gap-0.5">
-                        <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                            {{ de: 'Kunde', en: 'Customer' }[locale]}
-                        </dt>
-                        <dd>
-                            <Link
-                                to="/{-$locale}/admin/users/$userId"
-                                params={{ userId: call.customerUserId }}
-                                className="text-foreground hover:underline"
-                            >
-                                {call.customerDisplayName}
-                            </Link>
-                        </dd>
-                    </div>
-                </dl>
-                <div>
                     <Button variant="outline" size="sm" asChild>
                         <Link
                             to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
@@ -176,12 +142,27 @@ function AdminCallDetailBody({ call }: { call: AdminCallDetail }) {
                                 bookingRequestId: call.bookingRequestId,
                                 bookingRequestOfferId: call.bookingRequestOfferId,
                             }}
-                            search={{ tab: 'call' }}
+                            search={{ tab: 'offer' }}
                         >
                             {{ de: 'Zum Angebot', en: 'Open offer' }[locale]}
                         </Link>
                     </Button>
                 </div>
+                <AdminOfferPartyCards
+                    locale={locale}
+                    cook={{
+                        userId: call.cook.userId,
+                        displayName: call.cook.displayName,
+                        emailAddress: call.cook.emailAddress,
+                        profilePictureUrl: call.cook.profilePicture?.url ?? null,
+                    }}
+                    customer={{
+                        userId: call.customer.userId,
+                        displayName: call.customer.displayName,
+                        emailAddress: call.customer.emailAddress,
+                        profilePictureUrl: call.customer.profilePicture?.url ?? null,
+                    }}
+                />
             </section>
 
             <AdminCallRecordingReview call={call} />
@@ -207,7 +188,6 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
     if (!recording) {
         return (
             <section className="grid gap-2 rounded-lg border border-border p-4">
-                <h2 className="text-sm font-medium text-foreground">{{ de: 'Aufnahme', en: 'Recording' }[locale]}</h2>
                 <p className="text-sm text-muted-foreground">
                     {
                         {
@@ -255,21 +235,14 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
 
     return (
         <section className="grid gap-4">
-            <div className="sticky top-0 z-10 grid gap-3 border-b border-border bg-background/95 py-3 backdrop-blur-sm">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <h2 className="text-sm font-medium text-foreground">{{ de: 'Aufnahme', en: 'Recording' }[locale]}</h2>
-                    <Badge variant={recording.status === 'FAILED' ? 'destructive' : 'outline'}>
-                        {recordingStatusLabel(recording.status, locale)}
-                    </Badge>
-                </div>
-
+            <div className="sticky top-0 z-10 flex flex-wrap items-center gap-3 border-b border-border bg-background/95 py-3 backdrop-blur-sm">
                 {recording.audioUrl ? (
                     <AudioWaveformPlayer
                         src={recording.audioUrl}
                         waveformSeed={recording.bookingRequestOfferCallRecordingId}
                         tone="neutral"
                         barCount={64}
-                        className="max-w-2xl"
+                        className="min-w-0 max-w-2xl flex-1"
                         ref={playerRef}
                         onCurrentTimeChange={setCurrentSec}
                         labels={{
@@ -284,7 +257,12 @@ function AdminCallRecordingReview({ call }: { call: AdminCallDetail }) {
                             </div>
                         }
                     />
-                ) : null}
+                ) : (
+                    <div className="min-w-0 flex-1" />
+                )}
+                <Badge variant={recording.status === 'FAILED' ? 'destructive' : 'outline'} className="shrink-0">
+                    {recordingStatusLabel(recording.status, locale)}
+                </Badge>
             </div>
 
             {recording.status === 'FAILED' ? (

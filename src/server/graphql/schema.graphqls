@@ -1270,6 +1270,15 @@ type BookingRequestOfferCallRecording {
 
 # Admin discovery-call detail (`/admin/calls/$bookingRequestOfferCallRoomId`).
 # Room is the call id; recording is optional 1:1.
+# Party row on admin call detail (cook / customer cards).
+type AdminCallParty {
+    userId: ID!
+    displayName: String!
+    # Null when the account has been anonymized.
+    emailAddress: EmailAddress
+    profilePicture: FileUpload
+}
+
 type AdminCall {
     bookingRequestOfferCallRoomId: ID!
     bookingRequestOfferId: ID!
@@ -1283,6 +1292,8 @@ type AdminCall {
     customerUserId: ID!
     cookDisplayName: String!
     customerDisplayName: String!
+    cook: AdminCallParty!
+    customer: AdminCallParty!
     recording: BookingRequestOfferCallRecording
 }
 

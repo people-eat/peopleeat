@@ -880,8 +880,10 @@ export interface GqlCAdminCall {
     bookingRequestId: Scalars['ID']['output'];
     bookingRequestOfferCallRoomId: Scalars['ID']['output'];
     bookingRequestOfferId: Scalars['ID']['output'];
+    cook: GqlCAdminCallParty;
     cookDisplayName: Scalars['String']['output'];
     cookId: Scalars['ID']['output'];
+    customer: GqlCAdminCallParty;
     customerDisplayName: Scalars['String']['output'];
     customerUserId: Scalars['ID']['output'];
     endedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -920,6 +922,14 @@ export interface GqlCAdminCallListItem {
 }
 
 export type GqlCAdminCallListItemKind = 'CANCELED' | 'DECLINED' | 'LIVE' | 'PENDING' | 'RECENT_ROOM' | 'RECENT_SLOT' | 'UPCOMING';
+
+export interface GqlCAdminCallParty {
+    __typename?: 'AdminCallParty';
+    displayName: Scalars['String']['output'];
+    emailAddress?: Maybe<Scalars['EmailAddress']['output']>;
+    profilePicture?: Maybe<GqlCFileUpload>;
+    userId: Scalars['ID']['output'];
+}
 
 export type GqlCAdminCallTrafficCriterion = {
     cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
@@ -10920,6 +10930,18 @@ export type GqlCAdminCallPageQuery = {
                     customerUserId: string;
                     cookDisplayName: string;
                     customerDisplayName: string;
+                    cook: {
+                        userId: string;
+                        displayName: string;
+                        emailAddress: string | null;
+                        profilePicture: { fileUploadId: string; url: string } | null;
+                    };
+                    customer: {
+                        userId: string;
+                        displayName: string;
+                        emailAddress: string | null;
+                        profilePicture: { fileUploadId: string; url: string } | null;
+                    };
                     recording: {
                         bookingRequestOfferCallRecordingId: string;
                         bookingRequestOfferCallRoomId: string;
@@ -48091,6 +48113,82 @@ export const AdminCallPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'customerUserId' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'cookDisplayName' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'customerDisplayName' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'cook' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'displayName' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'emailAddress' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'profilePicture' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'fileUploadId',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'url' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'customer' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'displayName' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'emailAddress' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'profilePicture' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'fileUploadId',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'url' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                     {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'recording' },

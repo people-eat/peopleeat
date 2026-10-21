@@ -877,8 +877,10 @@ export interface GqlSAdminCall {
     bookingRequestId: Scalars['ID']['output'];
     bookingRequestOfferCallRoomId: Scalars['ID']['output'];
     bookingRequestOfferId: Scalars['ID']['output'];
+    cook: GqlSAdminCallParty;
     cookDisplayName: Scalars['String']['output'];
     cookId: Scalars['ID']['output'];
+    customer: GqlSAdminCallParty;
     customerDisplayName: Scalars['String']['output'];
     customerUserId: Scalars['ID']['output'];
     endedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -917,6 +919,14 @@ export interface GqlSAdminCallListItem {
 }
 
 export type GqlSAdminCallListItemKind = 'CANCELED' | 'DECLINED' | 'LIVE' | 'PENDING' | 'RECENT_ROOM' | 'RECENT_SLOT' | 'UPCOMING';
+
+export interface GqlSAdminCallParty {
+    __typename?: 'AdminCallParty';
+    displayName: Scalars['String']['output'];
+    emailAddress?: Maybe<Scalars['EmailAddress']['output']>;
+    profilePicture?: Maybe<GqlSFileUpload>;
+    userId: Scalars['ID']['output'];
+}
 
 export type GqlSAdminCallTrafficCriterion = {
     cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
@@ -5313,6 +5323,7 @@ export type GqlSResolversTypes = ResolversObject<{
         Omit<GqlSAdminCallListItem, 'callRoom'> & { callRoom?: Maybe<GqlSResolversTypes['BookingRequestOfferCallRoom']> }
     >;
     AdminCallListItemKind: GqlSAdminCallListItemKind;
+    AdminCallParty: ResolverTypeWrapper<GqlSAdminCallParty>;
     AdminCallTrafficCriterion: GqlSAdminCallTrafficCriterion;
     AdminCallTrafficSortField: GqlSAdminCallTrafficSortField;
     AdminCity: ResolverTypeWrapper<
@@ -5886,6 +5897,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminCallListItem: Omit<GqlSAdminCallListItem, 'callRoom'> & {
         callRoom?: Maybe<GqlSResolversParentTypes['BookingRequestOfferCallRoom']>;
     };
+    AdminCallParty: GqlSAdminCallParty;
     AdminCallTrafficCriterion: GqlSAdminCallTrafficCriterion;
     AdminCity: Omit<GqlSAdminCity, 'cooks' | 'sections' | 'testimonials'> & {
         cooks: Array<GqlSResolversParentTypes['AdminCityCook']>;
@@ -7039,8 +7051,10 @@ export type GqlSAdminCallResolvers<
     bookingRequestId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     bookingRequestOfferCallRoomId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     bookingRequestOfferId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    cook?: Resolver<GqlSResolversTypes['AdminCallParty'], ParentType, ContextType>;
     cookDisplayName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     cookId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    customer?: Resolver<GqlSResolversTypes['AdminCallParty'], ParentType, ContextType>;
     customerDisplayName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     customerUserId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     endedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -7078,6 +7092,16 @@ export type GqlSAdminCallListItemResolvers<
     customerUserId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     kind?: Resolver<GqlSResolversTypes['AdminCallListItemKind'], ParentType, ContextType>;
     occasion?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminCallPartyResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminCallParty'] = GqlSResolversParentTypes['AdminCallParty'],
+> = ResolversObject<{
+    displayName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    emailAddress?: Resolver<Maybe<GqlSResolversTypes['EmailAddress']>, ParentType, ContextType>;
+    profilePicture?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
+    userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminCityResolvers<
@@ -10945,6 +10969,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminCall?: GqlSAdminCallResolvers<ContextType>;
     AdminCallCookStat?: GqlSAdminCallCookStatResolvers<ContextType>;
     AdminCallListItem?: GqlSAdminCallListItemResolvers<ContextType>;
+    AdminCallParty?: GqlSAdminCallPartyResolvers<ContextType>;
     AdminCity?: GqlSAdminCityResolvers<ContextType>;
     AdminCityCook?: GqlSAdminCityCookResolvers<ContextType>;
     AdminCityTestimonial?: GqlSAdminCityTestimonialResolvers<ContextType>;
