@@ -143,8 +143,9 @@ participants / costs / configured-menu snapshots stay unprefixed.
 4. `publicationStatus` is on `AdminBookingRequest` only — customers do not see it yet (planned feature); cooks never see non-approved
    requests, so `CookBookingRequest` omits it
 5. Cook-facing request types expose a single resolved `message` (`adjustedMessage` ?? `originalMessage`, trimmed) — not the raw pair.
-   Customer / admin keep `originalMessage` + `adjustedMessage`. Cook-facing `exactEventAddress` redacts street until dual-accept; offer
-   context also gates `invoiceAddress` the same way (see Location above)
+   Customer / admin keep `originalMessage` + `adjustedMessage`. When `AI_BOOKING_REQUEST_MESSAGE` is on, create (and selective admin update)
+   fill `adjustedMessage` via a background job — see [ai-booking-request-message.md](../features/ai-booking-request-message.md). Cook-facing
+   `exactEventAddress` redacts street until dual-accept; offer context also gates `invoiceAddress` the same way (see Location above)
 6. Offer timeline projects onto `messages: [ChatMessage!]!` (`ChatMessageUser` + `ChatMessageBookingRequestOfferEvent`)
 7. Derived statuses: `bookingRequestStatusDerive` / `bookingRequestOfferStatusDerive` in `src/server/domain/bookingRequest.ts`
 8. `CostBreakdown` with `amountCents` (discounts negative) via `bookingRequestOfferCostBreakdownBuild`

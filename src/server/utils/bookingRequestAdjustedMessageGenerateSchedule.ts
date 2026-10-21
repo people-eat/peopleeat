@@ -1,10 +1,8 @@
 import type { JobWithMetadata } from 'pg-boss';
 
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import {
-    bookingRequestAdjustedMessageGenerate,
-    type BookingRequestAdjustedMessageGenerateData,
-} from '../jobs/handlers/bookingRequestAdjustedMessageGenerate';
+import type { BookingRequestAdjustedMessageGenerateData } from '../jobs/handlers/bookingRequestAdjustedMessageGenerate';
+import { bookingRequestAdjustedMessageGenerate } from '../jobs/handlers/bookingRequestAdjustedMessageGenerate';
 import { featureToggleIsEnabled } from './featureToggleIsEnabled';
 
 function isPendingJob(job: JobWithMetadata<BookingRequestAdjustedMessageGenerateData>): boolean {
@@ -19,10 +17,7 @@ async function pendingJobs(
     return rows.filter(isPendingJob);
 }
 
-export async function bookingRequestAdjustedMessageGenerateCancel(
-    serverRuntime: ServerRuntime,
-    bookingRequestId: string,
-): Promise<void> {
+export async function bookingRequestAdjustedMessageGenerateCancel(serverRuntime: ServerRuntime, bookingRequestId: string): Promise<void> {
     const pending = await pendingJobs(serverRuntime, bookingRequestId);
     await Promise.all(
         pending.map(async (job) => {
@@ -36,10 +31,7 @@ export async function bookingRequestAdjustedMessageGenerateCancel(
 }
 
 /** Cancel any pending adjusted-message job for this request, then enqueue a fresh one. */
-export async function bookingRequestAdjustedMessageGenerateSchedule(
-    serverRuntime: ServerRuntime,
-    bookingRequestId: string,
-): Promise<void> {
+export async function bookingRequestAdjustedMessageGenerateSchedule(serverRuntime: ServerRuntime, bookingRequestId: string): Promise<void> {
     await bookingRequestAdjustedMessageGenerateCancel(serverRuntime, bookingRequestId);
     await serverRuntime.jobs.enqueue(bookingRequestAdjustedMessageGenerate, { bookingRequestId });
 }

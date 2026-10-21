@@ -81,7 +81,8 @@ datetime via search params. Fixed calendar helper — no CMS for a first slice.
 
 Domain: `src/server/domain/bookingRequest.ts` (enums, payloads, status derive). Create sets `expiresAt` via `bookingRequestExpiresAt`.
 `menuEvaluation` / `menuEvaluationLoading` are filled by the AI menu-evaluation job when `AI_MENU_EVALUATION` is on — see
-[ai-menu-evaluation.md](./ai-menu-evaluation.md).
+[ai-menu-evaluation.md](./ai-menu-evaluation.md). When `AI_BOOKING_REQUEST_MESSAGE` is on, create enqueues an async job that fills
+`adjustedMessage` (cook-facing rewrite); see [ai-booking-request-message.md](./ai-booking-request-message.md).
 
 ### GraphQL / commands
 

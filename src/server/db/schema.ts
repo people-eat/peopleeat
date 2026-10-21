@@ -1433,7 +1433,7 @@ export const featureToggles = pgTable('FeatureToggles', {
 export type FeatureToggle = typeof featureToggles.$inferSelect;
 export type FeatureToggleCreate = typeof featureToggles.$inferInsert;
 
-// Per-user overrides of the global FeatureToggles default. A row forces the key
+// Per-user overrides of the global FeatureToggles default. A row sets the key
 // on or off for that user; absence falls back to the global row (missing global
 // = off). See docs/features/admin-feature-toggles.md.
 export const featureToggleUserOverrides = pgTable(

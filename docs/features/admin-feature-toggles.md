@@ -1,7 +1,7 @@
 # Admin feature toggles
 
 Operators turn fixed product capabilities on and off without a deploy. Missing database rows count as off until first write. Per-user
-overrides can force a key on or off for a specific `Users.userId` while the platform default stays unchanged.
+overrides can enable or disable a key for a specific `Users.userId` while the platform default stays unchanged.
 
 ## Behavior
 
@@ -13,6 +13,8 @@ Every known feature key is part of the product enum. Admins always see the full 
 Keys today:
 
 - AI menu evaluation
+- AI booking-request adjusted message (cook-facing rewrite after create; see
+  [ai-booking-request-message.md](./ai-booking-request-message.md))
 - Cook biography AI writing (Write / Improve with AI; short summary generation stays always on)
 - Cook wallet Stripe balance (live Connect balance + recent transactions on `/profile/wallet`)
 - Booking request restrictions
@@ -31,7 +33,7 @@ Calls and scheduling stay always on and are not toggles.
 
 For a given `(userId | null, key)`:
 
-1. If a `FeatureToggleUserOverrides` row exists for that pair → use its `enabled` value (force on or force off).
+1. If a `FeatureToggleUserOverrides` row exists for that pair → use its `enabled` value (enabled or disabled for that user).
 2. Else → use global `FeatureToggles.enabled` (missing global row = off).
 3. Anonymous / no `userId` → global only (no override possible).
 
@@ -41,13 +43,21 @@ For a given `(userId | null, key)`:
 ### Admin `/admin/feature-toggles`
 
 List shows every key as a shared admin card row with bilingual label, enum key, ghost badge when not persisted, last updated when persisted,
-global on/off switch, and the **user overrides** for that key. Live updates via admin updates seed-and-subscribe.
+global on/off switch, and a user-plus control to add overrides. Toggling the global switch opens a confirmation that explains what the
+feature does and that per-user overrides still win. Existing **user overrides** for a key appear on the card only when at least one is set.
+Live updates via admin updates seed-and-subscribe.
+
+Toolbar (client-side):
+
+- search by bilingual label or enum key
+- filter by status (enabled / disabled), configuration (configured / not configured), and whether overrides exist
+- sort by name, key, recently updated, most overrides, or enabled first
 
 Per key, operators can:
 
 - see who has an override (name links to the user Feature toggles tab)
-- change Force on / Force off / Default (clear)
-- search and add a user override
+- change Enabled for user / Disabled for user / Default (clear)
+- open a dialog (user-plus) to search and add a user override (DE UI: **Ausnahme**, not “Override”)
 
 ### Admin user detail (per-user overrides)
 
@@ -55,11 +65,11 @@ On `/admin/users/$userId` (**Feature toggles** tab), every catalog key is listed
 
 - effective active/inactive state
 - global default (read-only context)
-- Override badge when a row is set
-- Control: Default (global) / Force on / Force off
+- Override badge when a row is set (DE: Ausnahme)
+- Control: Default (global) / Enabled for user / Disabled for user
 
 Clearing the override deletes the row so the global default applies again. Upsert/delete publish `adminUpdates` and `userUpdates` for the
-target user so their session can refresh effective keys.
+target user so their session can refresh effective keys. German UI copy uses **Ausnahme** / **Ausnahmen** instead of “Override”.
 
 ### Client and server runtime
 
@@ -113,7 +123,7 @@ Wired today:
 | Percentage / A-B activity levels              | Extra complexity; we only need on/off plus per-user overrides |
 | Seed all keys on migrate                      | Ghost merge keeps defaults clear without seed noise           |
 | Fixed GraphQL enum + create-on-write (chosen) | Keys require a code change anyway; admin always sees all keys |
-| Allowlist-only when global off                | Cannot force off a user when global is on                     |
+| Allowlist-only when global off                | Cannot disable a user when global is on                       |
 | Global + per-user overrides (chosen)          | Early access and exclusions without percentage rollout        |
 
 ### Chosen
@@ -141,7 +151,7 @@ present.
   `adminFeatureToggleUserOverrideFindManyByKey`, `adminFeatureToggleUserOverrideUpsert`, `adminFeatureToggleUserOverrideDelete`,
   `sessionFeatureToggleFindActive` (user-aware), `featureToggleIsEnabled` (user-aware), `toGqlAdminFeatureToggle`,
   `toGqlAdminFeatureToggleUserOverride`
-- Admin UI: `AdminFeatureTogglesPage` (global + per-key overrides); `AdminUserFeatureTogglesSection` on user Feature toggles tab;
-  labels/helpers in `adminFeatureToggles.ts`
+- Admin UI: `AdminFeatureTogglesPage` (global + per-key overrides, enable/disable confirm with feature description);
+  `AdminUserFeatureTogglesSection` on user Feature toggles tab; labels/descriptions/helpers in `adminFeatureToggles.ts`
 
 See [admin-shell.md](./admin-shell.md).

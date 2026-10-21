@@ -42,13 +42,15 @@ Cook list from travel-radius preview before a row exists. Confirmation dialog be
 ### Detail — `/admin/booking-requests/<id>`
 
 Tabs via URL: **overview** (fields including per-guest restrictions when present, customer and accepted cook links, **Edit**, **Cancel
-request** when status is cancelable), **offers** funnel: accepted offer pin, open offers, notified cooks without offers (re-notify), radius
-cooks not yet notified (suggest / notify / create offer), and **discount** (apply / clear promo or gift codes via
-`BookingRequestDiscountEditor`, same rules as the customer: editable while `WAITING_FOR_OFFERS` / `OFFERS_WAITING_FOR_REVIEW`, not canceled,
-and not dual-accepted; no empty-state copy; input hidden once applied). Suggest and re-notify open a confirmation that states the cook will
-get an email (and, on first notify, the request in their pool). Bulk create offer → dedicated create route. Edit can change
-guests/restrictions; that path resets cook acceptance and emits offer timeline events (same as customer participant updates). Other ops
-fields stay a non-resetting patch.
+request** when status is cancelable, pending request-scoped `queuedJobs` including expire / no-offers / adjusted-message AI), **offers**
+funnel: accepted offer pin, open offers, notified cooks without offers (re-notify), radius cooks not yet notified (suggest / notify / create
+offer), and **discount** (apply / clear promo or gift codes via `BookingRequestDiscountEditor`, same rules as the customer: editable while
+`WAITING_FOR_OFFERS` / `OFFERS_WAITING_FOR_REVIEW`, not canceled, and not dual-accepted; no empty-state copy; input hidden once applied).
+Suggest and re-notify open a confirmation that states the cook will get an email (and, on first notify, the request in their pool). Bulk
+create offer → dedicated create route. Edit can change guests/restrictions; that path resets cook acceptance and emits offer timeline events
+(same as customer participant updates). Other ops fields stay a non-resetting patch. Admin edit can set or clear `adjustedMessage`; clearing
+it while changing `originalMessage` re-enqueues the AI rewrite when the toggle is on — see
+[ai-booking-request-message.md](./ai-booking-request-message.md).
 
 **Cancel request** uses the same cancelable statuses and customer/cook emails as self-serve cancel (`WAITING_FOR_OFFERS` /
 `OFFERS_WAITING_FOR_REVIEW` / `EXPIRED`). Reason required. Writes `USER_CANCELLED` offer timeline events.

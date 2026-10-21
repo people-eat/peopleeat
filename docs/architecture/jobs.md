@@ -37,6 +37,7 @@ src/server/jobs/
     ├── userKlaviyoProfileSync.ts Queued — Klaviyo marketing profile upsert
     ├── chatTitleGenerate.ts    Queued — LLM chat title after assistant turns
     ├── cookBiographySummaryGenerate.ts Queued — LLM cook biography summary after cook bio save
+    ├── bookingRequestAdjustedMessageGenerate.ts Queued — LLM cook-facing booking-request message rewrite after create
     ├── cookBookingRequestMenuEvaluationGenerate.ts Queued — parallel menu ranking + inventory menu draft on pool open / refresh
     ├── giftCardPreparedExpire.ts Queued — abandon unpaid prepared gift cards
     ├── bookingRequestOfferPullPayment.ts Queued — off-session charge ~14d before event
@@ -245,9 +246,9 @@ and calls `serverRuntime.jobs.cancel(name, jobId)`.
 **Per booking** — lazy `queuedJobs: [AdminQueuedJob!]!` on `AdminBookingRequestOffer` and `AdminBookingRequest`. Same live `findByData`
 pattern (payload containment). Offer-id queues (pull payment, announcement, testimonial reminder, chat notify, event-tomorrow Slack) are
 matched directly; call-slot reminder / complete and call-recording finalize are resolved through the offer's `cookCallSlotBookingId` /
-`bookingRequestOfferCallRoomId` rows. Request-scoped queues (expire notify, 24h/48h no-offers) are matched by `bookingRequestId` on the
-booking-request page. True recurring digests (Slack digest, admin action-items daily) and the LiveKit room sweep are not listed on either
-surface — they have no durable per-entity pending row between cron fires.
+`bookingRequestOfferCallRoomId` rows. Request-scoped queues (expire notify, 24h/48h no-offers, adjusted-message AI) are matched by
+`bookingRequestId` on the booking-request page. True recurring digests (Slack digest, admin action-items daily) and the LiveKit room sweep
+are not listed on either surface — they have no durable per-entity pending row between cron fires.
 
 ### Booking request expire / no-offers / event-tomorrow / call-slot complete
 
@@ -257,6 +258,7 @@ These were converted from recurring scanners to per-entity queued jobs:
 | ---------------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | `bookingRequestExpireNotify`             | `{ bookingRequestId }`                        | Create / `expiresAt` change (`startAfter: expiresAt`)                                                    | Accept (expires cleared), cancel, `expiresAt` null |
 | `bookingRequestNoOffersNotify`           | `{ bookingRequestId, hours }`                 | Create (24h + 48h from `createdAt`)                                                                      | First offer, cancel, admin `createdAt` reschedule  |
+| `bookingRequestAdjustedMessageGenerate`  | `{ bookingRequestId }`                        | Create (toggle on) / admin update when original changes and adjusted is null                             | Request cancel; reschedule cancels prior pending   |
 | `bookingRequestOfferEventTomorrowNotify` | `{ bookingRequestId, bookingRequestOfferId }` | Payment becomes paid / dual-accept out-of-system / event date change — due 08:00 Berlin day before event | Offer queued-jobs cancel / booking cancel          |
 | `bookingRequestOfferCallSlotsComplete`   | `{ cookCallSlotBookingId }`                   | Slot request (`endAt`); reschedule on confirm (`endAt+15m`)                                              | Decline / cancel / sibling superseded / handover   |
 

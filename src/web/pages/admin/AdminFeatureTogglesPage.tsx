@@ -7,6 +7,16 @@ import { pipe, subscribe } from 'wonka';
 
 import { formatDate, userDisplayName } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '../../components/base/alert-dialog';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/base/dialog';
@@ -14,6 +24,7 @@ import { Input } from '../../components/base/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import { StatusBadge } from '../../components/base/status-badge';
 import { Switch } from '../../components/base/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import type { GqlCAdminFeatureTogglesPageQuery, GqlCFeatureToggleKey } from '../../graphql/generated';
 import {
     AdminFeatureTogglesPageUpdatesDocument,
@@ -26,6 +37,7 @@ import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import {
+    adminFeatureToggleDescription,
     adminFeatureToggleLabel,
     adminFeatureToggleOverrideModeFromEnabled,
     adminFeatureToggleOverrideModeLabel,
@@ -35,7 +47,7 @@ import { adminOverviewCardClassName } from './adminOverviewLinkCard';
 
 export const adminFeatureTogglesPageTitle = { de: 'Feature Toggles', en: 'Feature Toggles' } as const;
 export const adminFeatureTogglesPageDescription = {
-    de: 'Globale Feature Toggles und Nutzer-Overrides. Fehlende Einträge gelten als aus.',
+    de: 'Globale Feature Toggles und Nutzer-Ausnahmen. Fehlende Einträge gelten als aus.',
     en: 'Global feature toggles and per-user overrides. Missing entries count as off.',
 } as const;
 
@@ -75,7 +87,7 @@ function FeatureToggleAddOverrideDialog({
     const locale = useLocale();
     const [searchText, setSearchText] = useState('');
     const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
-    const [addMode, setAddMode] = useState<'force-on' | 'force-off'>('force-on');
+    const [addMode, setAddMode] = useState<'user-on' | 'user-off'>('user-on');
     const debouncedSearch = useDebouncedValue(searchText, 300);
     const existingUserIds = new Set(featureToggle.userOverrides.map((row) => row.userId));
     const label = adminFeatureToggleLabel(featureToggle.featureToggleKey, locale);
@@ -98,12 +110,12 @@ function FeatureToggleAddOverrideDialog({
         if (open) return;
         setSearchText('');
         setSelectedUser(null);
-        setAddMode('force-on');
+        setAddMode('user-on');
     }, [open]);
 
     async function onAdd() {
         if (!selectedUser || busy) return;
-        await onAddOverride(selectedUser.userId, addMode === 'force-on');
+        await onAddOverride(selectedUser.userId, addMode === 'user-on');
         onOpenChange(false);
     }
 
@@ -111,11 +123,11 @@ function FeatureToggleAddOverrideDialog({
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>{{ de: 'Nutzer-Override hinzufügen', en: 'Add user override' }[locale]}</DialogTitle>
+                    <DialogTitle>{{ de: 'Nutzer-Ausnahme hinzufügen', en: 'Add user override' }[locale]}</DialogTitle>
                     <DialogDescription>
                         {
                             {
-                                de: `Override für „${label}“ festlegen.`,
+                                de: `Ausnahme für „${label}“ festlegen.`,
                                 en: `Set an override for “${label}”.`,
                             }[locale]
                         }
@@ -177,17 +189,13 @@ function FeatureToggleAddOverrideDialog({
                     </div>
                     <div className="grid gap-2">
                         <span className="text-sm font-medium">{{ de: 'Modus', en: 'Mode' }[locale]}</span>
-                        <Select
-                            value={addMode}
-                            disabled={busy}
-                            onValueChange={(value) => setAddMode(value as 'force-on' | 'force-off')}
-                        >
+                        <Select value={addMode} disabled={busy} onValueChange={(value) => setAddMode(value as 'user-on' | 'user-off')}>
                             <SelectTrigger className="w-full">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="force-on">{adminFeatureToggleOverrideModeLabel('force-on', locale)}</SelectItem>
-                                <SelectItem value="force-off">{adminFeatureToggleOverrideModeLabel('force-off', locale)}</SelectItem>
+                                <SelectItem value="user-on">{adminFeatureToggleOverrideModeLabel('user-on', locale)}</SelectItem>
+                                <SelectItem value="user-off">{adminFeatureToggleOverrideModeLabel('user-off', locale)}</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -205,53 +213,90 @@ function FeatureToggleAddOverrideDialog({
     );
 }
 
-function FeatureToggleUserOverrides({
+function FeatureToggleCard({
     featureToggle,
+    busyKey,
     busyUserKey,
+    onToggle,
     onOverrideModeChange,
     onAddOverride,
 }: {
     featureToggle: FeatureToggleRow;
+    busyKey: GqlCFeatureToggleKey | null;
     busyUserKey: string | null;
+    onToggle: (enabled: boolean) => Promise<void>;
     onOverrideModeChange: (userId: string, mode: AdminFeatureToggleOverrideMode) => Promise<void>;
     onAddOverride: (userId: string, enabled: boolean) => Promise<void>;
 }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [pendingEnabled, setPendingEnabled] = useState<boolean | null>(null);
+    const label = adminFeatureToggleLabel(featureToggle.featureToggleKey, locale);
+    const addOverrideLabel = { de: 'Nutzer-Ausnahme hinzufügen', en: 'Add user override' }[locale];
+    const toggleBusy = busyKey === featureToggle.featureToggleKey;
     const addBusy = busyUserKey?.startsWith(`${featureToggle.featureToggleKey}:`) === true;
+    const hasOverrides = featureToggle.userOverrides.length > 0;
+
+    async function onConfirmToggle() {
+        if (pendingEnabled == null || toggleBusy) return;
+        await onToggle(pendingEnabled);
+        setPendingEnabled(null);
+    }
 
     return (
-        <div className="grid gap-3 border-t border-border/60 pt-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                        {{ de: 'Nutzer-Overrides', en: 'User overrides' }[locale]}
-                    </p>
-                    {featureToggle.userOverrides.length > 0 ? (
-                        <StatusBadge tone="info">
-                            {
+        <li className={adminOverviewCardClassName('grid gap-3 px-4 py-3')}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="grid min-w-0 flex-1 gap-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-medium">{label}</p>
+                        {!featureToggle.persisted ? (
+                            <StatusBadge tone="info">{{ de: 'Nicht konfiguriert', en: 'Not configured' }[locale]}</StatusBadge>
+                        ) : null}
+                        {hasOverrides ? (
+                            <StatusBadge tone="info">
                                 {
-                                    de: `${featureToggle.userOverrides.length} Override${featureToggle.userOverrides.length === 1 ? '' : 's'}`,
-                                    en: `${featureToggle.userOverrides.length} override${featureToggle.userOverrides.length === 1 ? '' : 's'}`,
-                                }[locale]
-                            }
-                        </StatusBadge>
-                    ) : null}
+                                    {
+                                        de: `${featureToggle.userOverrides.length} Ausnahme${featureToggle.userOverrides.length === 1 ? '' : 'n'}`,
+                                        en: `${featureToggle.userOverrides.length} override${featureToggle.userOverrides.length === 1 ? '' : 's'}`,
+                                    }[locale]
+                                }
+                            </StatusBadge>
+                        ) : null}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        <span className="font-mono">{featureToggle.featureToggleKey}</span>
+                        {featureToggle.persisted && featureToggle.updatedAt
+                            ? ` · ${formatDate(new Date(featureToggle.updatedAt), { locale, timeZone })}`
+                            : null}
+                    </p>
                 </div>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="icon-sm"
-                    aria-label={{ de: 'Nutzer-Override hinzufügen', en: 'Add user override' }[locale]}
-                    onClick={() => setDialogOpen(true)}
-                >
-                    <UserPlusIcon aria-hidden />
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon-sm"
+                                aria-label={addOverrideLabel}
+                                onClick={() => setDialogOpen(true)}
+                            >
+                                <UserPlusIcon aria-hidden />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{addOverrideLabel}</TooltipContent>
+                    </Tooltip>
+                    <Switch
+                        checked={featureToggle.enabled}
+                        disabled={toggleBusy}
+                        onCheckedChange={(next) => setPendingEnabled(next)}
+                        aria-label={label}
+                    />
+                </div>
             </div>
 
-            {featureToggle.userOverrides.length > 0 ? (
-                <ul className="grid gap-2">
+            {hasOverrides ? (
+                <ul className="grid gap-2 border-t border-border/60 pt-3">
                     {featureToggle.userOverrides.map((override) => {
                         const mode = adminFeatureToggleOverrideModeFromEnabled(override.enabled);
                         const busy = busyUserKey === `${featureToggle.featureToggleKey}:${override.userId}`;
@@ -289,11 +334,11 @@ function FeatureToggleUserOverrides({
                                             <SelectItem value="default">
                                                 {adminFeatureToggleOverrideModeLabel('default', locale)}
                                             </SelectItem>
-                                            <SelectItem value="force-on">
-                                                {adminFeatureToggleOverrideModeLabel('force-on', locale)}
+                                            <SelectItem value="user-on">
+                                                {adminFeatureToggleOverrideModeLabel('user-on', locale)}
                                             </SelectItem>
-                                            <SelectItem value="force-off">
-                                                {adminFeatureToggleOverrideModeLabel('force-off', locale)}
+                                            <SelectItem value="user-off">
+                                                {adminFeatureToggleOverrideModeLabel('user-off', locale)}
                                             </SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -302,7 +347,7 @@ function FeatureToggleUserOverrides({
                                         variant="ghost"
                                         size="icon-sm"
                                         disabled={busy}
-                                        aria-label={{ de: 'Override entfernen', en: 'Clear override' }[locale]}
+                                        aria-label={{ de: 'Ausnahme entfernen', en: 'Clear override' }[locale]}
                                         onClick={() => void onOverrideModeChange(override.userId, 'default')}
                                     >
                                         <XIcon aria-hidden />
@@ -321,7 +366,61 @@ function FeatureToggleUserOverrides({
                 busy={addBusy}
                 onAddOverride={onAddOverride}
             />
-        </div>
+
+            <AlertDialog
+                open={pendingEnabled != null}
+                onOpenChange={(open) => {
+                    if (!open && !toggleBusy) setPendingEnabled(null);
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            {pendingEnabled
+                                ? {
+                                      de: `„${label}“ aktivieren?`,
+                                      en: `Enable “${label}”?`,
+                                  }[locale]
+                                : {
+                                      de: `„${label}“ deaktivieren?`,
+                                      en: `Disable “${label}”?`,
+                                  }[locale]}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="grid gap-3">
+                            <span>{adminFeatureToggleDescription(featureToggle.featureToggleKey, locale)}</span>
+                            <span>
+                                {pendingEnabled
+                                    ? {
+                                          de: 'Der globale Standard wird auf an gesetzt. Nutzer-Ausnahmen haben weiter Vorrang.',
+                                          en: 'Sets the global default to on. Per-user overrides still take precedence.',
+                                      }[locale]
+                                    : {
+                                          de: 'Der globale Standard wird auf aus gesetzt. Nutzer-Ausnahmen haben weiter Vorrang.',
+                                          en: 'Sets the global default to off. Per-user overrides still take precedence.',
+                                      }[locale]}
+                            </span>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={toggleBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                        <AlertDialogAction
+                            variant={pendingEnabled ? 'default' : 'destructive'}
+                            disabled={toggleBusy}
+                            onClick={(event) => {
+                                event.preventDefault();
+                                void onConfirmToggle();
+                            }}
+                        >
+                            {toggleBusy
+                                ? { de: 'Wird gespeichert…', en: 'Saving…' }[locale]
+                                : pendingEnabled
+                                  ? { de: 'Aktivieren', en: 'Enable' }[locale]
+                                  : { de: 'Deaktivieren', en: 'Disable' }[locale]}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </li>
     );
 }
 
@@ -399,7 +498,6 @@ function featureTogglesFilteredSorted({
 
 export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureTogglesPageQuery }) {
     const locale = useLocale();
-    const timeZone = useTimeZone();
     const client = useClient();
     const seed = data.currentSession.user?.admin ?? null;
     const [admin, setAdmin] = useState(seed);
@@ -430,7 +528,11 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
     const featureToggles = admin?.featureToggles ?? [];
     const searchQuery = debouncedSearch.trim().toLowerCase();
     const hasActiveFilters =
-        draftSearch.trim().length > 0 || statusFilter !== 'all' || configFilter !== 'all' || overrideFilter !== 'all' || sort !== 'label-asc';
+        draftSearch.trim().length > 0 ||
+        statusFilter !== 'all' ||
+        configFilter !== 'all' ||
+        overrideFilter !== 'all' ||
+        sort !== 'label-asc';
     const visibleFeatureToggles = featureTogglesFilteredSorted({
         featureToggles,
         searchQuery,
@@ -473,21 +575,21 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
             if (mode === 'default') {
                 const result = await deleteOverride({ userId, featureToggleKey });
                 if (result.error || !result.data?.admin.featureToggleUserOverrideDelete.success) {
-                    toast.error({ de: 'Override konnte nicht entfernt werden.', en: 'Could not clear the override.' }[locale]);
+                    toast.error({ de: 'Ausnahme konnte nicht entfernt werden.', en: 'Could not clear the override.' }[locale]);
                     return;
                 }
-                toast.success({ de: 'Override entfernt.', en: 'Override cleared.' }[locale]);
+                toast.success({ de: 'Ausnahme entfernt.', en: 'Override cleared.' }[locale]);
                 return;
             }
-            const result = await upsertOverride({ userId, featureToggleKey, enabled: mode === 'force-on' });
+            const result = await upsertOverride({ userId, featureToggleKey, enabled: mode === 'user-on' });
             if (result.error || !result.data?.admin.featureToggleUserOverrideUpsert.success) {
-                toast.error({ de: 'Override konnte nicht gespeichert werden.', en: 'Could not save the override.' }[locale]);
+                toast.error({ de: 'Ausnahme konnte nicht gespeichert werden.', en: 'Could not save the override.' }[locale]);
                 return;
             }
             toast.success(
-                mode === 'force-on'
-                    ? { de: 'Feature für diesen Nutzer erzwungen: an.', en: 'Feature forced on for this user.' }[locale]
-                    : { de: 'Feature für diesen Nutzer erzwungen: aus.', en: 'Feature forced off for this user.' }[locale],
+                mode === 'user-on'
+                    ? { de: 'Feature für diesen Nutzer aktiviert.', en: 'Feature enabled for this user.' }[locale]
+                    : { de: 'Feature für diesen Nutzer deaktiviert.', en: 'Feature disabled for this user.' }[locale],
             );
         } finally {
             setBusyUserKey(null);
@@ -499,13 +601,13 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
         try {
             const result = await upsertOverride({ userId, featureToggleKey, enabled });
             if (result.error || !result.data?.admin.featureToggleUserOverrideUpsert.success) {
-                toast.error({ de: 'Override konnte nicht gespeichert werden.', en: 'Could not save the override.' }[locale]);
+                toast.error({ de: 'Ausnahme konnte nicht gespeichert werden.', en: 'Could not save the override.' }[locale]);
                 return;
             }
             toast.success(
                 enabled
-                    ? { de: 'Feature für diesen Nutzer erzwungen: an.', en: 'Feature forced on for this user.' }[locale]
-                    : { de: 'Feature für diesen Nutzer erzwungen: aus.', en: 'Feature forced off for this user.' }[locale],
+                    ? { de: 'Feature für diesen Nutzer aktiviert.', en: 'Feature enabled for this user.' }[locale]
+                    : { de: 'Feature für diesen Nutzer deaktiviert.', en: 'Feature disabled for this user.' }[locale],
             );
         } finally {
             setBusyUserKey(null);
@@ -559,23 +661,19 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
                             <SelectContent>
                                 <SelectItem value="all">{{ de: 'Alle Konfigurationen', en: 'All configurations' }[locale]}</SelectItem>
                                 <SelectItem value="configured">{{ de: 'Konfiguriert', en: 'Configured' }[locale]}</SelectItem>
-                                <SelectItem value="not-configured">
-                                    {{ de: 'Nicht konfiguriert', en: 'Not configured' }[locale]}
-                                </SelectItem>
+                                <SelectItem value="not-configured">{{ de: 'Nicht konfiguriert', en: 'Not configured' }[locale]}</SelectItem>
                             </SelectContent>
                         </Select>
 
                         <Select value={overrideFilter} onValueChange={(value) => setOverrideFilter((value as OverrideFilter) ?? 'all')}>
-                            <SelectTrigger size="sm" aria-label={{ de: 'Overrides filtern', en: 'Filter by overrides' }[locale]}>
+                            <SelectTrigger size="sm" aria-label={{ de: 'Ausnahmen filtern', en: 'Filter by overrides' }[locale]}>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">{{ de: 'Alle Overrides', en: 'All overrides' }[locale]}</SelectItem>
-                                <SelectItem value="with-overrides">
-                                    {{ de: 'Mit Overrides', en: 'With overrides' }[locale]}
-                                </SelectItem>
+                                <SelectItem value="all">{{ de: 'Alle Ausnahmen', en: 'All overrides' }[locale]}</SelectItem>
+                                <SelectItem value="with-overrides">{{ de: 'Mit Ausnahmen', en: 'With overrides' }[locale]}</SelectItem>
                                 <SelectItem value="without-overrides">
-                                    {{ de: 'Ohne Overrides', en: 'Without overrides' }[locale]}
+                                    {{ de: 'Ohne Ausnahmen', en: 'Without overrides' }[locale]}
                                 </SelectItem>
                             </SelectContent>
                         </Select>
@@ -590,12 +688,8 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
                                 <SelectItem value="updated-desc">
                                     {{ de: 'Zuletzt aktualisiert', en: 'Recently updated' }[locale]}
                                 </SelectItem>
-                                <SelectItem value="overrides-desc">
-                                    {{ de: 'Meiste Overrides', en: 'Most overrides' }[locale]}
-                                </SelectItem>
-                                <SelectItem value="enabled-first">
-                                    {{ de: 'Aktive zuerst', en: 'Enabled first' }[locale]}
-                                </SelectItem>
+                                <SelectItem value="overrides-desc">{{ de: 'Meiste Ausnahmen', en: 'Most overrides' }[locale]}</SelectItem>
+                                <SelectItem value="enabled-first">{{ de: 'Aktive zuerst', en: 'Enabled first' }[locale]}</SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -621,50 +715,15 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
                 ) : (
                     <ul className="grid gap-3">
                         {visibleFeatureToggles.map((featureToggle) => (
-                            <li key={featureToggle.featureToggleKey} className={adminOverviewCardClassName('grid gap-3 px-4 py-3')}>
-                                <div className="flex flex-wrap items-center justify-between gap-3">
-                                    <div className="grid min-w-0 flex-1 gap-1">
-                                        <div className="flex flex-wrap items-center gap-2">
-                                            <p className="font-medium">{adminFeatureToggleLabel(featureToggle.featureToggleKey, locale)}</p>
-                                            {!featureToggle.persisted ? (
-                                                <StatusBadge tone="info">
-                                                    {{ de: 'Nicht konfiguriert', en: 'Not configured' }[locale]}
-                                                </StatusBadge>
-                                            ) : null}
-                                            {featureToggle.userOverrides.length > 0 ? (
-                                                <StatusBadge tone="info">
-                                                    {
-                                                        {
-                                                            de: `${featureToggle.userOverrides.length} Override${featureToggle.userOverrides.length === 1 ? '' : 's'}`,
-                                                            en: `${featureToggle.userOverrides.length} override${featureToggle.userOverrides.length === 1 ? '' : 's'}`,
-                                                        }[locale]
-                                                    }
-                                                </StatusBadge>
-                                            ) : null}
-                                        </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            <span className="font-mono">{featureToggle.featureToggleKey}</span>
-                                            {featureToggle.persisted && featureToggle.updatedAt
-                                                ? ` · ${formatDate(new Date(featureToggle.updatedAt), { locale, timeZone })}`
-                                                : null}
-                                        </p>
-                                    </div>
-                                    <Switch
-                                        checked={featureToggle.enabled}
-                                        disabled={busyKey === featureToggle.featureToggleKey}
-                                        onCheckedChange={(next) => void onToggle(featureToggle.featureToggleKey, next)}
-                                        aria-label={adminFeatureToggleLabel(featureToggle.featureToggleKey, locale)}
-                                    />
-                                </div>
-                                <FeatureToggleUserOverrides
-                                    featureToggle={featureToggle}
-                                    busyUserKey={busyUserKey}
-                                    onOverrideModeChange={(userId, mode) =>
-                                        onOverrideModeChange(featureToggle.featureToggleKey, userId, mode)
-                                    }
-                                    onAddOverride={(userId, enabled) => onAddOverride(featureToggle.featureToggleKey, userId, enabled)}
-                                />
-                            </li>
+                            <FeatureToggleCard
+                                key={featureToggle.featureToggleKey}
+                                featureToggle={featureToggle}
+                                busyKey={busyKey}
+                                busyUserKey={busyUserKey}
+                                onToggle={(enabled) => onToggle(featureToggle.featureToggleKey, enabled)}
+                                onOverrideModeChange={(userId, mode) => onOverrideModeChange(featureToggle.featureToggleKey, userId, mode)}
+                                onAddOverride={(userId, enabled) => onAddOverride(featureToggle.featureToggleKey, userId, enabled)}
+                            />
                         ))}
                     </ul>
                 )}

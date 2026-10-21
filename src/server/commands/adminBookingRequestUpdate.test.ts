@@ -153,10 +153,13 @@ describe('adminBookingRequestUpdate', () => {
             .update(bookingRequests)
             .set({ adjustedMessage: 'Old cook message' })
             .where(eq(bookingRequests.bookingRequestId, bookingRequestId));
-        await testDb.insert(featureToggles).values({ featureToggleKey: 'AI_BOOKING_REQUEST_MESSAGE', enabled: true }).onConflictDoUpdate({
-            target: featureToggles.featureToggleKey,
-            set: { enabled: true },
-        });
+        await testDb
+            .insert(featureToggles)
+            .values({ featureToggleKey: 'AI_BOOKING_REQUEST_MESSAGE', enabled: true })
+            .onConflictDoUpdate({
+                target: featureToggles.featureToggleKey,
+                set: { enabled: true },
+            });
         vi.mocked(admin.serverRuntime.jobs.enqueue).mockClear();
 
         await adminBookingRequestUpdate(
@@ -176,10 +179,13 @@ describe('adminBookingRequestUpdate', () => {
 
     it('does not enqueue adjusted-message AI when a manual adjusted message is set', async () => {
         const { admin, bookingRequestId } = await setupAdminAndRequest();
-        await testDb.insert(featureToggles).values({ featureToggleKey: 'AI_BOOKING_REQUEST_MESSAGE', enabled: true }).onConflictDoUpdate({
-            target: featureToggles.featureToggleKey,
-            set: { enabled: true },
-        });
+        await testDb
+            .insert(featureToggles)
+            .values({ featureToggleKey: 'AI_BOOKING_REQUEST_MESSAGE', enabled: true })
+            .onConflictDoUpdate({
+                target: featureToggles.featureToggleKey,
+                set: { enabled: true },
+            });
         vi.mocked(admin.serverRuntime.jobs.enqueue).mockClear();
 
         await adminBookingRequestUpdate(
@@ -192,9 +198,6 @@ describe('adminBookingRequestUpdate', () => {
             admin.serverRuntime,
         );
 
-        expect(admin.serverRuntime.jobs.enqueue).not.toHaveBeenCalledWith(
-            bookingRequestAdjustedMessageGenerate,
-            expect.anything(),
-        );
+        expect(admin.serverRuntime.jobs.enqueue).not.toHaveBeenCalledWith(bookingRequestAdjustedMessageGenerate, expect.anything());
     });
 });

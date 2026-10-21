@@ -52,6 +52,7 @@ docs/
 │   ├── booking-request-create.md # Form, publication, customer request surfaces
 │   ├── booking-offers.md         # Cook pool, offer create, dual accept, negotiation
 │   ├── ai-menu-evaluation.md     # AI menu ranking + inventory recommendation on pool open
+│   ├── ai-booking-request-message.md # AI cook-facing booking-request message rewrite
 │   ├── booking-offer-chat.md     # Offer timeline chat, concierge, phone block
 │   ├── admin-offer-chat-review.md # Post-hoc admin review pipeline for offer chats
 │   ├── booking-payment.md        # Checkout, pull payment, cook payout

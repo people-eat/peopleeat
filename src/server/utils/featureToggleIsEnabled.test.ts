@@ -31,8 +31,8 @@ describe('featureToggleIsEnabled', () => {
         await expect(featureToggleIsEnabled('BOOKING_REQUEST_RESTRICTIONS', serverRuntime)).resolves.toBe(false);
     });
 
-    it('force-on override enables the key for that user', async () => {
-        const user = await commandSetup.withUser({ firstName: 'toggle-force-on', lastName: 'User' });
+    it('user-on override enables the key for that user', async () => {
+        const user = await commandSetup.withUser({ firstName: 'toggle-user-on', lastName: 'User' });
         await setGlobalToggle('ASSISTANT_CUSTOMER', false);
         await testDb
             .insert(featureToggleUserOverrides)
@@ -58,8 +58,8 @@ describe('featureToggleIsEnabled', () => {
             );
     });
 
-    it('force-off override disables the key for that user', async () => {
-        const user = await commandSetup.withUser({ firstName: 'toggle-force-off', lastName: 'User' });
+    it('user-off override disables the key for that user', async () => {
+        const user = await commandSetup.withUser({ firstName: 'toggle-user-off', lastName: 'User' });
         await setGlobalToggle('ASSISTANT_COOK', true);
         await testDb
             .insert(featureToggleUserOverrides)
@@ -100,7 +100,7 @@ describe('featureToggleIsEnabled', () => {
                 set: { enabled: true },
             });
 
-        // Null userId must not see the force-on override. Global may race with
+        // Null userId must not see the user-on override. Global may race with
         // parallel tests; compare against the same anonymous read after cleanup.
         const withOverrideIgnored = await featureToggleIsEnabled('PUBLICATION_MEALS', user.serverRuntime, null);
         await expect(featureToggleIsEnabled('PUBLICATION_MEALS', user.serverRuntime, user.user.userId)).resolves.toBe(true);

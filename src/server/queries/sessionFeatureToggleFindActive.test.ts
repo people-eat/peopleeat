@@ -32,7 +32,7 @@ describe('sessionFeatureToggleFindActive', () => {
         expect(keys).not.toContain('PUBLICATION_MENUS');
     });
 
-    it('applies force-on and force-off overrides for a user', async () => {
+    it('applies user-on and user-off overrides for a user', async () => {
         const user = await commandSetup.withUser({ firstName: 'session-toggle', lastName: 'User' });
         await setGlobalToggle('ASSISTANT_CUSTOMER', false);
         await setGlobalToggle('ASSISTANT_COOK', true);

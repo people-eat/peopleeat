@@ -53,32 +53,32 @@ export function AdminUserFeatureTogglesSection({
                 if (result.error || !result.data?.admin.featureToggleUserOverrideDelete.success) {
                     toast.error(
                         {
-                            de: 'Override konnte nicht entfernt werden.',
+                            de: 'Ausnahme konnte nicht entfernt werden.',
                             en: 'Could not clear the override.',
                         }[locale],
                     );
                     return;
                 }
-                toast.success({ de: 'Override entfernt.', en: 'Override cleared.' }[locale]);
+                toast.success({ de: 'Ausnahme entfernt.', en: 'Override cleared.' }[locale]);
             } else {
                 const result = await upsertOverride({
                     userId: user.userId,
                     featureToggleKey,
-                    enabled: mode === 'force-on',
+                    enabled: mode === 'user-on',
                 });
                 if (result.error || !result.data?.admin.featureToggleUserOverrideUpsert.success) {
                     toast.error(
                         {
-                            de: 'Override konnte nicht gespeichert werden.',
+                            de: 'Ausnahme konnte nicht gespeichert werden.',
                             en: 'Could not save the override.',
                         }[locale],
                     );
                     return;
                 }
                 toast.success(
-                    mode === 'force-on'
-                        ? { de: 'Feature für diesen Nutzer erzwungen: an.', en: 'Feature forced on for this user.' }[locale]
-                        : { de: 'Feature für diesen Nutzer erzwungen: aus.', en: 'Feature forced off for this user.' }[locale],
+                    mode === 'user-on'
+                        ? { de: 'Feature für diesen Nutzer aktiviert.', en: 'Feature enabled for this user.' }[locale]
+                        : { de: 'Feature für diesen Nutzer deaktiviert.', en: 'Feature disabled for this user.' }[locale],
                 );
             }
             await router.invalidate();
@@ -93,7 +93,7 @@ export function AdminUserFeatureTogglesSection({
                 <p className="text-sm text-muted-foreground">
                     {
                         {
-                            de: 'Pro Nutzer überschreiben. Ohne Override gilt der globale Standard.',
+                            de: 'Pro Nutzer festlegen. Ohne Ausnahme gilt der globale Standard.',
                             en: 'Override per user. Without an override, the global default applies.',
                         }[locale]
                     }
@@ -121,7 +121,7 @@ export function AdminUserFeatureTogglesSection({
                                             : { de: 'Inaktiv', en: 'Inactive' }[locale]}
                                     </StatusBadge>
                                     {override != null ? (
-                                        <StatusBadge tone="info">{{ de: 'Override', en: 'Override' }[locale]}</StatusBadge>
+                                        <StatusBadge tone="info">{{ de: 'Ausnahme', en: 'Override' }[locale]}</StatusBadge>
                                     ) : null}
                                 </div>
                                 <p className="text-xs text-muted-foreground">
@@ -150,8 +150,8 @@ export function AdminUserFeatureTogglesSection({
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="default">{adminFeatureToggleOverrideModeLabel('default', locale)}</SelectItem>
-                                    <SelectItem value="force-on">{adminFeatureToggleOverrideModeLabel('force-on', locale)}</SelectItem>
-                                    <SelectItem value="force-off">{adminFeatureToggleOverrideModeLabel('force-off', locale)}</SelectItem>
+                                    <SelectItem value="user-on">{adminFeatureToggleOverrideModeLabel('user-on', locale)}</SelectItem>
+                                    <SelectItem value="user-off">{adminFeatureToggleOverrideModeLabel('user-off', locale)}</SelectItem>
                                 </SelectContent>
                             </Select>
                         </li>

@@ -1,6 +1,6 @@
 import { generateText } from 'ai';
 import type * as AiModule from 'ai';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
@@ -72,11 +72,12 @@ describe('bookingRequestAdjustedMessageGenerate', () => {
         const [row] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, bookingRequestId));
         expect(row?.adjustedMessage).toBe('Please cook for us at home.');
 
+        await customer.serverRuntime.aiGenerations.drain();
         const [generation] = await testDb
             .select()
             .from(aiGenerations)
-            .where(eq(aiGenerations.kind, 'BOOKING_REQUEST_ADJUSTED_MESSAGE'));
-        expect(generation?.userId).toBe(customer.user.userId);
+            .where(and(eq(aiGenerations.kind, 'BOOKING_REQUEST_ADJUSTED_MESSAGE'), eq(aiGenerations.userId, customer.user.userId)));
+        expect(generation?.output).toContain('Please cook for us at home.');
         expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalled();
     });
 
@@ -97,10 +98,7 @@ describe('bookingRequestAdjustedMessageGenerate', () => {
     it('skips when originalMessage is empty', async () => {
         const { customer, bookingRequestId } = await seedRequest({ originalMessage: '   ' });
         // Schema requires originalMessage; force empty after insert for the short-circuit path.
-        await testDb
-            .update(bookingRequests)
-            .set({ originalMessage: '' })
-            .where(eq(bookingRequests.bookingRequestId, bookingRequestId));
+        await testDb.update(bookingRequests).set({ originalMessage: '' }).where(eq(bookingRequests.bookingRequestId, bookingRequestId));
         vi.mocked(generateText).mockClear();
 
         const result = await bookingRequestAdjustedMessageGenerate({

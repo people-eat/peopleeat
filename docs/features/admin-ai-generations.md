@@ -1,6 +1,7 @@
 # Admin AI generations
 
-Admins audit one-shot LLM calls — prompts, outputs, models, and tokens — across chat titling and other recorded kinds.
+Admins audit one-shot LLM calls — prompts, outputs, models, and tokens — across chat titling, booking-request adjusted messages, and other
+recorded kinds.
 
 ## Behavior
 
