@@ -3,10 +3,10 @@ import {
     BookOpenIcon,
     ChefHatIcon,
     EyeIcon,
-    FileInputIcon,
     FileOutputIcon,
     MapPinIcon,
     PhoneIcon,
+    RadarIcon,
     UtensilsIcon,
     WalletIcon,
 } from 'lucide-react';
@@ -35,7 +35,7 @@ export const COOK_NAV_ROUTES: readonly CookNavRoute[] = [
             de: 'Hier findest du Buchungsanfragen von Kunden innerhalb deines Reiseradius.',
             en: 'Here you can find booking requests within your travel radius.',
         },
-        icon: FileInputIcon,
+        icon: RadarIcon,
     },
     {
         slug: 'booking-request-offers',
