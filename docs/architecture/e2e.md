@@ -86,10 +86,10 @@ with two in-radius cooks. Assert neither cook sees the pool row; admin opens the
 to this cook too” on the offers tab, confirms the notify AlertDialog, and the second cook appears in the pool.
 
 **Offer create** (`booking-offer-create.spec.ts`): seed a published request + Stripe-ready cook + a complete inventory menu (course title +
-meal option — offer pickers reject incomplete menus). Cook opens the pool detail, selects the menu, continues to the price step, then
-submits via the UI; assert the non-dismissible **Offer sent** success dialog, then the offer in the cook inbox and on the customer request
-detail. Also assert the request left the open pool and the stale pool deep-link shows “You already created an offer” (no street / occasion
-PII).
+meal option — offer pickers reject incomplete menus). Cook opens the pool detail, selects the menu, continues through price and optional
+personal-note steps (`?step=` URL-backed; use `clickUntilUrl` so Continue retries do not skip a step), then submits via the UI; assert the
+non-dismissible **Offer sent successfully!** dialog, then the offer in the cook inbox and on the customer request detail. Also assert the
+request left the open pool and the stale pool deep-link shows “You already created an offer” (no street / occasion PII).
 
 **Offer accept** (`booking-offer-accept.spec.ts`): seed a cook-accepted offer (event ≥15 days out so accept uses SetupIntent) plus a second
 in-radius cook with no offer. Customer accepts via the offer UI; assert checkout / payment status for the customer and “Confirmed” for the

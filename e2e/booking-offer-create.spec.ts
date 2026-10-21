@@ -3,12 +3,12 @@ import { expect, test } from '@playwright/test';
 import { idCreate } from '../src/shared/idCreate';
 import { actorClose, actorCreate } from './fixtures/actors';
 import { berlinAddress, seedBookingRequest, seedCook, seedCookMenu, seedCustomer } from './fixtures/db';
-import { clickUntil } from './fixtures/ui';
+import { clickUntil, clickUntilUrl } from './fixtures/ui';
 
 /**
- * Cook creates an offer (menu + price) through the pool UI; the customer sees it
- * on their request detail. After create the request leaves the open pool and the
- * stale pool deep-link explains OfferAlreadyExists (no request PII).
+ * Cook creates an offer (menus → price → message) through the pool UI; the customer
+ * sees it on their request detail. After create the request leaves the open pool and
+ * the stale pool deep-link explains OfferAlreadyExists (no request PII).
  */
 test('cook creates offer via UI and customer sees it', async ({ browser }) => {
     // Arrange
@@ -40,12 +40,12 @@ test('cook creates offer via UI and customer sees it', async ({ browser }) => {
     const customer = await actorCreate(browser, customerSeed);
 
     try {
-        // Act — cook opens pool detail → create → select menu → continue → submit price
+        // Act — cook opens pool detail → create → menus → price → message → submit
         await cook.page.goto(`/en/profile/booking-request-pool/${bookingRequestId}`);
         await expect(cook.page.locator('#main-content').getByText(occasion)).toBeVisible();
 
         await clickUntil(cook.page.getByRole('button', { name: 'Make offer' }), async () => {
-            await expect(cook.page.getByRole('heading', { name: 'Create offer' })).toBeVisible({ timeout: 2_000 });
+            await expect(cook.page.getByRole('heading', { name: 'Suggest menus' })).toBeVisible({ timeout: 2_000 });
         });
 
         await expect(cook.page.getByText(menuTitle)).toBeVisible();
@@ -53,11 +53,27 @@ test('cook creates offer via UI and customer sees it', async ({ browser }) => {
             await expect(cook.page.getByRole('button', { name: 'Selected' })).toBeVisible({ timeout: 2_000 });
         });
 
-        await clickUntil(cook.page.getByRole('button', { name: 'Continue' }), async () => {
-            await expect(cook.page.getByLabel('Suggest your menu price per person')).toBeVisible({ timeout: 2_000 });
-        });
+        await clickUntilUrl(
+            cook.page,
+            cook.page.getByRole('button', { name: 'Continue' }),
+            /\/create(?!.*[?&]step=)/,
+            /[?&]step=price(?:&|$)/,
+        );
+        await expect(cook.page.getByRole('heading', { name: 'Choose your price' })).toBeVisible();
+        await expect(cook.page.getByLabel('Menu price per person')).toBeVisible();
+
+        await clickUntilUrl(
+            cook.page,
+            cook.page.getByRole('button', { name: 'Continue' }),
+            /[?&]step=price(?:&|$)/,
+            /[?&]step=message(?:&|$)/,
+        );
+        await expect(cook.page.getByRole('heading', { name: 'Personal note' })).toBeVisible();
+
         await clickUntil(cook.page.getByRole('button', { name: 'Make offer' }), async () => {
-            await expect(cook.page.getByRole('alertdialog', { name: 'Offer sent' })).toBeVisible({ timeout: 2_000 });
+            await expect(cook.page.getByRole('alertdialog', { name: 'Offer sent successfully!' })).toBeVisible({
+                timeout: 2_000,
+            });
         });
         // Success dialog stays open until the cook chooses; assert via the inbox either way.
         await cook.page.goto('/en/profile/booking-request-offers');
