@@ -31,6 +31,7 @@ export const ADMIN_AI_GENERATION_KINDS: GqlCAdminAiGenerationKind[] = [
     'COOK_BIOGRAPHY_SUGGESTION',
     'COOK_BIOGRAPHY_SUMMARY',
     'BOOKING_REQUEST_COOK_MENU_EVALUATION',
+    'BOOKING_REQUEST_ADJUSTED_MESSAGE',
 ];
 
 const columnHelper = createColumnHelper<AdminAiGenerationsDataTableFeatures, AdminAiGenerationsTableRow>();
@@ -46,6 +47,10 @@ export function adminAiGenerationKindLabel(kind: GqlCAdminAiGenerationKind, loca
         COOK_BIOGRAPHY_SUGGESTION: { de: 'Biografie vorschlagen', en: 'Biography suggestion' },
         COOK_BIOGRAPHY_SUMMARY: { de: 'Biografie-Kurzfassung', en: 'Biography summary' },
         BOOKING_REQUEST_COOK_MENU_EVALUATION: { de: 'Menübewertung (Anfrage)', en: 'Menu evaluation (request)' },
+        BOOKING_REQUEST_ADJUSTED_MESSAGE: {
+            de: 'Angepasste Anfrage-Nachricht',
+            en: 'Adjusted booking-request message',
+        },
     }[kind][locale];
 }
 

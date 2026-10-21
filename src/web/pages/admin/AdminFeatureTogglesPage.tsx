@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { ToggleRightIcon, XIcon } from 'lucide-react';
+import { ToggleRightIcon, UserPlusIcon, XIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation, useQuery } from 'urql';
@@ -9,6 +9,8 @@ import { formatDate, userDisplayName } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../../components/base/dialog';
+import { Input } from '../../components/base/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import { StatusBadge } from '../../components/base/status-badge';
 import { Switch } from '../../components/base/switch';
@@ -48,8 +50,159 @@ type UserOption = {
     emailAddress: string | null;
 };
 
+type StatusFilter = 'all' | 'enabled' | 'disabled';
+type ConfigFilter = 'all' | 'configured' | 'not-configured';
+type OverrideFilter = 'all' | 'with-overrides' | 'without-overrides';
+type SortOption = 'label-asc' | 'key-asc' | 'updated-desc' | 'overrides-desc' | 'enabled-first';
+
 function userOptionLabel(user: UserOption): string {
     return user.emailAddress ? `${userDisplayName(user)} · ${user.emailAddress}` : userDisplayName(user);
+}
+
+function FeatureToggleAddOverrideDialog({
+    open,
+    onOpenChange,
+    featureToggle,
+    busy,
+    onAddOverride,
+}: {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    featureToggle: FeatureToggleRow;
+    busy: boolean;
+    onAddOverride: (userId: string, enabled: boolean) => Promise<void>;
+}) {
+    const locale = useLocale();
+    const [searchText, setSearchText] = useState('');
+    const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
+    const [addMode, setAddMode] = useState<'force-on' | 'force-off'>('force-on');
+    const debouncedSearch = useDebouncedValue(searchText, 300);
+    const existingUserIds = new Set(featureToggle.userOverrides.map((row) => row.userId));
+    const label = adminFeatureToggleLabel(featureToggle.featureToggleKey, locale);
+
+    const [{ data: usersData, fetching: usersFetching }] = useQuery({
+        query: AdminFeatureTogglesUserSearchDocument,
+        variables: {
+            criterion: {
+                skip: 0,
+                take: 20,
+                searchText: debouncedSearch.trim() || undefined,
+                types: ['customer', 'cook', 'admin'],
+            },
+        },
+        pause: !open || debouncedSearch.trim().length < 2 || (selectedUser != null && searchText === userOptionLabel(selectedUser)),
+    });
+    const users = (usersData?.currentSession.user?.admin?.users ?? []).filter((user) => !existingUserIds.has(user.userId));
+
+    useEffect(() => {
+        if (open) return;
+        setSearchText('');
+        setSelectedUser(null);
+        setAddMode('force-on');
+    }, [open]);
+
+    async function onAdd() {
+        if (!selectedUser || busy) return;
+        await onAddOverride(selectedUser.userId, addMode === 'force-on');
+        onOpenChange(false);
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{{ de: 'Nutzer-Override hinzufügen', en: 'Add user override' }[locale]}</DialogTitle>
+                    <DialogDescription>
+                        {
+                            {
+                                de: `Override für „${label}“ festlegen.`,
+                                en: `Set an override for “${label}”.`,
+                            }[locale]
+                        }
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4">
+                    <div className="grid gap-2">
+                        <span className="text-sm font-medium">{{ de: 'Nutzer', en: 'User' }[locale]}</span>
+                        <Combobox
+                            items={users.map((entry) => entry.userId)}
+                            value={selectedUser?.userId ?? null}
+                            inputValue={searchText}
+                            onValueChange={(userId: string | null) => {
+                                if (!userId) {
+                                    setSelectedUser(null);
+                                    return;
+                                }
+                                const match = users.find((entry) => entry.userId === userId);
+                                if (!match) return;
+                                setSelectedUser(match);
+                                setSearchText(userOptionLabel(match));
+                            }}
+                            onInputValueChange={(next) => {
+                                setSearchText(next);
+                                if (selectedUser && next !== userOptionLabel(selectedUser)) {
+                                    setSelectedUser(null);
+                                }
+                            }}
+                            itemToStringLabel={(userId: string) => {
+                                const match = users.find((entry) => entry.userId === userId);
+                                return match ? userOptionLabel(match) : userId;
+                            }}
+                        >
+                            <ComboboxInput
+                                className="w-full"
+                                placeholder={{ de: 'Nutzer suchen…', en: 'Search users…' }[locale]}
+                                showClear={false}
+                                disabled={busy}
+                            />
+                            <ComboboxContent>
+                                <ComboboxEmpty>
+                                    {usersFetching
+                                        ? { de: 'Suche…', en: 'Searching…' }[locale]
+                                        : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                </ComboboxEmpty>
+                                <ComboboxList>
+                                    {(userId: string) => {
+                                        const match = users.find((entry) => entry.userId === userId);
+                                        if (!match) return null;
+                                        return (
+                                            <ComboboxItem key={userId} value={userId}>
+                                                {userOptionLabel(match)}
+                                            </ComboboxItem>
+                                        );
+                                    }}
+                                </ComboboxList>
+                            </ComboboxContent>
+                        </Combobox>
+                    </div>
+                    <div className="grid gap-2">
+                        <span className="text-sm font-medium">{{ de: 'Modus', en: 'Mode' }[locale]}</span>
+                        <Select
+                            value={addMode}
+                            disabled={busy}
+                            onValueChange={(value) => setAddMode(value as 'force-on' | 'force-off')}
+                        >
+                            <SelectTrigger className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="force-on">{adminFeatureToggleOverrideModeLabel('force-on', locale)}</SelectItem>
+                                <SelectItem value="force-off">{adminFeatureToggleOverrideModeLabel('force-off', locale)}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button type="button" variant="outline" disabled={busy} onClick={() => onOpenChange(false)}>
+                        {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                    </Button>
+                    <Button type="button" disabled={!selectedUser || busy} onClick={() => void onAdd()}>
+                        {{ de: 'Hinzufügen', en: 'Add' }[locale]}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
 }
 
 function FeatureToggleUserOverrides({
@@ -65,61 +218,39 @@ function FeatureToggleUserOverrides({
 }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const [searchText, setSearchText] = useState('');
-    const [selectedUser, setSelectedUser] = useState<UserOption | null>(null);
-    const [addMode, setAddMode] = useState<'force-on' | 'force-off'>('force-on');
-    const [addBusy, setAddBusy] = useState(false);
-    const debouncedSearch = useDebouncedValue(searchText, 300);
-    const existingUserIds = new Set(featureToggle.userOverrides.map((row) => row.userId));
-
-    const [{ data: usersData, fetching: usersFetching }] = useQuery({
-        query: AdminFeatureTogglesUserSearchDocument,
-        variables: {
-            criterion: {
-                skip: 0,
-                take: 20,
-                searchText: debouncedSearch.trim() || undefined,
-                types: ['customer', 'cook', 'admin'],
-            },
-        },
-        pause: debouncedSearch.trim().length < 2 || (selectedUser != null && searchText === userOptionLabel(selectedUser)),
-    });
-    const users = (usersData?.currentSession.user?.admin?.users ?? []).filter((user) => !existingUserIds.has(user.userId));
-
-    async function onAdd() {
-        if (!selectedUser || addBusy) return;
-        setAddBusy(true);
-        try {
-            await onAddOverride(selectedUser.userId, addMode === 'force-on');
-            setSelectedUser(null);
-            setSearchText('');
-            setAddMode('force-on');
-        } finally {
-            setAddBusy(false);
-        }
-    }
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const addBusy = busyUserKey?.startsWith(`${featureToggle.featureToggleKey}:`) === true;
 
     return (
         <div className="grid gap-3 border-t border-border/60 pt-3">
-            <div className="flex flex-wrap items-center gap-2">
-                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                    {{ de: 'Nutzer-Overrides', en: 'User overrides' }[locale]}
-                </p>
-                <StatusBadge tone="info">
-                    {
-                        {
-                            de: `${featureToggle.userOverrides.length} Override${featureToggle.userOverrides.length === 1 ? '' : 's'}`,
-                            en: `${featureToggle.userOverrides.length} override${featureToggle.userOverrides.length === 1 ? '' : 's'}`,
-                        }[locale]
-                    }
-                </StatusBadge>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                        {{ de: 'Nutzer-Overrides', en: 'User overrides' }[locale]}
+                    </p>
+                    {featureToggle.userOverrides.length > 0 ? (
+                        <StatusBadge tone="info">
+                            {
+                                {
+                                    de: `${featureToggle.userOverrides.length} Override${featureToggle.userOverrides.length === 1 ? '' : 's'}`,
+                                    en: `${featureToggle.userOverrides.length} override${featureToggle.userOverrides.length === 1 ? '' : 's'}`,
+                                }[locale]
+                            }
+                        </StatusBadge>
+                    ) : null}
+                </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="icon-sm"
+                    aria-label={{ de: 'Nutzer-Override hinzufügen', en: 'Add user override' }[locale]}
+                    onClick={() => setDialogOpen(true)}
+                >
+                    <UserPlusIcon aria-hidden />
+                </Button>
             </div>
 
-            {featureToggle.userOverrides.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                    {{ de: 'Noch keine Nutzer-Overrides.', en: 'No user overrides yet.' }[locale]}
-                </p>
-            ) : (
+            {featureToggle.userOverrides.length > 0 ? (
                 <ul className="grid gap-2">
                     {featureToggle.userOverrides.map((override) => {
                         const mode = adminFeatureToggleOverrideModeFromEnabled(override.enabled);
@@ -181,76 +312,89 @@ function FeatureToggleUserOverrides({
                         );
                     })}
                 </ul>
-            )}
+            ) : null}
 
-            <div className="flex flex-wrap items-end gap-2">
-                <div className="min-w-56 flex-1">
-                    <Combobox
-                        items={users.map((entry) => entry.userId)}
-                        value={selectedUser?.userId ?? null}
-                        inputValue={searchText}
-                        onValueChange={(userId: string | null) => {
-                            if (!userId) {
-                                setSelectedUser(null);
-                                return;
-                            }
-                            const match = users.find((entry) => entry.userId === userId);
-                            if (!match) return;
-                            setSelectedUser(match);
-                            setSearchText(userOptionLabel(match));
-                        }}
-                        onInputValueChange={(next) => {
-                            setSearchText(next);
-                            if (selectedUser && next !== userOptionLabel(selectedUser)) {
-                                setSelectedUser(null);
-                            }
-                        }}
-                        itemToStringLabel={(userId: string) => {
-                            const match = users.find((entry) => entry.userId === userId);
-                            return match ? userOptionLabel(match) : userId;
-                        }}
-                    >
-                        <ComboboxInput
-                            className="w-full"
-                            placeholder={{ de: 'Nutzer suchen…', en: 'Search users…' }[locale]}
-                            showClear={false}
-                            disabled={addBusy}
-                        />
-                        <ComboboxContent>
-                            <ComboboxEmpty>
-                                {usersFetching
-                                    ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                    : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
-                            </ComboboxEmpty>
-                            <ComboboxList>
-                                {(userId: string) => {
-                                    const match = users.find((entry) => entry.userId === userId);
-                                    if (!match) return null;
-                                    return (
-                                        <ComboboxItem key={userId} value={userId}>
-                                            {userOptionLabel(match)}
-                                        </ComboboxItem>
-                                    );
-                                }}
-                            </ComboboxList>
-                        </ComboboxContent>
-                    </Combobox>
-                </div>
-                <Select value={addMode} disabled={addBusy} onValueChange={(value) => setAddMode(value as 'force-on' | 'force-off')}>
-                    <SelectTrigger size="sm" className="min-w-36">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="force-on">{adminFeatureToggleOverrideModeLabel('force-on', locale)}</SelectItem>
-                        <SelectItem value="force-off">{adminFeatureToggleOverrideModeLabel('force-off', locale)}</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Button type="button" size="sm" disabled={!selectedUser || addBusy} onClick={() => void onAdd()}>
-                    {{ de: 'Hinzufügen', en: 'Add' }[locale]}
-                </Button>
-            </div>
+            <FeatureToggleAddOverrideDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                featureToggle={featureToggle}
+                busy={addBusy}
+                onAddOverride={onAddOverride}
+            />
         </div>
     );
+}
+
+function featureToggleMatchesSearch(featureToggle: FeatureToggleRow, query: string, locale: 'de' | 'en'): boolean {
+    if (!query) return true;
+    const label = adminFeatureToggleLabel(featureToggle.featureToggleKey, locale).toLowerCase();
+    const key = featureToggle.featureToggleKey.toLowerCase();
+    return label.includes(query) || key.includes(query);
+}
+
+function featureTogglesFilteredSorted({
+    featureToggles,
+    searchQuery,
+    statusFilter,
+    configFilter,
+    overrideFilter,
+    sort,
+    locale,
+}: {
+    featureToggles: FeatureToggleRow[];
+    searchQuery: string;
+    statusFilter: StatusFilter;
+    configFilter: ConfigFilter;
+    overrideFilter: OverrideFilter;
+    sort: SortOption;
+    locale: 'de' | 'en';
+}): FeatureToggleRow[] {
+    const filtered = featureToggles.filter((featureToggle) => {
+        if (!featureToggleMatchesSearch(featureToggle, searchQuery, locale)) return false;
+        if (statusFilter === 'enabled' && !featureToggle.enabled) return false;
+        if (statusFilter === 'disabled' && featureToggle.enabled) return false;
+        if (configFilter === 'configured' && !featureToggle.persisted) return false;
+        if (configFilter === 'not-configured' && featureToggle.persisted) return false;
+        if (overrideFilter === 'with-overrides' && featureToggle.userOverrides.length === 0) return false;
+        if (overrideFilter === 'without-overrides' && featureToggle.userOverrides.length > 0) return false;
+        return true;
+    });
+
+    const sorted = [...filtered];
+    sorted.sort((a, b) => {
+        switch (sort) {
+            case 'key-asc':
+                return a.featureToggleKey.localeCompare(b.featureToggleKey);
+            case 'updated-desc': {
+                const aTime = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+                const bTime = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+                if (bTime !== aTime) return bTime - aTime;
+                return adminFeatureToggleLabel(a.featureToggleKey, locale).localeCompare(
+                    adminFeatureToggleLabel(b.featureToggleKey, locale),
+                );
+            }
+            case 'overrides-desc': {
+                if (b.userOverrides.length !== a.userOverrides.length) {
+                    return b.userOverrides.length - a.userOverrides.length;
+                }
+                return adminFeatureToggleLabel(a.featureToggleKey, locale).localeCompare(
+                    adminFeatureToggleLabel(b.featureToggleKey, locale),
+                );
+            }
+            case 'enabled-first': {
+                if (a.enabled !== b.enabled) return a.enabled ? -1 : 1;
+                return adminFeatureToggleLabel(a.featureToggleKey, locale).localeCompare(
+                    adminFeatureToggleLabel(b.featureToggleKey, locale),
+                );
+            }
+            case 'label-asc':
+            default:
+                return adminFeatureToggleLabel(a.featureToggleKey, locale).localeCompare(
+                    adminFeatureToggleLabel(b.featureToggleKey, locale),
+                );
+        }
+    });
+    return sorted;
 }
 
 export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureTogglesPageQuery }) {
@@ -261,6 +405,12 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
     const [admin, setAdmin] = useState(seed);
     const [busyKey, setBusyKey] = useState<GqlCFeatureToggleKey | null>(null);
     const [busyUserKey, setBusyUserKey] = useState<string | null>(null);
+    const [draftSearch, setDraftSearch] = useState('');
+    const debouncedSearch = useDebouncedValue(draftSearch, 200);
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+    const [configFilter, setConfigFilter] = useState<ConfigFilter>('all');
+    const [overrideFilter, setOverrideFilter] = useState<OverrideFilter>('all');
+    const [sort, setSort] = useState<SortOption>('label-asc');
     const [, featureToggleUpdate] = useMutation(AdminFeatureToggleUpdateDocument);
     const [, upsertOverride] = useMutation(AdminFeatureToggleUserOverrideUpsertDocument);
     const [, deleteOverride] = useMutation(AdminFeatureToggleUserOverrideDeleteDocument);
@@ -278,6 +428,26 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
     }, [client, seed]);
 
     const featureToggles = admin?.featureToggles ?? [];
+    const searchQuery = debouncedSearch.trim().toLowerCase();
+    const hasActiveFilters =
+        draftSearch.trim().length > 0 || statusFilter !== 'all' || configFilter !== 'all' || overrideFilter !== 'all' || sort !== 'label-asc';
+    const visibleFeatureToggles = featureTogglesFilteredSorted({
+        featureToggles,
+        searchQuery,
+        statusFilter,
+        configFilter,
+        overrideFilter,
+        sort,
+        locale,
+    });
+
+    function clearFilters() {
+        setDraftSearch('');
+        setStatusFilter('all');
+        setConfigFilter('all');
+        setOverrideFilter('all');
+        setSort('label-asc');
+    }
 
     async function onToggle(featureToggleKey: GqlCFeatureToggleKey, enabled: boolean) {
         setBusyKey(featureToggleKey);
@@ -345,20 +515,112 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
     return (
         <AdminPathPageChrome>
             <main id="main-content" className="grid w-full content-start gap-8">
-                <div className="grid gap-2">
-                    <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
-                        <ToggleRightIcon className="size-8 text-muted-foreground" aria-hidden />
-                        {adminFeatureTogglesPageTitle[locale]}
-                    </h1>
-                    <p className="text-muted-foreground">{adminFeatureTogglesPageDescription[locale]}</p>
+                <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
+                    <ToggleRightIcon className="size-8 text-muted-foreground" aria-hidden />
+                    {adminFeatureTogglesPageTitle[locale]}
+                </h1>
+
+                <div className="grid gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <Input
+                            type="search"
+                            value={draftSearch}
+                            onChange={(event) => setDraftSearch(event.target.value)}
+                            placeholder={{ de: 'Name oder Key suchen…', en: 'Search name or key…' }[locale]}
+                            aria-label={{ de: 'Feature Toggles suchen', en: 'Search feature toggles' }[locale]}
+                            className="max-w-sm"
+                        />
+                        <p className="text-sm text-muted-foreground tabular-nums">
+                            {
+                                {
+                                    de: `${visibleFeatureToggles.length} von ${featureToggles.length}`,
+                                    en: `${visibleFeatureToggles.length} of ${featureToggles.length}`,
+                                }[locale]
+                            }
+                        </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                        <Select value={statusFilter} onValueChange={(value) => setStatusFilter((value as StatusFilter) ?? 'all')}>
+                            <SelectTrigger size="sm" aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{{ de: 'Alle Status', en: 'All statuses' }[locale]}</SelectItem>
+                                <SelectItem value="enabled">{{ de: 'Aktiv', en: 'Enabled' }[locale]}</SelectItem>
+                                <SelectItem value="disabled">{{ de: 'Inaktiv', en: 'Disabled' }[locale]}</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={configFilter} onValueChange={(value) => setConfigFilter((value as ConfigFilter) ?? 'all')}>
+                            <SelectTrigger size="sm" aria-label={{ de: 'Konfiguration filtern', en: 'Filter by configuration' }[locale]}>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{{ de: 'Alle Konfigurationen', en: 'All configurations' }[locale]}</SelectItem>
+                                <SelectItem value="configured">{{ de: 'Konfiguriert', en: 'Configured' }[locale]}</SelectItem>
+                                <SelectItem value="not-configured">
+                                    {{ de: 'Nicht konfiguriert', en: 'Not configured' }[locale]}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={overrideFilter} onValueChange={(value) => setOverrideFilter((value as OverrideFilter) ?? 'all')}>
+                            <SelectTrigger size="sm" aria-label={{ de: 'Overrides filtern', en: 'Filter by overrides' }[locale]}>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">{{ de: 'Alle Overrides', en: 'All overrides' }[locale]}</SelectItem>
+                                <SelectItem value="with-overrides">
+                                    {{ de: 'Mit Overrides', en: 'With overrides' }[locale]}
+                                </SelectItem>
+                                <SelectItem value="without-overrides">
+                                    {{ de: 'Ohne Overrides', en: 'Without overrides' }[locale]}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={sort} onValueChange={(value) => setSort((value as SortOption) ?? 'label-asc')}>
+                            <SelectTrigger size="sm" aria-label={{ de: 'Sortierung', en: 'Sort' }[locale]}>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="label-asc">{{ de: 'Name A–Z', en: 'Name A–Z' }[locale]}</SelectItem>
+                                <SelectItem value="key-asc">{{ de: 'Key A–Z', en: 'Key A–Z' }[locale]}</SelectItem>
+                                <SelectItem value="updated-desc">
+                                    {{ de: 'Zuletzt aktualisiert', en: 'Recently updated' }[locale]}
+                                </SelectItem>
+                                <SelectItem value="overrides-desc">
+                                    {{ de: 'Meiste Overrides', en: 'Most overrides' }[locale]}
+                                </SelectItem>
+                                <SelectItem value="enabled-first">
+                                    {{ de: 'Aktive zuerst', en: 'Enabled first' }[locale]}
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        {hasActiveFilters ? (
+                            <Button
+                                type="button"
+                                variant="link"
+                                className="h-auto p-0 text-sm text-muted-foreground"
+                                onClick={clearFilters}
+                            >
+                                {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
+                            </Button>
+                        ) : null}
+                    </div>
                 </div>
+
                 {featureToggles.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                         {{ de: 'Noch keine Feature Toggles.', en: 'No feature toggles yet.' }[locale]}
                     </p>
+                ) : visibleFeatureToggles.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</p>
                 ) : (
                     <ul className="grid gap-3">
-                        {featureToggles.map((featureToggle) => (
+                        {visibleFeatureToggles.map((featureToggle) => (
                             <li key={featureToggle.featureToggleKey} className={adminOverviewCardClassName('grid gap-3 px-4 py-3')}>
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div className="grid min-w-0 flex-1 gap-1">

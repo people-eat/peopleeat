@@ -10,6 +10,7 @@ import type { GqlSAdminMutation, GqlSAdminMutationBookingRequestCreateArgs, GqlS
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { LARGE_GROUP_PARTICIPANT_THRESHOLD } from '../slack/bookingRequestSlack';
 import { slackNotifyBookingRequestCreated } from '../slack/slackNotifyBooking';
+import { bookingRequestAdjustedMessageGenerateScheduleIfEnabled } from '../utils/bookingRequestAdjustedMessageGenerateSchedule';
 import { bookingRequestCooksNotify } from '../utils/bookingRequestCooksNotify';
 import { bookingRequestExpireNotifySchedule } from '../utils/bookingRequestExpireNotifySchedule';
 import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
@@ -125,6 +126,11 @@ export async function adminBookingRequestCreate(
         await bookingRequestNoOffersNotifySchedule(serverRuntime, {
             bookingRequestId,
             createdAt: new Date(),
+        });
+        await bookingRequestAdjustedMessageGenerateScheduleIfEnabled(serverRuntime, {
+            bookingRequestId,
+            userId,
+            originalMessage,
         });
 
         await slackNotifyBookingRequestCreated(serverRuntime, {

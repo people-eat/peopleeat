@@ -64,6 +64,7 @@ export { bookingRequestOfferTestimonialReminder } from './handlers/bookingReques
 export { chatTitleGenerate } from './handlers/chatTitleGenerate';
 export { cookBiographySummaryGenerate } from './handlers/cookBiographySummaryGenerate';
 export { cookBookingRequestMenuEvaluationGenerateJob } from './handlers/cookBookingRequestMenuEvaluationGenerate';
+export { bookingRequestAdjustedMessageGenerate } from './handlers/bookingRequestAdjustedMessageGenerate';
 export { bookingRequestExpireNotify } from './handlers/bookingRequestExpireNotify';
 export { bookingRequestNoOffersNotify } from './handlers/bookingRequestNoOffersNotify';
 export { bookingRequestOfferCallRecordingFinalize } from './handlers/bookingRequestOfferCallRecordingFinalize';

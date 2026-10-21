@@ -10,6 +10,7 @@ import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutatio
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { slackNotifyBookingRequestCreated } from '../slack/slackNotifyBooking';
 import { applyDiscountToBookingRequest } from '../utils/applyDiscountToBookingRequest';
+import { bookingRequestAdjustedMessageGenerateScheduleIfEnabled } from '../utils/bookingRequestAdjustedMessageGenerateSchedule';
 import { bookingRequestCooksNotify } from '../utils/bookingRequestCooksNotify';
 import { bookingRequestExpireNotifySchedule } from '../utils/bookingRequestExpireNotifySchedule';
 import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
@@ -141,6 +142,11 @@ export async function userBookingRequestCreate(
         await bookingRequestNoOffersNotifySchedule(serverRuntime, {
             bookingRequestId,
             createdAt: new Date(),
+        });
+        await bookingRequestAdjustedMessageGenerateScheduleIfEnabled(serverRuntime, {
+            bookingRequestId,
+            userId,
+            originalMessage,
         });
 
         await userBookingRequestCreateEmailSend(serverRuntime, { bookingRequestId, userId });

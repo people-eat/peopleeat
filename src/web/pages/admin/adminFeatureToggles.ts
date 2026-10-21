@@ -3,6 +3,10 @@ import type { Locale } from '../../utils/locale';
 
 const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>> = {
     AI_MENU_EVALUATION: { de: 'KI-Menübewertung', en: 'AI menu evaluation' },
+    AI_BOOKING_REQUEST_MESSAGE: {
+        de: 'KI: Angepasste Anfrage-Nachricht',
+        en: 'AI: Adjusted booking-request message',
+    },
     COOK_BIOGRAPHY_AI_WRITE: { de: 'KI-Biografie schreiben', en: 'AI biography writing' },
     COOK_WALLET_STRIPE_BALANCE: { de: 'Wallet: Stripe-Guthaben', en: 'Wallet: Stripe balance' },
     BOOKING_REQUEST_RESTRICTIONS: { de: 'Buchungsanfrage: Einschränkungen', en: 'Booking request: restrictions' },

@@ -38,6 +38,10 @@ export function adminQueuedJobNameLabel(name: string, locale: Locale): string {
             de: 'Keine Angebote (Slack)',
             en: 'No offers notify',
         },
+        'booking-request-adjusted-message-generate': {
+            de: 'Angepasste Nachricht (KI)',
+            en: 'Adjusted message (AI)',
+        },
         'booking-request-reaction-reminder': {
             de: 'Reaktions-Erinnerung',
             en: 'Reaction reminder',
@@ -112,6 +116,10 @@ export function adminQueuedJobDescription(name: string, locale: Locale): string 
         'booking-request-no-offers-notify': {
             de: 'Sendet eine Slack-Warnung, wenn nach 24 oder 48 Stunden noch kein Angebot da ist.',
             en: 'Posts a Slack alert when there is still no offer after 24 or 48 hours.',
+        },
+        'booking-request-adjusted-message-generate': {
+            de: 'Erzeugt per KI die kochseitige Nachricht (ohne personenbezogene Daten).',
+            en: 'Uses AI to write the cook-facing request message without personal data.',
         },
         'booking-request-reaction-reminder': {
             de: 'Erinnert den Kunden per WhatsApp, auf offene Angebote zu reagieren.',

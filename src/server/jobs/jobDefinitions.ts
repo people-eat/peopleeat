@@ -1,4 +1,5 @@
 import { adminActionItemsSlackDaily } from './handlers/adminActionItemsSlackDaily';
+import { bookingRequestAdjustedMessageGenerate } from './handlers/bookingRequestAdjustedMessageGenerate';
 import { bookingRequestExpireNotify } from './handlers/bookingRequestExpireNotify';
 import { bookingRequestNoOffersNotify } from './handlers/bookingRequestNoOffersNotify';
 import { bookingRequestOfferCallRecordingFinalize } from './handlers/bookingRequestOfferCallRecordingFinalize';
@@ -26,6 +27,7 @@ export const jobDefinitions: JobDefinition[] = [
     userKlaviyoProfileSync,
     chatTitleGenerate,
     cookBiographySummaryGenerate,
+    bookingRequestAdjustedMessageGenerate,
     cookBookingRequestMenuEvaluationGenerateJob,
     giftCardPreparedExpire,
     bookingRequestOfferPullPayment,

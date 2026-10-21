@@ -523,6 +523,7 @@ export type GqlCAdminAiGenerationCriterion = {
 };
 
 export type GqlCAdminAiGenerationKind =
+    | 'BOOKING_REQUEST_ADJUSTED_MESSAGE'
     | 'BOOKING_REQUEST_COOK_MENU_EVALUATION'
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY'
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT'
@@ -3860,6 +3861,7 @@ export type GqlCDateTimeRange = {
 };
 
 export type GqlCFeatureToggleKey =
+    | 'AI_BOOKING_REQUEST_MESSAGE'
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'

@@ -12,6 +12,7 @@ import { bookingRequestOfferPaymentIsPaid } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminMutation, GqlSAdminMutationBookingRequestUpdateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { bookingRequestAdjustedMessageGenerateScheduleIfEnabled } from '../utils/bookingRequestAdjustedMessageGenerateSchedule';
 import { bookingRequestCookTravelDistanceKmClear } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
 import { bookingRequestExpireNotifySchedule } from '../utils/bookingRequestExpireNotifySchedule';
 import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
@@ -329,6 +330,17 @@ export async function adminBookingRequestUpdate(
             await bookingRequestNoOffersNotifySchedule(serverRuntime, {
                 bookingRequestId,
                 createdAt: requestPatch.createdAt,
+            });
+        }
+
+        const originalMessageChanged = requestPatch.originalMessage !== undefined;
+        const resultingAdjustedMessage =
+            requestPatch.adjustedMessage !== undefined ? requestPatch.adjustedMessage : bookingRequest.adjustedMessage;
+        if (originalMessageChanged && resultingAdjustedMessage == null) {
+            await bookingRequestAdjustedMessageGenerateScheduleIfEnabled(serverRuntime, {
+                bookingRequestId,
+                userId: bookingRequest.userId,
+                originalMessage: requestPatch.originalMessage ?? bookingRequest.originalMessage,
             });
         }
 

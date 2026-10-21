@@ -4069,6 +4069,7 @@ enum AdminAiGenerationKind {
     COOK_BIOGRAPHY_SUGGESTION
     COOK_BIOGRAPHY_SUMMARY
     BOOKING_REQUEST_COOK_MENU_EVALUATION
+    BOOKING_REQUEST_ADJUSTED_MESSAGE
 }
 
 # Admin-only view of a one-shot LLM call. Written by `ServerRuntime.aiGenerations`;
@@ -5237,6 +5238,7 @@ type PublicWebPageQuery {
 
 enum FeatureToggleKey {
     AI_MENU_EVALUATION
+    AI_BOOKING_REQUEST_MESSAGE
     COOK_BIOGRAPHY_AI_WRITE
     COOK_WALLET_STRIPE_BALANCE
     BOOKING_REQUEST_RESTRICTIONS

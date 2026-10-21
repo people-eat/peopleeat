@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { bookingRequestOfferCallRooms, cookCallSlotBookings } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminQueuedJob } from '../graphql/generated';
+import { bookingRequestAdjustedMessageGenerate } from '../jobs/handlers/bookingRequestAdjustedMessageGenerate';
 import { bookingRequestExpireNotify } from '../jobs/handlers/bookingRequestExpireNotify';
 import { bookingRequestNoOffersNotify } from '../jobs/handlers/bookingRequestNoOffersNotify';
 import { bookingRequestOfferCallRecordingFinalize } from '../jobs/handlers/bookingRequestOfferCallRecordingFinalize';
@@ -85,19 +86,22 @@ export async function adminBookingRequestOfferQueuedJobsByOfferIdFindMany(
 }
 
 /**
- * Request-scoped pending jobs (expire notify + no-offers Slack) for one booking
- * request. Used by the admin booking-request `queuedJobs` field alongside
- * offer-scoped lookups.
+ * Request-scoped pending jobs (expire notify + no-offers Slack + adjusted-message
+ * AI) for one booking request. Used by the admin booking-request `queuedJobs`
+ * field alongside offer-scoped lookups.
  */
 export async function adminBookingRequestScopedQueuedJobsFindMany(
     bookingRequestId: string,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSAdminQueuedJob[]> {
     const requestData = { bookingRequestId };
-    const [expireJobs, noOffersJobs] = await Promise.all([
+    const [expireJobs, noOffersJobs, adjustedMessageJobs] = await Promise.all([
         serverRuntime.jobs.findByData(bookingRequestExpireNotify, requestData),
         serverRuntime.jobs.findByData(bookingRequestNoOffersNotify, requestData),
+        serverRuntime.jobs.findByData(bookingRequestAdjustedMessageGenerate, requestData),
     ]);
 
-    return [...expireJobs, ...noOffersJobs].map(toGqlAdminQueuedJob).filter((job): job is GqlSAdminQueuedJob => job != null);
+    return [...expireJobs, ...noOffersJobs, ...adjustedMessageJobs]
+        .map(toGqlAdminQueuedJob)
+        .filter((job): job is GqlSAdminQueuedJob => job != null);
 }
