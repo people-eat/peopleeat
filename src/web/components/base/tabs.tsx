@@ -1,9 +1,14 @@
 import type { VariantProps } from 'class-variance-authority';
 import { cva } from 'class-variance-authority';
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { Tabs as TabsPrimitive } from 'radix-ui';
-
 import type { ComponentProps } from 'react';
+import { useEffect, useRef, useState } from 'react';
+
+import { useLocale } from '../../hooks/useLocale';
+import { usePrefersReducedMotion } from '../../hooks/usePrefersReducedMotion';
 import { cn } from '../../utils/cn';
+import { Button } from './button';
 
 function Tabs({ className, orientation = 'horizontal', ...props }: ComponentProps<typeof TabsPrimitive.Root>) {
     return (
@@ -32,25 +37,123 @@ const tabsListVariants = cva(
     },
 );
 
+const SCROLL_EDGE_EPSILON_PX = 1;
+
+function tabsListScrollEdges(el: HTMLElement): { canScrollStart: boolean; canScrollEnd: boolean } {
+    const { scrollLeft, scrollWidth, clientWidth } = el;
+    return {
+        canScrollStart: scrollLeft > SCROLL_EDGE_EPSILON_PX,
+        canScrollEnd: scrollLeft + clientWidth < scrollWidth - SCROLL_EDGE_EPSILON_PX,
+    };
+}
+
 function TabsList({
     className,
     variant = 'default',
     ...props
 }: ComponentProps<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>) {
+    const locale = useLocale();
+    const prefersReducedMotion = usePrefersReducedMotion();
+    const scrollerRef = useRef<HTMLDivElement>(null);
+    const listRef = useRef<HTMLDivElement>(null);
+    const [canScrollStart, setCanScrollStart] = useState(false);
+    const [canScrollEnd, setCanScrollEnd] = useState(false);
+
+    useEffect(() => {
+        const scroller = scrollerRef.current;
+        const list = listRef.current;
+        if (scroller == null) return;
+
+        const updateScrollState = () => {
+            const edges = tabsListScrollEdges(scroller);
+            setCanScrollStart(edges.canScrollStart);
+            setCanScrollEnd(edges.canScrollEnd);
+        };
+
+        updateScrollState();
+
+        scroller.addEventListener('scroll', updateScrollState, { passive: true });
+
+        const resizeObserver =
+            typeof ResizeObserver === 'undefined'
+                ? null
+                : new ResizeObserver(() => {
+                      updateScrollState();
+                  });
+        resizeObserver?.observe(scroller);
+        if (list != null) resizeObserver?.observe(list);
+
+        const onWheel = (event: WheelEvent) => {
+            if (scroller.scrollWidth <= scroller.clientWidth) return;
+            if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+            const edges = tabsListScrollEdges(scroller);
+            if (event.deltaY < 0 && !edges.canScrollStart) return;
+            if (event.deltaY > 0 && !edges.canScrollEnd) return;
+            scroller.scrollLeft += event.deltaY;
+            event.preventDefault();
+        };
+        scroller.addEventListener('wheel', onWheel, { passive: false });
+
+        return () => {
+            scroller.removeEventListener('scroll', updateScrollState);
+            scroller.removeEventListener('wheel', onWheel);
+            resizeObserver?.disconnect();
+        };
+    }, []);
+
+    const scrollByPage = (direction: -1 | 1) => {
+        const scroller = scrollerRef.current;
+        if (scroller == null) return;
+        scroller.scrollBy({
+            left: direction * scroller.clientWidth * 0.8,
+            behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        });
+    };
+
     return (
-        <div
-            className={cn(
-                'min-w-0 max-w-full scroll-fade-x',
-                'group-data-[orientation=horizontal]/tabs:overflow-x-auto group-data-[orientation=horizontal]/tabs:overflow-y-hidden group-data-[orientation=horizontal]/tabs:overscroll-x-contain group-data-[orientation=horizontal]/tabs:no-scrollbar',
-                variant === 'line' && 'group-data-[orientation=horizontal]/tabs:pb-[5px]',
-            )}
-        >
-            <TabsPrimitive.List
-                data-slot="tabs-list"
-                data-variant={variant}
-                className={cn(tabsListVariants({ variant }), className)}
-                {...props}
-            />
+        <div className="relative min-w-0 max-w-full">
+            {canScrollStart ? (
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    tabIndex={-1}
+                    className="absolute top-4 left-0 z-10 -translate-y-1/2 bg-background/80 text-muted-foreground shadow-sm hover:text-foreground"
+                    aria-label={{ de: 'Tabs nach links scrollen', en: 'Scroll tabs left' }[locale]}
+                    onClick={() => scrollByPage(-1)}
+                >
+                    <ChevronLeftIcon aria-hidden />
+                </Button>
+            ) : null}
+            {canScrollEnd ? (
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    tabIndex={-1}
+                    className="absolute top-4 right-0 z-10 -translate-y-1/2 bg-background/80 text-muted-foreground shadow-sm hover:text-foreground"
+                    aria-label={{ de: 'Tabs nach rechts scrollen', en: 'Scroll tabs right' }[locale]}
+                    onClick={() => scrollByPage(1)}
+                >
+                    <ChevronRightIcon aria-hidden />
+                </Button>
+            ) : null}
+            <div
+                ref={scrollerRef}
+                className={cn(
+                    'min-w-0 max-w-full scroll-fade-x',
+                    'group-data-[orientation=horizontal]/tabs:overflow-x-auto group-data-[orientation=horizontal]/tabs:overflow-y-hidden group-data-[orientation=horizontal]/tabs:overscroll-x-contain group-data-[orientation=horizontal]/tabs:no-scrollbar',
+                    variant === 'line' && 'group-data-[orientation=horizontal]/tabs:pb-[5px]',
+                )}
+            >
+                <TabsPrimitive.List
+                    ref={listRef}
+                    data-slot="tabs-list"
+                    data-variant={variant}
+                    className={cn(tabsListVariants({ variant }), className)}
+                    {...props}
+                />
+            </div>
         </div>
     );
 }

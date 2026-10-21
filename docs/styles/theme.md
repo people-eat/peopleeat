@@ -48,6 +48,10 @@ unsupported engines show crisp text and keep native scrolling; Chrome still gets
 affordance. Remove the override only if upstream ships a fix for [shadcn-ui/ui#11291](https://github.com/shadcn-ui/ui/issues/11291) (or
 equivalent) and we upgrade past it.
 
+Horizontal `TabsList` adds mouse affordances on top of the fade: start/end chevrons only while that edge can scroll, and a non-passive
+`wheel` listener that remaps vertical delta to `scrollLeft` when the row overflows (so a regular mouse can reach clipped tabs without
+Shift). Breadcrumbs and attachment strips stay fade-only for now.
+
 ## Scrollbar gutter
 
 Two scroll models share one stylesheet:
