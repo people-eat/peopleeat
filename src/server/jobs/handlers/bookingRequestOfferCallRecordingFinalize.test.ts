@@ -213,22 +213,34 @@ describe('bookingRequestOfferCallRecordingFinalize', () => {
             contentType: 'audio/ogg',
             contentLength: 4,
         });
-        vi.mocked(generateText).mockResolvedValue({
-            output: {
-                segments: [
-                    { startedAtMs: 0, endedAtMs: 1_000, text: 'Hello chef', speakerLabel: 'customer' },
-                    { startedAtMs: 1_100, endedAtMs: 2_000, text: 'Welcome', speakerLabel: 'cook' },
-                ],
-            },
-            usage: {
-                inputTokens: 20,
-                outputTokens: 10,
-                totalTokens: 30,
-                inputTokenDetails: {},
-                outputTokenDetails: {},
-            },
-            finalStep: { response: { modelId: 'mock-transcript' } },
-        } as never);
+        vi.mocked(generateText)
+            .mockResolvedValueOnce({
+                output: {
+                    segments: [
+                        { startedAtMs: 0, endedAtMs: 1_000, text: 'Hello chef', speakerLabel: 'customer' },
+                        { startedAtMs: 1_100, endedAtMs: 2_000, text: 'Welcome', speakerLabel: 'cook' },
+                    ],
+                },
+                usage: {
+                    inputTokens: 20,
+                    outputTokens: 10,
+                    totalTokens: 30,
+                    inputTokenDetails: {},
+                    outputTokenDetails: {},
+                },
+                finalStep: { response: { modelId: 'mock-transcript' } },
+            } as never)
+            .mockResolvedValueOnce({
+                output: { summary: 'Customer and cook discussed the dinner menu.' },
+                usage: {
+                    inputTokens: 10,
+                    outputTokens: 5,
+                    totalTokens: 15,
+                    inputTokenDetails: {},
+                    outputTokenDetails: {},
+                },
+                finalStep: { response: { modelId: 'mock-summary' } },
+            } as never);
 
         // Act
         await bookingRequestOfferCallRecordingFinalize.handler({
@@ -239,7 +251,7 @@ describe('bookingRequestOfferCallRecordingFinalize', () => {
         // Assert
         expect(listEgress).toHaveBeenCalledWith({ egressId: 'EG_test_1' });
         expect(serverRuntime.objectStorage.getObject).toHaveBeenCalledWith(objectKey);
-        expect(generateText).toHaveBeenCalled();
+        expect(generateText).toHaveBeenCalledTimes(2);
 
         const [row] = await testDb
             .select()
@@ -251,6 +263,7 @@ describe('bookingRequestOfferCallRecordingFinalize', () => {
             { startedAtMs: 0, endedAtMs: 1_000, text: 'Hello chef', speakerLabel: 'customer' },
             { startedAtMs: 1_100, endedAtMs: 2_000, text: 'Welcome', speakerLabel: 'cook' },
         ]);
+        expect(row?.summaryText).toBe('Customer and cook discussed the dinner menu.');
         expect(row?.completedAt).toBeInstanceOf(Date);
         expect(serverRuntime.publish.adminUpdates).toHaveBeenCalled();
     });

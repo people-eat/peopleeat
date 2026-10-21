@@ -18,6 +18,7 @@ export function toGqlBookingRequestOfferCallRecording(row: BookingRequestOfferCa
                   speakerLabel: segment.speakerLabel ?? null,
               }))
             : null,
+        summaryText: row.summaryText ?? null,
         audioUrl:
             row.status === 'COMPLETED' || row.status === 'EGRESS_COMPLETE' || row.status === 'TRANSCRIBING'
                 ? `/api/admin/call-recordings/${row.bookingRequestOfferCallRecordingId}/audio`

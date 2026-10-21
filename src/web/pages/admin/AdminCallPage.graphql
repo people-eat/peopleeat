@@ -1,0 +1,61 @@
+# Admin discovery-call detail. Loaded by `/admin/calls/$bookingRequestOfferCallRoomId`.
+
+query AdminCallPage($bookingRequestOfferCallRoomId: ID!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                call(bookingRequestOfferCallRoomId: $bookingRequestOfferCallRoomId) {
+                    bookingRequestOfferCallRoomId
+                    bookingRequestOfferId
+                    bookingRequestId
+                    livekitRoomName
+                    status
+                    startedAt
+                    endedAt
+                    occasion
+                    cookId
+                    customerUserId
+                    cookDisplayName
+                    customerDisplayName
+                    recording {
+                        bookingRequestOfferCallRecordingId
+                        bookingRequestOfferCallRoomId
+                        status
+                        mediaType
+                        byteSize
+                        transcriptText
+                        transcriptSegments {
+                            startedAtMs
+                            endedAtMs
+                            text
+                            speakerLabel
+                        }
+                        summaryText
+                        audioUrl
+                        errorMessage
+                        createdAt
+                        completedAt
+                    }
+                }
+            }
+        }
+    }
+}
+
+mutation AdminCallRecordingDelete($bookingRequestOfferCallRecordingId: ID!) {
+    admin {
+        bookingRequestOfferCallRecordingDelete(bookingRequestOfferCallRecordingId: $bookingRequestOfferCallRecordingId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminCallRecordingSummaryGenerate($bookingRequestOfferCallRecordingId: ID!) {
+    admin {
+        bookingRequestOfferCallRecordingSummaryGenerate(bookingRequestOfferCallRecordingId: $bookingRequestOfferCallRecordingId)
+    }
+}

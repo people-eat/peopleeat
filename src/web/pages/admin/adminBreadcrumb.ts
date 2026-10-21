@@ -41,7 +41,9 @@ export type AdminBreadcrumbCrumb = {
         | '/{-$locale}/admin/testimonials'
         | '/{-$locale}/admin/web-pages'
         | '/{-$locale}/admin/legal'
-        | '/{-$locale}/admin/legal/$kind';
+        | '/{-$locale}/admin/legal/$kind'
+        | '/{-$locale}/admin/calls'
+        | '/{-$locale}/admin/calls/list';
     params?: { kind: string } | { bookingRequestId: string } | { mealId: string } | { menuId: string } | { userId: string };
     search?: { tab?: string };
 };

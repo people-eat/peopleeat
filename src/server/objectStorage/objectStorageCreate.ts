@@ -1,4 +1,4 @@
-import { GetObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, GetObjectCommand, ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import type { ObjectStorage, ObjectStorageS3Credentials } from './ObjectStorage';
@@ -69,6 +69,15 @@ export function objectStorageCreate(options: ObjectStorageCreateOptions): Object
                     Key: objectKey,
                 }),
                 { expiresIn: expiresInSeconds },
+            );
+        },
+        deleteObject: async (objectKey) => {
+            const s3 = credentials();
+            await clientRequire().send(
+                new DeleteObjectCommand({
+                    Bucket: s3.bucket,
+                    Key: objectKey,
+                }),
             );
         },
         listObjects: async ({ prefix, continuationToken, maxKeys }) => {

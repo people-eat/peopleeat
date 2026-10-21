@@ -1259,11 +1259,31 @@ type BookingRequestOfferCallRecording {
     byteSize: Int
     transcriptText: String
     transcriptSegments: [BookingRequestOfferCallTranscriptSegment!]
+    # AI summary for admin review (generated after STT).
+    summaryText: String
     # Same-origin admin audio stream (`/api/admin/call-recordings/:id/audio`).
     audioUrl: String
     errorMessage: String
     createdAt: DateTime!
     completedAt: DateTime
+}
+
+# Admin discovery-call detail (`/admin/calls/$bookingRequestOfferCallRoomId`).
+# Room is the call id; recording is optional 1:1.
+type AdminCall {
+    bookingRequestOfferCallRoomId: ID!
+    bookingRequestOfferId: ID!
+    bookingRequestId: ID!
+    livekitRoomName: String!
+    status: BookingRequestOfferCallRoomStatus!
+    startedAt: DateTime!
+    endedAt: DateTime
+    occasion: String!
+    cookId: ID!
+    customerUserId: ID!
+    cookDisplayName: String!
+    customerDisplayName: String!
+    recording: BookingRequestOfferCallRecording
 }
 
 type BookingRequestOfferCallRoom {
@@ -3580,6 +3600,8 @@ type Admin {
     # Top cooks by call activity in `range` (rooms by startedAt; slot outcomes
     # by lastModifiedAt; pending awaiting cook is current, not range-scoped).
     callCookStats(range: DateTimeRange!, sortBy: AdminCallCookStatSortField! = roomCount, take: Int! = 10): [AdminCallCookStat!]!
+    # Single discovery-call detail (room + optional recording). Null when unknown.
+    call(bookingRequestOfferCallRoomId: ID!): AdminCall
 
     # Promo codes (admin catalog). Sorted by criterion (default newest first).
     # See `AdminPromoCodeCriterion`.
@@ -4005,6 +4027,7 @@ enum AdminAiGenerationKind {
     COOK_MENU_TITLE_DESCRIPTION
     CHAT_TITLE
     BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT
+    BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY
     COOK_BIOGRAPHY_SUGGESTION
     COOK_BIOGRAPHY_SUMMARY
     BOOKING_REQUEST_COOK_MENU_EVALUATION
@@ -4259,6 +4282,11 @@ type AdminMutation {
     # (`onBehalfOf` must be CUSTOMER when the cook initiated, COOK when the
     # customer initiated). Same lifecycle emails as the party decline path.
     bookingRequestOfferCallSlotDecline(cookCallSlotBookingId: ID!, onBehalfOf: CookCallSlotBookingActor!, reason: String): MutationResult!
+    # Delete a FAILED call recording (Garage object + DB row). Returns recording id.
+    bookingRequestOfferCallRecordingDelete(bookingRequestOfferCallRecordingId: ID!): MutationResult!
+    # Regenerate AI summary for a COMPLETED recording with transcript. Persists
+    # `summaryText` and returns the new summary. See docs/features/call-recordings.md.
+    bookingRequestOfferCallRecordingSummaryGenerate(bookingRequestOfferCallRecordingId: ID!): String!
     # Cancel a pre-accept booking request (same statuses and customer/cook emails
     # as `UserMutation.bookingRequestCancel`). Returns `bookingRequestId`.
     bookingRequestCancel(bookingRequestId: ID!, reason: String!): MutationResult!

@@ -126,6 +126,7 @@ export interface ServerRuntime {
         cookMenuSuggestionFromInventoryModel: () => LanguageModel;
         cookMenuTitleDescriptionModel: () => LanguageModel;
         bookingRequestOfferCallRecordingTranscriptModel: () => LanguageModel;
+        bookingRequestOfferCallRecordingSummaryModel: () => LanguageModel;
         cookBiographySuggestModel: () => LanguageModel;
         cookBiographySummaryModel: () => LanguageModel;
         cookMenuEvaluationModel: () => LanguageModel;

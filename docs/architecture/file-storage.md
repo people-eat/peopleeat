@@ -114,7 +114,8 @@ attachments, profile pictures, and other interactive uploads stay in Postgres.
 `{livekitRoomPrefix}/call-rooms/{roomId}.ogg`). New consumers add another prefix — they do not get a second bucket or a second runtime.
 
 **Admin insight:** `/admin/file-store` lists bucket objects via `Admin.objectStorageObjects` (prefix + S3 continuation-token pagination).
-Per-offer recording playback / transcripts stay on the booking-request offer Call tab — the file-store page is the bucket-wide ops view.
+Recording playback / summary / transcript live on `/admin/calls/$bookingRequestOfferCallRoomId` (`AdminCallPage`); failed recordings can be
+deleted via `objectStorage.deleteObject` + DB row remove. The file-store page remains the bucket-wide ops view.
 
 Env: `OBJECT_STORAGE_S3_*`. See [call-recordings.md](../features/call-recordings.md) and
 [admin-file-store.md](../features/admin-file-store.md). MinIO is not used (community edition archived).

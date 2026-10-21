@@ -48,6 +48,7 @@ export interface GqlSAdmin {
     bookingRequestOffersCounts: Array<Scalars['Int']['output']>;
     bookingRequests: Array<GqlSAdminBookingRequest>;
     bookingRequestsCounts: Array<Scalars['Int']['output']>;
+    call?: Maybe<GqlSAdminCall>;
     callCookStats: Array<GqlSAdminCallCookStat>;
     callRoomCreations: Array<GqlSAdminTimeBucket>;
     callSlotCreations: Array<GqlSAdminTimeBucket>;
@@ -218,6 +219,10 @@ export type GqlSAdminBookingRequestsArgs = {
 
 export type GqlSAdminBookingRequestsCountsArgs = {
     criteria: Array<GqlSAdminBookingRequestCriterion>;
+};
+
+export type GqlSAdminCallArgs = {
+    bookingRequestOfferCallRoomId: Scalars['ID']['input'];
 };
 
 export type GqlSAdminCallCookStatsArgs = {
@@ -516,6 +521,7 @@ export type GqlSAdminAiGenerationCriterion = {
 
 export type GqlSAdminAiGenerationKind =
     | 'BOOKING_REQUEST_COOK_MENU_EVALUATION'
+    | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY'
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT'
     | 'CHAT_TITLE'
     | 'COOK_BIOGRAPHY_SUGGESTION'
@@ -865,6 +871,23 @@ export type GqlSAdminBookingRequestUpdate = {
     participants?: InputMaybe<Array<GqlSUserBookingRequestParticipantCreate>>;
     priceClassType?: InputMaybe<GqlSBookingRequestPriceClassType>;
 };
+
+export interface GqlSAdminCall {
+    __typename?: 'AdminCall';
+    bookingRequestId: Scalars['ID']['output'];
+    bookingRequestOfferCallRoomId: Scalars['ID']['output'];
+    bookingRequestOfferId: Scalars['ID']['output'];
+    cookDisplayName: Scalars['String']['output'];
+    cookId: Scalars['ID']['output'];
+    customerDisplayName: Scalars['String']['output'];
+    customerUserId: Scalars['ID']['output'];
+    endedAt?: Maybe<Scalars['DateTime']['output']>;
+    livekitRoomName: Scalars['String']['output'];
+    occasion: Scalars['String']['output'];
+    recording?: Maybe<GqlSBookingRequestOfferCallRecording>;
+    startedAt: Scalars['DateTime']['output'];
+    status: GqlSBookingRequestOfferCallRoomStatus;
+}
 
 export interface GqlSAdminCallCookStat {
     __typename?: 'AdminCallCookStat';
@@ -1324,6 +1347,8 @@ export interface GqlSAdminMutation {
     bookingRequestOfferCallCreate: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlSMutationResult;
+    bookingRequestOfferCallRecordingDelete: GqlSMutationResult;
+    bookingRequestOfferCallRecordingSummaryGenerate: Scalars['String']['output'];
     bookingRequestOfferCallSlotDecline: GqlSMutationResult;
     bookingRequestOfferChatMessageCreate: GqlSMutationResult;
     bookingRequestOfferChatMessageDelete: GqlSMutationResult;
@@ -1444,6 +1469,14 @@ export type GqlSAdminMutationBookingRequestOfferCallJoinArgs = {
 
 export type GqlSAdminMutationBookingRequestOfferCallLeaveArgs = {
     bookingRequestOfferCallRoomParticipantId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationBookingRequestOfferCallRecordingDeleteArgs = {
+    bookingRequestOfferCallRecordingId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationBookingRequestOfferCallRecordingSummaryGenerateArgs = {
+    bookingRequestOfferCallRecordingId: Scalars['ID']['input'];
 };
 
 export type GqlSAdminMutationBookingRequestOfferCallSlotDeclineArgs = {
@@ -2416,6 +2449,7 @@ export interface GqlSBookingRequestOfferCallRecording {
     errorMessage?: Maybe<Scalars['String']['output']>;
     mediaType?: Maybe<Scalars['String']['output']>;
     status: GqlSBookingRequestOfferCallRecordingStatus;
+    summaryText?: Maybe<Scalars['String']['output']>;
     transcriptSegments?: Maybe<Array<GqlSBookingRequestOfferCallTranscriptSegment>>;
     transcriptText?: Maybe<Scalars['String']['output']>;
 }
@@ -5271,6 +5305,7 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminBookingRequestOfferUpdate: GqlSAdminBookingRequestOfferUpdate;
     AdminBookingRequestSortField: GqlSAdminBookingRequestSortField;
     AdminBookingRequestUpdate: GqlSAdminBookingRequestUpdate;
+    AdminCall: ResolverTypeWrapper<GqlSAdminCall>;
     AdminCallCookStat: ResolverTypeWrapper<GqlSAdminCallCookStat>;
     AdminCallCookStatSortField: GqlSAdminCallCookStatSortField;
     AdminCallListItem: ResolverTypeWrapper<
@@ -5845,6 +5880,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminBookingRequestOfferHandover: GqlSAdminBookingRequestOfferHandover;
     AdminBookingRequestOfferUpdate: GqlSAdminBookingRequestOfferUpdate;
     AdminBookingRequestUpdate: GqlSAdminBookingRequestUpdate;
+    AdminCall: GqlSAdminCall;
     AdminCallCookStat: GqlSAdminCallCookStat;
     AdminCallListItem: Omit<GqlSAdminCallListItem, 'callRoom'> & {
         callRoom?: Maybe<GqlSResolversParentTypes['BookingRequestOfferCallRoom']>;
@@ -6353,6 +6389,12 @@ export type GqlSAdminResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminBookingRequestsCountsArgs, 'criteria'>
+    >;
+    call?: Resolver<
+        Maybe<GqlSResolversTypes['AdminCall']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminCallArgs, 'bookingRequestOfferCallRoomId'>
     >;
     callCookStats?: Resolver<
         Array<GqlSResolversTypes['AdminCallCookStat']>,
@@ -6989,6 +7031,25 @@ export type GqlSAdminBookingRequestOfferEconomicsResolvers<
     totalPaidPlatformRevenueCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
+export type GqlSAdminCallResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminCall'] = GqlSResolversParentTypes['AdminCall'],
+> = ResolversObject<{
+    bookingRequestId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    bookingRequestOfferCallRoomId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    bookingRequestOfferId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    cookDisplayName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    cookId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    customerDisplayName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    customerUserId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    endedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
+    livekitRoomName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    occasion?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    recording?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferCallRecording']>, ParentType, ContextType>;
+    startedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    status?: Resolver<GqlSResolversTypes['BookingRequestOfferCallRoomStatus'], ParentType, ContextType>;
+}>;
+
 export type GqlSAdminCallCookStatResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['AdminCallCookStat'] = GqlSResolversParentTypes['AdminCallCookStat'],
@@ -7407,6 +7468,18 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationBookingRequestOfferCallLeaveArgs, 'bookingRequestOfferCallRoomParticipantId'>
+    >;
+    bookingRequestOfferCallRecordingDelete?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationBookingRequestOfferCallRecordingDeleteArgs, 'bookingRequestOfferCallRecordingId'>
+    >;
+    bookingRequestOfferCallRecordingSummaryGenerate?: Resolver<
+        GqlSResolversTypes['String'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationBookingRequestOfferCallRecordingSummaryGenerateArgs, 'bookingRequestOfferCallRecordingId'>
     >;
     bookingRequestOfferCallSlotDecline?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -8404,6 +8477,7 @@ export type GqlSBookingRequestOfferCallRecordingResolvers<
     errorMessage?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     mediaType?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestOfferCallRecordingStatus'], ParentType, ContextType>;
+    summaryText?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     transcriptSegments?: Resolver<Maybe<Array<GqlSResolversTypes['BookingRequestOfferCallTranscriptSegment']>>, ParentType, ContextType>;
     transcriptText?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
 }>;
@@ -10866,6 +10940,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminBookingRequestOffer?: GqlSAdminBookingRequestOfferResolvers<ContextType>;
     AdminBookingRequestOfferChatReviewAcknowledgeResult?: GqlSAdminBookingRequestOfferChatReviewAcknowledgeResultResolvers<ContextType>;
     AdminBookingRequestOfferEconomics?: GqlSAdminBookingRequestOfferEconomicsResolvers<ContextType>;
+    AdminCall?: GqlSAdminCallResolvers<ContextType>;
     AdminCallCookStat?: GqlSAdminCallCookStatResolvers<ContextType>;
     AdminCallListItem?: GqlSAdminCallListItemResolvers<ContextType>;
     AdminCity?: GqlSAdminCityResolvers<ContextType>;
@@ -11087,6 +11162,7 @@ export const definedNonNullAnySchema = z.any().refine((v) => isDefinedNonNullAny
 
 export const GqlSAdminAiGenerationKindSchema: z.ZodType<
     | 'BOOKING_REQUEST_COOK_MENU_EVALUATION'
+    | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY'
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT'
     | 'CHAT_TITLE'
     | 'COOK_BIOGRAPHY_SUGGESTION'
@@ -11095,6 +11171,7 @@ export const GqlSAdminAiGenerationKindSchema: z.ZodType<
     | 'COOK_MENU_SUGGESTION_FROM_TEXT'
     | 'COOK_MENU_TITLE_DESCRIPTION',
     | 'BOOKING_REQUEST_COOK_MENU_EVALUATION'
+    | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY'
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT'
     | 'CHAT_TITLE'
     | 'COOK_BIOGRAPHY_SUGGESTION'
@@ -11104,6 +11181,7 @@ export const GqlSAdminAiGenerationKindSchema: z.ZodType<
     | 'COOK_MENU_TITLE_DESCRIPTION'
 > = z.enum([
     'BOOKING_REQUEST_COOK_MENU_EVALUATION',
+    'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY',
     'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT',
     'CHAT_TITLE',
     'COOK_BIOGRAPHY_SUGGESTION',

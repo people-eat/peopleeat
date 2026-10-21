@@ -9,9 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
 
-type AdminDataTableRowLink = {
+export type AdminDataTableRowLink = {
     to: string;
     params?: Record<string, string>;
+    search?: Record<string, unknown>;
 };
 
 const stickyOpenClassName = cn(
@@ -75,7 +76,11 @@ export function AdminDataTable<TData extends RowData>({
     function navigateToRow(row: TData) {
         if (!getRowTo) return;
         const link = getRowTo(row);
-        void navigate({ to: link.to as never, params: link.params as never });
+        void navigate({
+            to: link.to as never,
+            params: link.params as never,
+            ...(link.search != null ? { search: link.search as never } : {}),
+        });
     }
 
     function onRowClick(event: MouseEvent<HTMLTableRowElement>, row: TData) {
@@ -126,6 +131,7 @@ export function AdminDataTable<TData extends RowData>({
                                                 <Link
                                                     to={link.to as never}
                                                     params={link.params as never}
+                                                    search={link.search as never}
                                                     aria-label={openDetailsLabel}
                                                     className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                                     onClick={(event) => event.stopPropagation()}

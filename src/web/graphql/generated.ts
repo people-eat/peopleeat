@@ -51,6 +51,7 @@ export interface GqlCAdmin {
     bookingRequestOffersCounts: Array<Scalars['Int']['output']>;
     bookingRequests: Array<GqlCAdminBookingRequest>;
     bookingRequestsCounts: Array<Scalars['Int']['output']>;
+    call?: Maybe<GqlCAdminCall>;
     callCookStats: Array<GqlCAdminCallCookStat>;
     callRoomCreations: Array<GqlCAdminTimeBucket>;
     callSlotCreations: Array<GqlCAdminTimeBucket>;
@@ -221,6 +222,10 @@ export type GqlCAdminBookingRequestsArgs = {
 
 export type GqlCAdminBookingRequestsCountsArgs = {
     criteria: Array<GqlCAdminBookingRequestCriterion>;
+};
+
+export type GqlCAdminCallArgs = {
+    bookingRequestOfferCallRoomId: Scalars['ID']['input'];
 };
 
 export type GqlCAdminCallCookStatsArgs = {
@@ -519,6 +524,7 @@ export type GqlCAdminAiGenerationCriterion = {
 
 export type GqlCAdminAiGenerationKind =
     | 'BOOKING_REQUEST_COOK_MENU_EVALUATION'
+    | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY'
     | 'BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT'
     | 'CHAT_TITLE'
     | 'COOK_BIOGRAPHY_SUGGESTION'
@@ -868,6 +874,23 @@ export type GqlCAdminBookingRequestUpdate = {
     participants?: InputMaybe<Array<GqlCUserBookingRequestParticipantCreate>>;
     priceClassType?: InputMaybe<GqlCBookingRequestPriceClassType>;
 };
+
+export interface GqlCAdminCall {
+    __typename?: 'AdminCall';
+    bookingRequestId: Scalars['ID']['output'];
+    bookingRequestOfferCallRoomId: Scalars['ID']['output'];
+    bookingRequestOfferId: Scalars['ID']['output'];
+    cookDisplayName: Scalars['String']['output'];
+    cookId: Scalars['ID']['output'];
+    customerDisplayName: Scalars['String']['output'];
+    customerUserId: Scalars['ID']['output'];
+    endedAt?: Maybe<Scalars['DateTime']['output']>;
+    livekitRoomName: Scalars['String']['output'];
+    occasion: Scalars['String']['output'];
+    recording?: Maybe<GqlCBookingRequestOfferCallRecording>;
+    startedAt: Scalars['DateTime']['output'];
+    status: GqlCBookingRequestOfferCallRoomStatus;
+}
 
 export interface GqlCAdminCallCookStat {
     __typename?: 'AdminCallCookStat';
@@ -1327,6 +1350,8 @@ export interface GqlCAdminMutation {
     bookingRequestOfferCallCreate: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlCMutationResult;
+    bookingRequestOfferCallRecordingDelete: GqlCMutationResult;
+    bookingRequestOfferCallRecordingSummaryGenerate: Scalars['String']['output'];
     bookingRequestOfferCallSlotDecline: GqlCMutationResult;
     bookingRequestOfferChatMessageCreate: GqlCMutationResult;
     bookingRequestOfferChatMessageDelete: GqlCMutationResult;
@@ -1447,6 +1472,14 @@ export type GqlCAdminMutationBookingRequestOfferCallJoinArgs = {
 
 export type GqlCAdminMutationBookingRequestOfferCallLeaveArgs = {
     bookingRequestOfferCallRoomParticipantId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationBookingRequestOfferCallRecordingDeleteArgs = {
+    bookingRequestOfferCallRecordingId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationBookingRequestOfferCallRecordingSummaryGenerateArgs = {
+    bookingRequestOfferCallRecordingId: Scalars['ID']['input'];
 };
 
 export type GqlCAdminMutationBookingRequestOfferCallSlotDeclineArgs = {
@@ -2419,6 +2452,7 @@ export interface GqlCBookingRequestOfferCallRecording {
     errorMessage?: Maybe<Scalars['String']['output']>;
     mediaType?: Maybe<Scalars['String']['output']>;
     status: GqlCBookingRequestOfferCallRecordingStatus;
+    summaryText?: Maybe<Scalars['String']['output']>;
     transcriptSegments?: Maybe<Array<GqlCBookingRequestOfferCallTranscriptSegment>>;
     transcriptText?: Maybe<Scalars['String']['output']>;
 }
@@ -9755,6 +9789,7 @@ export type GqlCAdminBookingRequestOfferPageOfferFragment = {
         mediaType: string | null;
         byteSize: number | null;
         transcriptText: string | null;
+        summaryText: string | null;
         audioUrl: string | null;
         errorMessage: string | null;
         createdAt: string;
@@ -9992,6 +10027,7 @@ export type GqlCAdminBookingRequestOfferPageQuery = {
                         mediaType: string | null;
                         byteSize: number | null;
                         transcriptText: string | null;
+                        summaryText: string | null;
                         audioUrl: string | null;
                         errorMessage: string | null;
                         createdAt: string;
@@ -10229,6 +10265,7 @@ export type GqlCAdminBookingRequestOfferPageUpdatesSubscription = {
                 mediaType: string | null;
                 byteSize: number | null;
                 transcriptText: string | null;
+                summaryText: string | null;
                 audioUrl: string | null;
                 errorMessage: string | null;
                 createdAt: string;
@@ -10857,6 +10894,69 @@ export type GqlCAdminBookingRequestsPageQuery = {
         } | null;
     };
 };
+
+export type GqlCAdminCallPageQueryVariables = Exact<{
+    bookingRequestOfferCallRoomId: string;
+}>;
+
+export type GqlCAdminCallPageQuery = {
+    currentSession: {
+        sessionId: string;
+        user: {
+            userId: string;
+            admin: {
+                adminId: string;
+                call: {
+                    bookingRequestOfferCallRoomId: string;
+                    bookingRequestOfferId: string;
+                    bookingRequestId: string;
+                    livekitRoomName: string;
+                    status: Schema.GqlCBookingRequestOfferCallRoomStatus;
+                    startedAt: string;
+                    endedAt: string | null;
+                    occasion: string;
+                    cookId: string;
+                    customerUserId: string;
+                    cookDisplayName: string;
+                    customerDisplayName: string;
+                    recording: {
+                        bookingRequestOfferCallRecordingId: string;
+                        bookingRequestOfferCallRoomId: string;
+                        status: Schema.GqlCBookingRequestOfferCallRecordingStatus;
+                        mediaType: string | null;
+                        byteSize: number | null;
+                        transcriptText: string | null;
+                        summaryText: string | null;
+                        audioUrl: string | null;
+                        errorMessage: string | null;
+                        createdAt: string;
+                        completedAt: string | null;
+                        transcriptSegments: Array<{
+                            startedAtMs: number;
+                            endedAtMs: number;
+                            text: string;
+                            speakerLabel: string | null;
+                        }> | null;
+                    } | null;
+                } | null;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCAdminCallRecordingDeleteMutationVariables = Exact<{
+    bookingRequestOfferCallRecordingId: string;
+}>;
+
+export type GqlCAdminCallRecordingDeleteMutation = {
+    admin: { bookingRequestOfferCallRecordingDelete: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCAdminCallRecordingSummaryGenerateMutationVariables = Exact<{
+    bookingRequestOfferCallRecordingId: string;
+}>;
+
+export type GqlCAdminCallRecordingSummaryGenerateMutation = { admin: { bookingRequestOfferCallRecordingSummaryGenerate: string } };
 
 export type GqlCAdminCallsAttentionCallFragment = {
     kind: Schema.GqlCAdminCallListItemKind;
@@ -25120,6 +25220,7 @@ export const AdminBookingRequestOfferPageOfferFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'byteSize' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'transcriptText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'summaryText' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'transcriptSegments' },
@@ -44851,6 +44952,7 @@ export const AdminBookingRequestOfferPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'byteSize' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'transcriptText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'summaryText' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'transcriptSegments' },
@@ -45469,6 +45571,7 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'mediaType' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'byteSize' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'transcriptText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'summaryText' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'transcriptSegments' },
@@ -47843,6 +47946,279 @@ export const AdminBookingRequestsPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminBookingRequestsPageQuery, GqlCAdminBookingRequestsPageQueryVariables>;
+export const AdminCallPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminCallPage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferCallRoomId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'admin' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'call' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'bookingRequestOfferCallRoomId' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'bookingRequestOfferCallRoomId' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'bookingRequestOfferCallRoomId' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'livekitRoomName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'startedAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'endedAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'customerUserId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'cookDisplayName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'customerDisplayName' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'recording' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'bookingRequestOfferCallRecordingId',
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'bookingRequestOfferCallRoomId',
+                                                                                    },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'mediaType' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'byteSize' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'transcriptText' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'transcriptSegments' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'startedAtMs',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'endedAtMs' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'text' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'speakerLabel',
+                                                                                                },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'summaryText' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'audioUrl' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'errorMessage' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'createdAt' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'completedAt' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminCallPageQuery, GqlCAdminCallPageQueryVariables>;
+export const AdminCallRecordingDeleteDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminCallRecordingDelete' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferCallRecordingId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferCallRecordingDelete' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferCallRecordingId' },
+                                            value: {
+                                                kind: 'Variable',
+                                                name: { kind: 'Name', value: 'bookingRequestOfferCallRecordingId' },
+                                            },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminCallRecordingDeleteMutation, GqlCAdminCallRecordingDeleteMutationVariables>;
+export const AdminCallRecordingSummaryGenerateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminCallRecordingSummaryGenerate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferCallRecordingId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferCallRecordingSummaryGenerate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferCallRecordingId' },
+                                            value: {
+                                                kind: 'Variable',
+                                                name: { kind: 'Name', value: 'bookingRequestOfferCallRecordingId' },
+                                            },
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminCallRecordingSummaryGenerateMutation, GqlCAdminCallRecordingSummaryGenerateMutationVariables>;
 export const AdminCallsAttentionUpdatesDocument = {
     kind: 'Document',
     definitions: [

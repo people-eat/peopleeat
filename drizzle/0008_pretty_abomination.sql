@@ -1,0 +1,1 @@
+ALTER TABLE "BookingRequestOfferCallRecordings" ADD COLUMN "summaryText" text;

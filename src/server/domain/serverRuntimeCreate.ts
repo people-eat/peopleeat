@@ -75,6 +75,7 @@ export function serverRuntimeCreate(): ServerRuntime {
             cookMenuSuggestionFromInventoryModel: () => google('gemini-2.5-flash'),
             cookMenuTitleDescriptionModel: () => google('gemini-2.5-flash'),
             bookingRequestOfferCallRecordingTranscriptModel: () => google('gemini-2.5-flash'),
+            bookingRequestOfferCallRecordingSummaryModel: () => google('gemini-2.5-flash'),
             cookBiographySuggestModel: () => google('gemini-2.5-flash'),
             cookBiographySummaryModel: () => google('gemini-2.5-flash'),
             cookMenuEvaluationModel: () => google('gemini-2.5-flash'),

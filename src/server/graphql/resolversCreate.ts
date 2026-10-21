@@ -18,6 +18,8 @@ import { adminBookingRequestDiscountUpdate } from '../commands/adminBookingReque
 import { adminBookingRequestOfferCallCreate } from '../commands/adminBookingRequestOfferCallCreate';
 import { adminBookingRequestOfferCallJoin } from '../commands/adminBookingRequestOfferCallJoin';
 import { adminBookingRequestOfferCallLeave } from '../commands/adminBookingRequestOfferCallLeave';
+import { adminBookingRequestOfferCallRecordingDelete } from '../commands/adminBookingRequestOfferCallRecordingDelete';
+import { adminBookingRequestOfferCallRecordingSummaryGenerate } from '../commands/adminBookingRequestOfferCallRecordingSummaryGenerate';
 import { adminBookingRequestOfferCallSlotDecline } from '../commands/adminBookingRequestOfferCallSlotDecline';
 import { adminBookingRequestOfferChatMessageCreate } from '../commands/adminBookingRequestOfferChatMessageCreate';
 import { adminBookingRequestOfferChatMessageDelete } from '../commands/adminBookingRequestOfferChatMessageDelete';
@@ -242,6 +244,7 @@ import { adminBookingRequestOfferFindOne } from '../queries/adminBookingRequestO
 import { adminBookingRequestOfferQueuedJobsByOfferIdFindMany } from '../queries/adminBookingRequestOfferQueuedJobsByOfferIdFindMany';
 import { adminBookingRequestQueuedJobsFindMany } from '../queries/adminBookingRequestQueuedJobsFindMany';
 import { adminCallCookStatsFindMany } from '../queries/adminCallCookStatsFindMany';
+import { adminCallFindOne } from '../queries/adminCallFindOne';
 import { adminCallRoomCreationsFindMany } from '../queries/adminCallRoomCreationsFindMany';
 import { adminCallsFindMany } from '../queries/adminCallsFindMany';
 import { adminCallSlotCreationsFindMany } from '../queries/adminCallSlotCreationsFindMany';
@@ -443,6 +446,7 @@ import type {
     GqlSAdminBookingRequestOffersCountsArgs,
     GqlSAdminBookingRequestsArgs,
     GqlSAdminBookingRequestsCountsArgs,
+    GqlSAdminCallArgs,
     GqlSAdminCallCookStatsArgs,
     GqlSAdminCallRoomCreationsArgs,
     GqlSAdminCallSlotCreationsArgs,
@@ -493,6 +497,8 @@ import type {
     GqlSAdminMutationBookingRequestOfferCallCreateArgs,
     GqlSAdminMutationBookingRequestOfferCallJoinArgs,
     GqlSAdminMutationBookingRequestOfferCallLeaveArgs,
+    GqlSAdminMutationBookingRequestOfferCallRecordingDeleteArgs,
+    GqlSAdminMutationBookingRequestOfferCallRecordingSummaryGenerateArgs,
     GqlSAdminMutationBookingRequestOfferCallSlotDeclineArgs,
     GqlSAdminMutationBookingRequestOfferChatMessageCreateArgs,
     GqlSAdminMutationBookingRequestOfferChatMessageDeleteArgs,
@@ -1308,6 +1314,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             callCookStats(_parent: GqlSAdmin, args: GqlSAdminCallCookStatsArgs, requestingSession: GqlSSession) {
                 return adminCallCookStatsFindMany(args, requestingSession, serverRuntime);
+            },
+            call(_parent: GqlSAdmin, args: GqlSAdminCallArgs, requestingSession: GqlSSession) {
+                return adminCallFindOne(args, requestingSession, serverRuntime);
             },
             promoCodes(_parent: GqlSAdmin, args: GqlSAdminPromoCodesArgs, requestingSession: GqlSSession) {
                 return adminPromoCodeFindMany(args, requestingSession, serverRuntime);
@@ -2310,6 +2319,20 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return adminBookingRequestOfferCallSlotDecline(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferCallRecordingDelete(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationBookingRequestOfferCallRecordingDeleteArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestOfferCallRecordingDelete(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferCallRecordingSummaryGenerate(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationBookingRequestOfferCallRecordingSummaryGenerateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestOfferCallRecordingSummaryGenerate(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestCancel(
                 parent: GqlSAdminMutation,

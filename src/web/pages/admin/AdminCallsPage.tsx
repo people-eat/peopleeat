@@ -130,6 +130,7 @@ function toTableRow(
         kind: item.kind,
         bookingRequestId: item.bookingRequestId,
         bookingRequestOfferId: item.bookingRequestOfferId,
+        bookingRequestOfferCallRoomId: room?.bookingRequestOfferCallRoomId ?? slot?.videoCallRoomId ?? null,
         cookDisplayName: item.cookDisplayName,
         customerDisplayName: item.customerDisplayName,
         occasion: item.occasion,

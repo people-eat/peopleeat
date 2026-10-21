@@ -12,6 +12,8 @@ export type AdminCallsTableRow = {
     kind: GqlCAdminCallListItemKind;
     bookingRequestId: string;
     bookingRequestOfferId: string;
+    /** Present for LIVE / RECENT_ROOM, or slots that already opened a room. */
+    bookingRequestOfferCallRoomId: string | null;
     cookDisplayName: string;
     customerDisplayName: string;
     occasion: string;

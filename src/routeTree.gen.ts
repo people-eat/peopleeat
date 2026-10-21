@@ -111,6 +111,7 @@ import { Route as Char123LocaleChar125AdminBlogPostsBlogPostIdRouteImport } from
 import { Route as Char123LocaleChar125AdminBookingRequestsBookingRequestIdRouteImport } from './routes/{-$locale}/admin/booking-requests_.$bookingRequestId'
 import { Route as Char123LocaleChar125AdminBookingRequestsCreateRouteImport } from './routes/{-$locale}/admin/booking-requests_.create'
 import { Route as Char123LocaleChar125AdminBookingRequestsListRouteImport } from './routes/{-$locale}/admin/booking-requests_.list'
+import { Route as Char123LocaleChar125AdminCallsBookingRequestOfferCallRoomIdRouteImport } from './routes/{-$locale}/admin/calls_.$bookingRequestOfferCallRoomId'
 import { Route as Char123LocaleChar125AdminCallsListRouteImport } from './routes/{-$locale}/admin/calls_.list'
 import { Route as Char123LocaleChar125AdminCitiesCityIdRouteImport } from './routes/{-$locale}/admin/cities_.$cityId'
 import { Route as Char123LocaleChar125AdminGiftCardsGiftCardIdRouteImport } from './routes/{-$locale}/admin/gift-cards_.$giftCardId'
@@ -762,6 +763,14 @@ const Char123LocaleChar125AdminBookingRequestsListRoute =
     path: '/booking-requests/list',
     getParentRoute: () => Char123LocaleChar125AdminRoute,
   } as any)
+const Char123LocaleChar125AdminCallsBookingRequestOfferCallRoomIdRoute =
+  Char123LocaleChar125AdminCallsBookingRequestOfferCallRoomIdRouteImport.update(
+    {
+      id: '/calls_/$bookingRequestOfferCallRoomId',
+      path: '/calls/$bookingRequestOfferCallRoomId',
+      getParentRoute: () => Char123LocaleChar125AdminRoute,
+    } as any,
+  )
 const Char123LocaleChar125AdminCallsListRoute =
   Char123LocaleChar125AdminCallsListRouteImport.update({
     id: '/calls_/list',
@@ -1236,6 +1245,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/admin/booking-requests/$bookingRequestId': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdRoute
   '/{-$locale}/admin/booking-requests/create': typeof Char123LocaleChar125AdminBookingRequestsCreateRoute
   '/{-$locale}/admin/booking-requests/list': typeof Char123LocaleChar125AdminBookingRequestsListRoute
+  '/{-$locale}/admin/calls/$bookingRequestOfferCallRoomId': typeof Char123LocaleChar125AdminCallsBookingRequestOfferCallRoomIdRoute
   '/{-$locale}/admin/calls/list': typeof Char123LocaleChar125AdminCallsListRoute
   '/{-$locale}/admin/cities/$cityId': typeof Char123LocaleChar125AdminCitiesCityIdRoute
   '/{-$locale}/admin/gift-cards/$giftCardId': typeof Char123LocaleChar125AdminGiftCardsGiftCardIdRoute
@@ -1393,6 +1403,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/admin/booking-requests/$bookingRequestId': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdRoute
   '/{-$locale}/admin/booking-requests/create': typeof Char123LocaleChar125AdminBookingRequestsCreateRoute
   '/{-$locale}/admin/booking-requests/list': typeof Char123LocaleChar125AdminBookingRequestsListRoute
+  '/{-$locale}/admin/calls/$bookingRequestOfferCallRoomId': typeof Char123LocaleChar125AdminCallsBookingRequestOfferCallRoomIdRoute
   '/{-$locale}/admin/calls/list': typeof Char123LocaleChar125AdminCallsListRoute
   '/{-$locale}/admin/cities/$cityId': typeof Char123LocaleChar125AdminCitiesCityIdRoute
   '/{-$locale}/admin/gift-cards/$giftCardId': typeof Char123LocaleChar125AdminGiftCardsGiftCardIdRoute
@@ -1554,6 +1565,7 @@ export interface FileRoutesById {
   '/{-$locale}/admin/booking-requests_/$bookingRequestId': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdRoute
   '/{-$locale}/admin/booking-requests_/create': typeof Char123LocaleChar125AdminBookingRequestsCreateRoute
   '/{-$locale}/admin/booking-requests_/list': typeof Char123LocaleChar125AdminBookingRequestsListRoute
+  '/{-$locale}/admin/calls_/$bookingRequestOfferCallRoomId': typeof Char123LocaleChar125AdminCallsBookingRequestOfferCallRoomIdRoute
   '/{-$locale}/admin/calls_/list': typeof Char123LocaleChar125AdminCallsListRoute
   '/{-$locale}/admin/cities_/$cityId': typeof Char123LocaleChar125AdminCitiesCityIdRoute
   '/{-$locale}/admin/gift-cards_/$giftCardId': typeof Char123LocaleChar125AdminGiftCardsGiftCardIdRoute
@@ -1716,6 +1728,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/booking-requests/$bookingRequestId'
     | '/{-$locale}/admin/booking-requests/create'
     | '/{-$locale}/admin/booking-requests/list'
+    | '/{-$locale}/admin/calls/$bookingRequestOfferCallRoomId'
     | '/{-$locale}/admin/calls/list'
     | '/{-$locale}/admin/cities/$cityId'
     | '/{-$locale}/admin/gift-cards/$giftCardId'
@@ -1873,6 +1886,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/booking-requests/$bookingRequestId'
     | '/{-$locale}/admin/booking-requests/create'
     | '/{-$locale}/admin/booking-requests/list'
+    | '/{-$locale}/admin/calls/$bookingRequestOfferCallRoomId'
     | '/{-$locale}/admin/calls/list'
     | '/{-$locale}/admin/cities/$cityId'
     | '/{-$locale}/admin/gift-cards/$giftCardId'
@@ -2033,6 +2047,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/booking-requests_/$bookingRequestId'
     | '/{-$locale}/admin/booking-requests_/create'
     | '/{-$locale}/admin/booking-requests_/list'
+    | '/{-$locale}/admin/calls_/$bookingRequestOfferCallRoomId'
     | '/{-$locale}/admin/calls_/list'
     | '/{-$locale}/admin/cities_/$cityId'
     | '/{-$locale}/admin/gift-cards_/$giftCardId'
@@ -2832,6 +2847,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125AdminBookingRequestsListRouteImport
       parentRoute: typeof Char123LocaleChar125AdminRoute
     }
+    '/{-$locale}/admin/calls_/$bookingRequestOfferCallRoomId': {
+      id: '/{-$locale}/admin/calls_/$bookingRequestOfferCallRoomId'
+      path: '/calls/$bookingRequestOfferCallRoomId'
+      fullPath: '/{-$locale}/admin/calls/$bookingRequestOfferCallRoomId'
+      preLoaderRoute: typeof Char123LocaleChar125AdminCallsBookingRequestOfferCallRoomIdRouteImport
+      parentRoute: typeof Char123LocaleChar125AdminRoute
+    }
     '/{-$locale}/admin/calls_/list': {
       id: '/{-$locale}/admin/calls_/list'
       path: '/calls/list'
@@ -3269,6 +3291,7 @@ interface Char123LocaleChar125AdminRouteChildren {
   Char123LocaleChar125AdminBookingRequestsBookingRequestIdRoute: typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdRoute
   Char123LocaleChar125AdminBookingRequestsCreateRoute: typeof Char123LocaleChar125AdminBookingRequestsCreateRoute
   Char123LocaleChar125AdminBookingRequestsListRoute: typeof Char123LocaleChar125AdminBookingRequestsListRoute
+  Char123LocaleChar125AdminCallsBookingRequestOfferCallRoomIdRoute: typeof Char123LocaleChar125AdminCallsBookingRequestOfferCallRoomIdRoute
   Char123LocaleChar125AdminCallsListRoute: typeof Char123LocaleChar125AdminCallsListRoute
   Char123LocaleChar125AdminCitiesCityIdRoute: typeof Char123LocaleChar125AdminCitiesCityIdRoute
   Char123LocaleChar125AdminGiftCardsGiftCardIdRoute: typeof Char123LocaleChar125AdminGiftCardsGiftCardIdRoute
@@ -3380,6 +3403,8 @@ const Char123LocaleChar125AdminRouteChildren: Char123LocaleChar125AdminRouteChil
       Char123LocaleChar125AdminBookingRequestsCreateRoute,
     Char123LocaleChar125AdminBookingRequestsListRoute:
       Char123LocaleChar125AdminBookingRequestsListRoute,
+    Char123LocaleChar125AdminCallsBookingRequestOfferCallRoomIdRoute:
+      Char123LocaleChar125AdminCallsBookingRequestOfferCallRoomIdRoute,
     Char123LocaleChar125AdminCallsListRoute:
       Char123LocaleChar125AdminCallsListRoute,
     Char123LocaleChar125AdminCitiesCityIdRoute:
@@ -3671,12 +3696,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

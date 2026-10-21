@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { EgressStatus } from 'livekit-server-sdk';
 import { z } from 'zod';
 
+import { bookingRequestOfferCallRecordingSummaryGenerate } from '../../commands/bookingRequestOfferCallRecordingSummaryGenerate';
 import { bookingRequestOfferCallRecordings } from '../../db/schema';
 import type { BookingRequestOfferCallTranscriptSegment } from '../../domain/bookingRequest';
 import { aiTelemetry } from '../../observability/aiTelemetry';
@@ -175,6 +176,21 @@ export const bookingRequestOfferCallRecordingFinalize: QueuedJobDefinition<Booki
                             recording.bookingRequestOfferCallRecordingId,
                         ),
                     );
+
+                try {
+                    await bookingRequestOfferCallRecordingSummaryGenerate({
+                        bookingRequestOfferCallRecordingId: recording.bookingRequestOfferCallRecordingId,
+                        requestingSession: null,
+                        serverRuntime,
+                    });
+                } catch (summaryError) {
+                    serverRuntime.log.warn(
+                        `bookingRequestOfferCallRecordingFinalize: summary failed (recording=${recording.bookingRequestOfferCallRecordingId}): ${
+                            summaryError instanceof Error ? summaryError.message : 'unknown'
+                        }`,
+                        null,
+                    );
+                }
 
                 await serverRuntime.publish.adminUpdates();
                 return;

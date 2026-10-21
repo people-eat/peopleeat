@@ -30,7 +30,7 @@ function NotificationBadge({ count, label, placement = 'corner', className, ...p
             className={cn(
                 'flex shrink-0 items-center justify-center rounded-full bg-red-400 font-bold text-white tabular-nums',
                 placement === 'corner' && 'absolute -top-2 -right-2 size-6 text-xs shadow-lg',
-                placement === 'inline' && 'size-4 text-[10px] leading-none shadow-sm',
+                placement === 'inline' && 'size-4 text-[10px]/none shadow-sm',
                 className,
             )}
             {...props}

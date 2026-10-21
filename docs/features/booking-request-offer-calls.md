@@ -20,7 +20,8 @@ On an open offer (customer, cook, or admin offer page), a single **Call** tab co
 4. **Admin** — Can create, join, and leave rooms on any offer; can decline PENDING call requests on the offer Call tab on behalf of the
    counterparty (customer or cook). Confirm / cancel / propose stay with the parties. Hub at `/admin/calls` (overview attention board +
    stats; list for full traffic including declines and cancels). Admin offer pages mirror customer/cook banners for pending/confirmed slots.
-   Recordings/transcripts sit below on the same Call tab.
+   Recording cards on the offer Call tab deep-link to `/admin/calls/$bookingRequestOfferCallRoomId` for summary / transcript review (see
+   [call-recordings.md](./call-recordings.md)).
 
 Customer and cook offer pages show pending incoming calls as a **compact header strip** above the tabs (visible without displacing the
 fill-height chat grid); chat milestones include the slot time range. Unread counters clear when opening chat **or** Call.
@@ -127,9 +128,10 @@ CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’
 - Profile overviews: `callBookingOverviewHint` — cook inbox uses info `Popover` on `CookBookingRequestOfferCard`; customer/admin cards keep
   inline hint text; `openCall` deep-links to `?tab=call`
 - Cook `/profile/calls`: cross-offer pending/confirmed via cook call-slot bookings query
-- Admin `/admin/calls` overview + list; admin offer cards use `callBookingOverviewHint(..., 'admin')` (neutral who-must-act copy)
+- Admin `/admin/calls` overview + list; room rows / attention “Open call” → `AdminCallPage`; slot-only rows → offer Call tab
+- Admin offer cards use `callBookingOverviewHint(..., 'admin')` (neutral who-must-act copy)
 - Admin offer Call tab: decline PENDING slots via `AdminBookingRequestOfferCallSlotDecline` (`onBehalfOf` counterparty); propose / confirm /
-  cancel remain unavailable
+  cancel remain unavailable; compact recording cards link to `AdminCallPage`
 
 ### Env
 

@@ -1,12 +1,8 @@
-import { useLocale } from '../hooks/useLocale';
-import { StatusAlert } from './base/status-alert';
+import { Link } from '@tanstack/react-router';
+import { ChevronRightIcon } from 'lucide-react';
 
-type CallRecordingSegment = {
-    startedAtMs: number;
-    endedAtMs: number;
-    text: string;
-    speakerLabel: string | null;
-};
+import { useLocale } from '../hooks/useLocale';
+import { Badge } from './base/badge';
 
 export type AdminBookingRequestOfferCallRecording = {
     bookingRequestOfferCallRecordingId: string;
@@ -15,19 +11,20 @@ export type AdminBookingRequestOfferCallRecording = {
     mediaType: string | null;
     byteSize: number | null;
     transcriptText: string | null;
-    transcriptSegments: readonly CallRecordingSegment[] | null;
+    summaryText?: string | null;
+    transcriptSegments:
+        | readonly {
+              startedAtMs: number;
+              endedAtMs: number;
+              text: string;
+              speakerLabel: string | null;
+          }[]
+        | null;
     audioUrl: string | null;
     errorMessage: string | null;
     createdAt: string;
     completedAt: string | null;
 };
-
-function formatOffset(ms: number): string {
-    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
 
 function statusLabel(status: AdminBookingRequestOfferCallRecording['status'], locale: 'de' | 'en'): string {
     return {
@@ -37,6 +34,25 @@ function statusLabel(status: AdminBookingRequestOfferCallRecording['status'], lo
         COMPLETED: { de: 'Fertig', en: 'Completed' },
         FAILED: { de: 'Fehlgeschlagen', en: 'Failed' },
     }[status][locale];
+}
+
+function cardSnippet(recording: AdminBookingRequestOfferCallRecording, locale: 'de' | 'en'): string {
+    if (recording.status === 'FAILED') {
+        return recording.errorMessage?.trim() || { de: 'Aufnahme fehlgeschlagen.', en: 'Recording failed.' }[locale];
+    }
+    if (recording.summaryText?.trim()) {
+        return recording.summaryText.trim();
+    }
+    if (recording.status === 'PENDING' || recording.status === 'EGRESS_COMPLETE' || recording.status === 'TRANSCRIBING') {
+        return {
+            de: 'Verarbeitung läuft. Zusammenfassung folgt nach dem Anruf.',
+            en: 'Processing. Summary appears after the call.',
+        }[locale];
+    }
+    return {
+        de: 'Aufnahme bereit. Öffnen für Zusammenfassung und Transkript.',
+        en: 'Recording ready. Open for summary and transcript.',
+    }[locale];
 }
 
 export function AdminBookingRequestOfferCallRecordingsSection({
@@ -60,55 +76,35 @@ export function AdminBookingRequestOfferCallRecordingsSection({
     }
 
     return (
-        <div className="grid gap-4">
-            <h2 className="text-sm font-medium text-foreground">
-                {{ de: 'Aufnahmen & Transkripte', en: 'Recordings & transcripts' }[locale]}
-            </h2>
-            {recordings.map((recording) => (
-                <div key={recording.bookingRequestOfferCallRecordingId} className="grid gap-3 rounded-lg border border-border p-4">
-                    <div className="flex flex-wrap items-baseline justify-between gap-2">
-                        <p className="text-sm font-medium text-foreground">{statusLabel(recording.status, locale)}</p>
-                        <p className="text-xs text-muted-foreground">{new Date(recording.createdAt).toLocaleString(locale)}</p>
-                    </div>
-
-                    {recording.status === 'FAILED' && recording.errorMessage ? (
-                        <StatusAlert tone="error" title={{ de: 'Fehler', en: 'Error' }[locale]}>
-                            {recording.errorMessage}
-                        </StatusAlert>
-                    ) : null}
-
-                    {recording.audioUrl ? (
-                        <audio controls preload="none" className="w-full" src={recording.audioUrl}>
-                            <track kind="captions" />
-                        </audio>
-                    ) : null}
-
-                    {recording.transcriptSegments && recording.transcriptSegments.length > 0 ? (
-                        <ol className="grid gap-2 text-sm">
-                            {recording.transcriptSegments.map((segment, index) => (
-                                <li key={`${segment.startedAtMs}-${index}`} className="grid gap-0.5">
-                                    <span className="text-xs text-muted-foreground">
-                                        {formatOffset(segment.startedAtMs)}
-                                        {segment.speakerLabel ? ` · ${segment.speakerLabel}` : ''}
+        <div className="grid gap-3">
+            <h2 className="text-sm font-medium text-foreground">{{ de: 'Aufnahmen', en: 'Recordings' }[locale]}</h2>
+            <ul className="grid gap-2">
+                {recordings.map((recording) => (
+                    <li key={recording.bookingRequestOfferCallRecordingId}>
+                        <Link
+                            to="/{-$locale}/admin/calls/$bookingRequestOfferCallRoomId"
+                            params={{ bookingRequestOfferCallRoomId: recording.bookingRequestOfferCallRoomId }}
+                            className="flex items-start gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                        >
+                            <div className="grid min-w-0 flex-1 gap-1.5">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <Badge variant={recording.status === 'FAILED' ? 'destructive' : 'outline'}>
+                                        {statusLabel(recording.status, locale)}
+                                    </Badge>
+                                    <span className="text-xs text-muted-foreground tabular-nums">
+                                        {new Date(recording.createdAt).toLocaleString(locale)}
                                     </span>
-                                    <span className="text-foreground">{segment.text}</span>
-                                </li>
-                            ))}
-                        </ol>
-                    ) : recording.transcriptText ? (
-                        <p className="whitespace-pre-wrap text-sm text-foreground">{recording.transcriptText}</p>
-                    ) : recording.status === 'PENDING' || recording.status === 'EGRESS_COMPLETE' || recording.status === 'TRANSCRIBING' ? (
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Transkript wird nach dem Anruf erstellt.',
-                                    en: 'Transcript will appear after the call ends.',
-                                }[locale]
-                            }
-                        </p>
-                    ) : null}
-                </div>
-            ))}
+                                </div>
+                                <p className="line-clamp-2 text-sm text-muted-foreground">{cardSnippet(recording, locale)}</p>
+                                <span className="text-xs font-medium text-foreground">
+                                    {{ de: 'Anruf öffnen', en: 'Open call' }[locale]}
+                                </span>
+                            </div>
+                            <ChevronRightIcon className="mt-1 size-4 shrink-0 text-muted-foreground" aria-hidden />
+                        </Link>
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 }

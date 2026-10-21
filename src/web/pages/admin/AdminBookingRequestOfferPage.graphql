@@ -142,6 +142,7 @@ fragment AdminBookingRequestOfferPageOffer on AdminBookingRequestOffer {
         mediaType
         byteSize
         transcriptText
+        summaryText
         transcriptSegments {
             startedAtMs
             endedAtMs

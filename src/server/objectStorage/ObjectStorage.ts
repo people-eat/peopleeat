@@ -20,6 +20,8 @@ export interface ObjectStorage {
     getObject: (objectKey: string) => Promise<{ body: Buffer; contentType: string | undefined; contentLength: number | undefined }>;
     /** Short-lived signed GET; prefer proxied admin routes in product UI. */
     signedGetUrl: (objectKey: string, expiresInSeconds?: number) => Promise<string>;
+    /** Best-effort delete (e.g. failed call-recording cleanup). Missing keys are not an error. */
+    deleteObject: (objectKey: string) => Promise<void>;
     /** Paginated `ListObjectsV2` for the admin file-store browse. */
     listObjects: (args: { prefix?: string; continuationToken?: string; maxKeys: number }) => Promise<{
         bucket: string;

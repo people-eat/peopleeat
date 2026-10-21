@@ -1844,6 +1844,8 @@ export const bookingRequestOfferCallRecordings = pgTable(
         status: varchar().$type<BookingRequestOfferCallRecordingStatus>().notNull().default('PENDING'),
         transcriptJson: jsonb().$type<BookingRequestOfferCallTranscriptSegment[]>(),
         transcriptText: text(),
+        /** Admin-facing AI summary of the call (generated after STT). */
+        summaryText: text(),
         errorMessage: text(),
         createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
         completedAt: timestamp({ withTimezone: true }),

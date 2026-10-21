@@ -59,6 +59,7 @@ function aiForTest(): ServerRuntime['ai'] {
         cookMenuSuggestionFromInventoryModel: () => new MockLanguageModelV3(),
         cookMenuTitleDescriptionModel: () => new MockLanguageModelV3(),
         bookingRequestOfferCallRecordingTranscriptModel: () => new MockLanguageModelV3(),
+        bookingRequestOfferCallRecordingSummaryModel: () => new MockLanguageModelV3(),
         cookBiographySuggestModel: () => new MockLanguageModelV3(),
         cookBiographySummaryModel: () => new MockLanguageModelV3(),
         cookMenuEvaluationModel: () => new MockLanguageModelV3(),
@@ -186,6 +187,7 @@ function objectStorageStubCreate(): ObjectStorage {
         listObjects: vi.fn(async () => {
             throw new Error('objectStorage.listObjects not used');
         }),
+        deleteObject: vi.fn(async () => undefined),
     };
 }
 

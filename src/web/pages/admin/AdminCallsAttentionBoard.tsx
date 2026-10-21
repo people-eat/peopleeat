@@ -60,6 +60,15 @@ function offerDeepLink(item: AdminCallsAttentionRow) {
     };
 }
 
+function callDeepLink(item: AdminCallsAttentionRow) {
+    const roomId = item.callRoom?.bookingRequestOfferCallRoomId ?? item.callSlotBooking?.videoCallRoomId ?? null;
+    if (roomId == null) return null;
+    return {
+        to: '/{-$locale}/admin/calls/$bookingRequestOfferCallRoomId' as const,
+        params: { bookingRequestOfferCallRoomId: roomId },
+    };
+}
+
 function isStalePending(item: AdminCallsAttentionRow, now: number): boolean {
     if (item.kind !== 'PENDING' || item.callSlotBooking == null) return false;
     const createdAt = new Date(item.callSlotBooking.createdAt).getTime();
@@ -85,6 +94,7 @@ function CallRow({ item, locale, timeZone, now }: { item: AdminCallsAttentionRow
                 : { de: 'Wartet auf Kunden', en: 'Awaiting customer' }[locale]
             : null;
     const stale = isStalePending(item, now);
+    const callLink = callDeepLink(item);
 
     return (
         <li>
@@ -109,6 +119,11 @@ function CallRow({ item, locale, timeZone, now }: { item: AdminCallsAttentionRow
                     {isLive ? (
                         <Button type="button" size="sm" asChild>
                             <Link {...offerDeepLink(item)}>{{ de: 'Beitreten', en: 'Join' }[locale]}</Link>
+                        </Button>
+                    ) : null}
+                    {callLink != null ? (
+                        <Button type="button" size="sm" variant="outline" asChild>
+                            <Link {...callLink}>{{ de: 'Anruf öffnen', en: 'Open call' }[locale]}</Link>
                         </Button>
                     ) : null}
                     <Button type="button" size="sm" variant="outline" asChild>

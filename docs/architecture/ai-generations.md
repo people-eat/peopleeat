@@ -56,6 +56,7 @@ Kinds today:
 - `COOK_MENU_TITLE_DESCRIPTION` → `ai.cookMenuTitleDescriptionModel`
 - `CHAT_TITLE` → `ai.chatTitlerModel`
 - `BOOKING_REQUEST_OFFER_CALL_RECORDING_TRANSCRIPT` → `ai.bookingRequestOfferCallRecordingTranscriptModel`
+- `BOOKING_REQUEST_OFFER_CALL_RECORDING_SUMMARY` → `ai.bookingRequestOfferCallRecordingSummaryModel`
 - `COOK_BIOGRAPHY_SUGGESTION` → `ai.cookBiographySuggestModel`
 - `COOK_BIOGRAPHY_SUMMARY` → `ai.cookBiographySummaryModel`
 - `BOOKING_REQUEST_COOK_MENU_EVALUATION` → `ai.cookMenuEvaluationModel`
@@ -93,7 +94,8 @@ See [features/admin-ai-generations.md](../features/admin-ai-generations.md).
 - `src/server/utils/aiGenerationUsage.ts` — shared token normalization
 - `src/server/utils/aiGenerationOutputSerialize.ts` — string / JSON output
 - Call sites: `cookMenuSuggestionFromText`, `cookMenuSuggestionFromInventoryGenerate`, `cookMenuTitleDescriptionSuggest`,
-  `chatTitleGenerate`, `bookingRequestOfferCallRecordingFinalize`, `cookBiographySuggestGenerate`, `cookBiographySummaryGenerate` (also from
-  the `cook-biography-summary-generate` job after cook biography save; admin summary suggest still calls the command inline),
-  `cookBookingRequestMenuEvaluationGenerate` (from the `cook-booking-request-menu-evaluation-generate` job; runs in parallel with inventory
-  suggestion — see [ai-menu-evaluation.md](../features/ai-menu-evaluation.md))
+  `chatTitleGenerate`, `bookingRequestOfferCallRecordingFinalize` (transcript + summary), `bookingRequestOfferCallRecordingSummaryGenerate`,
+  `cookBiographySuggestGenerate`, `cookBiographySummaryGenerate` (also from the `cook-biography-summary-generate` job after cook biography
+  save; admin summary suggest still calls the command inline), `cookBookingRequestMenuEvaluationGenerate` (from the
+  `cook-booking-request-menu-evaluation-generate` job; runs in parallel with inventory suggestion — see
+  [ai-menu-evaluation.md](../features/ai-menu-evaluation.md))
