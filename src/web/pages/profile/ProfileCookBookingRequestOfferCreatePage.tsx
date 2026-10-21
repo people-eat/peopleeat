@@ -4,7 +4,17 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { containsPhoneNumber, cookBookingRequestOfferFunnelArea } from '../../../shared';
-import type { CookBookingRequestOfferFunnelClientStep } from '../../../shared';
+import type { CookBookingRequestOfferFunnelClientStep, Locale } from '../../../shared';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '../../components/base/alert-dialog';
 import { Button } from '../../components/base/button';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Textarea } from '../../components/base/textarea';
@@ -111,6 +121,59 @@ function isPoolUnavailableKind(typename: string | undefined): typename is CookBo
     );
 }
 
+function CookBookingRequestOfferCreateSuccessDialog({
+    open,
+    locale,
+    hasMoreOpenRequests,
+    onGoToOffer,
+    onReviewNext,
+}: {
+    open: boolean;
+    locale: Locale;
+    hasMoreOpenRequests: boolean;
+    onGoToOffer: () => void;
+    onReviewNext: () => void;
+}) {
+    return (
+        <AlertDialog open={open}>
+            <AlertDialogContent onEscapeKeyDown={(event) => event.preventDefault()}>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{{ de: 'Angebot gesendet', en: 'Offer sent' }[locale]}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {
+                            (hasMoreOpenRequests
+                                ? {
+                                      de: 'Möchtest du dein Angebot öffnen oder weitere Anfragen prüfen?',
+                                      en: 'Open your offer, or keep reviewing booking requests?',
+                                  }
+                                : {
+                                      de: 'Möchtest du dein Angebot öffnen oder nach der nächsten Gelegenheit suchen?',
+                                      en: 'Open your offer, or look for the next opportunity?',
+                                  })[locale]
+                        }
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={onReviewNext}>
+                        {
+                            (hasMoreOpenRequests
+                                ? {
+                                      de: 'Weitere Anfragen prüfen',
+                                      en: 'Review next requests',
+                                  }
+                                : {
+                                      de: 'Nächste Gelegenheit finden',
+                                      en: 'Find next opportunity',
+                                  })[locale]
+                        }
+                    </AlertDialogCancel>
+                    <AlertDialogAction onClick={onGoToOffer}>{{ de: 'Zum Angebot', en: 'Go to offer' }[locale]}</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}
+
 export {
     profileCookBookingRequestOfferCreatePageDescription,
     profileCookBookingRequestOfferCreatePageTitle,
@@ -166,6 +229,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
     const [applyingGeneratedMenu, setApplyingGeneratedMenu] = useState(false);
     const [recommendationApplied, setRecommendationApplied] = useState(false);
     const [menuSelectionError, setMenuSelectionError] = useState<string | null>(null);
+    const [createdOfferId, setCreatedOfferId] = useState<string | null>(null);
     const submittedOfferRef = useRef(false);
     const applyingGeneratedMenuRef = useRef(false);
     const pageTopRef = useRef<HTMLDivElement>(null);
@@ -200,8 +264,8 @@ export function ProfileCookBookingRequestOfferCreatePage({
 
     useEffect(() => {
         if (user == null || cook == null) return;
-        // Offer create flips lookup to OfferAlreadyExists; do not race the success navigate.
-        if (submittedOfferRef.current || creatingOffer) return;
+        // Offer create flips lookup to OfferAlreadyExists; keep the success dialog open.
+        if (submittedOfferRef.current || creatingOffer || createdOfferId != null) return;
         if (lookup == null || lookup.__typename === 'CookBookingRequestNotFound') return;
         if (isPoolUnavailableKind(lookup.__typename)) return;
         if (request == null) return;
@@ -211,7 +275,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
         if (declined || !ready || !hasOrigin) {
             void navigate({ to: '/{-$locale}/profile/booking-request-pool/$bookingRequestId', params: { bookingRequestId } });
         }
-    }, [bookingRequestId, cook, creatingOffer, lookup, navigate, request, user]);
+    }, [bookingRequestId, cook, createdOfferId, creatingOffer, lookup, navigate, request, user]);
 
     useEffect(() => {
         if (cook == null) return;
@@ -254,6 +318,27 @@ export function ProfileCookBookingRequestOfferCreatePage({
     }
 
     if (isPoolUnavailableKind(lookup.__typename)) {
+        if (createdOfferId != null) {
+            const remainingOpenAfterCreate = (cook.openBookingRequests ?? []).filter(
+                (open) => open.bookingRequestId !== bookingRequestId,
+            ).length;
+            return (
+                <CookBookingRequestOfferCreateSuccessDialog
+                    open
+                    locale={locale}
+                    hasMoreOpenRequests={remainingOpenAfterCreate > 0}
+                    onGoToOffer={() => {
+                        void navigate({
+                            to: '/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId',
+                            params: { bookingRequestOfferId: createdOfferId },
+                        });
+                    }}
+                    onReviewNext={() => {
+                        void navigate({ to: poolRoute.to });
+                    }}
+                />
+            );
+        }
         if (submittedOfferRef.current || creatingOffer) {
             return null;
         }
@@ -337,21 +422,24 @@ export function ProfileCookBookingRequestOfferCreatePage({
                 throw new Error('offer create failed');
             }
             submittedOfferRef.current = true;
-            toast.success({ de: 'Angebot gesendet.', en: 'Offer sent.' }[locale]);
-            // More open requests → keep swiping the pool; last one → land on the offer just made.
-            if (remainingOpenAfterThis > 0) {
-                await navigate({ to: poolRoute.to });
-            } else {
-                await navigate({
-                    to: '/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId',
-                    params: { bookingRequestOfferId: offerId },
-                });
-            }
+            setCreatedOfferId(offerId);
         } catch {
             toast.error({ de: 'Angebot fehlgeschlagen.', en: 'Could not create the offer.' }[locale]);
         } finally {
             setCreatingOffer(false);
         }
+    }
+
+    async function goToCreatedOffer() {
+        if (createdOfferId == null) return;
+        await navigate({
+            to: '/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId',
+            params: { bookingRequestOfferId: createdOfferId },
+        });
+    }
+
+    async function reviewNextBookingRequests() {
+        await navigate({ to: poolRoute.to });
     }
 
     function completeSelectedMenuIds(): string[] {
@@ -506,176 +594,191 @@ export function ProfileCookBookingRequestOfferCreatePage({
     }
 
     return (
-        <ProfilePinnedFooterLayout
-            className="@container"
-            contentClassName="grid content-start gap-8"
-            footer={
-                step === 'menus' ? (
-                    <>
-                        <Button type="button" variant="outline" asChild disabled={busy}>
-                            <Link to="/{-$locale}/profile/booking-request-pool/$bookingRequestId" params={{ bookingRequestId }}>
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
-                            </Link>
-                        </Button>
-                        <Button type="button" disabled={busy || !hasCompleteMenuSelection} onClick={onContinueToPrice}>
-                            {{ de: 'Weiter', en: 'Continue' }[locale]}
-                        </Button>
-                    </>
-                ) : (
-                    <>
-                        <Button type="button" variant="outline" disabled={busy} onClick={onBackToMenus}>
-                            {{ de: 'Zurück', en: 'Back' }[locale]}
-                        </Button>
-                        <Button
-                            type="button"
-                            disabled={busy || !stripeReady || !hasTravelOrigin || !priceValid || messageContainsPhoneNumber}
-                            onClick={() => void onCreateOffer()}
-                        >
+        <>
+            <CookBookingRequestOfferCreateSuccessDialog
+                open={createdOfferId != null}
+                locale={locale}
+                hasMoreOpenRequests={remainingOpenAfterThis > 0}
+                onGoToOffer={() => {
+                    void goToCreatedOffer();
+                }}
+                onReviewNext={() => {
+                    void reviewNextBookingRequests();
+                }}
+            />
+            <ProfilePinnedFooterLayout
+                className="@container"
+                contentClassName="grid content-start gap-8"
+                footer={
+                    step === 'menus' ? (
+                        <>
+                            <Button type="button" variant="outline" asChild disabled={busy}>
+                                <Link to="/{-$locale}/profile/booking-request-pool/$bookingRequestId" params={{ bookingRequestId }}>
+                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                </Link>
+                            </Button>
+                            <Button type="button" disabled={busy || !hasCompleteMenuSelection} onClick={onContinueToPrice}>
+                                {{ de: 'Weiter', en: 'Continue' }[locale]}
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button type="button" variant="outline" disabled={busy} onClick={onBackToMenus}>
+                                {{ de: 'Zurück', en: 'Back' }[locale]}
+                            </Button>
+                            <Button
+                                type="button"
+                                disabled={busy || !stripeReady || !hasTravelOrigin || !priceValid || messageContainsPhoneNumber}
+                                onClick={() => void onCreateOffer()}
+                            >
+                                {
+                                    {
+                                        de: creatingOffer ? 'Wird gesendet…' : 'Angebot machen',
+                                        en: creatingOffer ? 'Sending…' : 'Make offer',
+                                    }[locale]
+                                }
+                            </Button>
+                        </>
+                    )
+                }
+            >
+                <div ref={pageTopRef} className="grid gap-3">
+                    <div aria-hidden="true" className="overflow-hidden rounded-full bg-muted">
+                        <div className="h-2 rounded-full bg-primary transition-[width]" style={{ width: `${progressPercent}%` }} />
+                    </div>
+                    <div className="grid gap-1">
+                        <h1 className="font-serif text-2xl text-foreground">{profileCookBookingRequestOfferCreatePageTitle[locale]}</h1>
+                        <p className="text-sm text-muted-foreground">
+                            {
+                                (step === 'menus'
+                                    ? {
+                                          de: 'Wähle oder erstelle mindestens ein Menü für dein Angebot.',
+                                          en: 'Select or create at least one menu for your offer.',
+                                      }
+                                    : {
+                                          de: 'Setze den Preis und optional eine Nachricht an den Gast.',
+                                          en: 'Set the price and optionally a message to the guest.',
+                                      })[locale]
+                            }
+                        </p>
+                    </div>
+                </div>
+
+                <div
+                    ref={menusSectionRef}
+                    className={cn('grid gap-3', step !== 'menus' && 'hidden')}
+                    aria-hidden={step !== 'menus'}
+                    inert={step !== 'menus' ? true : undefined}
+                >
+                    {menuSelectionError != null ? <StatusAlert tone="error">{menuSelectionError}</StatusAlert> : null}
+                    <CookMenuSelectPanel
+                        menus={inventoryMenus}
+                        selectedMenuIds={selectedMenuIds}
+                        onToggle={toggleMenu}
+                        onCreateMenu={() => void onCreateMenu()}
+                        onEditMenu={(menuId) => void onEditMenu(menuId)}
+                        createMenuDisabled={busy}
+                        editMenuDisabled={busy}
+                        menuEvaluations={menuEvaluationEnabled ? (menuEvaluation?.menus ?? null) : null}
+                        menuEvaluationLoading={menuEvaluationEnabled && menuEvaluationLoading}
+                        evaluationSummary={
+                            menuEvaluationEnabled && !recommendationApplied ? (menuEvaluation?.evaluationSummary ?? null) : null
+                        }
+                        generatedMenu={
+                            menuEvaluationEnabled && generatedMenu != null && !recommendationApplied
+                                ? {
+                                      title: generatedMenu.title,
+                                      description: generatedMenu.description,
+                                      courseCount: generatedMenu.courses.length,
+                                  }
+                                : null
+                        }
+                        onApplyGeneratedMenu={
+                            menuEvaluationEnabled && generatedMenu != null && !recommendationApplied
+                                ? () => void onApplyGeneratedMenu()
+                                : undefined
+                        }
+                        applyGeneratedMenuDisabled={busy || recommendationApplied}
+                        onRefreshEvaluation={menuEvaluationEnabled ? () => void onRefreshMenuEvaluation() : undefined}
+                        refreshEvaluationDisabled={busy}
+                    />
+                </div>
+
+                <div
+                    className={cn('grid max-w-lg gap-8', step !== 'price' && 'hidden')}
+                    aria-hidden={step !== 'price'}
+                    inert={step !== 'price' ? true : undefined}
+                >
+                    <BookingRequestOfferPriceConfigurationPanel
+                        locale={locale}
+                        viewer="cook"
+                        participantsAdult={adults}
+                        participantsDiscounted={discounted}
+                        travelExpensesCents={travelExpensesCents}
+                        guidance={{
+                            suggestedOfferAmountCents: request.suggestedOfferAmountCents,
+                            minOfferAmountCents: request.minOfferAmountCents ?? null,
+                            maxOfferAmountCents: request.maxOfferAmountCents ?? null,
+                            minOfferAmountHardCents: request.minOfferAmountHardCents ?? null,
+                        }}
+                        resetKey={request.bookingRequestId}
+                        initialPricePerPersonCents={initialPricePerPersonCents}
+                        disabled={busy}
+                        onMenuPriceCentsChange={setMenuPriceCents}
+                        onValidChange={setPriceValid}
+                    />
+
+                    <div className="grid gap-2">
+                        <label htmlFor={messageFieldId} className="text-base font-medium text-foreground">
+                            {{ de: 'Nachricht an den Gast (optional)', en: 'Message to the guest (optional)' }[locale]}
+                        </label>
+                        <p className="text-sm text-muted-foreground">
                             {
                                 {
-                                    de: creatingOffer ? 'Wird gesendet…' : 'Angebot machen',
-                                    en: creatingOffer ? 'Sending…' : 'Make offer',
+                                    de: 'Erscheint als erste Nachricht im Angebots-Chat.',
+                                    en: 'Appears as your first message in the offer chat.',
                                 }[locale]
                             }
-                        </Button>
-                    </>
-                )
-            }
-        >
-            <div ref={pageTopRef} className="grid gap-3">
-                <div aria-hidden="true" className="overflow-hidden rounded-full bg-muted">
-                    <div className="h-2 rounded-full bg-primary transition-[width]" style={{ width: `${progressPercent}%` }} />
-                </div>
-                <div className="grid gap-1">
-                    <h1 className="font-serif text-2xl text-foreground">{profileCookBookingRequestOfferCreatePageTitle[locale]}</h1>
-                    <p className="text-sm text-muted-foreground">
-                        {
-                            (step === 'menus'
-                                ? {
-                                      de: 'Wähle oder erstelle mindestens ein Menü für dein Angebot.',
-                                      en: 'Select or create at least one menu for your offer.',
-                                  }
-                                : {
-                                      de: 'Setze den Preis und optional eine Nachricht an den Gast.',
-                                      en: 'Set the price and optionally a message to the guest.',
-                                  })[locale]
-                        }
-                    </p>
-                </div>
-            </div>
+                        </p>
+                        {messageContainsPhoneNumber ? (
+                            <StatusAlert tone="warning">
+                                {
+                                    {
+                                        de: 'Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.',
+                                        en: 'Sharing phone numbers is not allowed. Please keep arrangements in this chat.',
+                                    }[locale]
+                                }
+                            </StatusAlert>
+                        ) : null}
+                        <Textarea
+                            id={messageFieldId}
+                            rows={4}
+                            value={message}
+                            disabled={busy}
+                            maxLength={OFFER_CREATE_MESSAGE_MAX_LENGTH}
+                            onChange={(event) => setMessage(event.target.value)}
+                            placeholder={
+                                {
+                                    de: 'z. B. Freue mich auf euer Event…',
+                                    en: 'e.g. Looking forward to your event…',
+                                }[locale]
+                            }
+                            aria-invalid={messageContainsPhoneNumber || undefined}
+                        />
+                    </div>
 
-            <div
-                ref={menusSectionRef}
-                className={cn('grid gap-3', step !== 'menus' && 'hidden')}
-                aria-hidden={step !== 'menus'}
-                inert={step !== 'menus' ? true : undefined}
-            >
-                {menuSelectionError != null ? <StatusAlert tone="error">{menuSelectionError}</StatusAlert> : null}
-                <CookMenuSelectPanel
-                    menus={inventoryMenus}
-                    selectedMenuIds={selectedMenuIds}
-                    onToggle={toggleMenu}
-                    onCreateMenu={() => void onCreateMenu()}
-                    onEditMenu={(menuId) => void onEditMenu(menuId)}
-                    createMenuDisabled={busy}
-                    editMenuDisabled={busy}
-                    menuEvaluations={menuEvaluationEnabled ? (menuEvaluation?.menus ?? null) : null}
-                    menuEvaluationLoading={menuEvaluationEnabled && menuEvaluationLoading}
-                    evaluationSummary={menuEvaluationEnabled && !recommendationApplied ? (menuEvaluation?.evaluationSummary ?? null) : null}
-                    generatedMenu={
-                        menuEvaluationEnabled && generatedMenu != null && !recommendationApplied
-                            ? {
-                                  title: generatedMenu.title,
-                                  description: generatedMenu.description,
-                                  courseCount: generatedMenu.courses.length,
-                              }
-                            : null
-                    }
-                    onApplyGeneratedMenu={
-                        menuEvaluationEnabled && generatedMenu != null && !recommendationApplied
-                            ? () => void onApplyGeneratedMenu()
-                            : undefined
-                    }
-                    applyGeneratedMenuDisabled={busy || recommendationApplied}
-                    onRefreshEvaluation={menuEvaluationEnabled ? () => void onRefreshMenuEvaluation() : undefined}
-                    refreshEvaluationDisabled={busy}
-                />
-            </div>
-
-            <div
-                className={cn('grid max-w-lg gap-8', step !== 'price' && 'hidden')}
-                aria-hidden={step !== 'price'}
-                inert={step !== 'price' ? true : undefined}
-            >
-                <BookingRequestOfferPriceConfigurationPanel
-                    locale={locale}
-                    viewer="cook"
-                    participantsAdult={adults}
-                    participantsDiscounted={discounted}
-                    travelExpensesCents={travelExpensesCents}
-                    guidance={{
-                        suggestedOfferAmountCents: request.suggestedOfferAmountCents,
-                        minOfferAmountCents: request.minOfferAmountCents ?? null,
-                        maxOfferAmountCents: request.maxOfferAmountCents ?? null,
-                        minOfferAmountHardCents: request.minOfferAmountHardCents ?? null,
-                    }}
-                    resetKey={request.bookingRequestId}
-                    initialPricePerPersonCents={initialPricePerPersonCents}
-                    disabled={busy}
-                    onMenuPriceCentsChange={setMenuPriceCents}
-                    onValidChange={setPriceValid}
-                />
-
-                <div className="grid gap-2">
-                    <label htmlFor={messageFieldId} className="text-base font-medium text-foreground">
-                        {{ de: 'Nachricht an den Gast (optional)', en: 'Message to the guest (optional)' }[locale]}
-                    </label>
-                    <p className="text-sm text-muted-foreground">
-                        {
-                            {
-                                de: 'Erscheint als erste Nachricht im Angebots-Chat.',
-                                en: 'Appears as your first message in the offer chat.',
-                            }[locale]
-                        }
-                    </p>
-                    {messageContainsPhoneNumber ? (
-                        <StatusAlert tone="warning">
+                    {!stripeReady || !hasTravelOrigin ? (
+                        <StatusAlert tone="warning" title={{ de: 'Voraussetzungen fehlen', en: 'Requirements missing' }[locale]}>
                             {
                                 {
-                                    de: 'Das Teilen von Telefonnummern ist nicht erlaubt. Bitte bleibe für Absprachen hier im Chat.',
-                                    en: 'Sharing phone numbers is not allowed. Please keep arrangements in this chat.',
+                                    de: 'Wallet und Reise-Startort müssen eingerichtet sein.',
+                                    en: 'Wallet and travel origin must be set up.',
                                 }[locale]
                             }
                         </StatusAlert>
                     ) : null}
-                    <Textarea
-                        id={messageFieldId}
-                        rows={4}
-                        value={message}
-                        disabled={busy}
-                        maxLength={OFFER_CREATE_MESSAGE_MAX_LENGTH}
-                        onChange={(event) => setMessage(event.target.value)}
-                        placeholder={
-                            {
-                                de: 'z. B. Freue mich auf euer Event…',
-                                en: 'e.g. Looking forward to your event…',
-                            }[locale]
-                        }
-                        aria-invalid={messageContainsPhoneNumber || undefined}
-                    />
                 </div>
-
-                {!stripeReady || !hasTravelOrigin ? (
-                    <StatusAlert tone="warning" title={{ de: 'Voraussetzungen fehlen', en: 'Requirements missing' }[locale]}>
-                        {
-                            {
-                                de: 'Wallet und Reise-Startort müssen eingerichtet sein.',
-                                en: 'Wallet and travel origin must be set up.',
-                            }[locale]
-                        }
-                    </StatusAlert>
-                ) : null}
-            </div>
-        </ProfilePinnedFooterLayout>
+            </ProfilePinnedFooterLayout>
+        </>
     );
 }
