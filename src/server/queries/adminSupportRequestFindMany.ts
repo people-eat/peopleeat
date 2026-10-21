@@ -27,7 +27,7 @@ export async function adminSupportRequestFindMany(
 ): Promise<GqlSAdminSupportRequest[]> {
     try {
         const criterion = args.criterion;
-        const where = adminSupportRequestCriterionWhere(criterion);
+        const where = adminSupportRequestCriterionWhere(criterion, serverRuntime.db);
 
         const joined = await serverRuntime.db
             .select({
@@ -91,7 +91,10 @@ const toolAdminSupportRequestsFindManyInputSchema = z.object({
         .array(z.string())
         .optional()
         .describe('Primary-key filter. Use for follow-up drill-in from prior tool results (typically one id). Do not invent ids.'),
-    searchText: z.string().optional().describe('Optional subject / supportRequestId / userId search.'),
+    searchText: z
+        .string()
+        .optional()
+        .describe('Optional subject / supportRequestId / userId / customer name search (first, last, or full name either order).'),
     statuses: z.array(GqlSSupportRequestStatusSchema).optional().describe('Optional status filter (OPEN / RESOLVED).'),
     hasAdminUnread: z.boolean().optional().describe('When true, only rows with admin unread messages.'),
     sortField: GqlSAdminSupportRequestSortFieldSchema.optional().describe(

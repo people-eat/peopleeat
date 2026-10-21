@@ -22,7 +22,8 @@ Visiting `/admin/*` as an admin shows:
 - **Footer:** Profile → `/profile`; Account → `/admin/account` (stays in admin shell).
 - **Sidebar search:** sticky under the logo (outside the nav scrollport). Plain filter input narrows visible nav groups/items; it does not
   open a dropdown over the links. **⌘K / Ctrl+K** (or the shortcut chip on the filter) opens a command dialog to jump to any destination
-  from `adminNavPages()`. Planned entity search still lives in [admin-global-search.md](./admin-global-search.md).
+  from `adminNavPages()`. Evolve that same dialog into entity search (users, booking requests, …) — see
+  [admin-global-search.md](./admin-global-search.md).
 - **Main pane header:** nav trigger + breadcrumbs + accent assistant trigger (soft orange pill, one-shot border orbit on mount; closed by
   default). Compact on mobile (`h-12` / tighter content `pt`) — [theme.md](../styles/theme.md#workspace-chrome-density).
 - **Main pane body:** viewport-locked inset; default scroll on content; full-bleed chat pages override so transcript scrolls inside chat
@@ -59,7 +60,7 @@ the mandatory offer-chat review pipeline. See [booking-offer-chat.md](./booking-
 five from `2xl` so long German labels are not mid-word broken. Cards with work waiting use a soft warning highlight and deep-link to the
 filtered list where one exists (approvals, booking review, support, offer chats; due payouts stay count-only). Item lists render only for
 non-zero queues (two columns from `lg`). When every queue is clear, one success `StatusAlert` replaces the empty panels. Sticky sidebar
-filter + ⌘K/Ctrl+K pages dialog sit under the logo (planned expansion: entity global search). When the sidebar nav is scrolled down, a
+filter + ⌘K/Ctrl+K pages dialog sit under the logo (evolve in place: entity global search). When the sidebar nav is scrolled down, a
 floating scroll-to-top control appears at the top of the visible sidebar.
 
 Stub routes show bilingual “coming soon” until shipped. Sessions, analytics, logs, scheduled jobs, AI generations, promo codes, booking
@@ -111,7 +112,8 @@ Stub catalog shared until real pages land.
 
 - Concierge-tagged offer chats on overview action queue (see [booking-offer-chat.md](./booking-offer-chat.md)).
 - Weekly Slack platform brief sharing snapshot helpers with the daily admin action-item report.
-- Admin global search extending the ⌘K pages dialog with entity hits.
+- Admin global search: evolve the ⌘K pages dialog in place with entity hits (users + booking requests first) — see
+  [admin-global-search.md](./admin-global-search.md).
 
 ## Implementation
 

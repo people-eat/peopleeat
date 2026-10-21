@@ -1,9 +1,10 @@
-import { and, asc, desc, ilike, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, desc, ilike, inArray, isNotNull, isNull, or } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
 import { meals, users } from '../db/schema';
 import type { GqlSAdminCookMealCriterion } from '../graphql/generated';
 import { likeContainsPattern } from './likeContainsPattern';
+import { userNameIlikeMatch } from './userNameIlikeMatch';
 
 /** Shared `WHERE` for `adminCookMealFindMany` / `adminCookMealCounts` (expects users join). */
 export function adminCookMealCriterionWhere(
@@ -51,10 +52,8 @@ export function adminCookMealCriterionWhere(
             or(
                 ilike(meals.title, pattern),
                 ilike(meals.description, pattern),
-                ilike(users.firstName, pattern),
-                ilike(users.lastName, pattern),
                 ilike(users.emailAddress, pattern),
-                ilike(sql`(${users.firstName} || ' ' || ${users.lastName})`, pattern),
+                userNameIlikeMatch(users, pattern),
             )!,
         );
     }

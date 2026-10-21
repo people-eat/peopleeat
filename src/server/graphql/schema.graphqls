@@ -1825,7 +1825,8 @@ enum AdminSupportRequestSortField {
 # Filter + pagination for `Admin.supportRequests` / `supportRequestsCounts`.
 # Optional `statuses` (`IN`); omit or empty = no status filter. Optional
 # `hasAdminUnread` keeps rows with `adminUnreadNotificationCount > 0`. Optional
-# `searchText` matches subject / supportRequestId / userId. Optional
+# `searchText` matches subject / supportRequestId / userId / customer first or
+# last name, or full name in either order (case-insensitive contains). Optional
 # `sortField` drives server `ORDER BY` (default `lastMessageAt`). When
 # `unreadFirst` is true (default), rows with admin unread come before others,
 # each group still ordered by `sortField`. `skip` / `take` / `sort*` /
@@ -1860,6 +1861,10 @@ type AdminWhatsAppConversation {
     messages: [HumanChatMessage!]!
 }
 
+# Filter + pagination for `Admin.whatsAppConversations` /
+# `whatsAppConversationsCounts`. Optional `searchText` matches phone,
+# WhatsApp display name, conversation id, linked user email / first or last
+# name / full name in either order (case-insensitive contains).
 input AdminWhatsAppConversationCriterion {
     skip: Int! = 0
     take: Int! = 25
@@ -2127,19 +2132,19 @@ enum AdminBookingRequestSortField {
 
 # Filter + pagination for `Admin.bookingRequests` / `bookingRequestsCounts`.
 # Optional `searchText` matches occasion, original message, event city /
-# display text, or customer email / name (case-insensitive contains). Optional
-# `userIds` scopes to those customers (`IN`); omit or empty = no user filter
-# (user-detail tab passes one id; list multi-select can pass many). Optional
-# `publicationStatuses` scopes to those values (`IN`); omit or empty = no
-# publication filter (overview queue passes blocked-for-review). Optional
-# `statuses` scopes to derived lifecycle values (`IN`); omit or empty = no
-# status filter. SQL mirrors `bookingRequestStatusDerive` (canceledAt, expiry,
-# offer count, dual-accepted payment status, event date vs now). Optional
-# `createdAtFrom` / `createdAtTo` bound `BookingRequests.createdAt` (`>=` /
-# `<=`); omit either end for an open bound (admin assistant “past X days”
-# sets `createdAtFrom`). Optional `sortField` / `sortDirection` drive server
-# `ORDER BY` (default `createdAt` DESC). `skip` / `take` / `sort*` are ignored
-# by `bookingRequestsCounts`.
+# display text, or customer email / first or last name / full name in either
+# order (case-insensitive contains). Optional `userIds` scopes to those
+# customers (`IN`); omit or empty = no user filter (user-detail tab passes one
+# id; list multi-select can pass many). Optional `publicationStatuses` scopes
+# to those values (`IN`); omit or empty = no publication filter (overview
+# queue passes blocked-for-review). Optional `statuses` scopes to derived
+# lifecycle values (`IN`); omit or empty = no status filter. SQL mirrors
+# `bookingRequestStatusDerive` (canceledAt, expiry, offer count, dual-accepted
+# payment status, event date vs now). Optional `createdAtFrom` / `createdAtTo`
+# bound `BookingRequests.createdAt` (`>=` / `<=`); omit either end for an open
+# bound (admin assistant “past X days” sets `createdAtFrom`). Optional
+# `sortField` / `sortDirection` drive server `ORDER BY` (default `createdAt`
+# DESC). `skip` / `take` / `sort*` are ignored by `bookingRequestsCounts`.
 input AdminBookingRequestCriterion {
     skip: Int! = 0
     take: Int! = 25
@@ -2977,8 +2982,9 @@ enum AdminCookMealImageFilter {
 # (user-detail tab passes one id; list multi-select can pass many).
 # `includeDeleted` defaults true so soft-deleted inventory stays visible; ignored
 # when `status` is set (`PUBLISHED`/`DRAFT` exclude deleted; `DELETED` requires it).
-# `searchText` matches title, description, or cook name (case-insensitive contains).
-# `imageFilter` ANDs with other filters. `skip` / `take` / `sort*` ignored by
+# `searchText` matches title, description, cook email, or cook name (first,
+# last, or full name either order; case-insensitive contains). `imageFilter`
+# ANDs with other filters. `skip` / `take` / `sort*` ignored by
 # `cookMealsCounts`.
 input AdminCookMealCriterion {
     skip: Int! = 0
@@ -3066,12 +3072,11 @@ enum AdminUserSortField {
 }
 
 # Filter + pagination for `Admin.users` / `Admin.userCounts`. Optional
-# `searchText` matches firstName, lastName, or emailAddress (case-insensitive
-# contains). `types` is
-# required — pass every type to leave membership unfiltered; an empty list
-# matches nothing. `skip` / `take` / `sort*` are ignored by `userCounts`.
-# Optional `sortField` / `sortDirection` drive server `ORDER BY` (default
-# `createdAt` DESC).
+# `searchText` matches firstName, lastName, full name in either order, or
+# emailAddress (case-insensitive contains). `types` is required — pass every
+# type to leave membership unfiltered; an empty list matches nothing. `skip` /
+# `take` / `sort*` are ignored by `userCounts`. Optional `sortField` /
+# `sortDirection` drive server `ORDER BY` (default `createdAt` DESC).
 input AdminUserCriterion {
     skip: Int! = 0
     take: Int! = 25

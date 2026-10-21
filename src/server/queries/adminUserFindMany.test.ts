@@ -44,6 +44,8 @@ describe('adminUserFindMany', () => {
         // Arrange
         const admin = await commandSetup.withUser({ firstName: 'search-admin', lastName: 'User' });
         const matchName = await commandSetup.withUser({ firstName: 'UniqueSearchName', lastName: 'User' });
+        const fullToken = `NmOrd${idCreate().slice(0, 8)}`;
+        const matchFull = await commandSetup.withUser({ firstName: 'Zelda', lastName: fullToken });
         const matchEmailId = idCreate();
         const matchEmail = `unique-search-email-${matchEmailId}@example.com`;
         await testDb.insert(users).values({
@@ -60,6 +62,16 @@ describe('adminUserFindMany', () => {
             admin.requestingSession,
             admin.serverRuntime,
         );
+        const byFirstLast = await adminUserFindMany(
+            { criterion: { skip: 0, take: 100, searchText: `Zelda ${fullToken}`, types: [...allTypes] } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+        const byLastFirst = await adminUserFindMany(
+            { criterion: { skip: 0, take: 100, searchText: `${fullToken} Zelda`, types: [...allTypes] } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
         const byEmail = await adminUserFindMany(
             { criterion: { skip: 0, take: 100, searchText: 'unique-search-email', types: [...allTypes] } },
             admin.requestingSession,
@@ -69,6 +81,8 @@ describe('adminUserFindMany', () => {
         // Assert
         expect(byName.some((row) => row.userId === matchName.user.userId)).toBe(true);
         expect(byName.some((row) => row.userId === miss.user.userId)).toBe(false);
+        expect(byFirstLast.some((row) => row.userId === matchFull.user.userId)).toBe(true);
+        expect(byLastFirst.some((row) => row.userId === matchFull.user.userId)).toBe(true);
         expect(byEmail.some((row) => row.userId === matchEmailId)).toBe(true);
         expect(byEmail.some((row) => row.userId === miss.user.userId)).toBe(false);
     });

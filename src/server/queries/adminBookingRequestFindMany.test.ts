@@ -202,6 +202,54 @@ describe('adminBookingRequestFindMany', () => {
         expect(rows.map((row) => row.bookingRequestId)).toEqual([matchId]);
     });
 
+    it('filters by searchText against customer full name in either order', async () => {
+        // Arrange
+        const token = `BrNm${idCreate().slice(0, 8)}`;
+        const { requestingSession, serverRuntime, user } = await commandSetup.withUser({
+            firstName: 'Zelda',
+            lastName: token,
+        });
+        const other = await commandSetup.withUser({ firstName: 'Other', lastName: `Ot${idCreate().slice(0, 8)}` });
+        const matchId = idCreate();
+        const otherId = idCreate();
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId: matchId,
+            userId: user.userId,
+            occasion: 'Dinner',
+            dateTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            exactEventAddress: berlin,
+            originalMessage: 'Looking for a chef',
+            publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+            preferences: [],
+        });
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId: otherId,
+            userId: other.user.userId,
+            occasion: 'Dinner',
+            dateTime: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            exactEventAddress: berlin,
+            originalMessage: 'Different message',
+            publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+            preferences: [],
+        });
+
+        // Act
+        const byFirstLast = await adminBookingRequestFindMany(
+            { criterion: { skip: 0, take: 100, searchText: `Zelda ${token}` } },
+            requestingSession,
+            serverRuntime,
+        );
+        const byLastFirst = await adminBookingRequestFindMany(
+            { criterion: { skip: 0, take: 100, searchText: `${token} Zelda` } },
+            requestingSession,
+            serverRuntime,
+        );
+
+        // Assert
+        expect(byFirstLast.map((row) => row.bookingRequestId)).toEqual([matchId]);
+        expect(byLastFirst.map((row) => row.bookingRequestId)).toEqual([matchId]);
+    });
+
     it('respects skip and take', async () => {
         // Arrange
         const { requestingSession, serverRuntime, user } = await commandSetup.withUser({

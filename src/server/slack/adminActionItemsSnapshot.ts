@@ -115,7 +115,7 @@ export async function adminActionItemsSnapshot(
     const pendingCookWhere = adminUserCriterionWhere(pendingCookCriterion, serverRuntime.db);
     const blockedBookingWhere = adminBookingRequestCriterionWhere(blockedBookingCriterion, serverRuntime.db);
     const duePayoutWhere = adminBookingRequestOfferCriterionWhere(duePayoutCriterion);
-    const openSupportWhere = adminSupportRequestCriterionWhere(openSupportCriterion);
+    const openSupportWhere = adminSupportRequestCriterionWhere(openSupportCriterion, serverRuntime.db);
     const pendingOfferChatReviewWhere = adminBookingRequestOfferCriterionWhere(pendingOfferChatReviewCriterion);
 
     const [

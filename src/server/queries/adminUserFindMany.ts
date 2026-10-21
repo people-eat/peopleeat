@@ -70,7 +70,10 @@ const toolAdminUsersFindManyInputSchema = z.object({
         .array(z.string())
         .optional()
         .describe('Primary-key filter. Use for follow-up drill-in from prior tool results (typically one id). Do not invent ids.'),
-    searchText: z.string().optional().describe('Optional name or email search (case-insensitive contains).'),
+    searchText: z
+        .string()
+        .optional()
+        .describe('Optional name or email search (first, last, or full name either order; case-insensitive contains).'),
     types: z.array(GqlSAdminUserTypeSchema).optional().describe('Membership filter. Omit to include customer, cook, and admin.'),
     status: GqlSUserStatusSchema.optional().describe('Optional account status filter (ACTIVE / BANNED / ANONYMIZED).'),
     isApprovedByAdmin: z

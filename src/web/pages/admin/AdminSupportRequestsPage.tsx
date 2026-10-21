@@ -217,7 +217,12 @@ export function AdminSupportRequestsPage({
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
-                        placeholder={{ de: 'Betreff oder Id suchen…', en: 'Search subject or id…' }[locale]}
+                        placeholder={
+                            {
+                                de: 'Betreff, Name oder Id suchen…',
+                                en: 'Search subject, name, or id…',
+                            }[locale]
+                        }
                         aria-label={{ de: 'Support-Anfragen suchen', en: 'Search support requests' }[locale]}
                         className="max-w-sm"
                     />

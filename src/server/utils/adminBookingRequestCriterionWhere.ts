@@ -6,6 +6,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminBookingRequestCriterion } from '../graphql/generated';
 import { adminBookingRequestStatusWhere } from './adminBookingRequestStatusWhere';
 import { likeContainsPattern } from './likeContainsPattern';
+import { userNameIlikeMatch } from './userNameIlikeMatch';
 
 /** Shared `WHERE` for `adminBookingRequestFindMany` / `adminBookingRequestCounts`. */
 export function adminBookingRequestCriterionWhere(
@@ -89,7 +90,7 @@ export function adminBookingRequestCriterionWhere(
                         .where(
                             and(
                                 eq(users.userId, bookingRequests.userId),
-                                or(ilike(users.emailAddress, pattern), ilike(users.firstName, pattern), ilike(users.lastName, pattern)),
+                                or(ilike(users.emailAddress, pattern), userNameIlikeMatch(users, pattern)),
                             ),
                         ),
                 ),

@@ -21,8 +21,8 @@ across cases.
 
 ### Admin
 
-- `/admin/support-requests` — Search + status select + sort (newest message, created at, soonest booking) + unread-first checkbox; live
-  updates. Default sort is newest message with unread first.
+- `/admin/support-requests` — Search (subject, id, customer name including first+last / last+first) + status select + sort (newest message,
+  created at, soonest booking) + unread-first checkbox; live updates. Default sort is newest message with unread first.
 - `/admin/support-requests/<id>` — Condensed chat chrome (crumbs + presence avatar linking to the customer, customer name above status,
   booking as an outlined button beside mark-resolved). Resolve is icon-only below `md`, labeled on desktop, and confirms closed-case email
   plus reopen-on-customer-message; dialog offers **resolve without notification** (no email, no customer unread bump).

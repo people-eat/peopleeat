@@ -130,7 +130,10 @@ const toolAdminBookingRequestsFindManyInputSchema = z.object({
         .string()
         .optional()
         .describe('ISO DateTime upper bound for BookingRequests.createdAt. Defaults to now when `days` is set.'),
-    searchText: z.string().optional().describe('Optional occasion / message / venue / customer name or email search.'),
+    searchText: z
+        .string()
+        .optional()
+        .describe('Optional occasion / message / venue / customer email or name search (first, last, or full name either order).'),
     publicationStatuses: z
         .array(GqlSBookingRequestPublicationStatusSchema)
         .optional()

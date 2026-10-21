@@ -81,7 +81,7 @@ docs/
 │   ├── admin-web-pages.md        # Fixed-route SEO titles/descriptions
 │   ├── admin-feature-toggles.md  # Fixed-key on/off feature toggles
 │   ├── admin-shell.md            # Floating sidebar admin chrome
-│   ├── admin-global-search.md    # Admin command-palette search (planned)
+│   ├── admin-global-search.md    # Admin ⌘K palette (pages shipped; entity search planned)
 │   ├── session-startup-gates.md  # Root locale → legal → cookie pipeline
 │   ├── route-errors.md           # Customer route error page (replaces TanStack default)
 │   ├── cookie-consent.md         # Session cookie banner + analytics gating

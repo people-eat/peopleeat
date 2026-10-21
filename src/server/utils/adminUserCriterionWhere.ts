@@ -5,6 +5,7 @@ import { admins, cooks, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminUserCriterion } from '../graphql/generated';
 import { likeContainsPattern } from './likeContainsPattern';
+import { userNameIlikeMatch } from './userNameIlikeMatch';
 
 /** Shared `WHERE` for `adminUserFindMany` / `adminUserCounts`. Returns `false`
  * when `types` is empty (match nothing), matching `AdminLogCriterion.levels`. */
@@ -28,9 +29,7 @@ export function adminUserCriterionWhere(
     }
 
     const pattern = likeContainsPattern(criterion.searchText);
-    const searchClause = pattern
-        ? or(ilike(users.firstName, pattern), ilike(users.lastName, pattern), ilike(users.emailAddress, pattern))
-        : undefined;
+    const searchClause = pattern ? or(userNameIlikeMatch(users, pattern), ilike(users.emailAddress, pattern)) : undefined;
 
     const userIdsClause = criterion.userIds && criterion.userIds.length > 0 ? inArray(users.userId, criterion.userIds) : undefined;
 

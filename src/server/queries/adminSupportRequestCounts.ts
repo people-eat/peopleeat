@@ -8,7 +8,7 @@ import { adminSupportRequestCriterionWhere } from '../utils/adminSupportRequestC
 const ADMIN_COUNTS_CRITERIA_MAX = 20;
 
 async function adminSupportRequestCountOne(criterion: GqlSAdminSupportRequestCriterion, serverRuntime: ServerRuntime): Promise<number> {
-    const where = adminSupportRequestCriterionWhere(criterion);
+    const where = adminSupportRequestCriterionWhere(criterion, serverRuntime.db);
     const [row] = await serverRuntime.db.select({ value: count() }).from(supportRequests).where(where);
     return row?.value ?? 0;
 }

@@ -1,13 +1,16 @@
-import { and, gt, ilike, inArray, or } from 'drizzle-orm';
+import { and, eq, exists, gt, ilike, inArray, or } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
-import { supportRequests } from '../db/schema';
+import { supportRequests, users } from '../db/schema';
+import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminSupportRequestCriterion } from '../graphql/generated';
 import { likeContainsPattern } from './likeContainsPattern';
+import { userNameIlikeMatch } from './userNameIlikeMatch';
 
 /** Shared `WHERE` for `adminSupportRequestFindMany` / `adminSupportRequestCounts`. */
 export function adminSupportRequestCriterionWhere(
     criterion: Pick<GqlSAdminSupportRequestCriterion, 'searchText' | 'supportRequestIds' | 'statuses' | 'hasAdminUnread'>,
+    db: ServerRuntime['db'],
 ): SQL | undefined {
     const parts: SQL[] = [];
 
@@ -30,6 +33,12 @@ export function adminSupportRequestCriterionWhere(
                 ilike(supportRequests.subject, pattern),
                 ilike(supportRequests.supportRequestId, pattern),
                 ilike(supportRequests.userId, pattern),
+                exists(
+                    db
+                        .select({ userId: users.userId })
+                        .from(users)
+                        .where(and(eq(users.userId, supportRequests.userId), userNameIlikeMatch(users, pattern))),
+                ),
             )!,
         );
     }
