@@ -1559,6 +1559,15 @@ input CookBookingRequestOfferTestimonialCreate {
     lowRatingAnswers: CookTestimonialLowRatingAnswersInput
 }
 
+# Why an open offer's price was auto-adjusted after a customer pre-accept edit.
+# Null when the price was not auto-adjusted. `UNKNOWN` is legacy / uncategorized.
+enum BookingRequestOfferPriceAutoAdjustReason {
+    PARTICIPANTS
+    TRAVEL
+    PARTICIPANTS_AND_TRAVEL
+    UNKNOWN
+}
+
 # Shared money / status fields for role-scoped offer types.
 # Customer offer — cook + public suggested menus.
 type UserBookingRequestOffer {
@@ -1572,7 +1581,7 @@ type UserBookingRequestOffer {
     userDeclinationReason: String
     cookDeclinationReason: String
     userUnreadNotificationCount: Int!
-    isPriceAutoAdjusted: Boolean
+    priceAutoAdjustReason: BookingRequestOfferPriceAutoAdjustReason
     userRequestedMenuAdjustments: Boolean
     travelDistanceKm: Float
     menuPriceCents: Int!
@@ -1654,7 +1663,7 @@ type CookBookingRequestOffer {
     userDeclinationReason: String
     cookDeclinationReason: String
     cookUnreadNotificationCount: Int!
-    isPriceAutoAdjusted: Boolean
+    priceAutoAdjustReason: BookingRequestOfferPriceAutoAdjustReason
     userRequestedMenuAdjustments: Boolean
     travelDistanceKm: Float
     menuPriceCents: Int!
@@ -1710,7 +1719,7 @@ type AdminBookingRequestOffer {
     adminChatReviewPendingCount: Int!
     # Last time an admin acknowledged the offer-chat review queue for this offer.
     adminChatReviewedAt: DateTime
-    isPriceAutoAdjusted: Boolean
+    priceAutoAdjustReason: BookingRequestOfferPriceAutoAdjustReason
     userRequestedMenuAdjustments: Boolean
     travelDistanceKm: Float
     menuPriceCents: Int!
@@ -1821,6 +1830,18 @@ type UserBookingRequestOfferTravelImpact {
     travelExpensesCentsAfter: Int!
 }
 
+# Per-offer menu / total preview when the customer considers a new headcount on edit.
+type UserBookingRequestOfferPriceImpact {
+    bookingRequestOfferId: ID!
+    cookDisplay: String!
+    menuPriceCentsBefore: Int!
+    menuPriceCentsAfter: Int!
+    totalWithoutDiscountsCentsCustomerBefore: Int!
+    totalWithoutDiscountsCentsCustomerAfter: Int!
+    payoutCentsCookBefore: Int!
+    payoutCentsCookAfter: Int!
+}
+
 type UserBookingRequest {
     bookingRequestId: ID!
     userId: ID!
@@ -1847,6 +1868,9 @@ type UserBookingRequest {
     # there are no offers or a cook lacks travel origin. Uses Routes API with
     # haversine fallback.
     travelImpact(exactEventAddress: UserBookingRequestExactEventAddressInput!): [UserBookingRequestOfferTravelImpact!]!
+    # Headcount price preview for open offers (edit form). Scales each offer's
+    # current menu by paid-headcount ratio. Empty when there are no offers.
+    priceImpact(participantsAdult: Int!, participantsDiscounted: Int!): [UserBookingRequestOfferPriceImpact!]!
     # At most one support case per booking request. Null when none opened yet.
     supportRequest: UserSupportRequest
 }
@@ -2502,8 +2526,9 @@ type UserMutation {
     bookingRequestRequestRecall(bookingRequestId: ID!): MutationResult!
     # Partial update while WAITING_FOR_OFFERS / OFFERS_WAITING_FOR_REVIEW.
     # Omit a scalar to leave it unchanged. `participants` always sent (material
-    # changes reset cookAccepted). Optional `exactEventAddress` patches venue
-    # (resets cookAccepted + recalculates travel fees on open offers).
+    # changes reset cookAccepted). Paid-headcount changes scale each open offer's
+    # menu from that offer's current rate. Optional `exactEventAddress` patches
+    # venue (resets cookAccepted + may recalculate travel fees on open offers).
     bookingRequestUpdate(
         bookingRequestId: ID!
         occasion: String

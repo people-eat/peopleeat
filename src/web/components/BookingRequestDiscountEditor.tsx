@@ -99,10 +99,12 @@ export function BookingRequestDiscountEditor({
             setAwaitingServer('cleared');
             toast.success({ de: 'Rabatt entfernt.', en: 'Discount removed.' }[locale]);
         } catch {
-            toast.error({
-                de: 'Rabatt konnte nicht entfernt werden.',
-                en: 'Could not remove the discount.',
-            }[locale]);
+            toast.error(
+                {
+                    de: 'Rabatt konnte nicht entfernt werden.',
+                    en: 'Could not remove the discount.',
+                }[locale],
+            );
         } finally {
             setRemoveBusy(false);
         }
@@ -121,13 +123,7 @@ export function BookingRequestDiscountEditor({
                     }
                     action={
                         canEdit ? (
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                disabled={controlsBusy}
-                                onClick={() => void removeDiscount()}
-                            >
+                            <Button type="button" variant="outline" size="sm" disabled={controlsBusy} onClick={() => void removeDiscount()}>
                                 {{ de: 'Entfernen', en: 'Remove' }[locale]}
                             </Button>
                         ) : undefined

@@ -42,6 +42,7 @@ import type {
     BookingRequestOfferParticipantAmendment,
     BookingRequestOfferPaymentData,
     BookingRequestOfferPaymentStatus,
+    BookingRequestOfferPriceAutoAdjustReason,
     BookingRequestParticipantType,
     BookingRequestPriceClassType,
     BookingRequestPublicationStatus,
@@ -1597,7 +1598,8 @@ export const bookingRequestOffers = pgTable(
         adminChatReviewPendingCount: smallint().notNull().default(0),
         adminChatReviewedAt: timestamp({ withTimezone: true }),
 
-        isPriceAutoAdjusted: boolean(),
+        // Set after customer pre-accept edits that auto-changed offer money; cleared on cook confirm / manual price.
+        priceAutoAdjustReason: varchar().$type<BookingRequestOfferPriceAutoAdjustReason>(),
         userRequestedMenuAdjustments: boolean(),
 
         travelDistanceKm: doublePrecision(),

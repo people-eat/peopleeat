@@ -36,3 +36,23 @@ query ProfileCustomerBookingRequestEditTravelImpact($bookingRequestId: ID!, $exa
         }
     }
 }
+
+query ProfileCustomerBookingRequestEditPriceImpact($bookingRequestId: ID!, $participantsAdult: Int!, $participantsDiscounted: Int!) {
+    currentSession {
+        user {
+            bookingRequest(bookingRequestId: $bookingRequestId) {
+                bookingRequestId
+                priceImpact(participantsAdult: $participantsAdult, participantsDiscounted: $participantsDiscounted) {
+                    bookingRequestOfferId
+                    cookDisplay
+                    menuPriceCentsBefore
+                    menuPriceCentsAfter
+                    totalWithoutDiscountsCentsCustomerBefore
+                    totalWithoutDiscountsCentsCustomerAfter
+                    payoutCentsCookBefore
+                    payoutCentsCookAfter
+                }
+            }
+        }
+    }
+}

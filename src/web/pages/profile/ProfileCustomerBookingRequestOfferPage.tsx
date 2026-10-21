@@ -375,6 +375,19 @@ export function ProfileCustomerBookingRequestOfferPage({
                         </DropdownMenu>
                     ) : null}
                 </div>
+                {offer.status === 'COOK_NEEDS_TO_ACCEPT' ? (
+                    <StatusAlert
+                        tone="info"
+                        title={{ de: 'Koch muss deine Änderungen bestätigen', en: 'Chef must confirm your changes' }[locale]}
+                    >
+                        {
+                            {
+                                de: 'Als Nächstes bestätigt der Koch deine Änderungen an der Anfrage. Danach kannst du das Angebot wieder annehmen.',
+                                en: 'Next, the chef confirms your changes to the request. After that you can accept the offer again.',
+                            }[locale]
+                        }
+                    </StatusAlert>
+                ) : null}
                 {needsDepositPayment ? (
                     <BookingRequestOfferAttentionBanner
                         message={

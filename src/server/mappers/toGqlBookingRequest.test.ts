@@ -51,7 +51,7 @@ const offer = {
     cookDeclinationReason: null,
     userUnreadNotificationCount: 1,
     cookUnreadNotificationCount: 0,
-    isPriceAutoAdjusted: null,
+    priceAutoAdjustReason: null,
     userRequestedMenuAdjustments: null,
     travelDistanceKm: 12.5,
     menuPriceCents: 20_000,

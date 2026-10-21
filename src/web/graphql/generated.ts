@@ -758,7 +758,6 @@ export interface GqlCAdminBookingRequestOffer {
     costBreakdown: GqlCCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
     customerTestimonial?: Maybe<GqlCAdminCustomerTestimonial>;
-    isPriceAutoAdjusted?: Maybe<Scalars['Boolean']['output']>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlCHumanChatMessage>;
     participantAmendment?: Maybe<GqlCBookingRequestOfferParticipantAmendment>;
@@ -775,6 +774,7 @@ export interface GqlCAdminBookingRequestOffer {
     platformFeePercentCook: Scalars['Int']['output'];
     platformFeePercentCustomer: Scalars['Int']['output'];
     preparationsCompletedAt?: Maybe<Scalars['DateTime']['output']>;
+    priceAutoAdjustReason?: Maybe<GqlCBookingRequestOfferPriceAutoAdjustReason>;
     queuedJobs: Array<GqlCAdminQueuedJob>;
     status: GqlCBookingRequestOfferStatus;
     stripePaymentIntentUrl?: Maybe<Scalars['String']['output']>;
@@ -2578,6 +2578,8 @@ export type GqlCBookingRequestOfferPaymentDataType = 'PAYMENT_INTENT' | 'SETUP_I
 
 export type GqlCBookingRequestOfferPaymentStatus = 'EMPTY' | 'FAILED' | 'PAYED' | 'PAYED_OUT_OF_SYSTEM' | 'SETUP' | 'TRANSFERRED';
 
+export type GqlCBookingRequestOfferPriceAutoAdjustReason = 'PARTICIPANTS' | 'PARTICIPANTS_AND_TRAVEL' | 'TRAVEL' | 'UNKNOWN';
+
 export type GqlCBookingRequestOfferPriceUpdate = {
     bookingRequestOfferId: Scalars['ID']['input'];
     menuPriceCents: Scalars['Int']['input'];
@@ -3214,7 +3216,6 @@ export interface GqlCCookBookingRequestOffer {
     cookUnreadNotificationCount: Scalars['Int']['output'];
     costBreakdown: GqlCCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
-    isPriceAutoAdjusted?: Maybe<Scalars['Boolean']['output']>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlCHumanChatMessage>;
     participantAmendment?: Maybe<GqlCBookingRequestOfferParticipantAmendment>;
@@ -3231,6 +3232,7 @@ export interface GqlCCookBookingRequestOffer {
     platformFeePercentCook: Scalars['Int']['output'];
     platformFeePercentCustomer: Scalars['Int']['output'];
     preparationsCompletedAt?: Maybe<Scalars['DateTime']['output']>;
+    priceAutoAdjustReason?: Maybe<GqlCBookingRequestOfferPriceAutoAdjustReason>;
     status: GqlCBookingRequestOfferStatus;
     suggestedMenus: Array<GqlCCookMenu>;
     testimonialMissing: Scalars['Boolean']['output'];
@@ -4633,12 +4635,18 @@ export interface GqlCUserBookingRequest {
     participants: Array<GqlCBookingRequestParticipant>;
     preferences: Array<Scalars['String']['output']>;
     priceClassType?: Maybe<GqlCBookingRequestPriceClassType>;
+    priceImpact: Array<GqlCUserBookingRequestOfferPriceImpact>;
     promoCode?: Maybe<GqlCUserBookingRequestPromoCode>;
     status: GqlCBookingRequestStatus;
     supportRequest?: Maybe<GqlCUserSupportRequest>;
     travelImpact: Array<GqlCUserBookingRequestOfferTravelImpact>;
     userId: Scalars['ID']['output'];
 }
+
+export type GqlCUserBookingRequestPriceImpactArgs = {
+    participantsAdult: Scalars['Int']['input'];
+    participantsDiscounted: Scalars['Int']['input'];
+};
 
 export type GqlCUserBookingRequestTravelImpactArgs = {
     exactEventAddress: GqlCUserBookingRequestExactEventAddressInput;
@@ -4689,7 +4697,6 @@ export interface GqlCUserBookingRequestOffer {
     costBreakdown: GqlCCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
     customerTestimonial?: Maybe<GqlCCustomerTestimonial>;
-    isPriceAutoAdjusted?: Maybe<Scalars['Boolean']['output']>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlCHumanChatMessage>;
     participantAmendment?: Maybe<GqlCBookingRequestOfferParticipantAmendment>;
@@ -4706,6 +4713,7 @@ export interface GqlCUserBookingRequestOffer {
     platformFeePercentCook: Scalars['Int']['output'];
     platformFeePercentCustomer: Scalars['Int']['output'];
     preparationsCompletedAt?: Maybe<Scalars['DateTime']['output']>;
+    priceAutoAdjustReason?: Maybe<GqlCBookingRequestOfferPriceAutoAdjustReason>;
     status: GqlCBookingRequestOfferStatus;
     suggestedMenus: Array<GqlCPublicCookMenu>;
     testimonialMissing: Scalars['Boolean']['output'];
@@ -4717,6 +4725,18 @@ export interface GqlCUserBookingRequestOffer {
     userDeclinationReason?: Maybe<Scalars['String']['output']>;
     userRequestedMenuAdjustments?: Maybe<Scalars['Boolean']['output']>;
     userUnreadNotificationCount: Scalars['Int']['output'];
+}
+
+export interface GqlCUserBookingRequestOfferPriceImpact {
+    __typename?: 'UserBookingRequestOfferPriceImpact';
+    bookingRequestOfferId: Scalars['ID']['output'];
+    cookDisplay: Scalars['String']['output'];
+    menuPriceCentsAfter: Scalars['Int']['output'];
+    menuPriceCentsBefore: Scalars['Int']['output'];
+    payoutCentsCookAfter: Scalars['Int']['output'];
+    payoutCentsCookBefore: Scalars['Int']['output'];
+    totalWithoutDiscountsCentsCustomerAfter: Scalars['Int']['output'];
+    totalWithoutDiscountsCentsCustomerBefore: Scalars['Int']['output'];
 }
 
 export type GqlCUserBookingRequestOfferTestimonialCreate = {
@@ -9716,7 +9736,7 @@ export type GqlCAdminBookingRequestOfferPageOfferFragment = {
     payoutCentsCook: number;
     totalWithoutDiscountsCentsCustomer: number;
     totalCentsCustomer: number | null;
-    isPriceAutoAdjusted: boolean | null;
+    priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
     plannedPaymentPullDateTime: string | null;
     paymentDateTime: string | null;
     plannedPayoutDateTime: string | null;
@@ -9945,7 +9965,7 @@ export type GqlCAdminBookingRequestOfferPageQuery = {
                     payoutCentsCook: number;
                     totalWithoutDiscountsCentsCustomer: number;
                     totalCentsCustomer: number | null;
-                    isPriceAutoAdjusted: boolean | null;
+                    priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
                     plannedPaymentPullDateTime: string | null;
                     paymentDateTime: string | null;
                     plannedPayoutDateTime: string | null;
@@ -10183,7 +10203,7 @@ export type GqlCAdminBookingRequestOfferPageUpdatesSubscription = {
             payoutCentsCook: number;
             totalWithoutDiscountsCentsCustomer: number;
             totalCentsCustomer: number | null;
-            isPriceAutoAdjusted: boolean | null;
+            priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
             plannedPaymentPullDateTime: string | null;
             paymentDateTime: string | null;
             plannedPayoutDateTime: string | null;
@@ -16353,7 +16373,7 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
             travelExpensesCents: number;
             totalWithoutDiscountsCentsCustomer: number;
             payoutCentsCook: number;
-            isPriceAutoAdjusted: boolean | null;
+            priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
             testimonialMissing: boolean;
             preparationsCompletedAt: string | null;
             canCompletePreparations: boolean;
@@ -16509,7 +16529,7 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                     travelExpensesCents: number;
                     totalWithoutDiscountsCentsCustomer: number;
                     payoutCentsCook: number;
-                    isPriceAutoAdjusted: boolean | null;
+                    priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
                     testimonialMissing: boolean;
                     preparationsCompletedAt: string | null;
                     canCompletePreparations: boolean;
@@ -16672,7 +16692,7 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                 travelExpensesCents: number;
                 totalWithoutDiscountsCentsCustomer: number;
                 payoutCentsCook: number;
-                isPriceAutoAdjusted: boolean | null;
+                priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
                 testimonialMissing: boolean;
                 preparationsCompletedAt: string | null;
                 canCompletePreparations: boolean;
@@ -18866,6 +18886,32 @@ export type GqlCProfileCustomerBookingRequestEditTravelImpactQuery = {
                     travelDistanceKmAfter: number;
                     travelExpensesCentsBefore: number;
                     travelExpensesCentsAfter: number;
+                }>;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCProfileCustomerBookingRequestEditPriceImpactQueryVariables = Exact<{
+    bookingRequestId: string;
+    participantsAdult: number;
+    participantsDiscounted: number;
+}>;
+
+export type GqlCProfileCustomerBookingRequestEditPriceImpactQuery = {
+    currentSession: {
+        user: {
+            bookingRequest: {
+                bookingRequestId: string;
+                priceImpact: Array<{
+                    bookingRequestOfferId: string;
+                    cookDisplay: string;
+                    menuPriceCentsBefore: number;
+                    menuPriceCentsAfter: number;
+                    totalWithoutDiscountsCentsCustomerBefore: number;
+                    totalWithoutDiscountsCentsCustomerAfter: number;
+                    payoutCentsCookBefore: number;
+                    payoutCentsCookAfter: number;
                 }>;
             } | null;
         } | null;
@@ -25056,7 +25102,7 @@ export const AdminBookingRequestOfferPageOfferFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isPriceAutoAdjusted' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'priceAutoAdjustReason' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'plannedPaymentPullDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
@@ -28827,7 +28873,7 @@ export const ProfileCookBookingRequestOfferPageUserFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'isPriceAutoAdjusted' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceAutoAdjustReason' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'configuredMenu' },
@@ -44830,7 +44876,7 @@ export const AdminBookingRequestOfferPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isPriceAutoAdjusted' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'priceAutoAdjustReason' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'plannedPaymentPullDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
@@ -45449,7 +45495,7 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isPriceAutoAdjusted' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'priceAutoAdjustReason' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'plannedPaymentPullDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
@@ -67995,7 +68041,7 @@ export const ProfileCookBookingRequestOfferPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'isPriceAutoAdjusted' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceAutoAdjustReason' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'configuredMenu' },
@@ -68470,7 +68516,7 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'isPriceAutoAdjusted' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceAutoAdjustReason' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'configuredMenu' },
@@ -75319,6 +75365,135 @@ export const ProfileCustomerBookingRequestEditTravelImpactDocument = {
 } as unknown as DocumentNode<
     GqlCProfileCustomerBookingRequestEditTravelImpactQuery,
     GqlCProfileCustomerBookingRequestEditTravelImpactQueryVariables
+>;
+export const ProfileCustomerBookingRequestEditPriceImpactDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'ProfileCustomerBookingRequestEditPriceImpact' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'participantsAdult' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'participantsDiscounted' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Int' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'bookingRequest' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'bookingRequestId' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'priceImpact' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'participantsAdult' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'participantsAdult' },
+                                                                    },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'participantsDiscounted' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'participantsDiscounted' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'cookDisplay' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'menuPriceCentsBefore' },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'totalWithoutDiscountsCentsCustomerBefore',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'totalWithoutDiscountsCentsCustomerAfter',
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'payoutCentsCookBefore' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'payoutCentsCookAfter' },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCustomerBookingRequestEditPriceImpactQuery,
+    GqlCProfileCustomerBookingRequestEditPriceImpactQueryVariables
 >;
 export const ProfileCustomerBookingRequestOfferCheckoutPageDocument = {
     kind: 'Document',

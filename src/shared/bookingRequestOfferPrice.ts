@@ -74,3 +74,21 @@ export function bookingRequestSuggestedCookPayoutCents(input: {
         travelExpensesCents: input.estimatedTravelExpensesCents,
     }).payoutCentsCook;
 }
+
+/**
+ * Scale a locked menu total by paid-headcount ratio (adults + 0.5 × children).
+ * Used for pre-accept customer headcount edits and post-accept amendments.
+ */
+export function bookingRequestOfferMenuPriceScaleByPaidParticipants(input: {
+    menuPriceCents: number;
+    paidParticipantsBefore: number;
+    paidParticipantsAfter: number;
+}): number {
+    if (input.paidParticipantsBefore <= 0) {
+        throw new Error('bookingRequestOfferMenuPriceScaleByPaidParticipants: paidParticipantsBefore must be positive');
+    }
+    if (input.paidParticipantsAfter <= 0) {
+        throw new Error('bookingRequestOfferMenuPriceScaleByPaidParticipants: paidParticipantsAfter must be positive');
+    }
+    return roundCents((input.menuPriceCents * input.paidParticipantsAfter) / input.paidParticipantsBefore);
+}

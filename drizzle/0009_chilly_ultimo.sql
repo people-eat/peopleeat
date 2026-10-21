@@ -1,0 +1,1 @@
+ALTER TABLE "BookingRequestOffers" ADD COLUMN "priceAutoAdjustReason" varchar;

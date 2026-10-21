@@ -35,6 +35,14 @@ export type BookingRequestParticipantType = (typeof bookingRequestParticipantTyp
 const bookingRequestOfferPaymentStatuses = ['EMPTY', 'SETUP', 'PAYED', 'TRANSFERRED', 'FAILED', 'PAYED_OUT_OF_SYSTEM'] as const;
 export type BookingRequestOfferPaymentStatus = (typeof bookingRequestOfferPaymentStatuses)[number];
 
+/**
+ * Why an open offer's price was auto-adjusted after a customer pre-accept edit.
+ * Null means not auto-adjusted. `UNKNOWN` is for rows migrated from the old boolean flag.
+ * Cleared when the cook confirms or manually edits price.
+ */
+export const bookingRequestOfferPriceAutoAdjustReasons = ['PARTICIPANTS', 'TRAVEL', 'PARTICIPANTS_AND_TRAVEL', 'UNKNOWN'] as const;
+export type BookingRequestOfferPriceAutoAdjustReason = (typeof bookingRequestOfferPriceAutoAdjustReasons)[number];
+
 /** Statuses where money has actually moved — drives testimonial-reminder eligibility. */
 export function bookingRequestOfferPaymentIsPaid(paymentStatus: BookingRequestOfferPaymentStatus): boolean {
     return paymentStatus === 'PAYED' || paymentStatus === 'TRANSFERRED' || paymentStatus === 'PAYED_OUT_OF_SYSTEM';

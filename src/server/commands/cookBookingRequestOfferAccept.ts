@@ -49,7 +49,7 @@ export async function cookBookingRequestOfferAccept(
                 .set({
                     cookAccepted: true,
                     userUnreadNotificationCount: row.offer.userUnreadNotificationCount + 1,
-                    isPriceAutoAdjusted: false,
+                    priceAutoAdjustReason: null,
                 })
                 .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
 

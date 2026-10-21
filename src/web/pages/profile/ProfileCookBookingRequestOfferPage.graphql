@@ -33,7 +33,7 @@ fragment ProfileCookBookingRequestOfferPageUser on User {
             travelExpensesCents
             totalWithoutDiscountsCentsCustomer
             payoutCentsCook
-            isPriceAutoAdjusted
+            priceAutoAdjustReason
             configuredMenu {
                 title
                 description

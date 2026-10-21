@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
 import type { BookingRequestCreate } from '../db/schema';
-import { bookingRequestOffers, bookingRequests, cooks } from '../db/schema';
+import { bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks, featureToggles } from '../db/schema';
 import { commandSetup, cookMutationParent, testDb, userMutationParent } from '../test/commandTestUtils';
 import { cookBookingRequestOfferCreate } from './cookBookingRequestOfferCreate';
 import { userBookingRequestUpdate } from './userBookingRequestUpdate';
@@ -47,7 +47,7 @@ async function setupCookReadyToOffer() {
     return setup;
 }
 
-async function insertCustomerBookingRequest(overrides: Partial<BookingRequestCreate> = {}) {
+async function insertCustomerBookingRequest(overrides: Partial<BookingRequestCreate> = {}, adultCount = 2) {
     const customer = await commandSetup.withUser({ firstName: 'Customer', lastName: 'Host' });
     const bookingRequestId = idCreate();
     await testDb.insert(bookingRequests).values({
@@ -67,6 +67,15 @@ async function insertCustomerBookingRequest(overrides: Partial<BookingRequestCre
         expiresAt: new Date(Date.now() + 8 * 24 * 60 * 60 * 1000),
         ...overrides,
     });
+    await testDb.insert(bookingRequestParticipants).values(
+        Array.from({ length: adultCount }, (_, index) => ({
+            bookingRequestParticipantId: idCreate(),
+            bookingRequestId,
+            type: 'ADULT' as const,
+            name: `Guest ${index + 1}`,
+            restrictions: [],
+        })),
+    );
     return { customer, bookingRequestId };
 }
 
@@ -102,7 +111,10 @@ describe('userBookingRequestUpdate', () => {
                 occasion: null,
                 dateTime: null,
                 preferences: null,
-                participants: [{ type: 'ADULT', name: 'Participant 1', restrictions: [] }],
+                participants: [
+                    { type: 'ADULT', name: 'Guest 1', restrictions: [] },
+                    { type: 'ADULT', name: 'Guest 2', restrictions: [] },
+                ],
                 exactEventAddress: munich,
             },
             customer.requestingSession,
@@ -120,5 +132,102 @@ describe('userBookingRequestUpdate', () => {
         expect(offer?.cookAccepted).toBeNull();
         expect(offer?.travelDistanceKm).not.toBe(before?.travelDistanceKm);
         expect(offer?.cookUnreadNotificationCount).toBeGreaterThan(before?.cookUnreadNotificationCount ?? 0);
+        expect(offer?.priceAutoAdjustReason).toBe('TRAVEL');
+    });
+
+    it('scales menu price when paid headcount changes and sets PARTICIPANTS reason', async () => {
+        const cook = await setupCookReadyToOffer();
+        const { customer, bookingRequestId } = await insertCustomerBookingRequest({}, 4);
+
+        const created = await cookBookingRequestOfferCreate(
+            cookMutationParent(cook.user.userId),
+            { input: { bookingRequestId, suggestedMenuIds: [], menuPriceCents: 40_000 } },
+            cook.requestingSession,
+            cook.serverRuntime,
+        );
+        const bookingRequestOfferId = created.referenceId!;
+
+        await testDb
+            .update(bookingRequestOffers)
+            .set({ cookAccepted: true })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+        const result = await userBookingRequestUpdate(
+            userMutationParent(customer.user.userId),
+            {
+                bookingRequestId,
+                occasion: null,
+                dateTime: null,
+                preferences: null,
+                participants: [
+                    { type: 'ADULT', name: 'Guest 1', restrictions: [] },
+                    { type: 'ADULT', name: 'Guest 2', restrictions: [] },
+                ],
+                exactEventAddress: null,
+            },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+        expect(result.success).toBe(true);
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.cookAccepted).toBeNull();
+        expect(offer?.menuPriceCents).toBe(20_000);
+        expect(offer?.priceAutoAdjustReason).toBe('PARTICIPANTS');
+    });
+
+    it('does not scale menu when only restrictions change', async () => {
+        await testDb
+            .insert(featureToggles)
+            .values({ featureToggleKey: 'BOOKING_REQUEST_RESTRICTIONS', enabled: true })
+            .onConflictDoUpdate({
+                target: featureToggles.featureToggleKey,
+                set: { enabled: true },
+            });
+
+        const cook = await setupCookReadyToOffer();
+        const { customer, bookingRequestId } = await insertCustomerBookingRequest({}, 2);
+
+        const created = await cookBookingRequestOfferCreate(
+            cookMutationParent(cook.user.userId),
+            { input: { bookingRequestId, suggestedMenuIds: [], menuPriceCents: 20_000 } },
+            cook.requestingSession,
+            cook.serverRuntime,
+        );
+        const bookingRequestOfferId = created.referenceId!;
+
+        await testDb
+            .update(bookingRequestOffers)
+            .set({ cookAccepted: true, priceAutoAdjustReason: null })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+        const result = await userBookingRequestUpdate(
+            userMutationParent(customer.user.userId),
+            {
+                bookingRequestId,
+                occasion: null,
+                dateTime: null,
+                preferences: null,
+                participants: [
+                    { type: 'ADULT', name: 'Guest 1', restrictions: ['gluten'] },
+                    { type: 'ADULT', name: 'Guest 2', restrictions: [] },
+                ],
+                exactEventAddress: null,
+            },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+        expect(result.success).toBe(true);
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.cookAccepted).toBeNull();
+        expect(offer?.menuPriceCents).toBe(20_000);
+        expect(offer?.priceAutoAdjustReason).toBeNull();
     });
 });

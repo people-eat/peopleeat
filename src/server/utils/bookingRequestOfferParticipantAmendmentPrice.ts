@@ -1,4 +1,7 @@
-import { bookingRequestOfferPriceCalculate } from '../../shared/bookingRequestOfferPrice';
+import {
+    bookingRequestOfferMenuPriceScaleByPaidParticipants,
+    bookingRequestOfferPriceCalculate,
+} from '../../shared/bookingRequestOfferPrice';
 import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
 import type { BookingRequestParticipantType } from '../domain/bookingRequest';
 
@@ -48,14 +51,11 @@ export function bookingRequestOfferParticipantAmendmentPriceCalculate(
     const paidParticipantsBefore = bookingRequestPaidParticipants(before.adults, before.discounted);
     const paidParticipantsAfter = bookingRequestPaidParticipants(after.adults, after.discounted);
 
-    if (paidParticipantsBefore <= 0) {
-        throw new Error('bookingRequestOfferParticipantAmendmentPriceCalculate: paidParticipantsBefore must be positive');
-    }
-    if (paidParticipantsAfter <= 0) {
-        throw new Error('bookingRequestOfferParticipantAmendmentPriceCalculate: paidParticipantsAfter must be positive');
-    }
-
-    const menuPriceCentsAfter = Math.round((input.menuPriceCentsBefore * paidParticipantsAfter) / paidParticipantsBefore);
+    const menuPriceCentsAfter = bookingRequestOfferMenuPriceScaleByPaidParticipants({
+        menuPriceCents: input.menuPriceCentsBefore,
+        paidParticipantsBefore,
+        paidParticipantsAfter,
+    });
     const price = bookingRequestOfferPriceCalculate({
         menuPriceCents: menuPriceCentsAfter,
         travelExpensesCents: input.travelExpensesCents,

@@ -1049,13 +1049,28 @@ function CostsTabPanel({
 
     return (
         <div className="@container grid max-w-4xl gap-4">
-            {offer.isPriceAutoAdjusted ? (
+            {offer.priceAutoAdjustReason != null ? (
                 <StatusAlert tone="info" title={{ de: 'Preis automatisch angepasst', en: 'Price auto-adjusted' }[locale]}>
                     {
-                        {
-                            de: 'Dieser Angebotspreis wurde automatisch angepasst (z. B. nach einer Anfrageänderung).',
-                            en: 'This offer price was adjusted automatically (for example after a request change).',
-                        }[locale]
+                        (offer.priceAutoAdjustReason === 'PARTICIPANTS'
+                            ? {
+                                  de: 'Dieser Angebotspreis wurde automatisch an die neue Teilnehmerzahl angepasst.',
+                                  en: 'This offer price was adjusted automatically to the new guest count.',
+                              }
+                            : offer.priceAutoAdjustReason === 'PARTICIPANTS_AND_TRAVEL'
+                              ? {
+                                    de: 'Dieser Angebotspreis wurde automatisch angepasst (Teilnehmerzahl und Fahrtkosten).',
+                                    en: 'This offer price was adjusted automatically (guest count and travel costs).',
+                                }
+                              : offer.priceAutoAdjustReason === 'TRAVEL'
+                                ? {
+                                      de: 'Dieser Angebotspreis wurde automatisch angepasst (meist Fahrtkosten nach Adressänderung).',
+                                      en: 'This offer price was adjusted automatically (usually travel costs after an address change).',
+                                  }
+                                : {
+                                      de: 'Dieser Angebotspreis wurde automatisch angepasst (nach einer Anfrageänderung).',
+                                      en: 'This offer price was adjusted automatically after a request change.',
+                                  })[locale]
                     }
                 </StatusAlert>
             ) : null}

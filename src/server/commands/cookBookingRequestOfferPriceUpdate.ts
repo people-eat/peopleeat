@@ -95,7 +95,7 @@ export async function cookBookingRequestOfferPriceUpdate(
                     platformFeeCentsCustomer: price.platformFeeCentsCustomer,
                     payoutCentsCook: price.payoutCentsCook,
                     totalWithoutDiscountsCentsCustomer: price.totalWithoutDiscountsCentsCustomer,
-                    isPriceAutoAdjusted: false,
+                    priceAutoAdjustReason: null,
                 })
                 .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
 

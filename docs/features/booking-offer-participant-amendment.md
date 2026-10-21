@@ -6,8 +6,9 @@ refund. Cooks can lock further changes by marking groceries / preparations done.
 ## Behavior
 
 1. **Before dual accept**, customers still edit the booking request (occasion, date, location, participants, …). Material changes reset cook
-   acceptance (`COOK_NEEDS_TO_ACCEPT`). Address changes may **auto-adjust travel expenses** (`isPriceAutoAdjusted`); the cook confirms with
-   **Confirm changes** (not the amendment Accept flow).
+   acceptance (`COOK_NEEDS_TO_ACCEPT`). Paid-headcount changes **auto-scale each open offer’s menu** from that offer’s current menu ÷ old
+   paid headcount; address changes may **auto-adjust travel expenses**. Both set `priceAutoAdjustReason`. The cook confirms with **Confirm
+   changes** (not the amendment Accept flow).
 2. **After dual accept**, participant count changes use this amendment path only. Entry is the booking-request **Edit** / **Change
    participants** control (same edit route, participants-only mode). The offer page shows status and links back to that edit path.
 3. On a dual-accepted offer (payment `EMPTY` / `SETUP` / `PAYED`, event still ahead), the customer can **propose** a new adult/child count
@@ -40,8 +41,8 @@ refund. Cooks can lock further changes by marking groceries / preparations done.
 ### Chosen
 
 Cook-gated amendment with preparations lock, feature-toggle rollout, and Stripe delta only on cook accept. Keep the booking-request edit
-route as the customer entry after accept (participants-only). Keep pre-accept **Confirm changes** (+ optional travel auto-adjust) separate
-from post-accept **Accept change**. Admin can clear the prep lock.
+route as the customer entry after accept (participants-only). Keep pre-accept **Confirm changes** (+ optional menu/travel auto-adjust)
+separate from post-accept **Accept change**. Admin can clear the prep lock.
 
 ## Next steps
 

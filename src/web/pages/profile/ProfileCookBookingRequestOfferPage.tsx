@@ -336,15 +336,30 @@ export function ProfileCookBookingRequestOfferPage({
                 ) : null}
                 {canReAccept && pendingParticipantAmendment == null ? (
                     <StatusAlert tone="warning" title={{ de: 'Änderungen bestätigen', en: 'Confirm changes' }[locale]}>
-                        {offer.isPriceAutoAdjusted
+                        {offer.priceAutoAdjustReason === 'PARTICIPANTS'
                             ? {
-                                  de: 'Dein Gast hat etwas geändert und der Preis wurde automatisch angepasst (z. B. Fahrtkosten). Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
-                                  en: 'Your guest changed something and the price was adjusted automatically (for example travel costs). Confirm the changes so the booking can continue. You can still tweak the price first.',
+                                  de: 'Dein Gast hat die Teilnehmerzahl geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
+                                  en: 'Your guest changed the guest count and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
                               }[locale]
-                            : {
-                                  de: 'Dein Gast hat eine Änderung gewünscht. Bestätige sie, damit die Buchung weitergehen kann.',
-                                  en: 'Your guest requested a change. Confirm it so the booking can continue.',
-                              }[locale]}
+                            : offer.priceAutoAdjustReason === 'PARTICIPANTS_AND_TRAVEL'
+                              ? {
+                                    de: 'Dein Gast hat Teilnehmerzahl und Adresse geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
+                                    en: 'Your guest changed the guest count and address and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
+                                }[locale]
+                              : offer.priceAutoAdjustReason === 'TRAVEL'
+                                ? {
+                                      de: 'Dein Gast hat die Adresse geändert und die Fahrtkosten wurden automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
+                                      en: 'Your guest changed the address and travel costs were adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
+                                  }[locale]
+                                : offer.priceAutoAdjustReason != null
+                                  ? {
+                                        de: 'Dein Gast hat etwas geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
+                                        en: 'Your guest changed something and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
+                                    }[locale]
+                                  : {
+                                        de: 'Dein Gast hat eine Änderung gewünscht. Bestätige sie, damit die Buchung weitergehen kann.',
+                                        en: 'Your guest requested a change. Confirm it so the booking can continue.',
+                                    }[locale]}
                     </StatusAlert>
                 ) : null}
                 {pendingIncomingCall ? (
@@ -701,13 +716,28 @@ function OfferTabPanel({
             </section>
 
             <section className="grid gap-4">
-                {canReAccept && offer.isPriceAutoAdjusted ? (
+                {canReAccept && offer.priceAutoAdjustReason != null ? (
                     <StatusAlert tone="info">
                         {
-                            {
-                                de: 'Der Preis wurde automatisch angepasst (meist Fahrtkosten nach Adressänderung). Du kannst ihn noch ändern, bevor du oben bestätigst.',
-                                en: 'The price was adjusted automatically (usually travel costs after an address change). You can still edit it before confirming above.',
-                            }[locale]
+                            (offer.priceAutoAdjustReason === 'PARTICIPANTS'
+                                ? {
+                                      de: 'Der Menüpreis wurde automatisch an die neue Teilnehmerzahl angepasst. Du kannst ihn noch ändern, bevor du oben bestätigst.',
+                                      en: 'The menu price was adjusted automatically to the new guest count. You can still edit it before confirming above.',
+                                  }
+                                : offer.priceAutoAdjustReason === 'PARTICIPANTS_AND_TRAVEL'
+                                  ? {
+                                        de: 'Menüpreis und Fahrtkosten wurden automatisch angepasst. Du kannst sie noch ändern, bevor du oben bestätigst.',
+                                        en: 'Menu price and travel costs were adjusted automatically. You can still edit them before confirming above.',
+                                    }
+                                  : offer.priceAutoAdjustReason === 'TRAVEL'
+                                    ? {
+                                          de: 'Die Fahrtkosten wurden automatisch angepasst (nach Adressänderung). Du kannst sie noch ändern, bevor du oben bestätigst.',
+                                          en: 'Travel costs were adjusted automatically after the address change. You can still edit them before confirming above.',
+                                      }
+                                    : {
+                                          de: 'Der Preis wurde automatisch angepasst. Du kannst ihn noch ändern, bevor du oben bestätigst.',
+                                          en: 'The price was adjusted automatically. You can still edit it before confirming above.',
+                                      })[locale]
                         }
                     </StatusAlert>
                 ) : null}

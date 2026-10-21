@@ -19,11 +19,13 @@ import type {
     GqlCProfileCustomerBookingRequestPageQuery,
     GqlCProfileCustomerBookingRequestPageUserFragment,
     GqlCUserBookingRequestExactEventAddressInput,
+    GqlCUserBookingRequestOfferPriceImpact,
     GqlCUserBookingRequestOfferTravelImpact,
 } from '../../graphql/generated';
 import {
     ProfileBookingRequestUpdateDocument,
     ProfileCustomerBookingRequestEditLocationSuggestionsDocument,
+    ProfileCustomerBookingRequestEditPriceImpactDocument,
     ProfileCustomerBookingRequestEditTravelImpactDocument,
     ProfileCustomerBookingRequestPageUpdatesDocument,
     ProfileCustomerBookingRequestParticipantAmendmentCreateDocument,
@@ -191,6 +193,66 @@ function TravelImpactPreview({
     );
 }
 
+function priceImpactMeaningful(impact: GqlCUserBookingRequestOfferPriceImpact): boolean {
+    return (
+        impact.menuPriceCentsAfter !== impact.menuPriceCentsBefore ||
+        impact.totalWithoutDiscountsCentsCustomerAfter !== impact.totalWithoutDiscountsCentsCustomerBefore ||
+        impact.payoutCentsCookAfter !== impact.payoutCentsCookBefore
+    );
+}
+
+function signedTotalLabel(deltaCents: number, locale: Locale): string {
+    const abs = formatCurrency(Math.abs(deltaCents), { locale });
+    if (deltaCents > 0) return `+${abs}`;
+    if (deltaCents < 0) return `-${abs}`;
+    return { de: '±0 €', en: '±€0' }[locale];
+}
+
+function PriceImpactPreview({
+    impacts,
+    fetching,
+    locale,
+}: {
+    impacts: GqlCUserBookingRequestOfferPriceImpact[];
+    fetching: boolean;
+    locale: Locale;
+}) {
+    if (fetching) {
+        return <StatusAlert tone="info" title={{ de: 'Preiswirkung wird berechnet…', en: 'Calculating price impact…' }[locale]} />;
+    }
+
+    const changed = impacts.filter(priceImpactMeaningful);
+    if (changed.length === 0) {
+        return (
+            <StatusAlert tone="info" title={{ de: 'Keine Preisänderung', en: 'No price change' }[locale]}>
+                {
+                    {
+                        de: 'Für die bestehenden Angebote bleibt der Menüpreis gleich.',
+                        en: 'Menu price stays the same for existing offers.',
+                    }[locale]
+                }
+            </StatusAlert>
+        );
+    }
+
+    return (
+        <StatusAlert tone="warning" title={{ de: 'Auswirkung auf Angebote', en: 'Impact on offers' }[locale]}>
+            <ul className="mt-2 grid gap-1.5 text-sm">
+                {changed.map((impact) => {
+                    const customerDelta = impact.totalWithoutDiscountsCentsCustomerAfter - impact.totalWithoutDiscountsCentsCustomerBefore;
+                    return (
+                        <li key={impact.bookingRequestOfferId}>
+                            <span className="font-medium">{impact.cookDisplay}</span>
+                            {': '}
+                            {signedTotalLabel(customerDelta, locale)} {{ de: 'Gesamtpreis', en: 'total' }[locale]}
+                        </li>
+                    );
+                })}
+            </ul>
+        </StatusAlert>
+    );
+}
+
 export function ProfileCustomerBookingRequestEditPage({
     data,
     bookingRequestId,
@@ -345,6 +407,9 @@ export function ProfileCustomerBookingRequestEditPage({
 
     const seedAddress = addressFromRequest(seedRequest.exactEventAddress);
     const locationChanged = exactEventAddress.displayText.trim().length > 0 && !exactEventAddressEqual(exactEventAddress, seedAddress);
+    const seedAdultCount = seedRequest.participants.filter((participant) => participant.type === 'ADULT').length || 1;
+    const seedChildCount = seedRequest.participants.filter((participant) => participant.type === 'DISCOUNTED').length;
+    const headcountChanged = adultCount !== seedAdultCount || childCount !== seedChildCount;
     const hasOffers = (request?.offers.length ?? 0) > 0;
     const [{ data: travelImpactData, fetching: travelImpactFetching }] = useQuery({
         query: ProfileCustomerBookingRequestEditTravelImpactDocument,
@@ -352,6 +417,12 @@ export function ProfileCustomerBookingRequestEditPage({
         pause: !locationChanged || !hasOffers,
     });
     const travelImpacts = travelImpactData?.currentSession.user?.bookingRequest?.travelImpact ?? [];
+    const [{ data: priceImpactData, fetching: priceImpactFetching }] = useQuery({
+        query: ProfileCustomerBookingRequestEditPriceImpactDocument,
+        variables: { bookingRequestId, participantsAdult: adultCount, participantsDiscounted: childCount },
+        pause: !headcountChanged || !hasOffers || isParticipantAmendmentMode,
+    });
+    const priceImpacts = priceImpactData?.currentSession.user?.bookingRequest?.priceImpact ?? [];
 
     useEffect(() => {
         if (user == null) return;
@@ -448,8 +519,8 @@ export function ProfileCustomerBookingRequestEditPage({
                 >
                     {
                         {
-                            de: 'Ändert sich die Adresse, können Fahrtkosten automatisch angepasst werden. Der Koch bestätigt danach erneut.',
-                            en: 'If the address changes, travel costs may adjust automatically. The chef confirms again afterwards.',
+                            de: 'Ändern sich Teilnehmerzahl oder Adresse, kann der Angebotspreis automatisch angepasst werden. Der Koch bestätigt danach erneut.',
+                            en: 'If the guest count or address changes, the offer price may adjust automatically. The chef confirms again afterwards.',
                         }[locale]
                     }
                 </StatusAlert>
@@ -605,6 +676,9 @@ export function ProfileCustomerBookingRequestEditPage({
                         )}
                     </form.Field>
                 </div>
+                {!isParticipantAmendmentMode && headcountChanged && hasOffers ? (
+                    <PriceImpactPreview impacts={priceImpacts} fetching={priceImpactFetching} locale={locale} />
+                ) : null}
                 {!isParticipantAmendmentMode ? (
                     <form.Field name="preferences">
                         {(field) => (

@@ -60,6 +60,7 @@ export function toGqlUserBookingRequest(input: ToGqlUserBookingRequestInput): Gq
               }
             : null,
         travelImpact: [],
+        priceImpact: [],
         // resolved fields
         supportRequest: null,
     };

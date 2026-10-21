@@ -755,7 +755,6 @@ export interface GqlSAdminBookingRequestOffer {
     costBreakdown: GqlSCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
     customerTestimonial?: Maybe<GqlSAdminCustomerTestimonial>;
-    isPriceAutoAdjusted?: Maybe<Scalars['Boolean']['output']>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlSHumanChatMessage>;
     participantAmendment?: Maybe<GqlSBookingRequestOfferParticipantAmendment>;
@@ -772,6 +771,7 @@ export interface GqlSAdminBookingRequestOffer {
     platformFeePercentCook: Scalars['Int']['output'];
     platformFeePercentCustomer: Scalars['Int']['output'];
     preparationsCompletedAt?: Maybe<Scalars['DateTime']['output']>;
+    priceAutoAdjustReason?: Maybe<GqlSBookingRequestOfferPriceAutoAdjustReason>;
     queuedJobs: Array<GqlSAdminQueuedJob>;
     status: GqlSBookingRequestOfferStatus;
     stripePaymentIntentUrl?: Maybe<Scalars['String']['output']>;
@@ -2575,6 +2575,8 @@ export type GqlSBookingRequestOfferPaymentDataType = 'PAYMENT_INTENT' | 'SETUP_I
 
 export type GqlSBookingRequestOfferPaymentStatus = 'EMPTY' | 'FAILED' | 'PAYED' | 'PAYED_OUT_OF_SYSTEM' | 'SETUP' | 'TRANSFERRED';
 
+export type GqlSBookingRequestOfferPriceAutoAdjustReason = 'PARTICIPANTS' | 'PARTICIPANTS_AND_TRAVEL' | 'TRAVEL' | 'UNKNOWN';
+
 export type GqlSBookingRequestOfferPriceUpdate = {
     bookingRequestOfferId: Scalars['ID']['input'];
     menuPriceCents: Scalars['Int']['input'];
@@ -3211,7 +3213,6 @@ export interface GqlSCookBookingRequestOffer {
     cookUnreadNotificationCount: Scalars['Int']['output'];
     costBreakdown: GqlSCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
-    isPriceAutoAdjusted?: Maybe<Scalars['Boolean']['output']>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlSHumanChatMessage>;
     participantAmendment?: Maybe<GqlSBookingRequestOfferParticipantAmendment>;
@@ -3228,6 +3229,7 @@ export interface GqlSCookBookingRequestOffer {
     platformFeePercentCook: Scalars['Int']['output'];
     platformFeePercentCustomer: Scalars['Int']['output'];
     preparationsCompletedAt?: Maybe<Scalars['DateTime']['output']>;
+    priceAutoAdjustReason?: Maybe<GqlSBookingRequestOfferPriceAutoAdjustReason>;
     status: GqlSBookingRequestOfferStatus;
     suggestedMenus: Array<GqlSCookMenu>;
     testimonialMissing: Scalars['Boolean']['output'];
@@ -4630,12 +4632,18 @@ export interface GqlSUserBookingRequest {
     participants: Array<GqlSBookingRequestParticipant>;
     preferences: Array<Scalars['String']['output']>;
     priceClassType?: Maybe<GqlSBookingRequestPriceClassType>;
+    priceImpact: Array<GqlSUserBookingRequestOfferPriceImpact>;
     promoCode?: Maybe<GqlSUserBookingRequestPromoCode>;
     status: GqlSBookingRequestStatus;
     supportRequest?: Maybe<GqlSUserSupportRequest>;
     travelImpact: Array<GqlSUserBookingRequestOfferTravelImpact>;
     userId: Scalars['ID']['output'];
 }
+
+export type GqlSUserBookingRequestPriceImpactArgs = {
+    participantsAdult: Scalars['Int']['input'];
+    participantsDiscounted: Scalars['Int']['input'];
+};
 
 export type GqlSUserBookingRequestTravelImpactArgs = {
     exactEventAddress: GqlSUserBookingRequestExactEventAddressInput;
@@ -4686,7 +4694,6 @@ export interface GqlSUserBookingRequestOffer {
     costBreakdown: GqlSCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
     customerTestimonial?: Maybe<GqlSCustomerTestimonial>;
-    isPriceAutoAdjusted?: Maybe<Scalars['Boolean']['output']>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlSHumanChatMessage>;
     participantAmendment?: Maybe<GqlSBookingRequestOfferParticipantAmendment>;
@@ -4703,6 +4710,7 @@ export interface GqlSUserBookingRequestOffer {
     platformFeePercentCook: Scalars['Int']['output'];
     platformFeePercentCustomer: Scalars['Int']['output'];
     preparationsCompletedAt?: Maybe<Scalars['DateTime']['output']>;
+    priceAutoAdjustReason?: Maybe<GqlSBookingRequestOfferPriceAutoAdjustReason>;
     status: GqlSBookingRequestOfferStatus;
     suggestedMenus: Array<GqlSPublicCookMenu>;
     testimonialMissing: Scalars['Boolean']['output'];
@@ -4714,6 +4722,18 @@ export interface GqlSUserBookingRequestOffer {
     userDeclinationReason?: Maybe<Scalars['String']['output']>;
     userRequestedMenuAdjustments?: Maybe<Scalars['Boolean']['output']>;
     userUnreadNotificationCount: Scalars['Int']['output'];
+}
+
+export interface GqlSUserBookingRequestOfferPriceImpact {
+    __typename?: 'UserBookingRequestOfferPriceImpact';
+    bookingRequestOfferId: Scalars['ID']['output'];
+    cookDisplay: Scalars['String']['output'];
+    menuPriceCentsAfter: Scalars['Int']['output'];
+    menuPriceCentsBefore: Scalars['Int']['output'];
+    payoutCentsCookAfter: Scalars['Int']['output'];
+    payoutCentsCookBefore: Scalars['Int']['output'];
+    totalWithoutDiscountsCentsCustomerAfter: Scalars['Int']['output'];
+    totalWithoutDiscountsCentsCustomerBefore: Scalars['Int']['output'];
 }
 
 export type GqlSUserBookingRequestOfferTestimonialCreate = {
@@ -5486,6 +5506,7 @@ export type GqlSResolversTypes = ResolversObject<{
     BookingRequestOfferPayment: ResolverTypeWrapper<GqlSBookingRequestOfferPayment>;
     BookingRequestOfferPaymentDataType: GqlSBookingRequestOfferPaymentDataType;
     BookingRequestOfferPaymentStatus: GqlSBookingRequestOfferPaymentStatus;
+    BookingRequestOfferPriceAutoAdjustReason: GqlSBookingRequestOfferPriceAutoAdjustReason;
     BookingRequestOfferPriceUpdate: GqlSBookingRequestOfferPriceUpdate;
     BookingRequestOfferStatus: GqlSBookingRequestOfferStatus;
     BookingRequestOfferSuggestedMenusUpdate: GqlSBookingRequestOfferSuggestedMenusUpdate;
@@ -5787,6 +5808,7 @@ export type GqlSResolversTypes = ResolversObject<{
             messages: Array<GqlSResolversTypes['HumanChatMessage']>;
         }
     >;
+    UserBookingRequestOfferPriceImpact: ResolverTypeWrapper<GqlSUserBookingRequestOfferPriceImpact>;
     UserBookingRequestOfferTestimonialCreate: GqlSUserBookingRequestOfferTestimonialCreate;
     UserBookingRequestOfferTravelImpact: ResolverTypeWrapper<GqlSUserBookingRequestOfferTravelImpact>;
     UserBookingRequestParticipantCreate: GqlSUserBookingRequestParticipantCreate;
@@ -6248,6 +6270,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
         activeCallRoom?: Maybe<GqlSResolversParentTypes['BookingRequestOfferCallRoom']>;
         messages: Array<GqlSResolversParentTypes['HumanChatMessage']>;
     };
+    UserBookingRequestOfferPriceImpact: GqlSUserBookingRequestOfferPriceImpact;
     UserBookingRequestOfferTestimonialCreate: GqlSUserBookingRequestOfferTestimonialCreate;
     UserBookingRequestOfferTravelImpact: GqlSUserBookingRequestOfferTravelImpact;
     UserBookingRequestParticipantCreate: GqlSUserBookingRequestParticipantCreate;
@@ -6988,7 +7011,6 @@ export type GqlSAdminBookingRequestOfferResolvers<
     costBreakdown?: Resolver<GqlSResolversTypes['CostBreakdown'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     customerTestimonial?: Resolver<Maybe<GqlSResolversTypes['AdminCustomerTestimonial']>, ParentType, ContextType>;
-    isPriceAutoAdjusted?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
     menuPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     messages?: Resolver<Array<GqlSResolversTypes['HumanChatMessage']>, ParentType, ContextType>;
     participantAmendment?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferParticipantAmendment']>, ParentType, ContextType>;
@@ -7005,6 +7027,7 @@ export type GqlSAdminBookingRequestOfferResolvers<
     platformFeePercentCook?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     platformFeePercentCustomer?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     preparationsCompletedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
+    priceAutoAdjustReason?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferPriceAutoAdjustReason']>, ParentType, ContextType>;
     queuedJobs?: Resolver<Array<GqlSResolversTypes['AdminQueuedJob']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestOfferStatus'], ParentType, ContextType>;
     stripePaymentIntentUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
@@ -9176,7 +9199,6 @@ export type GqlSCookBookingRequestOfferResolvers<
     cookUnreadNotificationCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     costBreakdown?: Resolver<GqlSResolversTypes['CostBreakdown'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
-    isPriceAutoAdjusted?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
     menuPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     messages?: Resolver<Array<GqlSResolversTypes['HumanChatMessage']>, ParentType, ContextType>;
     participantAmendment?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferParticipantAmendment']>, ParentType, ContextType>;
@@ -9193,6 +9215,7 @@ export type GqlSCookBookingRequestOfferResolvers<
     platformFeePercentCook?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     platformFeePercentCustomer?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     preparationsCompletedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
+    priceAutoAdjustReason?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferPriceAutoAdjustReason']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestOfferStatus'], ParentType, ContextType>;
     suggestedMenus?: Resolver<Array<GqlSResolversTypes['CookMenu']>, ParentType, ContextType>;
     testimonialMissing?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
@@ -10531,6 +10554,12 @@ export type GqlSUserBookingRequestResolvers<
     participants?: Resolver<Array<GqlSResolversTypes['BookingRequestParticipant']>, ParentType, ContextType>;
     preferences?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
     priceClassType?: Resolver<Maybe<GqlSResolversTypes['BookingRequestPriceClassType']>, ParentType, ContextType>;
+    priceImpact?: Resolver<
+        Array<GqlSResolversTypes['UserBookingRequestOfferPriceImpact']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserBookingRequestPriceImpactArgs, 'participantsAdult' | 'participantsDiscounted'>
+    >;
     promoCode?: Resolver<Maybe<GqlSResolversTypes['UserBookingRequestPromoCode']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestStatus'], ParentType, ContextType>;
     supportRequest?: Resolver<Maybe<GqlSResolversTypes['UserSupportRequest']>, ParentType, ContextType>;
@@ -10569,7 +10598,6 @@ export type GqlSUserBookingRequestOfferResolvers<
     costBreakdown?: Resolver<GqlSResolversTypes['CostBreakdown'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     customerTestimonial?: Resolver<Maybe<GqlSResolversTypes['CustomerTestimonial']>, ParentType, ContextType>;
-    isPriceAutoAdjusted?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
     menuPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     messages?: Resolver<Array<GqlSResolversTypes['HumanChatMessage']>, ParentType, ContextType>;
     participantAmendment?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferParticipantAmendment']>, ParentType, ContextType>;
@@ -10586,6 +10614,7 @@ export type GqlSUserBookingRequestOfferResolvers<
     platformFeePercentCook?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     platformFeePercentCustomer?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     preparationsCompletedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
+    priceAutoAdjustReason?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferPriceAutoAdjustReason']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestOfferStatus'], ParentType, ContextType>;
     suggestedMenus?: Resolver<Array<GqlSResolversTypes['PublicCookMenu']>, ParentType, ContextType>;
     testimonialMissing?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
@@ -10597,6 +10626,21 @@ export type GqlSUserBookingRequestOfferResolvers<
     userDeclinationReason?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     userRequestedMenuAdjustments?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
     userUnreadNotificationCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSUserBookingRequestOfferPriceImpactResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['UserBookingRequestOfferPriceImpact'] =
+        GqlSResolversParentTypes['UserBookingRequestOfferPriceImpact'],
+> = ResolversObject<{
+    bookingRequestOfferId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    cookDisplay?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    menuPriceCentsAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    menuPriceCentsBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    payoutCentsCookAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    payoutCentsCookBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    totalWithoutDiscountsCentsCustomerAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    totalWithoutDiscountsCentsCustomerBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type GqlSUserBookingRequestOfferTravelImpactResolvers<
@@ -11168,6 +11212,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     UserBookingRequest?: GqlSUserBookingRequestResolvers<ContextType>;
     UserBookingRequestGiftCard?: GqlSUserBookingRequestGiftCardResolvers<ContextType>;
     UserBookingRequestOffer?: GqlSUserBookingRequestOfferResolvers<ContextType>;
+    UserBookingRequestOfferPriceImpact?: GqlSUserBookingRequestOfferPriceImpactResolvers<ContextType>;
     UserBookingRequestOfferTravelImpact?: GqlSUserBookingRequestOfferTravelImpactResolvers<ContextType>;
     UserBookingRequestPromoCode?: GqlSUserBookingRequestPromoCodeResolvers<ContextType>;
     UserGiftCard?: GqlSUserGiftCardResolvers<ContextType>;
@@ -11469,6 +11514,11 @@ export const GqlSBookingRequestOfferPaymentStatusSchema: z.ZodType<
     'EMPTY' | 'FAILED' | 'PAYED' | 'PAYED_OUT_OF_SYSTEM' | 'SETUP' | 'TRANSFERRED',
     'EMPTY' | 'FAILED' | 'PAYED' | 'PAYED_OUT_OF_SYSTEM' | 'SETUP' | 'TRANSFERRED'
 > = z.enum(['EMPTY', 'FAILED', 'PAYED', 'PAYED_OUT_OF_SYSTEM', 'SETUP', 'TRANSFERRED']);
+
+export const GqlSBookingRequestOfferPriceAutoAdjustReasonSchema: z.ZodType<
+    'PARTICIPANTS' | 'PARTICIPANTS_AND_TRAVEL' | 'TRAVEL' | 'UNKNOWN',
+    'PARTICIPANTS' | 'PARTICIPANTS_AND_TRAVEL' | 'TRAVEL' | 'UNKNOWN'
+> = z.enum(['PARTICIPANTS', 'PARTICIPANTS_AND_TRAVEL', 'TRAVEL', 'UNKNOWN']);
 
 export const GqlSBookingRequestOfferStatusSchema: z.ZodType<
     | 'CANCELED'

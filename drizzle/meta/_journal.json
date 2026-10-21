@@ -64,6 +64,20 @@
             "when": 1792593616090,
             "tag": "0008_pretty_abomination",
             "breakpoints": true
+        },
+        {
+            "idx": 9,
+            "version": "7",
+            "when": 1792609582253,
+            "tag": "0009_chilly_ultimo",
+            "breakpoints": true
+        },
+        {
+            "idx": 10,
+            "version": "7",
+            "when": 1792610144296,
+            "tag": "0010_bitter_scarlet_spider",
+            "breakpoints": true
         }
     ]
 }

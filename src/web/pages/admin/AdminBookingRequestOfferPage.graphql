@@ -23,7 +23,7 @@ fragment AdminBookingRequestOfferPageOffer on AdminBookingRequestOffer {
     payoutCentsCook
     totalWithoutDiscountsCentsCustomer
     totalCentsCustomer
-    isPriceAutoAdjusted
+    priceAutoAdjustReason
     plannedPaymentPullDateTime
     paymentDateTime
     plannedPayoutDateTime

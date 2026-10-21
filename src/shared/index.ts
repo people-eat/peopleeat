@@ -35,7 +35,11 @@ export { bookingRequestOfferChatCanSend } from './bookingRequestOfferChatCanSend
 export { isCallJoinable } from './callJoinWindow';
 export { COOK_CALL_AVAILABILITY_TIME_ZONE, deriveCookCallSlots, zonedMidnightToUtc } from './deriveCookCallSlots';
 export type { DerivedCallSlot } from './deriveCookCallSlots';
-export { bookingRequestOfferPriceCalculate, bookingRequestSuggestedCookPayoutCents } from './bookingRequestOfferPrice';
+export {
+    bookingRequestOfferMenuPriceScaleByPaidParticipants,
+    bookingRequestOfferPriceCalculate,
+    bookingRequestSuggestedCookPayoutCents,
+} from './bookingRequestOfferPrice';
 export type { BookingRequestOfferPriceInput, BookingRequestOfferPriceResult } from './bookingRequestOfferPrice';
 export { bookingRequestOfferPriceGuidance, bookingRequestPaidParticipants } from './bookingRequestOfferPriceGuidance';
 export type {

@@ -47,7 +47,7 @@ export type BookingRequestOfferFields = {
     cookDeclinationReason: string | null;
     userUnreadNotificationCount: number;
     cookUnreadNotificationCount: number;
-    isPriceAutoAdjusted: boolean | null;
+    priceAutoAdjustReason: 'PARTICIPANTS' | 'TRAVEL' | 'PARTICIPANTS_AND_TRAVEL' | 'UNKNOWN' | null;
     userRequestedMenuAdjustments: boolean | null;
     travelDistanceKm: number | null;
     menuPriceCents: number;
@@ -153,7 +153,7 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
         cookDeclinationReason: offer.cookDeclinationReason ?? null,
         userUnreadNotificationCount: offer.userUnreadNotificationCount,
         cookUnreadNotificationCount: offer.cookUnreadNotificationCount,
-        isPriceAutoAdjusted: offer.isPriceAutoAdjusted ?? null,
+        priceAutoAdjustReason: offer.priceAutoAdjustReason ?? null,
         userRequestedMenuAdjustments: offer.userRequestedMenuAdjustments ?? null,
         travelDistanceKm: offer.travelDistanceKm ?? null,
         menuPriceCents: offer.menuPriceCents,

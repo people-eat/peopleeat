@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { bookingRequestOfferPriceCalculate, bookingRequestSuggestedCookPayoutCents } from './bookingRequestOfferPrice';
+import {
+    bookingRequestOfferMenuPriceScaleByPaidParticipants,
+    bookingRequestOfferPriceCalculate,
+    bookingRequestSuggestedCookPayoutCents,
+} from './bookingRequestOfferPrice';
 
 describe('bookingRequestOfferPriceCalculate', () => {
     it('applies 18%/4% platform fees and Stripe-style gross-up', () => {
@@ -30,5 +34,27 @@ describe('bookingRequestSuggestedCookPayoutCents', () => {
                 estimatedTravelExpensesCents: 2_500,
             }),
         ).toBe(41_040);
+    });
+});
+
+describe('bookingRequestOfferMenuPriceScaleByPaidParticipants', () => {
+    it('scales menu by paid-headcount ratio', () => {
+        expect(
+            bookingRequestOfferMenuPriceScaleByPaidParticipants({
+                menuPriceCents: 20_000,
+                paidParticipantsBefore: 4,
+                paidParticipantsAfter: 2,
+            }),
+        ).toBe(10_000);
+    });
+
+    it('rejects non-positive paid headcounts', () => {
+        expect(() =>
+            bookingRequestOfferMenuPriceScaleByPaidParticipants({
+                menuPriceCents: 20_000,
+                paidParticipantsBefore: 0,
+                paidParticipantsAfter: 2,
+            }),
+        ).toThrow(/paidParticipantsBefore/);
     });
 });

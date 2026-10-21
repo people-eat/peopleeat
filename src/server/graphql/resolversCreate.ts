@@ -402,6 +402,7 @@ import { userBookingRequestFindMany } from '../queries/userBookingRequestFindMan
 import { userBookingRequestFindOne } from '../queries/userBookingRequestFindOne';
 import { userBookingRequestOfferCustomerTestimonialFindOne } from '../queries/userBookingRequestOfferCustomerTestimonialFindOne';
 import { userBookingRequestOfferTestimonialMissing } from '../queries/userBookingRequestOfferTestimonialMissing';
+import { userBookingRequestPriceImpactFindMany } from '../queries/userBookingRequestPriceImpactFindMany';
 import { userBookingRequestSupportRequestFindOne } from '../queries/userBookingRequestSupportRequestFindOne';
 import { userBookingRequestTravelImpactFindMany } from '../queries/userBookingRequestTravelImpactFindMany';
 import { userCookFindOne } from '../queries/userCookFindOne';
@@ -721,6 +722,7 @@ import type {
     GqlSUserBookingRequest,
     GqlSUserBookingRequestArgs,
     GqlSUserBookingRequestOffer,
+    GqlSUserBookingRequestPriceImpactArgs,
     GqlSUserBookingRequestTravelImpactArgs,
     GqlSUserGiftCard,
     GqlSUserMutation,
@@ -938,6 +940,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
         UserBookingRequest: {
             travelImpact(parent: GqlSUserBookingRequest, args: GqlSUserBookingRequestTravelImpactArgs) {
                 return userBookingRequestTravelImpactFindMany(parent, args, serverRuntime);
+            },
+            priceImpact(parent: GqlSUserBookingRequest, args: GqlSUserBookingRequestPriceImpactArgs) {
+                return userBookingRequestPriceImpactFindMany(parent, args, serverRuntime);
             },
             supportRequest(parent: GqlSUserBookingRequest, _: unknown, requestingSession: GqlSSession) {
                 return userBookingRequestSupportRequestFindOne(parent, requestingSession, serverRuntime);
