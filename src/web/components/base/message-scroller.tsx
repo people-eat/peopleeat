@@ -66,16 +66,17 @@ function MessageScrollerItem({ className, scrollAnchor = false, ...props }: Comp
         <MessageScrollerPrimitive.Item
             data-slot="message-scroller-item"
             scrollAnchor={scrollAnchor}
-            // `content-visibility:auto` skips rendering off-screen rows, but it
-            // also forces `contain:paint` while the row IS on screen — which
-            // clips every descendant to the item box. Without room to bleed,
-            // card shadows (`shadow-sm`) and outset focus rings (`ring-[3px]`)
-            // get sheared at the edge. `p-1` opens 4px of paint room inside the
-            // clip edge; `-my-1` cancels it on the scroll axis so the parent's
-            // `gap` between turns stays exact. The horizontal 4px is left as a
-            // plain inset (no negative margin) so the item can't grow wider than
-            // the viewport and trip its overflow-x.
-            className={cn('min-w-0 shrink-0 -my-1 p-1 [contain-intrinsic-size:auto_10rem] [content-visibility:auto]', className)}
+            // Do NOT use `content-visibility:auto` here. Chat rows vary wildly
+            // in height (date pills vs short bubbles vs voice notes / images);
+            // a fixed `contain-intrinsic-size` estimate makes `scrollHeight`
+            // thrash while scrolling up, which fights stick-to-bottom follow
+            // and reads as flicker on every human transcript. `p-1` still
+            // opens paint room for card shadows / outset focus rings clipped
+            // by the viewport's `overflow-y-auto`; `-my-1` cancels that inset
+            // on the scroll axis so the parent's `gap` stays exact. Horizontal
+            // 4px stays as a plain inset (no negative margin) so the item
+            // cannot grow wider than the viewport and trip overflow-x.
+            className={cn('min-w-0 shrink-0 -my-1 p-1', className)}
             {...props}
         />
     );

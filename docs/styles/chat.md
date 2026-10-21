@@ -77,6 +77,7 @@ Classic scrollbars grow/shrink content width when they appear. In chat that show
 | Viewport inset is `pl-2 pr-0` — right breathing room is the item’s `p-1` (shadow bleed), not a second `pr-*` on top of the gutter | Transcript shell + `MessageScrollerItem`                                  |
 | **Never** hide the bar with `scrollbar-none` / `scrollbar-width: none` on the transcript viewport                                 | —                                                                         |
 | A surface **must not** turn the gutter off via `viewportClassName`                                                                | Review-time reject unless widening the reserved lane                      |
+| **Never** put `content-visibility: auto` on `MessageScrollerItem`                                                                 | Height thrash while scrolling fights stick-to-bottom (see Anti-patterns)  |
 
 ### Message rendering
 
@@ -386,6 +387,9 @@ Surfaces: `BookingRequestOfferChat`, `SupportRequestChat`, `WhatsAppConversation
 - **`scrollbar-width: none` on the transcript viewport.**
 - **Wrapping scroll items in a date `<section>` or `aria-live` region.**
 - **`scrollAnchor` on every row** — assistant: only the user message that starts a turn; human: never.
+- **`content-visibility: auto` on `MessageScrollerItem`.** Off-screen rows use a guessed height; real chat rows do not match that guess, so
+  `scrollHeight` jumps while the reader scrolls up and stick-to-bottom follow can re-arm near the live edge. Keep `p-1` / `-my-1` for shadow
+  / focus-ring bleed only — do not reintroduce content-visibility for “performance.”
 
 ## How to add a new chat surface
 
