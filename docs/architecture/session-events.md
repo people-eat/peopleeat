@@ -86,6 +86,8 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 ## Consequences
 
 - High write volume from pageviews: add a retention/aggregation job when needed.
+- Admin visit time-buckets (`Admin.sessionEventWebPageVisitCreations`) use a partial index
+  `SessionEvents_webPageVisit_webPageKey_createdAt_idx` on `(payload->>'webPageKey', createdAt)` where `type = 'WEB_PAGE_VISITED'`.
 - Booking-form funnel queries exclude bots and sessions whose user is admin or cook. Cook offer funnel cohorts are notified cooks (excluding
   admins); create-UI mid-steps still come from human cook sessions.
 - Admin descriptions are bilingual (`descriptionDe` / `descriptionEn`); raw payload stays off the GraphQL surface unless a deep link is

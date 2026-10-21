@@ -186,6 +186,11 @@ export const sessionEvents = pgTable(
             .onDelete('cascade'),
         index('SessionEvents_sessionId_createdAt_idx').on(table.sessionId, table.createdAt),
         index('SessionEvents_type_createdAt_idx').on(table.type, table.createdAt),
+        // Admin visit time-buckets filter WEB_PAGE_VISITED by payload webPageKey +
+        // createdAt range — see adminSessionEventWebPageVisitCreationsFindMany.
+        index('SessionEvents_webPageVisit_webPageKey_createdAt_idx')
+            .using('btree', sql`(${table.payload}->>'webPageKey')`, table.createdAt)
+            .where(sql`${table.type} = 'WEB_PAGE_VISITED'`),
     ],
 );
 
@@ -312,6 +317,7 @@ export const logs = pgTable(
         })
             .onUpdate('cascade')
             .onDelete('set null'),
+        index('Logs_createdAt_idx').on(table.createdAt),
     ],
 );
 
@@ -363,6 +369,7 @@ export const users = pgTable(
         uniqueIndex('Users_emailAddress_uidx').on(table.emailAddress),
         uniqueIndex('Users_phoneNumber_uidx').on(table.phoneNumber),
         index('Users_profilePictureFileUploadId_idx').on(table.profilePictureFileUploadId),
+        index('Users_createdAt_idx').on(table.createdAt),
     ],
 );
 
@@ -736,6 +743,7 @@ export const chats = pgTable(
         index('Chats_userId_lastModifiedAt_idx').on(table.userId, table.lastModifiedAt),
         index('Chats_userId_surface_lastModifiedAt_idx').on(table.userId, table.surface, table.lastModifiedAt),
         index('Chats_deletedAt_idx').on(table.deletedAt),
+        index('Chats_createdAt_idx').on(table.createdAt),
     ],
 );
 
@@ -1509,6 +1517,7 @@ export const bookingRequests = pgTable(
         index('BookingRequests_canceledAt_idx').on(table.canceledAt),
         index('BookingRequests_giftCardId_idx').on(table.giftCardId),
         index('BookingRequests_promoCodeId_idx').on(table.promoCodeId),
+        index('BookingRequests_createdAt_idx').on(table.createdAt),
     ],
 );
 
@@ -1921,6 +1930,7 @@ export const cookCallSlotBookings = pgTable(
         index('CookCallSlotBookings_bookingRequestOfferId_idx').on(table.bookingRequestOfferId),
         index('CookCallSlotBookings_startAt_idx').on(table.startAt),
         index('CookCallSlotBookings_status_idx').on(table.status),
+        index('CookCallSlotBookings_createdAt_idx').on(table.createdAt),
     ],
 );
 

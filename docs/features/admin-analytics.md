@@ -89,4 +89,6 @@ In-app overview with KPIs, step table, Sankey + visit buckets; event store docum
 - Shared steps: `src/shared/bookingRequestFormFunnel.ts`, `src/shared/cookBookingRequestOfferFunnel.ts`, `src/shared/giftCardFunnel.ts`,
   `src/shared/chefSignUpFunnel.ts`, `src/shared/bookingRequestCheckoutFunnel.ts`, `src/shared/chefsDiscovery.ts`
 - UI: `AdminAnalyticsPage`, route `analytics.tsx`, nav via `adminCatalog` (`analytics` stub slug with real page)
+- Indexes: visit buckets use `SessionEvents_webPageVisit_webPageKey_createdAt_idx` (partial on `WEB_PAGE_VISITED`); overview time-buckets
+  also rely on `createdAt` indexes on `Users`, `Logs`, `BookingRequests`, `Chats`, `CookCallSlotBookings`
 - Architecture: [session-events.md](../architecture/session-events.md)
