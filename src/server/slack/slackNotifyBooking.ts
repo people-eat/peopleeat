@@ -272,6 +272,21 @@ export async function slackNotifyPayoutReleased(
     });
 }
 
+/** Ops reconciled an existing Stripe Connect payout (no new payout created). */
+export async function slackNotifyPayoutAlreadyTookPlace(
+    serverRuntime: ServerRuntime,
+    args: { bookingRequestId: string; bookingRequestOfferId: string; amountCents: number },
+): Promise<void> {
+    await bookingRequestSlackThreadReply(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        header: 'Bestehende Stripe-Auszahlung bestätigt',
+        body: 'Keine neue Auszahlung ausgelöst. Status auf TRANSFERRED gesetzt.',
+        fields: [{ label: 'Betrag', value: slackFormatCents(args.amountCents) }],
+        broadcast: true,
+        adminOfferId: args.bookingRequestOfferId,
+    });
+}
+
 export async function slackNotifyCallSlot(
     serverRuntime: ServerRuntime,
     args: {

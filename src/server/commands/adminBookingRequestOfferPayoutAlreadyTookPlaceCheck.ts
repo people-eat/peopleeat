@@ -99,8 +99,8 @@ export async function adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId: offer.cookId }), serverRuntime.publish.adminUpdates()]);
 
-        const { slackNotifyPayoutReleased } = await import('../slack/slackNotifyBooking');
-        await slackNotifyPayoutReleased(serverRuntime, {
+        const { slackNotifyPayoutAlreadyTookPlace } = await import('../slack/slackNotifyBooking');
+        await slackNotifyPayoutAlreadyTookPlace(serverRuntime, {
             bookingRequestId: offer.bookingRequestId,
             bookingRequestOfferId,
             amountCents: offer.payoutCentsCook,
