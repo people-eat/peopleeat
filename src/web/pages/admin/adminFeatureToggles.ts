@@ -10,6 +10,10 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
         de: 'Angebots-Chat: Emoji-Reaktionen',
         en: 'Offer chat: emoji reactions',
     },
+    BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT: {
+        de: 'Angebot: Teilnehmeränderung nach Annahme',
+        en: 'Offer: participant amendment after accept',
+    },
     ASSISTANT_CUSTOMER: { de: 'Assistent: Kunden', en: 'Assistant: customer' },
     ASSISTANT_COOK: { de: 'Assistent: Köche', en: 'Assistant: cook' },
     PUBLICATION_MEALS: { de: 'Veröffentlichung: Gerichte', en: 'Publication: meals' },

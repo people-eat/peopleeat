@@ -239,6 +239,7 @@ function stripePaymentStubCreate(): StripePayment {
         paymentIntentSucceededCheck: vi.fn(unused('paymentIntentSucceededCheck')),
         paymentIntentCancel: vi.fn(unused('paymentIntentCancel')),
         paymentIntentRefund: vi.fn(unused('paymentIntentRefund')),
+        paymentIntentPaymentMethodIdFindOne: vi.fn(unused('paymentIntentPaymentMethodIdFindOne')),
         paymentIntentDestinationTransferIdFindOne: vi.fn(unused('paymentIntentDestinationTransferIdFindOne')),
         accountCreate: vi.fn(unused('accountCreate')),
         accountOnboardingUrlCreate: vi.fn(unused('accountOnboardingUrlCreate')),

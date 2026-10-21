@@ -135,6 +135,7 @@ export async function adminBookingRequestOfferHydrate(
                 promoCode,
                 giftCard,
                 participantCount: requestParticipants.length,
+                participants: requestParticipants,
             }),
         );
     }

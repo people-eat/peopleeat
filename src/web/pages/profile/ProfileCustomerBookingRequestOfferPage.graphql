@@ -37,6 +37,12 @@ fragment ProfileCustomerBookingRequestOfferPageUser on User {
             redeemCode
             balanceCents
         }
+        participants {
+            bookingRequestParticipantId
+            type
+            name
+            restrictions
+        }
         supportRequest {
             supportRequestId
             subject
@@ -167,6 +173,22 @@ fragment ProfileCustomerBookingRequestOfferPageUser on User {
                 type
             }
             plannedPaymentPullDateTime
+            preparationsCompletedAt
+            canRequestParticipantAmendment
+            participantAmendment {
+                requestedAt
+                participants {
+                    type
+                    name
+                    restrictions
+                }
+                menuPriceCentsBefore
+                menuPriceCentsAfter
+                totalCentsCustomerBefore
+                totalCentsCustomerAfter
+                payoutCentsCookBefore
+                payoutCentsCookAfter
+            }
             messages {
                 ...HumanChatMessageFields
             }
@@ -191,6 +213,18 @@ subscription ProfileCustomerBookingRequestOfferPageUpdates($bookingRequestId: ID
 mutation ProfileCustomerBookingRequestOfferAccept($bookingRequestOfferId: ID!) {
     user {
         bookingRequestOfferAccept(bookingRequestOfferId: $bookingRequestOfferId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferParticipantAmendmentCreate(
+    $bookingRequestOfferId: ID!
+    $participants: [UserBookingRequestParticipantCreate!]!
+) {
+    user {
+        bookingRequestOfferParticipantAmendmentCreate(bookingRequestOfferId: $bookingRequestOfferId, participants: $participants) {
             success
             referenceId
         }

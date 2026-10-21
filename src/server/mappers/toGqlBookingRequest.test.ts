@@ -78,6 +78,8 @@ const offer = {
     cookChatMessageNotifyJobId: null,
     adminChatReviewPendingCount: 0,
     adminChatReviewedAt: null,
+    preparationsCompletedAt: null,
+    participantAmendment: null,
     createdAt: new Date('2026-08-02T00:00:00.000Z'),
 } satisfies BookingRequestOffer;
 

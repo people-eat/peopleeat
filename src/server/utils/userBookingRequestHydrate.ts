@@ -107,6 +107,7 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
                     promoCode,
                     giftCard,
                     participantCount: requestParticipants.length,
+                    participants: requestParticipants,
                 }),
             );
         }

@@ -36,6 +36,7 @@ import { BookingRequestDiscountEditor } from '../../components/BookingRequestDis
 import { BookingRequestOfferAttentionBanner } from '../../components/BookingRequestOfferAttentionBanner';
 import { BookingRequestOfferCallTab } from '../../components/BookingRequestOfferCallTab';
 import { BookingRequestOfferChat } from '../../components/BookingRequestOfferChat';
+import { BookingRequestOfferParticipantAmendmentCustomerPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import { bookingRequestOfferStatusClassName, bookingRequestOfferStatusLabel } from '../../components/bookingRequestOfferStatus';
 import { BookingRequestOfferTestimonialPanel } from '../../components/BookingRequestOfferTestimonialPanel';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
@@ -68,6 +69,7 @@ import {
     ProfileCustomerBookingRequestOfferChatMessageReactionUpsertDocument,
     ProfileCustomerBookingRequestOfferConfiguredMenuCreateDocument,
     ProfileCustomerBookingRequestOfferPageUpdatesDocument,
+    ProfileCustomerBookingRequestOfferParticipantAmendmentCreateDocument,
     ProfileCustomerBookingRequestOfferUnreadNotificationCountResetDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
@@ -724,6 +726,9 @@ function OfferTabPanel({
     onCourseSelectionsChange: (selections: OfferMenuCourseSelection[]) => void;
 }) {
     const [, updateDiscount] = useMutation(ProfileBookingRequestDiscountUpdateDocument);
+    const [{ fetching: amendmentBusy }, createParticipantAmendment] = useMutation(
+        ProfileCustomerBookingRequestOfferParticipantAmendmentCreateDocument,
+    );
     const cook = offer.cook;
     const biographyText =
         cook.biographySummary.trim().length > 0 ? cook.biographySummary : cook.biography.trim().length > 0 ? cook.biography : null;
@@ -845,6 +850,39 @@ function OfferTabPanel({
                 <section className="grid gap-4">
                     <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Preisübersicht', en: 'Price overview' }[locale]}</h2>
                     <OfferCostSummary offer={offer} locale={locale} />
+                    <BookingRequestOfferParticipantAmendmentCustomerPanel
+                        locale={locale}
+                        canRequest={offer.canRequestParticipantAmendment}
+                        preparationsCompletedAt={offer.preparationsCompletedAt}
+                        amendment={offer.participantAmendment}
+                        currentParticipants={request.participants}
+                        busy={amendmentBusy}
+                        onPropose={async (participants) => {
+                            const result = await createParticipantAmendment({
+                                bookingRequestOfferId,
+                                participants: participants.map((participant) => ({
+                                    type: participant.type,
+                                    name: participant.name,
+                                    restrictions: participant.restrictions,
+                                })),
+                            });
+                            if (result.error || !result.data?.user.bookingRequestOfferParticipantAmendmentCreate.success) {
+                                toast.error(
+                                    {
+                                        de: 'Die Teilnehmeränderung konnte nicht gesendet werden.',
+                                        en: 'Could not send the participant change.',
+                                    }[locale],
+                                );
+                                return;
+                            }
+                            toast.success(
+                                {
+                                    de: 'Vorschlag an den Koch gesendet.',
+                                    en: 'Proposal sent to the chef.',
+                                }[locale],
+                            );
+                        }}
+                    />
 
                     {canEditDiscount || request.promoCode != null || request.giftCard != null ? (
                         <BookingRequestDiscountEditor

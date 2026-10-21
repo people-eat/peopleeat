@@ -245,6 +245,10 @@ export type BookingRequestOfferPaymentData =
           transferId?: string;
           /** Top-up Connect transfer when payout > pull (destination charge). */
           extraTransferId?: string;
+          /** Partial refunds from post-accept participant amendments (newest last). */
+          refundIds?: string[];
+          /** Extra customer PaymentIntents from amendment increases (newest last). */
+          amendmentPaymentIntentIds?: string[];
       }
     | {
           setupIntentId: string;
@@ -252,11 +256,28 @@ export type BookingRequestOfferPaymentData =
           clientSecret: string;
           transferId?: string;
           extraTransferId?: string;
+          refundIds?: string[];
+          amendmentPaymentIntentIds?: string[];
       }
     | {
           transferId: string;
           extraTransferId?: string;
+          refundIds?: string[];
+          amendmentPaymentIntentIds?: string[];
       };
+
+/** Pending post–dual-accept participant change awaiting cook accept/decline. */
+export type BookingRequestOfferParticipantAmendment = {
+    requestedAt: string;
+    participants: {
+        type: BookingRequestParticipantType;
+        name: string;
+        restrictions: string[];
+    }[];
+    menuPriceCentsBefore: number;
+    totalCentsCustomerBefore: number;
+    payoutCentsCookBefore: number;
+};
 
 /** Frozen customer menu selection on an accepted/configured offer (snapshot, not live Menus rows). */
 type BookingRequestOfferConfiguredMenuMeal = {
@@ -348,6 +369,11 @@ const bookingRequestOfferEventTypes = [
     'ADMIN_HANDED_OVER_CLOSED',
     'ADMIN_HANDED_OVER_TO_COOK',
     'USER_PARTICIPANTS_UPDATED',
+    'USER_PARTICIPANT_AMENDMENT_REQUESTED',
+    'COOK_PARTICIPANT_AMENDMENT_ACCEPTED',
+    'COOK_PARTICIPANT_AMENDMENT_DECLINED',
+    'COOK_PREPARATIONS_COMPLETED',
+    'ADMIN_PREPARATIONS_CLEARED',
     'USER_RESTRICTIONS_UPDATED',
     'USER_DATE_UPDATED',
     'USER_TIME_UPDATED',
@@ -458,6 +484,40 @@ type BookingRequestOfferEventPayloadByType = {
         participantsAdultAfter: number;
         participantsDiscountedAfter: number;
     };
+    USER_PARTICIPANT_AMENDMENT_REQUESTED: {
+        participantsAdultBefore: number;
+        participantsDiscountedBefore: number;
+        participantsAdultAfter: number;
+        participantsDiscountedAfter: number;
+        menuPriceCentsBefore: number;
+        menuPriceCentsAfter: number;
+        totalCentsCustomerBefore: number;
+        totalCentsCustomerAfter: number;
+        payoutCentsCookBefore: number;
+        payoutCentsCookAfter: number;
+    };
+    COOK_PARTICIPANT_AMENDMENT_ACCEPTED: {
+        participantsAdultBefore: number;
+        participantsDiscountedBefore: number;
+        participantsAdultAfter: number;
+        participantsDiscountedAfter: number;
+        menuPriceCentsBefore: number;
+        menuPriceCentsAfter: number;
+        totalCentsCustomerBefore: number;
+        totalCentsCustomerAfter: number;
+        payoutCentsCookBefore: number;
+        payoutCentsCookAfter: number;
+        customerDeltaCents: number;
+        cookPayoutDeltaCents: number;
+    };
+    COOK_PARTICIPANT_AMENDMENT_DECLINED: {
+        participantsAdultBefore: number;
+        participantsDiscountedBefore: number;
+        participantsAdultAfter: number;
+        participantsDiscountedAfter: number;
+    };
+    COOK_PREPARATIONS_COMPLETED: Record<string, never>;
+    ADMIN_PREPARATIONS_CLEARED: Record<string, never>;
     USER_RESTRICTIONS_UPDATED: Record<string, never>;
     USER_DATE_UPDATED: { dateTimeBefore: string; dateTimeAfter: string };
     USER_TIME_UPDATED: { dateTimeBefore: string; dateTimeAfter: string };

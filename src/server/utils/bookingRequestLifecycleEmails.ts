@@ -24,6 +24,14 @@ import {
     cookBookingRequestOfferCreateForCustomerEmailSubject,
 } from '../email/templates/CookBookingRequestOfferCreateForCustomerEmail';
 import {
+    CookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmail,
+    cookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmailSubject,
+} from '../email/templates/CookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmail';
+import {
+    CookBookingRequestOfferParticipantAmendmentDeclineForCustomerEmail,
+    cookBookingRequestOfferParticipantAmendmentDeclineForCustomerEmailSubject,
+} from '../email/templates/CookBookingRequestOfferParticipantAmendmentDeclineForCustomerEmail';
+import {
     CookBookingRequestOfferSuggestedMenusUpdateForCustomerEmail,
     cookBookingRequestOfferSuggestedMenusUpdateForCustomerEmailSubject,
 } from '../email/templates/CookBookingRequestOfferSuggestedMenusUpdateForCustomerEmail';
@@ -51,6 +59,10 @@ import {
     UserBookingRequestOfferDeclineForCookEmail,
     userBookingRequestOfferDeclineForCookEmailSubject,
 } from '../email/templates/UserBookingRequestOfferDeclineForCookEmail';
+import {
+    UserBookingRequestOfferParticipantAmendmentCreateForCookEmail,
+    userBookingRequestOfferParticipantAmendmentCreateForCookEmailSubject,
+} from '../email/templates/UserBookingRequestOfferParticipantAmendmentCreateForCookEmail';
 import {
     UserBookingRequestUpdateForCookEmail,
     userBookingRequestUpdateForCookEmailSubject,
@@ -628,4 +640,104 @@ export async function bookingRequestOfferPullPaymentAnnouncementEmailSend(
             totalLabel,
         }),
     ]);
+}
+
+export async function bookingRequestOfferParticipantAmendmentCreateEmailSend(
+    serverRuntime: ServerRuntime,
+    args: {
+        bookingRequest: BookingRequest;
+        offer: BookingRequestOffer;
+        customer: EmailUser;
+        cook: EmailUser;
+    },
+): Promise<void> {
+    const locale = args.cook.locale;
+    const webPageUrl = environmentVariables.webPageUrl;
+    await sendSafely(serverRuntime, 'bookingRequestOfferParticipantAmendmentCreateEmailSend', args.offer.bookingRequestOfferId, () =>
+        serverRuntime.email.send({
+            to: args.cook.emailAddress,
+            subject: userBookingRequestOfferParticipantAmendmentCreateForCookEmailSubject(locale),
+            react: UserBookingRequestOfferParticipantAmendmentCreateForCookEmail({
+                locale,
+                webPageUrl,
+                recipientFirstName: args.cook.firstName,
+                customerFirstName: args.customer.firstName,
+                offerUrl: bookingRequestEmailCookOfferUrl(webPageUrl, args.offer.bookingRequestOfferId),
+            }),
+            purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED',
+            locale,
+            relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
+            userId: args.cook.userId,
+        }),
+    );
+}
+
+export async function bookingRequestOfferParticipantAmendmentAcceptEmailSend(
+    serverRuntime: ServerRuntime,
+    args: {
+        bookingRequest: BookingRequest;
+        offer: BookingRequestOffer;
+        customer: EmailUser;
+        cook: EmailUser;
+        customerDeltaCents: number;
+    },
+): Promise<void> {
+    const locale = args.customer.locale;
+    const webPageUrl = environmentVariables.webPageUrl;
+    await sendSafely(serverRuntime, 'bookingRequestOfferParticipantAmendmentAcceptEmailSend', args.offer.bookingRequestOfferId, () =>
+        serverRuntime.email.send({
+            to: args.customer.emailAddress,
+            subject: cookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmailSubject(locale),
+            react: CookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmail({
+                locale,
+                webPageUrl,
+                recipientFirstName: args.customer.firstName,
+                cookFirstName: args.cook.firstName,
+                offerUrl: bookingRequestEmailCustomerOfferUrl(
+                    webPageUrl,
+                    args.bookingRequest.bookingRequestId,
+                    args.offer.bookingRequestOfferId,
+                ),
+                customerDeltaCents: args.customerDeltaCents,
+            }),
+            purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED',
+            locale,
+            relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
+            userId: args.customer.userId,
+        }),
+    );
+}
+
+export async function bookingRequestOfferParticipantAmendmentDeclineEmailSend(
+    serverRuntime: ServerRuntime,
+    args: {
+        bookingRequest: BookingRequest;
+        offer: BookingRequestOffer;
+        customer: EmailUser;
+        cook: EmailUser;
+    },
+): Promise<void> {
+    const locale = args.customer.locale;
+    const webPageUrl = environmentVariables.webPageUrl;
+    await sendSafely(serverRuntime, 'bookingRequestOfferParticipantAmendmentDeclineEmailSend', args.offer.bookingRequestOfferId, () =>
+        serverRuntime.email.send({
+            to: args.customer.emailAddress,
+            subject: cookBookingRequestOfferParticipantAmendmentDeclineForCustomerEmailSubject(locale),
+            react: CookBookingRequestOfferParticipantAmendmentDeclineForCustomerEmail({
+                locale,
+                webPageUrl,
+                recipientFirstName: args.customer.firstName,
+                cookFirstName: args.cook.firstName,
+                offerUrl: bookingRequestEmailCustomerOfferUrl(
+                    webPageUrl,
+                    args.bookingRequest.bookingRequestId,
+                    args.offer.bookingRequestOfferId,
+                ),
+            }),
+            purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED',
+            locale,
+            relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
+            userId: args.customer.userId,
+        }),
+    );
 }

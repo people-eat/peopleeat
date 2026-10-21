@@ -1,10 +1,11 @@
 import type { Locale } from '../../shared/locale';
-import type { BookingRequest, BookingRequestOffer, CookCallSlotBooking } from '../db/schema';
+import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant, CookCallSlotBooking } from '../db/schema';
 import { bookingRequestOfferStatusDerive } from '../domain/bookingRequest';
 import { bookingRequestOfferCostBreakdownBuild } from '../domain/bookingRequestOfferCostBreakdown';
 import { environmentVariables } from '../env/environmentVariablesCreate';
 import type {
     GqlSBookingRequestOfferConfiguredMenu,
+    GqlSBookingRequestOfferParticipantAmendment,
     GqlSBookingRequestOfferPayment,
     GqlSBookingRequestOfferPaymentDataType,
     GqlSBookingRequestOfferPaymentStatus,
@@ -12,7 +13,12 @@ import type {
     GqlSCookCallSlotBooking,
     GqlSCostBreakdown,
 } from '../graphql/generated';
+import {
+    bookingRequestOfferCanCompletePreparations,
+    bookingRequestOfferCanRequestParticipantAmendment,
+} from '../utils/bookingRequestOfferParticipantAmendmentGates';
 import { toGqlBookingRequestOfferConfiguredMenu } from './toGqlBookingRequestOfferConfiguredMenu';
+import { toGqlBookingRequestOfferParticipantAmendment } from './toGqlBookingRequestOfferParticipantAmendment';
 import { toGqlCookCallSlotBooking } from './toGqlCookCallSlotBooking';
 import { toGqlCostBreakdown } from './toGqlCostBreakdown';
 
@@ -22,6 +28,7 @@ export type BookingRequestOfferFieldsInput = {
     hasAcceptedAlternative: boolean;
     locale: Locale;
     participantCount?: number | null;
+    participants?: Pick<BookingRequestParticipant, 'type' | 'name' | 'restrictions'>[];
     promoCode?: { redeemCode: string; amountCents: number } | null;
     giftCard?: { redeemCode: string; balanceCents: number } | null;
     callBookings?: CookCallSlotBooking[];
@@ -62,6 +69,10 @@ export type BookingRequestOfferFields = {
     payoutDateTime: Date | null;
     createdAt: Date;
     callBookings: GqlSCookCallSlotBooking[];
+    preparationsCompletedAt: Date | null;
+    participantAmendment: GqlSBookingRequestOfferParticipantAmendment | null;
+    canRequestParticipantAmendment: boolean;
+    canCompletePreparations: boolean;
 };
 
 function bookingRequestOfferPaymentDataTypeDerive(
@@ -80,7 +91,18 @@ function bookingRequestOfferPaymentDataTypeDerive(
 }
 
 export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsInput): BookingRequestOfferFields {
-    const { offer, bookingRequest, hasAcceptedAlternative, locale, participantCount, promoCode, giftCard, callBookings = [], now } = input;
+    const {
+        offer,
+        bookingRequest,
+        hasAcceptedAlternative,
+        locale,
+        participantCount,
+        participants = [],
+        promoCode,
+        giftCard,
+        callBookings = [],
+        now,
+    } = input;
 
     const status = bookingRequestOfferStatusDerive({
         userAccepted: offer.userAccepted ?? null,
@@ -160,5 +182,24 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
         payoutDateTime: offer.payoutDateTime ?? null,
         createdAt: offer.createdAt,
         callBookings: callBookings.map((booking) => toGqlCookCallSlotBooking(booking)),
+        preparationsCompletedAt: offer.preparationsCompletedAt ?? null,
+        participantAmendment:
+            offer.participantAmendment != null
+                ? toGqlBookingRequestOfferParticipantAmendment({
+                      amendment: offer.participantAmendment,
+                      offer,
+                      currentParticipants: participants,
+                  })
+                : null,
+        canRequestParticipantAmendment: bookingRequestOfferCanRequestParticipantAmendment({
+            offer,
+            bookingRequest,
+            now,
+        }),
+        canCompletePreparations: bookingRequestOfferCanCompletePreparations({
+            offer,
+            bookingRequest,
+            now,
+        }),
     };
 }

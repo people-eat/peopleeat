@@ -735,6 +735,8 @@ export interface GqlSAdminBookingRequestOffer {
     bookingRequestOfferId: Scalars['ID']['output'];
     callBookings: Array<GqlSCookCallSlotBooking>;
     callRecordings: Array<GqlSBookingRequestOfferCallRecording>;
+    canCompletePreparations: Scalars['Boolean']['output'];
+    canRequestParticipantAmendment: Scalars['Boolean']['output'];
     configuredMenu?: Maybe<GqlSBookingRequestOfferConfiguredMenu>;
     cook: GqlSAdminCook;
     cookAccepted?: Maybe<Scalars['Boolean']['output']>;
@@ -750,6 +752,7 @@ export interface GqlSAdminBookingRequestOffer {
     isPriceAutoAdjusted?: Maybe<Scalars['Boolean']['output']>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlSHumanChatMessage>;
+    participantAmendment?: Maybe<GqlSBookingRequestOfferParticipantAmendment>;
     payment?: Maybe<GqlSBookingRequestOfferPayment>;
     paymentDateTime?: Maybe<Scalars['DateTime']['output']>;
     paymentProviderFeeCents: Scalars['Int']['output'];
@@ -762,6 +765,7 @@ export interface GqlSAdminBookingRequestOffer {
     platformFeeCentsCustomer: Scalars['Int']['output'];
     platformFeePercentCook: Scalars['Int']['output'];
     platformFeePercentCustomer: Scalars['Int']['output'];
+    preparationsCompletedAt?: Maybe<Scalars['DateTime']['output']>;
     queuedJobs: Array<GqlSAdminQueuedJob>;
     status: GqlSBookingRequestOfferStatus;
     stripePaymentIntentUrl?: Maybe<Scalars['String']['output']>;
@@ -1333,6 +1337,7 @@ export interface GqlSAdminMutation {
     bookingRequestOfferPayoutAlreadyTookPlaceCheck: GqlSMutationResult;
     bookingRequestOfferPayoutMarkOutOfSystem: GqlSMutationResult;
     bookingRequestOfferPayoutRelease: GqlSMutationResult;
+    bookingRequestOfferPreparationsClear: GqlSMutationResult;
     bookingRequestOfferUpdate: GqlSMutationResult;
     bookingRequestPublicationApprove: GqlSMutationResult;
     bookingRequestUpdate: GqlSMutationResult;
@@ -1498,6 +1503,10 @@ export type GqlSAdminMutationBookingRequestOfferPayoutMarkOutOfSystemArgs = {
 };
 
 export type GqlSAdminMutationBookingRequestOfferPayoutReleaseArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationBookingRequestOfferPreparationsClearArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
 };
 
@@ -1919,6 +1928,9 @@ export type GqlSAdminOutboundEmailPurpose =
     | 'BOOKING_REQUEST_OFFER_DECLINED'
     | 'BOOKING_REQUEST_OFFER_MENU_UPDATED'
     | 'BOOKING_REQUEST_OFFER_NOT_CHOSEN'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED'
     | 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT'
     | 'BOOKING_REQUEST_UPDATED'
@@ -2488,6 +2500,25 @@ export type GqlSBookingRequestOfferCreate = {
     suggestedMenuIds: Array<Scalars['ID']['input']>;
 };
 
+export interface GqlSBookingRequestOfferParticipantAmendment {
+    __typename?: 'BookingRequestOfferParticipantAmendment';
+    menuPriceCentsAfter: Scalars['Int']['output'];
+    menuPriceCentsBefore: Scalars['Int']['output'];
+    participants: Array<GqlSBookingRequestOfferParticipantAmendmentParticipant>;
+    payoutCentsCookAfter: Scalars['Int']['output'];
+    payoutCentsCookBefore: Scalars['Int']['output'];
+    requestedAt: Scalars['DateTime']['output'];
+    totalCentsCustomerAfter: Scalars['Int']['output'];
+    totalCentsCustomerBefore: Scalars['Int']['output'];
+}
+
+export interface GqlSBookingRequestOfferParticipantAmendmentParticipant {
+    __typename?: 'BookingRequestOfferParticipantAmendmentParticipant';
+    name: Scalars['String']['output'];
+    restrictions: Array<Scalars['String']['output']>;
+    type: GqlSBookingRequestParticipantType;
+}
+
 export interface GqlSBookingRequestOfferPayment {
     __typename?: 'BookingRequestOfferPayment';
     clientSecret: Scalars['String']['output'];
@@ -2587,6 +2618,7 @@ export interface GqlSChatMessageBookingRequestOfferEvent {
 export type GqlSChatMessageBookingRequestOfferEventType =
     | 'ADMIN_HANDED_OVER_CLOSED'
     | 'ADMIN_HANDED_OVER_TO_COOK'
+    | 'ADMIN_PREPARATIONS_CLEARED'
     | 'COOK_ACCEPTED'
     | 'COOK_CALL_SLOT_CANCELLED'
     | 'COOK_CALL_SLOT_CONFIRMED'
@@ -2595,6 +2627,9 @@ export type GqlSChatMessageBookingRequestOfferEventType =
     | 'COOK_CHANGED_PRICE'
     | 'COOK_CREATED'
     | 'COOK_DECLINED'
+    | 'COOK_PARTICIPANT_AMENDMENT_ACCEPTED'
+    | 'COOK_PARTICIPANT_AMENDMENT_DECLINED'
+    | 'COOK_PREPARATIONS_COMPLETED'
     | 'COOK_UPDATED_SUGGESTED_MENU'
     | 'SYSTEM_CHANGED_PRICE'
     | 'USER_ACCEPTED'
@@ -2608,6 +2643,7 @@ export type GqlSChatMessageBookingRequestOfferEventType =
     | 'USER_DECLINED'
     | 'USER_LOCATION_UPDATED'
     | 'USER_PARTICIPANTS_UPDATED'
+    | 'USER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'USER_PREFERENCES_UPDATED'
     | 'USER_REQUESTED_MENU_CHANGES'
     | 'USER_RESTRICTIONS_UPDATED'
@@ -3121,6 +3157,7 @@ export interface GqlSCookBookingRequestOffer {
     bookingRequestId: Scalars['ID']['output'];
     bookingRequestOfferId: Scalars['ID']['output'];
     callBookings: Array<GqlSCookCallSlotBooking>;
+    canCompletePreparations: Scalars['Boolean']['output'];
     configuredMenu?: Maybe<GqlSBookingRequestOfferConfiguredMenu>;
     cookAccepted?: Maybe<Scalars['Boolean']['output']>;
     cookDeclinationReason?: Maybe<Scalars['String']['output']>;
@@ -3132,6 +3169,7 @@ export interface GqlSCookBookingRequestOffer {
     isPriceAutoAdjusted?: Maybe<Scalars['Boolean']['output']>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlSHumanChatMessage>;
+    participantAmendment?: Maybe<GqlSBookingRequestOfferParticipantAmendment>;
     payment?: Maybe<GqlSBookingRequestOfferPayment>;
     paymentDateTime?: Maybe<Scalars['DateTime']['output']>;
     paymentProviderFeeCents: Scalars['Int']['output'];
@@ -3144,6 +3182,7 @@ export interface GqlSCookBookingRequestOffer {
     platformFeeCentsCustomer: Scalars['Int']['output'];
     platformFeePercentCook: Scalars['Int']['output'];
     platformFeePercentCustomer: Scalars['Int']['output'];
+    preparationsCompletedAt?: Maybe<Scalars['DateTime']['output']>;
     status: GqlSBookingRequestOfferStatus;
     suggestedMenus: Array<GqlSCookMenu>;
     testimonialMissing: Scalars['Boolean']['output'];
@@ -3423,6 +3462,9 @@ export interface GqlSCookMutation {
     bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
     bookingRequestOfferCreate: GqlSMutationResult;
     bookingRequestOfferDecline: GqlSMutationResult;
+    bookingRequestOfferParticipantAmendmentAccept: GqlSMutationResult;
+    bookingRequestOfferParticipantAmendmentDecline: GqlSMutationResult;
+    bookingRequestOfferPreparationsComplete: GqlSMutationResult;
     bookingRequestOfferPriceUpdate: GqlSMutationResult;
     bookingRequestOfferSuggestedMenusUpdate: GqlSMutationResult;
     bookingRequestOfferTestimonialCreate: GqlSMutationResult;
@@ -3520,6 +3562,18 @@ export type GqlSCookMutationBookingRequestOfferCreateArgs = {
 export type GqlSCookMutationBookingRequestOfferDeclineArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     reason: Scalars['String']['input'];
+};
+
+export type GqlSCookMutationBookingRequestOfferParticipantAmendmentAcceptArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+};
+
+export type GqlSCookMutationBookingRequestOfferParticipantAmendmentDeclineArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+};
+
+export type GqlSCookMutationBookingRequestOfferPreparationsCompleteArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
 };
 
 export type GqlSCookMutationBookingRequestOfferPriceUpdateArgs = {
@@ -3760,6 +3814,7 @@ export type GqlSFeatureToggleKey =
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT'
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_WALLET_STRIPE_BALANCE'
@@ -4577,6 +4632,7 @@ export interface GqlSUserBookingRequestOffer {
     bookingRequestId: Scalars['ID']['output'];
     bookingRequestOfferId: Scalars['ID']['output'];
     callBookings: Array<GqlSCookCallSlotBooking>;
+    canRequestParticipantAmendment: Scalars['Boolean']['output'];
     configuredMenu?: Maybe<GqlSBookingRequestOfferConfiguredMenu>;
     cook: GqlSPublicCook;
     cookAccepted?: Maybe<Scalars['Boolean']['output']>;
@@ -4588,6 +4644,7 @@ export interface GqlSUserBookingRequestOffer {
     isPriceAutoAdjusted?: Maybe<Scalars['Boolean']['output']>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlSHumanChatMessage>;
+    participantAmendment?: Maybe<GqlSBookingRequestOfferParticipantAmendment>;
     payment?: Maybe<GqlSBookingRequestOfferPayment>;
     paymentDateTime?: Maybe<Scalars['DateTime']['output']>;
     paymentProviderFeeCents: Scalars['Int']['output'];
@@ -4600,6 +4657,7 @@ export interface GqlSUserBookingRequestOffer {
     platformFeeCentsCustomer: Scalars['Int']['output'];
     platformFeePercentCook: Scalars['Int']['output'];
     platformFeePercentCustomer: Scalars['Int']['output'];
+    preparationsCompletedAt?: Maybe<Scalars['DateTime']['output']>;
     status: GqlSBookingRequestOfferStatus;
     suggestedMenus: Array<GqlSPublicCookMenu>;
     testimonialMissing: Scalars['Boolean']['output'];
@@ -4709,6 +4767,7 @@ export interface GqlSUserMutation {
     bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
     bookingRequestOfferConfiguredMenuCreate: GqlSMutationResult;
     bookingRequestOfferDecline: GqlSMutationResult;
+    bookingRequestOfferParticipantAmendmentCreate: GqlSMutationResult;
     bookingRequestOfferPaymentStatusUpdate: GqlSMutationResult;
     bookingRequestOfferTestimonialCreate: GqlSMutationResult;
     bookingRequestOfferUnreadNotificationCountReset: GqlSMutationResult;
@@ -4825,6 +4884,11 @@ export type GqlSUserMutationBookingRequestOfferConfiguredMenuCreateArgs = {
 export type GqlSUserMutationBookingRequestOfferDeclineArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     reason: Scalars['String']['input'];
+};
+
+export type GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+    participants: Array<GqlSUserBookingRequestParticipantCreate>;
 };
 
 export type GqlSUserMutationBookingRequestOfferPaymentStatusUpdateArgs = {
@@ -5370,6 +5434,8 @@ export type GqlSResolversTypes = ResolversObject<{
     BookingRequestOfferConfiguredMenuMeal: ResolverTypeWrapper<GqlSBookingRequestOfferConfiguredMenuMeal>;
     BookingRequestOfferConfiguredMenuMealInput: GqlSBookingRequestOfferConfiguredMenuMealInput;
     BookingRequestOfferCreate: GqlSBookingRequestOfferCreate;
+    BookingRequestOfferParticipantAmendment: ResolverTypeWrapper<GqlSBookingRequestOfferParticipantAmendment>;
+    BookingRequestOfferParticipantAmendmentParticipant: ResolverTypeWrapper<GqlSBookingRequestOfferParticipantAmendmentParticipant>;
     BookingRequestOfferPayment: ResolverTypeWrapper<GqlSBookingRequestOfferPayment>;
     BookingRequestOfferPaymentDataType: GqlSBookingRequestOfferPaymentDataType;
     BookingRequestOfferPaymentStatus: GqlSBookingRequestOfferPaymentStatus;
@@ -5905,6 +5971,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
     BookingRequestOfferConfiguredMenuMeal: GqlSBookingRequestOfferConfiguredMenuMeal;
     BookingRequestOfferConfiguredMenuMealInput: GqlSBookingRequestOfferConfiguredMenuMealInput;
     BookingRequestOfferCreate: GqlSBookingRequestOfferCreate;
+    BookingRequestOfferParticipantAmendment: GqlSBookingRequestOfferParticipantAmendment;
+    BookingRequestOfferParticipantAmendmentParticipant: GqlSBookingRequestOfferParticipantAmendmentParticipant;
     BookingRequestOfferPayment: GqlSBookingRequestOfferPayment;
     BookingRequestOfferPriceUpdate: GqlSBookingRequestOfferPriceUpdate;
     BookingRequestOfferSuggestedMenusUpdate: GqlSBookingRequestOfferSuggestedMenusUpdate;
@@ -6851,6 +6919,8 @@ export type GqlSAdminBookingRequestOfferResolvers<
     bookingRequestOfferId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     callBookings?: Resolver<Array<GqlSResolversTypes['CookCallSlotBooking']>, ParentType, ContextType>;
     callRecordings?: Resolver<Array<GqlSResolversTypes['BookingRequestOfferCallRecording']>, ParentType, ContextType>;
+    canCompletePreparations?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    canRequestParticipantAmendment?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     configuredMenu?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferConfiguredMenu']>, ParentType, ContextType>;
     cook?: Resolver<GqlSResolversTypes['AdminCook'], ParentType, ContextType>;
     cookAccepted?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -6866,6 +6936,7 @@ export type GqlSAdminBookingRequestOfferResolvers<
     isPriceAutoAdjusted?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
     menuPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     messages?: Resolver<Array<GqlSResolversTypes['HumanChatMessage']>, ParentType, ContextType>;
+    participantAmendment?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferParticipantAmendment']>, ParentType, ContextType>;
     payment?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferPayment']>, ParentType, ContextType>;
     paymentDateTime?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     paymentProviderFeeCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
@@ -6878,6 +6949,7 @@ export type GqlSAdminBookingRequestOfferResolvers<
     platformFeeCentsCustomer?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     platformFeePercentCook?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     platformFeePercentCustomer?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    preparationsCompletedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     queuedJobs?: Resolver<Array<GqlSResolversTypes['AdminQueuedJob']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestOfferStatus'], ParentType, ContextType>;
     stripePaymentIntentUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
@@ -7413,6 +7485,12 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationBookingRequestOfferPayoutReleaseArgs, 'bookingRequestOfferId'>
+    >;
+    bookingRequestOfferPreparationsClear?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationBookingRequestOfferPreparationsClearArgs, 'bookingRequestOfferId'>
     >;
     bookingRequestOfferUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -8394,6 +8472,31 @@ export type GqlSBookingRequestOfferConfiguredMenuMealResolvers<
     mealTitle?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type GqlSBookingRequestOfferParticipantAmendmentResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['BookingRequestOfferParticipantAmendment'] =
+        GqlSResolversParentTypes['BookingRequestOfferParticipantAmendment'],
+> = ResolversObject<{
+    menuPriceCentsAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    menuPriceCentsBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    participants?: Resolver<Array<GqlSResolversTypes['BookingRequestOfferParticipantAmendmentParticipant']>, ParentType, ContextType>;
+    payoutCentsCookAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    payoutCentsCookBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    requestedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    totalCentsCustomerAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    totalCentsCustomerBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSBookingRequestOfferParticipantAmendmentParticipantResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['BookingRequestOfferParticipantAmendmentParticipant'] =
+        GqlSResolversParentTypes['BookingRequestOfferParticipantAmendmentParticipant'],
+> = ResolversObject<{
+    name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    restrictions?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    type?: Resolver<GqlSResolversTypes['BookingRequestParticipantType'], ParentType, ContextType>;
+}>;
+
 export type GqlSBookingRequestOfferPaymentResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['BookingRequestOfferPayment'] = GqlSResolversParentTypes['BookingRequestOfferPayment'],
@@ -8964,6 +9067,7 @@ export type GqlSCookBookingRequestOfferResolvers<
     bookingRequestId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     bookingRequestOfferId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     callBookings?: Resolver<Array<GqlSResolversTypes['CookCallSlotBooking']>, ParentType, ContextType>;
+    canCompletePreparations?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     configuredMenu?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferConfiguredMenu']>, ParentType, ContextType>;
     cookAccepted?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
     cookDeclinationReason?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
@@ -8975,6 +9079,7 @@ export type GqlSCookBookingRequestOfferResolvers<
     isPriceAutoAdjusted?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
     menuPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     messages?: Resolver<Array<GqlSResolversTypes['HumanChatMessage']>, ParentType, ContextType>;
+    participantAmendment?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferParticipantAmendment']>, ParentType, ContextType>;
     payment?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferPayment']>, ParentType, ContextType>;
     paymentDateTime?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     paymentProviderFeeCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
@@ -8987,6 +9092,7 @@ export type GqlSCookBookingRequestOfferResolvers<
     platformFeeCentsCustomer?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     platformFeePercentCook?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     platformFeePercentCustomer?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    preparationsCompletedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestOfferStatus'], ParentType, ContextType>;
     suggestedMenus?: Resolver<Array<GqlSResolversTypes['CookMenu']>, ParentType, ContextType>;
     testimonialMissing?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
@@ -9301,6 +9407,24 @@ export type GqlSCookMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSCookMutationBookingRequestOfferDeclineArgs, 'bookingRequestOfferId' | 'reason'>
+    >;
+    bookingRequestOfferParticipantAmendmentAccept?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationBookingRequestOfferParticipantAmendmentAcceptArgs, 'bookingRequestOfferId'>
+    >;
+    bookingRequestOfferParticipantAmendmentDecline?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationBookingRequestOfferParticipantAmendmentDeclineArgs, 'bookingRequestOfferId'>
+    >;
+    bookingRequestOfferPreparationsComplete?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationBookingRequestOfferPreparationsCompleteArgs, 'bookingRequestOfferId'>
     >;
     bookingRequestOfferPriceUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -10336,6 +10460,7 @@ export type GqlSUserBookingRequestOfferResolvers<
     bookingRequestId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     bookingRequestOfferId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     callBookings?: Resolver<Array<GqlSResolversTypes['CookCallSlotBooking']>, ParentType, ContextType>;
+    canRequestParticipantAmendment?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     configuredMenu?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferConfiguredMenu']>, ParentType, ContextType>;
     cook?: Resolver<GqlSResolversTypes['PublicCook'], ParentType, ContextType>;
     cookAccepted?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -10347,6 +10472,7 @@ export type GqlSUserBookingRequestOfferResolvers<
     isPriceAutoAdjusted?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
     menuPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     messages?: Resolver<Array<GqlSResolversTypes['HumanChatMessage']>, ParentType, ContextType>;
+    participantAmendment?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferParticipantAmendment']>, ParentType, ContextType>;
     payment?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferPayment']>, ParentType, ContextType>;
     paymentDateTime?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     paymentProviderFeeCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
@@ -10359,6 +10485,7 @@ export type GqlSUserBookingRequestOfferResolvers<
     platformFeeCentsCustomer?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     platformFeePercentCook?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     platformFeePercentCustomer?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    preparationsCompletedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestOfferStatus'], ParentType, ContextType>;
     suggestedMenus?: Resolver<Array<GqlSResolversTypes['PublicCookMenu']>, ParentType, ContextType>;
     testimonialMissing?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
@@ -10551,6 +10678,12 @@ export type GqlSUserMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSUserMutationBookingRequestOfferDeclineArgs, 'bookingRequestOfferId' | 'reason'>
+    >;
+    bookingRequestOfferParticipantAmendmentCreate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs, 'bookingRequestOfferId' | 'participants'>
     >;
     bookingRequestOfferPaymentStatusUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -10804,6 +10937,8 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     BookingRequestOfferConfiguredMenu?: GqlSBookingRequestOfferConfiguredMenuResolvers<ContextType>;
     BookingRequestOfferConfiguredMenuCourse?: GqlSBookingRequestOfferConfiguredMenuCourseResolvers<ContextType>;
     BookingRequestOfferConfiguredMenuMeal?: GqlSBookingRequestOfferConfiguredMenuMealResolvers<ContextType>;
+    BookingRequestOfferParticipantAmendment?: GqlSBookingRequestOfferParticipantAmendmentResolvers<ContextType>;
+    BookingRequestOfferParticipantAmendmentParticipant?: GqlSBookingRequestOfferParticipantAmendmentParticipantResolvers<ContextType>;
     BookingRequestOfferPayment?: GqlSBookingRequestOfferPaymentResolvers<ContextType>;
     BookingRequestParticipant?: GqlSBookingRequestParticipantResolvers<ContextType>;
     Chat?: GqlSChatResolvers<ContextType>;
@@ -11073,6 +11208,9 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     | 'BOOKING_REQUEST_OFFER_DECLINED'
     | 'BOOKING_REQUEST_OFFER_MENU_UPDATED'
     | 'BOOKING_REQUEST_OFFER_NOT_CHOSEN'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED'
     | 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT'
     | 'BOOKING_REQUEST_UPDATED'
@@ -11104,6 +11242,9 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     | 'BOOKING_REQUEST_OFFER_DECLINED'
     | 'BOOKING_REQUEST_OFFER_MENU_UPDATED'
     | 'BOOKING_REQUEST_OFFER_NOT_CHOSEN'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED'
     | 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT'
     | 'BOOKING_REQUEST_UPDATED'
@@ -11136,6 +11277,9 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     'BOOKING_REQUEST_OFFER_DECLINED',
     'BOOKING_REQUEST_OFFER_MENU_UPDATED',
     'BOOKING_REQUEST_OFFER_NOT_CHOSEN',
+    'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED',
+    'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED',
+    'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED',
     'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED',
     'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
     'BOOKING_REQUEST_UPDATED',
@@ -11308,6 +11452,7 @@ export const GqlSBookingRequestStatusSchema: z.ZodType<
 export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'ADMIN_HANDED_OVER_CLOSED'
     | 'ADMIN_HANDED_OVER_TO_COOK'
+    | 'ADMIN_PREPARATIONS_CLEARED'
     | 'COOK_ACCEPTED'
     | 'COOK_CALL_SLOT_CANCELLED'
     | 'COOK_CALL_SLOT_CONFIRMED'
@@ -11316,6 +11461,9 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'COOK_CHANGED_PRICE'
     | 'COOK_CREATED'
     | 'COOK_DECLINED'
+    | 'COOK_PARTICIPANT_AMENDMENT_ACCEPTED'
+    | 'COOK_PARTICIPANT_AMENDMENT_DECLINED'
+    | 'COOK_PREPARATIONS_COMPLETED'
     | 'COOK_UPDATED_SUGGESTED_MENU'
     | 'SYSTEM_CHANGED_PRICE'
     | 'USER_ACCEPTED'
@@ -11329,12 +11477,14 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_DECLINED'
     | 'USER_LOCATION_UPDATED'
     | 'USER_PARTICIPANTS_UPDATED'
+    | 'USER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'USER_PREFERENCES_UPDATED'
     | 'USER_REQUESTED_MENU_CHANGES'
     | 'USER_RESTRICTIONS_UPDATED'
     | 'USER_TIME_UPDATED',
     | 'ADMIN_HANDED_OVER_CLOSED'
     | 'ADMIN_HANDED_OVER_TO_COOK'
+    | 'ADMIN_PREPARATIONS_CLEARED'
     | 'COOK_ACCEPTED'
     | 'COOK_CALL_SLOT_CANCELLED'
     | 'COOK_CALL_SLOT_CONFIRMED'
@@ -11343,6 +11493,9 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'COOK_CHANGED_PRICE'
     | 'COOK_CREATED'
     | 'COOK_DECLINED'
+    | 'COOK_PARTICIPANT_AMENDMENT_ACCEPTED'
+    | 'COOK_PARTICIPANT_AMENDMENT_DECLINED'
+    | 'COOK_PREPARATIONS_COMPLETED'
     | 'COOK_UPDATED_SUGGESTED_MENU'
     | 'SYSTEM_CHANGED_PRICE'
     | 'USER_ACCEPTED'
@@ -11356,6 +11509,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_DECLINED'
     | 'USER_LOCATION_UPDATED'
     | 'USER_PARTICIPANTS_UPDATED'
+    | 'USER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'USER_PREFERENCES_UPDATED'
     | 'USER_REQUESTED_MENU_CHANGES'
     | 'USER_RESTRICTIONS_UPDATED'
@@ -11363,6 +11517,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
 > = z.enum([
     'ADMIN_HANDED_OVER_CLOSED',
     'ADMIN_HANDED_OVER_TO_COOK',
+    'ADMIN_PREPARATIONS_CLEARED',
     'COOK_ACCEPTED',
     'COOK_CALL_SLOT_CANCELLED',
     'COOK_CALL_SLOT_CONFIRMED',
@@ -11371,6 +11526,9 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     'COOK_CHANGED_PRICE',
     'COOK_CREATED',
     'COOK_DECLINED',
+    'COOK_PARTICIPANT_AMENDMENT_ACCEPTED',
+    'COOK_PARTICIPANT_AMENDMENT_DECLINED',
+    'COOK_PREPARATIONS_COMPLETED',
     'COOK_UPDATED_SUGGESTED_MENU',
     'SYSTEM_CHANGED_PRICE',
     'USER_ACCEPTED',
@@ -11384,6 +11542,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     'USER_DECLINED',
     'USER_LOCATION_UPDATED',
     'USER_PARTICIPANTS_UPDATED',
+    'USER_PARTICIPANT_AMENDMENT_REQUESTED',
     'USER_PREFERENCES_UPDATED',
     'USER_REQUESTED_MENU_CHANGES',
     'USER_RESTRICTIONS_UPDATED',
@@ -11513,6 +11672,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT'
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_WALLET_STRIPE_BALANCE'
@@ -11524,6 +11684,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
+    | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT'
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_WALLET_STRIPE_BALANCE'
@@ -11536,6 +11697,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'ASSISTANT_COOK',
     'ASSISTANT_CUSTOMER',
     'BOOKING_REQUEST_OFFER_CHAT_REACTIONS',
+    'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT',
     'BOOKING_REQUEST_RESTRICTIONS',
     'COOK_BIOGRAPHY_AI_WRITE',
     'COOK_WALLET_STRIPE_BALANCE',

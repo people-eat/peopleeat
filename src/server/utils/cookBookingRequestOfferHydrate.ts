@@ -111,6 +111,8 @@ export async function cookBookingRequestOfferHydrate(
                 locale: DEFAULT_LOCALE,
                 callBookings: callBookingsByOfferId.get(offer.bookingRequestOfferId) ?? [],
                 suggestedMenus,
+                participants: participantsByRequestId.get(offer.bookingRequestId) ?? [],
+                participantCount: (participantsByRequestId.get(offer.bookingRequestId) ?? []).length,
                 bookingRequestContext: toGqlCookBookingRequestOfferContext({
                     bookingRequest,
                     participants: participantsByRequestId.get(offer.bookingRequestId) ?? [],

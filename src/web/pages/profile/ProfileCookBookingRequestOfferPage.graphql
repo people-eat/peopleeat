@@ -62,6 +62,22 @@ fragment ProfileCookBookingRequestOfferPageUser on User {
                 rating
             }
             testimonialMissing
+            preparationsCompletedAt
+            canCompletePreparations
+            participantAmendment {
+                requestedAt
+                participants {
+                    type
+                    name
+                    restrictions
+                }
+                menuPriceCentsBefore
+                menuPriceCentsAfter
+                totalCentsCustomerBefore
+                totalCentsCustomerAfter
+                payoutCentsCookBefore
+                payoutCentsCookAfter
+            }
             costBreakdown {
                 total {
                     title
@@ -163,6 +179,39 @@ mutation ProfileCookBookingRequestOfferAccept($bookingRequestOfferId: ID!) {
     user {
         cook {
             bookingRequestOfferAccept(bookingRequestOfferId: $bookingRequestOfferId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferParticipantAmendmentAccept($bookingRequestOfferId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferParticipantAmendmentAccept(bookingRequestOfferId: $bookingRequestOfferId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferParticipantAmendmentDecline($bookingRequestOfferId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferParticipantAmendmentDecline(bookingRequestOfferId: $bookingRequestOfferId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookBookingRequestOfferPreparationsComplete($bookingRequestOfferId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferPreparationsComplete(bookingRequestOfferId: $bookingRequestOfferId) {
                 success
                 referenceId
             }

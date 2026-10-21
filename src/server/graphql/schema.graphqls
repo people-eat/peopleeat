@@ -110,6 +110,11 @@ enum ChatMessageBookingRequestOfferEventType {
     ADMIN_HANDED_OVER_CLOSED
     ADMIN_HANDED_OVER_TO_COOK
     USER_PARTICIPANTS_UPDATED
+    USER_PARTICIPANT_AMENDMENT_REQUESTED
+    COOK_PARTICIPANT_AMENDMENT_ACCEPTED
+    COOK_PARTICIPANT_AMENDMENT_DECLINED
+    COOK_PREPARATIONS_COMPLETED
+    ADMIN_PREPARATIONS_CLEARED
     USER_RESTRICTIONS_UPDATED
     USER_DATE_UPDATED
     USER_TIME_UPDATED
@@ -1021,6 +1026,12 @@ type CookMutation {
     # Re-accept after customer material changes reset cookAccepted.
     bookingRequestOfferAccept(bookingRequestOfferId: ID!): MutationResult!
     bookingRequestOfferDecline(bookingRequestOfferId: ID!, reason: String!): MutationResult!
+    # Accept a pending participant amendment (reprice + Stripe delta). Gated by
+    # BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT.
+    bookingRequestOfferParticipantAmendmentAccept(bookingRequestOfferId: ID!): MutationResult!
+    bookingRequestOfferParticipantAmendmentDecline(bookingRequestOfferId: ID!): MutationResult!
+    # Mark groceries / preparations done — locks further customer amendments.
+    bookingRequestOfferPreparationsComplete(bookingRequestOfferId: ID!): MutationResult!
     bookingRequestOfferPriceUpdate(input: BookingRequestOfferPriceUpdate!): MutationResult!
     bookingRequestOfferSuggestedMenusUpdate(input: BookingRequestOfferSuggestedMenusUpdate!): MutationResult!
     # Append a free-text negotiation message (`COOK_MESSAGE_SIMPLE` event).
@@ -1167,6 +1178,25 @@ type BookingRequestOfferPayment {
     clientSecret: String!
     publishableKey: String!
     type: BookingRequestOfferPaymentDataType!
+}
+
+# Pending post–dual-accept participant amendment (cook-gated). See
+# docs/features/booking-offer-participant-amendment.md.
+type BookingRequestOfferParticipantAmendmentParticipant {
+    type: BookingRequestParticipantType!
+    name: String!
+    restrictions: [String!]!
+}
+
+type BookingRequestOfferParticipantAmendment {
+    requestedAt: DateTime!
+    participants: [BookingRequestOfferParticipantAmendmentParticipant!]!
+    menuPriceCentsBefore: Int!
+    menuPriceCentsAfter: Int!
+    totalCentsCustomerBefore: Int!
+    totalCentsCustomerAfter: Int!
+    payoutCentsCookBefore: Int!
+    payoutCentsCookAfter: Int!
 }
 
 type CookCallSlotBookingCustomer {
@@ -1545,6 +1575,12 @@ type UserBookingRequestOffer {
     # True once the offer is eligible for a review and none has been submitted
     # yet — drives a "leave a review" prompt on the offer page.
     testimonialMissing: Boolean!
+    # Post–dual-accept groceries / prep lock (null when not marked).
+    preparationsCompletedAt: DateTime
+    # Pending cook-gated participant amendment, if any.
+    participantAmendment: BookingRequestOfferParticipantAmendment
+    # True when the customer may propose a participant amendment (ignores feature toggle).
+    canRequestParticipantAmendment: Boolean!
 }
 
 # Lean request context on cook offer inbox rows — no nested `offers` (avoids recursion).
@@ -1620,6 +1656,10 @@ type CookBookingRequestOffer {
     # True once the offer is eligible for a review and none has been submitted
     # yet — drives a "leave a review" prompt on the offer page.
     testimonialMissing: Boolean!
+    preparationsCompletedAt: DateTime
+    participantAmendment: BookingRequestOfferParticipantAmendment
+    # True when the cook may mark groceries / preparations done (ignores feature toggle).
+    canCompletePreparations: Boolean!
 }
 
 # Admin offer — cook nested as AdminCook.
@@ -1681,6 +1721,10 @@ type AdminBookingRequestOffer {
     bookingRequest: AdminBookingRequest!
     customerTestimonial: AdminCustomerTestimonial
     cookTestimonial: AdminCookTestimonial
+    preparationsCompletedAt: DateTime
+    participantAmendment: BookingRequestOfferParticipantAmendment
+    canRequestParticipantAmendment: Boolean!
+    canCompletePreparations: Boolean!
     # Lazy — pending pg-boss jobs for this offer (pull, reminders, chat notify, …).
     # Do not request on list cards.
     queuedJobs: [AdminQueuedJob!]!
@@ -2439,6 +2483,12 @@ type UserMutation {
     ): MutationResult!
     # Dual-accept an offer and prepare Stripe (SetupIntent / PaymentIntent / €0 transfer).
     bookingRequestOfferAccept(bookingRequestOfferId: ID!): MutationResult!
+    # Propose a post–dual-accept participant change (cook must accept). Gated by
+    # BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT. Returns offer id as referenceId.
+    bookingRequestOfferParticipantAmendmentCreate(
+        bookingRequestOfferId: ID!
+        participants: [UserBookingRequestParticipantCreate!]!
+    ): MutationResult!
     # After Elements confirms SI/PI — advances paymentStatus and stores invoice address.
     bookingRequestOfferPaymentStatusUpdate(bookingRequestOfferId: ID!, invoiceAddress: InvoiceAddressInput!): MutationResult!
     bookingRequestOfferDecline(bookingRequestOfferId: ID!, reason: String!): MutationResult!
@@ -3761,6 +3811,9 @@ enum AdminOutboundEmailPurpose {
     BOOKING_REQUEST_OFFER_ACCEPTED
     BOOKING_REQUEST_OFFER_NOT_CHOSEN
     BOOKING_REQUEST_OFFER_DECLINED
+    BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED
+    BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED
+    BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED
     BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED
     BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT
     TESTIMONIAL_MEMORY_NUDGE_CUSTOMER
@@ -4159,6 +4212,8 @@ type AdminMutation {
     # Idempotent when already transferred / out-of-system / `payoutDateTime` set.
     # Returns `bookingRequestOfferId` as `referenceId`.
     bookingRequestOfferPayoutRelease(bookingRequestOfferId: ID!): MutationResult!
+    # Clear cook preparations / groceries lock so the customer can amend again.
+    bookingRequestOfferPreparationsClear(bookingRequestOfferId: ID!): MutationResult!
     # Marks a due PAYED offer as paid outside Stripe (wire / cash / goodwill).
     # Sets `PAYED_OUT_OF_SYSTEM` + `payoutDateTime`. No Stripe call. Idempotent
     # when already transferred / out-of-system / `payoutDateTime` set.
@@ -5120,6 +5175,7 @@ enum FeatureToggleKey {
     COOK_WALLET_STRIPE_BALANCE
     BOOKING_REQUEST_RESTRICTIONS
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS
+    BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT
     ASSISTANT_CUSTOMER
     ASSISTANT_COOK
     PUBLICATION_MEALS

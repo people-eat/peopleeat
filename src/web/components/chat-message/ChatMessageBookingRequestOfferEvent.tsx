@@ -123,7 +123,13 @@ function offerEventIcon(type: GqlCChatMessageBookingRequestOfferEventType): Luci
         case 'COOK_CALL_SLOT_REQUESTED':
             return PhoneIcon;
         case 'USER_PARTICIPANTS_UPDATED':
+        case 'USER_PARTICIPANT_AMENDMENT_REQUESTED':
+        case 'COOK_PARTICIPANT_AMENDMENT_ACCEPTED':
+        case 'COOK_PARTICIPANT_AMENDMENT_DECLINED':
             return UsersIcon;
+        case 'COOK_PREPARATIONS_COMPLETED':
+        case 'ADMIN_PREPARATIONS_CLEARED':
+            return UtensilsIcon;
         case 'USER_LOCATION_UPDATED':
             return MapPinIcon;
         case 'USER_DATE_UPDATED':
@@ -153,6 +159,20 @@ function chatMessageBookingRequestOfferEventLabel(type: GqlCChatMessageBookingRe
             ADMIN_HANDED_OVER_CLOSED: { de: 'Von Concierge geschlossen', en: 'Closed by concierge' },
             ADMIN_HANDED_OVER_TO_COOK: { de: 'Von Concierge übergeben', en: 'Handed over by concierge' },
             USER_PARTICIPANTS_UPDATED: { de: 'Teilnehmer aktualisiert', en: 'Participants updated' },
+            USER_PARTICIPANT_AMENDMENT_REQUESTED: {
+                de: 'Teilnehmeränderung vorgeschlagen',
+                en: 'Participant change proposed',
+            },
+            COOK_PARTICIPANT_AMENDMENT_ACCEPTED: {
+                de: 'Teilnehmeränderung angenommen',
+                en: 'Participant change accepted',
+            },
+            COOK_PARTICIPANT_AMENDMENT_DECLINED: {
+                de: 'Teilnehmeränderung abgelehnt',
+                en: 'Participant change declined',
+            },
+            COOK_PREPARATIONS_COMPLETED: { de: 'Einkauf / Vorbereitung erledigt', en: 'Shopping / preparations done' },
+            ADMIN_PREPARATIONS_CLEARED: { de: 'Vorbereitungssperre aufgehoben', en: 'Preparations lock cleared' },
             USER_RESTRICTIONS_UPDATED: { de: 'Einschränkungen aktualisiert', en: 'Restrictions updated' },
             USER_DATE_UPDATED: { de: 'Datum aktualisiert', en: 'Date updated' },
             USER_TIME_UPDATED: { de: 'Uhrzeit aktualisiert', en: 'Time updated' },

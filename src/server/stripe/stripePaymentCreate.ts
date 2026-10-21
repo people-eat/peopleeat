@@ -273,10 +273,17 @@ export function stripePaymentCreate({
 
         async paymentIntentRefund(paymentIntentId, amount) {
             const stripe = clientRequire();
-            await stripe.refunds.create({
+            const refund = await stripe.refunds.create({
                 payment_intent: paymentIntentId,
                 ...(amount != null ? { amount } : {}),
             });
+            return { refundId: refund.id };
+        },
+
+        async paymentIntentPaymentMethodIdFindOne(paymentIntentId) {
+            const stripe = clientRequire();
+            const { payment_method: paymentMethod } = await stripe.paymentIntents.retrieve(paymentIntentId);
+            return typeof paymentMethod === 'string' ? paymentMethod : paymentMethod?.id;
         },
 
         async paymentIntentDestinationTransferIdFindOne(paymentIntentId) {
@@ -521,9 +528,9 @@ export function stripePaymentCreate({
             return { transferId: transfer.id };
         },
 
-        async transferReverse({ transferId }: StripeTransferReverse) {
+        async transferReverse({ transferId, amountCents }: StripeTransferReverse) {
             const stripe = clientRequire();
-            await stripe.transfers.createReversal(transferId);
+            await stripe.transfers.createReversal(transferId, amountCents != null ? { amount: amountCents } : undefined);
         },
 
         async payoutCreate({ destinationAccountId, amount }: StripePayoutCreate): Promise<StripePayoutCreateResult> {

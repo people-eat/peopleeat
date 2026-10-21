@@ -30,6 +30,7 @@ import { adminBookingRequestOfferHandover } from '../commands/adminBookingReques
 import { adminBookingRequestOfferPayoutAlreadyTookPlaceCheck } from '../commands/adminBookingRequestOfferPayoutAlreadyTookPlaceCheck';
 import { adminBookingRequestOfferPayoutMarkOutOfSystem } from '../commands/adminBookingRequestOfferPayoutMarkOutOfSystem';
 import { adminBookingRequestOfferPayoutRelease } from '../commands/adminBookingRequestOfferPayoutRelease';
+import { adminBookingRequestOfferPreparationsClear } from '../commands/adminBookingRequestOfferPreparationsClear';
 import { adminBookingRequestOfferUpdate } from '../commands/adminBookingRequestOfferUpdate';
 import { adminBookingRequestPublicationApprove } from '../commands/adminBookingRequestPublicationApprove';
 import { adminBookingRequestUpdate } from '../commands/adminBookingRequestUpdate';
@@ -133,6 +134,9 @@ import { cookBookingRequestOfferCallSlotRequest } from '../commands/cookBookingR
 import { cookBookingRequestOfferChatMessageCreate } from '../commands/cookBookingRequestOfferChatMessageCreate';
 import { cookBookingRequestOfferCreate } from '../commands/cookBookingRequestOfferCreate';
 import { cookBookingRequestOfferDecline } from '../commands/cookBookingRequestOfferDecline';
+import { cookBookingRequestOfferParticipantAmendmentAccept } from '../commands/cookBookingRequestOfferParticipantAmendmentAccept';
+import { cookBookingRequestOfferParticipantAmendmentDecline } from '../commands/cookBookingRequestOfferParticipantAmendmentDecline';
+import { cookBookingRequestOfferPreparationsComplete } from '../commands/cookBookingRequestOfferPreparationsComplete';
 import { cookBookingRequestOfferPriceUpdate } from '../commands/cookBookingRequestOfferPriceUpdate';
 import { cookBookingRequestOfferSuggestedMenusUpdate } from '../commands/cookBookingRequestOfferSuggestedMenusUpdate';
 import { cookBookingRequestOfferTestimonialCreate } from '../commands/cookBookingRequestOfferTestimonialCreate';
@@ -183,6 +187,7 @@ import { userBookingRequestOfferCallSlotRequest } from '../commands/userBookingR
 import { userBookingRequestOfferChatMessageCreate } from '../commands/userBookingRequestOfferChatMessageCreate';
 import { userBookingRequestOfferConfiguredMenuCreate } from '../commands/userBookingRequestOfferConfiguredMenuCreate';
 import { userBookingRequestOfferDecline } from '../commands/userBookingRequestOfferDecline';
+import { userBookingRequestOfferParticipantAmendmentCreate } from '../commands/userBookingRequestOfferParticipantAmendmentCreate';
 import { userBookingRequestOfferPaymentStatusUpdate } from '../commands/userBookingRequestOfferPaymentStatusUpdate';
 import { userBookingRequestOfferTestimonialCreate } from '../commands/userBookingRequestOfferTestimonialCreate';
 import { userBookingRequestOfferUnreadNotificationCountReset } from '../commands/userBookingRequestOfferUnreadNotificationCountReset';
@@ -501,6 +506,7 @@ import type {
     GqlSAdminMutationBookingRequestOfferPayoutAlreadyTookPlaceCheckArgs,
     GqlSAdminMutationBookingRequestOfferPayoutMarkOutOfSystemArgs,
     GqlSAdminMutationBookingRequestOfferPayoutReleaseArgs,
+    GqlSAdminMutationBookingRequestOfferPreparationsClearArgs,
     GqlSAdminMutationBookingRequestOfferUpdateArgs,
     GqlSAdminMutationBookingRequestPublicationApproveArgs,
     GqlSAdminMutationBookingRequestUpdateArgs,
@@ -643,6 +649,9 @@ import type {
     GqlSCookMutationBookingRequestOfferChatMessageReactionUpsertArgs,
     GqlSCookMutationBookingRequestOfferCreateArgs,
     GqlSCookMutationBookingRequestOfferDeclineArgs,
+    GqlSCookMutationBookingRequestOfferParticipantAmendmentAcceptArgs,
+    GqlSCookMutationBookingRequestOfferParticipantAmendmentDeclineArgs,
+    GqlSCookMutationBookingRequestOfferPreparationsCompleteArgs,
     GqlSCookMutationBookingRequestOfferPriceUpdateArgs,
     GqlSCookMutationBookingRequestOfferSuggestedMenusUpdateArgs,
     GqlSCookMutationBookingRequestOfferTestimonialCreateArgs,
@@ -729,6 +738,7 @@ import type {
     GqlSUserMutationBookingRequestOfferChatMessageReactionUpsertArgs,
     GqlSUserMutationBookingRequestOfferConfiguredMenuCreateArgs,
     GqlSUserMutationBookingRequestOfferDeclineArgs,
+    GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs,
     GqlSUserMutationBookingRequestOfferPaymentStatusUpdateArgs,
     GqlSUserMutationBookingRequestOfferTestimonialCreateArgs,
     GqlSUserMutationBookingRequestOfferUnreadNotificationCountResetArgs,
@@ -1719,6 +1729,27 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return cookBookingRequestOfferDecline(parent, args, requestingSession, serverRuntime);
             },
+            bookingRequestOfferParticipantAmendmentAccept(
+                parent: GqlSCookMutation,
+                args: GqlSCookMutationBookingRequestOfferParticipantAmendmentAcceptArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return cookBookingRequestOfferParticipantAmendmentAccept(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferParticipantAmendmentDecline(
+                parent: GqlSCookMutation,
+                args: GqlSCookMutationBookingRequestOfferParticipantAmendmentDeclineArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return cookBookingRequestOfferParticipantAmendmentDecline(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferPreparationsComplete(
+                parent: GqlSCookMutation,
+                args: GqlSCookMutationBookingRequestOfferPreparationsCompleteArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return cookBookingRequestOfferPreparationsComplete(parent, args, requestingSession, serverRuntime);
+            },
             bookingRequestOfferPriceUpdate(
                 parent: GqlSCookMutation,
                 args: GqlSCookMutationBookingRequestOfferPriceUpdateArgs,
@@ -2173,6 +2204,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return adminBookingRequestCooksNotify(parent, args, requestingSession, serverRuntime);
             },
+            bookingRequestOfferPreparationsClear(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationBookingRequestOfferPreparationsClearArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestOfferPreparationsClear(parent, args, requestingSession, serverRuntime);
+            },
             bookingRequestOfferPayoutRelease(
                 parent: GqlSAdminMutation,
                 args: GqlSAdminMutationBookingRequestOfferPayoutReleaseArgs,
@@ -2439,6 +2477,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return userBookingRequestOfferAccept(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferParticipantAmendmentCreate(
+                parent: GqlSUserMutation,
+                args: GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return userBookingRequestOfferParticipantAmendmentCreate(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestOfferPaymentStatusUpdate(
                 parent: GqlSUserMutation,

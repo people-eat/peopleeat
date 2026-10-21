@@ -32,6 +32,23 @@ fragment AdminBookingRequestOfferPageOffer on AdminBookingRequestOffer {
     cookPayoutBlockedReason
     stripePaymentIntentUrl
     stripeSetupIntentUrl
+    preparationsCompletedAt
+    canRequestParticipantAmendment
+    canCompletePreparations
+    participantAmendment {
+        requestedAt
+        participants {
+            type
+            name
+            restrictions
+        }
+        menuPriceCentsBefore
+        menuPriceCentsAfter
+        totalCentsCustomerBefore
+        totalCentsCustomerAfter
+        payoutCentsCookBefore
+        payoutCentsCookAfter
+    }
     createdAt
     configuredMenu {
         menuId
@@ -327,6 +344,15 @@ mutation AdminBookingRequestOfferCallLeave($bookingRequestOfferCallRoomParticipa
 mutation AdminBookingRequestOfferCallSlotDecline($cookCallSlotBookingId: ID!, $onBehalfOf: CookCallSlotBookingActor!, $reason: String) {
     admin {
         bookingRequestOfferCallSlotDecline(cookCallSlotBookingId: $cookCallSlotBookingId, onBehalfOf: $onBehalfOf, reason: $reason) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferPreparationsClear($bookingRequestOfferId: ID!) {
+    admin {
+        bookingRequestOfferPreparationsClear(bookingRequestOfferId: $bookingRequestOfferId) {
             success
             referenceId
         }

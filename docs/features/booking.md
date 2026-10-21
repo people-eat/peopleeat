@@ -5,18 +5,19 @@ Index only — marketplace booking journey and where each slice lives. This is *
 peopleeat’s private-chef marketplace loop: customer request → cook pool / offer → negotiate → dual accept → payment → event → admin-gated
 cook payout. **Go-live path is live** (form, pool, offers, chat, payment, calls, admin ops).
 
-| Concern                                                              | Doc                                                                |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Create request (form, publication, customer list/detail/edit/cancel) | [booking-request-create.md](./booking-request-create.md)           |
-| Offers (cook pool, offer create, dual accept, negotiation surfaces)  | [booking-offers.md](./booking-offers.md)                           |
-| AI menu evaluation (pool open ranking + inventory recommendation)    | [ai-menu-evaluation.md](./ai-menu-evaluation.md)                   |
-| Offer chat (timeline, concierge presence, phone block, chat emails)  | [booking-offer-chat.md](./booking-offer-chat.md)                   |
-| Admin offer-chat review pipeline                                     | [admin-offer-chat-review.md](./admin-offer-chat-review.md)         |
-| Payment (checkout, pull charge, confirmation, cook payout)           | [booking-payment.md](./booking-payment.md)                         |
-| Discovery calls + slots                                              | [booking-request-offer-calls.md](./booking-request-offer-calls.md) |
-| Call recordings / transcripts                                        | [call-recordings.md](./call-recordings.md)                         |
-| Admin booking ops                                                    | [admin-booking-requests.md](./admin-booking-requests.md)           |
-| Structural decisions (schema, GraphQL, fees)                         | [architecture/booking.md](../architecture/booking.md)              |
+| Concern                                                              | Doc                                                                                |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Create request (form, publication, customer list/detail/edit/cancel) | [booking-request-create.md](./booking-request-create.md)                           |
+| Offers (cook pool, offer create, dual accept, negotiation surfaces)  | [booking-offers.md](./booking-offers.md)                                           |
+| AI menu evaluation (pool open ranking + inventory recommendation)    | [ai-menu-evaluation.md](./ai-menu-evaluation.md)                                   |
+| Offer chat (timeline, concierge presence, phone block, chat emails)  | [booking-offer-chat.md](./booking-offer-chat.md)                                   |
+| Admin offer-chat review pipeline                                     | [admin-offer-chat-review.md](./admin-offer-chat-review.md)                         |
+| Payment (checkout, pull charge, confirmation, cook payout)           | [booking-payment.md](./booking-payment.md)                                         |
+| Post-accept participant amendment (cook-gated + prep lock)           | [booking-offer-participant-amendment.md](./booking-offer-participant-amendment.md) |
+| Discovery calls + slots                                              | [booking-request-offer-calls.md](./booking-request-offer-calls.md)                 |
+| Call recordings / transcripts                                        | [call-recordings.md](./call-recordings.md)                                         |
+| Admin booking ops                                                    | [admin-booking-requests.md](./admin-booking-requests.md)                           |
+| Structural decisions (schema, GraphQL, fees)                         | [architecture/booking.md](../architecture/booking.md)                              |
 
 ## Journey (overview)
 

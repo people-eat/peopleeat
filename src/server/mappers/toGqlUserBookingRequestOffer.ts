@@ -9,7 +9,11 @@ export type ToGqlUserBookingRequestOfferInput = BookingRequestOfferFieldsInput &
 
 export function toGqlUserBookingRequestOffer(input: ToGqlUserBookingRequestOfferInput): GqlSUserBookingRequestOffer {
     const { cook, suggestedMenus = [], ...fieldsInput } = input;
-    const { cookUnreadNotificationCount: _cookUnread, ...fields } = bookingRequestOfferFieldsBuild(fieldsInput);
+    const {
+        cookUnreadNotificationCount: _cookUnread,
+        canCompletePreparations: _canCompletePreparations,
+        ...fields
+    } = bookingRequestOfferFieldsBuild(fieldsInput);
     return {
         ...fields,
         cook,

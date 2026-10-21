@@ -104,6 +104,8 @@ locks.
 1. **High — Customer menu-change request** — Let the customer ask for menu tweaks before accepting (status path partly exists; customer
    mutation + cook email still missing). See [Ideas](#customer-menu-change-request).
 2. ~~**Low — AI menu evaluation**~~ — Shipped; see [ai-menu-evaluation.md](./ai-menu-evaluation.md).
+3. ~~**Post-accept participant amendment**~~ — Shipped behind feature toggle; see
+   [booking-offer-participant-amendment.md](./booking-offer-participant-amendment.md).
 
 ## Ideas
 

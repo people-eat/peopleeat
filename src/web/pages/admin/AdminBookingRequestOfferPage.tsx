@@ -53,6 +53,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/t
 import { BookingRequestOfferAttentionBanner } from '../../components/BookingRequestOfferAttentionBanner';
 import { BookingRequestOfferCallTab } from '../../components/BookingRequestOfferCallTab';
 import { BookingRequestOfferChat } from '../../components/BookingRequestOfferChat';
+import { BookingRequestOfferParticipantAmendmentAdminPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import { BookingRequestOfferCostOverviewPanel } from '../../components/BookingRequestOfferPriceConfigurationPanel';
 import { bookingRequestOfferStatusClassName } from '../../components/bookingRequestOfferStatus';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
@@ -79,6 +80,7 @@ import {
     AdminBookingRequestOfferPayoutAlreadyTookPlaceCheckDocument,
     AdminBookingRequestOfferPayoutMarkOutOfSystemDocument,
     AdminBookingRequestOfferPayoutReleaseDocument,
+    AdminBookingRequestOfferPreparationsClearDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
@@ -844,6 +846,7 @@ function OfferMetaTabPanel({
     locale: Locale;
     timeZone: string;
 }) {
+    const [{ fetching: preparationsClearBusy }, clearPreparations] = useMutation(AdminBookingRequestOfferPreparationsClearDocument);
     const cookDisplayName = userDisplayName(offer.cook.user);
     const cookProfilePictureUrl = offer.cook.user.profilePicture?.url ?? null;
     const customerDisplayName = request ? adminBookingRequestCustomerLabel(request.customer) : null;
@@ -852,6 +855,30 @@ function OfferMetaTabPanel({
 
     return (
         <div className="@container grid max-w-3xl gap-4">
+            <BookingRequestOfferParticipantAmendmentAdminPanel
+                locale={locale}
+                amendment={offer.participantAmendment}
+                preparationsCompletedAt={offer.preparationsCompletedAt}
+                busy={preparationsClearBusy}
+                onClearPreparations={async () => {
+                    const result = await clearPreparations({ bookingRequestOfferId: offer.bookingRequestOfferId });
+                    if (result.error || !result.data?.admin.bookingRequestOfferPreparationsClear.success) {
+                        toast.error(
+                            {
+                                de: 'Sperre konnte nicht aufgehoben werden.',
+                                en: 'Could not clear the preparations lock.',
+                            }[locale],
+                        );
+                        return;
+                    }
+                    toast.success(
+                        {
+                            de: 'Vorbereitungssperre aufgehoben.',
+                            en: 'Preparations lock cleared.',
+                        }[locale],
+                    );
+                }}
+            />
             <div className="grid items-start gap-4 @2xl:grid-cols-2">
                 <Card className="gap-0 py-4">
                     <CardContent className="grid gap-3 px-4">

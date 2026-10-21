@@ -17,6 +17,7 @@ Keys today:
 - Cook wallet Stripe balance (live Connect balance + recent transactions on `/profile/wallet`)
 - Booking request restrictions
 - Offer chat emoji reactions
+- Offer participant amendment after accept (cook-gated headcount change + prep lock)
 - Customer assistant
 - Cook assistant
 - Meal publication
@@ -84,6 +85,10 @@ Wired today:
   cook **and admin** offer chat; admin shells mount the session toggle provider and gate this key with `gateInAdminShell` (unlike
   publication / restrictions, which stay visible for ops when the end-user rollout is off). Mutation
   `bookingRequestOfferChatMessageReactionUpsert` rejects when off for the acting `userId`
+- **Offer participant amendment** (`BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`) — post–dual-accept headcount change (customer propose →
+  cook accept/decline → Stripe delta) plus cook preparations/groceries lock; see
+  [booking-offer-participant-amendment.md](./booking-offer-participant-amendment.md). Customer/cook mutations reject when off for the acting
+  `userId`. Admin shells keep prep clear / amendment visibility for ops
 - **Cook biography AI writing** (`COOK_BIOGRAPHY_AI_WRITE`) — shows Write / Improve with AI on the cook chef-profile editor; cook and admin
   suggest mutations reject when off for the **cook** `userId`. Biography **summary** generation (auto job on cook save + admin Generate
   summary) is not toggled and always runs. Admin shells keep the AI write button visible for ops (same as publication / restrictions); the

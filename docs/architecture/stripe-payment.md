@@ -67,8 +67,10 @@ a Stripe retrieve failure (stale or fixture `acct_…` id) marks the cook not pa
 | `PAYED_OUT_OF_SYSTEM`        | DB-only after admin confirm                                                                                                                                   |
 | `TRANSFERRED`                | Blocked (bank payout already left Connect)                                                                                                                    |
 
-Top-up Connect transfers persist as `paymentData.extraTransferId`. `paymentIntentRefund` exists on `StripePayment` for future delta/refund
-paths; handover of equal-price `PAYED` offers prefers reverse + retransfer so the customer is not re-charged.
+Top-up Connect transfers persist as `paymentData.extraTransferId`. `paymentIntentRefund` returns `{ refundId }` and is used by post-accept
+participant amendments (partial refunds). `transferReverse` accepts optional `amountCents` for partial Connect reversals on decreases;
+handover of equal-price `PAYED` offers still prefers full reverse + retransfer so the customer is not re-charged. See
+[booking-offer-participant-amendment.md](../features/booking-offer-participant-amendment.md).
 
 ### Env
 

@@ -50,6 +50,13 @@
             "when": 1792427653683,
             "tag": "0006_blushing_terror",
             "breakpoints": true
+        },
+        {
+            "idx": 7,
+            "version": "7",
+            "when": 1792582302875,
+            "tag": "0007_amusing_spiral",
+            "breakpoints": true
         }
     ]
 }

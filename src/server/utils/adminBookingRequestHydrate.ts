@@ -149,6 +149,7 @@ export async function adminBookingRequestHydrate(rows: BookingRequest[], serverR
                     promoCode,
                     giftCard,
                     participantCount: requestParticipants.length,
+                    participants: requestParticipants,
                 }),
             );
         }

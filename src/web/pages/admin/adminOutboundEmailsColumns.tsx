@@ -52,6 +52,18 @@ export function adminOutboundEmailPurposeLabel(purpose: GqlCAdminOutboundEmailPu
         BOOKING_REQUEST_OFFER_ACCEPTED: { de: 'Angebot akzeptiert', en: 'Offer accepted' },
         BOOKING_REQUEST_OFFER_NOT_CHOSEN: { de: 'Anfrage anderweitig vergeben', en: 'Request went elsewhere' },
         BOOKING_REQUEST_OFFER_DECLINED: { de: 'Angebot abgelehnt', en: 'Offer declined' },
+        BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED: {
+            de: 'Teilnehmeränderung vorgeschlagen',
+            en: 'Participant amendment requested',
+        },
+        BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED: {
+            de: 'Teilnehmeränderung angenommen',
+            en: 'Participant amendment accepted',
+        },
+        BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED: {
+            de: 'Teilnehmeränderung abgelehnt',
+            en: 'Participant amendment declined',
+        },
         BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED: { de: 'Buchungsbestätigung', en: 'Booking confirmation' },
         BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT: { de: 'Zahlungseinzug angekündigt', en: 'Pull payment announced' },
         TESTIMONIAL_MEMORY_NUDGE_CUSTOMER: { de: 'Erinnerungs-Nudge (Kunde)', en: 'Memory nudge (customer)' },

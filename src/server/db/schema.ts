@@ -39,6 +39,7 @@ import type {
     BookingRequestOfferConfiguredMenu,
     BookingRequestOfferEventPayload,
     BookingRequestOfferEventType,
+    BookingRequestOfferParticipantAmendment,
     BookingRequestOfferPaymentData,
     BookingRequestOfferPaymentStatus,
     BookingRequestParticipantType,
@@ -1615,6 +1616,10 @@ export const bookingRequestOffers = pgTable(
         configuredMenu: jsonb().$type<BookingRequestOfferConfiguredMenu>(),
         paymentData: jsonb().$type<BookingRequestOfferPaymentData>(),
         paymentStatus: varchar().$type<BookingRequestOfferPaymentStatus>().notNull().default('EMPTY'),
+        // Post–dual-accept groceries / prep lock — blocks customer participant amendments.
+        preparationsCompletedAt: timestamp({ withTimezone: true }),
+        // Pending cook-gated participant amendment (null when none).
+        participantAmendment: jsonb().$type<BookingRequestOfferParticipantAmendment>(),
         plannedPaymentPullDateTime: timestamp({ withTimezone: true }),
         paymentDateTime: timestamp({ withTimezone: true }),
         plannedPayoutDateTime: timestamp({ withTimezone: true }),

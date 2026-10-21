@@ -70,6 +70,8 @@ export interface StripeTransferCreateResult {
 
 export interface StripeTransferReverse {
     transferId: string;
+    /** Partial reverse in cents; omit to reverse the full transfer. */
+    amountCents?: number;
 }
 
 export interface StripePayoutCreate {
@@ -199,7 +201,8 @@ export interface StripePayment {
     ) => Promise<StripePaymentIntentCreateResult>;
     paymentIntentSucceededCheck: (paymentIntentId: string) => Promise<boolean>;
     paymentIntentCancel: (paymentIntentId: string) => Promise<void>;
-    paymentIntentRefund: (paymentIntentId: string, amount?: number) => Promise<void>;
+    paymentIntentRefund: (paymentIntentId: string, amount?: number) => Promise<{ refundId: string }>;
+    paymentIntentPaymentMethodIdFindOne: (paymentIntentId: string) => Promise<string | undefined>;
     paymentIntentDestinationTransferIdFindOne: (paymentIntentId: string) => Promise<string | undefined>;
 
     accountCreate: (options: StripeAccountCreate) => Promise<StripeAccountCreateResult>;

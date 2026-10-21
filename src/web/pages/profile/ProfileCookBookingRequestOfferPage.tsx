@@ -25,6 +25,7 @@ import { Textarea } from '../../components/base/textarea';
 import { BookingRequestOfferAttentionBanner } from '../../components/BookingRequestOfferAttentionBanner';
 import { BookingRequestOfferCallTab } from '../../components/BookingRequestOfferCallTab';
 import { BookingRequestOfferChat } from '../../components/BookingRequestOfferChat';
+import { BookingRequestOfferParticipantAmendmentCookPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import { BookingRequestOfferCostOverviewPanel } from '../../components/BookingRequestOfferPriceConfigurationPanel';
 import { bookingRequestOfferStatusClassName, bookingRequestOfferStatusLabel } from '../../components/bookingRequestOfferStatus';
 import { BookingRequestOfferTestimonialPanel } from '../../components/BookingRequestOfferTestimonialPanel';
@@ -50,6 +51,9 @@ import {
     ProfileCookBookingRequestOfferChatMessageReactionUpsertDocument,
     ProfileCookBookingRequestOfferDeclineDocument,
     ProfileCookBookingRequestOfferPageUpdatesDocument,
+    ProfileCookBookingRequestOfferParticipantAmendmentAcceptDocument,
+    ProfileCookBookingRequestOfferParticipantAmendmentDeclineDocument,
+    ProfileCookBookingRequestOfferPreparationsCompleteDocument,
     ProfileCookBookingRequestOfferUnreadNotificationCountResetDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
@@ -142,6 +146,11 @@ export function ProfileCookBookingRequestOfferPage({
 
     const [, acceptOffer] = useMutation(ProfileCookBookingRequestOfferAcceptDocument);
     const [, declineOffer] = useMutation(ProfileCookBookingRequestOfferDeclineDocument);
+    const [{ fetching: amendmentBusy }, acceptParticipantAmendment] = useMutation(
+        ProfileCookBookingRequestOfferParticipantAmendmentAcceptDocument,
+    );
+    const [, declineParticipantAmendment] = useMutation(ProfileCookBookingRequestOfferParticipantAmendmentDeclineDocument);
+    const [, completePreparations] = useMutation(ProfileCookBookingRequestOfferPreparationsCompleteDocument);
     const [, sendChatMessage] = useMutation(ProfileCookBookingRequestOfferChatMessageCreateDocument);
     const [, upsertOfferChatReaction] = useMutation(ProfileCookBookingRequestOfferChatMessageReactionUpsertDocument);
     const [, resetUnread] = useMutation(ProfileCookBookingRequestOfferUnreadNotificationCountResetDocument);
@@ -411,8 +420,62 @@ export function ProfileCookBookingRequestOfferPage({
                         locale={locale}
                         canNegotiate={canNegotiate}
                         canReAccept={canReAccept}
-                        busy={busy}
+                        busy={busy || amendmentBusy}
                         onAccept={() => void onAccept()}
+                        onAcceptParticipantAmendment={async () => {
+                            const result = await acceptParticipantAmendment({ bookingRequestOfferId });
+                            if (result.error || !result.data?.user.cook?.bookingRequestOfferParticipantAmendmentAccept.success) {
+                                toast.error(
+                                    {
+                                        de: 'Die Teilnehmeränderung konnte nicht angenommen werden.',
+                                        en: 'Could not accept the participant change.',
+                                    }[locale],
+                                );
+                                return;
+                            }
+                            toast.success(
+                                {
+                                    de: 'Teilnehmeränderung angenommen.',
+                                    en: 'Participant change accepted.',
+                                }[locale],
+                            );
+                        }}
+                        onDeclineParticipantAmendment={async () => {
+                            const result = await declineParticipantAmendment({ bookingRequestOfferId });
+                            if (result.error || !result.data?.user.cook?.bookingRequestOfferParticipantAmendmentDecline.success) {
+                                toast.error(
+                                    {
+                                        de: 'Die Teilnehmeränderung konnte nicht abgelehnt werden.',
+                                        en: 'Could not decline the participant change.',
+                                    }[locale],
+                                );
+                                return;
+                            }
+                            toast.success(
+                                {
+                                    de: 'Teilnehmeränderung abgelehnt.',
+                                    en: 'Participant change declined.',
+                                }[locale],
+                            );
+                        }}
+                        onPreparationsComplete={async () => {
+                            const result = await completePreparations({ bookingRequestOfferId });
+                            if (result.error || !result.data?.user.cook?.bookingRequestOfferPreparationsComplete.success) {
+                                toast.error(
+                                    {
+                                        de: 'Einkauf konnte nicht markiert werden.',
+                                        en: 'Could not mark shopping as done.',
+                                    }[locale],
+                                );
+                                return;
+                            }
+                            toast.success(
+                                {
+                                    de: 'Einkauf als erledigt markiert.',
+                                    en: 'Shopping marked as done.',
+                                }[locale],
+                            );
+                        }}
                     />
                 </TabsContent>
 
@@ -513,6 +576,9 @@ function OfferTabPanel({
     canReAccept,
     busy,
     onAccept,
+    onAcceptParticipantAmendment,
+    onDeclineParticipantAmendment,
+    onPreparationsComplete,
 }: {
     offer: CookOffer;
     bookingRequestOfferId: string;
@@ -521,6 +587,9 @@ function OfferTabPanel({
     canReAccept: boolean;
     busy: boolean;
     onAccept: () => void;
+    onAcceptParticipantAmendment: () => Promise<void>;
+    onDeclineParticipantAmendment: () => Promise<void>;
+    onPreparationsComplete: () => Promise<void>;
 }) {
     const adults = offer.bookingRequest.participants.filter((participant) => participant.type === 'ADULT').length;
     const discounted = offer.bookingRequest.participants.filter((participant) => participant.type === 'DISCOUNTED').length;
@@ -551,6 +620,17 @@ function OfferTabPanel({
                     }
                 </StatusAlert>
             ) : null}
+
+            <BookingRequestOfferParticipantAmendmentCookPanel
+                locale={locale}
+                amendment={offer.participantAmendment}
+                canCompletePreparations={offer.canCompletePreparations}
+                preparationsCompletedAt={offer.preparationsCompletedAt}
+                busy={busy}
+                onAccept={onAcceptParticipantAmendment}
+                onDecline={onDeclineParticipantAmendment}
+                onPreparationsComplete={onPreparationsComplete}
+            />
 
             <section className="grid gap-4">
                 <h2 className="font-semibold text-foreground">
