@@ -43,23 +43,16 @@ export function ChatMessageUserView({
     message,
     showAuthorName = true,
     showAuthorAvatar = true,
-    labelOwnAuthors = false,
     onEdit,
     onVisibilityChange,
     onDelete,
     onReact,
 }: {
     message: GqlCChatMessageUser;
-    /** Name inside the first bubble of a same-author streak (peer always; own when `labelOwnAuthors`). */
+    /** Peer only: name inside the first bubble of a same-author streak. */
     showAuthorName?: boolean;
     /** Peer only: avatar bottom-aligned on the last bubble of a streak. */
     showAuthorAvatar?: boolean;
-    /**
-     * When true, own-rail bubbles also show author names (admin offer chat: cook +
-     * admin share the right rail). Also allows reacting on own-rail bubbles that
-     * are not hard-deletable admin messages.
-     */
-    labelOwnAuthors?: boolean;
     /** When set, shows an edit control that saves a new body via this callback. */
     onEdit?: (body: string) => Promise<boolean>;
     /** Soft-hide / unhide for offer-chat admin moderation. */
@@ -67,9 +60,8 @@ export function ChatMessageUserView({
     /** Hard-delete (admin messages only when `message.canHardDelete`). */
     onDelete?: () => Promise<boolean>;
     /**
-     * When set, shows a reaction picker on peer bubbles (and on labeled own-rail
-     * bubbles that are not admin-authored). Pass `''` to clear. Clicking the
-     * current emoji again clears it.
+     * When set on peer messages, shows a reaction picker. Pass `''` to clear the
+     * viewer's reaction. Clicking the current emoji again clears it.
      */
     onReact?: (emoji: string) => Promise<boolean>;
 }) {
@@ -352,15 +344,8 @@ export function ChatMessageUserView({
                     {hiddenLabel}
                 </p>
             ) : null}
-            {showAuthorName && (!isOwn || labelOwnAuthors) ? (
-                <p
-                    className={cn(
-                        'mb-0.5 truncate text-[11px] leading-tight font-semibold',
-                        isOwn ? 'text-primary-foreground/90' : 'text-primary',
-                    )}
-                >
-                    {message.author.display}
-                </p>
+            {!isOwn && showAuthorName ? (
+                <p className="mb-0.5 truncate text-[11px] leading-tight font-semibold text-primary">{message.author.display}</p>
             ) : null}
             {voiceAttachment ? (
                 <div className={cn(visibleBody.length > 0 && 'mb-2')}>
@@ -403,60 +388,60 @@ export function ChatMessageUserView({
         }
     };
 
-    const canShowReactionPicker = onReact != null && (!isOwn || (labelOwnAuthors && !message.canHardDelete));
-    const reactionPicker = canShowReactionPicker ? (
-        <Popover open={reactOpen} onOpenChange={setReactOpen}>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <PopoverTrigger asChild>
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-xs"
-                            aria-label={reactLabel}
-                            disabled={reactBusy}
-                            className="mb-0.5 shrink-0 opacity-70 hover:opacity-100"
-                        >
-                            <SmilePlusIcon aria-hidden />
-                        </Button>
-                    </PopoverTrigger>
-                </TooltipTrigger>
-                <TooltipContent>{reactLabel}</TooltipContent>
-            </Tooltip>
-            <PopoverContent align={isOwn ? 'end' : 'start'} side="top" className="w-auto p-1.5">
-                <div className="flex items-center gap-0.5" role="listbox" aria-label={reactLabel}>
-                    {QUICK_REACTION_EMOJIS.map((emoji) => {
-                        const selected = ownReactionEmoji === emoji;
-                        return (
-                            <button
-                                key={emoji}
+    const reactionPicker =
+        !isOwn && onReact != null ? (
+            <Popover open={reactOpen} onOpenChange={setReactOpen}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                            <Button
                                 type="button"
-                                role="option"
-                                aria-selected={selected}
+                                variant="ghost"
+                                size="icon-xs"
+                                aria-label={reactLabel}
                                 disabled={reactBusy}
-                                aria-label={
-                                    selected
-                                        ? { de: `${emoji} entfernen`, en: `Remove ${emoji}` }[locale]
-                                        : { de: `Mit ${emoji} reagieren`, en: `React with ${emoji}` }[locale]
-                                }
-                                onClick={() => {
-                                    void applyReaction(emoji);
-                                }}
-                                className={cn(
-                                    'flex size-9 items-center justify-center rounded-md text-lg leading-none',
-                                    'hover:bg-foreground/5 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-                                    selected && 'bg-foreground/8 ring-1 ring-border',
-                                    reactBusy && 'opacity-50',
-                                )}
+                                className="mb-0.5 shrink-0 opacity-70 hover:opacity-100"
                             >
-                                {emoji}
-                            </button>
-                        );
-                    })}
-                </div>
-            </PopoverContent>
-        </Popover>
-    ) : null;
+                                <SmilePlusIcon aria-hidden />
+                            </Button>
+                        </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>{reactLabel}</TooltipContent>
+                </Tooltip>
+                <PopoverContent align="start" side="top" className="w-auto p-1.5">
+                    <div className="flex items-center gap-0.5" role="listbox" aria-label={reactLabel}>
+                        {QUICK_REACTION_EMOJIS.map((emoji) => {
+                            const selected = ownReactionEmoji === emoji;
+                            return (
+                                <button
+                                    key={emoji}
+                                    type="button"
+                                    role="option"
+                                    aria-selected={selected}
+                                    disabled={reactBusy}
+                                    aria-label={
+                                        selected
+                                            ? { de: `${emoji} entfernen`, en: `Remove ${emoji}` }[locale]
+                                            : { de: `Mit ${emoji} reagieren`, en: `React with ${emoji}` }[locale]
+                                    }
+                                    onClick={() => {
+                                        void applyReaction(emoji);
+                                    }}
+                                    className={cn(
+                                        'flex size-9 items-center justify-center rounded-md text-lg leading-none',
+                                        'hover:bg-foreground/5 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                                        selected && 'bg-foreground/8 ring-1 ring-border',
+                                        reactBusy && 'opacity-50',
+                                    )}
+                                >
+                                    {emoji}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </PopoverContent>
+            </Popover>
+        ) : null;
 
     const reactionBadges =
         reactions.length > 0 ? (
@@ -483,12 +468,7 @@ export function ChatMessageUserView({
             <MessageRow side={side}>
                 <div className="group/msg flex w-full max-w-full flex-col">
                     <div className="flex items-end justify-end gap-2">
-                        {moderationMenu != null || reactionPicker != null ? (
-                            <div className="flex shrink-0 flex-col items-center gap-0.5 self-end">
-                                {moderationMenu}
-                                {reactionPicker}
-                            </div>
-                        ) : null}
+                        {moderationMenu}
                         <Bubble tone={tone} className={bubbleClassName}>
                             {bubbleInner}
                         </Bubble>

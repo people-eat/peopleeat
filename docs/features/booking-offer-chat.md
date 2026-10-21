@@ -12,8 +12,8 @@ Customer, cook, and admin negotiate on an offer through a shared timeline chat w
    Customer and cook each see the other party plus Juliana; admins see **customer, cook, and Juliana**. Layout: scrolls away with the
    transcript on small screens; stays pinned above the transcript from medium breakpoints up (same pattern as support chat). Transcript
    scroll uses **human** mode (open/stick at bottom — [styles/chat.md — Human transcript mode](../styles/chat.md#human-transcript-mode)). On
-   the admin offer transcript, **customer is left** and **cook + admin are right** (`toGqlOfferChatMessages` stamps cook `isOwn` for admin).
-   Same-author streak chrome labels both rails so cook and admin do not merge when they alternate.
+   the admin offer transcript, **customer and cook stay on the left** (peer rail) and **admin is on the right**. Same-author peer streak
+   chrome keeps guest and chef names/avatars from merging when they alternate.
 3. **Phone numbers are blocked** in outgoing messages (client warning + server reject) to discourage off-platform fee avoidance. Applies to
    customer, cook, and admin sends, and to the optional cook message on offer create.
 4. When the customer or cook sends a peer message, the other party gets a **debounced email** (~1 minute) if they still have unread chat
@@ -105,9 +105,8 @@ display name and true send time, and are never `isOwn` for the new cook. Peer ch
 Shared UI: `BookingRequestOfferChat` — concierge row + `containsPhoneNumber` on client and all three create commands; optional
 `onEditMessage` / `onVisibilityChangeMessage` / `onDeleteMessage` (admin pages) → ellipsis menu + confirm dialogs on `ChatMessageUserView`;
 optional `onReactMessage` when `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` is active (`useFeatureToggleActive` with `gateInAdminShell` so admin
-offer chat follows the same effective keys as profile). Admin passes `labelOwnAuthors` so cook/admin right-rail bubbles show names and keep
-the smile control (except hard-deletable admin messages). Ellipsis + smile stack beside the bubble (ellipsis above, smile below). Mutations:
-`bookingRequestOfferChatMessageReactionUpsert` on User / Cook / Admin.
+offer chat follows the same effective keys as profile). On admin peer bubbles the ellipsis and smile controls stack beside the bubble
+(ellipsis above, smile below). Mutations: `bookingRequestOfferChatMessageReactionUpsert` on User / Cook / Admin.
 
 ### Offer-chat message emails
 

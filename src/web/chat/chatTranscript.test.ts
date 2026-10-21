@@ -29,14 +29,6 @@ describe('peerUserMessageStreak', () => {
         expect(peerUserMessageStreak(messages, 2)).toEqual({ showName: false, showAvatar: true, continued: true });
     });
 
-    it('starts a new own-rail streak when the author changes (admin cook + admin)', () => {
-        const messages = [own('Chef'), own('Admin'), own('Admin')];
-
-        expect(peerUserMessageStreak(messages, 0)).toEqual({ showName: true, showAvatar: false, continued: false });
-        expect(peerUserMessageStreak(messages, 1)).toEqual({ showName: true, showAvatar: false, continued: false });
-        expect(peerUserMessageStreak(messages, 2)).toEqual({ showName: false, showAvatar: false, continued: true });
-    });
-
     it('does not continue a streak across a milestone between same-author peers', () => {
         const messages = [peer('Guest'), milestone, peer('Guest')];
 

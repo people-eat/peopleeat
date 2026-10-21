@@ -21,7 +21,7 @@ function messageEvent(
 }
 
 describe('toGqlOfferChatMessages admin rails', () => {
-    it('puts customer left and cook + admin right for admin viewers', () => {
+    it('keeps customer and cook on the peer rail and admin on the own rail', () => {
         const messages = toGqlOfferChatMessages({
             events: [
                 messageEvent('USER_MESSAGE_SIMPLE', 'e_user'),
@@ -35,7 +35,7 @@ describe('toGqlOfferChatMessages admin rails', () => {
 
         expect(messages).toMatchObject([
             { chatMessageId: 'e_user', isOwn: false, author: { display: 'Guest' } },
-            { chatMessageId: 'e_cook', isOwn: true, author: { display: 'Chef' } },
+            { chatMessageId: 'e_cook', isOwn: false, author: { display: 'Chef' } },
             { chatMessageId: 'e_admin', isOwn: true, author: { display: 'Admin' } },
         ]);
     });
@@ -49,7 +49,7 @@ describe('toGqlOfferChatMessages admin rails', () => {
         expect(forUser[0]).toMatchObject({ isOwn: false });
     });
 
-    it('keeps handed-over prior-chef bubbles on the cook rail for admin, not own for the new cook', () => {
+    it('keeps handed-over prior-chef bubbles as peer for admin and new cook', () => {
         const events = [
             messageEvent('COOK_MESSAGE_SIMPLE', 'e_handover', {
                 messageBody: 'From previous chef',
@@ -65,7 +65,7 @@ describe('toGqlOfferChatMessages admin rails', () => {
         const forAdmin = toGqlOfferChatMessages({ events, customer, cook, viewerRole: 'admin' });
         const forCook = toGqlOfferChatMessages({ events, customer, cook, viewerRole: 'cook' });
 
-        expect(forAdmin[0]).toMatchObject({ isOwn: true, author: { display: 'Chef Alpha' } });
+        expect(forAdmin[0]).toMatchObject({ isOwn: false, author: { display: 'Chef Alpha' } });
         expect(forCook[0]).toMatchObject({ isOwn: false, author: { display: 'Chef Alpha' } });
     });
 });

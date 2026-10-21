@@ -63,8 +63,8 @@ function sameRail(a: PeerStreakMessage, b: PeerStreakMessage): boolean {
 
 /**
  * Streak chrome for consecutive same-author human bubbles on the same rail
- * (offer/support/WhatsApp). Peer rail: name on first, avatar on last. Own rail:
- * name flags only (avatars stay off in the bubble view).
+ * (offer/support/WhatsApp). Peer rail: name on first, avatar on last. Own rail
+ * skips avatar chrome (bubbles never show own avatars).
  */
 export function peerUserMessageStreak(
     messages: ReadonlyArray<PeerStreakMessage>,
