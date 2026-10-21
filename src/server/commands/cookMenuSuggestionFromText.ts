@@ -2,8 +2,8 @@ import { generateText, Output } from 'ai';
 import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 
-import { capitalizeFirstLetter } from '../../shared';
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeProseTitled, textNormalizeTitled } from '../../shared/textNormalize';
 import type { MealCreate } from '../db/schema';
 import { meals } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -105,8 +105,8 @@ export async function cookMenuSuggestionFromText(
                     mealInserts.push({
                         mealId,
                         cookId,
-                        title: capitalizeFirstLetter(meal.title.trim()),
-                        description: capitalizeFirstLetter(meal.description.trim()),
+                        title: textNormalizeTitled(meal.title),
+                        description: textNormalizeProseTitled(meal.description),
                         publishedAt: null,
                         deletedAt: null,
                     });
@@ -115,7 +115,7 @@ export async function cookMenuSuggestionFromText(
             }
 
             courses.push({
-                title: capitalizeFirstLetter(course.title.trim()),
+                title: textNormalizeTitled(course.title),
                 mealIds,
             });
         }
@@ -127,7 +127,7 @@ export async function cookMenuSuggestionFromText(
         }
 
         return {
-            title: capitalizeFirstLetter(result.output.title.trim()),
+            title: textNormalizeTitled(result.output.title),
             description: '',
             courses,
         };

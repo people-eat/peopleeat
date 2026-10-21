@@ -1,5 +1,5 @@
-import { capitalizeFirstLetter } from '../../shared';
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeProseTitled, textNormalizeTitled } from '../../shared/textNormalize';
 import type { MealCreate } from '../db/schema';
 import { meals } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -17,9 +17,9 @@ export async function adminCookMealCreate(
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(adminId, serverRuntime);
 
-    const title = meal?.title != null && meal.title.trim().length > 0 ? capitalizeFirstLetter(meal.title.trim()) : DRAFT_TITLE;
-    const descriptionRaw = meal?.description?.trim() ?? '';
-    const description = descriptionRaw.length === 0 ? '' : capitalizeFirstLetter(descriptionRaw);
+    const titled = meal?.title != null ? textNormalizeTitled(meal.title) : '';
+    const title = titled.length > 0 ? titled : DRAFT_TITLE;
+    const description = meal?.description != null ? textNormalizeProseTitled(meal.description) : '';
 
     const mealId = idCreate();
     const values: MealCreate = {

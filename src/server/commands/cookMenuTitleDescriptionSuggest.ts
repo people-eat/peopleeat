@@ -2,6 +2,7 @@ import { generateText, Output } from 'ai';
 import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { z } from 'zod';
 
+import { textNormalizeProseTitled, textNormalizeTitled } from '../../shared/textNormalize';
 import { meals } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
@@ -93,8 +94,8 @@ Gib als Ergebnis title und description zurück.
         });
 
         return {
-            title: result.output.title.trim(),
-            description: result.output.description.trim(),
+            title: textNormalizeTitled(result.output.title),
+            description: textNormalizeProseTitled(result.output.description),
             courses: [],
         };
     } catch (error) {

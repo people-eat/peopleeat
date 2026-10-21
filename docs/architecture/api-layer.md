@@ -17,8 +17,8 @@ derive from it.
 ### Custom scalars (graphql-scalars)
 
 Wired in `resolversCreate()` via the `*Resolver` exports. They validate on both **parse** (inputs) and **serialize** (outputs). Commands
-still own normalize / uniqueness / domain rules (e.g. `emailNormalize`, `phoneNumberAssert`, phone uniqueness); GraphQL scalars are a first
-format gate only.
+still own normalize / uniqueness / domain rules (e.g. shared `emailNormalize`, `textNormalizeTitled`, `phoneNumberAssert`, phone
+uniqueness); GraphQL scalars are a first format gate only.
 
 | Scalar         | Role                                  | Codegen TS / Zod                                 |
 | -------------- | ------------------------------------- | ------------------------------------------------ |

@@ -1,5 +1,6 @@
 import { and, eq, ne } from 'drizzle-orm';
 
+import { emailNormalize } from '../../shared/emailNormalize';
 import { users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminMutation, GqlSAdminMutationUserEmailAddressUpdateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
@@ -18,7 +19,7 @@ export async function adminUserEmailAddressUpdate(
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(adminId, serverRuntime);
 
-    const nextEmail = emailAddress.trim();
+    const nextEmail = emailNormalize(emailAddress);
     if (nextEmail.length === 0) {
         throw new Error('adminUserEmailAddressUpdate: emailAddress must not be empty');
     }

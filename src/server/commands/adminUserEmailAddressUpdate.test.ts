@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
+import { emailNormalize } from '../../shared/emailNormalize';
 import { idCreate } from '../../shared/idCreate';
 import { admins, users } from '../db/schema';
 import { userKlaviyoProfileSync } from '../jobs';
@@ -24,7 +25,7 @@ describe('adminUserEmailAddressUpdate', () => {
 
         expect(result).toEqual({ success: true, referenceId: target.user.userId });
         const [row] = await testDb.select().from(users).where(eq(users.userId, target.user.userId));
-        expect(row?.emailAddress).toBe(next);
+        expect(row?.emailAddress).toBe(emailNormalize(next));
         expect(row?.previousEmailAddresses).toEqual([previous]);
         expect(admin.serverRuntime.jobs.enqueue).toHaveBeenCalledWith(userKlaviyoProfileSync, { userId: target.user.userId });
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledTimes(1);

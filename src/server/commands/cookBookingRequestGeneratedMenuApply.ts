@@ -1,8 +1,9 @@
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { capitalizeFirstLetter, cookMenuDraftTitle, DEFAULT_LOCALE } from '../../shared';
+import { cookMenuDraftTitle, DEFAULT_LOCALE } from '../../shared';
 import { idCreate } from '../../shared/idCreate';
 import type { Locale } from '../../shared/locale';
+import { textNormalizeProseTitled, textNormalizeTitled } from '../../shared/textNormalize';
 import type { MenuCourseCreate, MenuCourseMealOptionCreate, MenuCreate } from '../db/schema';
 import { bookingRequestCooks, meals, menuCourseMealOptions, menuCourses, menus, users } from '../db/schema';
 import type { BookingRequestCookMenuEvaluation } from '../domain/bookingRequest';
@@ -70,8 +71,8 @@ export async function cookBookingRequestGeneratedMenuApply(
         const menuInsert: MenuCreate = {
             menuId,
             cookId,
-            title: capitalizeFirstLetter(suggestion.title.trim()) || cookMenuDraftTitle(cookLocale),
-            description: suggestion.description,
+            title: textNormalizeTitled(suggestion.title) || cookMenuDraftTitle(cookLocale),
+            description: textNormalizeProseTitled(suggestion.description),
             publishedAt: null,
             deletedAt: null,
         };
@@ -88,7 +89,7 @@ export async function cookBookingRequestGeneratedMenuApply(
                 menuId,
                 cookId,
                 index: courseInserts.length,
-                title: course.title,
+                title: textNormalizeTitled(course.title),
                 mealSelectionLimit: null,
             });
 

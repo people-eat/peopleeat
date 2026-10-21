@@ -3,6 +3,7 @@ import { and, eq } from 'drizzle-orm';
 
 import { isCookCallDurationMinutes } from '../../shared/cookCallAvailability';
 import { isCookingPhilosophy, isCuisineStyle } from '../../shared/cookProfile';
+import { textNormalizeProse, textNormalizeTitled } from '../../shared/textNormalize';
 import type { Cook } from '../db/schema';
 import { cooks, fileUploads } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -110,10 +111,11 @@ export async function cookUpdate(
         patch.isVisible = isVisible;
     }
     if (stageName !== undefined) {
-        patch.stageName = stageName === null || stageName.trim() === '' ? null : stageName.trim();
+        const normalizedStageName = stageName == null ? '' : textNormalizeTitled(stageName);
+        patch.stageName = normalizedStageName.length === 0 ? null : normalizedStageName;
     }
     if (biography !== undefined && biography !== null) {
-        patch.biography = biography;
+        patch.biography = textNormalizeProse(biography);
     }
     if (cuisineStyle !== undefined) {
         patch.cuisineStyle = cuisineStyle === null || cuisineStyle.trim() === '' ? null : cuisineStyle.trim();
@@ -163,8 +165,7 @@ export async function cookUpdate(
     let scheduleBiographySummary = false;
     let cancelBiographySummary = false;
     if (biography !== undefined && biography !== null) {
-        const trimmedBiography = biography.trim();
-        if (!trimmedBiography) {
+        if (!patch.biography) {
             patch.biographySummary = '';
             cancelBiographySummary = true;
         } else {

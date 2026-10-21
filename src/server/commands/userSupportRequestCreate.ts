@@ -1,7 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 
-import { capitalizeFirstLetter } from '../../shared';
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeProseTitled, textNormalizeTitled } from '../../shared/textNormalize';
 import { bookingRequests, supportRequestMessageAttachments, supportRequestMessages, supportRequests, users } from '../db/schema';
 import type { SupportRequestMessageAttachmentCreate } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -19,8 +19,8 @@ export async function userSupportRequestCreate(
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
 
-    const subject = capitalizeFirstLetter(args.subject.trim());
-    const messageBody = capitalizeFirstLetter(args.messageBody.trim());
+    const subject = textNormalizeTitled(args.subject);
+    const messageBody = textNormalizeProseTitled(args.messageBody);
     if (subject.length === 0) {
         throw new Error('userSupportRequestCreate: subject must not be empty');
     }

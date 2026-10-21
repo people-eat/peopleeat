@@ -27,7 +27,6 @@ import {
     bookingRequestParticipantsFromCounts,
     bookingRequestPriceClassInfo,
     bookingRequestPriceClassTypes,
-    capitalizeFirstLetter,
     dateDistanceInDaysToToday,
     defaultBookingRequestOccasions,
     defaultBookingRequestPreferences,
@@ -35,6 +34,7 @@ import {
     formatCurrency,
     formatDate,
     formatParticipants,
+    textNormalizeTitled,
 } from '../../shared';
 import type { BookingRequestFormFunnelStep, BookingRequestFormPriceClassType, BookingRequestParticipantDraft, Locale } from '../../shared';
 import { AUTH_USER_PROFILE_FORM_ID, AuthIdentityGate } from '../components/auth/AuthIdentityGate';
@@ -977,7 +977,7 @@ export function BookingRequestFormPage({
                                             variant="default"
                                             disabled={busy || customPreferenceText.trim() === '' || values.preferences.length >= 4}
                                             onClick={() => {
-                                                const next = capitalizeFirstLetter(customPreferenceText.trim());
+                                                const next = textNormalizeTitled(customPreferenceText);
                                                 if (!next) return;
                                                 form.setFieldValue('preferences', [...values.preferences, next]);
                                                 setCustomPreferenceText('');

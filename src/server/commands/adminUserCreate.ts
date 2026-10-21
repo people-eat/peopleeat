@@ -1,8 +1,10 @@
 import { eq } from 'drizzle-orm';
 
+import { emailNormalize } from '../../shared/emailNormalize';
 import { idCreate } from '../../shared/idCreate';
 import { DEFAULT_LOCALE } from '../../shared/locale';
 import { phoneNumberAssert } from '../../shared/phoneNumber';
+import { textNormalizeTitled } from '../../shared/textNormalize';
 import { DEFAULT_TIME_ZONE } from '../../shared/timeZone';
 import { userBirthDateAssertMinimumAge } from '../../shared/userBirthDate';
 import type { AdminCreate, UserCreate } from '../db/schema';
@@ -10,7 +12,6 @@ import { admins, cooks, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminMutation, GqlSAdminMutationUserCreateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { emailNormalize } from '../utils/authOtpUtils';
 import { cookCreatePayloadBuild } from '../utils/cookCreatePayloadBuild';
 
 export async function adminUserCreate(
@@ -23,8 +24,8 @@ export async function adminUserCreate(
 
     // Phase 1 — Payload construction (pure validation + Places resolve; no DB writes yet)
     const email = emailNormalize(input.emailAddress);
-    const firstName = input.firstName.trim();
-    const lastName = input.lastName.trim();
+    const firstName = textNormalizeTitled(input.firstName);
+    const lastName = textNormalizeTitled(input.lastName);
     const phoneNumber = phoneNumberAssert(input.phoneNumber, 'adminUserCreate');
     const birthDate = input.birthDate;
     const preferredCommunication = input.preferredCommunication;

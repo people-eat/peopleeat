@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 
+import { textNormalizeProseTitled, textNormalizeTitled } from '../../shared/textNormalize';
 import { bookingRequestOffers, bookingRequests } from '../db/schema';
 import type { BookingRequestOfferConfiguredMenu } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -36,7 +37,7 @@ export async function adminBookingRequestOfferConfiguredMenuUpdate(
         throw new Error('adminBookingRequestOfferConfiguredMenuUpdate: bookingRequestOfferId must not be empty');
     }
 
-    const title = args.configuredMenu.title.trim();
+    const title = textNormalizeTitled(args.configuredMenu.title);
     if (title.length === 0) {
         throw new Error('adminBookingRequestOfferConfiguredMenuUpdate: title must not be empty');
     }
@@ -47,7 +48,7 @@ export async function adminBookingRequestOfferConfiguredMenuUpdate(
 
     const courses: BookingRequestOfferConfiguredMenu['courses'] = [];
     for (const [courseIndex, course] of args.configuredMenu.courses.entries()) {
-        const courseTitle = course.title.trim();
+        const courseTitle = textNormalizeTitled(course.title);
         if (courseTitle.length === 0) {
             throw new Error(`adminBookingRequestOfferConfiguredMenuUpdate: course ${courseIndex} title must not be empty`);
         }
@@ -57,7 +58,7 @@ export async function adminBookingRequestOfferConfiguredMenuUpdate(
 
         const meals: BookingRequestOfferConfiguredMenu['courses'][number]['meals'] = [];
         for (const [mealIndex, meal] of course.meals.entries()) {
-            const mealTitle = meal.mealTitle.trim();
+            const mealTitle = textNormalizeTitled(meal.mealTitle);
             if (mealTitle.length === 0) {
                 throw new Error(
                     `adminBookingRequestOfferConfiguredMenuUpdate: course ${courseIndex} meal ${mealIndex} title must not be empty`,
@@ -65,7 +66,7 @@ export async function adminBookingRequestOfferConfiguredMenuUpdate(
             }
             meals.push({
                 mealTitle,
-                mealDescription: meal.mealDescription.trim(),
+                mealDescription: textNormalizeProseTitled(meal.mealDescription),
                 mealImageUrl: assertOptionalUrl(meal.mealImageUrl, `course ${courseIndex} meal ${mealIndex} imageUrl`),
             });
         }
@@ -92,7 +93,7 @@ export async function adminBookingRequestOfferConfiguredMenuUpdate(
         const configuredMenu: BookingRequestOfferConfiguredMenu = {
             menuId: row.offer.configuredMenu.menuId,
             title,
-            description: args.configuredMenu.description.trim(),
+            description: textNormalizeProseTitled(args.configuredMenu.description),
             courses,
         };
 

@@ -2,6 +2,7 @@ import { and, eq } from 'drizzle-orm';
 
 import type { Locale } from '../../shared/locale';
 import { phoneNumberAssert } from '../../shared/phoneNumber';
+import { textNormalizeTitled } from '../../shared/textNormalize';
 import { userBirthDateAssertMinimumAge } from '../../shared/userBirthDate';
 import { fileUploads, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -53,7 +54,7 @@ export async function userUpdate(
         let previousProfilePictureFileUploadId: string | null | undefined;
 
         if (hasFirstName) {
-            const firstName = user.firstName!.trim();
+            const firstName = textNormalizeTitled(user.firstName!);
             if (firstName.length === 0) {
                 throw new Error('userUpdate: firstName must not be empty');
             }
@@ -61,7 +62,7 @@ export async function userUpdate(
         }
 
         if (hasLastName) {
-            const lastName = user.lastName!.trim();
+            const lastName = textNormalizeTitled(user.lastName!);
             if (lastName.length === 0) {
                 throw new Error('userUpdate: lastName must not be empty');
             }

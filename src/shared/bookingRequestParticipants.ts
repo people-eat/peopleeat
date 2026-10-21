@@ -1,4 +1,5 @@
 import type { Locale } from './locale';
+import { textNormalizeTitled } from './textNormalize';
 
 export type BookingRequestParticipantDraft = {
     type: 'ADULT' | 'DISCOUNTED';
@@ -40,13 +41,15 @@ export function bookingRequestParticipantsFromCounts(input: {
     return [...adults, ...discounted];
 }
 
-/** Trim names/restrictions and drop empty restriction strings. */
+/** Normalize names/restrictions (single-line + first letter) and drop empty restriction strings. */
 export function bookingRequestParticipantsNormalize(
     participants: readonly BookingRequestParticipantDraft[],
 ): BookingRequestParticipantDraft[] {
     return participants.map((participant) => ({
         type: participant.type,
-        name: participant.name.trim(),
-        restrictions: participant.restrictions.map((restriction) => restriction.trim()).filter((restriction) => restriction.length > 0),
+        name: textNormalizeTitled(participant.name),
+        restrictions: participant.restrictions
+            .map((restriction) => textNormalizeTitled(restriction))
+            .filter((restriction) => restriction.length > 0),
     }));
 }

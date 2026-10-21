@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeProseTitled, textNormalizeSingleLine, textNormalizeTitled } from '../../shared/textNormalize';
 import type { BookingRequestCreate, BookingRequestParticipantCreate } from '../db/schema';
 import { bookingRequestParticipants, bookingRequests, users } from '../db/schema';
 import type { BookingRequestExactEventAddress } from '../domain/bookingRequest';
@@ -26,8 +27,11 @@ export async function adminBookingRequestCreate(
 
     const input = args.input;
     const userId = input.userId.trim();
-    const occasion = input.occasion.trim();
-    const originalMessage = input.originalMessage.trim();
+    const occasion = textNormalizeTitled(input.occasion);
+    const originalMessage = textNormalizeProseTitled(input.originalMessage);
+    const preferences = input.preferences
+        .map((preference) => textNormalizeTitled(preference))
+        .filter((preference) => preference.length > 0);
 
     if (userId.length === 0) {
         throw new Error('adminBookingRequestCreate: userId must not be empty');
@@ -46,15 +50,15 @@ export async function adminBookingRequestCreate(
         userId,
     );
     const exactEventAddress: BookingRequestExactEventAddress = {
-        displayText: input.exactEventAddress.displayText.trim(),
+        displayText: textNormalizeSingleLine(input.exactEventAddress.displayText),
         latitude: input.exactEventAddress.latitude,
         longitude: input.exactEventAddress.longitude,
-        addressLine1: input.exactEventAddress.addressLine1.trim(),
-        addressLine2: input.exactEventAddress.addressLine2.trim(),
-        city: input.exactEventAddress.city.trim(),
-        postCode: input.exactEventAddress.postCode.trim(),
-        state: input.exactEventAddress.state.trim(),
-        country: input.exactEventAddress.country.trim(),
+        addressLine1: textNormalizeSingleLine(input.exactEventAddress.addressLine1),
+        addressLine2: textNormalizeSingleLine(input.exactEventAddress.addressLine2),
+        city: textNormalizeTitled(input.exactEventAddress.city),
+        postCode: textNormalizeSingleLine(input.exactEventAddress.postCode),
+        state: textNormalizeSingleLine(input.exactEventAddress.state),
+        country: textNormalizeSingleLine(input.exactEventAddress.country),
     };
 
     if (exactEventAddress.displayText.length === 0 || exactEventAddress.city.length === 0) {
@@ -80,7 +84,7 @@ export async function adminBookingRequestCreate(
             dateTime: input.dateTime,
             exactEventAddress,
             originalMessage,
-            preferences: input.preferences,
+            preferences,
             publicationStatus,
             expiresAt: bookingRequestExpiresAt(input.dateTime),
         };

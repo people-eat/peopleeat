@@ -1,6 +1,6 @@
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { capitalizeFirstLetter } from '../../shared';
+import { textNormalizeProseTitled, textNormalizeTitled } from '../../shared/textNormalize';
 import { fileUploads, meals } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookMutation, GqlSCookMutationMealUpdateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
@@ -35,16 +35,15 @@ export async function cookMealUpdate(
         let previousImageFileUploadId: string | null | undefined;
 
         if (hasTitle) {
-            const title = meal.title!.trim();
+            const title = textNormalizeTitled(meal.title!);
             if (title.length === 0) {
                 throw new Error('cookMealUpdate: title must not be empty');
             }
-            set.title = capitalizeFirstLetter(title);
+            set.title = title;
         }
 
         if (hasDescription) {
-            const description = meal.description!.trim();
-            set.description = description.length === 0 ? '' : capitalizeFirstLetter(description);
+            set.description = textNormalizeProseTitled(meal.description!);
         }
 
         if (hasImage) {

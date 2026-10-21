@@ -1,7 +1,7 @@
 import { tool } from 'ai';
 
-import { capitalizeFirstLetter } from '../../shared';
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeProseTitled, textNormalizeTitled } from '../../shared/textNormalize';
 import type { MealCreate } from '../db/schema';
 import { meals } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -26,10 +26,9 @@ export async function cookMealCreate(
     await assertLegalAcceptanceCurrent(cookId, serverRuntime);
 
     const mealInput = args?.meal;
-    const title =
-        mealInput?.title != null && mealInput.title.trim().length > 0 ? capitalizeFirstLetter(mealInput.title.trim()) : DRAFT_TITLE;
-    const descriptionRaw = mealInput?.description?.trim() ?? '';
-    const description = descriptionRaw.length === 0 ? '' : capitalizeFirstLetter(descriptionRaw);
+    const titled = mealInput?.title != null ? textNormalizeTitled(mealInput.title) : '';
+    const title = titled.length > 0 ? titled : DRAFT_TITLE;
+    const description = mealInput?.description != null ? textNormalizeProseTitled(mealInput.description) : '';
 
     const mealId = idCreate();
     const values: MealCreate = {

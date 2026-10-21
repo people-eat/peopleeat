@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 
+import { invoiceAddressNormalize } from '../../shared/invoiceAddressNormalize';
 import { giftCards } from '../db/schema';
 import type { GiftCardInvoiceAddress } from '../domain/giftCard';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -56,16 +57,7 @@ export async function giftCardPay(
         }
 
         // Phase 1 — Payload construction
-        const invoiceAddress: GiftCardInvoiceAddress = {
-            companyName: input.invoiceAddress.companyName || null,
-            firstName: input.invoiceAddress.firstName,
-            lastName: input.invoiceAddress.lastName,
-            country: input.invoiceAddress.country,
-            city: input.invoiceAddress.city,
-            postalCode: input.invoiceAddress.postalCode,
-            line1: input.invoiceAddress.line1,
-            line2: input.invoiceAddress.line2,
-        };
+        const invoiceAddress: GiftCardInvoiceAddress = invoiceAddressNormalize(input.invoiceAddress);
 
         await serverRuntime.stripe.customerUpdate({
             userId,

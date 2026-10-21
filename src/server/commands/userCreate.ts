@@ -2,6 +2,7 @@ import { and, desc, eq, isNotNull, isNull } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
 import { phoneNumberAssert } from '../../shared/phoneNumber';
+import { textNormalizeTitled } from '../../shared/textNormalize';
 import { userBirthDateAssertMinimumAge } from '../../shared/userBirthDate';
 import type { UserCreate } from '../db/schema';
 import { authEmailOtps, cooks, users } from '../db/schema';
@@ -22,8 +23,8 @@ export async function userCreate(
         throw new Error('userCreate: already signed in');
     }
 
-    const firstName = args.input.firstName.trim();
-    const lastName = args.input.lastName.trim();
+    const firstName = textNormalizeTitled(args.input.firstName);
+    const lastName = textNormalizeTitled(args.input.lastName);
     const phoneNumberInput = args.input.phoneNumber;
     const phoneNumber =
         phoneNumberInput === undefined || phoneNumberInput === null ? null : phoneNumberAssert(phoneNumberInput, 'userCreate');

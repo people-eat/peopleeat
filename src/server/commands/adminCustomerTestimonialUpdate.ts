@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 
+import { textNormalizeProseTitled, textNormalizeTitledOrNull } from '../../shared/textNormalize';
 import { customerTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
@@ -20,12 +21,12 @@ export async function adminCustomerTestimonialUpdate(
 
     try {
         const set: Partial<typeof customerTestimonials.$inferInsert> = {};
-        if (input.authorName !== undefined) set.authorName = input.authorName?.trim() || null;
-        if (input.location !== undefined) set.location = input.location?.trim() || null;
-        if (input.occasion !== undefined) set.occasion = input.occasion?.trim() || null;
+        if (input.authorName !== undefined) set.authorName = textNormalizeTitledOrNull(input.authorName);
+        if (input.location !== undefined) set.location = textNormalizeTitledOrNull(input.location);
+        if (input.occasion !== undefined) set.occasion = textNormalizeTitledOrNull(input.occasion);
         if (input.rating !== undefined) set.rating = input.rating ?? null;
         if (input.body !== undefined) {
-            const body = input.body?.trim() ?? '';
+            const body = textNormalizeProseTitled(input.body ?? '');
             if (body.length === 0) {
                 throw new Error('adminCustomerTestimonialUpdate: body must not be empty');
             }

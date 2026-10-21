@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 
-import { capitalizeFirstLetter } from '../../shared';
+import { textNormalizeProseTitled } from '../../shared/textNormalize';
 import { users, whatsAppConversations } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminMutation, GqlSAdminMutationWhatsAppMessageCreateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
@@ -11,7 +11,7 @@ export async function adminWhatsAppMessageCreate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    const message = capitalizeFirstLetter(args.message.trim());
+    const message = textNormalizeProseTitled(args.message);
     if (message.length === 0) {
         throw new Error('adminWhatsAppMessageCreate: message must not be empty');
     }

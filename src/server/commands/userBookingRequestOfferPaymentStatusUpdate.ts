@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 
+import { invoiceAddressNormalize } from '../../shared/invoiceAddressNormalize';
 import { bookingRequestOffers, bookingRequests, cooks } from '../db/schema';
 import type { BookingRequestInvoiceAddress } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -25,7 +26,7 @@ function invoiceAddressAssert(invoiceAddress: BookingRequestInvoiceAddress): voi
     if (required.some((value) => value.trim().length === 0)) {
         throw new Error('userBookingRequestOfferPaymentStatusUpdate: invoice address incomplete');
     }
-    if (!/^[A-Za-z]{2}$/.test(invoiceAddress.country.trim())) {
+    if (!/^[A-Za-z]{2}$/.test(invoiceAddress.country)) {
         throw new Error('userBookingRequestOfferPaymentStatusUpdate: invoice country must be ISO alpha-2');
     }
 }
@@ -66,16 +67,7 @@ export async function userBookingRequestOfferPaymentStatusUpdate(
             throw new Error('userBookingRequestOfferPaymentStatusUpdate: cook Stripe account missing');
         }
 
-        const invoiceAddress: BookingRequestInvoiceAddress = {
-            companyName: invoiceAddressInput.companyName || null,
-            firstName: invoiceAddressInput.firstName.trim(),
-            lastName: invoiceAddressInput.lastName.trim(),
-            country: invoiceAddressInput.country.trim().toUpperCase(),
-            city: invoiceAddressInput.city.trim(),
-            postalCode: invoiceAddressInput.postalCode.trim(),
-            line1: invoiceAddressInput.line1.trim(),
-            line2: invoiceAddressInput.line2.trim(),
-        };
+        const invoiceAddress: BookingRequestInvoiceAddress = invoiceAddressNormalize(invoiceAddressInput);
         invoiceAddressAssert(invoiceAddress);
 
         await serverRuntime.stripe.customerUpdate({

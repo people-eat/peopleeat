@@ -1,14 +1,13 @@
 import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
+import { emailNormalize } from '../../shared/emailNormalize';
 import { environmentVariables } from '../env/environmentVariablesCreate';
+
+export { emailNormalize };
 
 const AES_ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
 const AUTH_TAG_LENGTH = 16;
-
-export function emailNormalize(email: string): string {
-    return email.trim().toLowerCase();
-}
 
 export function authOtpPepperRequire(): string {
     return environmentVariables.authOtpPepper;

@@ -91,7 +91,7 @@ describe('cookUpdate', () => {
         await cookUpdate(cookMutationParent(user.userId), { input: { biography: '   ' } }, requestingSession, serverRuntime);
 
         const [row] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
-        expect(row!.biography).toBe('   ');
+        expect(row!.biography).toBe('');
         expect(row!.biographySummary).toBe('');
         expect(serverRuntime.jobs.findByData).toHaveBeenCalledWith(
             expect.objectContaining({ name: 'cook-biography-summary-generate' }),

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { capitalizeFirstLetter, defaultBookingRequestRestrictions } from '../../shared';
+import { defaultBookingRequestRestrictions, textNormalizeTitled } from '../../shared';
 import type { BookingRequestParticipantDraft, Locale } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
 import { Button } from './base/button';
@@ -181,7 +181,7 @@ export function BookingRequestParticipantsRestrictionsEditor({
                         type="button"
                         disabled={disabled || filter.trim() === ''}
                         onClick={() => {
-                            const next = capitalizeFirstLetter(filter.trim());
+                            const next = textNormalizeTitled(filter);
                             if (!next) return;
                             if (!participant.restrictions.includes(next)) {
                                 updateByKey(participant.key, { restrictions: [...participant.restrictions, next] });

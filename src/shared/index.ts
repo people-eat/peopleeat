@@ -10,7 +10,18 @@ export {
 export type { BookingRequestFormPriceClassType, BookingRequestPriceClassInfo } from './bookingRequestFormDefaults';
 export { capitalizeFirstLetter } from './capitalizeFirstLetter';
 export { containsPhoneNumber } from './containsPhoneNumber';
+export { emailNormalize } from './emailNormalize';
+export { invoiceAddressNormalize } from './invoiceAddressNormalize';
+export type { InvoiceAddressInput, InvoiceAddressNormalized } from './invoiceAddressNormalize';
 export { phoneNumberAssert, phoneNumberForWhatsAppApi, phoneNumberNormalize } from './phoneNumber';
+export {
+    textNormalizeProse,
+    textNormalizeProseTitled,
+    textNormalizeSingleLine,
+    textNormalizeTitled,
+    textNormalizeTitledOrNull,
+} from './textNormalize';
+
 export { idCreate, isNanoId, NANO_ID_LENGTH, zNanoId } from './idCreate';
 
 export {

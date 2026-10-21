@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeProse, textNormalizeTitled } from '../../shared/textNormalize';
 import { giftCards, sessions, users } from '../db/schema';
 import type { GiftCardCreate } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -63,10 +64,12 @@ export async function giftCardCreate(
             return { success: false };
         }
 
-        const recipientName = input.recipientName.trim();
+        const recipientName = textNormalizeTitled(input.recipientName);
         if (recipientName.length === 0) {
             return { success: false };
         }
+        const occasion = textNormalizeTitled(input.occasion);
+        const message = textNormalizeProse(input.message);
 
         const [buyer] = await serverRuntime.db
             .select({ emailAddress: users.emailAddress })
@@ -124,9 +127,9 @@ export async function giftCardCreate(
             buyerUserId: userId,
             buyerEmail,
             locale,
-            occasion: input.occasion,
+            occasion,
             recipientName,
-            message: input.message,
+            message,
             originalBalanceCents: input.balanceCents,
             balanceCents: input.balanceCents,
             redeemCode,

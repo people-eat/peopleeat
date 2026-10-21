@@ -1,6 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeProse, textNormalizeProseTitled, textNormalizeSingleLine, textNormalizeTitled } from '../../shared/textNormalize';
 import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequestParticipants, bookingRequests } from '../db/schema';
 import type {
     BookingRequestExactEventAddress,
@@ -29,15 +30,15 @@ function exactEventAddressNormalize(
     input: NonNullable<GqlSAdminMutationBookingRequestUpdateArgs['input']['exactEventAddress']>,
 ): BookingRequestExactEventAddress {
     const address: BookingRequestExactEventAddress = {
-        displayText: input.displayText.trim(),
+        displayText: textNormalizeSingleLine(input.displayText),
         latitude: input.latitude,
         longitude: input.longitude,
-        addressLine1: input.addressLine1.trim(),
-        addressLine2: input.addressLine2.trim(),
-        city: input.city.trim(),
-        postCode: input.postCode.trim(),
-        state: input.state.trim(),
-        country: input.country.trim(),
+        addressLine1: textNormalizeSingleLine(input.addressLine1),
+        addressLine2: textNormalizeSingleLine(input.addressLine2),
+        city: textNormalizeTitled(input.city),
+        postCode: textNormalizeSingleLine(input.postCode),
+        state: textNormalizeSingleLine(input.state),
+        country: textNormalizeSingleLine(input.country),
     };
     if (address.displayText.length === 0 || address.city.length === 0) {
         throw new Error('adminBookingRequestUpdate: exactEventAddress is incomplete');
@@ -83,7 +84,7 @@ export async function adminBookingRequestUpdate(
         } = {};
 
         if (input.occasion != null) {
-            const nextOccasion = input.occasion.trim();
+            const nextOccasion = textNormalizeTitled(input.occasion);
             if (nextOccasion.length === 0) {
                 throw new Error('adminBookingRequestUpdate: occasion must not be empty');
             }
@@ -120,7 +121,7 @@ export async function adminBookingRequestUpdate(
         }
 
         if (input.originalMessage != null) {
-            const nextMessage = input.originalMessage.trim();
+            const nextMessage = textNormalizeProseTitled(input.originalMessage);
             if (nextMessage.length === 0) {
                 throw new Error('adminBookingRequestUpdate: originalMessage must not be empty');
             }
@@ -131,7 +132,9 @@ export async function adminBookingRequestUpdate(
 
         if (input.adjustedMessage !== undefined) {
             const nextAdjusted =
-                input.adjustedMessage == null || input.adjustedMessage.trim().length === 0 ? null : input.adjustedMessage.trim();
+                input.adjustedMessage == null || textNormalizeProse(input.adjustedMessage).length === 0
+                    ? null
+                    : textNormalizeProseTitled(input.adjustedMessage);
             if (nextAdjusted !== bookingRequest.adjustedMessage) {
                 requestPatch.adjustedMessage = nextAdjusted;
             }

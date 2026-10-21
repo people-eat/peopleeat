@@ -24,7 +24,7 @@ describe('userUpdate', () => {
         expect(result).toEqual({ success: true });
         const rows = await testDb.select().from(users).where(eq(users.userId, user.userId));
         expect(rows).toHaveLength(1);
-        expect(rows[0]!.firstName).toBe('renamed');
+        expect(rows[0]!.firstName).toBe('Renamed');
         expect(rows[0]!.lastName).toBe('Person');
 
         // Assert — exactly one publish for this user.
@@ -119,11 +119,11 @@ describe('userUpdate', () => {
             serverRuntime,
         );
 
-        // Assert — success + the persisted value is the trimmed form.
+        // Assert — success + the persisted value is trimmed, collapsed, and titled.
         expect(result).toEqual({ success: true });
         const rows = await testDb.select().from(users).where(eq(users.userId, user.userId));
-        expect(rows[0]!.firstName).toBe('renamed');
-        expect(rows[0]!.lastName).toBe('with spaces');
+        expect(rows[0]!.firstName).toBe('Renamed');
+        expect(rows[0]!.lastName).toBe('With spaces');
         expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: user.userId });
     });
 

@@ -1,4 +1,5 @@
 import { isCookingPhilosophy, isCuisineStyle } from '../../shared/cookProfile';
+import { textNormalizeProse, textNormalizeSingleLine } from '../../shared/textNormalize';
 import type { CookCreate } from '../db/schema';
 import type { GqlSCookCreate } from '../graphql/generated';
 import type { Places } from '../places/Places';
@@ -22,9 +23,9 @@ export async function cookCreatePayloadBuild({
     places: Places;
     errorPrefix: string;
 }): Promise<CookCreatePayload> {
-    const biography = (input.biography ?? '').trim();
-    const cuisineStyleRaw = input.cuisineStyle?.trim() ?? '';
-    const cookingPhilosophyRaw = input.cookingPhilosophy?.trim() ?? '';
+    const biography = textNormalizeProse(input.biography ?? '');
+    const cuisineStyleRaw = textNormalizeSingleLine(input.cuisineStyle ?? '');
+    const cookingPhilosophyRaw = textNormalizeSingleLine(input.cookingPhilosophy ?? '');
     const { travelExpensesAmount, maximumTravelDistance } = input;
 
     const cuisineStyle = cuisineStyleRaw.length > 0 ? cuisineStyleRaw : null;

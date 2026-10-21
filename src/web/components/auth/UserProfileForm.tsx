@@ -5,6 +5,7 @@ import type { SubmitEventHandler } from 'react';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
+import { textNormalizeTitled } from '../../../shared/textNormalize';
 import { userBirthDatePickerBounds } from '../../../shared/userBirthDate';
 import type { GqlCCookCreate, GqlCUserPreferredCommunication } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
@@ -181,8 +182,8 @@ export function UserProfileForm({
         }
 
         void onSubmit({
-            firstName: firstName.trim(),
-            lastName: lastName.trim(),
+            firstName: textNormalizeTitled(firstName),
+            lastName: textNormalizeTitled(lastName),
             ...(requireProfileDetails
                 ? {
                       phoneNumber: phoneNumber.trim(),

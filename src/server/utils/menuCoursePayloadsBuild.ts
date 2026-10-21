@@ -1,5 +1,5 @@
-import { capitalizeFirstLetter } from '../../shared';
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeTitled } from '../../shared/textNormalize';
 import type { MenuCourseCreate, MenuCourseMealOptionCreate } from '../db/schema';
 import type { GqlSCookMenuCourseInput } from '../graphql/generated';
 import { menuMealSelectionLimitNormalize } from './menuMealSelectionLimit';
@@ -20,7 +20,7 @@ export function menuCoursePayloadsBuild(
 
     for (let courseIndex = 0; courseIndex < courses.length; courseIndex += 1) {
         const course = courses[courseIndex]!;
-        const title = course.title.trim();
+        const title = textNormalizeTitled(course.title);
         if (title.length === 0) {
             throw new Error(`${commandName}: each course needs a title`);
         }
@@ -31,7 +31,7 @@ export function menuCoursePayloadsBuild(
             menuId,
             cookId,
             index: courseIndex,
-            title: capitalizeFirstLetter(title),
+            title,
             mealSelectionLimit: menuMealSelectionLimitNormalize(course.mealSelectionLimit, course.mealIds.length),
         });
 

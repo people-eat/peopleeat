@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 
+import { textNormalizeProseTitled, textNormalizeTitledOrNull } from '../../shared/textNormalize';
 import { cookTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminMutation, GqlSAdminMutationCookTestimonialUpdateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
@@ -15,11 +16,11 @@ export async function adminCookTestimonialUpdate(
 
     try {
         const set: Partial<typeof cookTestimonials.$inferInsert> = {};
-        if (input.authorName !== undefined) set.authorName = input.authorName?.trim() || null;
-        if (input.location !== undefined) set.location = input.location?.trim() || null;
-        if (input.occasion !== undefined) set.occasion = input.occasion?.trim() || null;
+        if (input.authorName !== undefined) set.authorName = textNormalizeTitledOrNull(input.authorName);
+        if (input.location !== undefined) set.location = textNormalizeTitledOrNull(input.location);
+        if (input.occasion !== undefined) set.occasion = textNormalizeTitledOrNull(input.occasion);
         if (input.rating !== undefined) set.rating = input.rating ?? null;
-        if (input.body !== undefined) set.body = input.body?.trim() || null;
+        if (input.body !== undefined) set.body = input.body == null ? null : textNormalizeProseTitled(input.body) || null;
 
         if (Object.keys(set).length === 0) {
             throw new Error('adminCookTestimonialUpdate: at least one field is required');

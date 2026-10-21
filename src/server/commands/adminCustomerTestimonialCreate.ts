@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeProseTitled, textNormalizeTitledOrNull } from '../../shared/textNormalize';
 import { bookingRequestOffers, customerTestimonials, users } from '../db/schema';
 import type { CustomerTestimonialCreate } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -23,7 +24,7 @@ export async function adminCustomerTestimonialCreate(
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(adminId, serverRuntime);
 
-    const body = input.body.trim();
+    const body = textNormalizeProseTitled(input.body);
     if (body.length === 0) {
         throw new Error('adminCustomerTestimonialCreate: body must not be empty');
     }
@@ -58,9 +59,9 @@ export async function adminCustomerTestimonialCreate(
             customerTestimonialId,
             userId: input.userId,
             bookingRequestOfferId: input.bookingRequestOfferId ?? null,
-            authorName: input.authorName?.trim() || null,
-            location: input.location?.trim() || null,
-            occasion: input.occasion?.trim() || null,
+            authorName: textNormalizeTitledOrNull(input.authorName),
+            location: textNormalizeTitledOrNull(input.location),
+            occasion: textNormalizeTitledOrNull(input.occasion),
             body,
             imageUrls,
             rating: input.rating ?? null,

@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 
+import { emailNormalize } from '../../shared/emailNormalize';
 import { idCreate } from '../../shared/idCreate';
 import type { Locale } from '../../shared/locale';
 import type { NewsletterSubscriptionCreate } from '../db/schema';
@@ -7,10 +8,6 @@ import { newsletterSubscriptions, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
-
-function emailNormalize(emailAddress: string): string {
-    return emailAddress.trim().toLowerCase();
-}
 
 /**
  * Footer / marketing newsletter subscribe. Idempotent on email: already-subscribed

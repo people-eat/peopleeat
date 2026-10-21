@@ -62,6 +62,22 @@ Persist `Users.phoneNumber` as **E.164 with a leading `+` and country code** (e.
 `phoneNumberNormalize` from `src/shared/phoneNumber.ts` on every write path. Reject local trunk numbers (`0152…`) — they have no country
 code. WhatsApp / Meta sends use the same normalize, then `phoneNumberForWhatsAppApi` (digits only, no `+`).
 
+### Text / email / title normalization
+
+Commands own normalization on every write path (GraphQL scalars are format gates only). Helpers live in `src/shared/`:
+
+| Helper                                            | Use for                                                                                             |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `emailNormalize`                                  | Persist / uniqueness for all email columns (`trim` + lowercase)                                     |
+| `textNormalizeSingleLine`                         | Short fields that should not keep internal double spaces                                            |
+| `textNormalizeTitled`                             | Names, titles, occasions, subjects, preference chips (`singleLine` + capitalize first letter)       |
+| `textNormalizeTitledOrNull`                       | Optional titled fields (`null` when blank)                                                          |
+| `textNormalizeProse` / `textNormalizeProseTitled` | Multiline copy (biography, descriptions, messages); collapses horizontal whitespace, keeps newlines |
+| `invoiceAddressNormalize`                         | Invoice JSON (`firstName` / `lastName` / `companyName` / address lines)                             |
+
+Do **not** force Title Case of every word (preserves `McDonald`, particles, intentional internal caps). UI may apply the same helpers for
+feedback; never rely on the client alone.
+
 ### Column vocabulary and JSONB shapes
 
 `schema.ts` should stay tables + `$inferSelect` / `$inferInsert` row aliases. Hand-written unions and structured payloads used by `$type<>`

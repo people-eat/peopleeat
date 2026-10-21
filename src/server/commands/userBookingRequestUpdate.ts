@@ -6,6 +6,7 @@ import {
 } from '../../shared/bookingRequestOfferPrice';
 import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeSingleLine, textNormalizeTitled } from '../../shared/textNormalize';
 import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks } from '../db/schema';
 import type {
     BookingRequestExactEventAddress,
@@ -54,15 +55,15 @@ function exactEventAddressNormalize(
     input: NonNullable<GqlSUserMutationBookingRequestUpdateArgs['exactEventAddress']>,
 ): BookingRequestExactEventAddress {
     const address: BookingRequestExactEventAddress = {
-        displayText: input.displayText.trim(),
+        displayText: textNormalizeSingleLine(input.displayText),
         latitude: input.latitude,
         longitude: input.longitude,
-        addressLine1: input.addressLine1.trim(),
-        addressLine2: input.addressLine2.trim(),
-        city: input.city.trim(),
-        postCode: input.postCode.trim(),
-        state: input.state.trim(),
-        country: input.country.trim(),
+        addressLine1: textNormalizeSingleLine(input.addressLine1),
+        addressLine2: textNormalizeSingleLine(input.addressLine2),
+        city: textNormalizeTitled(input.city),
+        postCode: textNormalizeSingleLine(input.postCode),
+        state: textNormalizeSingleLine(input.state),
+        country: textNormalizeSingleLine(input.country),
     };
     if (address.displayText.length === 0 || address.city.length === 0) {
         throw new Error('userBookingRequestUpdate: exactEventAddress is incomplete');
@@ -184,7 +185,7 @@ export async function userBookingRequestUpdate(
         }
 
         if (occasion != null) {
-            const nextOccasion = occasion.trim();
+            const nextOccasion = textNormalizeTitled(occasion);
             if (nextOccasion.length === 0) {
                 throw new Error('userBookingRequestUpdate: occasion must not be empty');
             }
@@ -222,19 +223,24 @@ export async function userBookingRequestUpdate(
             }
         }
 
-        if (preferences != null && !preferencesEqual(bookingRequest.preferences, preferences)) {
-            resetCookAcceptance = true;
-            requestPatch.preferences = preferences;
-            for (const { offer } of offers) {
-                eventInserts.push({
-                    bookingRequestOfferEventId: idCreate(),
-                    bookingRequestOfferId: offer.bookingRequestOfferId,
-                    type: 'USER_PREFERENCES_UPDATED',
-                    payload: {
-                        preferencesBefore: bookingRequest.preferences,
-                        preferencesAfter: preferences,
-                    },
-                });
+        if (preferences != null) {
+            const nextPreferences = preferences
+                .map((preference) => textNormalizeTitled(preference))
+                .filter((preference) => preference.length > 0);
+            if (!preferencesEqual(bookingRequest.preferences, nextPreferences)) {
+                resetCookAcceptance = true;
+                requestPatch.preferences = nextPreferences;
+                for (const { offer } of offers) {
+                    eventInserts.push({
+                        bookingRequestOfferEventId: idCreate(),
+                        bookingRequestOfferId: offer.bookingRequestOfferId,
+                        type: 'USER_PREFERENCES_UPDATED',
+                        payload: {
+                            preferencesBefore: bookingRequest.preferences,
+                            preferencesAfter: nextPreferences,
+                        },
+                    });
+                }
             }
         }
 

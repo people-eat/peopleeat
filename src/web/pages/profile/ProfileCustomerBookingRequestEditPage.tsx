@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
-import { bookingRequestParticipantsFromCounts, formatCurrency } from '../../../shared';
+import { bookingRequestParticipantsFromCounts, formatCurrency, textNormalizeTitled } from '../../../shared';
 import type { BookingRequestParticipantDraft } from '../../../shared';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
@@ -355,11 +355,11 @@ export function ProfileCustomerBookingRequestEditPage({
             try {
                 const preferences = value.preferences
                     .split(',')
-                    .map((preference) => preference.trim())
+                    .map((preference) => textNormalizeTitled(preference))
                     .filter((preference) => preference.length > 0);
                 const result = await updateRequest({
                     bookingRequestId,
-                    occasion: value.occasion.trim(),
+                    occasion: textNormalizeTitled(value.occasion),
                     dateTime: value.dateTime,
                     preferences,
                     participants: nextParticipants,

@@ -1,6 +1,6 @@
 import { and, eq, isNull } from 'drizzle-orm';
 
-import { capitalizeFirstLetter } from '../../shared';
+import { textNormalizeProseTitled, textNormalizeTitled } from '../../shared/textNormalize';
 import type { MenuCourseCreate, MenuCourseMealOptionCreate } from '../db/schema';
 import { menuCourseMealOptions, menuCourses, menus } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -66,16 +66,15 @@ export async function cookMenuUpdate(
         } = { updatedAt: new Date() };
 
         if (hasTitle) {
-            const title = menu.title!.trim();
+            const title = textNormalizeTitled(menu.title!);
             if (title.length === 0) {
                 throw new Error('cookMenuUpdate: title must not be empty');
             }
-            set.title = capitalizeFirstLetter(title);
+            set.title = title;
         }
 
         if (hasDescription) {
-            const description = menu.description!.trim();
-            set.description = description.length === 0 ? '' : capitalizeFirstLetter(description);
+            set.description = textNormalizeProseTitled(menu.description!);
         }
 
         if (hasPublishedAt) {

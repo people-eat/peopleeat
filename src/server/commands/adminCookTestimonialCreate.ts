@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeProseTitled, textNormalizeTitledOrNull } from '../../shared/textNormalize';
 import { bookingRequestOffers, cooks, cookTestimonials } from '../db/schema';
 import type { CookTestimonialCreate } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -49,10 +50,10 @@ export async function adminCookTestimonialCreate(
             userId: input.cookId,
             cookId: input.cookId,
             bookingRequestOfferId: input.bookingRequestOfferId ?? null,
-            authorName: input.authorName?.trim() || null,
-            location: input.location?.trim() || null,
-            occasion: input.occasion?.trim() || null,
-            body: input.body?.trim() || null,
+            authorName: textNormalizeTitledOrNull(input.authorName),
+            location: textNormalizeTitledOrNull(input.location),
+            occasion: textNormalizeTitledOrNull(input.occasion),
+            body: input.body == null ? null : textNormalizeProseTitled(input.body) || null,
             imageUrls,
             rating: input.rating ?? null,
             lowRatingAnswers: null,

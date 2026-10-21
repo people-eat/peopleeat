@@ -1,7 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
 
-import { capitalizeFirstLetter } from '../../shared';
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeProseTitled } from '../../shared/textNormalize';
 import type { SupportRequestMessageAttachmentCreate } from '../db/schema';
 import { supportRequestMessageAttachments, supportRequestMessages, supportRequests, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -21,7 +21,7 @@ export async function adminSupportRequestMessageCreate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    const message = capitalizeFirstLetter(args.message.trim());
+    const message = textNormalizeProseTitled(args.message);
     const requestedFileUploadIds = Array.from(new Set(args.fileUploadIds ?? []));
     if (message.length === 0 && requestedFileUploadIds.length === 0) {
         throw new Error('adminSupportRequestMessageCreate: message must not be empty');

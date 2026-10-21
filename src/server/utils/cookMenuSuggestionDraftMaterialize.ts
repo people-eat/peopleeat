@@ -1,5 +1,5 @@
-import { capitalizeFirstLetter } from '../../shared';
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeProseTitled, textNormalizeTitled } from '../../shared/textNormalize';
 import type { MealCreate } from '../db/schema';
 import { meals } from '../db/schema';
 import type { BookingRequestCookMenuEvaluationGeneratedMealOption } from '../domain/bookingRequest';
@@ -36,8 +36,8 @@ export async function cookMenuSuggestionDraftMaterialize(
                 mealInserts.push({
                     mealId,
                     cookId,
-                    title: capitalizeFirstLetter(meal.title.trim()),
-                    description: capitalizeFirstLetter(meal.description.trim()),
+                    title: textNormalizeTitled(meal.title),
+                    description: textNormalizeProseTitled(meal.description),
                     publishedAt: null,
                     deletedAt: null,
                 });
@@ -46,7 +46,7 @@ export async function cookMenuSuggestionDraftMaterialize(
         }
 
         courses.push({
-            title: capitalizeFirstLetter(course.title.trim()),
+            title: textNormalizeTitled(course.title),
             mealIds,
         });
     }
@@ -56,8 +56,8 @@ export async function cookMenuSuggestionDraftMaterialize(
     }
 
     return {
-        title: capitalizeFirstLetter(draft.title.trim()),
-        description: capitalizeFirstLetter(draft.description.trim()),
+        title: textNormalizeTitled(draft.title),
+        description: textNormalizeProseTitled(draft.description),
         courses,
     };
 }
