@@ -57,10 +57,9 @@ test('cook creates offer via UI and customer sees it', async ({ browser }) => {
             await expect(cook.page.getByLabel('Suggest your menu price per person')).toBeVisible({ timeout: 2_000 });
         });
         await clickUntil(cook.page.getByRole('button', { name: 'Make offer' }), async () => {
-            await expect(cook.page.getByText('Offer sent.')).toBeVisible({ timeout: 2_000 });
+            await expect(cook.page.getByRole('alertdialog', { name: 'Offer sent' })).toBeVisible({ timeout: 2_000 });
         });
-        // Create may land on offer detail (last open) or the pool (other open rows remain —
-        // including leftovers from a prior retry). Assert via the cook inbox either way.
+        // Success dialog stays open until the cook chooses; assert via the inbox either way.
         await cook.page.goto('/en/profile/booking-request-offers');
         const cookOfferCard = cook.page.locator('a').filter({ hasText: occasion });
         await expect(cookOfferCard).toBeVisible();
