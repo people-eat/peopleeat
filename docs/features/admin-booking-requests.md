@@ -19,14 +19,14 @@ preselected (Total clears the filter). Cook rows deep-link to the admin user det
 
 ### List — `/admin/booking-requests/list`
 
-Search by occasion, message, venue text, or customer email/name (first, last, or full name in either order). Tabs filter publication status (admin review / auto-approved /
-admin-approved; omit = all). A **Status** select filters derived lifecycle (`WAITING_FOR_OFFERS` … `CANCELED`; omit = all) via
-`AdminBookingRequestCriterion.statuses`. Sort select is always available (grid and list); list column headers remain sortable too. **Clear
-filters** appears when search, publication, or status is set. **Card grid is default** (`view=grid` or omit); `view=list` shows a sortable
-table. Grid cards show occasion, customer link, status and publication badges, event date, location, participants, created date, and offer
-chips deep-linking to offer detail (unread accent, accepted-path ring). Sort and pinned bottom pagination (page + per-page size; default 25)
-via URL. Status uses derived booking request status with **booking lifecycle pills**; blocked-for-review also shows a publication badge.
-Exact event time is reserved for detail pages.
+Search by occasion, message, venue text, or customer email/name (first, last, or full name in either order). Tabs filter publication status
+(admin review / auto-approved / admin-approved; omit = all). A **Status** select filters derived lifecycle (`WAITING_FOR_OFFERS` …
+`CANCELED`; omit = all) via `AdminBookingRequestCriterion.statuses`. Sort select is always available (grid and list); list column headers
+remain sortable too. **Clear filters** appears when search, publication, or status is set. **Card grid is default** (`view=grid` or omit);
+`view=list` shows a sortable table. Grid cards show occasion, customer link, status and publication badges, event date, location,
+participants, created date, and offer chips deep-linking to offer detail (unread accent, accepted-path ring). Sort and pinned bottom
+pagination (page + per-page size; default 25) via URL. Status uses derived booking request status with **booking lifecycle pills**;
+blocked-for-review also shows a publication badge. Exact event time is reserved for detail pages.
 
 ### Create — `/admin/booking-requests/create`
 

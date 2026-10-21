@@ -16,8 +16,7 @@ import { localeFromParam } from '../../../web/utils/locale';
 export const Route = createFileRoute('/{-$locale}/admin/support-requests')({
     validateSearch: (search: Record<string, unknown>) => parseAdminSupportRequestsSearch(search),
     loaderDeps: ({ search }) => search,
-    loader: ({ deps }) =>
-        routeLoaderGraphqlClient(AdminSupportRequestsPageDocument, adminSupportRequestsPageVariables(deps))(),
+    loader: ({ deps }) => routeLoaderGraphqlClient(AdminSupportRequestsPageDocument, adminSupportRequestsPageVariables(deps))(),
     staleTime: 0,
     head: ({ params }) => {
         const locale = localeFromParam(params);

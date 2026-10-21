@@ -46,16 +46,16 @@ requests, WhatsApp conversations — each as its own group when list search crit
 
 ### Alternatives considered
 
-| Option                                           | Pros                           | Cons                                           |
-| ------------------------------------------------ | ------------------------------ | ---------------------------------------------- |
-| Overview combobox only                           | Already shipped                | Hidden on other pages; destinations only       |
-| Per-list URL search only                         | Precise filters                | No cross-entity jump                           |
-| New dialog beside pages palette                  | Isolates risk                  | Two shortcuts / two UIs; users won't discover  |
-| Client fan-out of many list queries              | No new API                     | Latency, inconsistent limits, hard to rank     |
-| Single admin search field returning grouped hits | One round-trip; server caps    | New API; grows with entities                   |
-| Postgres full-text index                         | Better ranking at scale        | Overkill for admin volume                      |
-| Dedicated search results page                    | Shareable URL                  | Extra hop vs palette                           |
-| Evolve ⌘K dialog + unified search (chosen)       | Familiar; available everywhere | Needs entity API; keyboard conflicts           |
+| Option                                           | Pros                           | Cons                                          |
+| ------------------------------------------------ | ------------------------------ | --------------------------------------------- |
+| Overview combobox only                           | Already shipped                | Hidden on other pages; destinations only      |
+| Per-list URL search only                         | Precise filters                | No cross-entity jump                          |
+| New dialog beside pages palette                  | Isolates risk                  | Two shortcuts / two UIs; users won't discover |
+| Client fan-out of many list queries              | No new API                     | Latency, inconsistent limits, hard to rank    |
+| Single admin search field returning grouped hits | One round-trip; server caps    | New API; grows with entities                  |
+| Postgres full-text index                         | Better ranking at scale        | Overkill for admin volume                     |
+| Dedicated search results page                    | Shareable URL                  | Extra hop vs palette                          |
+| Evolve ⌘K dialog + unified search (chosen)       | Familiar; available everywhere | Needs entity API; keyboard conflicts          |
 
 ### Chosen
 
@@ -99,8 +99,8 @@ admin search field returning typed hit groups. Debounce ~200–300 ms. Cap hits 
 ### GraphQL (sketch)
 
 Grouped result type on admin namespace, e.g. `globalSearch(text, takePerGroup)` returning users, booking requests, then later cities, web
-pages, …. Empty or short text → empty entity groups (pages still filter client-side). Prefer grouped fields over a flat union for v1
-mapping into command groups.
+pages, …. Empty or short text → empty entity groups (pages still filter client-side). Prefer grouped fields over a flat union for v1 mapping
+into command groups.
 
 ### Server
 

@@ -117,10 +117,10 @@ detail with URL tabs; manual create with optional admin and cook payloads.
 
 GraphQL: `users(criterion)` / `userCounts(criteria)` — search (email / first / last / full name either order), types filter, optional
 `status`, optional `userIds` (`IN`; omit or empty = no id filter — admin assistant drill-in), sort, paginate; `userRegistrations(range)`;
-`userInsights`; `upcomingBirthdays(take)`; `user(id)`;
-`userCreate`, `userUpdate`, `userEmailAddressUpdate`, `userAdminNoteUpdate`, `userStatusUpdate`, `sessionUserBind`, `userAnonymize`,
-`terminateSessions`, `cookUpdate`, `cookBiographySuggest`, `cookBiographySummarySuggest`, `cookMealCreate`, `cookMenuCreate`. Type labels:
-admin (admins row), cook (cooks row), customer (no cook row); combinations allowed. `AdminUser.status` exposes `UserStatus`.
+`userInsights`; `upcomingBirthdays(take)`; `user(id)`; `userCreate`, `userUpdate`, `userEmailAddressUpdate`, `userAdminNoteUpdate`,
+`userStatusUpdate`, `sessionUserBind`, `userAnonymize`, `terminateSessions`, `cookUpdate`, `cookBiographySuggest`,
+`cookBiographySummarySuggest`, `cookMealCreate`, `cookMenuCreate`. Type labels: admin (admins row), cook (cooks row), customer (no cook
+row); combinations allowed. `AdminUser.status` exposes `UserStatus`.
 
 Gate: [authorization-admin.md](../architecture/authorization-admin.md).
 
