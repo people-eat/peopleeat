@@ -73,8 +73,9 @@ when `paymentData` has those ids; test vs live from `STRIPE_SECRET_KEY`), payout
 Kochsicht** titles above, columns top-aligned. **Customer view** sits in a card around `CostBreakdownPanel` (promo / gift line items +
 total, muted travel-included footer). **Cook view** renders `BookingRequestOfferCostOverviewPanel` (`viewer: admin`) without an extra card
 wrapper (panel already has bordered sections) using **stored** offer fee amounts (not a live recalculation), so migrated or historical fee
-snapshots stay honest. Fee create/edit still only takes menu price + travel; percents/amounts are always recalculated on write. Edit-price
-CTA lives on this tab’s footer only.
+snapshots stay honest. Fee create/edit still only takes menu price + travel; percents/amounts (including
+`totalWithoutDiscountsCentsCustomer` and, when already set, `totalCentsCustomer` with any gift/promo discount cents preserved) are always
+recalculated on write. Edit-price CTA lives on this tab’s footer only.
 
 **Menu** holds only configured / suggested menus (`OfferMenuConfigured` or `CookMenuCard` grid to `/admin/menus/$menuId`) — no cook/customer
 header. When a customer has frozen a configured menu, admins can open `.../edit-configured-menu` to replace title, description, and

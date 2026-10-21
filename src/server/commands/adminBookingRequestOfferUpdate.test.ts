@@ -63,6 +63,7 @@ async function setupAdminOfferUpdate() {
         platformFeeCentsCustomer: 2_140,
         payoutCentsCook: 18_000,
         totalWithoutDiscountsCentsCustomer: 23_540,
+        totalCentsCustomer: 23_540,
         paymentStatus: 'EMPTY',
     });
 
@@ -101,7 +102,66 @@ describe('adminBookingRequestOfferUpdate', () => {
         expect(offer?.platformFeePercentCook).toBe(18);
         expect(offer?.payoutCentsCook).toBe(expectedPrice.payoutCentsCook);
         expect(offer?.totalWithoutDiscountsCentsCustomer).toBe(expectedPrice.totalWithoutDiscountsCentsCustomer);
+        expect(offer?.totalCentsCustomer).toBe(expectedPrice.totalWithoutDiscountsCentsCustomer);
         expect(offer?.paymentStatus).toBe('EMPTY');
+    });
+
+    it('preserves gift/promo discount cents when recalculating totalCentsCustomer', async () => {
+        const { admin, bookingRequestOfferId } = await setupAdminOfferUpdate();
+        const discountCents = 5_000;
+        await testDb
+            .update(bookingRequestOffers)
+            .set({ totalCentsCustomer: 23_540 - discountCents })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+        const expectedPrice = bookingRequestOfferPriceCalculate({
+            menuPriceCents: 30_000,
+            travelExpensesCents: 3_000,
+        });
+
+        await adminBookingRequestOfferUpdate(
+            adminMutationParent(admin.user.userId),
+            {
+                bookingRequestOfferId,
+                input: {
+                    menuPriceCents: 30_000,
+                    travelExpensesCents: 3_000,
+                },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.totalWithoutDiscountsCentsCustomer).toBe(expectedPrice.totalWithoutDiscountsCentsCustomer);
+        expect(offer?.totalCentsCustomer).toBe(expectedPrice.totalWithoutDiscountsCentsCustomer - discountCents);
+    });
+
+    it('leaves totalCentsCustomer null when it was unset', async () => {
+        const { admin, bookingRequestOfferId } = await setupAdminOfferUpdate();
+        await testDb
+            .update(bookingRequestOffers)
+            .set({ totalCentsCustomer: null })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+        await adminBookingRequestOfferUpdate(
+            adminMutationParent(admin.user.userId),
+            {
+                bookingRequestOfferId,
+                input: { menuPriceCents: 30_000, travelExpensesCents: 3_000 },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.totalCentsCustomer).toBeNull();
     });
 
     it('sets PAYED_OUT_OF_SYSTEM when dual-accepting an EMPTY offer', async () => {

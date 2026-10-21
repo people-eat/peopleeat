@@ -61,6 +61,7 @@ export async function adminBookingRequestOfferUpdate(
             platformFeeCentsCustomer?: number;
             payoutCentsCook?: number;
             totalWithoutDiscountsCentsCustomer?: number;
+            totalCentsCustomer?: number;
             travelDistanceKm?: number | null;
             paymentDateTime?: Date | null;
             plannedPayoutDateTime?: Date | null;
@@ -103,6 +104,10 @@ export async function adminBookingRequestOfferUpdate(
             offerPatch.platformFeeCentsCustomer = price.platformFeeCentsCustomer;
             offerPatch.payoutCentsCook = price.payoutCentsCook;
             offerPatch.totalWithoutDiscountsCentsCustomer = price.totalWithoutDiscountsCentsCustomer;
+            if (offer.totalCentsCustomer != null) {
+                const discountCents = Math.max(0, offer.totalWithoutDiscountsCentsCustomer - offer.totalCentsCustomer);
+                offerPatch.totalCentsCustomer = Math.max(0, price.totalWithoutDiscountsCentsCustomer - discountCents);
+            }
         }
 
         if (input.travelDistanceKm !== undefined) {
