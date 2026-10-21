@@ -36,7 +36,7 @@ Visiting `/admin/*` as an admin shows:
 
 Unsigned visitors redirect to sign-in with return URL. Signed-in non-admins redirect to `/profile`.
 
-Mobile: left nav sheet closes on route change.
+Mobile: left nav sheet and assistant sheet both close on route change (so in-chat entity cards reveal the destination).
 
 ### Overview — `/admin`
 

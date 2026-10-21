@@ -86,9 +86,13 @@ function pathWithoutLocale(pathname: string, locale: Locale): string {
 export function AssistantSidebarShell({ surface, ...props }: ComponentProps<typeof Sidebar> & { surface: AssistantSidebarSurface }) {
     const locale = useLocale();
     const isMobile = useIsMobile();
-    const { toggleSidebar, open, openMobile } = useSidebar();
+    const { toggleSidebar, open, openMobile, setOpenMobile } = useSidebar();
     const pathname = useRouterState({ select: (state) => state.location.pathname });
     const path = pathWithoutLocale(pathname, locale);
+
+    useEffect(() => {
+        setOpenMobile(false);
+    }, [pathname, setOpenMobile]);
     const [mode, setMode] = useState<ShellMode>('compose');
     const [chatId, setChatIdState] = useState<string | undefined>(() =>
         typeof window === 'undefined' ? undefined : readActiveChatId(surface),

@@ -22,6 +22,10 @@ screen** · close. Every icon-only control has a tooltip matching its `aria-labe
 closes the rail on navigate. Those routes render `AssistantChatWorkspace` (nav sidebar toggle + chat title; no back arrow) and hide the
 floating rail so the transcript can use the full inset. Distinct from admin inspect at `/admin/assistant-chats/$chatId` (read-only).
 
+**Mobile sheet + in-chat navigation** — On narrow viewports the rail is a full-screen sheet. When a transcript card (booking request, user,
+meal, …) or other in-rail link changes the route, the sheet closes so the main inset destination is visible. Desktop keeps the rail open
+beside the inset.
+
 **Drag-resize** — Desktop left-edge handle on the open rail; width persists in `localStorage` (18 rem–50% of viewport, default 22). SSR and
 the first client paint always use the default; the stored width is applied after mount so hydration stays matched.
 
