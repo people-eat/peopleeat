@@ -5,6 +5,7 @@ import type { DateRange } from 'react-day-picker';
 import { formatDate, formatIsoDate, userDisplayName } from '../../../shared';
 import type { Locale } from '../../../shared/locale';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
+import { Badge } from '../../components/base/badge';
 import { DateRangePicker } from '../../components/base/date-range-picker';
 import type {
     GqlCAdminUserCriterion,
@@ -371,7 +372,14 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                                             'flex flex-wrap items-center justify-between gap-3 px-4 py-3',
                                         )}
                                     >
-                                        <span className="font-medium text-foreground">{userDisplayName(entry)}</span>
+                                        <span className="flex min-w-0 flex-wrap items-center gap-2">
+                                            <span className="font-medium text-foreground">{userDisplayName(entry)}</span>
+                                            {entry.types.map((type) => (
+                                                <Badge key={type} variant="outline">
+                                                    {adminUserTypeLabel(type, locale)}
+                                                </Badge>
+                                            ))}
+                                        </span>
                                         <span className="text-sm text-muted-foreground tabular-nums">
                                             {formatDate(entry.nextBirthday, { locale, timeZone, dateStyle: 'medium' })}
                                             <span className="text-muted-foreground/80">

@@ -41,6 +41,7 @@ query AdminUsersOverviewPage(
                     userId
                     firstName
                     lastName
+                    types
                     birthDate
                     nextBirthday
                 }

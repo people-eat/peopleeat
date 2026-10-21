@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminUpcomingBirthdaysArgs, GqlSAdminUserUpcomingBirthday, GqlSSession } from '../graphql/generated';
+import { adminUserTypesByUserIdFindMany } from '../utils/adminUserTypesByUserIdFindMany';
 import { findManyTake } from '../utils/findManyTake';
 
 type UpcomingBirthdayRow = {
@@ -59,11 +60,16 @@ export async function adminUserUpcomingBirthdaysFindMany(
         `);
 
         const rows = Array.isArray(result) ? result : result.rows;
+        const typesByUserId = await adminUserTypesByUserIdFindMany(
+            rows.map((row) => row.userId),
+            serverRuntime.db,
+        );
 
         return rows.map((row) => ({
             userId: row.userId,
             firstName: row.firstName,
             lastName: row.lastName,
+            types: typesByUserId.get(row.userId) ?? ['customer'],
             birthDate: row.birthDate,
             nextBirthday: row.nextBirthday,
         }));

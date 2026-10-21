@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { users } from '../db/schema';
+import { cooks, users } from '../db/schema';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { adminUserInsightsFindOne } from './adminUserInsightsFindOne';
 import { adminUserUpcomingBirthdaysFindMany } from './adminUserUpcomingBirthdaysFindMany';
@@ -98,6 +98,7 @@ describe('adminUserUpcomingBirthdaysFindMany', () => {
             lastName: 'Beta',
             birthDate: `1992-${monthDayInDays(40)}`,
         });
+        await testDb.insert(cooks).values({ cookId: later.user.userId });
         await testDb.insert(users).values({
             userId: idCreate(),
             firstName: `${token}-anon`,
@@ -114,6 +115,8 @@ describe('adminUserUpcomingBirthdaysFindMany', () => {
         const ours = birthdays.filter((row) => row.userId === soon.user.userId || row.userId === later.user.userId);
         expect(ours.map((row) => row.userId)).toEqual([soon.user.userId, later.user.userId]);
         expect(ours[0]!.nextBirthday <= ours[1]!.nextBirthday).toBe(true);
+        expect(ours[0]!.types).toEqual(['customer']);
+        expect(ours[1]!.types).toEqual(['cook']);
         expect(birthdays.some((row) => row.firstName === `${token}-anon`)).toBe(false);
     });
 });

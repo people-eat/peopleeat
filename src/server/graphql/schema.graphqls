@@ -2747,6 +2747,8 @@ type AdminUserUpcomingBirthday {
     userId: ID!
     firstName: String!
     lastName: String!
+    # Membership labels for this row (same rules as `AdminUser.types`).
+    types: [AdminUserType!]!
     # Original birth date (year included).
     birthDate: Date!
     # Next calendar occurrence of the birthday (today or later).

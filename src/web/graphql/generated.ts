@@ -2295,6 +2295,7 @@ export interface GqlCAdminUserUpcomingBirthday {
     firstName: Scalars['String']['output'];
     lastName: Scalars['String']['output'];
     nextBirthday: Scalars['Date']['output'];
+    types: Array<GqlCAdminUserType>;
     userId: Scalars['ID']['output'];
 }
 
@@ -15511,7 +15512,14 @@ export type GqlCAdminUsersOverviewPageQuery = {
                     locales: Array<{ locale: Schema.GqlCLocale; count: number }>;
                     timeZones: Array<{ timeZone: string; count: number }>;
                 };
-                upcomingBirthdays: Array<{ userId: string; firstName: string; lastName: string; birthDate: string; nextBirthday: string }>;
+                upcomingBirthdays: Array<{
+                    userId: string;
+                    firstName: string;
+                    lastName: string;
+                    types: Array<Schema.GqlCAdminUserType>;
+                    birthDate: string;
+                    nextBirthday: string;
+                }>;
             } | null;
         } | null;
     };
@@ -64841,6 +64849,7 @@ export const AdminUsersOverviewPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'types' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'nextBirthday' } },
                                                                 ],

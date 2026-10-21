@@ -2292,6 +2292,7 @@ export interface GqlSAdminUserUpcomingBirthday {
     firstName: Scalars['String']['output'];
     lastName: Scalars['String']['output'];
     nextBirthday: Scalars['Date']['output'];
+    types: Array<GqlSAdminUserType>;
     userId: Scalars['ID']['output'];
 }
 
@@ -8314,6 +8315,7 @@ export type GqlSAdminUserUpcomingBirthdayResolvers<
     firstName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     lastName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     nextBirthday?: Resolver<GqlSResolversTypes['Date'], ParentType, ContextType>;
+    types?: Resolver<Array<GqlSResolversTypes['AdminUserType']>, ParentType, ContextType>;
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
 }>;
 

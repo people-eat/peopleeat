@@ -14,8 +14,8 @@ with `type` preselected (Total clears the filter).
 
 **Insights** (all non-anonymized accounts, independent of the chart range): ranked breakdowns for preferred communication, locale, and top
 time zones (count + share of non-anonymized accounts). **Age and birthdays** follows with median + average age and birth-date sample size,
-then upcoming birthdays (name links to the user detail; shows next date and age they turn). Median is the primary age signal; average stays
-for comparison when the distribution is skewed.
+then upcoming birthdays (name links to the user detail; type badges for cook / customer / admin; shows next date and age they turn). Median
+is the primary age signal; average stays for comparison when the distribution is skewed.
 
 ### List — `/admin/users/list`
 
