@@ -324,6 +324,15 @@ mutation AdminBookingRequestOfferCallLeave($bookingRequestOfferCallRoomParticipa
     }
 }
 
+mutation AdminBookingRequestOfferCallSlotDecline($cookCallSlotBookingId: ID!, $onBehalfOf: CookCallSlotBookingActor!, $reason: String) {
+    admin {
+        bookingRequestOfferCallSlotDecline(cookCallSlotBookingId: $cookCallSlotBookingId, onBehalfOf: $onBehalfOf, reason: $reason) {
+            success
+            referenceId
+        }
+    }
+}
+
 mutation AdminBookingRequestOfferPayoutRelease($bookingRequestOfferId: ID!) {
     admin {
         bookingRequestOfferPayoutRelease(bookingRequestOfferId: $bookingRequestOfferId) {

@@ -4195,6 +4195,10 @@ type AdminMutation {
     bookingRequestOfferCallCreate(bookingRequestOfferId: ID!): BookingRequestOfferCallTokenResult!
     bookingRequestOfferCallJoin(bookingRequestOfferId: ID!): BookingRequestOfferCallTokenResult!
     bookingRequestOfferCallLeave(bookingRequestOfferCallRoomParticipantId: ID!): MutationResult!
+    # Decline a PENDING call-slot request on behalf of the counterparty
+    # (`onBehalfOf` must be CUSTOMER when the cook initiated, COOK when the
+    # customer initiated). Same lifecycle emails as the party decline path.
+    bookingRequestOfferCallSlotDecline(cookCallSlotBookingId: ID!, onBehalfOf: CookCallSlotBookingActor!, reason: String): MutationResult!
     # Cancel a pre-accept booking request (same statuses and customer/cook emails
     # as `UserMutation.bookingRequestCancel`). Returns `bookingRequestId`.
     bookingRequestCancel(bookingRequestId: ID!, reason: String!): MutationResult!

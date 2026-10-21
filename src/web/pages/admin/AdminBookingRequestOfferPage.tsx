@@ -69,6 +69,7 @@ import {
     AdminBookingRequestOfferCallCreateDocument,
     AdminBookingRequestOfferCallJoinDocument,
     AdminBookingRequestOfferCallLeaveDocument,
+    AdminBookingRequestOfferCallSlotDeclineDocument,
     AdminBookingRequestOfferChatMessageCreateDocument,
     AdminBookingRequestOfferChatMessageDeleteDocument,
     AdminBookingRequestOfferChatMessageReactionUpsertDocument,
@@ -703,6 +704,7 @@ export function AdminBookingRequestOfferPage({
                                         createDocument={AdminBookingRequestOfferCallCreateDocument}
                                         joinDocument={AdminBookingRequestOfferCallJoinDocument}
                                         leaveDocument={AdminBookingRequestOfferCallLeaveDocument}
+                                        declineDocument={AdminBookingRequestOfferCallSlotDeclineDocument}
                                         showSchedule={showSchedule}
                                         callSchedulingEnabled={offer.cook.callSchedulingEnabled}
                                         callDurationMinutes={offer.cook.callDurationMinutes}

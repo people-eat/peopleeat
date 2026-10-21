@@ -101,7 +101,8 @@ decline / cancel. Slot **derivation** (`deriveCookCallSlots` / `cookCallSlotsFin
 commands are implemented. LiveKit rooms (`BookingRequestOfferCallRooms` + participants) support ad-hoc create/join/leave; confirmed slots
 link via `videoCallRoomId` when a room opens in the join window. Reminder / complete / empty-room sweep jobs are registered. Closing an
 offer (party decline, cook ban) auto-declines PENDING slots; booking-request expiry / cancel auto-cancels them
-(`bookingRequestOfferPendingCallSlotsClose`). When `OBJECT_STORAGE_S3_*` is set, room create starts audio egress and room end enqueues
+(`bookingRequestOfferPendingCallSlotsClose`). Admins may also decline PENDING slots on the offer Call tab on behalf of the counterparty
+(`adminBookingRequestOfferCallSlotDecline`). When `OBJECT_STORAGE_S3_*` is set, room create starts audio egress and room end enqueues
 transcript finalize (see [call-recordings.md](../features/call-recordings.md)). Travel distance uses **Google Routes driving km** via
 `serverRuntime.places.drivingDistanceKm`, with haversine `geoDistance` as fallback (`travelDistanceKmResolve`). That value is stamped on
 `BookingRequestCooks.travelDistanceKm` at first pool open (and on offer create if open was skipped), so cook pool detail / offer-create

@@ -18,6 +18,7 @@ import { adminBookingRequestDiscountUpdate } from '../commands/adminBookingReque
 import { adminBookingRequestOfferCallCreate } from '../commands/adminBookingRequestOfferCallCreate';
 import { adminBookingRequestOfferCallJoin } from '../commands/adminBookingRequestOfferCallJoin';
 import { adminBookingRequestOfferCallLeave } from '../commands/adminBookingRequestOfferCallLeave';
+import { adminBookingRequestOfferCallSlotDecline } from '../commands/adminBookingRequestOfferCallSlotDecline';
 import { adminBookingRequestOfferChatMessageCreate } from '../commands/adminBookingRequestOfferChatMessageCreate';
 import { adminBookingRequestOfferChatMessageDelete } from '../commands/adminBookingRequestOfferChatMessageDelete';
 import { adminBookingRequestOfferChatMessageUpdate } from '../commands/adminBookingRequestOfferChatMessageUpdate';
@@ -487,6 +488,7 @@ import type {
     GqlSAdminMutationBookingRequestOfferCallCreateArgs,
     GqlSAdminMutationBookingRequestOfferCallJoinArgs,
     GqlSAdminMutationBookingRequestOfferCallLeaveArgs,
+    GqlSAdminMutationBookingRequestOfferCallSlotDeclineArgs,
     GqlSAdminMutationBookingRequestOfferChatMessageCreateArgs,
     GqlSAdminMutationBookingRequestOfferChatMessageDeleteArgs,
     GqlSAdminMutationBookingRequestOfferChatMessageReactionUpsertArgs,
@@ -2263,6 +2265,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return adminBookingRequestOfferCallLeave(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferCallSlotDecline(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationBookingRequestOfferCallSlotDeclineArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestOfferCallSlotDecline(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestCancel(
                 parent: GqlSAdminMutation,

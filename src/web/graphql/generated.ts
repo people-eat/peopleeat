@@ -1323,6 +1323,7 @@ export interface GqlCAdminMutation {
     bookingRequestOfferCallCreate: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlCMutationResult;
+    bookingRequestOfferCallSlotDecline: GqlCMutationResult;
     bookingRequestOfferChatMessageCreate: GqlCMutationResult;
     bookingRequestOfferChatMessageDelete: GqlCMutationResult;
     bookingRequestOfferChatMessageReactionUpsert: GqlCMutationResult;
@@ -1441,6 +1442,12 @@ export type GqlCAdminMutationBookingRequestOfferCallJoinArgs = {
 
 export type GqlCAdminMutationBookingRequestOfferCallLeaveArgs = {
     bookingRequestOfferCallRoomParticipantId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationBookingRequestOfferCallSlotDeclineArgs = {
+    cookCallSlotBookingId: Scalars['ID']['input'];
+    onBehalfOf: GqlCCookCallSlotBookingActor;
+    reason?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GqlCAdminMutationBookingRequestOfferChatMessageCreateArgs = {
@@ -10267,6 +10274,16 @@ export type GqlCAdminBookingRequestOfferCallLeaveMutationVariables = Exact<{
 
 export type GqlCAdminBookingRequestOfferCallLeaveMutation = {
     admin: { bookingRequestOfferCallLeave: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCAdminBookingRequestOfferCallSlotDeclineMutationVariables = Exact<{
+    cookCallSlotBookingId: string;
+    onBehalfOf: Schema.GqlCCookCallSlotBookingActor;
+    reason?: string | null | undefined;
+}>;
+
+export type GqlCAdminBookingRequestOfferCallSlotDeclineMutation = {
+    admin: { bookingRequestOfferCallSlotDecline: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCAdminBookingRequestOfferPayoutReleaseMutationVariables = Exact<{
@@ -45624,6 +45641,78 @@ export const AdminBookingRequestOfferCallLeaveDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminBookingRequestOfferCallLeaveMutation, GqlCAdminBookingRequestOfferCallLeaveMutationVariables>;
+export const AdminBookingRequestOfferCallSlotDeclineDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminBookingRequestOfferCallSlotDecline' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookCallSlotBookingId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'onBehalfOf' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookCallSlotBookingActor' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'reason' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferCallSlotDecline' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'cookCallSlotBookingId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookCallSlotBookingId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'onBehalfOf' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'onBehalfOf' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'reason' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'reason' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminBookingRequestOfferCallSlotDeclineMutation,
+    GqlCAdminBookingRequestOfferCallSlotDeclineMutationVariables
+>;
 export const AdminBookingRequestOfferPayoutReleaseDocument = {
     kind: 'Document',
     definitions: [

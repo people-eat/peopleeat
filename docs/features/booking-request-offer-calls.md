@@ -17,9 +17,10 @@ On an open offer (customer, cook, or admin offer page), a single **Call** tab co
 2. **Ad-hoc call** — Either party (or admin) starts a live room on the offer; the peer sees a live banner and can join. Start/join lives at
    the top of the Call tab.
 3. **Scheduled join** — For a confirmed slot, join is available from 60 minutes before start through 15 minutes after end (same top CTA).
-4. **Admin** — Can create, join, and leave rooms on any offer; read-only on slot lifecycle. Hub at `/admin/calls` (overview attention
-   board + stats; list for full traffic including declines and cancels). Admin offer pages mirror customer/cook banners for
-   pending/confirmed slots; schedule section stays read-only. Recordings/transcripts sit below on the same Call tab.
+4. **Admin** — Can create, join, and leave rooms on any offer; can decline PENDING call requests on the offer Call tab on behalf of the
+   counterparty (customer or cook). Confirm / cancel / propose stay with the parties. Hub at `/admin/calls` (overview attention board +
+   stats; list for full traffic including declines and cancels). Admin offer pages mirror customer/cook banners for pending/confirmed slots.
+   Recordings/transcripts sit below on the same Call tab.
 
 Customer and cook offer pages show pending incoming calls as a **compact header strip** above the tabs (visible without displacing the
 fill-height chat grid); chat milestones include the slot time range. Unread counters clear when opening chat **or** Call.
@@ -72,7 +73,7 @@ empty and delete room; recurring sweep for stale active rooms (~90s threshold). 
 ### Commands (role-prefixed)
 
 - Call: `user|cook|admin` create / join / leave
-- Slots: `user|cook` request / confirm / decline / cancel
+- Slots: `user|cook` request / confirm / decline / cancel; `admin` decline (`onBehalfOf` counterparty only)
 - Confirm cancels sibling pending rows and emits matching cancelled offer events
 - Offer decline / cook ban / booking-request cancel / `booking-request-expire-notify` close PENDING slots via
   `bookingRequestOfferPendingCallSlotsClose` (decline emails suppressed; complete jobs canceled)
@@ -127,6 +128,8 @@ CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’
   inline hint text; `openCall` deep-links to `?tab=call`
 - Cook `/profile/calls`: cross-offer pending/confirmed via cook call-slot bookings query
 - Admin `/admin/calls` overview + list; admin offer cards use `callBookingOverviewHint(..., 'admin')` (neutral who-must-act copy)
+- Admin offer Call tab: decline PENDING slots via `AdminBookingRequestOfferCallSlotDecline` (`onBehalfOf` counterparty); propose / confirm /
+  cancel remain unavailable
 
 ### Env
 

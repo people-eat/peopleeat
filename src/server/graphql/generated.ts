@@ -1320,6 +1320,7 @@ export interface GqlSAdminMutation {
     bookingRequestOfferCallCreate: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlSMutationResult;
+    bookingRequestOfferCallSlotDecline: GqlSMutationResult;
     bookingRequestOfferChatMessageCreate: GqlSMutationResult;
     bookingRequestOfferChatMessageDelete: GqlSMutationResult;
     bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
@@ -1438,6 +1439,12 @@ export type GqlSAdminMutationBookingRequestOfferCallJoinArgs = {
 
 export type GqlSAdminMutationBookingRequestOfferCallLeaveArgs = {
     bookingRequestOfferCallRoomParticipantId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationBookingRequestOfferCallSlotDeclineArgs = {
+    cookCallSlotBookingId: Scalars['ID']['input'];
+    onBehalfOf: GqlSCookCallSlotBookingActor;
+    reason?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GqlSAdminMutationBookingRequestOfferChatMessageCreateArgs = {
@@ -7328,6 +7335,12 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationBookingRequestOfferCallLeaveArgs, 'bookingRequestOfferCallRoomParticipantId'>
+    >;
+    bookingRequestOfferCallSlotDecline?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationBookingRequestOfferCallSlotDeclineArgs, 'cookCallSlotBookingId' | 'onBehalfOf'>
     >;
     bookingRequestOfferChatMessageCreate?: Resolver<
         GqlSResolversTypes['MutationResult'],

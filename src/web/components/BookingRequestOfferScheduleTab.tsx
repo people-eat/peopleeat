@@ -120,7 +120,9 @@ function statusLabel(booking: BookingRequestOfferScheduleCallBooking, role: Book
                     ? { de: 'Wartet auf Kunden', en: 'Awaiting customer' }[locale]
                     : { de: 'Wartet auf deine Reaktion', en: 'Awaiting your response' }[locale];
             }
-            return { de: 'Ausstehend', en: 'Pending' }[locale];
+            return booking.initiator === 'COOK'
+                ? { de: 'Wartet auf Kunden', en: 'Awaiting customer' }[locale]
+                : { de: 'Wartet auf Koch', en: 'Awaiting chef' }[locale];
         default:
             return booking.status;
     }
@@ -141,7 +143,8 @@ function statusTone(booking: BookingRequestOfferScheduleCallBooking, role: Booki
             if (role === 'cook') {
                 return booking.initiator === 'CUSTOMER' ? 'warning' : 'info';
             }
-            return 'info';
+            // Admin can decline on behalf of the waiting counterparty.
+            return 'warning';
         default:
             return 'info';
     }
@@ -162,7 +165,8 @@ export function BookingRequestOfferScheduleTab({
 }: BookingRequestOfferScheduleTabProps) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const readOnly = role === 'admin' || !requestDocument;
+    // Admin stays off propose / confirm / cancel; decline is enabled when a decline doc is passed.
+    const readOnly = role === 'admin' ? !declineDocument : !requestDocument;
 
     const [, requestMutation] = useMutation(requestDocument ?? ({} as DocumentInput));
     const [, confirmMutation] = useMutation(confirmDocument ?? ({} as DocumentInput));
@@ -260,12 +264,24 @@ export function BookingRequestOfferScheduleTab({
 
     async function onDecline(cookCallSlotBookingId: string) {
         if (readOnly || !declineDocument || busy) return;
+        const booking = sortedBookings.find((row) => row.cookCallSlotBookingId === cookCallSlotBookingId);
+        if (!booking || booking.status !== 'PENDING') return;
         setBusy(true);
         try {
-            const result = await declineMutation({
-                cookCallSlotBookingId,
-                reason: declineReason.trim() || null,
-            });
+            const reason = declineReason.trim() || null;
+            const result = await declineMutation(
+                role === 'admin'
+                    ? {
+                          cookCallSlotBookingId,
+                          // Counterparty of the initiator — admin declines in their name.
+                          onBehalfOf: booking.initiator === 'COOK' ? 'CUSTOMER' : 'COOK',
+                          reason,
+                      }
+                    : {
+                          cookCallSlotBookingId,
+                          reason,
+                      },
+            );
             if (!mutationSucceeded(result.data)) throw new Error('decline failed');
             setDecliningId(null);
             setDeclineReason('');
@@ -361,8 +377,8 @@ export function BookingRequestOfferScheduleTab({
                 <p className="text-sm text-muted-foreground">
                     {
                         {
-                            de: 'Nur Ansicht. Termine bestätigen oder absagen die Parteien selbst.',
-                            en: 'Read-only. Parties confirm or cancel appointments themselves.',
+                            de: 'Ausstehende Anfragen kannst du im Namen von Kunde oder Koch ablehnen. Bestätigen und absagen bleiben bei den Parteien.',
+                            en: 'You can decline pending requests on behalf of the customer or chef. Confirm and cancel stay with the parties.',
                         }[locale]
                     }
                 </p>
@@ -598,16 +614,20 @@ function BookingCard({
     const reasonText = describeReason(booking.declineReason ?? booking.canceledReason, locale);
     const canRespondAsUser = role === 'user' && isPending && fromCook;
     const canRespondAsCook = role === 'cook' && isPending && fromCustomer;
+    const canDeclineAsAdmin = role === 'admin' && isPending;
     const canWithdrawAsUser = role === 'user' && isPending && fromCustomer;
     const canWithdrawAsCook = role === 'cook' && isPending && fromCook;
     const canCancelConfirmed = (role === 'user' || role === 'cook') && isConfirmed;
+    const adminDeclineLabel = fromCook
+        ? { de: 'Als Kunde ablehnen', en: 'Decline as customer' }[locale]
+        : { de: 'Als Koch ablehnen', en: 'Decline as chef' }[locale];
     const whenLabel = `${formatDate(start, { locale, timeZone, weekday: true })} · ${formatCallTime(start, locale, timeZone)}–${formatCallTime(end, locale, timeZone)}${locale === 'de' ? ' Uhr' : ''}`;
 
     const hasBody =
         Boolean(booking.customerMessage) ||
         Boolean(booking.cookMessage) ||
         Boolean(reasonText) ||
-        (!readOnly && (canRespondAsUser || canRespondAsCook)) ||
+        (!readOnly && (canRespondAsUser || canRespondAsCook || canDeclineAsAdmin)) ||
         isConfirmed ||
         (!readOnly && (canWithdrawAsUser || canWithdrawAsCook)) ||
         (!readOnly && isCanceling);
@@ -679,6 +699,23 @@ function BookingCard({
                                 }}
                             >
                                 {{ de: 'Ablehnen', en: 'Decline' }[locale]}
+                            </Button>
+                        </div>
+                    ) : null}
+
+                    {!readOnly && canDeclineAsAdmin && !isDeclining ? (
+                        <div className="flex flex-wrap justify-end gap-2">
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                disabled={busy}
+                                onClick={() => {
+                                    setDecliningId(booking.cookCallSlotBookingId);
+                                    setDeclineReason('');
+                                }}
+                            >
+                                {adminDeclineLabel}
                             </Button>
                         </div>
                     ) : null}

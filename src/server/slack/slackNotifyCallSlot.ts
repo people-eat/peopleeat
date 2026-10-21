@@ -8,11 +8,14 @@ export async function slackNotifyCallSlotEvent(
         bookingRequestId: string;
         bookingRequestOfferId: string;
         action: 'requested' | 'confirmed' | 'declined' | 'canceled';
-        actor: 'customer' | 'cook';
+        actor: 'customer' | 'cook' | 'admin';
+        /** When `actor` is admin, which party the admin acted as. */
+        onBehalfOf?: 'customer' | 'cook';
         startAt?: Date;
     },
 ): Promise<void> {
-    const actorLabel = args.actor === 'customer' ? 'Kunde' : 'Koch';
+    const partyLabel = (party: 'customer' | 'cook') => (party === 'customer' ? 'Kunde' : 'Koch');
+    const actorLabel = args.actor === 'admin' ? `Admin (als ${partyLabel(args.onBehalfOf ?? 'customer')})` : partyLabel(args.actor);
     const actionLabel = {
         requested: 'Call-Slot angefragt',
         confirmed: 'Call-Slot bestätigt',
