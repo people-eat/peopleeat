@@ -6,11 +6,13 @@ Customers open support cases with optional booking context; admins reply, resolv
 
 ### Customer
 
-- `/profile/support-requests` — Hub starts with a banner (empty state or “another question?” when cases exist); banner action toggles the
-  create form (optional booking link). Summary cards list below when cases exist. **Cancel** returns to the banner/list.
-- Booking request detail **Support** tab — Create when none exists for that booking; otherwise one summary card (unread chip on tab when the
-  case has customer unread).
-- Accepted-offer page **Support** tab — Same create/summary pattern for post-accept customers.
+- `/profile/support-requests` — Hub starts with a banner (empty state or “another question?” when cases exist); banner action navigates to
+  `/profile/support-requests/create`. Summary cards list below when cases exist.
+- `/profile/support-requests/create` — Dedicated create form (optional booking link). Optional `bookingRequestId` query locks the booking;
+  if that booking already has a case, redirect to the existing chat. **Cancel** returns to the hub.
+- Booking request detail — End-aligned Support CTA + status pill above offers/details/voucher. CTA opens create with `?bookingRequestId=`
+  when none exists, or the existing chat (unread chip) when a case exists.
+- Accepted-offer page — Same stateful Support CTA beside the offer tabs (no Support tab).
 
 Summary cards open `/profile/support-requests/<id>` for the chat. At most **one** support case per booking request; many general (or
 booking-linked) cases per user. Create and reply accept optional attachments. Transcript scroll uses **human** mode (open/stick at bottom —
@@ -49,13 +51,13 @@ Booking context: [booking.md](./booking.md).
 
 ### Alternatives considered
 
-| Option                                                  | Notes                                                                |
-| ------------------------------------------------------- | -------------------------------------------------------------------- |
-| Reuse assistant chat tables for support                 | Rejected — pollutes LLM replay; same as offer negotiation separation |
-| Dedicated support tables with chat-shaped API           | **Chosen** — matches offer chat; shared UI primitives                |
-| Optional booking link with at most one case per booking | **Chosen** — general + booking-scoped in one model                   |
-| Inline chat on booking support tab only                 | Rejected — dedicated detail route keeps composer shell consistent    |
-| Admin transactional email                               | Deferred — in-app unread, live queues, Slack                         |
+| Option                                                  | Notes                                                                    |
+| ------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Reuse assistant chat tables for support                 | Rejected — pollutes LLM replay; same as offer negotiation separation     |
+| Dedicated support tables with chat-shaped API           | **Chosen** — matches offer chat; shared UI primitives                    |
+| Optional booking link with at most one case per booking | **Chosen** — general + booking-scoped in one model                       |
+| Inline chat / create on booking support tab only        | Rejected — dedicated create + chat routes keep composer shell consistent |
+| Admin transactional email                               | Deferred — in-app unread, live queues, Slack                             |
 
 ### Chosen
 
@@ -74,9 +76,10 @@ lifecycle emails; ops Slack threading.
 - Queries: user list/one, booking-request field, admin criterion list/counts/one (`sortField` / `unreadFirst`; optional
   `supportRequestIds`), messages with attachments; admin assistant list tool `adminSupportRequestsFindMany` → `admin.supportRequestList`
   cards
-- Customer UI: catalog slug `support-requests`; `SupportRequestCreateForm`, `SupportRequestSummaryCard` (inbox-style row: avatar, title,
-  booking meta, single-line subject; status / inbox timestamp / unread on the right), `SupportRequestChat` (composer attachments; presence
-  header scrolls below `md`, static from `md` — same as offer chat); nav badges
+- Customer UI: catalog slug `support-requests`; create route `ProfileCustomerSupportRequestCreatePage` (`support-requests_.create.tsx`,
+  search `bookingRequestId`); `SupportRequestCreateForm`, `SupportRequestSummaryCard` (inbox-style row: avatar, title, booking meta,
+  single-line subject; status / inbox timestamp / unread on the right), `SupportRequestChat` (composer attachments; presence header scrolls
+  below `md`, static from `md` — same as offer chat); booking/offer detail Support CTAs; nav badges
 - Admin UI: overview + list live via admin updates; nav badge; pinned bottom pagination (`page` / `pageSize`); list search params `status` /
   `sort` / `unreadFirst`; detail viewport-locked like WhatsApp chat (`AdminPinnedFooterLayout` + `SupportRequestChat` presence avatar / user
   link)

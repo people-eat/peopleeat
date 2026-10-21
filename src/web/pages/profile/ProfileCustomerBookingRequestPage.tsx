@@ -1,6 +1,5 @@
-import { Link, notFound, useNavigate } from '@tanstack/react-router';
-import { BadgePercentIcon, CircleHelpIcon, FileTextIcon, HeadsetIcon, MoreHorizontalIcon } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { Link, notFound } from '@tanstack/react-router';
+import { CircleHelpIcon, HeadsetIcon, MoreHorizontalIcon } from 'lucide-react';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -23,15 +22,12 @@ import { Button } from '../../components/base/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/base/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/base/popover';
 import { StatusAlert } from '../../components/base/status-alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { Textarea } from '../../components/base/textarea';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
 import { bookingRequestStatusClassName, bookingRequestStatusLabel } from '../../components/bookingRequestStatus';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import { CustomerBookingRequestOfferCard } from '../../components/CustomerBookingRequestOfferCard';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
-import { SupportRequestCreateForm } from '../../components/SupportRequestCreateForm';
-import { SupportRequestSummaryCard } from '../../components/SupportRequestSummaryCard';
 import { UserBookingRequestChurnDialog } from '../../components/UserBookingRequestChurnDialog';
 import type { GqlCProfileCustomerBookingRequestPageQuery } from '../../graphql/generated';
 import {
@@ -44,7 +40,6 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { cn } from '../../utils/cn';
-import type { Locale } from '../../utils/locale';
 
 export const profileCustomerBookingRequestPageTitle = {
     de: 'Buchungsanfrage',
@@ -57,34 +52,6 @@ export const profileCustomerBookingRequestPageDescription = {
 
 const CANCELABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW', 'EXPIRED']);
 const UPDATABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW']);
-
-const DETAIL_TABS = ['overview', 'discount', 'support'] as const;
-export type ProfileCustomerBookingRequestTab = (typeof DETAIL_TABS)[number];
-
-export type ProfileCustomerBookingRequestSearch = {
-    tab?: ProfileCustomerBookingRequestTab;
-};
-
-function isDetailTab(value: unknown): value is ProfileCustomerBookingRequestTab {
-    return typeof value === 'string' && (DETAIL_TABS as readonly string[]).includes(value);
-}
-
-export function parseProfileCustomerBookingRequestSearch(search: Record<string, unknown>): ProfileCustomerBookingRequestSearch {
-    const tab = isDetailTab(search.tab) ? search.tab : undefined;
-    return { tab };
-}
-
-type DetailTabDef = {
-    id: ProfileCustomerBookingRequestTab;
-    label: Record<Locale, string>;
-    Icon: LucideIcon;
-};
-
-const DETAIL_TAB_DEFS: readonly DetailTabDef[] = [
-    { id: 'overview', label: { de: 'Übersicht', en: 'Overview' }, Icon: FileTextIcon },
-    { id: 'discount', label: { de: 'Gutschein', en: 'Voucher' }, Icon: BadgePercentIcon },
-    { id: 'support', label: { de: 'Support', en: 'Support' }, Icon: HeadsetIcon },
-];
 
 function initialsFromDisplay(display: string): string {
     const parts = display.trim().split(/\s+/u).filter(Boolean);
@@ -112,15 +79,12 @@ export function profileCustomerBookingRequestPageVariables(bookingRequestId: str
 export function ProfileCustomerBookingRequestPage({
     data,
     bookingRequestId,
-    search,
 }: {
     data: GqlCProfileCustomerBookingRequestPageQuery;
     bookingRequestId: string;
-    search: ProfileCustomerBookingRequestSearch;
 }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const navigate = useNavigate({ from: '/{-$locale}/profile/booking-requests/$bookingRequestId' });
     const seedUser = data.currentSession.user ?? null;
     const seedRequest = seedUser?.bookingRequest ?? null;
     if (!seedRequest) throw notFound();
@@ -150,7 +114,6 @@ export function ProfileCustomerBookingRequestPage({
     const canEdit = canUpdate || canAmendParticipants;
     const canEditDiscount = canUpdate;
     const offers = request.offers;
-    const activeTab = search.tab === 'support' || search.tab === 'discount' ? search.tab : 'overview';
     const supportRequest = request.supportRequest ?? null;
     const showFooter = canEdit || canCancel;
     const pendingAmendment = pendingAmendmentOffer?.participantAmendment ?? null;
@@ -161,6 +124,7 @@ export function ProfileCustomerBookingRequestPage({
     const cookVisibleAddress =
         request.exactEventAddress.city.trim().length > 0 ? request.exactEventAddress.city : request.exactEventAddress.displayText;
     const hasOriginalMessage = request.originalMessage.trim().length > 0;
+    const supportUnread = supportRequest?.userUnreadNotificationCount ?? 0;
 
     async function confirmCancel() {
         const reason = cancelReason.trim();
@@ -223,222 +187,209 @@ export function ProfileCustomerBookingRequestPage({
                     ) : undefined
                 }
             >
-                <Tabs
-                    value={activeTab}
-                    onValueChange={(value) => {
-                        const tab = isDetailTab(value) ? value : 'overview';
-                        void navigate({
-                            search: tab === 'overview' ? {} : { tab },
-                            replace: true,
-                        });
-                    }}
-                    className="grid min-h-0 gap-4"
-                >
-                    <div className="sticky top-0 z-10 -mx-4 bg-background px-4 pb-1">
-                        <TabsList variant="line" className="shrink-0" aria-label={{ de: 'Bereiche', en: 'Sections' }[locale]}>
-                            {DETAIL_TAB_DEFS.map(({ id, label, Icon }) => (
-                                <TabsTrigger key={id} value={id} className="gap-2">
-                                    <Icon className="size-4" />
-                                    {label[locale]}
-                                    {id === 'support' && supportRequest != null && supportRequest.userUnreadNotificationCount > 0 ? (
-                                        <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] font-medium">
-                                            {supportRequest.userUnreadNotificationCount}
-                                        </Badge>
-                                    ) : null}
-                                </TabsTrigger>
-                            ))}
-                        </TabsList>
-                    </div>
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                    <Button type="button" variant="outline" size="sm" asChild>
+                        {supportRequest != null ? (
+                            <Link
+                                to="/{-$locale}/profile/support-requests/$supportRequestId"
+                                params={{ supportRequestId: supportRequest.supportRequestId }}
+                            >
+                                <HeadsetIcon className="size-4" />
+                                {{ de: 'Support öffnen', en: 'Open support' }[locale]}
+                                {supportUnread > 0 ? (
+                                    <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] font-medium">
+                                        {supportUnread}
+                                    </Badge>
+                                ) : null}
+                            </Link>
+                        ) : (
+                            <Link to="/{-$locale}/profile/support-requests/create" search={{ bookingRequestId }}>
+                                <HeadsetIcon className="size-4" />
+                                {{ de: 'Support', en: 'Support' }[locale]}
+                            </Link>
+                        )}
+                    </Button>
+                    <BookingStatusPill className={cn('w-fit', bookingRequestStatusClassName(statusForPill))}>
+                        {bookingRequestStatusLabel(statusForPill, locale, 'customer')}
+                    </BookingStatusPill>
+                </div>
 
-                    <TabsContent value="overview" className="grid gap-6">
-                        {pendingAmendment != null ? (
-                            <StatusAlert tone="info" title={{ de: 'Änderung vorgeschlagen', en: 'Change proposed' }[locale]}>
+                {pendingAmendment != null ? (
+                    <StatusAlert tone="info" title={{ de: 'Änderung vorgeschlagen', en: 'Change proposed' }[locale]}>
+                        {
+                            {
+                                de: `Dein Vorschlag (${formatParticipants(
+                                    {
+                                        adultCount: pendingAmendment.participants.filter((p) => p.type === 'ADULT').length,
+                                        discountedCount: pendingAmendment.participants.filter((p) => p.type === 'DISCOUNTED').length,
+                                    },
+                                    { locale },
+                                )}) wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
+                                en: `Your proposal (${formatParticipants(
+                                    {
+                                        adultCount: pendingAmendment.participants.filter((p) => p.type === 'ADULT').length,
+                                        discountedCount: pendingAmendment.participants.filter((p) => p.type === 'DISCOUNTED').length,
+                                    },
+                                    { locale },
+                                )}) is waiting for the chef to confirm. New host price: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
+                            }[locale]
+                        }
+                    </StatusAlert>
+                ) : null}
+
+                <section className="grid gap-4">
+                    <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Angebote', en: 'Offers' }[locale]}</h2>
+                    {offers.length > 0 ? (
+                        <StatusAlert
+                            tone="info"
+                            title={
                                 {
-                                    {
-                                        de: `Dein Vorschlag (${formatParticipants(
-                                            {
-                                                adultCount: pendingAmendment.participants.filter((p) => p.type === 'ADULT').length,
-                                                discountedCount: pendingAmendment.participants.filter((p) => p.type === 'DISCOUNTED')
-                                                    .length,
-                                            },
-                                            { locale },
-                                        )}) wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
-                                        en: `Your proposal (${formatParticipants(
-                                            {
-                                                adultCount: pendingAmendment.participants.filter((p) => p.type === 'ADULT').length,
-                                                discountedCount: pendingAmendment.participants.filter((p) => p.type === 'DISCOUNTED')
-                                                    .length,
-                                            },
-                                            { locale },
-                                        )}) is waiting for the chef to confirm. New host price: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
-                                    }[locale]
-                                }
-                            </StatusAlert>
-                        ) : null}
-                        <section className="grid gap-4">
-                            <header className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Angebote', en: 'Offers' }[locale]}</h2>
-                                <BookingStatusPill
-                                    className={cn('w-fit self-start sm:self-auto', bookingRequestStatusClassName(statusForPill))}
-                                >
-                                    {bookingRequestStatusLabel(statusForPill, locale, 'customer')}
-                                </BookingStatusPill>
-                            </header>
-                            {offers.length > 0 ? (
-                                <StatusAlert
-                                    tone="info"
-                                    title={
-                                        {
-                                            de: 'Prüfe deine Angebote und teile den Köchen deine Entscheidung mit.',
-                                            en: 'Review your offers and let the chefs know your decision.',
-                                        }[locale]
-                                    }
-                                >
-                                    {
-                                        {
-                                            de:
-                                                offers.length === 1
-                                                    ? 'Du hast 1 Angebot erhalten. Du kannst Menüs vergleichen, mit den Köchen chatten oder sie anrufen, bevor du dich entscheidest.'
-                                                    : `Du hast ${offers.length} Angebote erhalten. Du kannst Menüs vergleichen, mit den Köchen chatten oder sie anrufen, bevor du dich entscheidest.`,
-                                            en:
-                                                offers.length === 1
-                                                    ? "You've received 1 offer. You can compare menus, chat with the chefs or call them before you decide."
-                                                    : `You've received ${offers.length} offers. You can compare menus, chat with the chefs or call them before you decide.`,
-                                        }[locale]
-                                    }
-                                </StatusAlert>
-                            ) : null}
-                            {offers.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">
-                                    {{ de: 'Noch keine Angebote.', en: 'No offers yet.' }[locale]}
-                                </p>
-                            ) : (
-                                <ul className="grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3 @4xl:grid-cols-4">
-                                    {offers.map((offer) => (
-                                        <li key={offer.bookingRequestOfferId} className="min-w-0">
-                                            <CustomerBookingRequestOfferCard bookingRequestId={bookingRequestId} offer={offer} />
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </section>
-
-                        <div
-                            className={cn(
-                                'grid gap-4 rounded-xl border border-border bg-card p-4 shadow-sm',
-                                hasOriginalMessage && '@xl:grid-cols-3 @xl:items-start',
-                            )}
+                                    de: 'Prüfe deine Angebote und teile den Köchen deine Entscheidung mit.',
+                                    en: 'Review your offers and let the chefs know your decision.',
+                                }[locale]
+                            }
                         >
-                            <dl className={cn('grid gap-4 @md:grid-cols-2', hasOriginalMessage && '@xl:col-span-2')}>
-                                <DetailField label={{ de: 'Anlass', en: 'Occasion' }[locale]} value={request.occasion} />
-                                <DetailField
-                                    label={{ de: 'Teilnehmer', en: 'Participants' }[locale]}
-                                    value={formatParticipants(request.participants, { locale })}
-                                />
-                                {request.participants.some((participant) => participant.restrictions.length > 0) ? (
-                                    <DetailField
-                                        label={{ de: 'Einschränkungen', en: 'Restrictions' }[locale]}
-                                        value={
-                                            <ul className="grid gap-1">
-                                                {request.participants
-                                                    .filter((participant) => participant.restrictions.length > 0)
-                                                    .map((participant) => (
-                                                        <li key={participant.bookingRequestParticipantId}>
-                                                            <span className="font-medium">{participant.name}:</span>{' '}
-                                                            {participant.restrictions.join(', ')}
-                                                        </li>
-                                                    ))}
-                                            </ul>
+                            {
+                                {
+                                    de:
+                                        offers.length === 1
+                                            ? 'Du hast 1 Angebot erhalten. Du kannst Menüs vergleichen, mit den Köchen chatten oder sie anrufen, bevor du dich entscheidest.'
+                                            : `Du hast ${offers.length} Angebote erhalten. Du kannst Menüs vergleichen, mit den Köchen chatten oder sie anrufen, bevor du dich entscheidest.`,
+                                    en:
+                                        offers.length === 1
+                                            ? "You've received 1 offer. You can compare menus, chat with the chefs or call them before you decide."
+                                            : `You've received ${offers.length} offers. You can compare menus, chat with the chefs or call them before you decide.`,
+                                }[locale]
+                            }
+                        </StatusAlert>
+                    ) : null}
+                    {offers.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">{{ de: 'Noch keine Angebote.', en: 'No offers yet.' }[locale]}</p>
+                    ) : (
+                        <ul className="grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3 @4xl:grid-cols-4">
+                            {offers.map((offer) => (
+                                <li key={offer.bookingRequestOfferId} className="min-w-0">
+                                    <CustomerBookingRequestOfferCard bookingRequestId={bookingRequestId} offer={offer} />
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
+
+                <div
+                    className={cn(
+                        'grid gap-4 rounded-xl border border-border bg-card p-4 shadow-sm',
+                        hasOriginalMessage && '@xl:grid-cols-3 @xl:items-start',
+                    )}
+                >
+                    <dl className={cn('grid gap-4 @md:grid-cols-2', hasOriginalMessage && '@xl:col-span-2')}>
+                        <DetailField label={{ de: 'Anlass', en: 'Occasion' }[locale]} value={request.occasion} />
+                        <DetailField
+                            label={{ de: 'Teilnehmer', en: 'Participants' }[locale]}
+                            value={formatParticipants(request.participants, { locale })}
+                        />
+                        {request.participants.some((participant) => participant.restrictions.length > 0) ? (
+                            <DetailField
+                                label={{ de: 'Einschränkungen', en: 'Restrictions' }[locale]}
+                                value={
+                                    <ul className="grid gap-1">
+                                        {request.participants
+                                            .filter((participant) => participant.restrictions.length > 0)
+                                            .map((participant) => (
+                                                <li key={participant.bookingRequestParticipantId}>
+                                                    <span className="font-medium">{participant.name}:</span>{' '}
+                                                    {participant.restrictions.join(', ')}
+                                                </li>
+                                            ))}
+                                    </ul>
+                                }
+                            />
+                        ) : null}
+                        <DetailField
+                            label={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
+                            value={formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}
+                        />
+                        <DetailField
+                            label={{ de: 'Präferenzen', en: 'Preferences' }[locale]}
+                            value={
+                                request.preferences.length > 0
+                                    ? request.preferences.join(', ')
+                                    : { de: 'Keine Präferenzen', en: 'No preferences' }[locale]
+                            }
+                        />
+                        {priceClassLabel != null ? (
+                            <DetailField label={{ de: 'Preisklasse', en: 'Price class' }[locale]} value={priceClassLabel} />
+                        ) : null}
+                        <DetailField
+                            label={{ de: 'Veranstaltungsort', en: 'Event location' }[locale]}
+                            value={exactAddress}
+                            hint={
+                                <p className="flex items-center gap-1">
+                                    <span>
+                                        {
+                                            {
+                                                de: `Köche sehen nur: ${cookVisibleAddress}`,
+                                                en: `Cooks only see: ${cookVisibleAddress}`,
+                                            }[locale]
                                         }
-                                    />
-                                ) : null}
-                                <DetailField
-                                    label={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
-                                    value={formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}
-                                />
-                                <DetailField
-                                    label={{ de: 'Präferenzen', en: 'Preferences' }[locale]}
-                                    value={
-                                        request.preferences.length > 0
-                                            ? request.preferences.join(', ')
-                                            : { de: 'Keine Präferenzen', en: 'No preferences' }[locale]
-                                    }
-                                />
-                                {priceClassLabel != null ? (
-                                    <DetailField label={{ de: 'Preisklasse', en: 'Price class' }[locale]} value={priceClassLabel} />
-                                ) : null}
-                                <DetailField
-                                    label={{ de: 'Veranstaltungsort', en: 'Event location' }[locale]}
-                                    value={exactAddress}
-                                    hint={
-                                        <p className="flex items-center gap-1">
-                                            <span>
-                                                {
+                                    </span>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon-xs"
+                                                className="text-muted-foreground"
+                                                aria-label={
                                                     {
-                                                        de: `Köche sehen nur: ${cookVisibleAddress}`,
-                                                        en: `Cooks only see: ${cookVisibleAddress}`,
+                                                        de: 'Mehr zur Adresssichtbarkeit',
+                                                        en: 'More about address visibility',
                                                     }[locale]
                                                 }
-                                            </span>
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="icon-xs"
-                                                        className="text-muted-foreground"
-                                                        aria-label={
-                                                            {
-                                                                de: 'Mehr zur Adresssichtbarkeit',
-                                                                en: 'More about address visibility',
-                                                            }[locale]
-                                                        }
-                                                    >
-                                                        <CircleHelpIcon />
-                                                    </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent align="start" className="w-72 text-sm text-muted-foreground">
-                                                    {
-                                                        {
-                                                            de: 'Köche sehen vor einer gemeinsamen Zusage nur die Stadt. Die vollständige Adresse nutzen wir im Hintergrund für die genaue Reisekostenberechnung und geben sie erst danach frei.',
-                                                            en: 'Cooks only see the city until both sides accept. We still use your full address in the background for exact travel expense calculations, and share it only after that.',
-                                                        }[locale]
-                                                    }
-                                                </PopoverContent>
-                                            </Popover>
-                                        </p>
-                                    }
-                                />
-                                {request.canceledAt && request.cancellationReason ? (
-                                    <DetailField
-                                        className="@md:col-span-2"
-                                        label={{ de: 'Grund', en: 'Reason' }[locale]}
-                                        value={request.cancellationReason}
-                                    />
-                                ) : null}
-                            </dl>
+                                            >
+                                                <CircleHelpIcon />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent align="start" className="w-72 text-sm text-muted-foreground">
+                                            {
+                                                {
+                                                    de: 'Köche sehen vor einer gemeinsamen Zusage nur die Stadt. Die vollständige Adresse nutzen wir im Hintergrund für die genaue Reisekostenberechnung und geben sie erst danach frei.',
+                                                    en: 'Cooks only see the city until both sides accept. We still use your full address in the background for exact travel expense calculations, and share it only after that.',
+                                                }[locale]
+                                            }
+                                        </PopoverContent>
+                                    </Popover>
+                                </p>
+                            }
+                        />
+                        {request.canceledAt && request.cancellationReason ? (
+                            <DetailField
+                                className="@md:col-span-2"
+                                label={{ de: 'Grund', en: 'Reason' }[locale]}
+                                value={request.cancellationReason}
+                            />
+                        ) : null}
+                    </dl>
 
-                            {hasOriginalMessage ? (
-                                <div className="grid min-w-0 w-full grid-cols-[minmax(0,1fr)_auto] items-start gap-2 self-start">
-                                    <article className="w-max max-w-full justify-self-end rounded-2xl rounded-br-sm bg-muted px-4 py-2 text-sm/relaxed whitespace-pre-wrap wrap-break-word text-foreground shadow-sm">
-                                        <p className="mb-0.5 truncate text-[11px] leading-tight font-semibold text-primary">
-                                            {displayName}
-                                        </p>
-                                        {request.originalMessage}
-                                    </article>
-                                    <Avatar size="sm" className="shrink-0">
-                                        {user.profilePicture != null ? <AvatarImage src={user.profilePicture.url} alt="" /> : null}
-                                        <AvatarFallback className="bg-foreground/10 text-[10px] font-semibold text-foreground/75">
-                                            {initialsFromDisplay(displayName)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                </div>
-                            ) : null}
+                    {hasOriginalMessage ? (
+                        <div className="grid min-w-0 w-full grid-cols-[minmax(0,1fr)_auto] items-start gap-2 self-start">
+                            <article className="w-max max-w-full justify-self-end rounded-2xl rounded-br-sm bg-muted px-4 py-2 text-sm/relaxed whitespace-pre-wrap wrap-break-word text-foreground shadow-sm">
+                                <p className="mb-0.5 truncate text-[11px] leading-tight font-semibold text-primary">{displayName}</p>
+                                {request.originalMessage}
+                            </article>
+                            <Avatar size="sm" className="shrink-0">
+                                {user.profilePicture != null ? <AvatarImage src={user.profilePicture.url} alt="" /> : null}
+                                <AvatarFallback className="bg-foreground/10 text-[10px] font-semibold text-foreground/75">
+                                    {initialsFromDisplay(displayName)}
+                                </AvatarFallback>
+                            </Avatar>
                         </div>
-                    </TabsContent>
+                    ) : null}
+                </div>
 
-                    <TabsContent value="discount" className="grid max-w-xl gap-4">
-                        <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Gutschein', en: 'Voucher' }[locale]}</h2>
+                {canEditDiscount || request.promoCode != null || request.giftCard != null ? (
+                    <section className="grid max-w-xl gap-4">
+                        <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Rabatt', en: 'Discount' }[locale]}</h2>
                         <BookingRequestDiscountEditor
                             bookingRequestId={bookingRequestId}
                             locale={locale}
@@ -450,34 +401,8 @@ export function ProfileCustomerBookingRequestPage({
                                 return result.data?.user.bookingRequestDiscountUpdate.success === true;
                             }}
                         />
-                    </TabsContent>
-
-                    <TabsContent value="support" className="grid max-w-xl gap-4">
-                        {supportRequest ? (
-                            <SupportRequestSummaryCard
-                                request={supportRequest}
-                                to="/{-$locale}/profile/support-requests/$supportRequestId"
-                                params={{ supportRequestId: supportRequest.supportRequestId }}
-                            />
-                        ) : (
-                            <SupportRequestCreateForm
-                                lockedBookingRequestId={bookingRequestId}
-                                onCreated={(supportRequestId) => {
-                                    toast.success(
-                                        {
-                                            de: 'Support-Anfrage gesendet. Wir melden uns im Chat.',
-                                            en: 'Support request sent. We will reply in chat.',
-                                        }[locale],
-                                    );
-                                    void navigate({
-                                        to: '/{-$locale}/profile/support-requests/$supportRequestId',
-                                        params: { supportRequestId },
-                                    });
-                                }}
-                            />
-                        )}
-                    </TabsContent>
-                </Tabs>
+                    </section>
+                ) : null}
             </ProfilePinnedFooterLayout>
 
             <UserBookingRequestChurnDialog

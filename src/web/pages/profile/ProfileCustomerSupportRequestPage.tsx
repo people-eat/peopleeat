@@ -79,7 +79,6 @@ export function ProfileCustomerSupportRequestPage({
                         <Link
                             to="/{-$locale}/profile/booking-requests/$bookingRequestId"
                             params={{ bookingRequestId: supportRequest.bookingRequest.bookingRequestId }}
-                            search={{ tab: 'support' }}
                             className="text-sm text-muted-foreground underline-offset-4 hover:underline"
                         >
                             {supportRequest.bookingRequest.occasion}

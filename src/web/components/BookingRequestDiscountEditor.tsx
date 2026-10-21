@@ -1,3 +1,4 @@
+import { useForm, useSelector } from '@tanstack/react-form';
 import { useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -35,58 +36,75 @@ export function BookingRequestDiscountEditor({
     onDiscountUpdate: (args: { bookingRequestId: string; redeemCode: string | null }) => Promise<boolean>;
 }) {
     const redeemInputId = useId();
-    const [redeemCode, setRedeemCode] = useState('');
-    const [busy, setBusy] = useState(false);
+    const redeemErrorId = `${redeemInputId}-error`;
+    const [removeBusy, setRemoveBusy] = useState(false);
     const [awaitingServer, setAwaitingServer] = useState<AwaitingServer | null>(null);
+    const [redeemInvalid, setRedeemInvalid] = useState(false);
 
     const appliedKind: 'promo' | 'giftCard' | null = promoCode != null ? 'promo' : giftCard != null ? 'giftCard' : null;
     const appliedRedeemCode = promoCode?.redeemCode ?? giftCard?.redeemCode ?? null;
     const amountCents =
         appliedKind === 'promo' ? (promoCode?.amountCents ?? null) : appliedKind === 'giftCard' ? (giftCard?.balanceCents ?? null) : null;
     const hasDiscount = appliedKind != null && appliedRedeemCode != null && amountCents != null;
-    const trimmedCode = redeemCode.trim();
-    const canRedeem = trimmedCode.length > 0;
-    const controlsBusy = busy || awaitingServer != null;
+
+    const form = useForm({
+        defaultValues: {
+            redeemCode: '',
+        },
+        onSubmit: async ({ value }) => {
+            if (removeBusy || awaitingServer != null || !canEdit) return;
+            const trimmedCode = value.redeemCode.trim();
+            if (trimmedCode.length === 0) {
+                setRedeemInvalid(true);
+                return;
+            }
+            try {
+                const success = await onDiscountUpdate({
+                    bookingRequestId,
+                    redeemCode: trimmedCode,
+                });
+                if (!success) {
+                    throw new Error('discount update failed');
+                }
+                form.reset();
+                setRedeemInvalid(false);
+                setAwaitingServer('applied');
+                toast.success({ de: 'Code eingelöst.', en: 'Code redeemed.' }[locale]);
+            } catch {
+                setRedeemInvalid(true);
+            }
+        },
+    });
+    const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
+    const controlsBusy = removeBusy || awaitingServer != null || isSubmitting;
 
     useEffect(() => {
         if (awaitingServer === 'applied' && hasDiscount) setAwaitingServer(null);
         if (awaitingServer === 'cleared' && !hasDiscount) setAwaitingServer(null);
     }, [awaitingServer, hasDiscount]);
 
-    async function runDiscountUpdate(nextRedeemCode: string | null, mode: 'redeem' | 'remove') {
+    async function removeDiscount() {
         if (controlsBusy || !canEdit) return;
-        setBusy(true);
+        setRemoveBusy(true);
         try {
             const success = await onDiscountUpdate({
                 bookingRequestId,
-                redeemCode: nextRedeemCode,
+                redeemCode: null,
             });
             if (!success) {
                 throw new Error('discount update failed');
             }
-            if (mode === 'remove') {
-                setRedeemCode('');
-                setAwaitingServer('cleared');
-                toast.success({ de: 'Rabatt entfernt.', en: 'Discount removed.' }[locale]);
-                return;
-            }
-            setRedeemCode('');
-            setAwaitingServer('applied');
-            toast.success({ de: 'Code eingelöst.', en: 'Code redeemed.' }[locale]);
+            form.reset();
+            setRedeemInvalid(false);
+            setAwaitingServer('cleared');
+            toast.success({ de: 'Rabatt entfernt.', en: 'Discount removed.' }[locale]);
         } catch {
-            toast.error(
-                mode === 'remove'
-                    ? {
-                          de: 'Rabatt konnte nicht entfernt werden.',
-                          en: 'Could not remove the discount.',
-                      }[locale]
-                    : {
-                          de: 'Code konnte nicht eingelöst werden.',
-                          en: 'Could not redeem the code.',
-                      }[locale],
-            );
+            toast.error({
+                de: 'Rabatt konnte nicht entfernt werden.',
+                en: 'Could not remove the discount.',
+            }[locale]);
         } finally {
-            setBusy(false);
+            setRemoveBusy(false);
         }
     }
 
@@ -108,7 +126,7 @@ export function BookingRequestDiscountEditor({
                                 variant="outline"
                                 size="sm"
                                 disabled={controlsBusy}
-                                onClick={() => void runDiscountUpdate(null, 'remove')}
+                                onClick={() => void removeDiscount()}
                             >
                                 {{ de: 'Entfernen', en: 'Remove' }[locale]}
                             </Button>
@@ -139,38 +157,57 @@ export function BookingRequestDiscountEditor({
             ) : null}
 
             {canEdit && !hasDiscount ? (
-                <div className="grid gap-3">
-                    <div className="grid gap-1.5">
-                        <label htmlFor={redeemInputId} className="text-sm font-medium text-foreground">
-                            {{ de: 'Gutschein oder Promocode einlösen', en: 'Redeem voucher or promo code' }[locale]}
-                        </label>
-                        <Input
-                            id={redeemInputId}
-                            value={redeemCode}
-                            disabled={controlsBusy}
-                            onChange={(event) => setRedeemCode(event.target.value)}
-                            placeholder={{ de: 'Code eingeben', en: 'Enter code' }[locale]}
-                            autoComplete="off"
-                            spellCheck={false}
-                        />
-                    </div>
+                <form
+                    className="grid gap-3"
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        void form.handleSubmit();
+                    }}
+                >
+                    <form.Field name="redeemCode">
+                        {(field) => (
+                            <div className="grid gap-1.5">
+                                <label htmlFor={redeemInputId} className="text-sm font-medium text-foreground">
+                                    {{ de: 'Gutschein oder Promocode einlösen', en: 'Redeem voucher or promo code' }[locale]}
+                                </label>
+                                <Input
+                                    id={redeemInputId}
+                                    value={field.state.value}
+                                    disabled={controlsBusy}
+                                    onChange={(event) => {
+                                        field.handleChange(event.target.value);
+                                        setRedeemInvalid(false);
+                                    }}
+                                    onBlur={field.handleBlur}
+                                    placeholder={{ de: 'Code eingeben', en: 'Enter code' }[locale]}
+                                    autoComplete="off"
+                                    spellCheck={false}
+                                    aria-invalid={redeemInvalid || undefined}
+                                    aria-describedby={redeemInvalid ? redeemErrorId : undefined}
+                                />
+                                {redeemInvalid ? (
+                                    <p id={redeemErrorId} className="text-sm text-destructive" role="alert">
+                                        {{ de: 'Rabattcode ungültig.', en: 'This code is invalid.' }[locale]}
+                                    </p>
+                                ) : null}
+                            </div>
+                        )}
+                    </form.Field>
                     <div className="flex flex-wrap justify-end gap-2">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            disabled={controlsBusy || !canRedeem}
-                            onClick={() => {
-                                if (!canRedeem) {
-                                    toast.error({ de: 'Bitte gib einen Code ein.', en: 'Please enter a code.' }[locale]);
-                                    return;
-                                }
-                                void runDiscountUpdate(trimmedCode, 'redeem');
-                            }}
-                        >
-                            {{ de: 'Einlösen', en: 'Redeem' }[locale]}
-                        </Button>
+                        <form.Subscribe selector={(state) => [state.canSubmit, state.values.redeemCode] as const}>
+                            {([canSubmit, redeemCode]) => (
+                                <Button
+                                    type="submit"
+                                    variant="outline"
+                                    disabled={controlsBusy || !canSubmit || redeemCode.trim().length === 0}
+                                >
+                                    {{ de: 'Einlösen', en: 'Redeem' }[locale]}
+                                </Button>
+                            )}
+                        </form.Subscribe>
                     </div>
-                </div>
+                </form>
             ) : null}
         </div>
     );

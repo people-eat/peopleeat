@@ -1,10 +1,7 @@
-import { useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
-import { toast } from 'sonner';
+import { Link } from '@tanstack/react-router';
 
 import { Button } from '../../components/base/button';
 import { StatusAlert } from '../../components/base/status-alert';
-import { SupportRequestCreateForm } from '../../components/SupportRequestCreateForm';
 import { SupportRequestSummaryCard } from '../../components/SupportRequestSummaryCard';
 import type { GqlCProfileCustomerSupportRequestsPageQuery } from '../../graphql/generated';
 import { ProfileCustomerSupportRequestsPageUpdatesDocument } from '../../graphql/generated';
@@ -19,52 +16,27 @@ export const profileCustomerSupportRequestsPageDescription = route.description;
 
 export function ProfileCustomerSupportRequestsPage({ data }: { data: GqlCProfileCustomerSupportRequestsPageQuery }) {
     const locale = useLocale();
-    const navigate = useNavigate();
     const seedUser = data.currentSession.user ?? null;
     const user = useUserUpdatesSeed(seedUser, ProfileCustomerSupportRequestsPageUpdatesDocument);
-    const [showCreate, setShowCreate] = useState(false);
 
     const supportRequests = user?.supportRequests ?? [];
-    const bookingOptions =
-        user?.bookingRequests?.map((request) => ({
-            bookingRequestId: request.bookingRequestId,
-            occasion: request.occasion,
-            dateTime: request.dateTime,
-            hasSupportRequest: request.supportRequest != null,
-        })) ?? [];
 
     const startAction = (
-        <Button type="button" variant="outline" size="sm" onClick={() => setShowCreate(true)}>
-            {
+        <Button type="button" variant="outline" size="sm" asChild>
+            <Link to="/{-$locale}/profile/support-requests/create">
                 {
-                    de: supportRequests.length === 0 ? 'Support-Anfrage starten' : 'Neue Support-Anfrage',
-                    en: supportRequests.length === 0 ? 'Start a support request' : 'New support request',
-                }[locale]
-            }
+                    {
+                        de: supportRequests.length === 0 ? 'Support-Anfrage starten' : 'Neue Support-Anfrage',
+                        en: supportRequests.length === 0 ? 'Start a support request' : 'New support request',
+                    }[locale]
+                }
+            </Link>
         </Button>
     );
 
     return (
         <main id="main-content" className="@container grid w-full min-w-0 content-start gap-6">
-            {showCreate ? (
-                <SupportRequestCreateForm
-                    bookingOptions={bookingOptions}
-                    onCancel={() => setShowCreate(false)}
-                    onCreated={(supportRequestId) => {
-                        setShowCreate(false);
-                        toast.success(
-                            {
-                                de: 'Support-Anfrage gesendet. Wir melden uns im Chat.',
-                                en: 'Support request sent. We will reply in chat.',
-                            }[locale],
-                        );
-                        void navigate({
-                            to: '/{-$locale}/profile/support-requests/$supportRequestId',
-                            params: { supportRequestId },
-                        });
-                    }}
-                />
-            ) : supportRequests.length === 0 ? (
+            {supportRequests.length === 0 ? (
                 <StatusAlert tone="info" title={{ de: 'Brauchst du Hilfe?', en: 'Need help?' }[locale]} action={startAction}>
                     {
                         {

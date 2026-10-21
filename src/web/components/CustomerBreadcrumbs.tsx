@@ -8,6 +8,7 @@ import {
     profileCustomerBookingRequestOfferCheckoutPageTitle,
     profileCustomerBookingRequestOfferPageTitle,
 } from '../pages/profile/profileCustomerBookingRequestOfferLabels';
+import { profileCustomerSupportRequestCreatePageTitle } from '../pages/profile/ProfileCustomerSupportRequestCreatePage';
 import { profileCustomerSupportRequestPageTitle } from '../pages/profile/profileCustomerSupportRequestLabels';
 import { DEFAULT_LOCALE } from '../utils/locale';
 import type { Locale } from '../utils/locale';
@@ -52,7 +53,8 @@ export function CustomerBreadcrumbs() {
     const listRoute = customerNavRouteBySlug('booking-requests');
     const supportListRoute = customerNavRouteBySlug('support-requests');
     const bookingMatch = path.match(/^\/profile\/booking-requests\/([^/]+)(?:\/(edit|offers\/([^/]+)(?:\/(checkout))?))?$/);
-    const supportMatch = path.match(/^\/profile\/support-requests\/([^/]+)$/);
+    const isSupportCreate = path === '/profile/support-requests/create';
+    const supportMatch = !isSupportCreate ? path.match(/^\/profile\/support-requests\/([^/]+)$/) : null;
     const navRoute = customerNavRouteByPath(path);
     const detailOccasion = useMatch({
         from: '/{-$locale}/profile/booking-requests_/$bookingRequestId',
@@ -112,6 +114,9 @@ export function CustomerBreadcrumbs() {
         crumbs.push({ label: { de: 'Übersicht', en: 'Overview' }[locale] });
     } else if (path === '/profile/account') {
         crumbs.push({ label: accountPageTitle[locale] });
+    } else if (isSupportCreate) {
+        crumbs.push({ label: supportListRoute.title[locale], to: '/{-$locale}/profile/support-requests' });
+        crumbs.push({ label: profileCustomerSupportRequestCreatePageTitle[locale] });
     } else if (supportMatch) {
         crumbs.push({ label: supportListRoute.title[locale], to: '/{-$locale}/profile/support-requests' });
         crumbs.push({ label: supportSubject ?? profileCustomerSupportRequestPageTitle[locale] });

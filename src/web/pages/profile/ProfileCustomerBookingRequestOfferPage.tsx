@@ -49,8 +49,6 @@ import type { OfferMenuCourseSelection } from '../../components/OfferMenuConfigu
 import { OfferMenuConfigured } from '../../components/OfferMenuConfigured';
 import { OfferSuggestedMenuCard } from '../../components/OfferSuggestedMenuCard';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
-import { SupportRequestCreateForm } from '../../components/SupportRequestCreateForm';
-import { SupportRequestSummaryCard } from '../../components/SupportRequestSummaryCard';
 import type {
     GqlCProfileCustomerBookingRequestOfferPageQuery,
     GqlCProfileCustomerBookingRequestOfferPageUserFragment,
@@ -81,7 +79,7 @@ export {
     profileCustomerBookingRequestOfferPageTitle,
 } from './profileCustomerBookingRequestOfferLabels';
 
-const OFFER_TABS = ['offer', 'chat', 'call', 'testimonial', 'support'] as const;
+const OFFER_TABS = ['offer', 'chat', 'call', 'testimonial'] as const;
 
 export type ProfileCustomerBookingRequestOfferTab = (typeof OFFER_TABS)[number];
 
@@ -121,7 +119,6 @@ const OFFER_TAB_DEFS: readonly OfferTabDef[] = [
     { id: 'chat', label: { de: 'Chat', en: 'Chat' }, Icon: MessageSquareIcon },
     { id: 'call', label: { de: 'Anruf', en: 'Call' }, Icon: VideoIcon },
     { id: 'testimonial', label: { de: 'Bewertung', en: 'Review' }, Icon: StarIcon },
-    { id: 'support', label: { de: 'Support', en: 'Support' }, Icon: HeadsetIcon },
 ];
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -217,7 +214,7 @@ export function ProfileCustomerBookingRequestOfferPage({
     const pendingIncomingCall = offer?.callBookings.find((booking) => booking.status === 'PENDING' && booking.initiator === 'COOK');
     const confirmedUpcomingCall = offer?.callBookings.find((booking) => booking.status === 'CONFIRMED');
     const visibleTabs = useMemo(() => {
-        const ids = new Set<ProfileCustomerBookingRequestOfferTab>(['offer', 'chat', 'call', 'support']);
+        const ids = new Set<ProfileCustomerBookingRequestOfferTab>(['offer', 'chat', 'call']);
         if (offer == null) return ids;
         if (offer.status === 'COMPLETED' || offer.testimonialMissing || offer.customerTestimonial != null) {
             ids.add('testimonial');
@@ -228,6 +225,7 @@ export function ProfileCustomerBookingRequestOfferPage({
     const visibleTabDefs = OFFER_TAB_DEFS.filter((entry) => visibleTabs.has(entry.id));
     const testimonialTabMissing = offer?.testimonialMissing ?? false;
     const supportRequest = request?.supportRequest ?? null;
+    const supportUnread = supportRequest?.userUnreadNotificationCount ?? 0;
 
     useEffect(() => {
         if (offer == null) return;
@@ -425,7 +423,7 @@ export function ProfileCustomerBookingRequestOfferPage({
             </div>
 
             <Tabs value={tab} className="flex min-h-0 flex-1 flex-col gap-0">
-                <div className="px-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-4">
                     <TabsList variant="line" className="shrink-0" aria-label={{ de: 'Angebotsbereiche', en: 'Offer sections' }[locale]}>
                         {visibleTabDefs.map(({ id, label, Icon }) => (
                             <TabsTrigger key={id} value={id} asChild>
@@ -444,11 +442,6 @@ export function ProfileCustomerBookingRequestOfferPage({
                                 >
                                     <Icon aria-hidden />
                                     {label[locale]}
-                                    {id === 'support' && supportRequest != null && supportRequest.userUnreadNotificationCount > 0 ? (
-                                        <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] font-medium">
-                                            {supportRequest.userUnreadNotificationCount}
-                                        </Badge>
-                                    ) : null}
                                     {id === 'testimonial' && testimonialTabMissing ? (
                                         <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] font-medium">
                                             1
@@ -458,6 +451,27 @@ export function ProfileCustomerBookingRequestOfferPage({
                             </TabsTrigger>
                         ))}
                     </TabsList>
+                    <Button type="button" variant="outline" size="sm" asChild>
+                        {supportRequest != null ? (
+                            <Link
+                                to="/{-$locale}/profile/support-requests/$supportRequestId"
+                                params={{ supportRequestId: supportRequest.supportRequestId }}
+                            >
+                                <HeadsetIcon className="size-4" />
+                                {{ de: 'Support öffnen', en: 'Open support' }[locale]}
+                                {supportUnread > 0 ? (
+                                    <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] font-medium">
+                                        {supportUnread}
+                                    </Badge>
+                                ) : null}
+                            </Link>
+                        ) : (
+                            <Link to="/{-$locale}/profile/support-requests/create" search={{ bookingRequestId }}>
+                                <HeadsetIcon className="size-4" />
+                                {{ de: 'Support', en: 'Support' }[locale]}
+                            </Link>
+                        )}
+                    </Button>
                 </div>
 
                 <TabsContent value="chat" className="mt-4 flex min-h-0 flex-1 flex-col gap-3 data-[state=inactive]:hidden">
@@ -622,35 +636,6 @@ export function ProfileCustomerBookingRequestOfferPage({
                         />
                     </TabsContent>
                 ) : null}
-
-                <TabsContent
-                    value="support"
-                    className="mt-4 grid max-w-xl items-start content-start gap-4 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
-                >
-                    {supportRequest ? (
-                        <SupportRequestSummaryCard
-                            request={supportRequest}
-                            to="/{-$locale}/profile/support-requests/$supportRequestId"
-                            params={{ supportRequestId: supportRequest.supportRequestId }}
-                        />
-                    ) : (
-                        <SupportRequestCreateForm
-                            lockedBookingRequestId={bookingRequestId}
-                            onCreated={(supportRequestId) => {
-                                toast.success(
-                                    {
-                                        de: 'Support-Anfrage gesendet. Wir melden uns im Chat.',
-                                        en: 'Support request sent. We will reply in chat.',
-                                    }[locale],
-                                );
-                                void navigate({
-                                    to: '/{-$locale}/profile/support-requests/$supportRequestId',
-                                    params: { supportRequestId },
-                                });
-                            }}
-                        />
-                    )}
-                </TabsContent>
             </Tabs>
 
             <AlertDialog open={acceptOpen} onOpenChange={(open) => !acceptBusy && setAcceptOpen(open)}>

@@ -3,7 +3,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { ProfileCustomerBookingRequestPageDocument } from '../../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../../web/graphql/routeLoaderGraphqlClient';
 import {
-    parseProfileCustomerBookingRequestSearch,
     ProfileCustomerBookingRequestPage,
     profileCustomerBookingRequestPageDescription,
     profileCustomerBookingRequestPageTitle,
@@ -14,7 +13,6 @@ import { webPageUrlGet } from '../../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../../web/utils/locale';
 
 export const Route = createFileRoute('/{-$locale}/profile/booking-requests_/$bookingRequestId')({
-    validateSearch: (search: Record<string, unknown>) => parseProfileCustomerBookingRequestSearch(search),
     loader: ({ params }) =>
         routeLoaderGraphqlClient(
             ProfileCustomerBookingRequestPageDocument,
@@ -34,14 +32,8 @@ export const Route = createFileRoute('/{-$locale}/profile/booking-requests_/$boo
     },
     component() {
         const { bookingRequestId } = Route.useParams();
-        const search = Route.useSearch();
         return (
-            <ProfileCustomerBookingRequestPage
-                key={bookingRequestId}
-                data={Route.useLoaderData()}
-                bookingRequestId={bookingRequestId}
-                search={search}
-            />
+            <ProfileCustomerBookingRequestPage key={bookingRequestId} data={Route.useLoaderData()} bookingRequestId={bookingRequestId} />
         );
     },
 });

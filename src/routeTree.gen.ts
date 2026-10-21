@@ -146,6 +146,7 @@ import { Route as Char123LocaleChar125ProfileChefProfileEditRouteImport } from '
 import { Route as Char123LocaleChar125ProfileMealsMealIdRouteImport } from './routes/{-$locale}/profile/meals_.$mealId'
 import { Route as Char123LocaleChar125ProfileMenusMenuIdRouteImport } from './routes/{-$locale}/profile/menus_.$menuId'
 import { Route as Char123LocaleChar125ProfileSupportRequestsSupportRequestIdRouteImport } from './routes/{-$locale}/profile/support-requests_.$supportRequestId'
+import { Route as Char123LocaleChar125ProfileSupportRequestsCreateRouteImport } from './routes/{-$locale}/profile/support-requests_.create'
 import { Route as Char123LocaleChar125ProfileTravelEditRouteImport } from './routes/{-$locale}/profile/travel_.edit'
 import { Route as ApiAdminCallRecordingsRecordingIdAudioRouteImport } from './routes/api/admin/call-recordings_.$recordingId.audio'
 import { Route as Char123LocaleChar125AdminBookingRequestsBookingRequestIdEditRouteImport } from './routes/{-$locale}/admin/booking-requests_.$bookingRequestId_.edit'
@@ -985,6 +986,12 @@ const Char123LocaleChar125ProfileSupportRequestsSupportRequestIdRoute =
     path: '/support-requests/$supportRequestId',
     getParentRoute: () => Char123LocaleChar125ProfileRoute,
   } as any)
+const Char123LocaleChar125ProfileSupportRequestsCreateRoute =
+  Char123LocaleChar125ProfileSupportRequestsCreateRouteImport.update({
+    id: '/support-requests_/create',
+    path: '/support-requests/create',
+    getParentRoute: () => Char123LocaleChar125ProfileRoute,
+  } as any)
 const Char123LocaleChar125ProfileTravelEditRoute =
   Char123LocaleChar125ProfileTravelEditRouteImport.update({
     id: '/travel_/edit',
@@ -1280,6 +1287,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/profile/meals/$mealId': typeof Char123LocaleChar125ProfileMealsMealIdRoute
   '/{-$locale}/profile/menus/$menuId': typeof Char123LocaleChar125ProfileMenusMenuIdRoute
   '/{-$locale}/profile/support-requests/$supportRequestId': typeof Char123LocaleChar125ProfileSupportRequestsSupportRequestIdRoute
+  '/{-$locale}/profile/support-requests/create': typeof Char123LocaleChar125ProfileSupportRequestsCreateRoute
   '/{-$locale}/profile/travel/edit': typeof Char123LocaleChar125ProfileTravelEditRoute
   '/api/admin/call-recordings/$recordingId/audio': typeof ApiAdminCallRecordingsRecordingIdAudioRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/edit': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdEditRoute
@@ -1438,6 +1446,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/profile/meals/$mealId': typeof Char123LocaleChar125ProfileMealsMealIdRoute
   '/{-$locale}/profile/menus/$menuId': typeof Char123LocaleChar125ProfileMenusMenuIdRoute
   '/{-$locale}/profile/support-requests/$supportRequestId': typeof Char123LocaleChar125ProfileSupportRequestsSupportRequestIdRoute
+  '/{-$locale}/profile/support-requests/create': typeof Char123LocaleChar125ProfileSupportRequestsCreateRoute
   '/{-$locale}/profile/travel/edit': typeof Char123LocaleChar125ProfileTravelEditRoute
   '/api/admin/call-recordings/$recordingId/audio': typeof ApiAdminCallRecordingsRecordingIdAudioRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/edit': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdEditRoute
@@ -1600,6 +1609,7 @@ export interface FileRoutesById {
   '/{-$locale}/profile/meals_/$mealId': typeof Char123LocaleChar125ProfileMealsMealIdRoute
   '/{-$locale}/profile/menus_/$menuId': typeof Char123LocaleChar125ProfileMenusMenuIdRoute
   '/{-$locale}/profile/support-requests_/$supportRequestId': typeof Char123LocaleChar125ProfileSupportRequestsSupportRequestIdRoute
+  '/{-$locale}/profile/support-requests_/create': typeof Char123LocaleChar125ProfileSupportRequestsCreateRoute
   '/{-$locale}/profile/travel_/edit': typeof Char123LocaleChar125ProfileTravelEditRoute
   '/api/admin/call-recordings_/$recordingId/audio': typeof ApiAdminCallRecordingsRecordingIdAudioRoute
   '/{-$locale}/admin/booking-requests_/$bookingRequestId_/edit': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdEditRoute
@@ -1763,6 +1773,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/meals/$mealId'
     | '/{-$locale}/profile/menus/$menuId'
     | '/{-$locale}/profile/support-requests/$supportRequestId'
+    | '/{-$locale}/profile/support-requests/create'
     | '/{-$locale}/profile/travel/edit'
     | '/api/admin/call-recordings/$recordingId/audio'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/edit'
@@ -1921,6 +1932,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/meals/$mealId'
     | '/{-$locale}/profile/menus/$menuId'
     | '/{-$locale}/profile/support-requests/$supportRequestId'
+    | '/{-$locale}/profile/support-requests/create'
     | '/{-$locale}/profile/travel/edit'
     | '/api/admin/call-recordings/$recordingId/audio'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/edit'
@@ -2082,6 +2094,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/meals_/$mealId'
     | '/{-$locale}/profile/menus_/$menuId'
     | '/{-$locale}/profile/support-requests_/$supportRequestId'
+    | '/{-$locale}/profile/support-requests_/create'
     | '/{-$locale}/profile/travel_/edit'
     | '/api/admin/call-recordings_/$recordingId/audio'
     | '/{-$locale}/admin/booking-requests_/$bookingRequestId_/edit'
@@ -3092,6 +3105,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125ProfileSupportRequestsSupportRequestIdRouteImport
       parentRoute: typeof Char123LocaleChar125ProfileRoute
     }
+    '/{-$locale}/profile/support-requests_/create': {
+      id: '/{-$locale}/profile/support-requests_/create'
+      path: '/support-requests/create'
+      fullPath: '/{-$locale}/profile/support-requests/create'
+      preLoaderRoute: typeof Char123LocaleChar125ProfileSupportRequestsCreateRouteImport
+      parentRoute: typeof Char123LocaleChar125ProfileRoute
+    }
     '/{-$locale}/profile/travel_/edit': {
       id: '/{-$locale}/profile/travel_/edit'
       path: '/travel/edit'
@@ -3508,6 +3528,7 @@ interface Char123LocaleChar125ProfileRouteChildren {
   Char123LocaleChar125ProfileMealsMealIdRoute: typeof Char123LocaleChar125ProfileMealsMealIdRoute
   Char123LocaleChar125ProfileMenusMenuIdRoute: typeof Char123LocaleChar125ProfileMenusMenuIdRoute
   Char123LocaleChar125ProfileSupportRequestsSupportRequestIdRoute: typeof Char123LocaleChar125ProfileSupportRequestsSupportRequestIdRoute
+  Char123LocaleChar125ProfileSupportRequestsCreateRoute: typeof Char123LocaleChar125ProfileSupportRequestsCreateRoute
   Char123LocaleChar125ProfileTravelEditRoute: typeof Char123LocaleChar125ProfileTravelEditRoute
   Char123LocaleChar125ProfileBookingRequestOffersBookingRequestOfferIdEditMenusRoute: typeof Char123LocaleChar125ProfileBookingRequestOffersBookingRequestOfferIdEditMenusRoute
   Char123LocaleChar125ProfileBookingRequestOffersBookingRequestOfferIdEditPriceRoute: typeof Char123LocaleChar125ProfileBookingRequestOffersBookingRequestOfferIdEditPriceRoute
@@ -3567,6 +3588,8 @@ const Char123LocaleChar125ProfileRouteChildren: Char123LocaleChar125ProfileRoute
       Char123LocaleChar125ProfileMenusMenuIdRoute,
     Char123LocaleChar125ProfileSupportRequestsSupportRequestIdRoute:
       Char123LocaleChar125ProfileSupportRequestsSupportRequestIdRoute,
+    Char123LocaleChar125ProfileSupportRequestsCreateRoute:
+      Char123LocaleChar125ProfileSupportRequestsCreateRoute,
     Char123LocaleChar125ProfileTravelEditRoute:
       Char123LocaleChar125ProfileTravelEditRoute,
     Char123LocaleChar125ProfileBookingRequestOffersBookingRequestOfferIdEditMenusRoute:

@@ -53,6 +53,7 @@ Breadcrumbs answer “where within the customer profile?”, not “are you in p
 - `/profile/booking-requests/<id>/offers/<offerId>/checkout` → Booking requests › {occasion} › {cook display name} › Checkout
 - `/profile/gift-cards` → Gift cards
 - `/profile/support-requests` → Support
+- `/profile/support-requests/create` → Support › New support request
 - `/profile/support-requests/<id>` → Support › {subject}
 - `/profile/account` → Account
 
