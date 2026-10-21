@@ -238,7 +238,8 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
     const liveOffer = offer;
 
     const needsDepositPayment = liveOffer.status === 'USER_NEEDS_DEPOSIT_PAYMENT';
-    const canPay = needsDepositPayment && liveOffer.payment != null;
+    // Also covers PAYED offers with `pendingDeltaPayment` (amendment increase without reusable PM).
+    const canPay = liveOffer.payment != null && (needsDepositPayment || liveOffer.status === 'EVENT_PENDING');
     const paymentUnavailable = needsDepositPayment && liveOffer.payment == null;
 
     const offerHref = {

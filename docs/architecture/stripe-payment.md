@@ -68,8 +68,10 @@ a Stripe retrieve failure (stale or fixture `acct_…` id) marks the cook not pa
 | `TRANSFERRED`                | Blocked (bank payout already left Connect)                                                                                                                    |
 
 Top-up Connect transfers persist as `paymentData.extraTransferId`. `paymentIntentRefund` returns `{ refundId }` and is used by post-accept
-participant amendments (partial refunds). `transferReverse` accepts optional `amountCents` for partial Connect reversals on decreases;
-handover of equal-price `PAYED` offers still prefers full reverse + retransfer so the customer is not re-charged. See
+booking amendments (partial refunds; newest `amendmentPaymentIntentIds` first). `transferReverse` accepts optional `amountCents` for partial
+Connect reversals on decreases; handover of equal-price `PAYED` offers still prefers full reverse + retransfer so the customer is not
+re-charged. Amendments use Stripe idempotency keys keyed by `amendmentApplyId`. When a `PAYED` increase has no reusable payment method,
+`paymentData.pendingDeltaPayment` holds an on-session delta PaymentIntent for checkout. See
 [booking-offer-participant-amendment.md](../features/booking-offer-participant-amendment.md).
 
 ### Env

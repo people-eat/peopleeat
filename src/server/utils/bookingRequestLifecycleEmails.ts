@@ -680,10 +680,19 @@ export async function bookingRequestOfferParticipantAmendmentAcceptEmailSend(
         customer: EmailUser;
         cook: EmailUser;
         customerDeltaCents: number;
+        giftCardDeltaCents: number;
+        paymentStatus: string;
+        pendingDeltaPaymentDue: boolean;
     },
 ): Promise<void> {
     const locale = args.customer.locale;
     const webPageUrl = environmentVariables.webPageUrl;
+    const offerUrl = bookingRequestEmailCustomerOfferUrl(
+        webPageUrl,
+        args.bookingRequest.bookingRequestId,
+        args.offer.bookingRequestOfferId,
+    );
+    const checkoutUrl = `${offerUrl}/checkout`;
     await sendSafely(serverRuntime, 'bookingRequestOfferParticipantAmendmentAcceptEmailSend', args.offer.bookingRequestOfferId, () =>
         serverRuntime.email.send({
             to: args.customer.emailAddress,
@@ -693,12 +702,12 @@ export async function bookingRequestOfferParticipantAmendmentAcceptEmailSend(
                 webPageUrl,
                 recipientFirstName: args.customer.firstName,
                 cookFirstName: args.cook.firstName,
-                offerUrl: bookingRequestEmailCustomerOfferUrl(
-                    webPageUrl,
-                    args.bookingRequest.bookingRequestId,
-                    args.offer.bookingRequestOfferId,
-                ),
+                offerUrl,
+                checkoutUrl,
                 customerDeltaCents: args.customerDeltaCents,
+                giftCardDeltaCents: args.giftCardDeltaCents,
+                paymentStatus: args.paymentStatus,
+                pendingDeltaPaymentDue: args.pendingDeltaPaymentDue,
             }),
             purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED',
             locale,

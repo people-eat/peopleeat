@@ -189,6 +189,7 @@ import { userBookingRequestOfferCallSlotRequest } from '../commands/userBookingR
 import { userBookingRequestOfferChatMessageCreate } from '../commands/userBookingRequestOfferChatMessageCreate';
 import { userBookingRequestOfferConfiguredMenuCreate } from '../commands/userBookingRequestOfferConfiguredMenuCreate';
 import { userBookingRequestOfferDecline } from '../commands/userBookingRequestOfferDecline';
+import { userBookingRequestOfferParticipantAmendmentCancel } from '../commands/userBookingRequestOfferParticipantAmendmentCancel';
 import { userBookingRequestOfferParticipantAmendmentCreate } from '../commands/userBookingRequestOfferParticipantAmendmentCreate';
 import { userBookingRequestOfferPaymentStatusUpdate } from '../commands/userBookingRequestOfferPaymentStatusUpdate';
 import { userBookingRequestOfferTestimonialCreate } from '../commands/userBookingRequestOfferTestimonialCreate';
@@ -746,6 +747,7 @@ import type {
     GqlSUserMutationBookingRequestOfferChatMessageReactionUpsertArgs,
     GqlSUserMutationBookingRequestOfferConfiguredMenuCreateArgs,
     GqlSUserMutationBookingRequestOfferDeclineArgs,
+    GqlSUserMutationBookingRequestOfferParticipantAmendmentCancelArgs,
     GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs,
     GqlSUserMutationBookingRequestOfferPaymentStatusUpdateArgs,
     GqlSUserMutationBookingRequestOfferTestimonialCreateArgs,
@@ -2512,6 +2514,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return userBookingRequestOfferParticipantAmendmentCreate(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferParticipantAmendmentCancel(
+                parent: GqlSUserMutation,
+                args: GqlSUserMutationBookingRequestOfferParticipantAmendmentCancelArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return userBookingRequestOfferParticipantAmendmentCancel(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestOfferPaymentStatusUpdate(
                 parent: GqlSUserMutation,

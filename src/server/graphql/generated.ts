@@ -2548,14 +2548,18 @@ export type GqlSBookingRequestOfferCreate = {
 
 export interface GqlSBookingRequestOfferParticipantAmendment {
     __typename?: 'BookingRequestOfferParticipantAmendment';
+    exactEventAddress?: Maybe<GqlSCookTravelOriginAddress>;
+    giftCardDeltaCents: Scalars['Int']['output'];
     menuPriceCentsAfter: Scalars['Int']['output'];
     menuPriceCentsBefore: Scalars['Int']['output'];
-    participants: Array<GqlSBookingRequestOfferParticipantAmendmentParticipant>;
+    participants?: Maybe<Array<GqlSBookingRequestOfferParticipantAmendmentParticipant>>;
     payoutCentsCookAfter: Scalars['Int']['output'];
     payoutCentsCookBefore: Scalars['Int']['output'];
     requestedAt: Scalars['DateTime']['output'];
     totalCentsCustomerAfter: Scalars['Int']['output'];
     totalCentsCustomerBefore: Scalars['Int']['output'];
+    travelExpensesCentsAfter: Scalars['Int']['output'];
+    travelExpensesCentsBefore: Scalars['Int']['output'];
 }
 
 export interface GqlSBookingRequestOfferParticipantAmendmentParticipant {
@@ -2691,6 +2695,7 @@ export type GqlSChatMessageBookingRequestOfferEventType =
     | 'USER_DECLINED'
     | 'USER_LOCATION_UPDATED'
     | 'USER_PARTICIPANTS_UPDATED'
+    | 'USER_PARTICIPANT_AMENDMENT_CANCELED'
     | 'USER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'USER_PREFERENCES_UPDATED'
     | 'USER_REQUESTED_MENU_CHANGES'
@@ -4833,6 +4838,7 @@ export interface GqlSUserMutation {
     bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
     bookingRequestOfferConfiguredMenuCreate: GqlSMutationResult;
     bookingRequestOfferDecline: GqlSMutationResult;
+    bookingRequestOfferParticipantAmendmentCancel: GqlSMutationResult;
     bookingRequestOfferParticipantAmendmentCreate: GqlSMutationResult;
     bookingRequestOfferPaymentStatusUpdate: GqlSMutationResult;
     bookingRequestOfferTestimonialCreate: GqlSMutationResult;
@@ -4952,9 +4958,14 @@ export type GqlSUserMutationBookingRequestOfferDeclineArgs = {
     reason: Scalars['String']['input'];
 };
 
+export type GqlSUserMutationBookingRequestOfferParticipantAmendmentCancelArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+};
+
 export type GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
-    participants: Array<GqlSUserBookingRequestParticipantCreate>;
+    exactEventAddress?: InputMaybe<GqlSUserBookingRequestExactEventAddressInput>;
+    participants?: InputMaybe<Array<GqlSUserBookingRequestParticipantCreate>>;
 };
 
 export type GqlSUserMutationBookingRequestOfferPaymentStatusUpdateArgs = {
@@ -8601,14 +8612,22 @@ export type GqlSBookingRequestOfferParticipantAmendmentResolvers<
     ParentType extends GqlSResolversParentTypes['BookingRequestOfferParticipantAmendment'] =
         GqlSResolversParentTypes['BookingRequestOfferParticipantAmendment'],
 > = ResolversObject<{
+    exactEventAddress?: Resolver<Maybe<GqlSResolversTypes['CookTravelOriginAddress']>, ParentType, ContextType>;
+    giftCardDeltaCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     menuPriceCentsAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     menuPriceCentsBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-    participants?: Resolver<Array<GqlSResolversTypes['BookingRequestOfferParticipantAmendmentParticipant']>, ParentType, ContextType>;
+    participants?: Resolver<
+        Maybe<Array<GqlSResolversTypes['BookingRequestOfferParticipantAmendmentParticipant']>>,
+        ParentType,
+        ContextType
+    >;
     payoutCentsCookAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     payoutCentsCookBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     requestedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     totalCentsCustomerAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     totalCentsCustomerBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    travelExpensesCentsAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    travelExpensesCentsBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type GqlSBookingRequestOfferParticipantAmendmentParticipantResolvers<
@@ -10824,11 +10843,17 @@ export type GqlSUserMutationResolvers<
         ContextType,
         RequireFields<GqlSUserMutationBookingRequestOfferDeclineArgs, 'bookingRequestOfferId' | 'reason'>
     >;
+    bookingRequestOfferParticipantAmendmentCancel?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserMutationBookingRequestOfferParticipantAmendmentCancelArgs, 'bookingRequestOfferId'>
+    >;
     bookingRequestOfferParticipantAmendmentCreate?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs, 'bookingRequestOfferId' | 'participants'>
+        RequireFields<GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs, 'bookingRequestOfferId'>
     >;
     bookingRequestOfferPaymentStatusUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -11636,6 +11661,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_DECLINED'
     | 'USER_LOCATION_UPDATED'
     | 'USER_PARTICIPANTS_UPDATED'
+    | 'USER_PARTICIPANT_AMENDMENT_CANCELED'
     | 'USER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'USER_PREFERENCES_UPDATED'
     | 'USER_REQUESTED_MENU_CHANGES'
@@ -11668,6 +11694,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_DECLINED'
     | 'USER_LOCATION_UPDATED'
     | 'USER_PARTICIPANTS_UPDATED'
+    | 'USER_PARTICIPANT_AMENDMENT_CANCELED'
     | 'USER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'USER_PREFERENCES_UPDATED'
     | 'USER_REQUESTED_MENU_CHANGES'
@@ -11701,6 +11728,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     'USER_DECLINED',
     'USER_LOCATION_UPDATED',
     'USER_PARTICIPANTS_UPDATED',
+    'USER_PARTICIPANT_AMENDMENT_CANCELED',
     'USER_PARTICIPANT_AMENDMENT_REQUESTED',
     'USER_PREFERENCES_UPDATED',
     'USER_REQUESTED_MENU_CHANGES',

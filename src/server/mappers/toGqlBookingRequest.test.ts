@@ -64,6 +64,7 @@ const offer = {
     payoutCentsCook: 17_000,
     totalWithoutDiscountsCentsCustomer: 24_000,
     totalCentsCustomer: null,
+    giftCardAppliedCents: 0,
     configuredMenu: null,
     paymentData: null,
     paymentStatus: 'EMPTY',

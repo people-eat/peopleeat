@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 
-import { bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks, users } from '../db/schema';
+import { bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks, giftCards, promoCodes, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
     GqlSCookMutation,
@@ -16,6 +16,7 @@ import {
     bookingRequestOfferParticipantAmendmentPaymentAllowed,
 } from '../utils/bookingRequestOfferParticipantAmendmentGates';
 import { emailAddressPresent } from '../utils/emailAddressPresent';
+import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function cookBookingRequestOfferParticipantAmendmentAccept(
@@ -36,11 +37,15 @@ export async function cookBookingRequestOfferParticipantAmendmentAccept(
                 bookingRequest: bookingRequests,
                 cook: cooks,
                 customer: users,
+                giftCard: giftCards,
+                promoCode: promoCodes,
             })
             .from(bookingRequestOffers)
             .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestOffers.bookingRequestId))
             .innerJoin(cooks, eq(cooks.cookId, bookingRequestOffers.cookId))
             .innerJoin(users, eq(users.userId, bookingRequests.userId))
+            .leftJoin(giftCards, eq(giftCards.giftCardId, bookingRequests.giftCardId))
+            .leftJoin(promoCodes, eq(promoCodes.promoCodeId, bookingRequests.promoCodeId))
             .where(and(eq(bookingRequestOffers.cookId, cookId), eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId)))
             .limit(1);
 
@@ -67,15 +72,34 @@ export async function cookBookingRequestOfferParticipantAmendmentAccept(
             .from(bookingRequestParticipants)
             .where(eq(bookingRequestParticipants.bookingRequestId, row.bookingRequest.bookingRequestId));
 
-        const totalCentsCustomerBefore = row.offer.totalCentsCustomer ?? row.offer.totalWithoutDiscountsCentsCustomer;
+        let travelDistanceKmAfter: number | null | undefined;
+        let travelExpensesCentsAfter: number | undefined;
+        if (amendment.exactEventAddress) {
+            const origin = row.cook.exactTravelOriginAddress;
+            if (origin) {
+                travelDistanceKmAfter = await travelDistanceKmResolve(
+                    serverRuntime.places,
+                    { latitude: origin.latitude, longitude: origin.longitude },
+                    {
+                        latitude: amendment.exactEventAddress.latitude,
+                        longitude: amendment.exactEventAddress.longitude,
+                    },
+                );
+                travelExpensesCentsAfter = Math.round(travelDistanceKmAfter * row.cook.travelExpensesAmount * 2);
+            }
+        }
 
-        await bookingRequestOfferParticipantAmendmentApply(serverRuntime, {
+        const applyResult = await bookingRequestOfferParticipantAmendmentApply(serverRuntime, {
             offer: row.offer,
             bookingRequest: row.bookingRequest,
             cook: row.cook,
             customer: row.customer,
             existingParticipants,
             amendment,
+            giftCard: row.giftCard,
+            promoCode: row.promoCode,
+            travelDistanceKmAfter,
+            travelExpensesCentsAfter,
         });
 
         const [updatedOffer] = await serverRuntime.db
@@ -99,7 +123,10 @@ export async function cookBookingRequestOfferParticipantAmendmentAccept(
                 offer: updatedOffer,
                 customer,
                 cook,
-                customerDeltaCents: (updatedOffer.totalCentsCustomer ?? 0) - totalCentsCustomerBefore,
+                customerDeltaCents: applyResult.customerDeltaCents,
+                giftCardDeltaCents: applyResult.giftCardDeltaCents,
+                paymentStatus: applyResult.paymentStatus,
+                pendingDeltaPaymentDue: applyResult.pendingDeltaPaymentDue,
             });
         }
 

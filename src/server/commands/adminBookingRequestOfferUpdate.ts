@@ -91,6 +91,16 @@ export async function adminBookingRequestOfferUpdate(
         }
 
         if (priceInputsChanged) {
+            if (
+                offer.paymentStatus === 'SETUP' ||
+                offer.paymentStatus === 'PAYED' ||
+                offer.paymentStatus === 'TRANSFERRED' ||
+                offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM'
+            ) {
+                throw new Error(
+                    'adminBookingRequestOfferUpdate: cannot change menu/travel prices after payment is prepared or completed; use amendment or handover tools',
+                );
+            }
             const price = bookingRequestOfferPriceCalculate({
                 menuPriceCents: nextMenuPriceCents,
                 travelExpensesCents: nextTravelExpensesCents,

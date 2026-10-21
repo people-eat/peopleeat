@@ -242,10 +242,17 @@ export function bookingRequestOfferListBucketDerive(status: BookingRequestOfferS
  * Stripe ids stored on an offer while payment progresses.
  * Discriminated loosely — commands own which combination is valid per status.
  */
+export type BookingRequestOfferPendingDeltaPayment = {
+    paymentIntentId: string;
+    clientSecret: string;
+    amountCents: number;
+};
+
 export type BookingRequestOfferPaymentData =
     | {
           setupIntentId: string;
           clientSecret: string;
+          pendingDeltaPayment?: BookingRequestOfferPendingDeltaPayment;
       }
     | {
           paymentIntentId: string;
@@ -257,6 +264,8 @@ export type BookingRequestOfferPaymentData =
           refundIds?: string[];
           /** Extra customer PaymentIntents from amendment increases (newest last). */
           amendmentPaymentIntentIds?: string[];
+          /** On-session delta charge when no reusable PM (amendment increase). */
+          pendingDeltaPayment?: BookingRequestOfferPendingDeltaPayment;
       }
     | {
           setupIntentId: string;
@@ -266,23 +275,30 @@ export type BookingRequestOfferPaymentData =
           extraTransferId?: string;
           refundIds?: string[];
           amendmentPaymentIntentIds?: string[];
+          pendingDeltaPayment?: BookingRequestOfferPendingDeltaPayment;
       }
     | {
           transferId: string;
           extraTransferId?: string;
           refundIds?: string[];
           amendmentPaymentIntentIds?: string[];
+          pendingDeltaPayment?: BookingRequestOfferPendingDeltaPayment;
+          clientSecret?: string;
       };
 
-/** Pending post–dual-accept participant change awaiting cook accept/decline. */
+/** Pending post–dual-accept booking change (participants and/or venue) awaiting cook accept/decline. */
 export type BookingRequestOfferParticipantAmendment = {
+    /** Stable id for Stripe idempotency keys across accept retries. */
+    amendmentApplyId: string;
     requestedAt: string;
-    participants: {
+    participants?: {
         type: BookingRequestParticipantType;
         name: string;
         restrictions: string[];
     }[];
+    exactEventAddress?: BookingRequestExactEventAddress;
     menuPriceCentsBefore: number;
+    travelExpensesCentsBefore: number;
     totalCentsCustomerBefore: number;
     payoutCentsCookBefore: number;
 };
@@ -378,6 +394,7 @@ const bookingRequestOfferEventTypes = [
     'ADMIN_HANDED_OVER_TO_COOK',
     'USER_PARTICIPANTS_UPDATED',
     'USER_PARTICIPANT_AMENDMENT_REQUESTED',
+    'USER_PARTICIPANT_AMENDMENT_CANCELED',
     'COOK_PARTICIPANT_AMENDMENT_ACCEPTED',
     'COOK_PARTICIPANT_AMENDMENT_DECLINED',
     'COOK_PREPARATIONS_COMPLETED',
@@ -497,27 +514,38 @@ type BookingRequestOfferEventPayloadByType = {
         participantsDiscountedBefore: number;
         participantsAdultAfter: number;
         participantsDiscountedAfter: number;
+        locationBefore?: BookingRequestExactEventAddress;
+        locationAfter?: BookingRequestExactEventAddress;
         menuPriceCentsBefore: number;
         menuPriceCentsAfter: number;
+        travelExpensesCentsBefore?: number;
+        travelExpensesCentsAfter?: number;
         totalCentsCustomerBefore: number;
         totalCentsCustomerAfter: number;
         payoutCentsCookBefore: number;
         payoutCentsCookAfter: number;
+        giftCardDeltaCents?: number;
     };
     COOK_PARTICIPANT_AMENDMENT_ACCEPTED: {
         participantsAdultBefore: number;
         participantsDiscountedBefore: number;
         participantsAdultAfter: number;
         participantsDiscountedAfter: number;
+        locationBefore?: BookingRequestExactEventAddress;
+        locationAfter?: BookingRequestExactEventAddress;
         menuPriceCentsBefore: number;
         menuPriceCentsAfter: number;
+        travelExpensesCentsBefore?: number;
+        travelExpensesCentsAfter?: number;
         totalCentsCustomerBefore: number;
         totalCentsCustomerAfter: number;
         payoutCentsCookBefore: number;
         payoutCentsCookAfter: number;
         customerDeltaCents: number;
         cookPayoutDeltaCents: number;
+        giftCardDeltaCents?: number;
     };
+    USER_PARTICIPANT_AMENDMENT_CANCELED: Record<string, never>;
     COOK_PARTICIPANT_AMENDMENT_DECLINED: {
         participantsAdultBefore: number;
         participantsDiscountedBefore: number;

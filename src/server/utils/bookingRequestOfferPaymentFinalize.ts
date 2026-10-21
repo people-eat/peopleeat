@@ -56,6 +56,49 @@ export async function bookingRequestOfferPaymentFinalize(
         throw new Error('bookingRequestOfferPaymentFinalize: offer not dual-accepted or missing paymentData');
     }
 
+    const pendingDelta = 'pendingDeltaPayment' in offer.paymentData ? offer.paymentData.pendingDeltaPayment : undefined;
+
+    if (offer.paymentStatus === 'PAYED' && pendingDelta) {
+        const succeeded = await serverRuntime.stripe.paymentIntentSucceededCheck(pendingDelta.paymentIntentId);
+        if (!succeeded) {
+            throw new Error('bookingRequestOfferPaymentFinalize: pending delta payment intent not succeeded');
+        }
+        const cookPayoutForSplit = Math.max(0, offer.payoutCentsCook);
+        const extraTransferId = await bookingRequestOfferExtraTransferMaybeCreate(serverRuntime, {
+            destinationAccountId: cookStripeAccountId,
+            userId: customerUserId,
+            totalCentsCustomer: pendingDelta.amountCents,
+            payoutCentsCook: Math.min(cookPayoutForSplit, pendingDelta.amountCents),
+        });
+        const clearedPending: BookingRequestOfferPaymentData = {
+            ...offer.paymentData,
+            pendingDeltaPayment: undefined,
+            clientSecret:
+                'clientSecret' in offer.paymentData && offer.paymentData.clientSecret !== pendingDelta.clientSecret
+                    ? offer.paymentData.clientSecret
+                    : undefined,
+            ...(extraTransferId ? { extraTransferId } : {}),
+        } as BookingRequestOfferPaymentData;
+        // Drop undefined pendingDeltaPayment key for cleaner JSON.
+        if ('pendingDeltaPayment' in clearedPending) {
+            delete (clearedPending as { pendingDeltaPayment?: unknown }).pendingDeltaPayment;
+        }
+
+        await serverRuntime.db.transaction(async (transaction) => {
+            await transaction
+                .update(bookingRequestOffers)
+                .set({ paymentData: clearedPending })
+                .where(eq(bookingRequestOffers.bookingRequestOfferId, offer.bookingRequestOfferId));
+            if (invoiceAddress) {
+                await transaction
+                    .update(bookingRequests)
+                    .set({ invoiceAddress })
+                    .where(eq(bookingRequests.bookingRequestId, bookingRequest.bookingRequestId));
+            }
+        });
+        return { advanced: true };
+    }
+
     if (offer.paymentStatus === 'PAYED' || offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM' || offer.paymentStatus === 'TRANSFERRED') {
         if (invoiceAddress) {
             await serverRuntime.db

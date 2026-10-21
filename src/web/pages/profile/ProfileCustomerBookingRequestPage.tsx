@@ -179,7 +179,7 @@ export function ProfileCustomerBookingRequestPage({
                                     <Link to="/{-$locale}/profile/booking-requests/$bookingRequestId/edit" params={{ bookingRequestId }}>
                                         {canUpdate
                                             ? { de: 'Bearbeiten', en: 'Edit' }[locale]
-                                            : { de: 'Teilnehmer ändern', en: 'Change participants' }[locale]}
+                                            : { de: 'Buchung ändern', en: 'Change booking' }[locale]}
                                     </Link>
                                 </Button>
                             ) : null}
@@ -218,20 +218,8 @@ export function ProfileCustomerBookingRequestPage({
                     <StatusAlert tone="info" title={{ de: 'Änderung vorgeschlagen', en: 'Change proposed' }[locale]}>
                         {
                             {
-                                de: `Dein Vorschlag (${formatParticipants(
-                                    {
-                                        adultCount: pendingAmendment.participants.filter((p) => p.type === 'ADULT').length,
-                                        discountedCount: pendingAmendment.participants.filter((p) => p.type === 'DISCOUNTED').length,
-                                    },
-                                    { locale },
-                                )}) wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
-                                en: `Your proposal (${formatParticipants(
-                                    {
-                                        adultCount: pendingAmendment.participants.filter((p) => p.type === 'ADULT').length,
-                                        discountedCount: pendingAmendment.participants.filter((p) => p.type === 'DISCOUNTED').length,
-                                    },
-                                    { locale },
-                                )}) is waiting for the chef to confirm. New host price: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
+                                de: `Dein Vorschlag wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
+                                en: `Your proposal is waiting for the chef to confirm. New host price: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
                             }[locale]
                         }
                     </StatusAlert>

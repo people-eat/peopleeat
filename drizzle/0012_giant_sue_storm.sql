@@ -1,0 +1,1 @@
+ALTER TABLE "BookingRequestOffers" ADD COLUMN "giftCardAppliedCents" integer DEFAULT 0 NOT NULL;

@@ -50,12 +50,19 @@ fragment ProfileCustomerBookingRequestPageUser on User {
                     name
                     restrictions
                 }
+                exactEventAddress {
+                    displayText
+                    city
+                }
                 menuPriceCentsBefore
                 menuPriceCentsAfter
+                travelExpensesCentsBefore
+                travelExpensesCentsAfter
                 totalCentsCustomerBefore
                 totalCentsCustomerAfter
                 payoutCentsCookBefore
                 payoutCentsCookAfter
+                giftCardDeltaCents
             }
             configuredMenu {
                 title
@@ -185,10 +192,24 @@ mutation ProfileBookingRequestUpdate(
 
 mutation ProfileCustomerBookingRequestParticipantAmendmentCreate(
     $bookingRequestOfferId: ID!
-    $participants: [UserBookingRequestParticipantCreate!]!
+    $participants: [UserBookingRequestParticipantCreate!]
+    $exactEventAddress: UserBookingRequestExactEventAddressInput
 ) {
     user {
-        bookingRequestOfferParticipantAmendmentCreate(bookingRequestOfferId: $bookingRequestOfferId, participants: $participants) {
+        bookingRequestOfferParticipantAmendmentCreate(
+            bookingRequestOfferId: $bookingRequestOfferId
+            participants: $participants
+            exactEventAddress: $exactEventAddress
+        ) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestParticipantAmendmentCancel($bookingRequestOfferId: ID!) {
+    user {
+        bookingRequestOfferParticipantAmendmentCancel(bookingRequestOfferId: $bookingRequestOfferId) {
             success
             referenceId
         }

@@ -38,6 +38,7 @@ export interface StripePaymentIntentCreateWithSplit {
     pullAmount: number;
     // Amount destined for the cook (may exceed pull when top-up transfer is used).
     payoutAmount: number;
+    idempotencyKey?: string;
 }
 
 export interface StripePaymentIntentCreateFromPaymentMethodWithSplit {
@@ -46,6 +47,10 @@ export interface StripePaymentIntentCreateFromPaymentMethodWithSplit {
     paymentMethodId: string;
     pullAmount: number;
     payoutAmount: number;
+    idempotencyKey?: string;
+    /** When false, create without confirm (on-session Elements). Default true for off-session. */
+    confirm?: boolean;
+    offSession?: boolean;
 }
 
 export interface StripePaymentIntentCreateResult {
@@ -62,6 +67,7 @@ export interface StripeTransferCreate {
     destinationAccountId: string;
     payoutAmount: number;
     transferGroup?: string;
+    idempotencyKey?: string;
 }
 
 export interface StripeTransferCreateResult {
@@ -72,6 +78,7 @@ export interface StripeTransferReverse {
     transferId: string;
     /** Partial reverse in cents; omit to reverse the full transfer. */
     amountCents?: number;
+    idempotencyKey?: string;
 }
 
 export interface StripePayoutCreate {
@@ -192,6 +199,7 @@ export interface StripePayment {
     setupIntentCreate: (options: StripeSetupIntentCreate) => Promise<StripeSetupIntentCreateResult>;
     setupIntentSucceededCheck: (setupIntentId: string) => Promise<boolean>;
     setupIntentPaymentMethodIdFindOne: (setupIntentId: string) => Promise<string | undefined>;
+    setupIntentCancel: (setupIntentId: string) => Promise<void>;
 
     paymentIntentCreate: (options: StripePaymentIntentCreate) => Promise<StripePaymentIntentCreateResult>;
     paymentIntentAmountUpdate: (paymentIntentId: string, amount: number) => Promise<StripePaymentIntentCreateResult>;
@@ -201,7 +209,9 @@ export interface StripePayment {
     ) => Promise<StripePaymentIntentCreateResult>;
     paymentIntentSucceededCheck: (paymentIntentId: string) => Promise<boolean>;
     paymentIntentCancel: (paymentIntentId: string) => Promise<void>;
-    paymentIntentRefund: (paymentIntentId: string, amount?: number) => Promise<{ refundId: string }>;
+    paymentIntentRefund: (paymentIntentId: string, amount?: number, options?: { idempotencyKey?: string }) => Promise<{ refundId: string }>;
+    /** Cents still refundable on the PaymentIntent (amount_received minus charge refunds). */
+    paymentIntentRefundableCentsFindOne: (paymentIntentId: string) => Promise<number>;
     paymentIntentPaymentMethodIdFindOne: (paymentIntentId: string) => Promise<string | undefined>;
     paymentIntentDestinationTransferIdFindOne: (paymentIntentId: string) => Promise<string | undefined>;
 

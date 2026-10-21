@@ -182,12 +182,19 @@ fragment ProfileCustomerBookingRequestOfferPageUser on User {
                     name
                     restrictions
                 }
+                exactEventAddress {
+                    displayText
+                    city
+                }
                 menuPriceCentsBefore
                 menuPriceCentsAfter
+                travelExpensesCentsBefore
+                travelExpensesCentsAfter
                 totalCentsCustomerBefore
                 totalCentsCustomerAfter
                 payoutCentsCookBefore
                 payoutCentsCookAfter
+                giftCardDeltaCents
             }
             messages {
                 ...HumanChatMessageFields
@@ -221,10 +228,24 @@ mutation ProfileCustomerBookingRequestOfferAccept($bookingRequestOfferId: ID!) {
 
 mutation ProfileCustomerBookingRequestOfferParticipantAmendmentCreate(
     $bookingRequestOfferId: ID!
-    $participants: [UserBookingRequestParticipantCreate!]!
+    $participants: [UserBookingRequestParticipantCreate!]
+    $exactEventAddress: UserBookingRequestExactEventAddressInput
 ) {
     user {
-        bookingRequestOfferParticipantAmendmentCreate(bookingRequestOfferId: $bookingRequestOfferId, participants: $participants) {
+        bookingRequestOfferParticipantAmendmentCreate(
+            bookingRequestOfferId: $bookingRequestOfferId
+            participants: $participants
+            exactEventAddress: $exactEventAddress
+        ) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferParticipantAmendmentCancel($bookingRequestOfferId: ID!) {
+    user {
+        bookingRequestOfferParticipantAmendmentCancel(bookingRequestOfferId: $bookingRequestOfferId) {
             success
             referenceId
         }

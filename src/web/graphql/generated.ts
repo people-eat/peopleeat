@@ -2551,14 +2551,18 @@ export type GqlCBookingRequestOfferCreate = {
 
 export interface GqlCBookingRequestOfferParticipantAmendment {
     __typename?: 'BookingRequestOfferParticipantAmendment';
+    exactEventAddress?: Maybe<GqlCCookTravelOriginAddress>;
+    giftCardDeltaCents: Scalars['Int']['output'];
     menuPriceCentsAfter: Scalars['Int']['output'];
     menuPriceCentsBefore: Scalars['Int']['output'];
-    participants: Array<GqlCBookingRequestOfferParticipantAmendmentParticipant>;
+    participants?: Maybe<Array<GqlCBookingRequestOfferParticipantAmendmentParticipant>>;
     payoutCentsCookAfter: Scalars['Int']['output'];
     payoutCentsCookBefore: Scalars['Int']['output'];
     requestedAt: Scalars['DateTime']['output'];
     totalCentsCustomerAfter: Scalars['Int']['output'];
     totalCentsCustomerBefore: Scalars['Int']['output'];
+    travelExpensesCentsAfter: Scalars['Int']['output'];
+    travelExpensesCentsBefore: Scalars['Int']['output'];
 }
 
 export interface GqlCBookingRequestOfferParticipantAmendmentParticipant {
@@ -2694,6 +2698,7 @@ export type GqlCChatMessageBookingRequestOfferEventType =
     | 'USER_DECLINED'
     | 'USER_LOCATION_UPDATED'
     | 'USER_PARTICIPANTS_UPDATED'
+    | 'USER_PARTICIPANT_AMENDMENT_CANCELED'
     | 'USER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'USER_PREFERENCES_UPDATED'
     | 'USER_REQUESTED_MENU_CHANGES'
@@ -4836,6 +4841,7 @@ export interface GqlCUserMutation {
     bookingRequestOfferChatMessageReactionUpsert: GqlCMutationResult;
     bookingRequestOfferConfiguredMenuCreate: GqlCMutationResult;
     bookingRequestOfferDecline: GqlCMutationResult;
+    bookingRequestOfferParticipantAmendmentCancel: GqlCMutationResult;
     bookingRequestOfferParticipantAmendmentCreate: GqlCMutationResult;
     bookingRequestOfferPaymentStatusUpdate: GqlCMutationResult;
     bookingRequestOfferTestimonialCreate: GqlCMutationResult;
@@ -4955,9 +4961,14 @@ export type GqlCUserMutationBookingRequestOfferDeclineArgs = {
     reason: Scalars['String']['input'];
 };
 
+export type GqlCUserMutationBookingRequestOfferParticipantAmendmentCancelArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+};
+
 export type GqlCUserMutationBookingRequestOfferParticipantAmendmentCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
-    participants: Array<GqlCUserBookingRequestParticipantCreate>;
+    exactEventAddress?: InputMaybe<GqlCUserBookingRequestExactEventAddressInput>;
+    participants?: InputMaybe<Array<GqlCUserBookingRequestParticipantCreate>>;
 };
 
 export type GqlCUserMutationBookingRequestOfferPaymentStatusUpdateArgs = {
@@ -9754,11 +9765,15 @@ export type GqlCAdminBookingRequestOfferPageOfferFragment = {
         requestedAt: string;
         menuPriceCentsBefore: number;
         menuPriceCentsAfter: number;
+        travelExpensesCentsBefore: number;
+        travelExpensesCentsAfter: number;
         totalCentsCustomerBefore: number;
         totalCentsCustomerAfter: number;
         payoutCentsCookBefore: number;
         payoutCentsCookAfter: number;
-        participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+        giftCardDeltaCents: number;
+        participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }> | null;
+        exactEventAddress: { displayText: string; city: string } | null;
     } | null;
     configuredMenu: {
         menuId: string | null;
@@ -9983,11 +9998,19 @@ export type GqlCAdminBookingRequestOfferPageQuery = {
                         requestedAt: string;
                         menuPriceCentsBefore: number;
                         menuPriceCentsAfter: number;
+                        travelExpensesCentsBefore: number;
+                        travelExpensesCentsAfter: number;
                         totalCentsCustomerBefore: number;
                         totalCentsCustomerAfter: number;
                         payoutCentsCookBefore: number;
                         payoutCentsCookAfter: number;
-                        participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                        giftCardDeltaCents: number;
+                        participants: Array<{
+                            type: Schema.GqlCBookingRequestParticipantType;
+                            name: string;
+                            restrictions: Array<string>;
+                        }> | null;
+                        exactEventAddress: { displayText: string; city: string } | null;
                     } | null;
                     configuredMenu: {
                         menuId: string | null;
@@ -10221,11 +10244,15 @@ export type GqlCAdminBookingRequestOfferPageUpdatesSubscription = {
                 requestedAt: string;
                 menuPriceCentsBefore: number;
                 menuPriceCentsAfter: number;
+                travelExpensesCentsBefore: number;
+                travelExpensesCentsAfter: number;
                 totalCentsCustomerBefore: number;
                 totalCentsCustomerAfter: number;
                 payoutCentsCookBefore: number;
                 payoutCentsCookAfter: number;
-                participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                giftCardDeltaCents: number;
+                participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }> | null;
+                exactEventAddress: { displayText: string; city: string } | null;
             } | null;
             configuredMenu: {
                 menuId: string | null;
@@ -16399,11 +16426,15 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
                 requestedAt: string;
                 menuPriceCentsBefore: number;
                 menuPriceCentsAfter: number;
+                travelExpensesCentsBefore: number;
+                travelExpensesCentsAfter: number;
                 totalCentsCustomerBefore: number;
                 totalCentsCustomerAfter: number;
                 payoutCentsCookBefore: number;
                 payoutCentsCookAfter: number;
-                participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                giftCardDeltaCents: number;
+                participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }> | null;
+                exactEventAddress: { displayText: string; city: string } | null;
             } | null;
             costBreakdown: { total: { title: string; amountCents: number } | null };
             callBookings: Array<{
@@ -16555,11 +16586,19 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                         requestedAt: string;
                         menuPriceCentsBefore: number;
                         menuPriceCentsAfter: number;
+                        travelExpensesCentsBefore: number;
+                        travelExpensesCentsAfter: number;
                         totalCentsCustomerBefore: number;
                         totalCentsCustomerAfter: number;
                         payoutCentsCookBefore: number;
                         payoutCentsCookAfter: number;
-                        participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                        giftCardDeltaCents: number;
+                        participants: Array<{
+                            type: Schema.GqlCBookingRequestParticipantType;
+                            name: string;
+                            restrictions: Array<string>;
+                        }> | null;
+                        exactEventAddress: { displayText: string; city: string } | null;
                     } | null;
                     costBreakdown: { total: { title: string; amountCents: number } | null };
                     callBookings: Array<{
@@ -16718,11 +16757,19 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                     requestedAt: string;
                     menuPriceCentsBefore: number;
                     menuPriceCentsAfter: number;
+                    travelExpensesCentsBefore: number;
+                    travelExpensesCentsAfter: number;
                     totalCentsCustomerBefore: number;
                     totalCentsCustomerAfter: number;
                     payoutCentsCookBefore: number;
                     payoutCentsCookAfter: number;
-                    participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                    giftCardDeltaCents: number;
+                    participants: Array<{
+                        type: Schema.GqlCBookingRequestParticipantType;
+                        name: string;
+                        restrictions: Array<string>;
+                    }> | null;
+                    exactEventAddress: { displayText: string; city: string } | null;
                 } | null;
                 costBreakdown: { total: { title: string; amountCents: number } | null };
                 callBookings: Array<{
@@ -19179,11 +19226,15 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
                 requestedAt: string;
                 menuPriceCentsBefore: number;
                 menuPriceCentsAfter: number;
+                travelExpensesCentsBefore: number;
+                travelExpensesCentsAfter: number;
                 totalCentsCustomerBefore: number;
                 totalCentsCustomerAfter: number;
                 payoutCentsCookBefore: number;
                 payoutCentsCookAfter: number;
-                participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                giftCardDeltaCents: number;
+                participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }> | null;
+                exactEventAddress: { displayText: string; city: string } | null;
             } | null;
             messages: Array<
                 | {
@@ -19348,11 +19399,19 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
                         requestedAt: string;
                         menuPriceCentsBefore: number;
                         menuPriceCentsAfter: number;
+                        travelExpensesCentsBefore: number;
+                        travelExpensesCentsAfter: number;
                         totalCentsCustomerBefore: number;
                         totalCentsCustomerAfter: number;
                         payoutCentsCookBefore: number;
                         payoutCentsCookAfter: number;
-                        participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                        giftCardDeltaCents: number;
+                        participants: Array<{
+                            type: Schema.GqlCBookingRequestParticipantType;
+                            name: string;
+                            restrictions: Array<string>;
+                        }> | null;
+                        exactEventAddress: { displayText: string; city: string } | null;
                     } | null;
                     messages: Array<
                         | {
@@ -19524,11 +19583,19 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
                     requestedAt: string;
                     menuPriceCentsBefore: number;
                     menuPriceCentsAfter: number;
+                    travelExpensesCentsBefore: number;
+                    travelExpensesCentsAfter: number;
                     totalCentsCustomerBefore: number;
                     totalCentsCustomerAfter: number;
                     payoutCentsCookBefore: number;
                     payoutCentsCookAfter: number;
-                    participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                    giftCardDeltaCents: number;
+                    participants: Array<{
+                        type: Schema.GqlCBookingRequestParticipantType;
+                        name: string;
+                        restrictions: Array<string>;
+                    }> | null;
+                    exactEventAddress: { displayText: string; city: string } | null;
                 } | null;
                 messages: Array<
                     | {
@@ -19579,11 +19646,21 @@ export type GqlCProfileCustomerBookingRequestOfferAcceptMutation = {
 
 export type GqlCProfileCustomerBookingRequestOfferParticipantAmendmentCreateMutationVariables = Exact<{
     bookingRequestOfferId: string;
-    participants: Array<Schema.GqlCUserBookingRequestParticipantCreate> | Schema.GqlCUserBookingRequestParticipantCreate;
+    participants?:
+        Array<Schema.GqlCUserBookingRequestParticipantCreate> | Schema.GqlCUserBookingRequestParticipantCreate | null | undefined;
+    exactEventAddress?: Schema.GqlCUserBookingRequestExactEventAddressInput | null | undefined;
 }>;
 
 export type GqlCProfileCustomerBookingRequestOfferParticipantAmendmentCreateMutation = {
     user: { bookingRequestOfferParticipantAmendmentCreate: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCProfileCustomerBookingRequestOfferParticipantAmendmentCancelMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+}>;
+
+export type GqlCProfileCustomerBookingRequestOfferParticipantAmendmentCancelMutation = {
+    user: { bookingRequestOfferParticipantAmendmentCancel: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCProfileCustomerBookingRequestOfferPaymentStatusUpdateMutationVariables = Exact<{
@@ -19748,11 +19825,15 @@ export type GqlCProfileCustomerBookingRequestPageUserFragment = {
                 requestedAt: string;
                 menuPriceCentsBefore: number;
                 menuPriceCentsAfter: number;
+                travelExpensesCentsBefore: number;
+                travelExpensesCentsAfter: number;
                 totalCentsCustomerBefore: number;
                 totalCentsCustomerAfter: number;
                 payoutCentsCookBefore: number;
                 payoutCentsCookAfter: number;
-                participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                giftCardDeltaCents: number;
+                participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }> | null;
+                exactEventAddress: { displayText: string; city: string } | null;
             } | null;
             configuredMenu: { title: string } | null;
             cook: {
@@ -19836,11 +19917,19 @@ export type GqlCProfileCustomerBookingRequestPageQuery = {
                         requestedAt: string;
                         menuPriceCentsBefore: number;
                         menuPriceCentsAfter: number;
+                        travelExpensesCentsBefore: number;
+                        travelExpensesCentsAfter: number;
                         totalCentsCustomerBefore: number;
                         totalCentsCustomerAfter: number;
                         payoutCentsCookBefore: number;
                         payoutCentsCookAfter: number;
-                        participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                        giftCardDeltaCents: number;
+                        participants: Array<{
+                            type: Schema.GqlCBookingRequestParticipantType;
+                            name: string;
+                            restrictions: Array<string>;
+                        }> | null;
+                        exactEventAddress: { displayText: string; city: string } | null;
                     } | null;
                     configuredMenu: { title: string } | null;
                     cook: {
@@ -19925,11 +20014,19 @@ export type GqlCProfileCustomerBookingRequestPageUpdatesSubscription = {
                     requestedAt: string;
                     menuPriceCentsBefore: number;
                     menuPriceCentsAfter: number;
+                    travelExpensesCentsBefore: number;
+                    travelExpensesCentsAfter: number;
                     totalCentsCustomerBefore: number;
                     totalCentsCustomerAfter: number;
                     payoutCentsCookBefore: number;
                     payoutCentsCookAfter: number;
-                    participants: Array<{ type: Schema.GqlCBookingRequestParticipantType; name: string; restrictions: Array<string> }>;
+                    giftCardDeltaCents: number;
+                    participants: Array<{
+                        type: Schema.GqlCBookingRequestParticipantType;
+                        name: string;
+                        restrictions: Array<string>;
+                    }> | null;
+                    exactEventAddress: { displayText: string; city: string } | null;
                 } | null;
                 configuredMenu: { title: string } | null;
                 cook: {
@@ -20008,11 +20105,21 @@ export type GqlCProfileBookingRequestUpdateMutation = { user: { bookingRequestUp
 
 export type GqlCProfileCustomerBookingRequestParticipantAmendmentCreateMutationVariables = Exact<{
     bookingRequestOfferId: string;
-    participants: Array<Schema.GqlCUserBookingRequestParticipantCreate> | Schema.GqlCUserBookingRequestParticipantCreate;
+    participants?:
+        Array<Schema.GqlCUserBookingRequestParticipantCreate> | Schema.GqlCUserBookingRequestParticipantCreate | null | undefined;
+    exactEventAddress?: Schema.GqlCUserBookingRequestExactEventAddressInput | null | undefined;
 }>;
 
 export type GqlCProfileCustomerBookingRequestParticipantAmendmentCreateMutation = {
     user: { bookingRequestOfferParticipantAmendmentCreate: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCProfileCustomerBookingRequestParticipantAmendmentCancelMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+}>;
+
+export type GqlCProfileCustomerBookingRequestParticipantAmendmentCancelMutation = {
+    user: { bookingRequestOfferParticipantAmendmentCancel: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCProfileCustomerBookingRequestsPageUserFragment = {
@@ -25134,12 +25241,26 @@ export const AdminBookingRequestOfferPageOfferFragmentDoc = {
                                         ],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'exactEventAddress' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                        ],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                             ],
                         },
                     },
@@ -28973,12 +29094,26 @@ export const ProfileCookBookingRequestOfferPageUserFragmentDoc = {
                                                                 ],
                                                             },
                                                         },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'exactEventAddress' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                                ],
+                                                            },
+                                                        },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                                                     ],
                                                 },
                                             },
@@ -31746,12 +31881,26 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                                                                 ],
                                                             },
                                                         },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'exactEventAddress' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                                ],
+                                                            },
+                                                        },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                                                     ],
                                                 },
                                             },
@@ -31972,12 +32121,26 @@ export const ProfileCustomerBookingRequestPageUserFragmentDoc = {
                                                                 ],
                                                             },
                                                         },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'exactEventAddress' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                                ],
+                                                            },
+                                                        },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                                                     ],
                                                 },
                                             },
@@ -44908,12 +45071,26 @@ export const AdminBookingRequestOfferPageDocument = {
                                         ],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'exactEventAddress' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                        ],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                             ],
                         },
                     },
@@ -45527,12 +45704,26 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                                         ],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'exactEventAddress' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                        ],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                             ],
                         },
                     },
@@ -68141,12 +68332,26 @@ export const ProfileCookBookingRequestOfferPageDocument = {
                                                                 ],
                                                             },
                                                         },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'exactEventAddress' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                                ],
+                                                            },
+                                                        },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                                                     ],
                                                 },
                                             },
@@ -68616,12 +68821,26 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
                                                                 ],
                                                             },
                                                         },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'exactEventAddress' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                                ],
+                                                            },
+                                                        },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                                                     ],
                                                 },
                                             },
@@ -76516,12 +76735,26 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                                                                 ],
                                                             },
                                                         },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'exactEventAddress' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                                ],
+                                                            },
+                                                        },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                                                     ],
                                                 },
                                             },
@@ -77109,12 +77342,26 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                                                                 ],
                                                             },
                                                         },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'exactEventAddress' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                                ],
+                                                            },
+                                                        },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                                                     ],
                                                 },
                                             },
@@ -77211,15 +77458,17 @@ export const ProfileCustomerBookingRequestOfferParticipantAmendmentCreateDocumen
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'participants' } },
                     type: {
-                        kind: 'NonNullType',
+                        kind: 'ListType',
                         type: {
-                            kind: 'ListType',
-                            type: {
-                                kind: 'NonNullType',
-                                type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestParticipantCreate' } },
-                            },
+                            kind: 'NonNullType',
+                            type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestParticipantCreate' } },
                         },
                     },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'exactEventAddress' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestExactEventAddressInput' } },
                 },
             ],
             selectionSet: {
@@ -77245,6 +77494,11 @@ export const ProfileCustomerBookingRequestOfferParticipantAmendmentCreateDocumen
                                             name: { kind: 'Name', value: 'participants' },
                                             value: { kind: 'Variable', name: { kind: 'Name', value: 'participants' } },
                                         },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'exactEventAddress' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'exactEventAddress' } },
+                                        },
                                     ],
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -77264,6 +77518,58 @@ export const ProfileCustomerBookingRequestOfferParticipantAmendmentCreateDocumen
 } as unknown as DocumentNode<
     GqlCProfileCustomerBookingRequestOfferParticipantAmendmentCreateMutation,
     GqlCProfileCustomerBookingRequestOfferParticipantAmendmentCreateMutationVariables
+>;
+export const ProfileCustomerBookingRequestOfferParticipantAmendmentCancelDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCustomerBookingRequestOfferParticipantAmendmentCancel' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferParticipantAmendmentCancel' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCustomerBookingRequestOfferParticipantAmendmentCancelMutation,
+    GqlCProfileCustomerBookingRequestOfferParticipantAmendmentCancelMutationVariables
 >;
 export const ProfileCustomerBookingRequestOfferPaymentStatusUpdateDocument = {
     kind: 'Document',
@@ -78214,12 +78520,26 @@ export const ProfileCustomerBookingRequestPageDocument = {
                                                                 ],
                                                             },
                                                         },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'exactEventAddress' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                                ],
+                                                            },
+                                                        },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                                                     ],
                                                 },
                                             },
@@ -78482,12 +78802,26 @@ export const ProfileCustomerBookingRequestPageUpdatesDocument = {
                                                                 ],
                                                             },
                                                         },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'exactEventAddress' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                                ],
+                                                            },
+                                                        },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCentsAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsBefore' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCentsAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomerAfter' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookBefore' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCookAfter' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'giftCardDeltaCents' } },
                                                     ],
                                                 },
                                             },
@@ -78969,15 +79303,17 @@ export const ProfileCustomerBookingRequestParticipantAmendmentCreateDocument = {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'participants' } },
                     type: {
-                        kind: 'NonNullType',
+                        kind: 'ListType',
                         type: {
-                            kind: 'ListType',
-                            type: {
-                                kind: 'NonNullType',
-                                type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestParticipantCreate' } },
-                            },
+                            kind: 'NonNullType',
+                            type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestParticipantCreate' } },
                         },
                     },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'exactEventAddress' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestExactEventAddressInput' } },
                 },
             ],
             selectionSet: {
@@ -79003,6 +79339,11 @@ export const ProfileCustomerBookingRequestParticipantAmendmentCreateDocument = {
                                             name: { kind: 'Name', value: 'participants' },
                                             value: { kind: 'Variable', name: { kind: 'Name', value: 'participants' } },
                                         },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'exactEventAddress' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'exactEventAddress' } },
+                                        },
                                     ],
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -79022,6 +79363,58 @@ export const ProfileCustomerBookingRequestParticipantAmendmentCreateDocument = {
 } as unknown as DocumentNode<
     GqlCProfileCustomerBookingRequestParticipantAmendmentCreateMutation,
     GqlCProfileCustomerBookingRequestParticipantAmendmentCreateMutationVariables
+>;
+export const ProfileCustomerBookingRequestParticipantAmendmentCancelDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCustomerBookingRequestParticipantAmendmentCancel' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferParticipantAmendmentCancel' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCustomerBookingRequestParticipantAmendmentCancelMutation,
+    GqlCProfileCustomerBookingRequestParticipantAmendmentCancelMutationVariables
 >;
 export const ProfileCustomerBookingRequestsPageDocument = {
     kind: 'Document',

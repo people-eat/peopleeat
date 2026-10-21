@@ -1623,13 +1623,15 @@ export const bookingRequestOffers = pgTable(
         payoutCentsCook: integer().notNull(),
         totalWithoutDiscountsCentsCustomer: integer().notNull(),
         totalCentsCustomer: integer(),
+        // Gift-card cents currently applied against this dual-accepted offer (restored/recharged on amendments).
+        giftCardAppliedCents: integer().notNull().default(0),
 
         configuredMenu: jsonb().$type<BookingRequestOfferConfiguredMenu>(),
         paymentData: jsonb().$type<BookingRequestOfferPaymentData>(),
         paymentStatus: varchar().$type<BookingRequestOfferPaymentStatus>().notNull().default('EMPTY'),
         // Post–dual-accept groceries / prep lock — blocks customer participant amendments.
         preparationsCompletedAt: timestamp({ withTimezone: true }),
-        // Pending cook-gated participant amendment (null when none).
+        // Pending cook-gated booking amendment (participants and/or venue; null when none).
         participantAmendment: jsonb().$type<BookingRequestOfferParticipantAmendment>(),
         plannedPaymentPullDateTime: timestamp({ withTimezone: true }),
         paymentDateTime: timestamp({ withTimezone: true }),

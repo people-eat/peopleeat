@@ -160,6 +160,8 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
             .from(bookingRequestOffers)
             .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
         expect(pending?.participantAmendment?.participants).toHaveLength(2);
+        expect(pending?.participantAmendment?.amendmentApplyId).toBeTruthy();
+        expect(pending?.participantAmendment?.travelExpensesCentsBefore).toBe(2_000);
 
         const accepted = await cookBookingRequestOfferParticipantAmendmentAccept(
             cookMutationParent(cook.user.userId),
@@ -187,6 +189,7 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
 
     it('refunds and reverses Connect transfer when cook accepts a PAYED decrease', async () => {
         const { cook, customer, bookingRequestOfferId } = await seedDualAcceptedOffer('PAYED');
+        vi.mocked(cook.serverRuntime.stripe.paymentIntentRefundableCentsFindOne).mockResolvedValue(100_000);
         vi.mocked(cook.serverRuntime.stripe.paymentIntentRefund).mockResolvedValue({ refundId: 're_amend' });
         vi.mocked(cook.serverRuntime.stripe.transferReverse).mockResolvedValue(undefined);
 

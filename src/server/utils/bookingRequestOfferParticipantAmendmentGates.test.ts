@@ -90,9 +90,11 @@ describe('bookingRequestOfferCanCompletePreparations', () => {
                     cookAccepted: true,
                     preparationsCompletedAt: null,
                     participantAmendment: {
+                        amendmentApplyId: 'amend_1',
                         requestedAt: new Date().toISOString(),
                         participants: [{ type: 'ADULT', name: 'A', restrictions: [] }],
                         menuPriceCentsBefore: 1,
+                        travelExpensesCentsBefore: 0,
                         totalCentsCustomerBefore: 1,
                         payoutCentsCookBefore: 1,
                     },

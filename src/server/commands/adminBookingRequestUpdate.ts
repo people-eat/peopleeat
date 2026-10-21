@@ -173,6 +173,22 @@ export async function adminBookingRequestUpdate(
             .from(bookingRequestOffers)
             .where(eq(bookingRequestOffers.bookingRequestId, bookingRequestId));
 
+        const dualAcceptedPaidOffer = offers.find(
+            (offer) =>
+                offer.userAccepted === true &&
+                offer.cookAccepted === true &&
+                (offer.paymentStatus === 'EMPTY' ||
+                    offer.paymentStatus === 'SETUP' ||
+                    offer.paymentStatus === 'PAYED' ||
+                    offer.paymentStatus === 'TRANSFERRED' ||
+                    offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM'),
+        );
+        if (dualAcceptedPaidOffer && (eventAddressChanged || input.participants != null)) {
+            throw new Error(
+                'adminBookingRequestUpdate: cannot change venue or participants on a dual-accepted paid offer; use the customer amendment flow or handover tools',
+            );
+        }
+
         let resetCookAcceptance = false;
         let participantInserts:
             | {

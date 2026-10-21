@@ -71,12 +71,19 @@ fragment ProfileCookBookingRequestOfferPageUser on User {
                     name
                     restrictions
                 }
+                exactEventAddress {
+                    displayText
+                    city
+                }
                 menuPriceCentsBefore
                 menuPriceCentsAfter
+                travelExpensesCentsBefore
+                travelExpensesCentsAfter
                 totalCentsCustomerBefore
                 totalCentsCustomerAfter
                 payoutCentsCookBefore
                 payoutCentsCookAfter
+                giftCardDeltaCents
             }
             costBreakdown {
                 total {

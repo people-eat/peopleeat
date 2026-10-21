@@ -111,6 +111,7 @@ enum ChatMessageBookingRequestOfferEventType {
     ADMIN_HANDED_OVER_TO_COOK
     USER_PARTICIPANTS_UPDATED
     USER_PARTICIPANT_AMENDMENT_REQUESTED
+    USER_PARTICIPANT_AMENDMENT_CANCELED
     COOK_PARTICIPANT_AMENDMENT_ACCEPTED
     COOK_PARTICIPANT_AMENDMENT_DECLINED
     COOK_PREPARATIONS_COMPLETED
@@ -1180,8 +1181,8 @@ type BookingRequestOfferPayment {
     type: BookingRequestOfferPaymentDataType!
 }
 
-# Pending post–dual-accept participant amendment (cook-gated). See
-# docs/features/booking-offer-participant-amendment.md.
+# Pending post–dual-accept booking amendment (participants and/or venue; cook-gated).
+# See docs/features/booking-offer-participant-amendment.md.
 type BookingRequestOfferParticipantAmendmentParticipant {
     type: BookingRequestParticipantType!
     name: String!
@@ -1190,13 +1191,19 @@ type BookingRequestOfferParticipantAmendmentParticipant {
 
 type BookingRequestOfferParticipantAmendment {
     requestedAt: DateTime!
-    participants: [BookingRequestOfferParticipantAmendmentParticipant!]!
+    # Null when the proposal is venue-only.
+    participants: [BookingRequestOfferParticipantAmendmentParticipant!]
+    # Null when the proposal is participants-only.
+    exactEventAddress: CookTravelOriginAddress
     menuPriceCentsBefore: Int!
     menuPriceCentsAfter: Int!
+    travelExpensesCentsBefore: Int!
+    travelExpensesCentsAfter: Int!
     totalCentsCustomerBefore: Int!
     totalCentsCustomerAfter: Int!
     payoutCentsCookBefore: Int!
     payoutCentsCookAfter: Int!
+    giftCardDeltaCents: Int!
 }
 
 type CookCallSlotBookingCustomer {
@@ -2539,12 +2546,15 @@ type UserMutation {
     ): MutationResult!
     # Dual-accept an offer and prepare Stripe (SetupIntent / PaymentIntent / €0 transfer).
     bookingRequestOfferAccept(bookingRequestOfferId: ID!): MutationResult!
-    # Propose a post–dual-accept participant change (cook must accept). Gated by
-    # BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT. Returns offer id as referenceId.
+    # Propose a post–dual-accept booking change (participants and/or venue; cook must accept).
+    # Gated by BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT. Returns offer id as referenceId.
     bookingRequestOfferParticipantAmendmentCreate(
         bookingRequestOfferId: ID!
-        participants: [UserBookingRequestParticipantCreate!]!
+        participants: [UserBookingRequestParticipantCreate!]
+        exactEventAddress: UserBookingRequestExactEventAddressInput
     ): MutationResult!
+    # Customer cancels a pending cook-gated amendment (no money move).
+    bookingRequestOfferParticipantAmendmentCancel(bookingRequestOfferId: ID!): MutationResult!
     # After Elements confirms SI/PI — advances paymentStatus and stores invoice address.
     bookingRequestOfferPaymentStatusUpdate(bookingRequestOfferId: ID!, invoiceAddress: InvoiceAddressInput!): MutationResult!
     bookingRequestOfferDecline(bookingRequestOfferId: ID!, reason: String!): MutationResult!

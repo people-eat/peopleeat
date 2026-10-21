@@ -110,6 +110,7 @@ export function stripePaymentCreate({
         confirm,
         offSession,
         setupFutureUsage,
+        idempotencyKey,
     }: {
         customerId: string;
         destinationAccountId: string;
@@ -119,6 +120,7 @@ export function stripePaymentCreate({
         confirm?: boolean;
         offSession?: boolean;
         setupFutureUsage?: 'off_session';
+        idempotencyKey?: string;
     }): Promise<StripePaymentIntentCreateResult> {
         const stripe = clientRequire();
         // Destination charge moves min(pull, payout) to the cook with the
@@ -129,21 +131,24 @@ export function stripePaymentCreate({
         const pendingExtraTransferAmount = payoutAmount > pullAmount ? payoutAmount - pullAmount : undefined;
         const transferGroup = pendingExtraTransferAmount !== undefined ? `${destinationAccountId}:${customerId}` : undefined;
 
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: pullAmount,
-            currency,
-            customer: customerId,
-            ...(setupFutureUsage ? { setup_future_usage: setupFutureUsage } : {}),
-            ...(offSession ? { off_session: true } : {}),
-            ...(confirm ? { confirm: true } : {}),
-            ...(paymentMethodId ? { payment_method: paymentMethodId } : {}),
-            transfer_data: {
-                amount: transferAmount,
-                destination: destinationAccountId,
+        const paymentIntent = await stripe.paymentIntents.create(
+            {
+                amount: pullAmount,
+                currency,
+                customer: customerId,
+                ...(setupFutureUsage ? { setup_future_usage: setupFutureUsage } : {}),
+                ...(offSession ? { off_session: true } : {}),
+                ...(confirm ? { confirm: true } : {}),
+                ...(paymentMethodId ? { payment_method: paymentMethodId } : {}),
+                transfer_data: {
+                    amount: transferAmount,
+                    destination: destinationAccountId,
+                },
+                automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
+                ...(transferGroup ? { transfer_group: transferGroup } : {}),
             },
-            automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
-            ...(transferGroup ? { transfer_group: transferGroup } : {}),
-        });
+            idempotencyKey ? { idempotencyKey } : undefined,
+        );
 
         return {
             paymentIntentId: paymentIntent.id,
@@ -209,6 +214,13 @@ export function stripePaymentCreate({
             return typeof paymentMethod === 'string' ? paymentMethod : undefined;
         },
 
+        async setupIntentCancel(setupIntentId) {
+            const stripe = clientRequire();
+            const setupIntent = await stripe.setupIntents.retrieve(setupIntentId);
+            if (setupIntent.status === 'canceled' || setupIntent.status === 'succeeded') return;
+            await stripe.setupIntents.cancel(setupIntentId);
+        },
+
         async paymentIntentCreate({ user, amount }: StripePaymentIntentCreate): Promise<StripePaymentIntentCreateResult> {
             const stripe = clientRequire();
             const customerId = await customerEnsure(user);
@@ -242,19 +254,23 @@ export function stripePaymentCreate({
                 pullAmount: options.pullAmount,
                 payoutAmount: options.payoutAmount,
                 setupFutureUsage: 'off_session',
+                idempotencyKey: options.idempotencyKey,
             });
         },
 
         async paymentIntentCreateFromPaymentMethodWithSplit(options: StripePaymentIntentCreateFromPaymentMethodWithSplit) {
             const customerId = await customerEnsure(options.user);
+            const confirm = options.confirm !== false;
             return paymentIntentCreateWithSplitInternal({
                 customerId,
                 destinationAccountId: options.destinationAccountId,
                 pullAmount: options.pullAmount,
                 payoutAmount: options.payoutAmount,
                 paymentMethodId: options.paymentMethodId,
-                confirm: true,
-                offSession: true,
+                confirm,
+                offSession: options.offSession ?? confirm,
+                idempotencyKey: options.idempotencyKey,
+                ...(confirm ? {} : { setupFutureUsage: 'off_session' }),
             });
         },
 
@@ -271,13 +287,27 @@ export function stripePaymentCreate({
             await stripe.paymentIntents.cancel(paymentIntentId);
         },
 
-        async paymentIntentRefund(paymentIntentId, amount) {
+        async paymentIntentRefund(paymentIntentId, amount, options) {
             const stripe = clientRequire();
-            const refund = await stripe.refunds.create({
-                payment_intent: paymentIntentId,
-                ...(amount != null ? { amount } : {}),
-            });
+            const refund = await stripe.refunds.create(
+                {
+                    payment_intent: paymentIntentId,
+                    ...(amount != null ? { amount } : {}),
+                },
+                options?.idempotencyKey ? { idempotencyKey: options.idempotencyKey } : undefined,
+            );
             return { refundId: refund.id };
+        },
+
+        async paymentIntentRefundableCentsFindOne(paymentIntentId) {
+            const stripe = clientRequire();
+            const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+                expand: ['latest_charge'],
+            });
+            const received = paymentIntent.amount_received;
+            const latestCharge = paymentIntent.latest_charge;
+            const refunded = latestCharge && typeof latestCharge !== 'string' ? latestCharge.amount_refunded : 0;
+            return Math.max(0, received - refunded);
         },
 
         async paymentIntentPaymentMethodIdFindOne(paymentIntentId) {
@@ -517,20 +547,28 @@ export function stripePaymentCreate({
             destinationAccountId,
             payoutAmount,
             transferGroup,
+            idempotencyKey,
         }: StripeTransferCreate): Promise<StripeTransferCreateResult> {
             const stripe = clientRequire();
-            const transfer = await stripe.transfers.create({
-                amount: payoutAmount,
-                currency,
-                destination: destinationAccountId,
-                ...(transferGroup ? { transfer_group: transferGroup } : {}),
-            });
+            const transfer = await stripe.transfers.create(
+                {
+                    amount: payoutAmount,
+                    currency,
+                    destination: destinationAccountId,
+                    ...(transferGroup ? { transfer_group: transferGroup } : {}),
+                },
+                idempotencyKey ? { idempotencyKey } : undefined,
+            );
             return { transferId: transfer.id };
         },
 
-        async transferReverse({ transferId, amountCents }: StripeTransferReverse) {
+        async transferReverse({ transferId, amountCents, idempotencyKey }: StripeTransferReverse) {
             const stripe = clientRequire();
-            await stripe.transfers.createReversal(transferId, amountCents != null ? { amount: amountCents } : undefined);
+            await stripe.transfers.createReversal(
+                transferId,
+                amountCents != null ? { amount: amountCents } : undefined,
+                idempotencyKey ? { idempotencyKey } : undefined,
+            );
         },
 
         async payoutCreate({ destinationAccountId, amount }: StripePayoutCreate): Promise<StripePayoutCreateResult> {

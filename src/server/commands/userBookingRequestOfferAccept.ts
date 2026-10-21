@@ -107,6 +107,7 @@ export async function userBookingRequestOfferAccept(
 
         const discountCents = (row.giftCard?.balanceCents ?? 0) + (row.promoCode?.amountCents ?? 0);
         const totalCentsCustomer = Math.max(0, price.totalWithoutDiscountsCentsCustomer - discountCents);
+        const giftCardAppliedCents = row.giftCard ? Math.min(row.giftCard.balanceCents, price.totalWithoutDiscountsCentsCustomer) : 0;
 
         const payment = await bookingRequestOfferPaymentPrepare(serverRuntime, {
             userId,
@@ -144,6 +145,7 @@ export async function userBookingRequestOfferAccept(
                     payoutCentsCook: price.payoutCentsCook,
                     totalWithoutDiscountsCentsCustomer: price.totalWithoutDiscountsCentsCustomer,
                     totalCentsCustomer,
+                    giftCardAppliedCents,
                     cookUnreadNotificationCount: row.offer.cookUnreadNotificationCount + 1,
                     paymentStatus: payment.paymentStatus,
                     paymentData: payment.paymentData,

@@ -52,8 +52,9 @@ export async function cookBookingRequestOfferParticipantAmendmentDecline(
 
         const adultsBefore = existingParticipants.filter((p) => p.type === 'ADULT').length;
         const discountedBefore = existingParticipants.filter((p) => p.type === 'DISCOUNTED').length;
-        const adultsAfter = amendment.participants.filter((p) => p.type === 'ADULT').length;
-        const discountedAfter = amendment.participants.filter((p) => p.type === 'DISCOUNTED').length;
+        const proposedParticipants = amendment.participants ?? existingParticipants;
+        const adultsAfter = proposedParticipants.filter((p) => p.type === 'ADULT').length;
+        const discountedAfter = proposedParticipants.filter((p) => p.type === 'DISCOUNTED').length;
 
         await serverRuntime.db.transaction(async (transaction) => {
             await transaction

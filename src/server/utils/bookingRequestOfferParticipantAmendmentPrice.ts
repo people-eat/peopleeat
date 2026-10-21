@@ -7,11 +7,18 @@ import type { BookingRequestParticipantType } from '../domain/bookingRequest';
 
 export type BookingRequestOfferParticipantAmendmentPriceInput = {
     menuPriceCentsBefore: number;
-    travelExpensesCents: number;
+    travelExpensesCentsAfter: number;
     totalWithoutDiscountsCentsCustomerBefore: number;
     totalCentsCustomerBefore: number;
+    giftCardAppliedCentsBefore: number;
+    /** Remaining balance on the linked gift card (not yet applied to this booking). */
+    giftCardBalanceCents: number;
+    /** Fixed promo amount on the booking request (0 when none). */
+    promoAmountCents: number;
     participantsBefore: { type: BookingRequestParticipantType }[];
     participantsAfter: { type: BookingRequestParticipantType }[];
+    /** When false, keep menu total (location-only amendment). Default true when headcount changes. */
+    scaleMenuByParticipants?: boolean;
 };
 
 export type BookingRequestOfferParticipantAmendmentPriceResult = {
@@ -26,6 +33,9 @@ export type BookingRequestOfferParticipantAmendmentPriceResult = {
     platformFeeCentsCustomer: number;
     payoutCentsCookAfter: number;
     totalWithoutDiscountsCentsCustomerAfter: number;
+    promoAppliedCentsAfter: number;
+    giftCardAppliedCentsAfter: number;
+    giftCardDeltaCents: number;
     totalCentsCustomerAfter: number;
     customerDeltaCents: number;
     cookPayoutDeltaCents: number;
@@ -38,9 +48,8 @@ function participantCounts(participants: { type: BookingRequestParticipantType }
 }
 
 /**
- * Scale locked menu total by paid-headcount ratio and recompute fee snapshot.
- * Gift / promo stay as the fixed discount already baked into `totalCentsCustomerBefore`
- * (gift ledger is not restored on decrease).
+ * Scale locked menu total by paid-headcount ratio (optional), recompute fee snapshot,
+ * then re-apply promo + gift against the new pre-discount total.
  */
 export function bookingRequestOfferParticipantAmendmentPriceCalculate(
     input: BookingRequestOfferParticipantAmendmentPriceInput,
@@ -51,17 +60,26 @@ export function bookingRequestOfferParticipantAmendmentPriceCalculate(
     const paidParticipantsBefore = bookingRequestPaidParticipants(before.adults, before.discounted);
     const paidParticipantsAfter = bookingRequestPaidParticipants(after.adults, after.discounted);
 
-    const menuPriceCentsAfter = bookingRequestOfferMenuPriceScaleByPaidParticipants({
-        menuPriceCents: input.menuPriceCentsBefore,
-        paidParticipantsBefore,
-        paidParticipantsAfter,
-    });
+    const scaleMenu = input.scaleMenuByParticipants !== false;
+    const menuPriceCentsAfter = scaleMenu
+        ? bookingRequestOfferMenuPriceScaleByPaidParticipants({
+              menuPriceCents: input.menuPriceCentsBefore,
+              paidParticipantsBefore,
+              paidParticipantsAfter,
+          })
+        : input.menuPriceCentsBefore;
+
     const price = bookingRequestOfferPriceCalculate({
         menuPriceCents: menuPriceCentsAfter,
-        travelExpensesCents: input.travelExpensesCents,
+        travelExpensesCents: input.travelExpensesCentsAfter,
     });
-    const discountCents = Math.max(0, input.totalWithoutDiscountsCentsCustomerBefore - input.totalCentsCustomerBefore);
-    const totalCentsCustomerAfter = Math.max(0, price.totalWithoutDiscountsCentsCustomer - discountCents);
+
+    const promoAppliedCentsAfter = Math.min(Math.max(0, input.promoAmountCents), price.totalWithoutDiscountsCentsCustomer);
+    const afterPromo = Math.max(0, price.totalWithoutDiscountsCentsCustomer - promoAppliedCentsAfter);
+    const giftCapacity = Math.max(0, input.giftCardAppliedCentsBefore) + Math.max(0, input.giftCardBalanceCents);
+    const giftCardAppliedCentsAfter = Math.min(giftCapacity, afterPromo);
+    const totalCentsCustomerAfter = Math.max(0, afterPromo - giftCardAppliedCentsAfter);
+    const giftCardDeltaCents = giftCardAppliedCentsAfter - input.giftCardAppliedCentsBefore;
 
     return {
         paidParticipantsBefore,
@@ -75,6 +93,9 @@ export function bookingRequestOfferParticipantAmendmentPriceCalculate(
         platformFeeCentsCustomer: price.platformFeeCentsCustomer,
         payoutCentsCookAfter: price.payoutCentsCook,
         totalWithoutDiscountsCentsCustomerAfter: price.totalWithoutDiscountsCentsCustomer,
+        promoAppliedCentsAfter,
+        giftCardAppliedCentsAfter,
+        giftCardDeltaCents,
         totalCentsCustomerAfter,
         customerDeltaCents: totalCentsCustomerAfter - input.totalCentsCustomerBefore,
         cookPayoutDeltaCents: price.payoutCentsCook - payoutCentsCookBefore,

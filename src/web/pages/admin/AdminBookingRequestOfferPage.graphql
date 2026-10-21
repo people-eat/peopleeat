@@ -42,12 +42,19 @@ fragment AdminBookingRequestOfferPageOffer on AdminBookingRequestOffer {
             name
             restrictions
         }
+        exactEventAddress {
+            displayText
+            city
+        }
         menuPriceCentsBefore
         menuPriceCentsAfter
+        travelExpensesCentsBefore
+        travelExpensesCentsAfter
         totalCentsCustomerBefore
         totalCentsCustomerAfter
         payoutCentsCookBefore
         payoutCentsCookAfter
+        giftCardDeltaCents
     }
     createdAt
     configuredMenu {

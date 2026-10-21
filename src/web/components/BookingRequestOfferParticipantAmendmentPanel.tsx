@@ -19,14 +19,31 @@ import { StatusAlert } from './base/status-alert';
 
 type AmendmentPreview = {
     requestedAt: string;
-    participants: { type: 'ADULT' | 'DISCOUNTED'; name: string; restrictions: string[] }[];
+    participants: { type: 'ADULT' | 'DISCOUNTED'; name: string; restrictions: string[] }[] | null;
+    exactEventAddress: { displayText: string; city: string } | null;
     menuPriceCentsBefore: number;
     menuPriceCentsAfter: number;
+    travelExpensesCentsBefore: number;
+    travelExpensesCentsAfter: number;
     totalCentsCustomerBefore: number;
     totalCentsCustomerAfter: number;
     payoutCentsCookBefore: number;
     payoutCentsCookAfter: number;
+    giftCardDeltaCents: number;
 };
+
+function amendmentSummary(amendment: AmendmentPreview, locale: Locale): string {
+    const parts: string[] = [];
+    if (amendment.participants) {
+        const adults = amendment.participants.filter((p) => p.type === 'ADULT').length;
+        const discounted = amendment.participants.filter((p) => p.type === 'DISCOUNTED').length;
+        parts.push(formatParticipants({ adultCount: adults, discountedCount: discounted }, { locale }));
+    }
+    if (amendment.exactEventAddress) {
+        parts.push(amendment.exactEventAddress.displayText || amendment.exactEventAddress.city);
+    }
+    return parts.join(' · ');
+}
 
 export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
     locale: Locale;
@@ -34,20 +51,36 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
     preparationsCompletedAt: string | null;
     amendment: AmendmentPreview | null;
     bookingRequestId: string;
+    onCancelAmendment?: () => Promise<void>;
+    cancelBusy?: boolean;
 }) {
     const enabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT');
 
     if (!enabled && !props.amendment && !props.preparationsCompletedAt) return null;
 
     if (props.amendment) {
-        const adults = props.amendment.participants.filter((p) => p.type === 'ADULT').length;
-        const discounted = props.amendment.participants.filter((p) => p.type === 'DISCOUNTED').length;
         return (
-            <StatusAlert tone="info" title={{ de: 'Änderung vorgeschlagen', en: 'Change proposed' }[props.locale]}>
+            <StatusAlert
+                tone="info"
+                title={{ de: 'Änderung vorgeschlagen', en: 'Change proposed' }[props.locale]}
+                action={
+                    props.onCancelAmendment ? (
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            disabled={props.cancelBusy}
+                            onClick={() => void props.onCancelAmendment?.()}
+                        >
+                            {{ de: 'Zurückziehen', en: 'Withdraw' }[props.locale]}
+                        </Button>
+                    ) : undefined
+                }
+            >
                 {
                     {
-                        de: `Dein Vorschlag (${formatParticipants({ adultCount: adults, discountedCount: discounted }, { locale: props.locale })}) wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
-                        en: `Your proposal (${formatParticipants({ adultCount: adults, discountedCount: discounted }, { locale: props.locale })}) is waiting for the chef to confirm. New host price: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
+                        de: `Dein Vorschlag (${amendmentSummary(props.amendment, props.locale)}) wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
+                        en: `Your proposal (${amendmentSummary(props.amendment, props.locale)}) is waiting for the chef to confirm. New host price: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
                     }[props.locale]
                 }
             </StatusAlert>
@@ -59,8 +92,8 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
             <StatusAlert tone="info" title={{ de: 'Einkauf abgeschlossen', en: 'Shopping completed' }[props.locale]}>
                 {
                     {
-                        de: 'Dein Koch hat den Einkauf bzw. die Vorbereitung bereits erledigt. Die Teilnehmerzahl kann nicht mehr geändert werden.',
-                        en: 'Your chef has already completed grocery shopping or preparations. The number of participants can no longer be changed.',
+                        de: 'Dein Koch hat den Einkauf bzw. die Vorbereitung bereits erledigt. Teilnehmerzahl und Ort können nicht mehr geändert werden.',
+                        en: 'Your chef has already completed grocery shopping or preparations. Participants and venue can no longer be changed.',
                     }[props.locale]
                 }
             </StatusAlert>
@@ -74,8 +107,8 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
             <p className="text-sm text-muted-foreground">
                 {
                     {
-                        de: 'Du möchtest die Teilnehmerzahl nach der Annahme ändern? Nutze die Bearbeitung der Anfrage.',
-                        en: 'Need to change the number of participants after accepting? Use Edit on the booking request.',
+                        de: 'Du möchtest Teilnehmerzahl oder Ort nach der Annahme ändern? Nutze die Bearbeitung der Anfrage.',
+                        en: 'Need to change participants or venue after accepting? Use Edit on the booking request.',
                     }[props.locale]
                 }
             </p>
@@ -84,7 +117,7 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
                     to="/{-$locale}/profile/booking-requests/$bookingRequestId/edit"
                     params={{ bookingRequestId: props.bookingRequestId }}
                 >
-                    {{ de: 'Teilnehmer ändern', en: 'Change participants' }[props.locale]}
+                    {{ de: 'Buchung ändern', en: 'Change booking' }[props.locale]}
                 </Link>
             </Button>
         </div>
@@ -101,10 +134,17 @@ export function BookingRequestOfferParticipantAmendmentCookReview(props: {
     showActions?: boolean;
 }) {
     const showActions = props.showActions !== false;
+    const giftNote =
+        props.amendment.giftCardDeltaCents < 0
+            ? {
+                  de: ` Geschenkkarte ${formatCurrency(Math.abs(props.amendment.giftCardDeltaCents), { locale: props.locale })} zurück.`,
+                  en: ` Gift card ${formatCurrency(Math.abs(props.amendment.giftCardDeltaCents), { locale: props.locale })} restored.`,
+              }[props.locale]
+            : '';
     return (
         <StatusAlert
             tone="warning"
-            title={{ de: 'Teilnehmeränderung prüfen', en: 'Review participant change' }[props.locale]}
+            title={{ de: 'Buchungsänderung prüfen', en: 'Review booking change' }[props.locale]}
             action={
                 showActions ? (
                     <div className="flex flex-wrap gap-2">
@@ -112,7 +152,7 @@ export function BookingRequestOfferParticipantAmendmentCookReview(props: {
                             {{ de: 'Ablehnen', en: 'Decline' }[props.locale]}
                         </Button>
                         <Button type="button" size="sm" disabled={props.busy} onClick={() => void props.onAccept()}>
-                            {{ de: 'Annehmen', en: 'Accept' }[props.locale]}
+                            {{ de: 'Änderung annehmen', en: 'Accept change' }[props.locale]}
                         </Button>
                     </div>
                 ) : undefined
@@ -120,20 +160,8 @@ export function BookingRequestOfferParticipantAmendmentCookReview(props: {
         >
             {
                 {
-                    de: `Neu: ${formatParticipants(
-                        {
-                            adultCount: props.amendment.participants.filter((p) => p.type === 'ADULT').length,
-                            discountedCount: props.amendment.participants.filter((p) => p.type === 'DISCOUNTED').length,
-                        },
-                        { locale: props.locale },
-                    )}. Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. Die Buchung bleibt bestätigt; Zahlung oder Erstattung folgen automatisch nach deiner Entscheidung.`,
-                    en: `New: ${formatParticipants(
-                        {
-                            adultCount: props.amendment.participants.filter((p) => p.type === 'ADULT').length,
-                            discountedCount: props.amendment.participants.filter((p) => p.type === 'DISCOUNTED').length,
-                        },
-                        { locale: props.locale },
-                    )}. Payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. The booking stays confirmed; charge or refund runs automatically after you decide.`,
+                    de: `${amendmentSummary(props.amendment, props.locale)}. Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. Die Buchung bleibt bestätigt; Zahlung oder Erstattung folgen automatisch nach deiner Entscheidung.${giftNote}`,
+                    en: `${amendmentSummary(props.amendment, props.locale)}. Payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. The booking stays confirmed; charge or refund runs automatically after you decide.${giftNote}`,
                 }[props.locale]
             }
         </StatusAlert>
@@ -178,12 +206,12 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
             {showPrep && props.preparationsCompletedAt ? (
                 <StatusAlert
                     tone="success"
-                    title={{ de: 'Einkauf und Vorbereitung erledigt', en: 'Shopping and prep marked done' }[props.locale]}
+                    title={{ de: 'Einkauf / Vorbereitung erledigt', en: 'Shopping / preparations done' }[props.locale]}
                 >
                     {
                         {
-                            de: 'Der Gast kann die Teilnehmerzahl für diesen Auftrag nicht mehr ändern. Support kann die Sperre bei Bedarf aufheben.',
-                            en: 'The guest can no longer change the participant count for this booking. Support can clear the lock if needed.',
+                            de: 'Weitere Kundenänderungen an Teilnehmerzahl oder Ort sind gesperrt.',
+                            en: 'Further customer changes to participants or venue are locked.',
                         }[props.locale]
                     }
                 </StatusAlert>
@@ -191,43 +219,26 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
 
             {showPrep && !props.preparationsCompletedAt && props.canCompletePreparations ? (
                 <>
-                    <StatusAlert
-                        tone="info"
-                        title={{ de: 'Einkauf und Vorbereitung', en: 'Shopping and prep' }[props.locale]}
-                        action={
-                            <Button type="button" size="sm" disabled={props.busy} onClick={() => setPreparationsConfirmOpen(true)}>
-                                {{ de: 'Als erledigt markieren', en: 'Mark as done' }[props.locale]}
-                            </Button>
-                        }
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={props.busy}
+                        onClick={() => setPreparationsConfirmOpen(true)}
                     >
-                        {
-                            {
-                                de: 'Sobald du den Einkauf oder die Vorbereitung für die aktuelle Personenzahl erledigt hast, markiere es hier. Danach kann der Gast die Teilnehmerzahl nicht mehr ändern.',
-                                en: 'Once you have finished shopping or prep for the current headcount, mark it here. After that, the guest can no longer change the number of participants.',
-                            }[props.locale]
-                        }
-                    </StatusAlert>
-                    <AlertDialog
-                        open={preparationsConfirmOpen}
-                        onOpenChange={(open) => {
-                            if (!confirmBusy) setPreparationsConfirmOpen(open);
-                        }}
-                    >
+                        {{ de: 'Einkauf / Vorbereitung erledigt', en: 'Mark shopping / prep done' }[props.locale]}
+                    </Button>
+                    <AlertDialog open={preparationsConfirmOpen} onOpenChange={setPreparationsConfirmOpen}>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                    {
-                                        {
-                                            de: 'Einkauf und Vorbereitung als erledigt markieren?',
-                                            en: 'Mark shopping and prep as done?',
-                                        }[props.locale]
-                                    }
+                                    {{ de: 'Einkauf wirklich als erledigt markieren?', en: 'Mark shopping as done?' }[props.locale]}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
                                     {
                                         {
-                                            de: 'Danach kann der Gast die Teilnehmerzahl nicht mehr ändern. Nutze das erst, wenn du für die aktuelle Personenzahl eingekauft oder vorbereitet hast.',
-                                            en: 'After this, the guest can no longer change the participant count. Only do this once you have shopped or prepared for the current headcount.',
+                                            de: 'Danach kann der Gastgeber Teilnehmerzahl und Ort nicht mehr ändern.',
+                                            en: 'Afterwards the host can no longer change participants or venue.',
                                         }[props.locale]
                                     }
                                 </AlertDialogDescription>
@@ -240,20 +251,14 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
                                     disabled={confirmBusy}
                                     onClick={(event) => {
                                         event.preventDefault();
-                                        void (async () => {
-                                            setPreparationsConfirmBusy(true);
-                                            try {
-                                                await props.onPreparationsComplete();
-                                                setPreparationsConfirmOpen(false);
-                                            } finally {
-                                                setPreparationsConfirmBusy(false);
-                                            }
-                                        })();
+                                        setPreparationsConfirmBusy(true);
+                                        void props.onPreparationsComplete().finally(() => {
+                                            setPreparationsConfirmBusy(false);
+                                            setPreparationsConfirmOpen(false);
+                                        });
                                     }}
                                 >
-                                    {confirmBusy
-                                        ? { de: 'Wird markiert…', en: 'Marking…' }[props.locale]
-                                        : { de: 'Ja, als erledigt markieren', en: 'Yes, mark as done' }[props.locale]}
+                                    {{ de: 'Ja, erledigt', en: 'Yes, done' }[props.locale]}
                                 </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
@@ -277,7 +282,7 @@ export function BookingRequestOfferParticipantAmendmentAdminPanel(props: {
     return (
         <div className="grid gap-3">
             {props.amendment ? (
-                <StatusAlert tone="info" title={{ de: 'Offene Teilnehmeränderung', en: 'Pending participant amendment' }[props.locale]}>
+                <StatusAlert tone="info" title={{ de: 'Offene Buchungsänderung', en: 'Pending booking amendment' }[props.locale]}>
                     {
                         {
                             de: `Vorschlag wartet auf den Koch. Gastgeberpreis ${formatCurrency(props.amendment.totalCentsCustomerBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
@@ -304,8 +309,8 @@ export function BookingRequestOfferParticipantAmendmentAdminPanel(props: {
                 >
                     {
                         {
-                            de: 'Der Koch hat Einkauf/Vorbereitung als erledigt markiert.',
-                            en: 'The chef marked shopping/preparations as done.',
+                            de: 'Der Koch hat Einkauf / Vorbereitung als erledigt markiert.',
+                            en: 'The chef marked shopping / preparations as done.',
                         }[props.locale]
                     }
                 </StatusAlert>

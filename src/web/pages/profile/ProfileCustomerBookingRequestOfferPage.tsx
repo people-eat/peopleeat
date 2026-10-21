@@ -67,6 +67,7 @@ import {
     ProfileCustomerBookingRequestOfferChatMessageReactionUpsertDocument,
     ProfileCustomerBookingRequestOfferConfiguredMenuCreateDocument,
     ProfileCustomerBookingRequestOfferPageUpdatesDocument,
+    ProfileCustomerBookingRequestOfferParticipantAmendmentCancelDocument,
     ProfileCustomerBookingRequestOfferUnreadNotificationCountResetDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
@@ -197,6 +198,9 @@ export function ProfileCustomerBookingRequestOfferPage({
     const [, sendOfferChatMessage] = useMutation(ProfileCustomerBookingRequestOfferChatMessageCreateDocument);
     const [, upsertOfferChatReaction] = useMutation(ProfileCustomerBookingRequestOfferChatMessageReactionUpsertDocument);
     const [, resetUnread] = useMutation(ProfileCustomerBookingRequestOfferUnreadNotificationCountResetDocument);
+    const [{ fetching: amendmentCancelBusy }, cancelAmendment] = useMutation(
+        ProfileCustomerBookingRequestOfferParticipantAmendmentCancelDocument,
+    );
 
     useEffect(() => {
         if (user == null) return;
@@ -241,7 +245,8 @@ export function ProfileCustomerBookingRequestOfferPage({
         offer.suggestedMenus.length > 0 &&
         offer.configuredMenu == null;
     const needsDepositPayment = offer?.status === 'USER_NEEDS_DEPOSIT_PAYMENT';
-    const canPay = offer != null && offer.status === 'USER_NEEDS_DEPOSIT_PAYMENT' && offer.payment != null;
+    const needsAmendmentDeltaPayment = offer != null && offer.paymentStatus === 'PAYED' && offer.payment != null;
+    const canPay = offer != null && offer.payment != null && (offer.status === 'USER_NEEDS_DEPOSIT_PAYMENT' || needsAmendmentDeltaPayment);
     const paymentUnavailable = offer != null && offer.status === 'USER_NEEDS_DEPOSIT_PAYMENT' && offer.payment == null;
     const canSend = offer != null && bookingRequestOfferChatCanSend(offer.status);
 
@@ -601,6 +606,25 @@ export function ProfileCustomerBookingRequestOfferPage({
                         courseSelections={courseSelections}
                         onSelectMenu={selectConfigureMenu}
                         onCourseSelectionsChange={setCourseSelections}
+                        amendmentCancelBusy={amendmentCancelBusy}
+                        onCancelAmendment={async () => {
+                            const result = await cancelAmendment({ bookingRequestOfferId });
+                            if (result.error || !result.data?.user.bookingRequestOfferParticipantAmendmentCancel.success) {
+                                toast.error(
+                                    {
+                                        de: 'Vorschlag konnte nicht zurückgezogen werden.',
+                                        en: 'Could not withdraw the proposal.',
+                                    }[locale],
+                                );
+                                return;
+                            }
+                            toast.success(
+                                {
+                                    de: 'Vorschlag zurückgezogen.',
+                                    en: 'Proposal withdrawn.',
+                                }[locale],
+                            );
+                        }}
                     />
                 </TabsContent>
 
@@ -708,6 +732,8 @@ function OfferTabPanel({
     courseSelections,
     onSelectMenu,
     onCourseSelectionsChange,
+    amendmentCancelBusy,
+    onCancelAmendment,
 }: {
     offer: CustomerOffer;
     request: CustomerRequest;
@@ -721,6 +747,8 @@ function OfferTabPanel({
     courseSelections: OfferMenuCourseSelection[];
     onSelectMenu: (menuId: string) => void;
     onCourseSelectionsChange: (selections: OfferMenuCourseSelection[]) => void;
+    amendmentCancelBusy: boolean;
+    onCancelAmendment: () => Promise<void>;
 }) {
     const [, updateDiscount] = useMutation(ProfileBookingRequestDiscountUpdateDocument);
     const cook = offer.cook;
@@ -850,6 +878,8 @@ function OfferTabPanel({
                         preparationsCompletedAt={offer.preparationsCompletedAt}
                         amendment={offer.participantAmendment}
                         bookingRequestId={bookingRequestId}
+                        cancelBusy={amendmentCancelBusy}
+                        onCancelAmendment={onCancelAmendment}
                     />
 
                     {canEditDiscount || request.promoCode != null || request.giftCard != null ? (

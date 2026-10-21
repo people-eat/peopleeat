@@ -130,9 +130,15 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
         giftCard,
     });
 
-    const paymentType = bookingRequestOfferPaymentDataTypeDerive(offer.paymentData);
-    const clientSecret = offer.paymentData && 'clientSecret' in offer.paymentData ? offer.paymentData.clientSecret : null;
-    const paymentEligible = clientSecret != null && paymentType != null && offer.paymentStatus === 'EMPTY';
+    const pendingDelta =
+        offer.paymentData && 'pendingDeltaPayment' in offer.paymentData ? offer.paymentData.pendingDeltaPayment : undefined;
+    const paymentType = pendingDelta ? ('PAYMENT_INTENT' as const) : bookingRequestOfferPaymentDataTypeDerive(offer.paymentData);
+    const clientSecret = pendingDelta?.clientSecret
+        ? pendingDelta.clientSecret
+        : offer.paymentData && 'clientSecret' in offer.paymentData
+          ? offer.paymentData.clientSecret
+          : null;
+    const paymentEligible = clientSecret != null && paymentType != null && (offer.paymentStatus === 'EMPTY' || pendingDelta != null);
     const publishableKey = environmentVariables.stripePublishableKey;
     if (paymentEligible && !publishableKey) {
         // Accept prepared Stripe SI/PI, but Elements cannot mount without the publishable key.
@@ -189,6 +195,8 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
                       amendment: offer.participantAmendment,
                       offer,
                       currentParticipants: participants,
+                      giftCardBalanceCents: giftCard?.balanceCents ?? 0,
+                      promoAmountCents: promoCode?.amountCents ?? 0,
                   })
                 : null,
         canRequestParticipantAmendment: bookingRequestOfferCanRequestParticipantAmendment({

@@ -124,6 +124,7 @@ function offerEventIcon(type: GqlCChatMessageBookingRequestOfferEventType): Luci
             return PhoneIcon;
         case 'USER_PARTICIPANTS_UPDATED':
         case 'USER_PARTICIPANT_AMENDMENT_REQUESTED':
+        case 'USER_PARTICIPANT_AMENDMENT_CANCELED':
         case 'COOK_PARTICIPANT_AMENDMENT_ACCEPTED':
         case 'COOK_PARTICIPANT_AMENDMENT_DECLINED':
             return UsersIcon;
@@ -160,16 +161,20 @@ function chatMessageBookingRequestOfferEventLabel(type: GqlCChatMessageBookingRe
             ADMIN_HANDED_OVER_TO_COOK: { de: 'Von Concierge übergeben', en: 'Handed over by concierge' },
             USER_PARTICIPANTS_UPDATED: { de: 'Teilnehmer aktualisiert', en: 'Participants updated' },
             USER_PARTICIPANT_AMENDMENT_REQUESTED: {
-                de: 'Teilnehmeränderung vorgeschlagen',
-                en: 'Participant change proposed',
+                de: 'Buchungsänderung vorgeschlagen',
+                en: 'Booking change proposed',
+            },
+            USER_PARTICIPANT_AMENDMENT_CANCELED: {
+                de: 'Buchungsänderung zurückgezogen',
+                en: 'Booking change withdrawn',
             },
             COOK_PARTICIPANT_AMENDMENT_ACCEPTED: {
-                de: 'Teilnehmeränderung angenommen',
-                en: 'Participant change accepted',
+                de: 'Buchungsänderung angenommen',
+                en: 'Booking change accepted',
             },
             COOK_PARTICIPANT_AMENDMENT_DECLINED: {
-                de: 'Teilnehmeränderung abgelehnt',
-                en: 'Participant change declined',
+                de: 'Buchungsänderung abgelehnt',
+                en: 'Booking change declined',
             },
             COOK_PREPARATIONS_COMPLETED: { de: 'Einkauf / Vorbereitung erledigt', en: 'Shopping / preparations done' },
             ADMIN_PREPARATIONS_CLEARED: { de: 'Vorbereitungssperre aufgehoben', en: 'Preparations lock cleared' },
