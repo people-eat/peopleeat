@@ -255,16 +255,8 @@ export function CookMenuSelectPanel({
 
     return (
         <div className={cn('grid gap-3', className)}>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-base font-medium text-foreground">
-                    {
-                        {
-                            de: 'Schlage deine Menüs vor oder erstelle gleich hier Neue',
-                            en: 'Suggest your menus or create new ones right here',
-                        }[locale]
-                    }
-                </span>
-                <div className="flex flex-wrap items-center gap-2">
+            {onRefreshEvaluation != null || onCreateMenu != null ? (
+                <div className="flex flex-wrap items-center justify-end gap-2">
                     {onRefreshEvaluation != null ? (
                         <Button
                             type="button"
@@ -294,7 +286,7 @@ export function CookMenuSelectPanel({
                         </Button>
                     ) : null}
                 </div>
-            </div>
+            ) : null}
 
             {showEvaluationUi && menuEvaluationLoading ? (
                 <StatusAlert tone="info">
@@ -434,21 +426,31 @@ export function CookMenuSelectPanel({
                                 />
                             </Button>
                             {incompleteExpanded ? (
-                                <ul className={menuGridClassName}>
-                                    {incompleteMenus.map((menu) => (
-                                        <CookMenuSelectPanelMenuCard
-                                            key={menu.menuId}
-                                            menu={menu}
-                                            checked={false}
-                                            selectable={false}
-                                            onToggle={onToggle}
-                                            onEditMenu={onEditMenu}
-                                            editMenuDisabled={editMenuDisabled}
-                                            evaluation={menuEvaluationLoading ? undefined : evaluationById.get(menu.menuId)}
-                                            locale={locale}
-                                        />
-                                    ))}
-                                </ul>
+                                <div className="grid gap-3">
+                                    <StatusAlert tone="warning">
+                                        {
+                                            {
+                                                de: 'Diese Menüs können noch nicht ausgewählt werden. Jeder Gang braucht einen Titel und mindestens eine Speise. Tippe auf Fertigstellen, um sie zu vervollständigen.',
+                                                en: 'These menus cannot be selected yet. Every course needs a title and at least one dish. Tap Finish to complete them.',
+                                            }[locale]
+                                        }
+                                    </StatusAlert>
+                                    <ul className={menuGridClassName}>
+                                        {incompleteMenus.map((menu) => (
+                                            <CookMenuSelectPanelMenuCard
+                                                key={menu.menuId}
+                                                menu={menu}
+                                                checked={false}
+                                                selectable={false}
+                                                onToggle={onToggle}
+                                                onEditMenu={onEditMenu}
+                                                editMenuDisabled={editMenuDisabled}
+                                                evaluation={menuEvaluationLoading ? undefined : evaluationById.get(menu.menuId)}
+                                                locale={locale}
+                                            />
+                                        ))}
+                                    </ul>
+                                </div>
                             ) : null}
                         </div>
                     ) : null}

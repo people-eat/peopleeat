@@ -13,6 +13,7 @@ const FUNNEL_LABELS: Record<CookBookingRequestOfferFunnelStep, { de: string; en:
     offer_create: { de: 'Angebot starten', en: 'Start offer' },
     menus: { de: 'Menüs', en: 'Menus' },
     price: { de: 'Preis', en: 'Price' },
+    message: { de: 'Nachricht', en: 'Message' },
     created: { de: 'Angebot erstellt', en: 'Offer created' },
 };
 
@@ -91,7 +92,7 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
               AND e.type = 'WEB_PAGE_INTERACTION'
               AND e.payload->>'area' = ${cookBookingRequestOfferFunnelArea}
               AND e.payload->'interaction'->>'type' IN ('step_entered', 'step_completed')
-              AND e.payload->'interaction'->>'step' IN ('offer_create', 'menus', 'price')
+              AND e.payload->'interaction'->>'step' IN ('offer_create', 'menus', 'price', 'message')
               AND e.payload->>'bookingRequestId' IS NOT NULL
         `);
 
@@ -130,7 +131,8 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
             const hasOffer = row.offer_id != null;
             const declined = row.declined_at != null;
             const reached = clientReached.get(key) ?? new Set<string>();
-            const hasCreateUi = reached.has('offer_create') || reached.has('menus') || reached.has('price') || hasOffer;
+            const hasCreateUi =
+                reached.has('offer_create') || reached.has('menus') || reached.has('price') || reached.has('message') || hasOffer;
             // Legacy rows often lack firstOpenedAt; treat any later activity as opened.
             const opened = row.first_opened_at != null || declined || hasCreateUi;
 
@@ -157,20 +159,29 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
 
             if (hasCreateUi) {
                 sequence.push('offer_create');
-                if (!completedByStep.get('offer_create')?.has(key) && (reached.has('menus') || reached.has('price') || hasOffer)) {
+                if (
+                    !completedByStep.get('offer_create')?.has(key) &&
+                    (reached.has('menus') || reached.has('price') || reached.has('message') || hasOffer)
+                ) {
                     mark(completedByStep, 'offer_create', key);
                 }
             }
-            if (reached.has('menus') || reached.has('price') || hasOffer) {
+            if (reached.has('menus') || reached.has('price') || reached.has('message') || hasOffer) {
                 sequence.push('menus');
-                if (!completedByStep.get('menus')?.has(key) && (reached.has('price') || hasOffer)) {
+                if (!completedByStep.get('menus')?.has(key) && (reached.has('price') || reached.has('message') || hasOffer)) {
                     mark(completedByStep, 'menus', key);
                 }
             }
-            if (reached.has('price') || hasOffer) {
+            if (reached.has('price') || reached.has('message') || hasOffer) {
                 sequence.push('price');
-                if (!completedByStep.get('price')?.has(key) && hasOffer) {
+                if (!completedByStep.get('price')?.has(key) && (reached.has('message') || hasOffer)) {
                     mark(completedByStep, 'price', key);
+                }
+            }
+            if (reached.has('message') || hasOffer) {
+                sequence.push('message');
+                if (!completedByStep.get('message')?.has(key) && hasOffer) {
+                    mark(completedByStep, 'message', key);
                 }
             }
             if (hasOffer) {

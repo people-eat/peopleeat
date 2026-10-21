@@ -43,12 +43,20 @@ function initialsFromDisplay(display: string): string {
     return `${parts[0]![0] ?? ''}${parts[1]![0] ?? ''}`.toUpperCase();
 }
 
+/**
+ * Customer offer comparison card (cook photo, city, tags, menu hint, total).
+ * Pass `interactive={false}` for cook self-preview on offer create (static chrome, no navigation).
+ */
 export function CustomerBookingRequestOfferCard({
     bookingRequestId,
     offer,
+    interactive = true,
+    className,
 }: {
     bookingRequestId: string;
     offer: CustomerBookingRequestOfferCardOffer;
+    interactive?: boolean;
+    className?: string;
 }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
@@ -71,16 +79,14 @@ export function CustomerBookingRequestOfferCard({
           ? { de: 'Menüvorschlag anzeigen', en: 'Show menu suggestion' }[locale]
           : { de: 'Angebot anzeigen', en: 'View offer' }[locale];
 
-    return (
-        <Link
-            to="/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
-            params={{ bookingRequestId, bookingRequestOfferId: offer.bookingRequestOfferId }}
-            search={search}
-            className={cn(
-                'relative flex h-full flex-col justify-between rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm',
-                bookingRequestCardInteractionClassName,
-            )}
-        >
+    const cardClassName = cn(
+        'relative flex h-full flex-col justify-between rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm',
+        interactive && bookingRequestCardInteractionClassName,
+        className,
+    );
+
+    const body = (
+        <>
             <NotificationBadge
                 count={unreadCount}
                 label={
@@ -131,6 +137,21 @@ export function CustomerBookingRequestOfferCard({
             <span className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
                 {ctaLabel}
             </span>
+        </>
+    );
+
+    if (!interactive) {
+        return <div className={cardClassName}>{body}</div>;
+    }
+
+    return (
+        <Link
+            to="/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
+            params={{ bookingRequestId, bookingRequestOfferId: offer.bookingRequestOfferId }}
+            search={search}
+            className={cardClassName}
+        >
+            {body}
         </Link>
     );
 }

@@ -289,14 +289,20 @@ export function BookingRequestOfferPriceConfigurationPanel({
 
     return (
         <div className="grid gap-4">
-            <div className="grid gap-2">
-                <label htmlFor={pricePerPersonId} className="text-base font-medium text-foreground">
+            {viewer === 'cook' ? (
+                <StatusAlert tone="info" title={{ de: 'Du bestimmst deinen Preis selbst!', en: 'You set your own price!' }[locale]}>
                     {
                         {
-                            de: 'Menüpreis pro Person vorschlagen',
-                            en: 'Suggest your menu price per person',
+                            de: 'Der angezeigte Preis ist nur unser Vorschlag und liegt im empfohlenen Rahmen. Du kannst ihn jederzeit ändern und deinen eigenen Preis festlegen.',
+                            en: 'The shown price is only our suggestion and sits in the recommended range. You can change it anytime and set your own price.',
                         }[locale]
                     }
+                </StatusAlert>
+            ) : null}
+
+            <div className="grid gap-2">
+                <label htmlFor={pricePerPersonId} className="text-base font-medium text-foreground">
+                    {{ de: 'Menüpreis pro Person', en: 'Menu price per person' }[locale]}
                 </label>
                 <Input
                     id={pricePerPersonId}
@@ -329,7 +335,7 @@ export function BookingRequestOfferPriceConfigurationPanel({
             ) : null}
 
             {pricePerPersonTooHigh ? (
-                <StatusAlert tone="error">
+                <StatusAlert tone="warning">
                     {
                         {
                             de: `Dieser Preis pro Person liegt über dem von uns vorgeschlagenen Rahmen. Unser Vorschlag ist ${formatCurrency(guidance.suggestedOfferAmountCents, { locale })} pro Person.`,

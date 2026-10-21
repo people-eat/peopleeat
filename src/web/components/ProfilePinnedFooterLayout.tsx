@@ -49,7 +49,7 @@ export function ProfilePinnedFooterLayout({
             </div>
             {footer != null ? (
                 <div className="shrink-0 border-t bg-background px-4 py-3">
-                    <div className="flex flex-wrap justify-end gap-2">{footer}</div>
+                    <div className="flex w-full flex-wrap justify-end gap-2">{footer}</div>
                 </div>
             ) : null}
         </main>

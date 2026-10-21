@@ -2,12 +2,20 @@
 
 fragment ProfileCookBookingRequestOfferCreatePageUser on User {
     userId
+    firstName
+    profilePicture {
+        url
+    }
     cook {
         cookId
+        stageName
+        cuisineStyle
+        cookingPhilosophy
         canCreateOffers
         stripeStatus
         exactTravelOriginAddress {
             displayText
+            city
         }
         meals {
             mealId

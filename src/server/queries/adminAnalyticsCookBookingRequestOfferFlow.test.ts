@@ -141,8 +141,11 @@ describe('adminAnalyticsCookBookingRequestOfferFlow', () => {
         // Assert
         expect(flow.offersCreatedCount).toBeGreaterThanOrEqual(1);
         expect(flow.links.some((link) => link.source === 'opened' && link.target === 'offer_create')).toBe(true);
-        expect(flow.links.some((link) => link.source === 'price' && link.target === 'created')).toBe(true);
+        expect(flow.links.some((link) => link.source === 'price' && link.target === 'message')).toBe(true);
+        expect(flow.links.some((link) => link.source === 'message' && link.target === 'created')).toBe(true);
         const menus = flow.steps.find((step) => step.id === 'menus');
         expect(menus?.completedCount).toBeGreaterThanOrEqual(1);
+        const message = flow.steps.find((step) => step.id === 'message');
+        expect(message?.completedCount).toBeGreaterThanOrEqual(1);
     });
 });

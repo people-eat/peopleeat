@@ -373,7 +373,8 @@ When a profile shell page needs actions always visible at the bottom of the inse
 row — that is the “sticky footer” pattern in product language, **not** CSS `position: sticky`. Pass `contentScroll={false}` when a child
 (tab panel, chat transcript) owns scrolling — the default body scroller would otherwise keep an idle `scrollbar-gutter` strip on the right.
 `contentClassName` (e.g. `grid content-start gap-6`) lands on an inner wrapper so the scrollport stays a block box — Chromium drops
-`padding-bottom` when the overflow scroller is itself `display: grid` / `flex` (same class of bug as `workspace-inset-scroll`).
+`padding-bottom` when the overflow scroller is itself `display: grid` / `flex` (same class of bug as `workspace-inset-scroll`). For
+equal-width paired actions on narrow panes, put `flex-1 md:flex-initial` on each footer button (footer row is `w-full`).
 
 **Dirty Save gating (cook edit forms):** when the footer’s primary action is Save, show Save only while the form (or local edit state) is
 dirty. When clean, replace Cancel+Save with a single back/view CTA (e.g. “Back to profile”). Applies to chef-profile, travel, meal, menu,

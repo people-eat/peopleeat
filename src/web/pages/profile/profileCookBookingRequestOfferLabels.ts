@@ -3,8 +3,8 @@ export const profileCookBookingRequestOfferCreatePageTitle = {
     en: 'Create offer',
 } as const;
 export const profileCookBookingRequestOfferCreatePageDescription = {
-    de: 'Menüs vorschlagen und Preis festlegen.',
-    en: 'Suggest menus and set a price.',
+    de: 'Menüs vorschlagen, Preis wählen und optional eine Nachricht hinzufügen.',
+    en: 'Suggest menus, choose your price, and optionally add a personal note.',
 } as const;
 
 export const profileCookBookingRequestOfferPageTitle = {

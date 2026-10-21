@@ -63,9 +63,9 @@ dialog, including after send is closed), **offer** (cook / customer / accept met
 
 **Offer** holds people and lifecycle metadata: cook + customer cards via shared `AdminOfferPartyCards` (avatar + name/email, outline role
 badge top-right, outline **Nutzer öffnen** to `/admin/users/$userId`; also used on `AdminCallPage`), an **Angebotsstatus** block (title
-above card; 2-column grid:
-offer id with copy, long created date-time, then accept `StatusBadge`s; decline reasons full-width below when present), and pending
-`queuedJobs`. Hand over lives here (footer). Offer status pill sits top-right above the tabs (no payment-status pill in that chrome).
+above card; 2-column grid: offer id with copy, long created date-time, then accept `StatusBadge`s; decline reasons full-width below when
+present), and pending `queuedJobs`. Hand over lives here (footer). Offer status pill sits top-right above the tabs (no payment-status pill
+in that chrome).
 
 **Costs** is the ops economics surface: labeled cook/customer platform fees with stored percents, payment-provider fee, menu / travel /
 payout / customer totals, and **Plattformgewinn / Platform profit** (`platformFeeCentsCook + platformFeeCentsCustomer`) highlighted in the

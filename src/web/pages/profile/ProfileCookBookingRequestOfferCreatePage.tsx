@@ -3,7 +3,7 @@ import { useEffect, useEffectEvent, useId, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { containsPhoneNumber, cookBookingRequestOfferFunnelArea } from '../../../shared';
+import { bookingRequestOfferPriceCalculate, containsPhoneNumber, cookBookingRequestOfferFunnelArea } from '../../../shared';
 import type { CookBookingRequestOfferFunnelClientStep, Locale } from '../../../shared';
 import {
     AlertDialog,
@@ -22,6 +22,7 @@ import { BookingRequestOfferPriceConfigurationPanel } from '../../components/Boo
 import { CookBookingRequestPoolUnavailable } from '../../components/CookBookingRequestPoolUnavailable';
 import type { CookBookingRequestPoolUnavailableKind } from '../../components/CookBookingRequestPoolUnavailable';
 import { CookMenuSelectPanel, cookMenuSelectPanelMenuIsComplete } from '../../components/CookMenuSelectPanel';
+import { CustomerBookingRequestOfferCard } from '../../components/CustomerBookingRequestOfferCard';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
 import type { GqlCProfileCookBookingRequestOfferCreatePageQuery } from '../../graphql/generated';
 import {
@@ -39,11 +40,9 @@ import { cn } from '../../utils/cn';
 import { returnToFromLocation } from '../../utils/returnTo';
 import { cookStubRouteBySlug } from './cookCatalog';
 
-import { profileCookBookingRequestOfferCreatePageTitle } from './profileCookBookingRequestOfferLabels';
-
 const OFFER_CREATE_MESSAGE_MAX_LENGTH = 2000;
 
-export type ProfileCookBookingRequestOfferCreateStep = 'menus' | 'price';
+export type ProfileCookBookingRequestOfferCreateStep = 'menus' | 'price' | 'message';
 
 export type ProfileCookBookingRequestOfferCreateSearch = {
     menus?: string;
@@ -53,7 +52,36 @@ export type ProfileCookBookingRequestOfferCreateSearch = {
 };
 
 function offerCreateStepFromSearch(step: unknown): ProfileCookBookingRequestOfferCreateStep {
-    return step === 'price' ? 'price' : 'menus';
+    if (step === 'price') return 'price';
+    if (step === 'message') return 'message';
+    return 'menus';
+}
+
+function offerCreateStepCopy(step: ProfileCookBookingRequestOfferCreateStep, locale: Locale): { title: string; subTitle?: string } {
+    const copy = {
+        menus: {
+            title: { de: 'Menüs vorschlagen', en: 'Suggest menus' },
+            subTitle: {
+                de: 'Wähle bestehende Menüs aus oder erstelle neue.',
+                en: 'Choose from existing menus or create new ones.',
+            },
+        },
+        price: {
+            title: { de: 'Preis wählen', en: 'Choose your price' },
+        },
+        message: {
+            title: { de: 'Persönliche Nachricht', en: 'Personal note' },
+            subTitle: {
+                de: 'Optional. Erscheint als erste Nachricht im Angebots-Chat.',
+                en: 'Optional. Appears as your first message in the offer chat.',
+            },
+        },
+    } as const;
+    const stepCopy = copy[step];
+    return {
+        title: stepCopy.title[locale],
+        subTitle: 'subTitle' in stepCopy ? stepCopy.subTitle[locale] : undefined,
+    };
 }
 
 export function parseProfileCookBookingRequestOfferCreateSearch(
@@ -70,8 +98,8 @@ export function parseProfileCookBookingRequestOfferCreateSearch(
         menus,
         price,
         message,
-        // Default menus stays out of the URL; only persist the non-default step.
-        step: step === 'price' ? 'price' : undefined,
+        // Default menus stays out of the URL; only persist non-default steps.
+        step: step === 'menus' ? undefined : step,
     };
 }
 
@@ -86,7 +114,8 @@ function profileCookBookingRequestOfferCreateSearchForUrl(next: {
         menus: next.menus.length > 0 ? next.menus.join(',') : undefined,
         price: next.price > 0 ? next.price : undefined,
         message: trimmedMessage.length > 0 ? trimmedMessage : undefined,
-        step: next.step === 'price' ? 'price' : undefined,
+        // Default menus stays out of the URL; only persist non-default steps.
+        step: next.step === 'menus' ? undefined : next.step,
     };
 }
 
@@ -138,35 +167,22 @@ function CookBookingRequestOfferCreateSuccessDialog({
         <AlertDialog open={open}>
             <AlertDialogContent onEscapeKeyDown={(event) => event.preventDefault()}>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>{{ de: 'Angebot gesendet', en: 'Offer sent' }[locale]}</AlertDialogTitle>
+                    <AlertDialogTitle>{{ de: 'Angebot erfolgreich versendet!', en: 'Offer sent successfully!' }[locale]}</AlertDialogTitle>
                     <AlertDialogDescription>
                         {
-                            (hasMoreOpenRequests
-                                ? {
-                                      de: 'Möchtest du dein Angebot öffnen oder weitere Anfragen prüfen?',
-                                      en: 'Open your offer, or keep reviewing booking requests?',
-                                  }
-                                : {
-                                      de: 'Möchtest du dein Angebot öffnen oder nach der nächsten Gelegenheit suchen?',
-                                      en: 'Open your offer, or look for the next opportunity?',
-                                  })[locale]
+                            {
+                                de: 'Der Kunde wurde über dein Angebot benachrichtigt. Sobald er Fragen hat, Änderungen wünscht oder einen Video-Call vereinbaren möchte, wirst du automatisch benachrichtigt.',
+                                en: 'The guest has been notified about your offer. You will be notified automatically when they have questions, request changes, or want to schedule a video call.',
+                            }[locale]
                         }
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel onClick={onReviewNext}>
-                        {
-                            (hasMoreOpenRequests
-                                ? {
-                                      de: 'Weitere Anfragen prüfen',
-                                      en: 'Review next requests',
-                                  }
-                                : {
-                                      de: 'Nächste Gelegenheit finden',
-                                      en: 'Find next opportunity',
-                                  })[locale]
-                        }
-                    </AlertDialogCancel>
+                    {hasMoreOpenRequests ? (
+                        <AlertDialogCancel onClick={onReviewNext}>
+                            {{ de: 'Weitere Anfragen prüfen', en: 'Review more requests' }[locale]}
+                        </AlertDialogCancel>
+                    ) : null}
                     <AlertDialogAction onClick={onGoToOffer}>{{ de: 'Zum Angebot', en: 'Go to offer' }[locale]}</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
@@ -220,7 +236,9 @@ export function ProfileCookBookingRequestOfferCreatePage({
     const [message, setMessage] = useState(() => search.message ?? '');
     const [step, setStep] = useState<ProfileCookBookingRequestOfferCreateStep>(() => {
         const fromSearch = offerCreateStepFromSearch(search.step);
-        if (fromSearch === 'price' && menuIdsFromOfferCreateSearch(search).length === 0) return 'menus';
+        if ((fromSearch === 'price' || fromSearch === 'message') && menuIdsFromOfferCreateSearch(search).length === 0) {
+            return 'menus';
+        }
         return fromSearch;
     });
     const [creatingOffer, setCreatingOffer] = useState(false);
@@ -288,7 +306,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
     }, [cook]);
 
     useEffect(() => {
-        if (step !== 'price') return;
+        if (step === 'menus') return;
         if (selectedMenuIds.length > 0) return;
         setStep('menus');
     }, [selectedMenuIds.length, step]);
@@ -406,7 +424,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
         if (trimmedMessage.length > 0 && containsPhoneNumber(trimmedMessage)) {
             return;
         }
-        trackFunnelStep('step_completed', 'price');
+        trackFunnelStep('step_completed', 'message');
         setCreatingOffer(true);
         try {
             const result = await createOffer({
@@ -468,8 +486,28 @@ export function ProfileCookBookingRequestOfferCreatePage({
         pageTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    function onBackToMenus() {
+    function onContinueToMessage() {
+        if (!priceValid || menuPriceCents <= 0) {
+            toast.error(
+                {
+                    de: 'Bitte gib einen gültigen Menüpreis ein.',
+                    en: 'Please enter a valid menu price.',
+                }[locale],
+            );
+            return;
+        }
+        trackFunnelStep('step_completed', 'price');
+        setStep('message');
+        pageTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function onBackFromPrice() {
         setStep('menus');
+        pageTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function onBackFromMessage() {
+        setStep('price');
         pageTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -511,8 +549,17 @@ export function ProfileCookBookingRequestOfferCreatePage({
     const menuEvaluationLoading = poolDetails?.menuEvaluationLoading === true;
     const generatedMenu = menuEvaluation?.generatedMenu ?? null;
     const hasCompleteMenuSelection = completeSelectedMenuIds().length > 0;
-    const stepNumber = step === 'menus' ? 1 : 2;
-    const progressPercent = Math.min(100, Math.max(0, (stepNumber / 2) * 100));
+    const stepNumber = step === 'menus' ? 1 : step === 'price' ? 2 : 3;
+    const progressPercent = Math.min(100, Math.max(0, (stepNumber / 3) * 100));
+    const stepCopy = offerCreateStepCopy(step, locale);
+    const cookDisplayName = (cook.stageName?.trim() || user?.firstName?.trim() || '').trim() || '?';
+    const selectedMenuTitles = completeSelectedMenuIds()
+        .map((menuId) => inventoryMenus.find((row) => row.menuId === menuId)?.title.trim() ?? '')
+        .filter((title) => title.length > 0);
+    const customerTotalCents = bookingRequestOfferPriceCalculate({
+        menuPriceCents,
+        travelExpensesCents,
+    }).totalWithoutDiscountsCentsCustomer;
 
     async function onRefreshMenuEvaluation() {
         if (busy || !menuEvaluationEnabled) return;
@@ -612,22 +659,54 @@ export function ProfileCookBookingRequestOfferCreatePage({
                 footer={
                     step === 'menus' ? (
                         <>
-                            <Button type="button" variant="outline" asChild disabled={busy}>
+                            <Button type="button" variant="outline" className="flex-1 md:flex-initial" asChild disabled={busy}>
                                 <Link to="/{-$locale}/profile/booking-request-pool/$bookingRequestId" params={{ bookingRequestId }}>
                                     {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
                                 </Link>
                             </Button>
-                            <Button type="button" disabled={busy || !hasCompleteMenuSelection} onClick={onContinueToPrice}>
+                            <Button
+                                type="button"
+                                className="flex-1 md:flex-initial"
+                                disabled={busy || !hasCompleteMenuSelection}
+                                onClick={onContinueToPrice}
+                            >
+                                {{ de: 'Weiter', en: 'Continue' }[locale]}
+                            </Button>
+                        </>
+                    ) : step === 'price' ? (
+                        <>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="flex-1 md:flex-initial"
+                                disabled={busy}
+                                onClick={onBackFromPrice}
+                            >
+                                {{ de: 'Zurück', en: 'Back' }[locale]}
+                            </Button>
+                            <Button
+                                type="button"
+                                className="flex-1 md:flex-initial"
+                                disabled={busy || !priceValid}
+                                onClick={onContinueToMessage}
+                            >
                                 {{ de: 'Weiter', en: 'Continue' }[locale]}
                             </Button>
                         </>
                     ) : (
                         <>
-                            <Button type="button" variant="outline" disabled={busy} onClick={onBackToMenus}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="flex-1 md:flex-initial"
+                                disabled={busy}
+                                onClick={onBackFromMessage}
+                            >
                                 {{ de: 'Zurück', en: 'Back' }[locale]}
                             </Button>
                             <Button
                                 type="button"
+                                className="flex-1 md:flex-initial"
                                 disabled={busy || !stripeReady || !hasTravelOrigin || !priceValid || messageContainsPhoneNumber}
                                 onClick={() => void onCreateOffer()}
                             >
@@ -647,20 +726,8 @@ export function ProfileCookBookingRequestOfferCreatePage({
                         <div className="h-2 rounded-full bg-primary transition-[width]" style={{ width: `${progressPercent}%` }} />
                     </div>
                     <div className="grid gap-1">
-                        <h1 className="font-serif text-2xl text-foreground">{profileCookBookingRequestOfferCreatePageTitle[locale]}</h1>
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                (step === 'menus'
-                                    ? {
-                                          de: 'Wähle oder erstelle mindestens ein Menü für dein Angebot.',
-                                          en: 'Select or create at least one menu for your offer.',
-                                      }
-                                    : {
-                                          de: 'Setze den Preis und optional eine Nachricht an den Gast.',
-                                          en: 'Set the price and optionally a message to the guest.',
-                                      })[locale]
-                            }
-                        </p>
+                        <h1 className="font-serif text-2xl text-foreground">{stepCopy.title}</h1>
+                        {stepCopy.subTitle != null ? <p className="text-sm text-muted-foreground">{stepCopy.subTitle}</p> : null}
                     </div>
                 </div>
 
@@ -727,19 +794,17 @@ export function ProfileCookBookingRequestOfferCreatePage({
                         onMenuPriceCentsChange={setMenuPriceCents}
                         onValidChange={setPriceValid}
                     />
+                </div>
 
+                <div
+                    className={cn('grid max-w-lg gap-8', step !== 'message' && 'hidden')}
+                    aria-hidden={step !== 'message'}
+                    inert={step !== 'message' ? true : undefined}
+                >
                     <div className="grid gap-2">
-                        <label htmlFor={messageFieldId} className="text-base font-medium text-foreground">
+                        <label htmlFor={messageFieldId} className="sr-only">
                             {{ de: 'Nachricht an den Gast (optional)', en: 'Message to the guest (optional)' }[locale]}
                         </label>
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Erscheint als erste Nachricht im Angebots-Chat.',
-                                    en: 'Appears as your first message in the offer chat.',
-                                }[locale]
-                            }
-                        </p>
                         {messageContainsPhoneNumber ? (
                             <StatusAlert tone="warning">
                                 {
@@ -752,7 +817,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
                         ) : null}
                         <Textarea
                             id={messageFieldId}
-                            rows={4}
+                            rows={5}
                             value={message}
                             disabled={busy}
                             maxLength={OFFER_CREATE_MESSAGE_MAX_LENGTH}
@@ -777,6 +842,35 @@ export function ProfileCookBookingRequestOfferCreatePage({
                             }
                         </StatusAlert>
                     ) : null}
+
+                    <div className="grid gap-2">
+                        <p className="text-sm font-medium text-foreground">
+                            {{ de: 'So sieht der Gast dein Angebot', en: 'How the guest sees your offer' }[locale]}
+                        </p>
+                        <CustomerBookingRequestOfferCard
+                            interactive={false}
+                            bookingRequestId={bookingRequestId}
+                            className="max-w-sm"
+                            offer={{
+                                bookingRequestOfferId: 'preview',
+                                status: 'USER_NEEDS_TO_ACCEPT',
+                                userUnreadNotificationCount: 0,
+                                totalCentsCustomer: null,
+                                totalWithoutDiscountsCentsCustomer: customerTotalCents,
+                                configuredMenu: null,
+                                suggestedMenus: selectedMenuTitles.map((title) => ({ title })),
+                                cook: {
+                                    city: cook.exactTravelOriginAddress?.city ?? null,
+                                    cuisineStyle: cook.cuisineStyle ?? null,
+                                    cookingPhilosophy: cook.cookingPhilosophy ?? null,
+                                    user: {
+                                        display: cookDisplayName,
+                                        profilePicture: user?.profilePicture ?? null,
+                                    },
+                                },
+                            }}
+                        />
+                    </div>
                 </div>
             </ProfilePinnedFooterLayout>
         </>

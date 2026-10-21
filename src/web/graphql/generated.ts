@@ -15994,11 +15994,16 @@ export type GqlCCookBookingRequestOfferFunnelTrackMutation = {
 
 export type GqlCProfileCookBookingRequestOfferCreatePageUserFragment = {
     userId: string;
+    firstName: string;
+    profilePicture: { url: string } | null;
     cook: {
         cookId: string;
+        stageName: string | null;
+        cuisineStyle: string | null;
+        cookingPhilosophy: string | null;
         canCreateOffers: boolean;
         stripeStatus: Schema.GqlCCookStripeStatus;
-        exactTravelOriginAddress: { displayText: string } | null;
+        exactTravelOriginAddress: { displayText: string; city: string } | null;
         meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
         menus: Array<{
             menuId: string;
@@ -16070,11 +16075,16 @@ export type GqlCProfileCookBookingRequestOfferCreatePageQuery = {
     currentSession: {
         user: {
             userId: string;
+            firstName: string;
+            profilePicture: { url: string } | null;
             cook: {
                 cookId: string;
+                stageName: string | null;
+                cuisineStyle: string | null;
+                cookingPhilosophy: string | null;
                 canCreateOffers: boolean;
                 stripeStatus: Schema.GqlCCookStripeStatus;
-                exactTravelOriginAddress: { displayText: string } | null;
+                exactTravelOriginAddress: { displayText: string; city: string } | null;
                 meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
                 menus: Array<{
                     menuId: string;
@@ -16147,11 +16157,16 @@ export type GqlCProfileCookBookingRequestOfferCreatePageUpdatesSubscriptionVaria
 export type GqlCProfileCookBookingRequestOfferCreatePageUpdatesSubscription = {
     userUpdates: {
         userId: string;
+        firstName: string;
+        profilePicture: { url: string } | null;
         cook: {
             cookId: string;
+            stageName: string | null;
+            cuisineStyle: string | null;
+            cookingPhilosophy: string | null;
             canCreateOffers: boolean;
             stripeStatus: Schema.GqlCCookStripeStatus;
-            exactTravelOriginAddress: { displayText: string } | null;
+            exactTravelOriginAddress: { displayText: string; city: string } | null;
             meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
             menus: Array<{
                 menuId: string;
@@ -28205,6 +28220,12 @@ export const ProfileCookBookingRequestOfferCreatePageUserFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'profilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -28212,6 +28233,9 @@ export const ProfileCookBookingRequestOfferCreatePageUserFragmentDoc = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                                 {
@@ -28219,7 +28243,10 @@ export const ProfileCookBookingRequestOfferCreatePageUserFragmentDoc = {
                                     name: { kind: 'Name', value: 'exactTravelOriginAddress' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
-                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'displayText' } }],
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                        ],
                                     },
                                 },
                                 {
@@ -66402,6 +66429,12 @@ export const ProfileCookBookingRequestOfferCreatePageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'profilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -66409,6 +66442,9 @@ export const ProfileCookBookingRequestOfferCreatePageDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                                 {
@@ -66416,7 +66452,10 @@ export const ProfileCookBookingRequestOfferCreatePageDocument = {
                                     name: { kind: 'Name', value: 'exactTravelOriginAddress' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
-                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'displayText' } }],
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                        ],
                                     },
                                 },
                                 {
@@ -66839,6 +66878,12 @@ export const ProfileCookBookingRequestOfferCreatePageUpdatesDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'profilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -66846,6 +66891,9 @@ export const ProfileCookBookingRequestOfferCreatePageUpdatesDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'stageName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canCreateOffers' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                                 {
@@ -66853,7 +66901,10 @@ export const ProfileCookBookingRequestOfferCreatePageUpdatesDocument = {
                                     name: { kind: 'Name', value: 'exactTravelOriginAddress' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
-                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'displayText' } }],
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                        ],
                                     },
                                 },
                                 {

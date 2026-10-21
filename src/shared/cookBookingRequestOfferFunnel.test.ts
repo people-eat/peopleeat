@@ -23,6 +23,9 @@ describe('cookBookingRequestOfferFunnel', () => {
         expect(isCookBookingRequestOfferFunnelStep('created')).toBe(true);
         expect(isCookBookingRequestOfferFunnelStep('unknown')).toBe(false);
         expect(isCookBookingRequestOfferFunnelClientStep('menus')).toBe(true);
+        expect(isCookBookingRequestOfferFunnelClientStep('message')).toBe(true);
         expect(isCookBookingRequestOfferFunnelClientStep('notified')).toBe(false);
+        expect(cookBookingRequestOfferFunnelSteps.indexOf('price')).toBeLessThan(cookBookingRequestOfferFunnelSteps.indexOf('message'));
+        expect(cookBookingRequestOfferFunnelSteps.indexOf('message')).toBeLessThan(cookBookingRequestOfferFunnelSteps.indexOf('created'));
     });
 });

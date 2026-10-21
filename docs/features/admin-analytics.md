@@ -27,9 +27,9 @@ plus page-visit time series.
    - **KPIs** — notified, opened, declined (decline without create-UI path), offers created, conversion notified→offer.
    - **Opened** — `firstOpenedAt`, or inferred when the row later declined / started create / has an offer (older imported rows often lack
      `firstOpenedAt`).
-   - **Steps** — `notified` → `opened` → either `declined` **or** `offer_create` → `menus` → `price` → `created`. Early/terminal steps from
-     `BookingRequestCooks` / `BookingRequestOffers`; create-UI mid-steps from `WEB_PAGE_INTERACTION` with `area: cook_booking_request_offer`
-     and `bookingRequestId`.
+   - **Steps** — `notified` → `opened` → either `declined` **or** `offer_create` → `menus` → `price` → `message` → `created`. Early/terminal
+     steps from `BookingRequestCooks` / `BookingRequestOffers`; create-UI mid-steps from `WEB_PAGE_INTERACTION` with
+     `area: cook_booking_request_offer` and `bookingRequestId`.
    - **Drop-off %** — vs the graph parent (`declined` and `offer_create` both vs `opened`), not vs the previous table row. Negative values
      meant the UI was wrongly comparing the offer branch to the decline branch.
    - **Sankey** — forward-only edges on that per-row sequence (decline branches off opened).
@@ -48,8 +48,8 @@ plus page-visit time series.
   `BOOKING_REQUEST_CREATED`). Imported historical clicks were reshaped into `step_completed` where mapping was known; unmatched free-form
   clicks still do not appear. Migrated rows have no `step_entered`, so the Reached column is omitted until live instrumentation produces
   entered events.
-- Cook create-UI mid-steps (`offer_create` / `menus` / `price`) only appear after live instrumentation; historical cohorts still show
-  notified / opened / declined / created from DB timestamps.
+- Cook create-UI mid-steps (`offer_create` / `menus` / `price` / `message`) only appear after live instrumentation; historical cohorts still
+  show notified / opened / declined / created from DB timestamps.
 
 Session and user event timelines live on session detail and the user **session-events** tab (see [admin-sessions.md](./admin-sessions.md)
 and [admin-users.md](./admin-users.md)). Offer accept / decline / payment lifecycle events also appear there.

@@ -4,12 +4,21 @@
  * See docs/architecture/session-events.md and docs/features/admin-analytics.md.
  */
 
-export const cookBookingRequestOfferFunnelSteps = ['notified', 'opened', 'declined', 'offer_create', 'menus', 'price', 'created'] as const;
+export const cookBookingRequestOfferFunnelSteps = [
+    'notified',
+    'opened',
+    'declined',
+    'offer_create',
+    'menus',
+    'price',
+    'message',
+    'created',
+] as const;
 
 export type CookBookingRequestOfferFunnelStep = (typeof cookBookingRequestOfferFunnelSteps)[number];
 
 /** Client-emitted create-UI steps (DB timestamps cover notified/opened/declined/created). */
-const cookBookingRequestOfferFunnelClientSteps = ['offer_create', 'menus', 'price'] as const;
+const cookBookingRequestOfferFunnelClientSteps = ['offer_create', 'menus', 'price', 'message'] as const;
 
 export type CookBookingRequestOfferFunnelClientStep = (typeof cookBookingRequestOfferFunnelClientSteps)[number];
 
