@@ -52,7 +52,17 @@ export type CookMenuCourseMealOption = {
 
 const COURSE_TITLE_PRESETS: Record<Locale, string[]> = {
     de: ['Amuse Bouche', 'Vorspeise', 'Hauptspeise', 'Dessert', 'Zwischengang', 'Käsegang', 'Kindergang', 'Fingerfood', 'Weinbegleitung'],
-    en: ['Amuse Bouche', 'Starter', 'Main course', 'Dessert', 'Intermediate course', 'Cheese course', 'Children course', 'Fingerfood', 'Wine pairing'],
+    en: [
+        'Amuse Bouche',
+        'Starter',
+        'Main course',
+        'Dessert',
+        'Intermediate course',
+        'Cheese course',
+        'Children course',
+        'Fingerfood',
+        'Wine pairing',
+    ],
 };
 
 const VERTICAL_SORT_DROP_ANIMATION: DropAnimation = {
