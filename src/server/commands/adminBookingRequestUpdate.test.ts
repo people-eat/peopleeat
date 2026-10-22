@@ -201,20 +201,14 @@ describe('adminBookingRequestUpdate', () => {
         expect(result).toEqual({ success: true, referenceId: bookingRequestId });
         const [row] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, bookingRequestId));
         expect(row?.preferences).toEqual(['Vegetarian', 'No nuts']);
-        const [offer] = await testDb
-            .select()
-            .from(bookingRequestOffers)
-            .where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+        const [offer] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
         expect(offer?.cookAccepted).toBeNull();
     });
 
     it('recalculates travel on venue change and sets TRAVEL priceAutoAdjustReason', async () => {
         const { admin, bookingRequestId } = await setupAdminAndRequest();
         const { offerId } = await insertOfferWithCook(bookingRequestId);
-        const [before] = await testDb
-            .select()
-            .from(bookingRequestOffers)
-            .where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+        const [before] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
 
         const result = await adminBookingRequestUpdate(
             adminMutationParent(admin.user.userId),
@@ -224,10 +218,7 @@ describe('adminBookingRequestUpdate', () => {
         );
         expect(result.success).toBe(true);
 
-        const [offer] = await testDb
-            .select()
-            .from(bookingRequestOffers)
-            .where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+        const [offer] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
         expect(offer?.cookAccepted).toBeNull();
         expect(offer?.travelDistanceKm).not.toBe(before?.travelDistanceKm);
         expect(offer?.priceAutoAdjustReason).toBe('TRAVEL');
@@ -262,10 +253,7 @@ describe('adminBookingRequestUpdate', () => {
         );
         expect(result.success).toBe(true);
 
-        const [offer] = await testDb
-            .select()
-            .from(bookingRequestOffers)
-            .where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+        const [offer] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
         expect(offer?.cookAccepted).toBeNull();
         expect(offer?.menuPriceCents).toBe(20_000);
         expect(offer?.priceAutoAdjustReason).toBe('PARTICIPANTS');

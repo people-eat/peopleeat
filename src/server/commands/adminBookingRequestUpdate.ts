@@ -240,10 +240,8 @@ export async function adminBookingRequestUpdate(
             }
         }
 
-        const nextAddress =
-            input.exactEventAddress != null ? exactEventAddressNormalize(input.exactEventAddress) : null;
-        const eventAddressChanged =
-            nextAddress != null && !exactEventAddressEqual(bookingRequest.exactEventAddress, nextAddress);
+        const nextAddress = input.exactEventAddress != null ? exactEventAddressNormalize(input.exactEventAddress) : null;
+        const eventAddressChanged = nextAddress != null && !exactEventAddressEqual(bookingRequest.exactEventAddress, nextAddress);
 
         const dualAcceptedPaidOffer = offers.find(
             ({ offer }) =>
