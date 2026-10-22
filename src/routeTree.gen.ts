@@ -168,6 +168,7 @@ import { Route as Char123LocaleChar125AdminUsersUserIdCookProfileEditRouteImport
 import { Route as Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRouteImport } from './routes/{-$locale}/profile/booking-requests_.$bookingRequestId_.offers_.$bookingRequestOfferId'
 import { Route as Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRouteImport } from './routes/{-$locale}/admin/booking-requests_.$bookingRequestId_.offers_.$bookingRequestOfferId_.edit'
 import { Route as Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRouteImport } from './routes/{-$locale}/admin/booking-requests_.$bookingRequestId_.offers_.$bookingRequestOfferId_.edit-configured-menu'
+import { Route as Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditPriceRouteImport } from './routes/{-$locale}/admin/booking-requests_.$bookingRequestId_.offers_.$bookingRequestOfferId_.edit-price'
 import { Route as Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdCheckoutRouteImport } from './routes/{-$locale}/profile/booking-requests_.$bookingRequestId_.offers_.$bookingRequestOfferId_.checkout'
 
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
@@ -1140,6 +1141,14 @@ const Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingReque
       getParentRoute: () => Char123LocaleChar125AdminRoute,
     } as any,
   )
+const Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditPriceRoute =
+  Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditPriceRouteImport.update(
+    {
+      id: '/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit-price',
+      path: '/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price',
+      getParentRoute: () => Char123LocaleChar125AdminRoute,
+    } as any,
+  )
 const Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdCheckoutRoute =
   Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdCheckoutRouteImport.update(
     {
@@ -1309,6 +1318,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute
+  '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditPriceRoute
   '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/checkout': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdCheckoutRoute
 }
 export interface FileRoutesByTo {
@@ -1468,6 +1478,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute
+  '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditPriceRoute
   '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/checkout': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdCheckoutRoute
 }
 export interface FileRoutesById {
@@ -1631,6 +1642,7 @@ export interface FileRoutesById {
   '/{-$locale}/profile/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute
   '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit-configured-menu': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute
+  '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit-price': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditPriceRoute
   '/{-$locale}/profile/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/checkout': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdCheckoutRoute
 }
 export interface FileRouteTypes {
@@ -1795,6 +1807,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu'
+    | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price'
     | '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/checkout'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -1954,6 +1967,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu'
+    | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price'
     | '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/checkout'
   id:
     | '__root__'
@@ -2116,6 +2130,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit'
     | '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit-configured-menu'
+    | '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit-price'
     | '/{-$locale}/profile/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/checkout'
   fileRoutesById: FileRoutesById
 }
@@ -3259,6 +3274,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRouteImport
       parentRoute: typeof Char123LocaleChar125AdminRoute
     }
+    '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit-price': {
+      id: '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/edit-price'
+      path: '/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price'
+      fullPath: '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price'
+      preLoaderRoute: typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditPriceRouteImport
+      parentRoute: typeof Char123LocaleChar125AdminRoute
+    }
     '/{-$locale}/profile/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/checkout': {
       id: '/{-$locale}/profile/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId_/checkout'
       path: '/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/checkout'
@@ -3348,6 +3370,7 @@ interface Char123LocaleChar125AdminRouteChildren {
   Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute: typeof Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute
   Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute: typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute
   Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute: typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute
+  Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditPriceRoute: typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditPriceRoute
 }
 
 const Char123LocaleChar125AdminRouteChildren: Char123LocaleChar125AdminRouteChildren =
@@ -3497,6 +3520,8 @@ const Char123LocaleChar125AdminRouteChildren: Char123LocaleChar125AdminRouteChil
       Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditRoute,
     Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute:
       Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditConfiguredMenuRoute,
+    Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditPriceRoute:
+      Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdEditPriceRoute,
   }
 
 const Char123LocaleChar125AdminRouteWithChildren =

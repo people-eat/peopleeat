@@ -9728,25 +9728,10 @@ export type GqlCAdminBookingRequestOfferEditPageOfferFragment = {
     bookingRequestId: string;
     userAccepted: boolean | null;
     cookAccepted: boolean | null;
-    menuPriceCents: number;
-    travelExpensesCents: number;
-    travelDistanceKm: number | null;
-    paymentDateTime: string | null;
-    plannedPayoutDateTime: string | null;
-    payoutDateTime: string | null;
     cook: { cookId: string; user: { firstName: string; lastName: string } };
 };
 
-export type GqlCAdminBookingRequestOfferEditPageRequestFragment = {
-    bookingRequestId: string;
-    occasion: string;
-    priceClassType: Schema.GqlCBookingRequestPriceClassType | null;
-    suggestedOfferAmountCents: number;
-    minOfferAmountCents: number | null;
-    maxOfferAmountCents: number | null;
-    minOfferAmountHardCents: number | null;
-    participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
-};
+export type GqlCAdminBookingRequestOfferEditPageRequestFragment = { bookingRequestId: string; occasion: string };
 
 export type GqlCAdminBookingRequestOfferEditPageQueryVariables = Exact<{
     bookingRequestId: string;
@@ -9758,27 +9743,12 @@ export type GqlCAdminBookingRequestOfferEditPageQuery = {
         user: {
             admin: {
                 adminId: string;
-                bookingRequest: {
-                    bookingRequestId: string;
-                    occasion: string;
-                    priceClassType: Schema.GqlCBookingRequestPriceClassType | null;
-                    suggestedOfferAmountCents: number;
-                    minOfferAmountCents: number | null;
-                    maxOfferAmountCents: number | null;
-                    minOfferAmountHardCents: number | null;
-                    participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
-                } | null;
+                bookingRequest: { bookingRequestId: string; occasion: string } | null;
                 bookingRequestOffer: {
                     bookingRequestOfferId: string;
                     bookingRequestId: string;
                     userAccepted: boolean | null;
                     cookAccepted: boolean | null;
-                    menuPriceCents: number;
-                    travelExpensesCents: number;
-                    travelDistanceKm: number | null;
-                    paymentDateTime: string | null;
-                    plannedPayoutDateTime: string | null;
-                    payoutDateTime: string | null;
                     cook: { cookId: string; user: { firstName: string; lastName: string } };
                 } | null;
             } | null;
@@ -10592,6 +10562,65 @@ export type GqlCAdminBookingRequestOfferHandoverMutationVariables = Exact<{
 
 export type GqlCAdminBookingRequestOfferHandoverMutation = {
     admin: { bookingRequestOfferHandover: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCAdminBookingRequestOfferPriceEditPageOfferFragment = {
+    bookingRequestOfferId: string;
+    bookingRequestId: string;
+    menuPriceCents: number;
+    travelExpensesCents: number;
+    travelDistanceKm: number | null;
+    paymentDateTime: string | null;
+    plannedPayoutDateTime: string | null;
+    payoutDateTime: string | null;
+    cook: { cookId: string; user: { firstName: string; lastName: string } };
+};
+
+export type GqlCAdminBookingRequestOfferPriceEditPageRequestFragment = {
+    bookingRequestId: string;
+    occasion: string;
+    priceClassType: Schema.GqlCBookingRequestPriceClassType | null;
+    suggestedOfferAmountCents: number;
+    minOfferAmountCents: number | null;
+    maxOfferAmountCents: number | null;
+    minOfferAmountHardCents: number | null;
+    participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
+};
+
+export type GqlCAdminBookingRequestOfferPriceEditPageQueryVariables = Exact<{
+    bookingRequestId: string;
+    bookingRequestOfferId: string;
+}>;
+
+export type GqlCAdminBookingRequestOfferPriceEditPageQuery = {
+    currentSession: {
+        user: {
+            admin: {
+                adminId: string;
+                bookingRequest: {
+                    bookingRequestId: string;
+                    occasion: string;
+                    priceClassType: Schema.GqlCBookingRequestPriceClassType | null;
+                    suggestedOfferAmountCents: number;
+                    minOfferAmountCents: number | null;
+                    maxOfferAmountCents: number | null;
+                    minOfferAmountHardCents: number | null;
+                    participants: Array<{ bookingRequestParticipantId: string; type: Schema.GqlCBookingRequestParticipantType }>;
+                } | null;
+                bookingRequestOffer: {
+                    bookingRequestOfferId: string;
+                    bookingRequestId: string;
+                    menuPriceCents: number;
+                    travelExpensesCents: number;
+                    travelDistanceKm: number | null;
+                    paymentDateTime: string | null;
+                    plannedPayoutDateTime: string | null;
+                    payoutDateTime: string | null;
+                    cook: { cookId: string; user: { firstName: string; lastName: string } };
+                } | null;
+            } | null;
+        } | null;
+    };
 };
 
 export type GqlCAdminBookingRequestPageRequestFragment = {
@@ -25095,12 +25124,6 @@ export const AdminBookingRequestOfferEditPageOfferFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'userAccepted' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookAccepted' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'travelDistanceKm' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'payoutDateTime' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -25139,22 +25162,6 @@ export const AdminBookingRequestOfferEditPageRequestFragmentDoc = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'priceClassType' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'suggestedOfferAmountCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minOfferAmountCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maxOfferAmountCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minOfferAmountHardCents' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'participants' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestParticipantId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
-                            ],
-                        },
-                    },
                 ],
             },
         },
@@ -25827,6 +25834,83 @@ export const AdminBookingRequestOfferPageRequestFragmentDoc = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminBookingRequestOfferPageRequestFragment, unknown>;
+export const AdminBookingRequestOfferPriceEditPageOfferFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminBookingRequestOfferPriceEditPageOffer' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminBookingRequestOffer' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'travelDistanceKm' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'payoutDateTime' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminBookingRequestOfferPriceEditPageOfferFragment, unknown>;
+export const AdminBookingRequestOfferPriceEditPageRequestFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminBookingRequestOfferPriceEditPageRequest' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminBookingRequest' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'priceClassType' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'suggestedOfferAmountCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'minOfferAmountCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'maxOfferAmountCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'minOfferAmountHardCents' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'participants' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestParticipantId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminBookingRequestOfferPriceEditPageRequestFragment, unknown>;
 export const AdminBookingRequestPageRequestFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -44972,22 +45056,6 @@ export const AdminBookingRequestOfferEditPageDocument = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'priceClassType' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'suggestedOfferAmountCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minOfferAmountCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'maxOfferAmountCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'minOfferAmountHardCents' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'participants' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestParticipantId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
-                            ],
-                        },
-                    },
                 ],
             },
         },
@@ -45002,12 +45070,6 @@ export const AdminBookingRequestOfferEditPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'userAccepted' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookAccepted' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'travelDistanceKm' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'payoutDateTime' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -47190,6 +47252,180 @@ export const AdminBookingRequestOfferHandoverDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminBookingRequestOfferHandoverMutation, GqlCAdminBookingRequestOfferHandoverMutationVariables>;
+export const AdminBookingRequestOfferPriceEditPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminBookingRequestOfferPriceEditPage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'admin' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'bookingRequest' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'bookingRequestId' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'bookingRequestId' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'FragmentSpread',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'AdminBookingRequestOfferPriceEditPageRequest',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'bookingRequestOffer' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                                                    },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'FragmentSpread',
+                                                                        name: {
+                                                                            kind: 'Name',
+                                                                            value: 'AdminBookingRequestOfferPriceEditPageOffer',
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminBookingRequestOfferPriceEditPageRequest' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminBookingRequest' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'priceClassType' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'suggestedOfferAmountCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'minOfferAmountCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'maxOfferAmountCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'minOfferAmountHardCents' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'participants' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestParticipantId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminBookingRequestOfferPriceEditPageOffer' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminBookingRequestOffer' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'travelDistanceKm' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'payoutDateTime' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminBookingRequestOfferPriceEditPageQuery, GqlCAdminBookingRequestOfferPriceEditPageQueryVariables>;
 export const AdminBookingRequestPageDocument = {
     kind: 'Document',
     definitions: [

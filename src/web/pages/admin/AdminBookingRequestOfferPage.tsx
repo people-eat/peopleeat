@@ -422,12 +422,24 @@ export function AdminBookingRequestOfferPage({
                     contentScroll={false}
                     contentClassName="flex w-full min-w-0 flex-col pb-0"
                     footer={
-                        offer && ((tab === 'offer' && canHandover) || tab === 'costs' || (tab === 'menu' && offer.configuredMenu)) ? (
+                        offer && (tab === 'offer' || tab === 'costs' || (tab === 'menu' && offer.configuredMenu)) ? (
                             <>
-                                {tab === 'offer' && canHandover ? (
-                                    <Button type="button" variant="outline" onClick={() => setHandoverOpen(true)}>
-                                        {{ de: 'Übergeben', en: 'Hand over' }[locale]}
-                                    </Button>
+                                {tab === 'offer' ? (
+                                    <>
+                                        <Button type="button" variant="outline" asChild>
+                                            <Link
+                                                to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit"
+                                                params={{ bookingRequestId, bookingRequestOfferId }}
+                                            >
+                                                {{ de: 'Angebot bearbeiten', en: 'Edit offer' }[locale]}
+                                            </Link>
+                                        </Button>
+                                        {canHandover ? (
+                                            <Button type="button" variant="outline" onClick={() => setHandoverOpen(true)}>
+                                                {{ de: 'Übergeben', en: 'Hand over' }[locale]}
+                                            </Button>
+                                        ) : null}
+                                    </>
                                 ) : null}
                                 {tab === 'menu' && offer.configuredMenu ? (
                                     <Button type="button" variant="outline" asChild>
@@ -440,9 +452,9 @@ export function AdminBookingRequestOfferPage({
                                     </Button>
                                 ) : null}
                                 {tab === 'costs' ? (
-                                    <Button type="button" asChild>
+                                    <Button type="button" variant="outline" asChild>
                                         <Link
-                                            to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit"
+                                            to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price"
                                             params={{ bookingRequestId, bookingRequestOfferId }}
                                         >
                                             {{ de: 'Preis bearbeiten', en: 'Edit price' }[locale]}

@@ -68,8 +68,8 @@ dialog, including after send is closed), **offer** (cook / customer / accept met
 **Offer** holds people and lifecycle metadata: cook + customer cards via shared `AdminOfferPartyCards` (avatar + name/email, outline role
 badge top-right, outline **Nutzer öffnen** to `/admin/users/$userId`; also used on `AdminCallPage`), an **Angebotsstatus** block (title
 above card; 2-column grid: offer id with copy, long created date-time, then accept `StatusBadge`s; decline reasons full-width below when
-present), and pending `queuedJobs`. Hand over lives here (footer). Offer status pill sits top-right above the tabs (no payment-status pill
-in that chrome).
+present), and pending `queuedJobs`. Footer: **Edit offer** (`.../edit`, accept flags only) and hand over when dual-accepted. Offer status
+pill sits top-right above the tabs (no payment-status pill in that chrome).
 
 **Costs** is the ops economics surface: labeled cook/customer platform fees with stored percents, payment-provider fee, menu / travel /
 payout / customer totals, and **Plattformgewinn / Platform profit** (`platformFeeCentsCook + platformFeeCentsCustomer`) highlighted in the
@@ -80,11 +80,12 @@ total, muted travel-included footer). **Cook view** renders `BookingRequestOffer
 wrapper (panel already has bordered sections) using **stored** offer fee amounts (not a live recalculation), so migrated or historical fee
 snapshots stay honest. Fee create/edit still only takes menu price + travel; percents/amounts (including
 `totalWithoutDiscountsCentsCustomer` and, when already set, `totalCentsCustomer` with any gift/promo discount cents preserved) are always
-recalculated on write. Edit-price CTA lives on this tab’s footer only.
+recalculated on write. Edit-price CTA (`.../edit-price`: menu price, travel, payment/payout timestamps) lives on this tab’s footer only.
 
 **Menu** holds only configured / suggested menus (`OfferMenuConfigured` or `CookMenuCard` grid to `/admin/menus/$menuId`) — no cook/customer
 header. When a customer has frozen a configured menu, admins can open `.../edit-configured-menu` to replace title, description, and
-courses/meals (optional meal image URLs). Update-only: no create when the snapshot is missing. Fee / accept-flag edits stay on `.../edit`.
+courses/meals (optional meal image URLs). Update-only: no create when the snapshot is missing. Accept-flag edits stay on `.../edit`; price
+edits on `.../edit-price`.
 
 **Hand over** (dual-accepted, event still in the future): closes the current offer and creates or upgrades a dual-accepted offer for another
 cook in travel radius. Never mutates `cookId` in place. Admin chooses what to copy (price, configured menu, payment/payout dates, chat
@@ -140,7 +141,7 @@ estimated travel expenses and soft suggested menu price total (same guidance as 
 
 | Area     | Notes                                                                                                                                                                                                 |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pages    | Overview, list (grid/table), create, edit, detail, offer (+ create/edit), calls overview/list                                                                                                         |
+| Pages    | Overview, list (grid/table), create, edit, detail, offer (+ create / edit accept / edit-price / edit-configured-menu), calls overview/list                                                            |
 | Queries  | Request/offer finders, counts, creations, occasion/month stats, average participants, offer economics, cook offer stats, calls, call traffic, cook stats                                              |
 | Commands | Create/update/cancel request; discount apply/clear; create/update/handover offer; configured-menu update; publication approve; cook notify; payout release / already-took-place check / out-of-system |
 | Nav      | `adminBookingRequests.ts`, `adminCalls.ts`, sidebar subs                                                                                                                                              |

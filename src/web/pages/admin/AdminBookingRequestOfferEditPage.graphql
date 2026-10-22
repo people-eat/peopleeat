@@ -1,4 +1,4 @@
-# Admin offer edit. Loaded by
+# Admin offer edit (accept flags). Loaded by
 # `/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit`.
 
 fragment AdminBookingRequestOfferEditPageOffer on AdminBookingRequestOffer {
@@ -6,12 +6,6 @@ fragment AdminBookingRequestOfferEditPageOffer on AdminBookingRequestOffer {
     bookingRequestId
     userAccepted
     cookAccepted
-    menuPriceCents
-    travelExpensesCents
-    travelDistanceKm
-    paymentDateTime
-    plannedPayoutDateTime
-    payoutDateTime
     cook {
         cookId
         user {
@@ -24,15 +18,6 @@ fragment AdminBookingRequestOfferEditPageOffer on AdminBookingRequestOffer {
 fragment AdminBookingRequestOfferEditPageRequest on AdminBookingRequest {
     bookingRequestId
     occasion
-    priceClassType
-    suggestedOfferAmountCents
-    minOfferAmountCents
-    maxOfferAmountCents
-    minOfferAmountHardCents
-    participants {
-        bookingRequestParticipantId
-        type
-    }
 }
 
 query AdminBookingRequestOfferEditPage($bookingRequestId: ID!, $bookingRequestOfferId: ID!) {

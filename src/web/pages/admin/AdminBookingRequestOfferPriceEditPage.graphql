@@ -1,0 +1,50 @@
+# Admin offer price edit. Loaded by
+# `/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price`.
+
+fragment AdminBookingRequestOfferPriceEditPageOffer on AdminBookingRequestOffer {
+    bookingRequestOfferId
+    bookingRequestId
+    menuPriceCents
+    travelExpensesCents
+    travelDistanceKm
+    paymentDateTime
+    plannedPayoutDateTime
+    payoutDateTime
+    cook {
+        cookId
+        user {
+            firstName
+            lastName
+        }
+    }
+}
+
+fragment AdminBookingRequestOfferPriceEditPageRequest on AdminBookingRequest {
+    bookingRequestId
+    occasion
+    priceClassType
+    suggestedOfferAmountCents
+    minOfferAmountCents
+    maxOfferAmountCents
+    minOfferAmountHardCents
+    participants {
+        bookingRequestParticipantId
+        type
+    }
+}
+
+query AdminBookingRequestOfferPriceEditPage($bookingRequestId: ID!, $bookingRequestOfferId: ID!) {
+    currentSession {
+        user {
+            admin {
+                adminId
+                bookingRequest(bookingRequestId: $bookingRequestId) {
+                    ...AdminBookingRequestOfferPriceEditPageRequest
+                }
+                bookingRequestOffer(bookingRequestOfferId: $bookingRequestOfferId) {
+                    ...AdminBookingRequestOfferPriceEditPageOffer
+                }
+            }
+        }
+    }
+}
