@@ -259,7 +259,7 @@ export async function adminBookingRequestUpdate(
             );
         }
 
-        if (eventAddressChanged && nextAddress != null) {
+        if (eventAddressChanged) {
             resetCookAcceptance = true;
             requestPatch.exactEventAddress = nextAddress;
 
