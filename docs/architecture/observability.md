@@ -54,6 +54,9 @@ Transports default to **off** so local/test boot never requires vendor keys (sam
 - `pg_stat_statements` must be available on the Postgres instance (`shared_preload_libraries`); the admin query returns `[]` when the
   extension is missing.
 - Trace ids are merged into `Logs.context` when an active span exists so admin log rows can be correlated with Grafana/Langfuse.
+- App code imports span processors from `@opentelemetry/sdk-trace` (not the deprecated `@opentelemetry/sdk-trace-base` shim). Stay on the
+  OpenTelemetry JS **2.x** / experimental **0.223.x** line until `@langfuse/otel` peers allow SDK 3.0 (`@opentelemetry/core` ^3,
+  `@opentelemetry/sdk-trace` instead of `sdk-trace-base`).
 
 ## How it works
 

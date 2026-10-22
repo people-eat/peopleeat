@@ -8,7 +8,7 @@ import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
 import { resourceFromAttributes } from '@opentelemetry/resources';
 import { MeterProvider, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { BatchSpanProcessor, ConsoleSpanExporter, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { BatchSpanProcessor, ConsoleSpanExporter, SimpleSpanProcessor } from '@opentelemetry/sdk-trace';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 import { registerTelemetry } from 'ai';
 
@@ -79,12 +79,12 @@ export function observabilityStart(environmentVariablesValue: EnvironmentVariabl
     if (otlpEnabled) {
         const headers = otlpHeadersParse(environmentVariablesValue.otelExporterOtlpHeaders);
         spanProcessors.push(
-            new BatchSpanProcessor(
-                new OTLPTraceExporter({
+            new BatchSpanProcessor({
+                exporter: new OTLPTraceExporter({
                     url: `${environmentVariablesValue.otelExporterOtlpEndpoint!.replace(/\/$/, '')}/v1/traces`,
                     headers,
                 }),
-            ),
+            }),
         );
 
         const meterProvider = new MeterProvider({
@@ -103,7 +103,7 @@ export function observabilityStart(environmentVariablesValue: EnvironmentVariabl
     }
 
     if (consoleEnabled) {
-        spanProcessors.push(new SimpleSpanProcessor(new ConsoleSpanExporter()));
+        spanProcessors.push(new SimpleSpanProcessor({ exporter: new ConsoleSpanExporter() }));
     }
 
     // Prefer `ops/observability/register.mjs` via Node `--import` so PgInstrumentation
