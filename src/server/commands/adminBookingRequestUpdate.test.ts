@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { admins, bookingRequests, featureToggles } from '../db/schema';
+import { admins, bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks, featureToggles } from '../db/schema';
 import { bookingRequestAdjustedMessageGenerate } from '../jobs/handlers/bookingRequestAdjustedMessageGenerate';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
 import { phoneNumberCreate } from '../test/phoneNumberCreate';
@@ -19,6 +19,51 @@ const sampleAddress = {
     state: 'BY',
     country: 'DE',
 };
+
+const berlinAddress = {
+    displayText: 'Berlin',
+    latitude: 52.52,
+    longitude: 13.405,
+    addressLine1: 'Street 1',
+    addressLine2: '',
+    city: 'Berlin',
+    postCode: '10115',
+    state: 'BE',
+    country: 'DE',
+};
+
+async function insertOfferWithCook(bookingRequestId: string, menuPriceCents = 20_000) {
+    const cook = await commandSetup.withUser({ firstName: 'price-cook', lastName: 'Cook' });
+    await testDb.insert(cooks).values({
+        cookId: cook.user.userId,
+        isVisible: true,
+        isApprovedByAdmin: true,
+        exactTravelOriginAddress: berlinAddress,
+        travelExpensesAmount: 25,
+        maximumTravelDistance: 100,
+    });
+    const offerId = idCreate();
+    await testDb.insert(bookingRequestOffers).values({
+        bookingRequestOfferId: offerId,
+        bookingRequestId,
+        cookId: cook.user.userId,
+        cookAccepted: true,
+        userAccepted: null,
+        menuPriceCents,
+        travelExpensesCents: 1_000,
+        travelDistanceKm: 20,
+        paymentProviderFeeCents: 400,
+        platformFeePercentCook: 15,
+        platformFeePercentCustomer: 10,
+        platformFeeCentsCook: 3_000,
+        platformFeeCentsCustomer: 2_140,
+        payoutCentsCook: 18_000,
+        totalWithoutDiscountsCentsCustomer: 23_540,
+        paymentStatus: 'EMPTY',
+        priceAutoAdjustReason: null,
+    });
+    return { cook, offerId };
+}
 
 async function setupAdminAndRequest() {
     const admin = await commandSetup.withUser({ firstName: 'booking-admin-update', lastName: 'User' });
@@ -114,6 +159,116 @@ describe('adminBookingRequestUpdate', () => {
 
         const [explicit] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, bookingRequestId));
         expect(explicit?.expiresAt?.toISOString()).toBe(explicitExpiresAt.toISOString());
+    });
+
+    it('patches preferences and resets cook acceptance on open offers', async () => {
+        const { admin, bookingRequestId } = await setupAdminAndRequest();
+        const cook = await commandSetup.withUser({ firstName: 'prefs-cook', lastName: 'Cook' });
+        await testDb.insert(cooks).values({
+            cookId: cook.user.userId,
+            isVisible: true,
+            isApprovedByAdmin: true,
+            exactTravelOriginAddress: sampleAddress,
+            travelExpensesAmount: 25,
+            maximumTravelDistance: 100,
+        });
+        const offerId = idCreate();
+        await testDb.insert(bookingRequestOffers).values({
+            bookingRequestOfferId: offerId,
+            bookingRequestId,
+            cookId: cook.user.userId,
+            cookAccepted: true,
+            userAccepted: null,
+            menuPriceCents: 20_000,
+            travelExpensesCents: 1_000,
+            paymentProviderFeeCents: 400,
+            platformFeePercentCook: 15,
+            platformFeePercentCustomer: 10,
+            platformFeeCentsCook: 3_000,
+            platformFeeCentsCustomer: 2_140,
+            payoutCentsCook: 18_000,
+            totalWithoutDiscountsCentsCustomer: 23_540,
+            paymentStatus: 'EMPTY',
+        });
+
+        const result = await adminBookingRequestUpdate(
+            adminMutationParent(admin.user.userId),
+            { bookingRequestId, input: { preferences: ['vegetarian', 'no nuts'] } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(result).toEqual({ success: true, referenceId: bookingRequestId });
+        const [row] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, bookingRequestId));
+        expect(row?.preferences).toEqual(['Vegetarian', 'No nuts']);
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+        expect(offer?.cookAccepted).toBeNull();
+    });
+
+    it('recalculates travel on venue change and sets TRAVEL priceAutoAdjustReason', async () => {
+        const { admin, bookingRequestId } = await setupAdminAndRequest();
+        const { offerId } = await insertOfferWithCook(bookingRequestId);
+        const [before] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+
+        const result = await adminBookingRequestUpdate(
+            adminMutationParent(admin.user.userId),
+            { bookingRequestId, input: { exactEventAddress: berlinAddress } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+        expect(result.success).toBe(true);
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+        expect(offer?.cookAccepted).toBeNull();
+        expect(offer?.travelDistanceKm).not.toBe(before?.travelDistanceKm);
+        expect(offer?.priceAutoAdjustReason).toBe('TRAVEL');
+    });
+
+    it('scales menu price when paid headcount changes and sets PARTICIPANTS reason', async () => {
+        const { admin, bookingRequestId } = await setupAdminAndRequest();
+        await testDb.insert(bookingRequestParticipants).values(
+            Array.from({ length: 4 }, (_, index) => ({
+                bookingRequestParticipantId: idCreate(),
+                bookingRequestId,
+                type: 'ADULT' as const,
+                name: `Guest ${index + 1}`,
+                restrictions: [],
+            })),
+        );
+        const { offerId } = await insertOfferWithCook(bookingRequestId, 40_000);
+
+        const result = await adminBookingRequestUpdate(
+            adminMutationParent(admin.user.userId),
+            {
+                bookingRequestId,
+                input: {
+                    participants: [
+                        { type: 'ADULT', name: 'Guest 1', restrictions: [] },
+                        { type: 'ADULT', name: 'Guest 2', restrictions: [] },
+                    ],
+                },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+        expect(result.success).toBe(true);
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+        expect(offer?.cookAccepted).toBeNull();
+        expect(offer?.menuPriceCents).toBe(20_000);
+        expect(offer?.priceAutoAdjustReason).toBe('PARTICIPANTS');
     });
 
     it('clears adjustedMessage when null or blank', async () => {

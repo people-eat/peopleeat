@@ -9,7 +9,6 @@ import {
     bookingRequestParticipantsFromCounts,
     defaultBookingRequestOccasions,
     defaultBookingRequestPreferences,
-    formatCurrency,
     textNormalizeTitled,
 } from '../../../shared';
 import type { BookingRequestParticipantDraft } from '../../../shared';
@@ -18,6 +17,10 @@ import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, 
 import { DateTimePicker } from '../../components/base/date-time-picker';
 import { Input } from '../../components/base/input';
 import { StatusAlert } from '../../components/base/status-alert';
+import {
+    BookingRequestOfferPriceImpactPreview,
+    BookingRequestOfferTravelImpactPreview,
+} from '../../components/BookingRequestOfferImpactPreviews';
 import { BookingRequestParticipantsRestrictionsEditor } from '../../components/BookingRequestParticipantsRestrictionsEditor';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
 import { SelectableChip } from '../../components/SelectableChip';
@@ -26,8 +29,6 @@ import type {
     GqlCProfileCustomerBookingRequestPageQuery,
     GqlCProfileCustomerBookingRequestPageUserFragment,
     GqlCUserBookingRequestExactEventAddressInput,
-    GqlCUserBookingRequestOfferPriceImpact,
-    GqlCUserBookingRequestOfferTravelImpact,
 } from '../../graphql/generated';
 import {
     ProfileBookingRequestUpdateDocument,
@@ -42,7 +43,6 @@ import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
-import type { Locale } from '../../utils/locale';
 
 const UPDATABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW']);
 
@@ -138,135 +138,6 @@ function exactEventAddressEqual(a: GqlCUserBookingRequestExactEventAddressInput,
         a.postCode === b.postCode &&
         a.state === b.state &&
         a.country === b.country
-    );
-}
-
-function signedKmLabel(deltaKm: number, locale: Locale): string {
-    const rounded = Math.round(deltaKm * 10) / 10;
-    const abs = Math.abs(rounded).toFixed(1);
-    if (rounded > 0) return `+${abs} km`;
-    if (rounded < 0) return `-${abs} km`;
-    return { de: '±0 km', en: '±0 km' }[locale];
-}
-
-function signedTravelExpenseLabel(deltaCents: number, locale: Locale): string {
-    const abs = formatCurrency(Math.abs(deltaCents), { locale });
-    if (deltaCents > 0) return `+${abs}`;
-    if (deltaCents < 0) return `-${abs}`;
-    return { de: '±0 €', en: '±€0' }[locale];
-}
-
-function travelImpactMeaningful(impact: GqlCUserBookingRequestOfferTravelImpact): boolean {
-    const distanceDelta = impact.travelDistanceKmAfter - impact.travelDistanceKmBefore;
-    const expenseDelta = impact.travelExpensesCentsAfter - impact.travelExpensesCentsBefore;
-    return Math.abs(distanceDelta) >= 0.05 || expenseDelta !== 0;
-}
-
-function TravelImpactPreview({
-    impacts,
-    fetching,
-    locale,
-}: {
-    impacts: GqlCUserBookingRequestOfferTravelImpact[];
-    fetching: boolean;
-    locale: Locale;
-}) {
-    if (fetching) {
-        return <StatusAlert tone="info" title={{ de: 'Fahrtkosten werden berechnet…', en: 'Calculating travel costs…' }[locale]} />;
-    }
-
-    const changed = impacts.filter(travelImpactMeaningful);
-    if (changed.length === 0) {
-        return (
-            <StatusAlert tone="info" title={{ de: 'Keine Änderung der Fahrtkosten', en: 'No change to travel costs' }[locale]}>
-                {
-                    {
-                        de: 'Für die bestehenden Angebote bleibt die Fahrtstrecke gleich.',
-                        en: 'Travel distance stays the same for existing offers.',
-                    }[locale]
-                }
-            </StatusAlert>
-        );
-    }
-
-    return (
-        <StatusAlert tone="warning" title={{ de: 'Auswirkung auf Angebote', en: 'Impact on offers' }[locale]}>
-            <ul className="mt-2 grid gap-1.5 text-sm">
-                {changed.map((impact) => {
-                    const distanceDelta = impact.travelDistanceKmAfter - impact.travelDistanceKmBefore;
-                    const expenseDelta = impact.travelExpensesCentsAfter - impact.travelExpensesCentsBefore;
-                    return (
-                        <li key={impact.bookingRequestOfferId}>
-                            <span className="font-medium">{impact.cookDisplay}</span>
-                            {': '}
-                            {signedKmLabel(distanceDelta, locale)}
-                            {' · '}
-                            {signedTravelExpenseLabel(expenseDelta, locale)} {{ de: 'Fahrtkosten', en: 'travel' }[locale]}
-                        </li>
-                    );
-                })}
-            </ul>
-        </StatusAlert>
-    );
-}
-
-function priceImpactMeaningful(impact: GqlCUserBookingRequestOfferPriceImpact): boolean {
-    return (
-        impact.menuPriceCentsAfter !== impact.menuPriceCentsBefore ||
-        impact.totalWithoutDiscountsCentsCustomerAfter !== impact.totalWithoutDiscountsCentsCustomerBefore ||
-        impact.payoutCentsCookAfter !== impact.payoutCentsCookBefore
-    );
-}
-
-function signedTotalLabel(deltaCents: number, locale: Locale): string {
-    const abs = formatCurrency(Math.abs(deltaCents), { locale });
-    if (deltaCents > 0) return `+${abs}`;
-    if (deltaCents < 0) return `-${abs}`;
-    return { de: '±0 €', en: '±€0' }[locale];
-}
-
-function PriceImpactPreview({
-    impacts,
-    fetching,
-    locale,
-}: {
-    impacts: GqlCUserBookingRequestOfferPriceImpact[];
-    fetching: boolean;
-    locale: Locale;
-}) {
-    if (fetching) {
-        return <StatusAlert tone="info" title={{ de: 'Preiswirkung wird berechnet…', en: 'Calculating price impact…' }[locale]} />;
-    }
-
-    const changed = impacts.filter(priceImpactMeaningful);
-    if (changed.length === 0) {
-        return (
-            <StatusAlert tone="info" title={{ de: 'Keine Preisänderung', en: 'No price change' }[locale]}>
-                {
-                    {
-                        de: 'Für die bestehenden Angebote bleibt der Menüpreis gleich.',
-                        en: 'Menu price stays the same for existing offers.',
-                    }[locale]
-                }
-            </StatusAlert>
-        );
-    }
-
-    return (
-        <StatusAlert tone="warning" title={{ de: 'Auswirkung auf Angebote', en: 'Impact on offers' }[locale]}>
-            <ul className="mt-2 grid gap-1.5 text-sm">
-                {changed.map((impact) => {
-                    const customerDelta = impact.totalWithoutDiscountsCentsCustomerAfter - impact.totalWithoutDiscountsCentsCustomerBefore;
-                    return (
-                        <li key={impact.bookingRequestOfferId}>
-                            <span className="font-medium">{impact.cookDisplay}</span>
-                            {': '}
-                            {signedTotalLabel(customerDelta, locale)} {{ de: 'Gesamtpreis', en: 'total' }[locale]}
-                        </li>
-                    );
-                })}
-            </ul>
-        </StatusAlert>
     );
 }
 
@@ -703,7 +574,11 @@ export function ProfileCustomerBookingRequestEditPage({
                                 </ComboboxContent>
                             </Combobox>
                             {locationChanged && (hasOffers || isParticipantAmendmentMode) ? (
-                                <TravelImpactPreview impacts={travelImpacts} fetching={travelImpactFetching} locale={locale} />
+                                <BookingRequestOfferTravelImpactPreview
+                                    impacts={travelImpacts}
+                                    fetching={travelImpactFetching}
+                                    locale={locale}
+                                />
                             ) : null}
                         </div>
                     )}
@@ -749,7 +624,7 @@ export function ProfileCustomerBookingRequestEditPage({
                     </form.Field>
                 </div>
                 {!isParticipantAmendmentMode && headcountChanged && hasOffers ? (
-                    <PriceImpactPreview impacts={priceImpacts} fetching={priceImpactFetching} locale={locale} />
+                    <BookingRequestOfferPriceImpactPreview impacts={priceImpacts} fetching={priceImpactFetching} locale={locale} />
                 ) : null}
                 {!isParticipantAmendmentMode ? (
                     <div className="grid gap-3">

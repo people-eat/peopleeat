@@ -15,8 +15,8 @@ import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
  * booking request. Used by the customer edit form before save.
  */
 export async function userBookingRequestTravelImpactFindMany(
-    parent: GqlSUserBookingRequest,
-    args: GqlSUserBookingRequestTravelImpactArgs,
+    parent: Pick<GqlSUserBookingRequest, 'bookingRequestId' | 'exactEventAddress'>,
+    args: Pick<GqlSUserBookingRequestTravelImpactArgs, 'exactEventAddress'>,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSUserBookingRequestOfferTravelImpact[]> {
     const address = args.exactEventAddress;

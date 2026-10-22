@@ -47,10 +47,12 @@ funnel: accepted offer pin, open offers, notified cooks without offers (re-notif
 offer), and **discount** (apply / clear promo or gift codes via `BookingRequestDiscountEditor`, same rules as the customer: editable while
 `WAITING_FOR_OFFERS` / `OFFERS_WAITING_FOR_REVIEW`, not canceled, and not dual-accepted; no empty-state copy; input hidden once applied).
 Suggest and re-notify open a confirmation that states the cook will get an email (and, on first notify, the request in their pool). Bulk
-create offer → dedicated create route. Edit can change guests/restrictions; that path resets cook acceptance and emits offer timeline events
-(same as customer participant updates). Other ops fields stay a non-resetting patch. Admin edit can set or clear `adjustedMessage`; clearing
-it while changing `originalMessage` re-enqueues the AI rewrite when the toggle is on — see
-[ai-booking-request-message.md](./ai-booking-request-message.md).
+create offer → dedicated create route. Edit mirrors the customer form for occasion chips, preferences, guest restrictions (collapsed by
+default), and live `travelImpact` / `priceImpact` banners next to the venue and guest-count fields (admin also sees cook-payout deltas).
+Changing venue, guests, preferences, or restrictions resets cook acceptance and emits offer timeline events; venue/headcount changes also
+auto-adjust open-offer travel and menu prices (`priceAutoAdjustReason` + `SYSTEM_CHANGED_PRICE`, same as customer update). Other ops fields
+stay a non-resetting patch. Admin edit can set or clear `adjustedMessage`; clearing it while changing `originalMessage` re-enqueues the AI
+rewrite when the toggle is on — see [ai-booking-request-message.md](./ai-booking-request-message.md).
 
 **Cancel request** uses the same cancelable statuses and customer/cook emails as self-serve cancel (`WAITING_FOR_OFFERS` /
 `OFFERS_WAITING_FOR_REVIEW` / `EXPIRED`). Reason required. Writes `USER_CANCELLED` offer timeline events.

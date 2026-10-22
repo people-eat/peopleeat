@@ -1,10 +1,16 @@
 import { eq, sql } from 'drizzle-orm';
 
+import {
+    bookingRequestOfferMenuPriceScaleByPaidParticipants,
+    bookingRequestOfferPriceCalculate,
+} from '../../shared/bookingRequestOfferPrice';
+import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
 import { idCreate } from '../../shared/idCreate';
 import { textNormalizeProse, textNormalizeProseTitled, textNormalizeSingleLine, textNormalizeTitled } from '../../shared/textNormalize';
-import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequestParticipants, bookingRequests } from '../db/schema';
+import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks } from '../db/schema';
 import type {
     BookingRequestExactEventAddress,
+    BookingRequestOfferPriceAutoAdjustReason,
     BookingRequestParticipantType,
     BookingRequestPriceClassType,
 } from '../domain/bookingRequest';
@@ -19,12 +25,28 @@ import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
 import { userBookingRequestUpdateEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestNoOffersNotifySchedule } from '../utils/bookingRequestNoOffersNotifySchedule';
 import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/bookingRequestOfferEventTomorrowNotifySchedule';
+import { bookingRequestOfferPriceSnapshot } from '../utils/bookingRequestOfferPriceSnapshot';
 import { bookingRequestParticipantsPrepareForWrite } from '../utils/bookingRequestParticipantsPrepareForWrite';
 import { scheduleTestimonialReminderJobs } from '../utils/scheduleTestimonialReminderJobs';
+import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
 
 function preferencesEqual(a: string[], b: string[]): boolean {
     if (a.length !== b.length) return false;
     return a.every((value, index) => value === b[index]);
+}
+
+function exactEventAddressEqual(a: BookingRequestExactEventAddress, b: BookingRequestExactEventAddress): boolean {
+    return (
+        a.displayText === b.displayText &&
+        a.latitude === b.latitude &&
+        a.longitude === b.longitude &&
+        a.addressLine1 === b.addressLine1 &&
+        a.addressLine2 === b.addressLine2 &&
+        a.city === b.city &&
+        a.postCode === b.postCode &&
+        a.state === b.state &&
+        a.country === b.country
+    );
 }
 
 function exactEventAddressNormalize(
@@ -73,6 +95,12 @@ export async function adminBookingRequestUpdate(
             throw new Error('adminBookingRequestUpdate: booking request not found');
         }
 
+        const offers = await serverRuntime.db
+            .select({ offer: bookingRequestOffers, cook: cooks })
+            .from(bookingRequestOffers)
+            .innerJoin(cooks, eq(cooks.cookId, bookingRequestOffers.cookId))
+            .where(eq(bookingRequestOffers.bookingRequestId, bookingRequestId));
+
         const requestPatch: {
             occasion?: string;
             dateTime?: Date;
@@ -82,7 +110,64 @@ export async function adminBookingRequestUpdate(
             priceClassType?: BookingRequestPriceClassType;
             createdAt?: Date;
             exactEventAddress?: BookingRequestExactEventAddress;
+            preferences?: string[];
         } = {};
+
+        type OfferEventInsert = {
+            bookingRequestOfferEventId: string;
+            bookingRequestOfferId: string;
+            type:
+                | 'USER_PARTICIPANTS_UPDATED'
+                | 'USER_RESTRICTIONS_UPDATED'
+                | 'USER_PREFERENCES_UPDATED'
+                | 'USER_LOCATION_UPDATED'
+                | 'SYSTEM_CHANGED_PRICE';
+            payload: Record<string, unknown>;
+        };
+
+        type OfferPricePatch = {
+            bookingRequestOfferId: string;
+            travelDistanceKm: number | null;
+            platformFeePercentCook: number;
+            platformFeePercentCustomer: number;
+            travelExpensesCents: number;
+            menuPriceCents: number;
+            paymentProviderFeeCents: number;
+            platformFeeCentsCook: number;
+            platformFeeCentsCustomer: number;
+            payoutCentsCook: number;
+            totalWithoutDiscountsCentsCustomer: number;
+            priceAutoAdjustReason: BookingRequestOfferPriceAutoAdjustReason | null;
+        };
+
+        const eventInserts: OfferEventInsert[] = [];
+        const offerPricePatchesById = new Map<string, OfferPricePatch>();
+        const priceAutoAdjustReasonsById = new Map<string, Set<'PARTICIPANTS' | 'TRAVEL'>>();
+        let resetCookAcceptance = false;
+
+        function priceAutoAdjustReasonMerge(
+            bookingRequestOfferId: string,
+            reason: 'PARTICIPANTS' | 'TRAVEL',
+        ): BookingRequestOfferPriceAutoAdjustReason {
+            const reasons = priceAutoAdjustReasonsById.get(bookingRequestOfferId) ?? new Set();
+            reasons.add(reason);
+            priceAutoAdjustReasonsById.set(bookingRequestOfferId, reasons);
+            if (reasons.has('PARTICIPANTS') && reasons.has('TRAVEL')) return 'PARTICIPANTS_AND_TRAVEL';
+            if (reasons.has('PARTICIPANTS')) return 'PARTICIPANTS';
+            return 'TRAVEL';
+        }
+
+        function offerPriceMoneyChanged(
+            before: ReturnType<typeof bookingRequestOfferPriceSnapshot>,
+            after: ReturnType<typeof bookingRequestOfferPriceSnapshot>,
+        ): boolean {
+            return (
+                before.travelExpensesCents !== after.travelExpensesCents ||
+                before.menuPriceCents !== after.menuPriceCents ||
+                before.totalWithoutDiscountsCentsCustomer !== after.totalWithoutDiscountsCentsCustomer ||
+                before.payoutCentsCook !== after.payoutCentsCook
+            );
+        }
 
         if (input.occasion != null) {
             const nextOccasion = textNormalizeTitled(input.occasion);
@@ -155,26 +240,13 @@ export async function adminBookingRequestUpdate(
             }
         }
 
-        let eventAddressChanged = false;
-        if (input.exactEventAddress != null) {
-            const nextAddress = exactEventAddressNormalize(input.exactEventAddress);
-            const previous = bookingRequest.exactEventAddress;
-            eventAddressChanged =
-                previous.latitude !== nextAddress.latitude ||
-                previous.longitude !== nextAddress.longitude ||
-                previous.addressLine1 !== nextAddress.addressLine1 ||
-                previous.city !== nextAddress.city ||
-                previous.postCode !== nextAddress.postCode;
-            requestPatch.exactEventAddress = nextAddress;
-        }
-
-        const offers = await serverRuntime.db
-            .select()
-            .from(bookingRequestOffers)
-            .where(eq(bookingRequestOffers.bookingRequestId, bookingRequestId));
+        const nextAddress =
+            input.exactEventAddress != null ? exactEventAddressNormalize(input.exactEventAddress) : null;
+        const eventAddressChanged =
+            nextAddress != null && !exactEventAddressEqual(bookingRequest.exactEventAddress, nextAddress);
 
         const dualAcceptedPaidOffer = offers.find(
-            (offer) =>
+            ({ offer }) =>
                 offer.userAccepted === true &&
                 offer.cookAccepted === true &&
                 (offer.paymentStatus === 'EMPTY' ||
@@ -189,7 +261,72 @@ export async function adminBookingRequestUpdate(
             );
         }
 
-        let resetCookAcceptance = false;
+        if (eventAddressChanged && nextAddress != null) {
+            resetCookAcceptance = true;
+            requestPatch.exactEventAddress = nextAddress;
+
+            for (const { offer, cook } of offers) {
+                eventInserts.push({
+                    bookingRequestOfferEventId: idCreate(),
+                    bookingRequestOfferId: offer.bookingRequestOfferId,
+                    type: 'USER_LOCATION_UPDATED',
+                    payload: {
+                        locationBefore: bookingRequest.exactEventAddress,
+                        locationAfter: nextAddress,
+                    },
+                });
+
+                const origin = cook.exactTravelOriginAddress;
+                if (!origin) continue;
+
+                const travelDistanceKm = await travelDistanceKmResolve(
+                    serverRuntime.places,
+                    { latitude: origin.latitude, longitude: origin.longitude },
+                    { latitude: nextAddress.latitude, longitude: nextAddress.longitude },
+                );
+                const travelExpensesCents = Math.round(travelDistanceKm * cook.travelExpensesAmount * 2);
+                const price = bookingRequestOfferPriceCalculate({
+                    menuPriceCents: offer.menuPriceCents,
+                    travelExpensesCents,
+                });
+                const priceBefore = bookingRequestOfferPriceSnapshot(offer);
+                const priceAfter = bookingRequestOfferPriceSnapshot(price);
+
+                if (offerPriceMoneyChanged(priceBefore, priceAfter)) {
+                    const reason = priceAutoAdjustReasonMerge(offer.bookingRequestOfferId, 'TRAVEL');
+                    offerPricePatchesById.set(offer.bookingRequestOfferId, {
+                        bookingRequestOfferId: offer.bookingRequestOfferId,
+                        travelDistanceKm,
+                        platformFeePercentCook: price.platformFeePercentCook,
+                        platformFeePercentCustomer: price.platformFeePercentCustomer,
+                        travelExpensesCents: price.travelExpensesCents,
+                        menuPriceCents: price.menuPriceCents,
+                        paymentProviderFeeCents: price.paymentProviderFeeCents,
+                        platformFeeCentsCook: price.platformFeeCentsCook,
+                        platformFeeCentsCustomer: price.platformFeeCentsCustomer,
+                        payoutCentsCook: price.payoutCentsCook,
+                        totalWithoutDiscountsCentsCustomer: price.totalWithoutDiscountsCentsCustomer,
+                        priceAutoAdjustReason: reason,
+                    });
+                } else {
+                    offerPricePatchesById.set(offer.bookingRequestOfferId, {
+                        bookingRequestOfferId: offer.bookingRequestOfferId,
+                        travelDistanceKm,
+                        platformFeePercentCook: offer.platformFeePercentCook,
+                        platformFeePercentCustomer: offer.platformFeePercentCustomer,
+                        travelExpensesCents: offer.travelExpensesCents,
+                        menuPriceCents: offer.menuPriceCents,
+                        paymentProviderFeeCents: offer.paymentProviderFeeCents,
+                        platformFeeCentsCook: offer.platformFeeCentsCook,
+                        platformFeeCentsCustomer: offer.platformFeeCentsCustomer,
+                        payoutCentsCook: offer.payoutCentsCook,
+                        totalWithoutDiscountsCentsCustomer: offer.totalWithoutDiscountsCentsCustomer,
+                        priceAutoAdjustReason: offer.priceAutoAdjustReason ?? null,
+                    });
+                }
+            }
+        }
+
         let participantInserts:
             | {
                   bookingRequestParticipantId: string;
@@ -199,12 +336,28 @@ export async function adminBookingRequestUpdate(
                   restrictions: string[];
               }[]
             | null = null;
-        const eventInserts: {
-            bookingRequestOfferEventId: string;
-            bookingRequestOfferId: string;
-            type: 'USER_PARTICIPANTS_UPDATED' | 'USER_RESTRICTIONS_UPDATED';
-            payload: Record<string, unknown>;
-        }[] = [];
+
+        if (input.preferences != null) {
+            const nextPreferences = input.preferences
+                .map((preference) => textNormalizeTitled(preference))
+                .filter((preference) => preference.length > 0)
+                .slice(0, 4);
+            if (!preferencesEqual(bookingRequest.preferences, nextPreferences)) {
+                resetCookAcceptance = true;
+                requestPatch.preferences = nextPreferences;
+                for (const { offer } of offers) {
+                    eventInserts.push({
+                        bookingRequestOfferEventId: idCreate(),
+                        bookingRequestOfferId: offer.bookingRequestOfferId,
+                        type: 'USER_PREFERENCES_UPDATED',
+                        payload: {
+                            preferencesBefore: bookingRequest.preferences,
+                            preferencesAfter: nextPreferences,
+                        },
+                    });
+                }
+            }
+        }
 
         if (input.participants != null) {
             const participants = await bookingRequestParticipantsPrepareForWrite(
@@ -247,7 +400,7 @@ export async function adminBookingRequestUpdate(
                     restrictions: participant.restrictions,
                 }));
 
-                for (const offer of offers) {
+                for (const { offer } of offers) {
                     eventInserts.push(
                         countsUnchanged
                             ? {
@@ -269,10 +422,92 @@ export async function adminBookingRequestUpdate(
                               },
                     );
                 }
+
+                if (!countsUnchanged) {
+                    const paidBefore = bookingRequestPaidParticipants(adultsBefore, discountedBefore);
+                    const paidAfter = bookingRequestPaidParticipants(adultsAfter, discountedAfter);
+                    if (paidBefore > 0 && paidAfter > 0) {
+                        for (const { offer } of offers) {
+                            const pending = offerPricePatchesById.get(offer.bookingRequestOfferId);
+                            const menuPriceCentsBefore = pending?.menuPriceCents ?? offer.menuPriceCents;
+                            const travelExpensesCents = pending?.travelExpensesCents ?? offer.travelExpensesCents;
+                            const travelDistanceKm = pending?.travelDistanceKm ?? offer.travelDistanceKm ?? null;
+                            const menuPriceCentsAfter = bookingRequestOfferMenuPriceScaleByPaidParticipants({
+                                menuPriceCents: menuPriceCentsBefore,
+                                paidParticipantsBefore: paidBefore,
+                                paidParticipantsAfter: paidAfter,
+                            });
+                            const price = bookingRequestOfferPriceCalculate({
+                                menuPriceCents: menuPriceCentsAfter,
+                                travelExpensesCents,
+                            });
+                            const priceBefore = bookingRequestOfferPriceSnapshot(offer);
+                            const priceAfter = bookingRequestOfferPriceSnapshot(price);
+                            if (!offerPriceMoneyChanged(priceBefore, priceAfter) && pending == null) {
+                                continue;
+                            }
+                            if (offerPriceMoneyChanged(priceBefore, priceAfter)) {
+                                const reason = priceAutoAdjustReasonMerge(offer.bookingRequestOfferId, 'PARTICIPANTS');
+                                offerPricePatchesById.set(offer.bookingRequestOfferId, {
+                                    bookingRequestOfferId: offer.bookingRequestOfferId,
+                                    travelDistanceKm,
+                                    platformFeePercentCook: price.platformFeePercentCook,
+                                    platformFeePercentCustomer: price.platformFeePercentCustomer,
+                                    travelExpensesCents: price.travelExpensesCents,
+                                    menuPriceCents: price.menuPriceCents,
+                                    paymentProviderFeeCents: price.paymentProviderFeeCents,
+                                    platformFeeCentsCook: price.platformFeeCentsCook,
+                                    platformFeeCentsCustomer: price.platformFeeCentsCustomer,
+                                    payoutCentsCook: price.payoutCentsCook,
+                                    totalWithoutDiscountsCentsCustomer: price.totalWithoutDiscountsCentsCustomer,
+                                    priceAutoAdjustReason: reason,
+                                });
+                            } else if (pending != null) {
+                                offerPricePatchesById.set(offer.bookingRequestOfferId, {
+                                    ...pending,
+                                    menuPriceCents: price.menuPriceCents,
+                                    platformFeePercentCook: price.platformFeePercentCook,
+                                    platformFeePercentCustomer: price.platformFeePercentCustomer,
+                                    travelExpensesCents: price.travelExpensesCents,
+                                    paymentProviderFeeCents: price.paymentProviderFeeCents,
+                                    platformFeeCentsCook: price.platformFeeCentsCook,
+                                    platformFeeCentsCustomer: price.platformFeeCentsCustomer,
+                                    payoutCentsCook: price.payoutCentsCook,
+                                    totalWithoutDiscountsCentsCustomer: price.totalWithoutDiscountsCentsCustomer,
+                                });
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        if (Object.keys(requestPatch).length === 0 && participantInserts == null && eventInserts.length === 0) {
+        for (const { offer } of offers) {
+            const patch = offerPricePatchesById.get(offer.bookingRequestOfferId);
+            if (patch == null || patch.priceAutoAdjustReason == null) continue;
+            const priceBefore = bookingRequestOfferPriceSnapshot(offer);
+            const priceAfter = bookingRequestOfferPriceSnapshot(patch);
+            if (!offerPriceMoneyChanged(priceBefore, priceAfter)) continue;
+            const alreadyEmitted = eventInserts.some(
+                (event) => event.bookingRequestOfferId === offer.bookingRequestOfferId && event.type === 'SYSTEM_CHANGED_PRICE',
+            );
+            if (alreadyEmitted) continue;
+            eventInserts.push({
+                bookingRequestOfferEventId: idCreate(),
+                bookingRequestOfferId: offer.bookingRequestOfferId,
+                type: 'SYSTEM_CHANGED_PRICE',
+                payload: { priceBefore, priceAfter },
+            });
+        }
+
+        const offerPricePatches = [...offerPricePatchesById.values()];
+
+        if (
+            Object.keys(requestPatch).length === 0 &&
+            participantInserts == null &&
+            eventInserts.length === 0 &&
+            offerPricePatches.length === 0
+        ) {
             return { success: true, referenceId: bookingRequestId };
         }
 
@@ -286,6 +521,14 @@ export async function adminBookingRequestUpdate(
                     .delete(bookingRequestParticipants)
                     .where(eq(bookingRequestParticipants.bookingRequestId, bookingRequestId));
                 await transaction.insert(bookingRequestParticipants).values(participantInserts);
+            }
+
+            for (const patch of offerPricePatches) {
+                const { bookingRequestOfferId, ...setValues } = patch;
+                await transaction
+                    .update(bookingRequestOffers)
+                    .set(setValues)
+                    .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
             }
 
             if (resetCookAcceptance && offers.length > 0) {
@@ -317,11 +560,11 @@ export async function adminBookingRequestUpdate(
         if (dateTimeChanged && requestPatch.dateTime) {
             const newDateTime = requestPatch.dateTime;
             const paidOffers = offers.filter(
-                (offer) =>
+                ({ offer }) =>
                     offer.userAccepted === true && offer.cookAccepted === true && bookingRequestOfferPaymentIsPaid(offer.paymentStatus),
             );
             await Promise.all(
-                paidOffers.flatMap((offer) => [
+                paidOffers.flatMap(({ offer }) => [
                     scheduleTestimonialReminderJobs(serverRuntime, {
                         bookingRequestOfferId: offer.bookingRequestOfferId,
                         eventDate: newDateTime,
@@ -360,7 +603,7 @@ export async function adminBookingRequestUpdate(
             });
         }
 
-        const cookUserIds = [...new Set(offers.map((offer) => offer.cookId))];
+        const cookUserIds = [...new Set(offers.map(({ offer }) => offer.cookId))];
         await Promise.all([
             serverRuntime.publish.userUpdates({ userId: bookingRequest.userId }),
             ...cookUserIds.map((cookId) => serverRuntime.publish.userUpdates({ userId: cookId })),
@@ -372,7 +615,7 @@ export async function adminBookingRequestUpdate(
                 bookingRequestId,
                 customerUserId: bookingRequest.userId,
                 cookIds: cookUserIds,
-                offerIdsByCookId: new Map(offers.map((offer) => [offer.cookId, offer.bookingRequestOfferId])),
+                offerIdsByCookId: new Map(offers.map(({ offer }) => [offer.cookId, offer.bookingRequestOfferId])),
             });
         }
 

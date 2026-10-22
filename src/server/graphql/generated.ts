@@ -651,13 +651,24 @@ export interface GqlSAdminBookingRequest {
     participants: Array<GqlSBookingRequestParticipant>;
     preferences: Array<Scalars['String']['output']>;
     priceClassType?: Maybe<GqlSBookingRequestPriceClassType>;
+    priceImpact: Array<GqlSUserBookingRequestOfferPriceImpact>;
     promoCode?: Maybe<GqlSUserBookingRequestPromoCode>;
     publicationStatus: GqlSBookingRequestPublicationStatus;
     queuedJobs: Array<GqlSAdminQueuedJob>;
     status: GqlSBookingRequestStatus;
     suggestedOfferAmountCents: Scalars['Int']['output'];
+    travelImpact: Array<GqlSUserBookingRequestOfferTravelImpact>;
     userId: Scalars['ID']['output'];
 }
+
+export type GqlSAdminBookingRequestPriceImpactArgs = {
+    participantsAdult: Scalars['Int']['input'];
+    participantsDiscounted: Scalars['Int']['input'];
+};
+
+export type GqlSAdminBookingRequestTravelImpactArgs = {
+    exactEventAddress: GqlSAdminBookingRequestExactEventAddressInput;
+};
 
 export interface GqlSAdminBookingRequestCookInTravelRadius {
     __typename?: 'AdminBookingRequestCookInTravelRadius';
@@ -870,6 +881,7 @@ export type GqlSAdminBookingRequestUpdate = {
     occasion?: InputMaybe<Scalars['String']['input']>;
     originalMessage?: InputMaybe<Scalars['String']['input']>;
     participants?: InputMaybe<Array<GqlSUserBookingRequestParticipantCreate>>;
+    preferences?: InputMaybe<Array<Scalars['String']['input']>>;
     priceClassType?: InputMaybe<GqlSBookingRequestPriceClassType>;
 };
 
@@ -6946,11 +6958,23 @@ export type GqlSAdminBookingRequestResolvers<
     participants?: Resolver<Array<GqlSResolversTypes['BookingRequestParticipant']>, ParentType, ContextType>;
     preferences?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
     priceClassType?: Resolver<Maybe<GqlSResolversTypes['BookingRequestPriceClassType']>, ParentType, ContextType>;
+    priceImpact?: Resolver<
+        Array<GqlSResolversTypes['UserBookingRequestOfferPriceImpact']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminBookingRequestPriceImpactArgs, 'participantsAdult' | 'participantsDiscounted'>
+    >;
     promoCode?: Resolver<Maybe<GqlSResolversTypes['UserBookingRequestPromoCode']>, ParentType, ContextType>;
     publicationStatus?: Resolver<GqlSResolversTypes['BookingRequestPublicationStatus'], ParentType, ContextType>;
     queuedJobs?: Resolver<Array<GqlSResolversTypes['AdminQueuedJob']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestStatus'], ParentType, ContextType>;
     suggestedOfferAmountCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    travelImpact?: Resolver<
+        Array<GqlSResolversTypes['UserBookingRequestOfferTravelImpact']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminBookingRequestTravelImpactArgs, 'exactEventAddress'>
+    >;
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
 }>;
 
@@ -12123,6 +12147,7 @@ export function GqlSAdminBookingRequestUpdateSchema(): z.ZodObject<Properties<Gq
         occasion: z.string().nullish(),
         originalMessage: z.string().nullish(),
         participants: z.array(z.lazy(() => GqlSUserBookingRequestParticipantCreateSchema())).nullish(),
+        preferences: z.array(z.string()).nullish(),
         priceClassType: GqlSBookingRequestPriceClassTypeSchema.nullish(),
     }) as z.ZodObject<Properties<GqlSAdminBookingRequestUpdate>>;
 }

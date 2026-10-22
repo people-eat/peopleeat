@@ -2067,6 +2067,12 @@ type AdminBookingRequest {
     # Lazy — pending pg-boss jobs across all offers on this request.
     # Do not request on list cards.
     queuedJobs: [AdminQueuedJob!]!
+    # Driving-distance travel preview for a proposed venue (admin edit form). Same
+    # shape as the customer `travelImpact` field.
+    travelImpact(exactEventAddress: AdminBookingRequestExactEventAddressInput!): [UserBookingRequestOfferTravelImpact!]!
+    # Headcount price preview for open offers (admin edit form). Same shape as the
+    # customer `priceImpact` field.
+    priceImpact(participantsAdult: Int!, participantsDiscounted: Int!): [UserBookingRequestOfferPriceImpact!]!
 }
 
 # Per-menu AI fit score on a cook↔request pool row. Recommendations only —
@@ -4408,6 +4414,8 @@ input AdminBookingRequestCreate {
 # message. Venue uses the same address input as admin create.
 # Optional `participants` replaces the full guest list (same as customer update):
 # resets cook acceptance and emits offer timeline events when the list changes.
+# Optional `preferences` replaces the preference list and resets cook acceptance
+# when it changes (same as customer update).
 input AdminBookingRequestUpdate {
     occasion: String
     dateTime: DateTime
@@ -4417,6 +4425,7 @@ input AdminBookingRequestUpdate {
     expiresAt: DateTime
     createdAt: DateTime
     exactEventAddress: AdminBookingRequestExactEventAddressInput
+    preferences: [String!]
     participants: [UserBookingRequestParticipantCreate!]
 }
 

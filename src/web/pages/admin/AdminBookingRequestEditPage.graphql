@@ -7,6 +7,7 @@ fragment AdminBookingRequestEditPageRequest on AdminBookingRequest {
     priceClassType
     originalMessage
     adjustedMessage
+    preferences
     expiresAt
     createdAt
     exactEventAddress {
@@ -25,6 +26,9 @@ fragment AdminBookingRequestEditPageRequest on AdminBookingRequest {
         type
         name
         restrictions
+    }
+    offers {
+        bookingRequestOfferId
     }
 }
 
@@ -66,6 +70,48 @@ query AdminBookingRequestEditLocationSuggestions($searchText: String!, $onlyFull
                 postCode
                 state
                 country
+            }
+        }
+    }
+}
+
+query AdminBookingRequestEditTravelImpact($bookingRequestId: ID!, $exactEventAddress: AdminBookingRequestExactEventAddressInput!) {
+    currentSession {
+        user {
+            admin {
+                bookingRequest(bookingRequestId: $bookingRequestId) {
+                    bookingRequestId
+                    travelImpact(exactEventAddress: $exactEventAddress) {
+                        bookingRequestOfferId
+                        cookDisplay
+                        travelDistanceKmBefore
+                        travelDistanceKmAfter
+                        travelExpensesCentsBefore
+                        travelExpensesCentsAfter
+                    }
+                }
+            }
+        }
+    }
+}
+
+query AdminBookingRequestEditPriceImpact($bookingRequestId: ID!, $participantsAdult: Int!, $participantsDiscounted: Int!) {
+    currentSession {
+        user {
+            admin {
+                bookingRequest(bookingRequestId: $bookingRequestId) {
+                    bookingRequestId
+                    priceImpact(participantsAdult: $participantsAdult, participantsDiscounted: $participantsDiscounted) {
+                        bookingRequestOfferId
+                        cookDisplay
+                        menuPriceCentsBefore
+                        menuPriceCentsAfter
+                        totalWithoutDiscountsCentsCustomerBefore
+                        totalWithoutDiscountsCentsCustomerAfter
+                        payoutCentsCookBefore
+                        payoutCentsCookAfter
+                    }
+                }
             }
         }
     }

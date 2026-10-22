@@ -446,8 +446,10 @@ import type {
     GqlSAdminBookingRequestOfferEconomicsArgs,
     GqlSAdminBookingRequestOffersArgs,
     GqlSAdminBookingRequestOffersCountsArgs,
+    GqlSAdminBookingRequestPriceImpactArgs,
     GqlSAdminBookingRequestsArgs,
     GqlSAdminBookingRequestsCountsArgs,
+    GqlSAdminBookingRequestTravelImpactArgs,
     GqlSAdminCallArgs,
     GqlSAdminCallCookStatsArgs,
     GqlSAdminCallRoomCreationsArgs,
@@ -1018,6 +1020,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             queuedJobs(parent: GqlSAdminBookingRequest, _: unknown, requestingSession: GqlSSession) {
                 return adminBookingRequestQueuedJobsFindMany(parent, requestingSession, serverRuntime);
+            },
+            travelImpact(parent: GqlSAdminBookingRequest, args: GqlSAdminBookingRequestTravelImpactArgs) {
+                return userBookingRequestTravelImpactFindMany(parent, args, serverRuntime);
+            },
+            priceImpact(parent: GqlSAdminBookingRequest, args: GqlSAdminBookingRequestPriceImpactArgs) {
+                return userBookingRequestPriceImpactFindMany(parent, args, serverRuntime);
             },
         },
         User: {

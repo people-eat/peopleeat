@@ -18,8 +18,8 @@ import type {
  * request. Used by the customer edit form before save.
  */
 export async function userBookingRequestPriceImpactFindMany(
-    parent: GqlSUserBookingRequest,
-    args: GqlSUserBookingRequestPriceImpactArgs,
+    parent: Pick<GqlSUserBookingRequest, 'bookingRequestId'>,
+    args: Pick<GqlSUserBookingRequestPriceImpactArgs, 'participantsAdult' | 'participantsDiscounted'>,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSUserBookingRequestOfferPriceImpact[]> {
     const participantsAdultAfter = Math.max(0, args.participantsAdult);

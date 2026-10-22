@@ -92,5 +92,8 @@ export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): 
         cooksInTravelRadius: [],
         // Lazy via `AdminBookingRequest.queuedJobs` field resolver.
         queuedJobs: [],
+        // Lazy via `AdminBookingRequest.travelImpact` / `priceImpact` field resolvers.
+        travelImpact: [],
+        priceImpact: [],
     };
 }

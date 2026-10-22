@@ -1,12 +1,19 @@
 import { useForm, useSelector } from '@tanstack/react-form';
 import { Link, notFound, useNavigate } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { CakeIcon, ChevronDownIcon, GemIcon, HeartHandshakeIcon, HeartIcon, UsersIcon, UsersRoundIcon } from 'lucide-react';
+import { useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
-import { bookingRequestParticipantsFromCounts } from '../../../shared';
+import {
+    bookingRequestParticipantsFromCounts,
+    defaultBookingRequestOccasions,
+    defaultBookingRequestPreferences,
+    textNormalizeTitled,
+} from '../../../shared';
 import type { BookingRequestParticipantDraft } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
+import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { DateTimePicker } from '../../components/base/date-time-picker';
@@ -14,7 +21,12 @@ import { Input } from '../../components/base/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Textarea } from '../../components/base/textarea';
+import {
+    BookingRequestOfferPriceImpactPreview,
+    BookingRequestOfferTravelImpactPreview,
+} from '../../components/BookingRequestOfferImpactPreviews';
 import { BookingRequestParticipantsRestrictionsEditor } from '../../components/BookingRequestParticipantsRestrictionsEditor';
+import { SelectableChip } from '../../components/SelectableChip';
 import type {
     GqlCAdminBookingRequestEditPageQuery,
     GqlCAdminBookingRequestEditPageRequestFragment,
@@ -22,19 +34,36 @@ import type {
     GqlCBookingRequestPriceClassType,
     GqlCLocationSuggestion,
 } from '../../graphql/generated';
-import { AdminBookingRequestEditLocationSuggestionsDocument, AdminBookingRequestUpdateDocument } from '../../graphql/generated';
+import {
+    AdminBookingRequestEditLocationSuggestionsDocument,
+    AdminBookingRequestEditPriceImpactDocument,
+    AdminBookingRequestEditTravelImpactDocument,
+    AdminBookingRequestUpdateDocument,
+} from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
+import { cn } from '../../utils/cn';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import { adminStubRouteBySlug } from './adminCatalog';
 
 const listRoute = adminStubRouteBySlug('booking-requests');
+const FORM_ID = 'admin-booking-request-edit-form';
+
+const occasionIcons = [
+    <CakeIcon className="size-4" key="cake-1" />,
+    <CakeIcon className="size-4" key="cake-2" />,
+    <HeartIcon className="size-4" key="heart" />,
+    <GemIcon className="size-4" key="gem" />,
+    <UsersRoundIcon className="size-4" key="users-round" />,
+    <HeartHandshakeIcon className="size-4" key="handshake" />,
+    <UsersIcon className="size-4" key="users" />,
+];
 
 export const adminBookingRequestEditPageTitle = { de: 'Anfrage bearbeiten', en: 'Edit request' } as const;
 export const adminBookingRequestEditPageDescription = {
-    de: 'Anlass, Termin, Ort, Nachrichten, Preisklasse und Einschränkungen anpassen.',
-    en: 'Edit occasion, date, venue, messages, price class, and restrictions.',
+    de: 'Anlass, Termin, Ort, Präferenzen, Nachrichten, Preisklasse und Einschränkungen anpassen.',
+    en: 'Edit occasion, date, venue, preferences, messages, price class, and restrictions.',
 } as const;
 
 export function adminBookingRequestEditPageVariables(bookingRequestId: string) {
@@ -52,6 +81,7 @@ type FormValues = {
     exactEventAddress: GqlCAdminBookingRequestExactEventAddressInput;
     adultCount: number;
     childCount: number;
+    preferences: string[];
 };
 
 const PRICE_CLASS_OPTIONS: readonly { value: GqlCBookingRequestPriceClassType | 'NONE'; de: string; en: string }[] = [
@@ -105,7 +135,44 @@ function formFromRequest(request: GqlCAdminBookingRequestEditPageRequestFragment
         exactEventAddress: addressFromRequest(request.exactEventAddress),
         adultCount: request.participants.filter((participant) => participant.type === 'ADULT').length || 1,
         childCount: request.participants.filter((participant) => participant.type === 'DISCOUNTED').length,
+        preferences: [...request.preferences],
     };
+}
+
+function participantsFromRequest(request: GqlCAdminBookingRequestEditPageRequestFragment): BookingRequestParticipantDraft[] {
+    return request.participants.map((participant) => ({
+        type: participant.type,
+        name: participant.name,
+        restrictions: [...participant.restrictions],
+    }));
+}
+
+function participantsEqual(a: BookingRequestParticipantDraft[], b: BookingRequestParticipantDraft[]): boolean {
+    if (a.length !== b.length) return false;
+    return a.every((participant, index) => {
+        const other = b[index];
+        if (other == null) return false;
+        if (participant.type !== other.type || participant.name !== other.name) return false;
+        if (participant.restrictions.length !== other.restrictions.length) return false;
+        return participant.restrictions.every((restriction, restrictionIndex) => restriction === other.restrictions[restrictionIndex]);
+    });
+}
+
+function exactEventAddressEqual(
+    a: GqlCAdminBookingRequestExactEventAddressInput,
+    b: GqlCAdminBookingRequestExactEventAddressInput,
+): boolean {
+    return (
+        a.displayText === b.displayText &&
+        a.latitude === b.latitude &&
+        a.longitude === b.longitude &&
+        a.addressLine1 === b.addressLine1 &&
+        a.addressLine2 === b.addressLine2 &&
+        a.city === b.city &&
+        a.postCode === b.postCode &&
+        a.state === b.state &&
+        a.country === b.country
+    );
 }
 
 export function AdminBookingRequestEditPage({
@@ -122,14 +189,12 @@ export function AdminBookingRequestEditPage({
 
     const [, updateBookingRequest] = useMutation(AdminBookingRequestUpdateDocument);
     const [locationSearchText, setLocationSearchText] = useState(seedRequest.exactEventAddress.displayText);
+    const [customPreferenceText, setCustomPreferenceText] = useState('');
+    const [restrictionsExpanded, setRestrictionsExpanded] = useState(false);
+    const restrictionsPanelId = useId();
     const restrictionsEnabled = useFeatureToggleActive('BOOKING_REQUEST_RESTRICTIONS');
-    const [participants, setParticipants] = useState<BookingRequestParticipantDraft[]>(() =>
-        seedRequest.participants.map((participant) => ({
-            type: participant.type,
-            name: participant.name,
-            restrictions: [...participant.restrictions],
-        })),
-    );
+    const [participants, setParticipants] = useState<BookingRequestParticipantDraft[]>(() => participantsFromRequest(seedRequest));
+    const seedParticipants = participantsFromRequest(seedRequest);
 
     const form = useForm({
         defaultValues: formFromRequest(seedRequest),
@@ -143,7 +208,7 @@ export function AdminBookingRequestEditPage({
                 return;
             }
             if (value.exactEventAddress.displayText.trim().length === 0) {
-                toast.error({ de: 'Veranstaltungsort ist erforderlich.', en: 'Event location is required.' }[locale]);
+                toast.error({ de: 'Bitte eine vollständige Adresse wählen.', en: 'Please choose a full address.' }[locale]);
                 return;
             }
 
@@ -154,10 +219,14 @@ export function AdminBookingRequestEditPage({
                     locale,
                     previous: participants,
                 });
+                const preferences = value.preferences
+                    .map((preference) => textNormalizeTitled(preference))
+                    .filter((preference) => preference.length > 0)
+                    .slice(0, 4);
                 const result = await updateBookingRequest({
                     bookingRequestId,
                     input: {
-                        occasion: value.occasion.trim(),
+                        occasion: textNormalizeTitled(value.occasion),
                         dateTime: value.dateTime,
                         originalMessage: value.originalMessage.trim(),
                         adjustedMessage: value.adjustedMessage.trim().length === 0 ? null : value.adjustedMessage.trim(),
@@ -165,6 +234,7 @@ export function AdminBookingRequestEditPage({
                         expiresAt: value.expiresAt,
                         createdAt: value.createdAt,
                         exactEventAddress: value.exactEventAddress,
+                        preferences,
                         participants: nextParticipants,
                     },
                 });
@@ -183,9 +253,24 @@ export function AdminBookingRequestEditPage({
     });
 
     const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
+    const isDirty = useSelector(form.store, (state) => state.isDirty);
+    const occasion = useSelector(form.store, (state) => state.values.occasion);
+    const preferences = useSelector(form.store, (state) => state.values.preferences);
     const exactEventAddress = useSelector(form.store, (state) => state.values.exactEventAddress);
     const adultCount = useSelector(form.store, (state) => state.values.adultCount);
     const childCount = useSelector(form.store, (state) => state.values.childCount);
+    const participantsDirty = !participantsEqual(participants, seedParticipants);
+    const hasUnsavedChanges = isDirty || participantsDirty;
+    const submitDisabled =
+        isSubmitting || !hasUnsavedChanges || occasion.trim().length === 0 || exactEventAddress.displayText.trim().length === 0;
+
+    const defaultPreferences = defaultBookingRequestPreferences(locale);
+    const preferenceOptionsCustom = preferences.filter((preference) => !defaultPreferences.includes(preference));
+    const preferenceOptions = [...defaultPreferences, ...preferenceOptionsCustom].filter((option) =>
+        option.toLowerCase().includes(customPreferenceText.toLowerCase()),
+    );
+    const restrictedGuestCount = participants.filter((participant) => participant.restrictions.length > 0).length;
+    const guestTotal = participants.length;
 
     useEffect(() => {
         setParticipants((previous) =>
@@ -206,6 +291,25 @@ export function AdminBookingRequestEditPage({
     });
     const suggestions = suggestionsData?.currentSession.locationSuggestions ?? [];
 
+    const seedAddress = addressFromRequest(seedRequest.exactEventAddress);
+    const locationChanged = exactEventAddress.displayText.trim().length > 0 && !exactEventAddressEqual(exactEventAddress, seedAddress);
+    const seedAdultCount = seedRequest.participants.filter((participant) => participant.type === 'ADULT').length || 1;
+    const seedChildCount = seedRequest.participants.filter((participant) => participant.type === 'DISCOUNTED').length;
+    const headcountChanged = adultCount !== seedAdultCount || childCount !== seedChildCount;
+    const hasOffers = seedRequest.offers.length > 0;
+    const [{ data: travelImpactData, fetching: travelImpactFetching }] = useQuery({
+        query: AdminBookingRequestEditTravelImpactDocument,
+        variables: { bookingRequestId, exactEventAddress },
+        pause: !locationChanged || !hasOffers,
+    });
+    const travelImpacts = travelImpactData?.currentSession.user?.admin?.bookingRequest?.travelImpact ?? [];
+    const [{ data: priceImpactData, fetching: priceImpactFetching }] = useQuery({
+        query: AdminBookingRequestEditPriceImpactDocument,
+        variables: { bookingRequestId, participantsAdult: adultCount, participantsDiscounted: childCount },
+        pause: !headcountChanged || !hasOffers,
+    });
+    const priceImpacts = priceImpactData?.currentSession.user?.admin?.bookingRequest?.priceImpact ?? [];
+
     return (
         <AdminPageChrome
             crumbs={[
@@ -217,51 +321,99 @@ export function AdminBookingRequestEditPage({
                 },
                 { label: adminBookingRequestEditPageTitle[locale] },
             ]}
+            contentClassName="min-h-0 overflow-hidden gap-0"
         >
-            <main id="main-content" className="grid w-full content-start gap-8">
+            <AdminPinnedFooterLayout
+                contentClassName="grid w-full max-w-xl content-start gap-8"
+                footer={
+                    hasUnsavedChanges ? (
+                        <>
+                            <Button type="button" variant="outline" disabled={isSubmitting} asChild>
+                                <Link to="/{-$locale}/admin/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
+                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                </Link>
+                            </Button>
+                            <Button type="submit" form={FORM_ID} disabled={submitDisabled}>
+                                {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
+                            </Button>
+                        </>
+                    ) : (
+                        <Button type="button" disabled={isSubmitting} asChild>
+                            <Link to="/{-$locale}/admin/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
+                                {{ de: 'Zur Anfrage', en: 'Back to request' }[locale]}
+                            </Link>
+                        </Button>
+                    )
+                }
+            >
                 <div className="grid gap-2">
                     <h1 className="font-serif text-3xl/tight text-foreground">{adminBookingRequestEditPageTitle[locale]}</h1>
                     <p className="text-sm text-muted-foreground">
                         {
                             {
-                                de: 'Ops-Patch für Felder ohne Annahme-Reset. Änderungen an Teilnehmern oder Einschränkungen setzen die Koch-Annahme zurück.',
-                                en: 'Ops patch for fields without acceptance reset. Changing guests or restrictions resets cook acceptance.',
+                                de: 'Ops-Patch. Änderungen an Ort, Teilnehmern, Präferenzen oder Einschränkungen setzen die Koch-Annahme zurück und können Angebotspreise automatisch anpassen.',
+                                en: 'Ops patch. Changing venue, guests, preferences, or restrictions resets cook acceptance and may auto-adjust offer prices.',
                             }[locale]
                         }
                     </p>
                 </div>
 
+                <StatusAlert
+                    tone="warning"
+                    title={
+                        {
+                            de: 'Wesentliche Änderungen müssen vom Koch erneut bestätigt werden.',
+                            en: 'Material changes require the chef to confirm again.',
+                        }[locale]
+                    }
+                >
+                    {
+                        {
+                            de: 'Ändern sich Teilnehmerzahl oder Adresse, kann der Angebotspreis automatisch angepasst werden. Live-Vorschauen erscheinen direkt am Feld. Der Koch bestätigt danach erneut.',
+                            en: 'If the guest count or address changes, the offer price may adjust automatically. Live previews appear next to the field. The chef confirms again afterwards.',
+                        }[locale]
+                    }
+                </StatusAlert>
+
                 <form
-                    className="grid max-w-xl gap-4"
+                    id={FORM_ID}
+                    className="grid gap-4"
                     onSubmit={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
                         void form.handleSubmit();
                     }}
                 >
-                    {restrictionsEnabled ? (
-                        <StatusAlert tone="warning">
-                            {
-                                {
-                                    de: 'Änderungen an Gästen oder Einschränkungen setzen die Annahme bestehender Angebote zurück.',
-                                    en: 'Changing guests or restrictions resets acceptance on existing offers.',
-                                }[locale]
-                            }
-                        </StatusAlert>
-                    ) : null}
+
                     <form.Field name="occasion">
                         {(field) => (
-                            <div className="grid gap-1.5">
-                                <label htmlFor="admin-br-occasion" className="text-sm font-medium">
-                                    {{ de: 'Anlass', en: 'Occasion' }[locale]}
-                                </label>
-                                <Input
-                                    id="admin-br-occasion"
-                                    name={field.name}
-                                    value={field.state.value}
-                                    onBlur={field.handleBlur}
-                                    onChange={(event) => field.handleChange(event.target.value)}
-                                />
+                            <div className="grid gap-4">
+                                <div className="grid gap-1.5">
+                                    <label htmlFor="admin-br-occasion" className="text-sm font-medium">
+                                        {{ de: 'Anlass', en: 'Occasion' }[locale]}
+                                    </label>
+                                    <Input
+                                        id="admin-br-occasion"
+                                        name={field.name}
+                                        value={field.state.value}
+                                        onBlur={field.handleBlur}
+                                        onChange={(event) => field.handleChange(event.target.value)}
+                                        placeholder={{ de: 'z. B. Geburtstag, Firmenfeier', en: 'e.g. Birthday, company dinner' }[locale]}
+                                        disabled={isSubmitting}
+                                    />
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    {defaultBookingRequestOccasions(locale).map((option, index) => (
+                                        <SelectableChip
+                                            key={option}
+                                            label={option}
+                                            icon={occasionIcons[index]}
+                                            selected={field.state.value === option}
+                                            disabled={isSubmitting}
+                                            onClick={() => field.handleChange(field.state.value === option ? '' : option)}
+                                        />
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </form.Field>
@@ -269,7 +421,7 @@ export function AdminBookingRequestEditPage({
                     <form.Field name="dateTime">
                         {(field) => (
                             <div className="grid gap-1.5">
-                                <span className="text-sm font-medium">{{ de: 'Termin', en: 'Event date' }[locale]}</span>
+                                <span className="text-sm font-medium">{{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}</span>
                                 <DateTimePicker
                                     value={new Date(field.state.value)}
                                     onValueChange={(date) => field.handleChange(date.toISOString())}
@@ -277,6 +429,7 @@ export function AdminBookingRequestEditPage({
                                     timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
                                     locale={DATE_FNS_LOCALE[locale]}
                                     className="w-full"
+                                    disabled={isSubmitting}
                                 />
                             </div>
                         )}
@@ -299,33 +452,56 @@ export function AdminBookingRequestEditPage({
                                         if (!address) {
                                             toast.error(
                                                 {
-                                                    de: 'Adresse unvollständig. Bitte eine vollständige Adresse wählen.',
-                                                    en: 'Incomplete address. Please pick a full address.',
+                                                    de: 'Bitte eine vollständige Adresse wählen.',
+                                                    en: 'Please choose a full address.',
                                                 }[locale],
                                             );
                                             return;
                                         }
                                         field.handleChange(address);
-                                        setLocationSearchText(address.displayText);
+                                        setLocationSearchText(match.displayText);
                                     }}
-                                    onInputValueChange={setLocationSearchText}
+                                    onInputValueChange={(next) => {
+                                        setLocationSearchText(next);
+                                        if (field.state.value.displayText && next !== field.state.value.displayText) {
+                                            field.handleChange({
+                                                ...field.state.value,
+                                                displayText: '',
+                                            });
+                                        }
+                                    }}
+                                    itemToStringLabel={(item: string) => item}
                                 >
-                                    <ComboboxInput placeholder={{ de: 'Adresse suchen…', en: 'Search address…' }[locale]} />
+                                    <ComboboxInput
+                                        className="w-full"
+                                        placeholder={{ de: 'Adresse suchen…', en: 'Search address…' }[locale]}
+                                        showClear={false}
+                                        disabled={isSubmitting}
+                                        required={!field.state.value.displayText}
+                                    />
                                     <ComboboxContent>
                                         <ComboboxEmpty>
                                             {suggestionsFetching
                                                 ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                                : { de: 'Keine Treffer', en: 'No matches' }[locale]}
+                                                : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
                                         </ComboboxEmpty>
                                         <ComboboxList>
-                                            {suggestions.map((suggestion) => (
-                                                <ComboboxItem key={suggestion.displayText} value={suggestion.displayText}>
-                                                    {suggestion.displayText}
+                                            {(item: string) => (
+                                                <ComboboxItem key={item} value={item}>
+                                                    {item}
                                                 </ComboboxItem>
-                                            ))}
+                                            )}
                                         </ComboboxList>
                                     </ComboboxContent>
                                 </Combobox>
+                                {locationChanged && hasOffers ? (
+                                    <BookingRequestOfferTravelImpactPreview
+                                        impacts={travelImpacts}
+                                        fetching={travelImpactFetching}
+                                        locale={locale}
+                                        emphasizeOnSave
+                                    />
+                                ) : null}
                             </div>
                         )}
                     </form.Field>
@@ -339,6 +515,7 @@ export function AdminBookingRequestEditPage({
                                     onValueChange={(next) => {
                                         field.handleChange(next as FormValues['priceClassType']);
                                     }}
+                                    disabled={isSubmitting}
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue />
@@ -370,6 +547,7 @@ export function AdminBookingRequestEditPage({
                                         value={field.state.value}
                                         onBlur={field.handleBlur}
                                         onChange={(event) => field.handleChange(Number(event.target.value) || 1)}
+                                        disabled={isSubmitting}
                                     />
                                 </div>
                             )}
@@ -388,16 +566,53 @@ export function AdminBookingRequestEditPage({
                                         value={field.state.value}
                                         onBlur={field.handleBlur}
                                         onChange={(event) => field.handleChange(Number(event.target.value) || 0)}
+                                        disabled={isSubmitting}
                                     />
                                 </div>
                             )}
                         </form.Field>
                     </div>
+                    {headcountChanged && hasOffers ? (
+                        <BookingRequestOfferPriceImpactPreview
+                            impacts={priceImpacts}
+                            fetching={priceImpactFetching}
+                            locale={locale}
+                            showCookPayout
+                        />
+                    ) : null}
 
                     {restrictionsEnabled ? (
                         <div className="grid gap-3">
-                            <div className="grid gap-1">
-                                <span className="text-sm font-medium">{{ de: 'Einschränkungen', en: 'Restrictions' }[locale]}</span>
+                            <button
+                                type="button"
+                                aria-expanded={restrictionsExpanded}
+                                aria-controls={restrictionsPanelId}
+                                onClick={() => setRestrictionsExpanded((current) => !current)}
+                                className={cn(
+                                    'flex w-full items-center justify-between gap-3 rounded-md border px-3 py-2.5 text-left',
+                                    'hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+                                )}
+                            >
+                                <span className="grid min-w-0 gap-0.5">
+                                    <span className="text-sm font-medium">{{ de: 'Gäste & Einschränkungen', en: 'Guests & restrictions' }[locale]}</span>
+                                    <span className="text-sm text-muted-foreground">
+                                        {
+                                            {
+                                                de: `${guestTotal} Gäste · ${restrictedGuestCount} mit Einschränkungen`,
+                                                en: `${guestTotal} guests · ${restrictedGuestCount} with restrictions`,
+                                            }[locale]
+                                        }
+                                    </span>
+                                </span>
+                                <ChevronDownIcon
+                                    aria-hidden
+                                    className={cn(
+                                        'size-4 shrink-0 text-muted-foreground transition-transform duration-200 ease-out motion-reduce:transition-none',
+                                        restrictionsExpanded && 'rotate-180',
+                                    )}
+                                />
+                            </button>
+                            <div id={restrictionsPanelId} hidden={!restrictionsExpanded} className="grid gap-3">
                                 <p className="text-sm text-muted-foreground">
                                     {
                                         {
@@ -406,14 +621,83 @@ export function AdminBookingRequestEditPage({
                                         }[locale]
                                     }
                                 </p>
+                                <BookingRequestParticipantsRestrictionsEditor
+                                    participants={participants}
+                                    onChange={setParticipants}
+                                    disabled={isSubmitting}
+                                />
                             </div>
-                            <BookingRequestParticipantsRestrictionsEditor
-                                participants={participants}
-                                onChange={setParticipants}
-                                disabled={isSubmitting}
-                            />
                         </div>
                     ) : null}
+
+                    <div className="grid gap-3">
+                        <span className="text-sm font-medium">{{ de: 'Präferenzen', en: 'Preferences' }[locale]}</span>
+                        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                            <Input
+                                value={customPreferenceText}
+                                onChange={(event) => setCustomPreferenceText(event.target.value)}
+                                placeholder={
+                                    {
+                                        de: 'Präferenz (suchen oder hier eigene eingeben)',
+                                        en: 'Select from the options below or add your own one here',
+                                    }[locale]
+                                }
+                                disabled={isSubmitting || preferences.length >= 4}
+                            />
+                            <Button
+                                type="button"
+                                className="justify-self-end"
+                                variant="default"
+                                disabled={isSubmitting || customPreferenceText.trim() === '' || preferences.length >= 4}
+                                onClick={() => {
+                                    const next = textNormalizeTitled(customPreferenceText);
+                                    if (!next) return;
+                                    form.setFieldValue('preferences', [...preferences, next]);
+                                    setCustomPreferenceText('');
+                                }}
+                            >
+                                {{ de: 'Eigene hinzufügen', en: 'Add custom' }[locale]}
+                            </Button>
+                        </div>
+                        <form.Field name="preferences">
+                            {(field) => (
+                                <div className="grid gap-3">
+                                    <div className="flex flex-wrap gap-2">
+                                        {preferenceOptions.map((option) => {
+                                            const selected = field.state.value.includes(option);
+                                            return (
+                                                <SelectableChip
+                                                    key={option}
+                                                    label={option}
+                                                    selected={selected}
+                                                    disabled={isSubmitting || (!selected && field.state.value.length >= 4)}
+                                                    onClick={() => {
+                                                        if (selected) {
+                                                            field.handleChange(field.state.value.filter((item) => item !== option));
+                                                            return;
+                                                        }
+                                                        if (field.state.value.length >= 4) return;
+                                                        field.handleChange([...field.state.value, option]);
+                                                        setCustomPreferenceText('');
+                                                    }}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                    {field.state.value.length >= 4 ? (
+                                        <StatusAlert tone="info">
+                                            {
+                                                {
+                                                    de: 'Du hast die maximale Anzahl ausgewählter Präferenzen erreicht.',
+                                                    en: 'You have reached the limit of 4 selected preferences.',
+                                                }[locale]
+                                            }
+                                        </StatusAlert>
+                                    ) : null}
+                                </div>
+                            )}
+                        </form.Field>
+                    </div>
 
                     <form.Field name="originalMessage">
                         {(field) => (
@@ -428,6 +712,7 @@ export function AdminBookingRequestEditPage({
                                     value={field.state.value}
                                     onBlur={field.handleBlur}
                                     onChange={(event) => field.handleChange(event.target.value)}
+                                    disabled={isSubmitting}
                                 />
                             </div>
                         )}
@@ -447,6 +732,7 @@ export function AdminBookingRequestEditPage({
                                     onBlur={field.handleBlur}
                                     onChange={(event) => field.handleChange(event.target.value)}
                                     placeholder={{ de: 'Leer = Original verwenden', en: 'Empty = use original' }[locale]}
+                                    disabled={isSubmitting}
                                 />
                             </div>
                         )}
@@ -463,6 +749,7 @@ export function AdminBookingRequestEditPage({
                                     timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
                                     locale={DATE_FNS_LOCALE[locale]}
                                     className="w-full"
+                                    disabled={isSubmitting}
                                 />
                                 {field.state.value ? (
                                     <Button
@@ -471,6 +758,7 @@ export function AdminBookingRequestEditPage({
                                         variant="outline"
                                         onClick={() => field.handleChange(null)}
                                         className="justify-self-end"
+                                        disabled={isSubmitting}
                                     >
                                         {{ de: 'Ablauf entfernen', en: 'Clear expiry' }[locale]}
                                     </Button>
@@ -490,23 +778,13 @@ export function AdminBookingRequestEditPage({
                                     timeAriaLabel={{ de: 'Uhrzeit', en: 'Time' }[locale]}
                                     locale={DATE_FNS_LOCALE[locale]}
                                     className="w-full"
+                                    disabled={isSubmitting}
                                 />
                             </div>
                         )}
                     </form.Field>
-
-                    <div className="flex flex-wrap gap-2 pt-2">
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
-                        </Button>
-                        <Button type="button" variant="outline" asChild>
-                            <Link to="/{-$locale}/admin/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
-                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
-                            </Link>
-                        </Button>
-                    </div>
                 </form>
-            </main>
+            </AdminPinnedFooterLayout>
         </AdminPageChrome>
     );
 }
