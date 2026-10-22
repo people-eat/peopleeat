@@ -163,7 +163,7 @@ describe('adminBookingRequestUpdate', () => {
 
     it('patches preferences and resets cook acceptance on open offers', async () => {
         const { admin, bookingRequestId } = await setupAdminAndRequest();
-        const cook = await commandSetup.withUser({ firstName: 'prefs-cook', lastName: 'Cook' });
+        const cook = await commandSetup.withUser({ firstName: 'preferences-cook', lastName: 'Cook' });
         await testDb.insert(cooks).values({
             cookId: cook.user.userId,
             isVisible: true,
