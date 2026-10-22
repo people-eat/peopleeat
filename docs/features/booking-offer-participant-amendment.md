@@ -14,7 +14,7 @@ preparations done. Gated by `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`.
    booking** control (same edit route, amendment mode: venue + headcount). Date, occasion, and preferences stay read-only. The offer page
    shows status and links back to that edit path.
 3. On a dual-accepted offer (payment `EMPTY` / `SETUP` / `PAYED`, event still ahead), the customer can **propose** when the feature toggle
-   is on and preparations are not locked.
+   is on, preparations are not locked, and there is no unpaid `pendingDeltaPayment` from a prior increase.
 4. The booking stays dual-accepted. Live participants, venue, and money stay unchanged until the cook decides. The customer may **withdraw**
    a pending proposal (no money move).
 5. The cook sees the proposal on every offer tab (banner + pinned footer **Accept change** / **Decline**) with before/after headcount and/or
@@ -23,10 +23,12 @@ preparations done. Gated by `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`.
    recomputes travel when venue changed, re-applies promo + gift against the new pre-discount total (restoring unused gift balance), and:
    - `SETUP` / unpaid pull path: updates offer cents only (pull job charges the new total later)
    - `EMPTY`: cancels open PaymentIntent and SetupIntent when present and re-prepares payment (persists `plannedPayoutDateTime`)
-   - `PAYED`: partial customer refund (newest amendment PI first, then primary PI) or off-session delta charge; if no reusable payment
-     method, creates an on-session delta PaymentIntent (`pendingDeltaPayment`) so the customer can pay in checkout; Connect transfer reverse
-     / top-up for the cook payout delta
-7. On decline or customer cancel, the pending proposal is cleared; the booking is unchanged.
+   - `PAYED`: partial customer refund (newest amendment PI first, then primary PI) or off-session delta charge (top-up transfer only after
+     PI success); if no reusable payment method, creates an on-session delta PaymentIntent (`pendingDeltaPayment` with customer + cook
+     deltas) so the customer can pay in checkout (finalize / Stripe webhook clear the pending delta and top up the cook); Connect reverse
+     chunks across top-ups + amendment PI destination transfers + primary transfer
+7. On decline or customer cancel, the pending proposal is cleared (cancel is blocked once accept has claimed the amendment); the booking is
+   unchanged.
 8. The cook can mark **shopping / preparations done** (confirmation dialog first). After that, the customer cannot open a new amendment.
    Admins can clear the lock for ops.
 9. Blocked when the event is past, the request is canceled, or payment is `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED`.
@@ -49,8 +51,9 @@ preparations done. Gated by `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`.
 
 Cook-gated amendment with preparations lock, feature-toggle rollout, Stripe + gift deltas only on cook accept. Keep the booking-request edit
 route as the customer entry after accept (venue + participants). Keep pre-accept **Confirm changes** (+ optional menu/travel auto-adjust)
-separate from post-accept **Accept change**. Admin can clear the prep lock. Idempotent Stripe ops use `amendmentApplyId` on the pending
-JSON.
+separate from post-accept **Accept change**. Admin can clear the prep lock. Accept claims the pending JSON (`claimedAt`) before Stripe money
+moves; Stripe ops use `amendmentApplyId` idempotency keys; Connect top-ups append to `extraTransferIds` (legacy `extraTransferId` kept as
+latest).
 
 ## Next steps
 
@@ -65,8 +68,10 @@ JSON.
   `COOK_PREPARATIONS_COMPLETED`, `ADMIN_PREPARATIONS_CLEARED`
 - Price helper: `bookingRequestOfferParticipantAmendmentPrice.ts` (menu scale, travel, promo + gift re-apply)
 - Gates: `bookingRequestOfferParticipantAmendmentGates.ts`
-- Apply + Stripe: `bookingRequestOfferParticipantAmendmentApply.ts`; `setupIntentCancel`; refundable-cents lookup; optional idempotency
-  keys; `pendingDeltaPayment` on `paymentData`; `giftCardCredit` / `giftCardCharge`
+- Apply + Stripe: `bookingRequestOfferParticipantAmendmentApply.ts`; claim-before-money; `setupIntentCancel` / status-tolerant
+  `paymentIntentCancel`; refundable-cents + reversible-transfer chunking; idempotency keys; `pendingDeltaPayment` (+
+  `cookPayoutDeltaCents`); `extraTransferIds`; `giftCardCredit` / fail-closed `giftCardCharge`; webhook finalize via
+  `bookingRequestOfferPaymentIntentSucceededApply`
 - Commands: `userBookingRequestOfferParticipantAmendmentCreate` / `Cancel`, `cookBookingRequestOfferParticipantAmendmentAccept` / `Decline`,
   `cookBookingRequestOfferPreparationsComplete`, `adminBookingRequestOfferPreparationsClear`
 - Emails: cook request; customer accept (status-aware: EMPTY checkout / SETUP pull / PAYED refund-charge / gift restore / pending delta)

@@ -97,6 +97,7 @@ async function seedOfferWithPendingAmendment(paymentStatus: 'EMPTY' | 'SETUP' | 
                         paymentIntentId: 'pi_apply',
                         clientSecret: 'pi_secret',
                         transferId: 'tr_apply',
+                        extraTransferId: 'tr_extra',
                         amendmentPaymentIntentIds: ['pi_amend_prior'],
                     },
         participantAmendment: amendment,
@@ -133,13 +134,17 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
         expect(offer?.plannedPayoutDateTime).toBeTruthy();
     });
 
-    it('PAYED decrease refunds from newest amendment PaymentIntent first', async () => {
+    it('PAYED decrease refunds from newest amendment PaymentIntent first and chunks cook reverse', async () => {
         const { cook, bookingRequestOfferId } = await seedOfferWithPendingAmendment('PAYED');
         vi.mocked(cook.serverRuntime.stripe.paymentIntentRefundableCentsFindOne).mockImplementation(async (id) =>
             id === 'pi_amend_prior' ? 50_000 : 100_000,
         );
         vi.mocked(cook.serverRuntime.stripe.paymentIntentRefund).mockResolvedValue({ refundId: 're_newest' });
+        vi.mocked(cook.serverRuntime.stripe.transferReversibleCentsFindOne).mockImplementation(async (id) =>
+            id === 'tr_extra' ? 5_000 : 100_000,
+        );
         vi.mocked(cook.serverRuntime.stripe.transferReverse).mockResolvedValue(undefined);
+        vi.mocked(cook.serverRuntime.stripe.paymentIntentDestinationTransferIdFindOne).mockResolvedValue(undefined);
 
         const accepted = await cookBookingRequestOfferParticipantAmendmentAccept(
             cookMutationParent(cook.user.userId),
@@ -151,9 +156,12 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
         expect(cook.serverRuntime.stripe.paymentIntentRefund).toHaveBeenCalled();
         const refundCall = vi.mocked(cook.serverRuntime.stripe.paymentIntentRefund).mock.calls[0];
         expect(refundCall?.[0]).toBe('pi_amend_prior');
+        expect(cook.serverRuntime.stripe.transferReverse).toHaveBeenCalled();
+        const reverseCalls = vi.mocked(cook.serverRuntime.stripe.transferReverse).mock.calls;
+        expect(reverseCalls[0]?.[0]?.transferId).toBe('tr_extra');
     });
 
-    it('PAYED increase without PM creates on-session pending delta payment', async () => {
+    it('PAYED increase without PM creates on-session pending delta with cook payout delta', async () => {
         const { cook, bookingRequestId, bookingRequestOfferId } = await seedOfferWithPendingAmendment('PAYED');
         await testDb.delete(bookingRequestParticipants).where(eq(bookingRequestParticipants.bookingRequestId, bookingRequestId));
         await testDb.insert(bookingRequestParticipants).values(
@@ -205,10 +213,10 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
             .select()
             .from(bookingRequestOffers)
             .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
-        expect(
-            offer?.paymentData && 'pendingDeltaPayment' in offer.paymentData
-                ? offer.paymentData.pendingDeltaPayment?.paymentIntentId
-                : null,
-        ).toBe('pi_delta');
+        const pending = offer?.paymentData && 'pendingDeltaPayment' in offer.paymentData ? offer.paymentData.pendingDeltaPayment : null;
+        expect(pending?.paymentIntentId).toBe('pi_delta');
+        expect(pending?.amountCents).toBeGreaterThan(0);
+        expect(pending?.cookPayoutDeltaCents).toBeGreaterThan(0);
+        expect(pending?.cookPayoutDeltaCents).toBeDefined();
     });
 });

@@ -1,12 +1,13 @@
-import { eq, sql } from 'drizzle-orm';
+import { eq, or, sql } from 'drizzle-orm';
 
 import { bookingRequestOffers, bookingRequests, cooks } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
+import { bookingRequestOfferHasPendingDeltaPayment } from '../utils/bookingRequestOfferParticipantAmendmentGates';
 import { bookingRequestOfferPaymentFinalize } from '../utils/bookingRequestOfferPaymentFinalize';
 
 /**
  * Webhook / recovery path: find an offer whose paymentData references this
- * PaymentIntent and finalize to PAYED (shared with the customer mutation).
+ * PaymentIntent (primary or pending delta) and finalize to PAYED / clear pending delta.
  */
 export async function bookingRequestOfferPaymentIntentSucceededApply(
     paymentIntentId: string,
@@ -21,19 +22,30 @@ export async function bookingRequestOfferPaymentIntentSucceededApply(
         .from(bookingRequestOffers)
         .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestOffers.bookingRequestId))
         .innerJoin(cooks, eq(cooks.cookId, bookingRequestOffers.cookId))
-        .where(sql`${bookingRequestOffers.paymentData}->>'paymentIntentId' = ${paymentIntentId}`)
+        .where(
+            or(
+                sql`${bookingRequestOffers.paymentData}->>'paymentIntentId' = ${paymentIntentId}`,
+                sql`${bookingRequestOffers.paymentData}->'pendingDeltaPayment'->>'paymentIntentId' = ${paymentIntentId}`,
+            ),
+        )
         .limit(1);
 
     if (!row || !row.cook.stripeAccountId) {
         return false;
     }
 
+    const pendingDelta =
+        row.offer.paymentData && 'pendingDeltaPayment' in row.offer.paymentData ? row.offer.paymentData.pendingDeltaPayment : undefined;
+    const isPendingDeltaSuccess = pendingDelta?.paymentIntentId === paymentIntentId;
+
     if (
         row.offer.paymentStatus === 'PAYED' ||
         row.offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM' ||
         row.offer.paymentStatus === 'TRANSFERRED'
     ) {
-        return true;
+        if (!(isPendingDeltaSuccess && bookingRequestOfferHasPendingDeltaPayment(row.offer.paymentData))) {
+            return true;
+        }
     }
 
     await bookingRequestOfferPaymentFinalize(serverRuntime, {

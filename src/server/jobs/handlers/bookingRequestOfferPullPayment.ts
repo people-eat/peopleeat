@@ -1,7 +1,9 @@
 import { eq } from 'drizzle-orm';
 
 import { bookingRequestOffers, bookingRequests, cooks, users } from '../../db/schema';
+import type { BookingRequestOfferPaymentData } from '../../domain/bookingRequest';
 import { bookingRequestOfferExtraTransferMaybeCreate } from '../../utils/bookingRequestOfferExtraTransferMaybeCreate';
+import { paymentDataWithExtraTransfer } from '../../utils/bookingRequestOfferPaymentDataTransfers';
 import {
     bookingRequestOfferPaymentFailedSessionEventCreate,
     bookingRequestOfferPaymentSucceededSessionEventCreate,
@@ -80,25 +82,35 @@ export const bookingRequestOfferPullPayment: QueuedJobDefinition<BookingRequestO
                     payoutAmount: offer.payoutCentsCook,
                 });
 
+                const succeeded = await serverRuntime.stripe.paymentIntentSucceededCheck(paymentIntentId);
+                if (!succeeded) {
+                    throw new Error(`bookingRequestOfferPullPayment: payment intent ${paymentIntentId} not succeeded`);
+                }
+
                 const extraTransferId = await bookingRequestOfferExtraTransferMaybeCreate(serverRuntime, {
                     destinationAccountId: cook.stripeAccountId,
                     userId: customer.userId,
                     totalCentsCustomer,
                     payoutCentsCook: offer.payoutCentsCook,
+                    idempotencyKey: `pull-payment:${data.bookingRequestOfferId}:extra-transfer`,
                 });
 
                 const transferId = await serverRuntime.stripe.paymentIntentDestinationTransferIdFindOne(paymentIntentId);
 
+                let paymentData: BookingRequestOfferPaymentData = {
+                    setupIntentId,
+                    paymentIntentId,
+                    clientSecret: clientSecret || existingClientSecret,
+                    ...(transferId ? { transferId } : {}),
+                };
+                if (extraTransferId) {
+                    paymentData = paymentDataWithExtraTransfer(paymentData, extraTransferId);
+                }
+
                 await serverRuntime.db
                     .update(bookingRequestOffers)
                     .set({
-                        paymentData: {
-                            setupIntentId,
-                            paymentIntentId,
-                            clientSecret: clientSecret || existingClientSecret,
-                            ...(transferId ? { transferId } : {}),
-                            ...(extraTransferId ? { extraTransferId } : {}),
-                        },
+                        paymentData,
                         paymentStatus: 'PAYED',
                         paymentDateTime: new Date(),
                     })

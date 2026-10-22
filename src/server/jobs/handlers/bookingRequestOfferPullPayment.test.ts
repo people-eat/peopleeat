@@ -121,6 +121,7 @@ describe('bookingRequestOfferPullPayment', () => {
             paymentIntentId: 'pi_pull_test',
             clientSecret: 'pi_pull_test_secret',
         });
+        vi.mocked(serverRuntime.stripe.paymentIntentSucceededCheck).mockResolvedValue(true);
         vi.mocked(serverRuntime.stripe.paymentIntentDestinationTransferIdFindOne).mockResolvedValue('tr_pull_test');
 
         // Act

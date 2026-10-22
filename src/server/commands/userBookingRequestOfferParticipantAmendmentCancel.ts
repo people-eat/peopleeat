@@ -48,15 +48,29 @@ export async function userBookingRequestOfferParticipantAmendmentCancel(
         if (row.offer.participantAmendment == null) {
             throw new Error('userBookingRequestOfferParticipantAmendmentCancel: no pending amendment');
         }
+        if (row.offer.participantAmendment.claimedAt) {
+            throw new Error('userBookingRequestOfferParticipantAmendmentCancel: amendment is already being applied');
+        }
 
         await serverRuntime.db.transaction(async (transaction) => {
-            await transaction
+            const cleared = await transaction
                 .update(bookingRequestOffers)
                 .set({
                     participantAmendment: null,
                     cookUnreadNotificationCount: sql`${bookingRequestOffers.cookUnreadNotificationCount} + 1`,
                 })
-                .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+                .where(
+                    and(
+                        eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId),
+                        sql`${bookingRequestOffers.participantAmendment} IS NOT NULL`,
+                        sql`(${bookingRequestOffers.participantAmendment}->>'claimedAt') IS NULL`,
+                    ),
+                )
+                .returning({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId });
+
+            if (cleared.length === 0) {
+                throw new Error('userBookingRequestOfferParticipantAmendmentCancel: amendment is already being applied');
+            }
 
             await transaction.insert(bookingRequestOfferEvents).values({
                 bookingRequestOfferEventId: idCreate(),

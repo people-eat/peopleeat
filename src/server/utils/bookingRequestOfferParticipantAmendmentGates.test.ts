@@ -16,6 +16,7 @@ describe('bookingRequestOfferCanRequestParticipantAmendment', () => {
                     userAccepted: true,
                     cookAccepted: true,
                     paymentStatus: 'PAYED',
+                    paymentData: { paymentIntentId: 'pi_1', clientSecret: 'sec' },
                     preparationsCompletedAt: null,
                     participantAmendment: null,
                 },
@@ -31,6 +32,7 @@ describe('bookingRequestOfferCanRequestParticipantAmendment', () => {
                     userAccepted: true,
                     cookAccepted: true,
                     paymentStatus: 'PAYED',
+                    paymentData: { paymentIntentId: 'pi_1', clientSecret: 'sec' },
                     preparationsCompletedAt: new Date(),
                     participantAmendment: null,
                 },
@@ -46,6 +48,7 @@ describe('bookingRequestOfferCanRequestParticipantAmendment', () => {
                     userAccepted: true,
                     cookAccepted: true,
                     paymentStatus: 'TRANSFERRED',
+                    paymentData: null,
                     preparationsCompletedAt: null,
                     participantAmendment: null,
                 },
@@ -58,10 +61,36 @@ describe('bookingRequestOfferCanRequestParticipantAmendment', () => {
                     userAccepted: true,
                     cookAccepted: true,
                     paymentStatus: 'PAYED',
+                    paymentData: null,
                     preparationsCompletedAt: null,
                     participantAmendment: null,
                 },
                 bookingRequest: { dateTime: past, canceledAt: null },
+            }),
+        ).toBe(false);
+    });
+
+    it('blocks when a pending delta payment is unpaid', () => {
+        expect(
+            bookingRequestOfferCanRequestParticipantAmendment({
+                offer: {
+                    userAccepted: true,
+                    cookAccepted: true,
+                    paymentStatus: 'PAYED',
+                    paymentData: {
+                        paymentIntentId: 'pi_1',
+                        clientSecret: 'sec',
+                        pendingDeltaPayment: {
+                            paymentIntentId: 'pi_delta',
+                            clientSecret: 'delta_sec',
+                            amountCents: 1_000,
+                            cookPayoutDeltaCents: 2_000,
+                        },
+                    },
+                    preparationsCompletedAt: null,
+                    participantAmendment: null,
+                },
+                bookingRequest: { dateTime: future, canceledAt: null },
             }),
         ).toBe(false);
     });

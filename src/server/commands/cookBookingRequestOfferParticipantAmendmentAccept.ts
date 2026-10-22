@@ -12,6 +12,7 @@ import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCur
 import { bookingRequestOfferParticipantAmendmentAcceptEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestOfferParticipantAmendmentApply } from '../utils/bookingRequestOfferParticipantAmendmentApply';
 import {
+    bookingRequestOfferHasPendingDeltaPayment,
     bookingRequestOfferIsDualAccepted,
     bookingRequestOfferParticipantAmendmentPaymentAllowed,
 } from '../utils/bookingRequestOfferParticipantAmendmentGates';
@@ -62,6 +63,9 @@ export async function cookBookingRequestOfferParticipantAmendmentAccept(
         }
         if (!bookingRequestOfferParticipantAmendmentPaymentAllowed(row.offer.paymentStatus)) {
             throw new Error('cookBookingRequestOfferParticipantAmendmentAccept: payment status does not allow amendment');
+        }
+        if (bookingRequestOfferHasPendingDeltaPayment(row.offer.paymentData)) {
+            throw new Error('cookBookingRequestOfferParticipantAmendmentAccept: unpaid pending delta payment must be completed first');
         }
         if (row.bookingRequest.canceledAt != null || row.bookingRequest.dateTime.getTime() <= Date.now()) {
             throw new Error('cookBookingRequestOfferParticipantAmendmentAccept: booking is not amendable');
@@ -132,7 +136,8 @@ export async function cookBookingRequestOfferParticipantAmendmentAccept(
 
         return { success: true, referenceId: bookingRequestOfferId };
     } catch (error) {
+        // Money may have already moved in Stripe; surface to the client instead of a soft fail.
         serverRuntime.log.error(error);
-        return { success: false };
+        throw error;
     }
 }

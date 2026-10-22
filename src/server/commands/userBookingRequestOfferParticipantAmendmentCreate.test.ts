@@ -191,7 +191,9 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
         const { cook, customer, bookingRequestOfferId } = await seedDualAcceptedOffer('PAYED');
         vi.mocked(cook.serverRuntime.stripe.paymentIntentRefundableCentsFindOne).mockResolvedValue(100_000);
         vi.mocked(cook.serverRuntime.stripe.paymentIntentRefund).mockResolvedValue({ refundId: 're_amend' });
+        vi.mocked(cook.serverRuntime.stripe.transferReversibleCentsFindOne).mockResolvedValue(100_000);
         vi.mocked(cook.serverRuntime.stripe.transferReverse).mockResolvedValue(undefined);
+        vi.mocked(cook.serverRuntime.stripe.paymentIntentDestinationTransferIdFindOne).mockResolvedValue(undefined);
 
         await userBookingRequestOfferParticipantAmendmentCreate(
             userMutationParent(customer.user.userId),

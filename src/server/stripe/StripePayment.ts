@@ -229,6 +229,8 @@ export interface StripePayment {
     accountBalanceTransactionsFindMany: (options: StripeAccountBalanceTransactionsFindMany) => Promise<StripeBalanceTransaction[]>;
 
     transferCreate: (options: StripeTransferCreate) => Promise<StripeTransferCreateResult>;
+    /** Cents still reversible on a Connect transfer (`amount` minus `amount_reversed`). */
+    transferReversibleCentsFindOne: (transferId: string) => Promise<number>;
     transferReverse: (options: StripeTransferReverse) => Promise<void>;
     // Manual Express schedule: move Connect balance to the cook's bank.
     payoutCreate: (options: StripePayoutCreate) => Promise<StripePayoutCreateResult>;

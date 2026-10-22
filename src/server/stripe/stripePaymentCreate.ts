@@ -284,6 +284,10 @@ export function stripePaymentCreate({
 
         async paymentIntentCancel(paymentIntentId) {
             const stripe = clientRequire();
+            const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+            if (paymentIntent.status === 'canceled' || paymentIntent.status === 'succeeded' || paymentIntent.status === 'processing') {
+                return;
+            }
             await stripe.paymentIntents.cancel(paymentIntentId);
         },
 
@@ -560,6 +564,12 @@ export function stripePaymentCreate({
                 idempotencyKey ? { idempotencyKey } : undefined,
             );
             return { transferId: transfer.id };
+        },
+
+        async transferReversibleCentsFindOne(transferId) {
+            const stripe = clientRequire();
+            const transfer = await stripe.transfers.retrieve(transferId);
+            return Math.max(0, transfer.amount - transfer.amount_reversed);
         },
 
         async transferReverse({ transferId, amountCents, idempotencyKey }: StripeTransferReverse) {

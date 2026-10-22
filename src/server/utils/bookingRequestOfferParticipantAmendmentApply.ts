@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
 import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequestParticipants, bookingRequests } from '../db/schema';
@@ -12,54 +12,18 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import { bookingRequestCookTravelDistanceKmClear } from './bookingRequestCookTravelDistanceKmEnsure';
 import { bookingRequestOfferEventTomorrowNotifySchedule } from './bookingRequestOfferEventTomorrowNotifySchedule';
 import { bookingRequestOfferExtraTransferMaybeCreate } from './bookingRequestOfferExtraTransferMaybeCreate';
+import { bookingRequestOfferHasPendingDeltaPayment } from './bookingRequestOfferParticipantAmendmentGates';
 import { bookingRequestOfferParticipantAmendmentPriceCalculate } from './bookingRequestOfferParticipantAmendmentPrice';
+import {
+    cookPayoutDeltaReverse,
+    paymentDataWithExtraTransfer,
+    paymentTransferIdsForCookReverse,
+} from './bookingRequestOfferPaymentDataTransfers';
 import { bookingRequestOfferPaymentPrepare } from './bookingRequestOfferPaymentPrepare';
 import { bookingRequestOfferPriceSnapshot } from './bookingRequestOfferPriceSnapshot';
 import { giftCardChargeInTransaction } from './giftCardCharge';
 import { giftCardCreditInTransaction } from './giftCardCredit';
 import { scheduleTestimonialReminderJobs } from './scheduleTestimonialReminderJobs';
-
-async function paymentTransferIdsResolve(
-    serverRuntime: ServerRuntime,
-    paymentData: BookingRequestOfferPaymentData | null,
-): Promise<string[]> {
-    if (!paymentData) return [];
-
-    const transferIds: string[] = [];
-    if ('extraTransferId' in paymentData && paymentData.extraTransferId) {
-        transferIds.push(paymentData.extraTransferId);
-    }
-    if ('transferId' in paymentData && paymentData.transferId) {
-        transferIds.push(paymentData.transferId);
-    }
-
-    const paymentIntentId = 'paymentIntentId' in paymentData ? paymentData.paymentIntentId : undefined;
-    if (transferIds.length === 0 && paymentIntentId) {
-        const destinationTransferId = await serverRuntime.stripe.paymentIntentDestinationTransferIdFindOne(paymentIntentId);
-        if (destinationTransferId) {
-            transferIds.push(destinationTransferId);
-        }
-    }
-
-    return transferIds;
-}
-
-async function cookPayoutDeltaReverse(
-    serverRuntime: ServerRuntime,
-    transferIds: string[],
-    amountCents: number,
-    idempotencyKey: string,
-): Promise<void> {
-    if (amountCents <= 0) return;
-    if (transferIds.length === 0) {
-        throw new Error('bookingRequestOfferParticipantAmendmentApply: no Connect transfers to reverse for cook payout decrease');
-    }
-    await serverRuntime.stripe.transferReverse({
-        transferId: transferIds[0]!,
-        amountCents,
-        idempotencyKey,
-    });
-}
 
 function refundablePaymentIntentIds(paymentData: BookingRequestOfferPaymentData | null): string[] {
     if (!paymentData) return [];
@@ -125,11 +89,44 @@ function paymentDataWithAmendmentPaymentIntent(
         'amendmentPaymentIntentIds' in paymentData && paymentData.amendmentPaymentIntentIds
             ? [...paymentData.amendmentPaymentIntentIds, amendmentPaymentIntentId]
             : [amendmentPaymentIntentId];
-    return {
+    const withAmendment: BookingRequestOfferPaymentData = {
         ...paymentData,
         amendmentPaymentIntentIds,
-        ...(extraTransferId ? { extraTransferId } : {}),
     };
+    return extraTransferId ? paymentDataWithExtraTransfer(withAmendment, extraTransferId) : withAmendment;
+}
+
+async function amendmentClaim(serverRuntime: ServerRuntime, offerId: string, applyId: string): Promise<void> {
+    const claimedAt = new Date().toISOString();
+    const claimed = await serverRuntime.db
+        .update(bookingRequestOffers)
+        .set({
+            participantAmendment: sql`jsonb_set(${bookingRequestOffers.participantAmendment}, '{claimedAt}', to_jsonb(${claimedAt}::text), true)`,
+        })
+        .where(
+            and(
+                eq(bookingRequestOffers.bookingRequestOfferId, offerId),
+                sql`${bookingRequestOffers.participantAmendment}->>'amendmentApplyId' = ${applyId}`,
+                sql`(${bookingRequestOffers.participantAmendment}->>'claimedAt') IS NULL`,
+            ),
+        )
+        .returning({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId });
+
+    if (claimed.length > 0) return;
+
+    const [current] = await serverRuntime.db
+        .select({ participantAmendment: bookingRequestOffers.participantAmendment })
+        .from(bookingRequestOffers)
+        .where(eq(bookingRequestOffers.bookingRequestOfferId, offerId))
+        .limit(1);
+
+    const amendment = current?.participantAmendment;
+    if (amendment?.amendmentApplyId === applyId && amendment.claimedAt) {
+        // Retry after a prior claim (Stripe ops are idempotent by applyId).
+        return;
+    }
+
+    throw new Error('bookingRequestOfferParticipantAmendmentApply: amendment no longer pending (canceled or already applied)');
 }
 
 export type BookingRequestOfferParticipantAmendmentApplyResult = {
@@ -167,6 +164,12 @@ export async function bookingRequestOfferParticipantAmendmentApply(
     if (!customer.emailAddress) {
         throw new Error('bookingRequestOfferParticipantAmendmentApply: customer has no email');
     }
+    if (bookingRequestOfferHasPendingDeltaPayment(offer.paymentData)) {
+        throw new Error('bookingRequestOfferParticipantAmendmentApply: unpaid pending delta payment must be completed first');
+    }
+
+    const applyId = amendment.amendmentApplyId || idCreate();
+    await amendmentClaim(serverRuntime, offer.bookingRequestOfferId, applyId);
 
     const participantsAfter =
         amendment.participants ??
@@ -201,6 +204,10 @@ export async function bookingRequestOfferParticipantAmendmentApply(
         offer.payoutCentsCook,
     );
 
+    if (price.giftCardDeltaCents !== 0 && !giftCard) {
+        throw new Error('bookingRequestOfferParticipantAmendmentApply: gift card required for gift ledger delta');
+    }
+
     const adultsBefore = existingParticipants.filter((p) => p.type === 'ADULT').length;
     const discountedBefore = existingParticipants.filter((p) => p.type === 'DISCOUNTED').length;
     const adultsAfter = participantsAfter.filter((p) => p.type === 'ADULT').length;
@@ -219,7 +226,6 @@ export async function bookingRequestOfferParticipantAmendmentApply(
     let nextPaymentDateTime = offer.paymentDateTime;
     let nextPlannedPayoutDateTime = offer.plannedPayoutDateTime;
     let pendingDeltaPaymentDue = false;
-    const applyId = amendment.amendmentApplyId || idCreate();
 
     if (offer.paymentStatus === 'EMPTY') {
         if (offer.paymentData && 'paymentIntentId' in offer.paymentData && offer.paymentData.paymentIntentId) {
@@ -279,11 +285,16 @@ export async function bookingRequestOfferParticipantAmendmentApply(
                     payoutAmount: cookPayoutForSplit,
                     idempotencyKey: `${applyId}:charge`,
                 });
+                const succeeded = await serverRuntime.stripe.paymentIntentSucceededCheck(paymentIntentId);
+                if (!succeeded) {
+                    throw new Error('bookingRequestOfferParticipantAmendmentApply: off-session delta payment intent not succeeded');
+                }
                 const extraTransferId = await bookingRequestOfferExtraTransferMaybeCreate(serverRuntime, {
                     destinationAccountId: cook.stripeAccountId,
                     userId: customer.userId,
                     totalCentsCustomer: customerDelta,
                     payoutCentsCook: cookPayoutForSplit,
+                    idempotencyKey: `${applyId}:extra-transfer`,
                 });
                 nextPaymentData = paymentDataWithAmendmentPaymentIntent(nextPaymentData, paymentIntentId, extraTransferId);
             } else {
@@ -310,6 +321,7 @@ export async function bookingRequestOfferParticipantAmendmentApply(
                         paymentIntentId,
                         clientSecret,
                         amountCents: customerDelta,
+                        cookPayoutDeltaCents: cookPayoutForSplit,
                     },
                     amendmentPaymentIntentIds: [...priorAmendmentIds, paymentIntentId],
                 } as BookingRequestOfferPaymentData;
@@ -318,7 +330,7 @@ export async function bookingRequestOfferParticipantAmendmentApply(
         }
 
         if (cookDelta < 0) {
-            const transferIds = await paymentTransferIdsResolve(serverRuntime, offer.paymentData);
+            const transferIds = await paymentTransferIdsForCookReverse(serverRuntime, offer.paymentData);
             await cookPayoutDeltaReverse(serverRuntime, transferIds, Math.abs(cookDelta), `${applyId}:transfer-reverse`);
         } else if (cookDelta > 0 && customerDelta <= 0) {
             const { transferId } = await serverRuntime.stripe.transferCreate({
@@ -326,8 +338,8 @@ export async function bookingRequestOfferParticipantAmendmentApply(
                 payoutAmount: cookDelta,
                 idempotencyKey: `${applyId}:transfer-create`,
             });
-            if (nextPaymentData && !('extraTransferId' in nextPaymentData && nextPaymentData.extraTransferId)) {
-                nextPaymentData = { ...nextPaymentData, extraTransferId: transferId };
+            if (nextPaymentData) {
+                nextPaymentData = paymentDataWithExtraTransfer(nextPaymentData, transferId);
             }
         }
     } else {
@@ -349,7 +361,7 @@ export async function bookingRequestOfferParticipantAmendmentApply(
     const systemPriceEventId = priceChanged ? idCreate() : null;
     const becamePayedFromEmpty = offer.paymentStatus === 'EMPTY' && nextPaymentStatus === 'PAYED';
 
-    await serverRuntime.db.transaction(async (transaction) => {
+    const applied = await serverRuntime.db.transaction(async (transaction) => {
         if (participantInserts != null) {
             await transaction
                 .delete(bookingRequestParticipants)
@@ -372,7 +384,7 @@ export async function bookingRequestOfferParticipantAmendmentApply(
             }
         }
 
-        await transaction
+        const updatedOffers = await transaction
             .update(bookingRequestOffers)
             .set({
                 menuPriceCents: price.menuPriceCentsAfter,
@@ -395,7 +407,19 @@ export async function bookingRequestOfferParticipantAmendmentApply(
                 participantAmendment: null,
                 userUnreadNotificationCount: offer.userUnreadNotificationCount + 1,
             })
-            .where(eq(bookingRequestOffers.bookingRequestOfferId, offer.bookingRequestOfferId));
+            .where(
+                and(
+                    eq(bookingRequestOffers.bookingRequestOfferId, offer.bookingRequestOfferId),
+                    sql`${bookingRequestOffers.participantAmendment}->>'amendmentApplyId' = ${applyId}`,
+                ),
+            )
+            .returning({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId });
+
+        if (updatedOffers.length === 0) {
+            throw new Error(
+                'bookingRequestOfferParticipantAmendmentApply: failed to persist after Stripe money move (amendment claim lost)',
+            );
+        }
 
         await transaction.insert(bookingRequestOfferEvents).values({
             bookingRequestOfferEventId: acceptEventId,
@@ -447,7 +471,13 @@ export async function bookingRequestOfferParticipantAmendmentApply(
                 },
             });
         }
+
+        return true;
     });
+
+    if (!applied) {
+        throw new Error('bookingRequestOfferParticipantAmendmentApply: transaction did not apply');
+    }
 
     if (nextAddress != null) {
         await bookingRequestCookTravelDistanceKmClear(serverRuntime, {

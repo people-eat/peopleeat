@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import { bookingRequestOffers, bookingRequests } from '../db/schema';
 import type { BookingRequest, BookingRequestOffer } from '../db/schema';
@@ -12,6 +12,7 @@ import { bookingRequestOfferPullPayment } from '../jobs/handlers/bookingRequestO
 import { bookingRequestOfferPullPaymentAnnouncement } from '../jobs/handlers/bookingRequestOfferPullPaymentAnnouncement';
 import { bookingRequestOfferPaymentConfirmedEmailSend } from './bookingRequestLifecycleEmails';
 import { bookingRequestOfferExtraTransferMaybeCreate } from './bookingRequestOfferExtraTransferMaybeCreate';
+import { paymentDataWithExtraTransfer } from './bookingRequestOfferPaymentDataTransfers';
 import {
     bookingRequestOfferPullAnnouncementDueDate,
     bookingRequestOfferPullPaymentDueDate,
@@ -63,23 +64,25 @@ export async function bookingRequestOfferPaymentFinalize(
         if (!succeeded) {
             throw new Error('bookingRequestOfferPaymentFinalize: pending delta payment intent not succeeded');
         }
-        const cookPayoutForSplit = Math.max(0, offer.payoutCentsCook);
+        const cookPayoutForSplit = Math.max(0, pendingDelta.cookPayoutDeltaCents ?? pendingDelta.amountCents);
         const extraTransferId = await bookingRequestOfferExtraTransferMaybeCreate(serverRuntime, {
             destinationAccountId: cookStripeAccountId,
             userId: customerUserId,
             totalCentsCustomer: pendingDelta.amountCents,
-            payoutCentsCook: Math.min(cookPayoutForSplit, pendingDelta.amountCents),
+            payoutCentsCook: cookPayoutForSplit,
+            idempotencyKey: `pending-delta:${pendingDelta.paymentIntentId}:extra-transfer`,
         });
-        const clearedPending: BookingRequestOfferPaymentData = {
+        let clearedPending: BookingRequestOfferPaymentData = {
             ...offer.paymentData,
-            pendingDeltaPayment: undefined,
             clientSecret:
                 'clientSecret' in offer.paymentData && offer.paymentData.clientSecret !== pendingDelta.clientSecret
                     ? offer.paymentData.clientSecret
                     : undefined,
-            ...(extraTransferId ? { extraTransferId } : {}),
         } as BookingRequestOfferPaymentData;
-        // Drop undefined pendingDeltaPayment key for cleaner JSON.
+        if (extraTransferId) {
+            clearedPending = paymentDataWithExtraTransfer(clearedPending, extraTransferId);
+        }
+        // Drop pendingDeltaPayment key for cleaner JSON.
         if ('pendingDeltaPayment' in clearedPending) {
             delete (clearedPending as { pendingDeltaPayment?: unknown }).pendingDeltaPayment;
         }
@@ -88,7 +91,12 @@ export async function bookingRequestOfferPaymentFinalize(
             await transaction
                 .update(bookingRequestOffers)
                 .set({ paymentData: clearedPending })
-                .where(eq(bookingRequestOffers.bookingRequestOfferId, offer.bookingRequestOfferId));
+                .where(
+                    and(
+                        eq(bookingRequestOffers.bookingRequestOfferId, offer.bookingRequestOfferId),
+                        sql`${bookingRequestOffers.paymentData}->'pendingDeltaPayment'->>'paymentIntentId' = ${pendingDelta.paymentIntentId}`,
+                    ),
+                );
             if (invoiceAddress) {
                 await transaction
                     .update(bookingRequests)
@@ -126,8 +134,8 @@ export async function bookingRequestOfferPaymentFinalize(
             payoutCentsCook: offer.payoutCentsCook,
         });
         nextPaymentData = await paymentDataWithTransferId(serverRuntime, offer.paymentData);
-        if (extraTransferId && 'paymentIntentId' in nextPaymentData) {
-            nextPaymentData = { ...nextPaymentData, extraTransferId };
+        if (extraTransferId) {
+            nextPaymentData = paymentDataWithExtraTransfer(nextPaymentData, extraTransferId);
         }
         nextPaymentStatus = 'PAYED';
         nextPaymentDateTime = new Date();

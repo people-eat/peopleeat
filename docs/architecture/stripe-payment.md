@@ -67,11 +67,13 @@ a Stripe retrieve failure (stale or fixture `acct_…` id) marks the cook not pa
 | `PAYED_OUT_OF_SYSTEM`        | DB-only after admin confirm                                                                                                                                   |
 | `TRANSFERRED`                | Blocked (bank payout already left Connect)                                                                                                                    |
 
-Top-up Connect transfers persist as `paymentData.extraTransferId`. `paymentIntentRefund` returns `{ refundId }` and is used by post-accept
-booking amendments (partial refunds; newest `amendmentPaymentIntentIds` first). `transferReverse` accepts optional `amountCents` for partial
-Connect reversals on decreases; handover of equal-price `PAYED` offers still prefers full reverse + retransfer so the customer is not
-re-charged. Amendments use Stripe idempotency keys keyed by `amendmentApplyId`. When a `PAYED` increase has no reusable payment method,
-`paymentData.pendingDeltaPayment` holds an on-session delta PaymentIntent for checkout. See
+Top-up Connect transfers persist as `paymentData.extraTransferIds` (and legacy `extraTransferId` as the latest). `paymentIntentRefund`
+returns `{ refundId }` and is used by post-accept booking amendments (partial refunds; newest `amendmentPaymentIntentIds` first).
+`transferReverse` accepts optional `amountCents` for partial Connect reversals; decreases chunk across top-ups, amendment destination
+transfers, then the primary transfer. Handover of equal-price `PAYED` offers still prefers full reverse + retransfer so the customer is not
+re-charged. Amendments claim the pending JSON before money moves and use Stripe idempotency keys keyed by `amendmentApplyId`. When a `PAYED`
+increase has no reusable payment method, `paymentData.pendingDeltaPayment` holds an on-session delta PaymentIntent (customer pull + cook
+payout deltas) for checkout; `payment_intent.succeeded` / finalize clear it and create any leftover cook top-up. See
 [booking-offer-participant-amendment.md](../features/booking-offer-participant-amendment.md).
 
 ### Env
@@ -128,7 +130,7 @@ catalog); `log.error` when the handler throws. Gift-card checkout still finalize
 
 | Event                           | Behavior                                                                                                                                                   |
 | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `payment_intent.succeeded`      | Finalize matching offer → `PAYED` (`bookingRequestOfferPaymentIntentSucceededApply`)                                                                       |
+| `payment_intent.succeeded`      | Finalize matching offer → `PAYED`, or clear `pendingDeltaPayment` + cook top-up (`bookingRequestOfferPaymentIntentSucceededApply`)                         |
 | `payment_intent.processing`     | Same (async methods such as SEPA)                                                                                                                          |
 | `payment_intent.payment_failed` | Mark matching offer `FAILED` if not already paid/transferred; Slack fail notify                                                                            |
 | `payment_intent.canceled`       | Same as payment_failed                                                                                                                                     |

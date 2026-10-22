@@ -34,6 +34,7 @@ import {
     bookingRequestOfferInitialChatMessageInsert,
     bookingRequestOfferInitialMessageResolve,
 } from '../utils/bookingRequestOfferInitialChatMessage';
+import { paymentTransferIdsForCookReverse } from '../utils/bookingRequestOfferPaymentDataTransfers';
 import { bookingRequestOfferPaymentPrepare } from '../utils/bookingRequestOfferPaymentPrepare';
 import { bookingRequestOfferQueuedJobsCancel } from '../utils/bookingRequestOfferQueuedJobsCancel';
 
@@ -61,22 +62,8 @@ async function paymentTransferIdsResolve(
 ): Promise<{ transferIds: string[]; paymentIntentId?: string }> {
     if (!paymentData) return { transferIds: [] };
 
-    const transferIds: string[] = [];
-    if ('transferId' in paymentData && paymentData.transferId) {
-        transferIds.push(paymentData.transferId);
-    }
-    if ('extraTransferId' in paymentData && paymentData.extraTransferId) {
-        transferIds.push(paymentData.extraTransferId);
-    }
-
+    const transferIds = await paymentTransferIdsForCookReverse(serverRuntime, paymentData);
     const paymentIntentId = 'paymentIntentId' in paymentData ? paymentData.paymentIntentId : undefined;
-    if (transferIds.length === 0 && paymentIntentId) {
-        const destinationTransferId = await serverRuntime.stripe.paymentIntentDestinationTransferIdFindOne(paymentIntentId);
-        if (destinationTransferId) {
-            transferIds.push(destinationTransferId);
-        }
-    }
-
     return { transferIds, paymentIntentId };
 }
 

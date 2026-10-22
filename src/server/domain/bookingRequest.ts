@@ -245,7 +245,10 @@ export function bookingRequestOfferListBucketDerive(status: BookingRequestOfferS
 export type BookingRequestOfferPendingDeltaPayment = {
     paymentIntentId: string;
     clientSecret: string;
+    /** Customer pull cents for the delta PaymentIntent. */
     amountCents: number;
+    /** Cook Connect payout delta (may exceed customer pull when gift absorbed the increase). Optional on legacy rows. */
+    cookPayoutDeltaCents?: number;
 };
 
 export type BookingRequestOfferPaymentData =
@@ -258,8 +261,10 @@ export type BookingRequestOfferPaymentData =
           paymentIntentId: string;
           clientSecret: string;
           transferId?: string;
-          /** Top-up Connect transfer when payout > pull (destination charge). */
+          /** Latest top-up Connect transfer when payout > pull (legacy; prefer `extraTransferIds`). */
           extraTransferId?: string;
+          /** All top-up Connect transfers (oldest first). */
+          extraTransferIds?: string[];
           /** Partial refunds from post-accept participant amendments (newest last). */
           refundIds?: string[];
           /** Extra customer PaymentIntents from amendment increases (newest last). */
@@ -273,6 +278,7 @@ export type BookingRequestOfferPaymentData =
           clientSecret: string;
           transferId?: string;
           extraTransferId?: string;
+          extraTransferIds?: string[];
           refundIds?: string[];
           amendmentPaymentIntentIds?: string[];
           pendingDeltaPayment?: BookingRequestOfferPendingDeltaPayment;
@@ -280,6 +286,7 @@ export type BookingRequestOfferPaymentData =
     | {
           transferId: string;
           extraTransferId?: string;
+          extraTransferIds?: string[];
           refundIds?: string[];
           amendmentPaymentIntentIds?: string[];
           pendingDeltaPayment?: BookingRequestOfferPendingDeltaPayment;
@@ -291,6 +298,8 @@ export type BookingRequestOfferParticipantAmendment = {
     /** Stable id for Stripe idempotency keys across accept retries. */
     amendmentApplyId: string;
     requestedAt: string;
+    /** Set when cook accept claims the amendment before Stripe money moves (blocks cancel). */
+    claimedAt?: string;
     participants?: {
         type: BookingRequestParticipantType;
         name: string;

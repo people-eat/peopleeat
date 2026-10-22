@@ -257,6 +257,7 @@ function stripePaymentStubCreate(): StripePayment {
         accountBalanceFindOne: vi.fn(unused('accountBalanceFindOne')),
         accountBalanceTransactionsFindMany: vi.fn(unused('accountBalanceTransactionsFindMany')),
         transferCreate: vi.fn(unused('transferCreate')),
+        transferReversibleCentsFindOne: vi.fn(unused('transferReversibleCentsFindOne')),
         transferReverse: vi.fn(unused('transferReverse')),
         payoutCreate: vi.fn(unused('payoutCreate')),
         accountPayoutsFindMany: vi.fn(unused('accountPayoutsFindMany')),

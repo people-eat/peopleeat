@@ -170,8 +170,8 @@ export async function userBookingRequestOfferAccept(
 
         await bookingRequestExpireNotifyCancel(serverRuntime, row.bookingRequest.bookingRequestId);
 
-        if (row.giftCard) {
-            await giftCardCharge(serverRuntime, row.giftCard, price.totalWithoutDiscountsCentsCustomer);
+        if (row.giftCard && giftCardAppliedCents > 0) {
+            await giftCardCharge(serverRuntime, row.giftCard, giftCardAppliedCents);
         }
 
         const cookIdsCanCreateOffers = await cookIdsCanCreateOffersFind(

@@ -91,11 +91,13 @@ export async function adminBookingRequestOfferUpdate(
         }
 
         if (priceInputsChanged) {
+            const dualAccepted = offer.userAccepted === true && offer.cookAccepted === true;
             if (
                 offer.paymentStatus === 'SETUP' ||
                 offer.paymentStatus === 'PAYED' ||
                 offer.paymentStatus === 'TRANSFERRED' ||
-                offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM'
+                offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM' ||
+                (dualAccepted && offer.paymentStatus === 'EMPTY')
             ) {
                 throw new Error(
                     'adminBookingRequestOfferUpdate: cannot change menu/travel prices after payment is prepared or completed; use amendment or handover tools',

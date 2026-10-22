@@ -1,5 +1,5 @@
 import type { BookingRequest, BookingRequestOffer } from '../db/schema';
-import type { BookingRequestOfferPaymentStatus } from '../domain/bookingRequest';
+import type { BookingRequestOfferPaymentData, BookingRequestOfferPaymentStatus } from '../domain/bookingRequest';
 
 const AMENDMENT_ALLOWED_PAYMENT_STATUSES = new Set<BookingRequestOfferPaymentStatus>(['EMPTY', 'SETUP', 'PAYED']);
 
@@ -15,11 +15,15 @@ function bookingRequestOfferEventIsInFuture(bookingRequest: Pick<BookingRequest,
     return bookingRequest.dateTime.getTime() > now.getTime();
 }
 
+export function bookingRequestOfferHasPendingDeltaPayment(paymentData: BookingRequestOfferPaymentData | null | undefined): boolean {
+    return Boolean(paymentData && 'pendingDeltaPayment' in paymentData && paymentData.pendingDeltaPayment);
+}
+
 /** Customer may propose a participant amendment (feature toggle checked separately). */
 export function bookingRequestOfferCanRequestParticipantAmendment(input: {
     offer: Pick<
         BookingRequestOffer,
-        'userAccepted' | 'cookAccepted' | 'paymentStatus' | 'preparationsCompletedAt' | 'participantAmendment'
+        'userAccepted' | 'cookAccepted' | 'paymentStatus' | 'paymentData' | 'preparationsCompletedAt' | 'participantAmendment'
     >;
     bookingRequest: Pick<BookingRequest, 'dateTime' | 'canceledAt'>;
     now?: Date;
@@ -29,6 +33,7 @@ export function bookingRequestOfferCanRequestParticipantAmendment(input: {
     if (!bookingRequestOfferIsDualAccepted(offer)) return false;
     if (!bookingRequestOfferEventIsInFuture(bookingRequest, now)) return false;
     if (!bookingRequestOfferParticipantAmendmentPaymentAllowed(offer.paymentStatus)) return false;
+    if (bookingRequestOfferHasPendingDeltaPayment(offer.paymentData)) return false;
     if (offer.preparationsCompletedAt != null) return false;
     if (offer.participantAmendment != null) return false;
     return true;
