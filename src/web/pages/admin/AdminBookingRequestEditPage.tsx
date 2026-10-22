@@ -384,7 +384,6 @@ export function AdminBookingRequestEditPage({
                         void form.handleSubmit();
                     }}
                 >
-
                     <form.Field name="occasion">
                         {(field) => (
                             <div className="grid gap-4">
@@ -594,7 +593,9 @@ export function AdminBookingRequestEditPage({
                                 )}
                             >
                                 <span className="grid min-w-0 gap-0.5">
-                                    <span className="text-sm font-medium">{{ de: 'Gäste & Einschränkungen', en: 'Guests & restrictions' }[locale]}</span>
+                                    <span className="text-sm font-medium">
+                                        {{ de: 'Gäste & Einschränkungen', en: 'Guests & restrictions' }[locale]}
+                                    </span>
                                     <span className="text-sm text-muted-foreground">
                                         {
                                             {
