@@ -67,6 +67,7 @@ fragment ProfileCustomerBookingRequestOfferCheckoutPageUser on User {
                 publishableKey
                 type
             }
+            plannedPaymentPullDateTime
         }
     }
 }

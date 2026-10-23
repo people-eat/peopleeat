@@ -11,8 +11,8 @@ import {
     UtensilsCrossedIcon,
     VideoIcon,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
@@ -30,6 +30,7 @@ import {
     adminBookingRequestOfferPaymentStatusDescription,
     adminBookingRequestOfferPaymentStatusLabel,
     adminBookingRequestOfferPaymentStatusTone,
+    adminBookingRequestOfferPlannedPullPastNote,
 } from '../../components/adminBookingRequestOfferPaymentStatus';
 import { adminBookingRequestOfferStatusLabel } from '../../components/adminBookingRequestOfferStatus';
 import { AdminBookingRequestOfferTestimonialsSection } from '../../components/AdminBookingRequestOfferTestimonialsSection';
@@ -69,6 +70,7 @@ import type {
     GqlCAdminBookingRequestOfferPageQuery,
     GqlCAdminBookingRequestOfferPageRequestFragment,
     GqlCAdminCookPayoutBlockedReason,
+    GqlCBookingRequestOfferPaymentStatus,
 } from '../../graphql/generated';
 import {
     AdminBookingRequestOfferCallCreateDocument,
@@ -88,6 +90,7 @@ import {
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import { bookingPaymentPullIsPast } from '../../utils/bookingPaymentPullIsPast';
 import type { Locale } from '../../utils/locale';
 import { AdminBookingRequestOfferHandoverDialog } from './AdminBookingRequestOfferHandoverDialog';
 import { adminBookingRequestCustomerLabel } from './adminBookingRequestsColumns';
@@ -209,6 +212,36 @@ function DetailField({ label, value, mono, copyText }: { label: string; value: R
                     </div>
                 ) : null}
             </dd>
+        </div>
+    );
+}
+
+function PlannedPaymentPullValue({
+    plannedPaymentPullDateTime,
+    paymentStatus,
+    locale,
+    timeZone,
+}: {
+    plannedPaymentPullDateTime: string;
+    paymentStatus: GqlCBookingRequestOfferPaymentStatus;
+    locale: Locale;
+    timeZone: string;
+}) {
+    const pastNote = bookingPaymentPullIsPast(plannedPaymentPullDateTime)
+        ? adminBookingRequestOfferPlannedPullPastNote(paymentStatus, locale)
+        : null;
+
+    return (
+        <div className="grid gap-1">
+            <span>
+                {formatDateTime(plannedPaymentPullDateTime, {
+                    locale,
+                    timeZone,
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                })}
+            </span>
+            {pastNote != null ? <p className="text-xs text-muted-foreground">{pastNote}</p> : null}
         </div>
     );
 }
@@ -1336,7 +1369,11 @@ function CostsTabPanel({
                                 tone={adminBookingRequestOfferPaymentStatusTone(offer.paymentStatus)}
                                 title={adminBookingRequestOfferPaymentStatusLabel(offer.paymentStatus, locale)}
                             >
-                                <p>{adminBookingRequestOfferPaymentStatusDescription(offer.paymentStatus, locale)}</p>
+                                <p>
+                                    {adminBookingRequestOfferPaymentStatusDescription(offer.paymentStatus, locale, {
+                                        plannedPaymentPullDateTime: offer.plannedPaymentPullDateTime,
+                                    })}
+                                </p>
                                 <p className="text-muted-foreground">
                                     {
                                         {
@@ -1350,12 +1387,14 @@ function CostsTabPanel({
                         {offer.plannedPaymentPullDateTime ? (
                             <DetailField
                                 label={{ de: 'Geplanter Karteneinzug', en: 'Planned card pull' }[locale]}
-                                value={formatDateTime(offer.plannedPaymentPullDateTime, {
-                                    locale,
-                                    timeZone,
-                                    dateStyle: 'medium',
-                                    timeStyle: 'short',
-                                })}
+                                value={
+                                    <PlannedPaymentPullValue
+                                        plannedPaymentPullDateTime={offer.plannedPaymentPullDateTime}
+                                        paymentStatus={offer.paymentStatus}
+                                        locale={locale}
+                                        timeZone={timeZone}
+                                    />
+                                }
                             />
                         ) : null}
                         {offer.paymentDateTime ? (

@@ -19180,6 +19180,7 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageUserFragment = {
         offers: Array<{
             bookingRequestOfferId: string;
             status: Schema.GqlCBookingRequestOfferStatus;
+            plannedPaymentPullDateTime: string | null;
             configuredMenu: { title: string; courses: Array<{ title: string }> } | null;
             cook: {
                 cookId: string;
@@ -19227,6 +19228,7 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageQuery = {
                 offers: Array<{
                     bookingRequestOfferId: string;
                     status: Schema.GqlCBookingRequestOfferStatus;
+                    plannedPaymentPullDateTime: string | null;
                     configuredMenu: { title: string; courses: Array<{ title: string }> } | null;
                     cook: {
                         cookId: string;
@@ -19275,6 +19277,7 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageUpdatesSubscriptio
             offers: Array<{
                 bookingRequestOfferId: string;
                 status: Schema.GqlCBookingRequestOfferStatus;
+                plannedPaymentPullDateTime: string | null;
                 configuredMenu: { title: string; courses: Array<{ title: string }> } | null;
                 cook: {
                     cookId: string;
@@ -31710,6 +31713,7 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageUserFragmentDoc = {
                                                     ],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'plannedPaymentPullDateTime' } },
                                         ],
                                     },
                                 },
@@ -76908,6 +76912,7 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageDocument = {
                                                     ],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'plannedPaymentPullDateTime' } },
                                         ],
                                     },
                                 },
@@ -77126,6 +77131,7 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageUpdatesDocument = {
                                                     ],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'plannedPaymentPullDateTime' } },
                                         ],
                                     },
                                 },

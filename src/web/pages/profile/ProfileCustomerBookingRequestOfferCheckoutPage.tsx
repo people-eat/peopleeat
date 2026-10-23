@@ -22,6 +22,7 @@ import {
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
+import { bookingPaymentPullIsPast } from '../../utils/bookingPaymentPullIsPast';
 import type { Locale } from '../../utils/locale';
 
 import { profileCustomerBookingRequestOfferCheckoutPageTitle } from './profileCustomerBookingRequestOfferLabels';
@@ -241,6 +242,8 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
     // Also covers PAYED offers with `pendingDeltaPayment` (amendment increase without reusable PM).
     const canPay = liveOffer.payment != null && (needsDepositPayment || liveOffer.status === 'EVENT_PENDING');
     const paymentUnavailable = needsDepositPayment && liveOffer.payment == null;
+    const pullIsPast = bookingPaymentPullIsPast(liveOffer.plannedPaymentPullDateTime);
+    const isSetupIntent = liveOffer.payment?.type === 'SETUP_INTENT';
 
     const offerHref = {
         to: '/{-$locale}/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId' as const,
@@ -297,8 +300,18 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
             });
             toast.success(
                 {
-                    de: liveOffer.payment?.type === 'SETUP_INTENT' ? 'Zahlungsdaten gespeichert.' : 'Zahlung erfolgreich.',
-                    en: liveOffer.payment?.type === 'SETUP_INTENT' ? 'Payment details saved.' : 'Payment successful.',
+                    de:
+                        liveOffer.payment?.type === 'SETUP_INTENT'
+                            ? pullIsPast
+                                ? 'Zahlungsdaten gespeichert. Die Abbuchung folgt in Kürze.'
+                                : 'Zahlungsdaten gespeichert.'
+                            : 'Zahlung erfolgreich.',
+                    en:
+                        liveOffer.payment?.type === 'SETUP_INTENT'
+                            ? pullIsPast
+                                ? 'Payment details saved. The charge follows shortly.'
+                                : 'Payment details saved.'
+                            : 'Payment successful.',
                 }[locale],
             );
             void navigate({ ...offerHref, search: { tab: 'offer' } });
@@ -316,26 +329,27 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
         toast.error(message ?? { de: 'Zahlung fehlgeschlagen.', en: 'Payment failed.' }[locale]);
     }
 
-    const paymentConfirmLabel =
-        liveOffer.payment?.type === 'SETUP_INTENT'
-            ? {
-                  de: paymentBusy || confirmPayment ? 'Wird gespeichert…' : 'Zahlungsdaten vormerken',
-                  en: paymentBusy || confirmPayment ? 'Saving…' : 'Store payment details',
-              }[locale]
-            : {
-                  de: paymentBusy || confirmPayment ? 'Wird bestätigt…' : 'Jetzt bezahlen',
-                  en: paymentBusy || confirmPayment ? 'Confirming…' : 'Pay now',
-              }[locale];
+    const paymentConfirmLabel = isSetupIntent
+        ? {
+              de: paymentBusy || confirmPayment ? 'Wird gespeichert…' : 'Zahlungsdaten vormerken',
+              en: paymentBusy || confirmPayment ? 'Saving…' : 'Store payment details',
+          }[locale]
+        : {
+              de: paymentBusy || confirmPayment ? 'Wird bestätigt…' : 'Jetzt bezahlen',
+              en: paymentBusy || confirmPayment ? 'Confirming…' : 'Pay now',
+          }[locale];
 
     const description = {
-        de:
-            liveOffer.payment?.type === 'SETUP_INTENT'
-                ? 'Hinterlege deine Kartendaten. Wir belasten dich erst kurz vor dem Event.'
-                : 'Schließe die Zahlung ab, um die Buchung zu bestätigen.',
-        en:
-            liveOffer.payment?.type === 'SETUP_INTENT'
-                ? 'Save your card details. We charge you shortly before the event.'
-                : 'Complete payment to confirm the booking.',
+        de: isSetupIntent
+            ? pullIsPast
+                ? 'Hinterlege deine Kartendaten. Wir belasten die Karte direkt danach.'
+                : 'Hinterlege deine Kartendaten. Wir belasten dich erst kurz vor dem Event.'
+            : 'Schließe die Zahlung ab, um die Buchung zu bestätigen.',
+        en: isSetupIntent
+            ? pullIsPast
+                ? 'Save your card details. We charge the card right after that.'
+                : 'Save your card details. We charge you shortly before the event.'
+            : 'Complete payment to confirm the booking.',
     }[locale];
 
     return (

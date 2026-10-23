@@ -1,4 +1,5 @@
 import type { GqlCBookingRequestOfferPaymentStatus } from '../graphql/generated';
+import { bookingPaymentPullIsPast } from '../utils/bookingPaymentPullIsPast';
 import type { Locale } from '../utils/locale';
 import type { StatusTone } from './base/status';
 
@@ -15,7 +16,18 @@ export function adminBookingRequestOfferPaymentStatusLabel(status: GqlCBookingRe
 }
 
 /** One-sentence ops explanation of what the status means next. */
-export function adminBookingRequestOfferPaymentStatusDescription(status: GqlCBookingRequestOfferPaymentStatus, locale: Locale): string {
+export function adminBookingRequestOfferPaymentStatusDescription(
+    status: GqlCBookingRequestOfferPaymentStatus,
+    locale: Locale,
+    options?: { plannedPaymentPullDateTime?: Date | string | null },
+): string {
+    if (status === 'SETUP' && bookingPaymentPullIsPast(options?.plannedPaymentPullDateTime)) {
+        return {
+            de: 'Kartendaten sind gespeichert. Der geplante Einzugstermin ist vorbei; der Betrag wird in Kürze automatisch abgebucht.',
+            en: 'Card details are saved. The planned pull date is past; the amount will be charged automatically shortly.',
+        }[locale];
+    }
+
     return {
         EMPTY: {
             de: 'Noch keine Stripe-Zahlung vorbereitet. Checkout steht aus, oder eine Vorbereitung wurde zurückgesetzt.',
@@ -42,6 +54,26 @@ export function adminBookingRequestOfferPaymentStatusDescription(status: GqlCBoo
             en: 'Marked as paid outside Stripe (for example wire). Optionally check whether Stripe already paid out.',
         },
     }[status][locale];
+}
+
+/** Ops note under planned pull when that instant is already past and money is not collected yet. */
+export function adminBookingRequestOfferPlannedPullPastNote(
+    paymentStatus: GqlCBookingRequestOfferPaymentStatus,
+    locale: Locale,
+): string | null {
+    if (paymentStatus === 'EMPTY') {
+        return {
+            de: 'Bereits in der Vergangenheit. Wird direkt nach Eingabe der Zahlungsdaten eingezogen.',
+            en: 'Already in the past. Will be pulled right after the customer enters payment data.',
+        }[locale];
+    }
+    if (paymentStatus === 'SETUP') {
+        return {
+            de: 'Bereits in der Vergangenheit. Der automatische Einzug sollte in Kürze laufen.',
+            en: 'Already in the past. The automatic pull should run shortly.',
+        }[locale];
+    }
+    return null;
 }
 
 export function adminBookingRequestOfferPaymentStatusTone(status: GqlCBookingRequestOfferPaymentStatus): StatusTone {

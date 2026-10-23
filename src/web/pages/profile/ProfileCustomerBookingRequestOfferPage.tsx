@@ -72,6 +72,7 @@ import {
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
+import { bookingPaymentPullIsPast } from '../../utils/bookingPaymentPullIsPast';
 import { cn } from '../../utils/cn';
 import type { Locale } from '../../utils/locale';
 
@@ -248,6 +249,8 @@ export function ProfileCustomerBookingRequestOfferPage({
     const needsAmendmentDeltaPayment = offer != null && offer.paymentStatus === 'PAYED' && offer.payment != null;
     const canPay = offer != null && offer.payment != null && (offer.status === 'USER_NEEDS_DEPOSIT_PAYMENT' || needsAmendmentDeltaPayment);
     const paymentUnavailable = offer != null && offer.status === 'USER_NEEDS_DEPOSIT_PAYMENT' && offer.payment == null;
+    const pullIsPast = bookingPaymentPullIsPast(offer?.plannedPaymentPullDateTime);
+    const isSetupIntent = offer?.payment?.type === 'SETUP_INTENT';
     const canSend = offer != null && bookingRequestOfferChatCanSend(offer.status);
 
     useEffect(() => {
@@ -397,14 +400,16 @@ export function ProfileCustomerBookingRequestOfferPage({
                     <BookingRequestOfferAttentionBanner
                         message={
                             {
-                                de:
-                                    offer.payment?.type === 'SETUP_INTENT'
-                                        ? 'Zahlungsdaten ausstehend: bitte hinterlegen'
-                                        : 'Zahlung ausstehend: bitte Checkout abschließen',
-                                en:
-                                    offer.payment?.type === 'SETUP_INTENT'
-                                        ? 'Payment details pending: please save your card'
-                                        : 'Payment pending: please complete checkout',
+                                de: isSetupIntent
+                                    ? pullIsPast
+                                        ? 'Zahlungsdaten ausstehend: bitte hinterlegen (Abbuchung danach sofort)'
+                                        : 'Zahlungsdaten ausstehend: bitte hinterlegen'
+                                    : 'Zahlung ausstehend: bitte Checkout abschließen',
+                                en: isSetupIntent
+                                    ? pullIsPast
+                                        ? 'Payment details pending: please save your card (charged right after)'
+                                        : 'Payment details pending: please save your card'
+                                    : 'Payment pending: please complete checkout',
                             }[locale]
                         }
                         actionLabel={{ de: 'Zum Checkout', en: 'Go to checkout' }[locale]}
@@ -758,6 +763,8 @@ function OfferTabPanel({
     const canEditDiscount = offer.paymentStatus === 'EMPTY' && !dualAccepted;
     const selectedMenu = offer.suggestedMenus.find((menu) => menu.menuId === selectedMenuId) ?? null;
     const hasMenu = offer.configuredMenu != null || canConfigure || offer.suggestedMenus.length > 0;
+    const pullIsPast = bookingPaymentPullIsPast(offer.plannedPaymentPullDateTime);
+    const isSetupIntent = offer.payment?.type === 'SETUP_INTENT';
 
     return (
         <div className={cn('grid gap-8', hasMenu && '@5xl:grid-cols-2 @5xl:items-start @5xl:gap-10')}>
@@ -909,8 +916,8 @@ function OfferTabPanel({
                                 >
                                     {
                                         {
-                                            de: offer.payment?.type === 'SETUP_INTENT' ? 'Zahlungsdaten hinterlegen' : 'Jetzt bezahlen',
-                                            en: offer.payment?.type === 'SETUP_INTENT' ? 'Add payment details' : 'Pay now',
+                                            de: isSetupIntent ? 'Zahlungsdaten hinterlegen' : 'Jetzt bezahlen',
+                                            en: isSetupIntent ? 'Add payment details' : 'Pay now',
                                         }[locale]
                                     }
                                 </Link>
@@ -919,14 +926,16 @@ function OfferTabPanel({
                     >
                         {
                             {
-                                de:
-                                    offer.payment?.type === 'SETUP_INTENT'
-                                        ? 'Bitte hinterlege deine Kartendaten, damit wir die Buchung vormerken können.'
-                                        : 'Bitte schließe die Zahlung ab, um die Buchung zu bestätigen.',
-                                en:
-                                    offer.payment?.type === 'SETUP_INTENT'
-                                        ? 'Please save your card details so we can reserve the booking.'
-                                        : 'Please complete payment to confirm the booking.',
+                                de: isSetupIntent
+                                    ? pullIsPast
+                                        ? 'Bitte hinterlege deine Kartendaten. Wir belasten die Karte direkt danach.'
+                                        : 'Bitte hinterlege deine Kartendaten, damit wir die Buchung vormerken können.'
+                                    : 'Bitte schließe die Zahlung ab, um die Buchung zu bestätigen.',
+                                en: isSetupIntent
+                                    ? pullIsPast
+                                        ? 'Please save your card details. We charge the card right after that.'
+                                        : 'Please save your card details so we can reserve the booking.'
+                                    : 'Please complete payment to confirm the booking.',
                             }[locale]
                         }
                     </StatusAlert>

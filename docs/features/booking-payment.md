@@ -10,7 +10,10 @@ After dual acceptance, the customer pays (or completes a €0 path); later an ad
 3. After successful payment (or €0 accept), the customer receives a confirmation email. Accept also emails the chosen cook and notifies
    sibling cooks who were not chosen. The chosen cook can read the checkout **invoice address** on the offer Request tab (for their own
    invoicing).
-4. For pull/charge-later paths, the customer receives an announcement email before the card is charged.
+4. For pull/charge-later paths, the customer receives an announcement email before the card is charged. If the customer only completes
+   SetupIntent checkout **after** `plannedPaymentPullDateTime`, checkout / offer copy warns that the card is charged right after saving
+   details (the pull job is enqueued with a past `startAfter` and runs ASAP). Admin Costs shows the same overdue note next to the planned
+   pull timestamp.
 5. After the event, **cook bank payout** is admin-gated: due payouts surface on the admin overview; an admin releases a Connect payout,
    checks whether a Stripe payout already took place, or marks out-of-system. Cooks do not self-trigger payout. On completed offers, the
    cook Offer tab shows an info banner with the invoice amount (menu + travel before the platform fee) and notes that the fee was deducted
