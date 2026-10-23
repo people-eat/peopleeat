@@ -26,6 +26,11 @@ import {
     userDisplayName,
 } from '../../../shared';
 import { AdminBookingRequestOfferCallRecordingsSection } from '../../components/AdminBookingRequestOfferCallRecordingsSection';
+import {
+    adminBookingRequestOfferPaymentStatusDescription,
+    adminBookingRequestOfferPaymentStatusLabel,
+    adminBookingRequestOfferPaymentStatusTone,
+} from '../../components/adminBookingRequestOfferPaymentStatus';
 import { adminBookingRequestOfferStatusLabel } from '../../components/adminBookingRequestOfferStatus';
 import { AdminBookingRequestOfferTestimonialsSection } from '../../components/AdminBookingRequestOfferTestimonialsSection';
 import { AdminOfferPartyCards } from '../../components/AdminOfferPartyCards';
@@ -1323,7 +1328,25 @@ function CostsTabPanel({
                         <CardTitle className="text-sm">{{ de: 'Zahlung & Stripe', en: 'Payment & Stripe' }[locale]}</CardTitle>
                     </CardHeader>
                     <CardContent className="grid gap-3 px-4">
-                        <DetailField label={{ de: 'Zahlungsstatus', en: 'Payment status' }[locale]} value={offer.paymentStatus} />
+                        <div className="grid gap-2">
+                            <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                {{ de: 'Zahlungsstatus', en: 'Payment status' }[locale]}
+                            </p>
+                            <StatusAlert
+                                tone={adminBookingRequestOfferPaymentStatusTone(offer.paymentStatus)}
+                                title={adminBookingRequestOfferPaymentStatusLabel(offer.paymentStatus, locale)}
+                            >
+                                <p>{adminBookingRequestOfferPaymentStatusDescription(offer.paymentStatus, locale)}</p>
+                                <p className="text-muted-foreground">
+                                    {
+                                        {
+                                            de: `Technisch: ${offer.paymentStatus}`,
+                                            en: `Technical: ${offer.paymentStatus}`,
+                                        }[locale]
+                                    }
+                                </p>
+                            </StatusAlert>
+                        </div>
                         {offer.plannedPaymentPullDateTime ? (
                             <DetailField
                                 label={{ de: 'Geplanter Karteneinzug', en: 'Planned card pull' }[locale]}

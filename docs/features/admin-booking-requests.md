@@ -74,21 +74,22 @@ pill sits top-right above the tabs (no payment-status pill in that chrome).
 
 **Costs** is the ops economics surface: labeled cook/customer platform fees with stored percents, payment-provider fee, menu / travel /
 payout / customer totals, and **Plattformgewinn / Platform profit** (`platformFeeCentsCook + platformFeeCentsCustomer`) highlighted in the
-untitled economics card (no “Wirtschaftlichkeit” heading). The **Zahlung & Stripe** card shows payment status, **Geplanter Karteneinzug /
-Planned card pull** as a full date-time (`plannedPaymentPullDateTime`, event time minus 14 days on the SetupIntent path), paid / payout
-timestamps the same way, and Stripe Dashboard deep links (`stripePaymentIntentUrl` / `stripeSetupIntentUrl` when `paymentData` has those
-ids; test vs live from `STRIPE_SECRET_KEY`). Payout release actions and dual cost views with **Kundensicht / Kochsicht** titles above,
-columns top-aligned. **Customer view** sits in a card around `CostBreakdownPanel` (promo / gift line items + total, muted travel-included
-footer). **Cook view** renders `BookingRequestOfferCostOverviewPanel` (`viewer: admin`) without an extra card wrapper (panel already has
-bordered sections) using **stored** offer fee amounts (not a live recalculation), so migrated or historical fee snapshots stay honest. Fee
-create/edit still only takes menu price + travel; percents/amounts (including `totalWithoutDiscountsCentsCustomer` and, when already set,
-`totalCentsCustomer` with any gift/promo discount cents preserved) are always recalculated on write. Edit-price CTA (`.../edit-price`: menu
-price, travel, payment/payout timestamps) lives on this tab’s footer only. On dual-accepted offers (`EMPTY` / `SETUP` / `PAYED`),
-menu/travel edits use `bookingRequestOfferAmendmentCreate` (cook must accept) or `bookingRequestOfferAmendmentApply` (bypass cook approval).
-Both reuse amendment Stripe rules (`EMPTY` cancel and re-prepare, `SETUP` columns only, `PAYED` refund/top-up). UI: checkbox **Bypass cook
-approval** (default off) + consequence confirm dialog. No feature toggle. Same path applies from request edit for venue/participants.
-Blocked for `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED` and when preparations are locked (clear prep first). Pre-accept price edits
-still use `bookingRequestOfferUpdate`.
+untitled economics card (no “Wirtschaftlichkeit” heading). The **Zahlung & Stripe** card explains `paymentStatus` with a bilingual
+`StatusAlert` (ops label + one-sentence meaning, plus the technical enum for Stripe debugging via `adminBookingRequestOfferPaymentStatus*`),
+**Geplanter Karteneinzug / Planned card pull** as a full date-time (`plannedPaymentPullDateTime`, event time minus 14 days on the
+SetupIntent path), paid / payout timestamps the same way, and Stripe Dashboard deep links (`stripePaymentIntentUrl` / `stripeSetupIntentUrl`
+when `paymentData` has those ids; test vs live from `STRIPE_SECRET_KEY`). Payout release actions and dual cost views with **Kundensicht /
+Kochsicht** titles above, columns top-aligned. **Customer view** sits in a card around `CostBreakdownPanel` (promo / gift line items +
+total, muted travel-included footer). **Cook view** renders `BookingRequestOfferCostOverviewPanel` (`viewer: admin`) without an extra card
+wrapper (panel already has bordered sections) using **stored** offer fee amounts (not a live recalculation), so migrated or historical fee
+snapshots stay honest. Fee create/edit still only takes menu price + travel; percents/amounts (including
+`totalWithoutDiscountsCentsCustomer` and, when already set, `totalCentsCustomer` with any gift/promo discount cents preserved) are always
+recalculated on write. Edit-price CTA (`.../edit-price`: menu price, travel, payment/payout timestamps) lives on this tab’s footer only. On
+dual-accepted offers (`EMPTY` / `SETUP` / `PAYED`), menu/travel edits use `bookingRequestOfferAmendmentCreate` (cook must accept) or
+`bookingRequestOfferAmendmentApply` (bypass cook approval). Both reuse amendment Stripe rules (`EMPTY` cancel and re-prepare, `SETUP`
+columns only, `PAYED` refund/top-up). UI: checkbox **Bypass cook approval** (default off) + consequence confirm dialog. No feature toggle.
+Same path applies from request edit for venue/participants. Blocked for `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED` and when
+preparations are locked (clear prep first). Pre-accept price edits still use `bookingRequestOfferUpdate`.
 
 **Menu** holds only configured / suggested menus (`OfferMenuConfigured` or `CookMenuCard` grid to `/admin/menus/$menuId`) — no cook/customer
 header. When a customer has frozen a configured menu, admins can open `.../edit-configured-menu` to replace title, description, and
