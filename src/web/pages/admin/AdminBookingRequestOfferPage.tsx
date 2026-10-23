@@ -1326,26 +1326,46 @@ function CostsTabPanel({
                         <DetailField label={{ de: 'Zahlungsstatus', en: 'Payment status' }[locale]} value={offer.paymentStatus} />
                         {offer.plannedPaymentPullDateTime ? (
                             <DetailField
-                                label={{ de: 'Geplante Zahlung', en: 'Planned payment' }[locale]}
-                                value={formatDate(offer.plannedPaymentPullDateTime, { locale, timeZone, dateStyle: 'medium' })}
+                                label={{ de: 'Geplanter Karteneinzug', en: 'Planned card pull' }[locale]}
+                                value={formatDateTime(offer.plannedPaymentPullDateTime, {
+                                    locale,
+                                    timeZone,
+                                    dateStyle: 'medium',
+                                    timeStyle: 'short',
+                                })}
                             />
                         ) : null}
                         {offer.paymentDateTime ? (
                             <DetailField
                                 label={{ de: 'Bezahlt', en: 'Paid' }[locale]}
-                                value={formatDate(offer.paymentDateTime, { locale, timeZone, dateStyle: 'medium' })}
+                                value={formatDateTime(offer.paymentDateTime, {
+                                    locale,
+                                    timeZone,
+                                    dateStyle: 'medium',
+                                    timeStyle: 'short',
+                                })}
                             />
                         ) : null}
                         {offer.plannedPayoutDateTime ? (
                             <DetailField
                                 label={{ de: 'Geplante Auszahlung', en: 'Planned payout' }[locale]}
-                                value={formatDate(offer.plannedPayoutDateTime, { locale, timeZone, dateStyle: 'medium' })}
+                                value={formatDateTime(offer.plannedPayoutDateTime, {
+                                    locale,
+                                    timeZone,
+                                    dateStyle: 'medium',
+                                    timeStyle: 'short',
+                                })}
                             />
                         ) : null}
                         {offer.payoutDateTime ? (
                             <DetailField
                                 label={{ de: 'Ausgezahlt', en: 'Paid out' }[locale]}
-                                value={formatDate(offer.payoutDateTime, { locale, timeZone, dateStyle: 'medium' })}
+                                value={formatDateTime(offer.payoutDateTime, {
+                                    locale,
+                                    timeZone,
+                                    dateStyle: 'medium',
+                                    timeStyle: 'short',
+                                })}
                             />
                         ) : null}
                         {offer.stripePaymentIntentUrl || offer.stripeSetupIntentUrl ? (
