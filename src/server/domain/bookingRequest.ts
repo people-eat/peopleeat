@@ -316,7 +316,11 @@ export type BookingRequestOfferParticipantAmendment = {
      */
     travelExpensesCentsAfter?: number;
     menuPriceCentsBefore: number;
-    travelExpensesCentsBefore: number;
+    /**
+     * Absent on legacy pending rows created before venue amendments stored travel snapshots.
+     * GraphQL / apply fall back to the live offer travel when missing.
+     */
+    travelExpensesCentsBefore?: number;
     totalCentsCustomerBefore: number;
     payoutCentsCookBefore: number;
 };

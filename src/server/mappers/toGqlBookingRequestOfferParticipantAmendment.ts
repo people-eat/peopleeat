@@ -73,7 +73,8 @@ export function toGqlBookingRequestOfferParticipantAmendment(input: {
         exactEventAddress: amendment.exactEventAddress ? toGqlAddress(amendment.exactEventAddress) : null,
         menuPriceCentsBefore: amendment.menuPriceCentsBefore,
         menuPriceCentsAfter: price.menuPriceCentsAfter,
-        travelExpensesCentsBefore: amendment.travelExpensesCentsBefore,
+        // Legacy pending JSON (pre–venue amendments) omitted travel snapshots.
+        travelExpensesCentsBefore: amendment.travelExpensesCentsBefore ?? offer.travelExpensesCents,
         travelExpensesCentsAfter: price.travelExpensesCents,
         totalCentsCustomerBefore: amendment.totalCentsCustomerBefore,
         totalCentsCustomerAfter: price.totalCentsCustomerAfter,
