@@ -1,8 +1,8 @@
 import { and, eq, sql } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
-import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequestParticipants, bookingRequests } from '../db/schema';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant, Cook, GiftCard, PromoCode, User } from '../db/schema';
+import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequestParticipants, bookingRequests } from '../db/schema';
 import type {
     BookingRequestExactEventAddress,
     BookingRequestOfferParticipantAmendment,
@@ -154,9 +154,12 @@ export async function bookingRequestOfferParticipantAmendmentApply(
         promoCode?: PromoCode | null;
         travelDistanceKmAfter?: number | null;
         travelExpensesCentsAfter?: number;
+        /** Timeline event for the apply (cook accept vs admin bypass). */
+        acceptEventType?: 'COOK_PARTICIPANT_AMENDMENT_ACCEPTED' | 'ADMIN_PARTICIPANT_AMENDMENT_APPLIED';
     },
 ): Promise<BookingRequestOfferParticipantAmendmentApplyResult> {
     const { offer, bookingRequest, cook, customer, existingParticipants, amendment, giftCard = null, promoCode = null } = input;
+    const acceptEventType = input.acceptEventType ?? 'COOK_PARTICIPANT_AMENDMENT_ACCEPTED';
 
     if (!cook.stripeAccountId) {
         throw new Error('bookingRequestOfferParticipantAmendmentApply: cook has no Stripe account');
@@ -184,7 +187,7 @@ export async function bookingRequestOfferParticipantAmendmentApply(
             existingParticipants.filter((p) => p.type === 'DISCOUNTED').length !==
                 participantsAfter.filter((p) => p.type === 'DISCOUNTED').length);
 
-    const travelExpensesCentsAfter = input.travelExpensesCentsAfter ?? offer.travelExpensesCents;
+    const travelExpensesCentsAfter = amendment.travelExpensesCentsAfter ?? input.travelExpensesCentsAfter ?? offer.travelExpensesCents;
     const travelDistanceKmAfter = input.travelDistanceKmAfter ?? offer.travelDistanceKm ?? null;
 
     const totalCentsCustomerBefore = offer.totalCentsCustomer ?? offer.totalWithoutDiscountsCentsCustomer;
@@ -199,7 +202,8 @@ export async function bookingRequestOfferParticipantAmendmentApply(
             promoAmountCents: promoCode?.amountCents ?? 0,
             participantsBefore: existingParticipants,
             participantsAfter,
-            scaleMenuByParticipants: headcountChanged,
+            scaleMenuByParticipants: headcountChanged && amendment.menuPriceCentsAfter == null,
+            menuPriceCentsOverride: amendment.menuPriceCentsAfter,
         },
         offer.payoutCentsCook,
     );
@@ -424,7 +428,7 @@ export async function bookingRequestOfferParticipantAmendmentApply(
         await transaction.insert(bookingRequestOfferEvents).values({
             bookingRequestOfferEventId: acceptEventId,
             bookingRequestOfferId: offer.bookingRequestOfferId,
-            type: 'COOK_PARTICIPANT_AMENDMENT_ACCEPTED',
+            type: acceptEventType,
             payload: {
                 participantsAdultBefore: adultsBefore,
                 participantsDiscountedBefore: discountedBefore,

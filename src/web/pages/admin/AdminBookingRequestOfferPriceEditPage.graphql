@@ -4,9 +4,16 @@
 fragment AdminBookingRequestOfferPriceEditPageOffer on AdminBookingRequestOffer {
     bookingRequestOfferId
     bookingRequestId
+    userAccepted
+    cookAccepted
+    paymentStatus
+    canRequestParticipantAmendment
     menuPriceCents
     travelExpensesCents
     travelDistanceKm
+    totalCentsCustomer
+    totalWithoutDiscountsCentsCustomer
+    payoutCentsCook
     paymentDateTime
     plannedPayoutDateTime
     payoutDateTime
@@ -45,6 +52,24 @@ query AdminBookingRequestOfferPriceEditPage($bookingRequestId: ID!, $bookingRequ
                     ...AdminBookingRequestOfferPriceEditPageOffer
                 }
             }
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferAmendmentCreate($bookingRequestOfferId: ID!, $input: AdminBookingRequestOfferAmendmentInput!) {
+    admin {
+        bookingRequestOfferAmendmentCreate(bookingRequestOfferId: $bookingRequestOfferId, input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferAmendmentApply($bookingRequestOfferId: ID!, $input: AdminBookingRequestOfferAmendmentInput!) {
+    admin {
+        bookingRequestOfferAmendmentApply(bookingRequestOfferId: $bookingRequestOfferId, input: $input) {
+            success
+            referenceId
         }
     }
 }

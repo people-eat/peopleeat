@@ -43,7 +43,7 @@ export function toGqlBookingRequestOfferParticipantAmendment(input: {
                 participantsAfter.filter((p) => p.type === 'DISCOUNTED').length);
 
     const totalCentsCustomerBefore = offer.totalCentsCustomer ?? offer.totalWithoutDiscountsCentsCustomer;
-    const travelExpensesCentsAfter = input.travelExpensesCentsAfter ?? offer.travelExpensesCents;
+    const travelExpensesCentsAfter = amendment.travelExpensesCentsAfter ?? input.travelExpensesCentsAfter ?? offer.travelExpensesCents;
     const price = bookingRequestOfferParticipantAmendmentPriceCalculate(
         {
             menuPriceCentsBefore: offer.menuPriceCents,
@@ -55,7 +55,8 @@ export function toGqlBookingRequestOfferParticipantAmendment(input: {
             promoAmountCents: input.promoAmountCents ?? 0,
             participantsBefore: currentParticipants,
             participantsAfter,
-            scaleMenuByParticipants: headcountChanged,
+            scaleMenuByParticipants: headcountChanged && amendment.menuPriceCentsAfter == null,
+            menuPriceCentsOverride: amendment.menuPriceCentsAfter,
         },
         offer.payoutCentsCook,
     );

@@ -114,6 +114,8 @@ enum ChatMessageBookingRequestOfferEventType {
     USER_PARTICIPANT_AMENDMENT_CANCELED
     COOK_PARTICIPANT_AMENDMENT_ACCEPTED
     COOK_PARTICIPANT_AMENDMENT_DECLINED
+    ADMIN_PARTICIPANT_AMENDMENT_REQUESTED
+    ADMIN_PARTICIPANT_AMENDMENT_APPLIED
     COOK_PREPARATIONS_COMPLETED
     ADMIN_PREPARATIONS_CLEARED
     USER_RESTRICTIONS_UPDATED
@@ -4292,6 +4294,13 @@ type AdminMutation {
     bookingRequestOfferPayoutRelease(bookingRequestOfferId: ID!): MutationResult!
     # Clear cook preparations / groceries lock so the customer can amend again.
     bookingRequestOfferPreparationsClear(bookingRequestOfferId: ID!): MutationResult!
+    # Propose a post–dual-accept booking change (venue / participants / absolute
+    # menu or travel). Cook must accept. No feature toggle. Returns offer id.
+    bookingRequestOfferAmendmentCreate(bookingRequestOfferId: ID!, input: AdminBookingRequestOfferAmendmentInput!): MutationResult!
+    # Apply a post–dual-accept booking change immediately (bypasses cook
+    # approval). Reuses amendment Stripe money rules. No feature toggle.
+    # Returns offer id.
+    bookingRequestOfferAmendmentApply(bookingRequestOfferId: ID!, input: AdminBookingRequestOfferAmendmentInput!): MutationResult!
     # Marks a due PAYED offer as paid outside Stripe (wire / cash / goodwill).
     # Sets `PAYED_OUT_OF_SYSTEM` + `payoutDateTime`. No Stripe call. Idempotent
     # when already transferred / out-of-system / `payoutDateTime` set.
@@ -4462,6 +4471,16 @@ input AdminBookingRequestOfferUpdate {
     paymentDateTime: DateTime
     plannedPayoutDateTime: DateTime
     payoutDateTime: DateTime
+}
+
+# Admin post–dual-accept booking change (propose or apply). At least one of
+# participants, venue, menuPriceCents, or travelExpensesCents must change.
+input AdminBookingRequestOfferAmendmentInput {
+    participants: [UserBookingRequestParticipantCreate!]
+    exactEventAddress: AdminBookingRequestExactEventAddressInput
+    menuPriceCents: Int
+    travelExpensesCents: Int
+    travelDistanceKm: Float
 }
 
 # Concierge handover — close source dual-accepted offer, open/upgrade target.

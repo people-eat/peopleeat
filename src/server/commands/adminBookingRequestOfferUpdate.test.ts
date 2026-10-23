@@ -31,6 +31,8 @@ async function setupAdminOfferUpdate() {
         exactTravelOriginAddress: berlin,
         travelExpensesAmount: 25,
         maximumTravelDistance: 100,
+        stripeAccountId: 'acct_offer_update',
+        stripeAccountActive: true,
     });
 
     const customer = await commandSetup.withUser({ firstName: 'Customer', lastName: 'UpdateHost' });
@@ -184,6 +186,62 @@ describe('adminBookingRequestOfferUpdate', () => {
         expect(offer?.userAccepted).toBe(true);
         expect(offer?.cookAccepted).toBe(true);
         expect(offer?.paymentStatus).toBe('PAYED_OUT_OF_SYSTEM');
+    });
+
+    it('does not mark already dual-accepted EMPTY as PAYED_OUT_OF_SYSTEM on non-price updates', async () => {
+        const { admin, bookingRequestOfferId } = await setupAdminOfferUpdate();
+        await testDb
+            .update(bookingRequestOffers)
+            .set({
+                userAccepted: true,
+                cookAccepted: true,
+                paymentStatus: 'EMPTY',
+                paymentData: { setupIntentId: 'seti_keep', clientSecret: 'secret_keep' },
+            })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+        await adminBookingRequestOfferUpdate(
+            adminMutationParent(admin.user.userId),
+            {
+                bookingRequestOfferId,
+                input: { travelDistanceKm: 12.5 },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.travelDistanceKm).toBe(12.5);
+        expect(offer?.paymentStatus).toBe('EMPTY');
+        expect(offer?.paymentData).toEqual({ setupIntentId: 'seti_keep', clientSecret: 'secret_keep' });
+    });
+
+    it('rejects menu/travel price changes on dual-accepted offers', async () => {
+        const { admin, bookingRequestOfferId } = await setupAdminOfferUpdate();
+        await testDb
+            .update(bookingRequestOffers)
+            .set({
+                userAccepted: true,
+                cookAccepted: true,
+                paymentStatus: 'EMPTY',
+                paymentData: { paymentIntentId: 'pi_open', clientSecret: 'secret_open' },
+            })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+        await expect(
+            adminBookingRequestOfferUpdate(
+                adminMutationParent(admin.user.userId),
+                {
+                    bookingRequestOfferId,
+                    input: { menuPriceCents: 30_000 },
+                },
+                admin.requestingSession,
+                admin.serverRuntime,
+            ),
+        ).rejects.toThrow(/bookingRequestOfferAmendmentCreate/);
     });
 
     it('no-ops when input is empty', async () => {

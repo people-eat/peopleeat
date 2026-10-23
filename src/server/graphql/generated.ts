@@ -799,6 +799,14 @@ export interface GqlSAdminBookingRequestOffer {
     userUnreadNotificationCount: Scalars['Int']['output'];
 }
 
+export type GqlSAdminBookingRequestOfferAmendmentInput = {
+    exactEventAddress?: InputMaybe<GqlSAdminBookingRequestExactEventAddressInput>;
+    menuPriceCents?: InputMaybe<Scalars['Int']['input']>;
+    participants?: InputMaybe<Array<GqlSUserBookingRequestParticipantCreate>>;
+    travelDistanceKm?: InputMaybe<Scalars['Float']['input']>;
+    travelExpensesCents?: InputMaybe<Scalars['Int']['input']>;
+};
+
 export interface GqlSAdminBookingRequestOfferChatReviewAcknowledgeResult {
     __typename?: 'AdminBookingRequestOfferChatReviewAcknowledgeResult';
     acknowledgedOfferId: Scalars['ID']['output'];
@@ -1367,6 +1375,8 @@ export interface GqlSAdminMutation {
     bookingRequestCooksNotify: GqlSMutationResult;
     bookingRequestCreate: GqlSMutationResult;
     bookingRequestDiscountUpdate: GqlSMutationResult;
+    bookingRequestOfferAmendmentApply: GqlSMutationResult;
+    bookingRequestOfferAmendmentCreate: GqlSMutationResult;
     bookingRequestOfferCallCreate: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlSMutationResult;
@@ -1480,6 +1490,16 @@ export type GqlSAdminMutationBookingRequestCreateArgs = {
 export type GqlSAdminMutationBookingRequestDiscountUpdateArgs = {
     bookingRequestId: Scalars['ID']['input'];
     redeemCode?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type GqlSAdminMutationBookingRequestOfferAmendmentApplyArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+    input: GqlSAdminBookingRequestOfferAmendmentInput;
+};
+
+export type GqlSAdminMutationBookingRequestOfferAmendmentCreateArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+    input: GqlSAdminBookingRequestOfferAmendmentInput;
 };
 
 export type GqlSAdminMutationBookingRequestOfferCallCreateArgs = {
@@ -2682,6 +2702,8 @@ export interface GqlSChatMessageBookingRequestOfferEvent {
 export type GqlSChatMessageBookingRequestOfferEventType =
     | 'ADMIN_HANDED_OVER_CLOSED'
     | 'ADMIN_HANDED_OVER_TO_COOK'
+    | 'ADMIN_PARTICIPANT_AMENDMENT_APPLIED'
+    | 'ADMIN_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'ADMIN_PREPARATIONS_CLEARED'
     | 'COOK_ACCEPTED'
     | 'COOK_CALL_SLOT_CANCELLED'
@@ -5352,6 +5374,7 @@ export type GqlSResolversTypes = ResolversObject<{
             messages: Array<GqlSResolversTypes['HumanChatMessage']>;
         }
     >;
+    AdminBookingRequestOfferAmendmentInput: GqlSAdminBookingRequestOfferAmendmentInput;
     AdminBookingRequestOfferChatReviewAcknowledgeResult: ResolverTypeWrapper<GqlSAdminBookingRequestOfferChatReviewAcknowledgeResult>;
     AdminBookingRequestOfferCreate: GqlSAdminBookingRequestOfferCreate;
     AdminBookingRequestOfferCriterion: GqlSAdminBookingRequestOfferCriterion;
@@ -5931,6 +5954,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
         bookingRequest: GqlSResolversParentTypes['AdminBookingRequest'];
         messages: Array<GqlSResolversParentTypes['HumanChatMessage']>;
     };
+    AdminBookingRequestOfferAmendmentInput: GqlSAdminBookingRequestOfferAmendmentInput;
     AdminBookingRequestOfferChatReviewAcknowledgeResult: GqlSAdminBookingRequestOfferChatReviewAcknowledgeResult;
     AdminBookingRequestOfferCreate: GqlSAdminBookingRequestOfferCreate;
     AdminBookingRequestOfferCriterion: GqlSAdminBookingRequestOfferCriterion;
@@ -7534,6 +7558,18 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationBookingRequestDiscountUpdateArgs, 'bookingRequestId'>
+    >;
+    bookingRequestOfferAmendmentApply?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationBookingRequestOfferAmendmentApplyArgs, 'bookingRequestOfferId' | 'input'>
+    >;
+    bookingRequestOfferAmendmentCreate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationBookingRequestOfferAmendmentCreateArgs, 'bookingRequestOfferId' | 'input'>
     >;
     bookingRequestOfferCallCreate?: Resolver<
         GqlSResolversTypes['BookingRequestOfferCallTokenResult'],
@@ -11660,6 +11696,8 @@ export const GqlSBookingRequestStatusSchema: z.ZodType<
 export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'ADMIN_HANDED_OVER_CLOSED'
     | 'ADMIN_HANDED_OVER_TO_COOK'
+    | 'ADMIN_PARTICIPANT_AMENDMENT_APPLIED'
+    | 'ADMIN_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'ADMIN_PREPARATIONS_CLEARED'
     | 'COOK_ACCEPTED'
     | 'COOK_CALL_SLOT_CANCELLED'
@@ -11693,6 +11731,8 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_TIME_UPDATED',
     | 'ADMIN_HANDED_OVER_CLOSED'
     | 'ADMIN_HANDED_OVER_TO_COOK'
+    | 'ADMIN_PARTICIPANT_AMENDMENT_APPLIED'
+    | 'ADMIN_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'ADMIN_PREPARATIONS_CLEARED'
     | 'COOK_ACCEPTED'
     | 'COOK_CALL_SLOT_CANCELLED'
@@ -11727,6 +11767,8 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
 > = z.enum([
     'ADMIN_HANDED_OVER_CLOSED',
     'ADMIN_HANDED_OVER_TO_COOK',
+    'ADMIN_PARTICIPANT_AMENDMENT_APPLIED',
+    'ADMIN_PARTICIPANT_AMENDMENT_REQUESTED',
     'ADMIN_PREPARATIONS_CLEARED',
     'COOK_ACCEPTED',
     'COOK_CALL_SLOT_CANCELLED',
@@ -12076,6 +12118,16 @@ export function GqlSAdminBookingRequestExactEventAddressInputSchema(): z.ZodObje
     });
 }
 
+export function GqlSAdminBookingRequestOfferAmendmentInputSchema(): z.ZodObject<Properties<GqlSAdminBookingRequestOfferAmendmentInput>> {
+    return z.object({
+        exactEventAddress: GqlSAdminBookingRequestExactEventAddressInputSchema().nullish(),
+        menuPriceCents: z.number().nullish(),
+        participants: z.array(z.lazy(() => GqlSUserBookingRequestParticipantCreateSchema())).nullish(),
+        travelDistanceKm: z.number().nullish(),
+        travelExpensesCents: z.number().nullish(),
+    }) as z.ZodObject<Properties<GqlSAdminBookingRequestOfferAmendmentInput>>;
+}
+
 export function GqlSAdminBookingRequestOfferCreateSchema(): z.ZodObject<Properties<GqlSAdminBookingRequestOfferCreate>> {
     return z.object({
         bookingRequestId: z.string(),
@@ -12142,7 +12194,7 @@ export function GqlSAdminBookingRequestUpdateSchema(): z.ZodObject<Properties<Gq
         adjustedMessage: z.string().nullish(),
         createdAt: z.date().nullish(),
         dateTime: z.date().nullish(),
-        exactEventAddress: GqlSAdminBookingRequestExactEventAddressInputSchema().nullish(),
+        exactEventAddress: z.lazy(() => GqlSAdminBookingRequestExactEventAddressInputSchema().nullish()),
         expiresAt: z.date().nullish(),
         occasion: z.string().nullish(),
         originalMessage: z.string().nullish(),

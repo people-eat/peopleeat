@@ -15,6 +15,8 @@ import { adminBookingRequestCancel } from '../commands/adminBookingRequestCancel
 import { adminBookingRequestCooksNotify } from '../commands/adminBookingRequestCooksNotify';
 import { adminBookingRequestCreate } from '../commands/adminBookingRequestCreate';
 import { adminBookingRequestDiscountUpdate } from '../commands/adminBookingRequestDiscountUpdate';
+import { adminBookingRequestOfferAmendmentApply } from '../commands/adminBookingRequestOfferAmendmentApply';
+import { adminBookingRequestOfferAmendmentCreate } from '../commands/adminBookingRequestOfferAmendmentCreate';
 import { adminBookingRequestOfferCallCreate } from '../commands/adminBookingRequestOfferCallCreate';
 import { adminBookingRequestOfferCallJoin } from '../commands/adminBookingRequestOfferCallJoin';
 import { adminBookingRequestOfferCallLeave } from '../commands/adminBookingRequestOfferCallLeave';
@@ -498,6 +500,8 @@ import type {
     GqlSAdminMutationBookingRequestCooksNotifyArgs,
     GqlSAdminMutationBookingRequestCreateArgs,
     GqlSAdminMutationBookingRequestDiscountUpdateArgs,
+    GqlSAdminMutationBookingRequestOfferAmendmentApplyArgs,
+    GqlSAdminMutationBookingRequestOfferAmendmentCreateArgs,
     GqlSAdminMutationBookingRequestOfferCallCreateArgs,
     GqlSAdminMutationBookingRequestOfferCallJoinArgs,
     GqlSAdminMutationBookingRequestOfferCallLeaveArgs,
@@ -2234,6 +2238,20 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return adminBookingRequestOfferPreparationsClear(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferAmendmentCreate(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationBookingRequestOfferAmendmentCreateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestOfferAmendmentCreate(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferAmendmentApply(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationBookingRequestOfferAmendmentApplyArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestOfferAmendmentApply(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestOfferPayoutRelease(
                 parent: GqlSAdminMutation,

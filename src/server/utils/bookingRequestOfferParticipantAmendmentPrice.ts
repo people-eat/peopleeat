@@ -19,6 +19,8 @@ export type BookingRequestOfferParticipantAmendmentPriceInput = {
     participantsAfter: { type: BookingRequestParticipantType }[];
     /** When false, keep menu total (location-only amendment). Default true when headcount changes. */
     scaleMenuByParticipants?: boolean;
+    /** Absolute menu total (admin). When set, skips paid-headcount scaling. */
+    menuPriceCentsOverride?: number;
 };
 
 export type BookingRequestOfferParticipantAmendmentPriceResult = {
@@ -60,14 +62,16 @@ export function bookingRequestOfferParticipantAmendmentPriceCalculate(
     const paidParticipantsBefore = bookingRequestPaidParticipants(before.adults, before.discounted);
     const paidParticipantsAfter = bookingRequestPaidParticipants(after.adults, after.discounted);
 
-    const scaleMenu = input.scaleMenuByParticipants !== false;
-    const menuPriceCentsAfter = scaleMenu
-        ? bookingRequestOfferMenuPriceScaleByPaidParticipants({
-              menuPriceCents: input.menuPriceCentsBefore,
-              paidParticipantsBefore,
-              paidParticipantsAfter,
-          })
-        : input.menuPriceCentsBefore;
+    const menuPriceCentsAfter =
+        input.menuPriceCentsOverride != null
+            ? input.menuPriceCentsOverride
+            : input.scaleMenuByParticipants !== false
+              ? bookingRequestOfferMenuPriceScaleByPaidParticipants({
+                    menuPriceCents: input.menuPriceCentsBefore,
+                    paidParticipantsBefore,
+                    paidParticipantsAfter,
+                })
+              : input.menuPriceCentsBefore;
 
     const price = bookingRequestOfferPriceCalculate({
         menuPriceCents: menuPriceCentsAfter,

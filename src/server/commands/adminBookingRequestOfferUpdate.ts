@@ -93,16 +93,17 @@ export async function adminBookingRequestOfferUpdate(
         if (priceInputsChanged) {
             const dualAccepted = offer.userAccepted === true && offer.cookAccepted === true;
             if (
+                dualAccepted ||
                 offer.paymentStatus === 'SETUP' ||
                 offer.paymentStatus === 'PAYED' ||
                 offer.paymentStatus === 'TRANSFERRED' ||
-                offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM' ||
-                (dualAccepted && offer.paymentStatus === 'EMPTY')
+                offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM'
             ) {
                 throw new Error(
-                    'adminBookingRequestOfferUpdate: cannot change menu/travel prices after payment is prepared or completed; use amendment or handover tools',
+                    'adminBookingRequestOfferUpdate: cannot change menu/travel prices on dual-accepted or paid offers; use bookingRequestOfferAmendmentCreate / Apply',
                 );
             }
+
             const price = bookingRequestOfferPriceCalculate({
                 menuPriceCents: nextMenuPriceCents,
                 travelExpensesCents: nextTravelExpensesCents,
@@ -137,8 +138,10 @@ export async function adminBookingRequestOfferUpdate(
 
         const nextUserAccepted = offerPatch.userAccepted !== undefined ? offerPatch.userAccepted : offer.userAccepted;
         const nextCookAccepted = offerPatch.cookAccepted !== undefined ? offerPatch.cookAccepted : offer.cookAccepted;
+        const wasDualAccepted = offer.userAccepted === true && offer.cookAccepted === true;
+        const becomingDualAccepted = nextUserAccepted === true && nextCookAccepted === true && !wasDualAccepted;
         let becamePaidOutOfSystem = false;
-        if (nextUserAccepted === true && nextCookAccepted === true && offer.paymentStatus === 'EMPTY') {
+        if (becomingDualAccepted && offer.paymentStatus === 'EMPTY') {
             offerPatch.paymentStatus = 'PAYED_OUT_OF_SYSTEM';
             becamePaidOutOfSystem = true;
         }

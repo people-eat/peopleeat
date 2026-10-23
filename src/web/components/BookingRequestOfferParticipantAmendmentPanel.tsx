@@ -42,6 +42,22 @@ function amendmentSummary(amendment: AmendmentPreview, locale: Locale): string {
     if (amendment.exactEventAddress) {
         parts.push(amendment.exactEventAddress.displayText || amendment.exactEventAddress.city);
     }
+    if (amendment.menuPriceCentsBefore !== amendment.menuPriceCentsAfter) {
+        parts.push(
+            {
+                de: `Menü ${formatCurrency(amendment.menuPriceCentsBefore, { locale })} → ${formatCurrency(amendment.menuPriceCentsAfter, { locale })}`,
+                en: `Menu ${formatCurrency(amendment.menuPriceCentsBefore, { locale })} → ${formatCurrency(amendment.menuPriceCentsAfter, { locale })}`,
+            }[locale],
+        );
+    }
+    if (amendment.travelExpensesCentsBefore !== amendment.travelExpensesCentsAfter) {
+        parts.push(
+            {
+                de: `Reise ${formatCurrency(amendment.travelExpensesCentsBefore, { locale })} → ${formatCurrency(amendment.travelExpensesCentsAfter, { locale })}`,
+                en: `Travel ${formatCurrency(amendment.travelExpensesCentsBefore, { locale })} → ${formatCurrency(amendment.travelExpensesCentsAfter, { locale })}`,
+            }[locale],
+        );
+    }
     return parts.join(' · ');
 }
 

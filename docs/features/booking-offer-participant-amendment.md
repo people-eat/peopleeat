@@ -32,7 +32,10 @@ preparations done. Gated by `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`.
 8. The cook can mark **shopping / preparations done** (confirmation dialog first). After that, the customer cannot open a new amendment.
    Admins can clear the lock for ops.
 9. Blocked when the event is past, the request is canceled, or payment is `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED`.
-10. Admin request/offer money or venue/participant edits on dual-accepted paid offers are blocked (use amendment or handover tools).
+10. Admins may propose or immediately apply venue / participants / absolute menu or travel on dual-accepted offers via
+    `bookingRequestOfferAmendmentCreate` / `Apply` (no feature toggle; optional cook-approval bypass checkbox; consequence confirm dialog).
+    Prep lock and payment-status gates still apply. Direct `adminBookingRequestUpdate` venue/participants and
+    `adminBookingRequestOfferUpdate` menu/travel on dual-accepted offers stay rejected.
 
 ## Decisions
 
@@ -65,7 +68,8 @@ latest).
 - Toggle: `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT` in `src/shared/featureToggle.ts` + GraphQL enum + admin labels
 - Schema: `BookingRequestOffers.preparationsCompletedAt`, `participantAmendment` JSONB, `giftCardAppliedCents`
 - Domain events: `USER_PARTICIPANT_AMENDMENT_REQUESTED`, `USER_PARTICIPANT_AMENDMENT_CANCELED`, `COOK_PARTICIPANT_AMENDMENT_*`,
-  `COOK_PREPARATIONS_COMPLETED`, `ADMIN_PREPARATIONS_CLEARED`
+  `ADMIN_PARTICIPANT_AMENDMENT_REQUESTED`, `ADMIN_PARTICIPANT_AMENDMENT_APPLIED`, `COOK_PREPARATIONS_COMPLETED`,
+  `ADMIN_PREPARATIONS_CLEARED`
 - Price helper: `bookingRequestOfferParticipantAmendmentPrice.ts` (menu scale, travel, promo + gift re-apply)
 - Gates: `bookingRequestOfferParticipantAmendmentGates.ts`
 - Apply + Stripe: `bookingRequestOfferParticipantAmendmentApply.ts`; claim-before-money; `setupIntentCancel` / status-tolerant
@@ -73,7 +77,8 @@ latest).
   `cookPayoutDeltaCents`); `extraTransferIds`; `giftCardCredit` / fail-closed `giftCardCharge`; webhook finalize via
   `bookingRequestOfferPaymentIntentSucceededApply`
 - Commands: `userBookingRequestOfferParticipantAmendmentCreate` / `Cancel`, `cookBookingRequestOfferParticipantAmendmentAccept` / `Decline`,
-  `cookBookingRequestOfferPreparationsComplete`, `adminBookingRequestOfferPreparationsClear`
+  `cookBookingRequestOfferPreparationsComplete`, `adminBookingRequestOfferPreparationsClear`, `adminBookingRequestOfferAmendmentCreate` /
+  `Apply` (shared prepare helper + absolute menu/travel overrides)
 - Emails: cook request; customer accept (status-aware: EMPTY checkout / SETUP pull / PAYED refund-charge / gift restore / pending delta)
 - UI: customer propose via `ProfileCustomerBookingRequestEditPage` (amendment mode) + status on booking-request / offer pages; cook
   Accept/Decline in offer page chrome + footer; prep controls on cook Offer tab; admin prep clear on admin offer page

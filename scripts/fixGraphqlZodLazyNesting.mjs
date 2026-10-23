@@ -82,6 +82,7 @@ for (const name of [
     'GqlSUserBookingRequestCreate',
     'GqlSAdminBookingRequestCreate',
     'GqlSAdminBookingRequestUpdate',
+    'GqlSAdminBookingRequestOfferAmendmentInput',
     'GqlSPublicCookFindManyCriterion',
     'GqlSUserCreate',
     'GqlSAdminUserCreate',

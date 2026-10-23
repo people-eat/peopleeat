@@ -306,6 +306,15 @@ export type BookingRequestOfferParticipantAmendment = {
         restrictions: string[];
     }[];
     exactEventAddress?: BookingRequestExactEventAddress;
+    /**
+     * Absolute menu total override (admin). When set, cook accept / apply skips
+     * paid-headcount menu scaling and uses this amount.
+     */
+    menuPriceCentsAfter?: number;
+    /**
+     * Absolute travel override (admin). When set, wins over venue-recomputed travel.
+     */
+    travelExpensesCentsAfter?: number;
     menuPriceCentsBefore: number;
     travelExpensesCentsBefore: number;
     totalCentsCustomerBefore: number;
@@ -406,6 +415,8 @@ const bookingRequestOfferEventTypes = [
     'USER_PARTICIPANT_AMENDMENT_CANCELED',
     'COOK_PARTICIPANT_AMENDMENT_ACCEPTED',
     'COOK_PARTICIPANT_AMENDMENT_DECLINED',
+    'ADMIN_PARTICIPANT_AMENDMENT_REQUESTED',
+    'ADMIN_PARTICIPANT_AMENDMENT_APPLIED',
     'COOK_PREPARATIONS_COMPLETED',
     'ADMIN_PREPARATIONS_CLEARED',
     'USER_RESTRICTIONS_UPDATED',
@@ -535,7 +546,43 @@ type BookingRequestOfferEventPayloadByType = {
         payoutCentsCookAfter: number;
         giftCardDeltaCents?: number;
     };
+    ADMIN_PARTICIPANT_AMENDMENT_REQUESTED: {
+        participantsAdultBefore: number;
+        participantsDiscountedBefore: number;
+        participantsAdultAfter: number;
+        participantsDiscountedAfter: number;
+        locationBefore?: BookingRequestExactEventAddress;
+        locationAfter?: BookingRequestExactEventAddress;
+        menuPriceCentsBefore: number;
+        menuPriceCentsAfter: number;
+        travelExpensesCentsBefore?: number;
+        travelExpensesCentsAfter?: number;
+        totalCentsCustomerBefore: number;
+        totalCentsCustomerAfter: number;
+        payoutCentsCookBefore: number;
+        payoutCentsCookAfter: number;
+        giftCardDeltaCents?: number;
+    };
     COOK_PARTICIPANT_AMENDMENT_ACCEPTED: {
+        participantsAdultBefore: number;
+        participantsDiscountedBefore: number;
+        participantsAdultAfter: number;
+        participantsDiscountedAfter: number;
+        locationBefore?: BookingRequestExactEventAddress;
+        locationAfter?: BookingRequestExactEventAddress;
+        menuPriceCentsBefore: number;
+        menuPriceCentsAfter: number;
+        travelExpensesCentsBefore?: number;
+        travelExpensesCentsAfter?: number;
+        totalCentsCustomerBefore: number;
+        totalCentsCustomerAfter: number;
+        payoutCentsCookBefore: number;
+        payoutCentsCookAfter: number;
+        customerDeltaCents: number;
+        cookPayoutDeltaCents: number;
+        giftCardDeltaCents?: number;
+    };
+    ADMIN_PARTICIPANT_AMENDMENT_APPLIED: {
         participantsAdultBefore: number;
         participantsDiscountedBefore: number;
         participantsAdultAfter: number;

@@ -802,6 +802,14 @@ export interface GqlCAdminBookingRequestOffer {
     userUnreadNotificationCount: Scalars['Int']['output'];
 }
 
+export type GqlCAdminBookingRequestOfferAmendmentInput = {
+    exactEventAddress?: InputMaybe<GqlCAdminBookingRequestExactEventAddressInput>;
+    menuPriceCents?: InputMaybe<Scalars['Int']['input']>;
+    participants?: InputMaybe<Array<GqlCUserBookingRequestParticipantCreate>>;
+    travelDistanceKm?: InputMaybe<Scalars['Float']['input']>;
+    travelExpensesCents?: InputMaybe<Scalars['Int']['input']>;
+};
+
 export interface GqlCAdminBookingRequestOfferChatReviewAcknowledgeResult {
     __typename?: 'AdminBookingRequestOfferChatReviewAcknowledgeResult';
     acknowledgedOfferId: Scalars['ID']['output'];
@@ -1370,6 +1378,8 @@ export interface GqlCAdminMutation {
     bookingRequestCooksNotify: GqlCMutationResult;
     bookingRequestCreate: GqlCMutationResult;
     bookingRequestDiscountUpdate: GqlCMutationResult;
+    bookingRequestOfferAmendmentApply: GqlCMutationResult;
+    bookingRequestOfferAmendmentCreate: GqlCMutationResult;
     bookingRequestOfferCallCreate: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlCMutationResult;
@@ -1483,6 +1493,16 @@ export type GqlCAdminMutationBookingRequestCreateArgs = {
 export type GqlCAdminMutationBookingRequestDiscountUpdateArgs = {
     bookingRequestId: Scalars['ID']['input'];
     redeemCode?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type GqlCAdminMutationBookingRequestOfferAmendmentApplyArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+    input: GqlCAdminBookingRequestOfferAmendmentInput;
+};
+
+export type GqlCAdminMutationBookingRequestOfferAmendmentCreateArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+    input: GqlCAdminBookingRequestOfferAmendmentInput;
 };
 
 export type GqlCAdminMutationBookingRequestOfferCallCreateArgs = {
@@ -2685,6 +2705,8 @@ export interface GqlCChatMessageBookingRequestOfferEvent {
 export type GqlCChatMessageBookingRequestOfferEventType =
     | 'ADMIN_HANDED_OVER_CLOSED'
     | 'ADMIN_HANDED_OVER_TO_COOK'
+    | 'ADMIN_PARTICIPANT_AMENDMENT_APPLIED'
+    | 'ADMIN_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'ADMIN_PREPARATIONS_CLEARED'
     | 'COOK_ACCEPTED'
     | 'COOK_CALL_SLOT_CANCELLED'
@@ -9469,7 +9491,36 @@ export type GqlCAdminBookingRequestEditPageRequestFragment = {
         name: string;
         restrictions: Array<string>;
     }>;
-    offers: Array<{ bookingRequestOfferId: string }>;
+    offers: Array<{
+        bookingRequestOfferId: string;
+        userAccepted: boolean | null;
+        cookAccepted: boolean | null;
+        paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
+        canRequestParticipantAmendment: boolean;
+        menuPriceCents: number;
+        travelExpensesCents: number;
+        totalCentsCustomer: number | null;
+        totalWithoutDiscountsCentsCustomer: number;
+        payoutCentsCook: number;
+    }>;
+};
+
+export type GqlCAdminBookingRequestEditAmendmentCreateMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+    input: Schema.GqlCAdminBookingRequestOfferAmendmentInput;
+}>;
+
+export type GqlCAdminBookingRequestEditAmendmentCreateMutation = {
+    admin: { bookingRequestOfferAmendmentCreate: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCAdminBookingRequestEditAmendmentApplyMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+    input: Schema.GqlCAdminBookingRequestOfferAmendmentInput;
+}>;
+
+export type GqlCAdminBookingRequestEditAmendmentApplyMutation = {
+    admin: { bookingRequestOfferAmendmentApply: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCAdminBookingRequestEditPageQueryVariables = Exact<{
@@ -9508,7 +9559,18 @@ export type GqlCAdminBookingRequestEditPageQuery = {
                         name: string;
                         restrictions: Array<string>;
                     }>;
-                    offers: Array<{ bookingRequestOfferId: string }>;
+                    offers: Array<{
+                        bookingRequestOfferId: string;
+                        userAccepted: boolean | null;
+                        cookAccepted: boolean | null;
+                        paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
+                        canRequestParticipantAmendment: boolean;
+                        menuPriceCents: number;
+                        travelExpensesCents: number;
+                        totalCentsCustomer: number | null;
+                        totalWithoutDiscountsCentsCustomer: number;
+                        payoutCentsCook: number;
+                    }>;
                 } | null;
             } | null;
         } | null;
@@ -10567,9 +10629,16 @@ export type GqlCAdminBookingRequestOfferHandoverMutation = {
 export type GqlCAdminBookingRequestOfferPriceEditPageOfferFragment = {
     bookingRequestOfferId: string;
     bookingRequestId: string;
+    userAccepted: boolean | null;
+    cookAccepted: boolean | null;
+    paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
+    canRequestParticipantAmendment: boolean;
     menuPriceCents: number;
     travelExpensesCents: number;
     travelDistanceKm: number | null;
+    totalCentsCustomer: number | null;
+    totalWithoutDiscountsCentsCustomer: number;
+    payoutCentsCook: number;
     paymentDateTime: string | null;
     plannedPayoutDateTime: string | null;
     payoutDateTime: string | null;
@@ -10610,9 +10679,16 @@ export type GqlCAdminBookingRequestOfferPriceEditPageQuery = {
                 bookingRequestOffer: {
                     bookingRequestOfferId: string;
                     bookingRequestId: string;
+                    userAccepted: boolean | null;
+                    cookAccepted: boolean | null;
+                    paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
+                    canRequestParticipantAmendment: boolean;
                     menuPriceCents: number;
                     travelExpensesCents: number;
                     travelDistanceKm: number | null;
+                    totalCentsCustomer: number | null;
+                    totalWithoutDiscountsCentsCustomer: number;
+                    payoutCentsCook: number;
                     paymentDateTime: string | null;
                     plannedPayoutDateTime: string | null;
                     payoutDateTime: string | null;
@@ -10621,6 +10697,24 @@ export type GqlCAdminBookingRequestOfferPriceEditPageQuery = {
             } | null;
         } | null;
     };
+};
+
+export type GqlCAdminBookingRequestOfferAmendmentCreateMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+    input: Schema.GqlCAdminBookingRequestOfferAmendmentInput;
+}>;
+
+export type GqlCAdminBookingRequestOfferAmendmentCreateMutation = {
+    admin: { bookingRequestOfferAmendmentCreate: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCAdminBookingRequestOfferAmendmentApplyMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+    input: Schema.GqlCAdminBookingRequestOfferAmendmentInput;
+}>;
+
+export type GqlCAdminBookingRequestOfferAmendmentApplyMutation = {
+    admin: { bookingRequestOfferAmendmentApply: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCAdminBookingRequestPageRequestFragment = {
@@ -24934,7 +25028,18 @@ export const AdminBookingRequestEditPageRequestFragmentDoc = {
                         name: { kind: 'Name', value: 'offers' },
                         selectionSet: {
                             kind: 'SelectionSet',
-                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } }],
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'userAccepted' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookAccepted' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canRequestParticipantAmendment' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
+                            ],
                         },
                     },
                 ],
@@ -25846,9 +25951,16 @@ export const AdminBookingRequestOfferPriceEditPageOfferFragmentDoc = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'userAccepted' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookAccepted' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'canRequestParticipantAmendment' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'travelDistanceKm' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'payoutDateTime' } },
@@ -43944,6 +44056,133 @@ export const AdminBookingRequestCreateCooksInTravelRadiusDocument = {
     GqlCAdminBookingRequestCreateCooksInTravelRadiusQuery,
     GqlCAdminBookingRequestCreateCooksInTravelRadiusQueryVariables
 >;
+export const AdminBookingRequestEditAmendmentCreateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminBookingRequestEditAmendmentCreate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminBookingRequestOfferAmendmentInput' } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferAmendmentCreate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminBookingRequestEditAmendmentCreateMutation,
+    GqlCAdminBookingRequestEditAmendmentCreateMutationVariables
+>;
+export const AdminBookingRequestEditAmendmentApplyDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminBookingRequestEditAmendmentApply' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminBookingRequestOfferAmendmentInput' } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferAmendmentApply' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminBookingRequestEditAmendmentApplyMutation, GqlCAdminBookingRequestEditAmendmentApplyMutationVariables>;
 export const AdminBookingRequestEditPageDocument = {
     kind: 'Document',
     definitions: [
@@ -44067,7 +44306,18 @@ export const AdminBookingRequestEditPageDocument = {
                         name: { kind: 'Name', value: 'offers' },
                         selectionSet: {
                             kind: 'SelectionSet',
-                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } }],
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'userAccepted' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookAccepted' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canRequestParticipantAmendment' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
+                            ],
                         },
                     },
                 ],
@@ -47394,9 +47644,16 @@ export const AdminBookingRequestOfferPriceEditPageDocument = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'userAccepted' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookAccepted' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'canRequestParticipantAmendment' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'travelDistanceKm' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'payoutDateTime' } },
@@ -47426,6 +47683,136 @@ export const AdminBookingRequestOfferPriceEditPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminBookingRequestOfferPriceEditPageQuery, GqlCAdminBookingRequestOfferPriceEditPageQueryVariables>;
+export const AdminBookingRequestOfferAmendmentCreateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminBookingRequestOfferAmendmentCreate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminBookingRequestOfferAmendmentInput' } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferAmendmentCreate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminBookingRequestOfferAmendmentCreateMutation,
+    GqlCAdminBookingRequestOfferAmendmentCreateMutationVariables
+>;
+export const AdminBookingRequestOfferAmendmentApplyDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminBookingRequestOfferAmendmentApply' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminBookingRequestOfferAmendmentInput' } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferAmendmentApply' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminBookingRequestOfferAmendmentApplyMutation,
+    GqlCAdminBookingRequestOfferAmendmentApplyMutationVariables
+>;
 export const AdminBookingRequestPageDocument = {
     kind: 'Document',
     definitions: [

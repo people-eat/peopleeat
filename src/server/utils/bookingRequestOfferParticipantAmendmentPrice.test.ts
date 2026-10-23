@@ -71,4 +71,26 @@ describe('bookingRequestOfferParticipantAmendmentPriceCalculate', () => {
         expect(result.travelExpensesCents).toBe(8_000);
         expect(result.customerDeltaCents).toBeGreaterThan(0);
     });
+
+    it('honors absolute menu override without scaling', () => {
+        const result = bookingRequestOfferParticipantAmendmentPriceCalculate(
+            {
+                menuPriceCentsBefore: 40_000,
+                travelExpensesCentsAfter: 2_000,
+                totalWithoutDiscountsCentsCustomerBefore: 45_000,
+                totalCentsCustomerBefore: 45_000,
+                giftCardAppliedCentsBefore: 0,
+                giftCardBalanceCents: 0,
+                promoAmountCents: 0,
+                participantsBefore: [{ type: 'ADULT' }, { type: 'ADULT' }],
+                participantsAfter: [{ type: 'ADULT' }, { type: 'ADULT' }, { type: 'ADULT' }],
+                scaleMenuByParticipants: true,
+                menuPriceCentsOverride: 55_000,
+            },
+            34_800,
+        );
+
+        expect(result.menuPriceCentsAfter).toBe(55_000);
+        expect(result.paidParticipantsAfter).toBe(3);
+    });
 });

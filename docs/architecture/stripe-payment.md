@@ -56,6 +56,22 @@ when a matching amount is found (no `payoutCreate`). The same check can upgrade 
 accident. `accountPayoutsEnabledCheck` surfaces readiness before the release CTA. Callers that hydrate admin offer lists wrap that check so
 a Stripe retrieve failure (stale or fixture `acct_…` id) marks the cook not payout-ready rather than crashing the page.
 
+### Admin dual-accept amendments (venue / participants / menu / travel)
+
+`AdminMutation.bookingRequestOfferAmendmentCreate` proposes a cook-gated change (no feature toggle).
+`AdminMutation.bookingRequestOfferAmendmentApply` stages the same pending JSON then runs `bookingRequestOfferParticipantAmendmentApply`
+immediately (bypass cook approval). Absolute menu/travel overrides live on `participantAmendment.menuPriceCentsAfter` /
+`travelExpensesCentsAfter`. Money rules match customer amendments:
+
+| `paymentStatus` | Behavior                                                                                                                               |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `EMPTY`         | Cancel unpaid PI/SI when present; re-prepare at new totals (SetupIntent path has no amount on the SI; near-term PI must be re-created) |
+| `SETUP`         | Update offer cents only; pull job charges the new total later                                                                          |
+| `PAYED`         | Partial refund / off-session top-up / `pendingDeltaPayment` on-session delta                                                           |
+
+Blocked for `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED`. Prep lock still applies unless cleared. Direct `bookingRequestOfferUpdate`
+menu/travel on dual-accepted offers is rejected.
+
 ### Concierge offer handover money
 
 `AdminMutation.bookingRequestOfferHandover` closes a dual-accepted offer and opens another for a different cook (event still in the future):

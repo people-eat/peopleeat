@@ -4,10 +4,18 @@ import { useId, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { bookingRequestOfferPriceGuidance, bookingRequestPaidParticipants, centsToEuros, userDisplayName } from '../../../shared';
+import {
+    bookingRequestOfferPriceCalculate,
+    bookingRequestOfferPriceGuidance,
+    bookingRequestPaidParticipants,
+    centsToEuros,
+    userDisplayName,
+} from '../../../shared';
+import { AdminBookingRequestOfferAmendmentConfirmDialog } from '../../components/AdminBookingRequestOfferAmendmentConfirmDialog';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
+import { Checkbox } from '../../components/base/checkbox';
 import { DateTimePicker } from '../../components/base/date-time-picker';
 import { Input } from '../../components/base/input';
 import { BookingRequestOfferPriceConfigurationPanel } from '../../components/BookingRequestOfferPriceConfigurationPanel';
@@ -15,7 +23,11 @@ import type {
     GqlCAdminBookingRequestOfferPriceEditPageOfferFragment,
     GqlCAdminBookingRequestOfferPriceEditPageQuery,
 } from '../../graphql/generated';
-import { AdminBookingRequestOfferUpdateDocument } from '../../graphql/generated';
+import {
+    AdminBookingRequestOfferAmendmentApplyDocument,
+    AdminBookingRequestOfferAmendmentCreateDocument,
+    AdminBookingRequestOfferUpdateDocument,
+} from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import { parseAdminOfferPriceInputs } from './adminBookingRequestOfferFeeForm';
@@ -80,15 +92,93 @@ export function AdminBookingRequestOfferPriceEditPage({
     }
     if (!seedRequest) throw notFound();
 
+    const dualAccepted = seedOffer.userAccepted === true && seedOffer.cookAccepted === true;
     const { adults, discounted } = participantCounts(seedRequest.participants);
     const paidParticipants = bookingRequestPaidParticipants(adults, discounted);
     const initialPricePerPersonCents =
         paidParticipants > 0 ? Math.round(seedOffer.menuPriceCents / paidParticipants) : seedRequest.suggestedOfferAmountCents;
 
     const [, updateOffer] = useMutation(AdminBookingRequestOfferUpdateDocument);
+    const [, amendmentCreate] = useMutation(AdminBookingRequestOfferAmendmentCreateDocument);
+    const [, amendmentApply] = useMutation(AdminBookingRequestOfferAmendmentApplyDocument);
     const [menuPriceCents, setMenuPriceCents] = useState(seedOffer.menuPriceCents);
     const [priceValid, setPriceValid] = useState(true);
     const [travelExpensesCents, setTravelExpensesCents] = useState(seedOffer.travelExpensesCents);
+    const [bypassCookApproval, setBypassCookApproval] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmBusy, setConfirmBusy] = useState(false);
+    const [pendingPriceInput, setPendingPriceInput] = useState<{
+        menuPriceCents: number;
+        travelExpensesCents: number;
+        travelDistanceKm: number | null;
+        paymentDateTime: string | null;
+        plannedPayoutDateTime: string | null;
+        payoutDateTime: string | null;
+        priceChanged: boolean;
+    } | null>(null);
+
+    async function navigateBackToCosts() {
+        await navigate({
+            to: '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId',
+            params: { bookingRequestId, bookingRequestOfferId },
+            search: { tab: 'costs' },
+        });
+    }
+
+    async function persistTimestamps(input: {
+        paymentDateTime: string | null;
+        plannedPayoutDateTime: string | null;
+        payoutDateTime: string | null;
+    }) {
+        const result = await updateOffer({
+            bookingRequestOfferId,
+            input,
+        });
+        if (!result.data?.admin.bookingRequestOfferUpdate.success) {
+            throw new Error('timestamp update failed');
+        }
+    }
+
+    async function applyConfirmedAmendment() {
+        if (!pendingPriceInput) return;
+        setConfirmBusy(true);
+        try {
+            const amendmentInput = {
+                menuPriceCents: pendingPriceInput.menuPriceCents,
+                travelExpensesCents: pendingPriceInput.travelExpensesCents,
+                travelDistanceKm: pendingPriceInput.travelDistanceKm,
+            };
+            if (bypassCookApproval) {
+                const result = await amendmentApply({ bookingRequestOfferId, input: amendmentInput });
+                if (!result.data?.admin.bookingRequestOfferAmendmentApply.success) {
+                    throw new Error('amendment failed');
+                }
+            } else {
+                const result = await amendmentCreate({ bookingRequestOfferId, input: amendmentInput });
+                if (!result.data?.admin.bookingRequestOfferAmendmentCreate.success) {
+                    throw new Error('amendment failed');
+                }
+            }
+
+            await persistTimestamps({
+                paymentDateTime: pendingPriceInput.paymentDateTime,
+                plannedPayoutDateTime: pendingPriceInput.plannedPayoutDateTime,
+                payoutDateTime: pendingPriceInput.payoutDateTime,
+            });
+
+            toast.success(
+                bypassCookApproval
+                    ? { de: 'Preis angewendet.', en: 'Price applied.' }[locale]
+                    : { de: 'Preisänderung dem Koch vorgeschlagen.', en: 'Price change proposed to the chef.' }[locale],
+            );
+            setConfirmOpen(false);
+            await navigateBackToCosts();
+        } catch {
+            toast.error({ de: 'Aktualisierung fehlgeschlagen.', en: 'Update failed.' }[locale]);
+        } finally {
+            setConfirmBusy(false);
+        }
+    }
 
     const form = useForm({
         defaultValues: formFromOffer(seedOffer),
@@ -104,27 +194,54 @@ export function AdminBookingRequestOfferPriceEditPage({
                 return;
             }
 
+            const priceChanged =
+                fees.menuPriceCents !== seedOffer.menuPriceCents || fees.travelExpensesCents !== seedOffer.travelExpensesCents;
+            const timestampInput = {
+                paymentDateTime: value.paymentDateTime?.toISOString() ?? null,
+                plannedPayoutDateTime: value.plannedPayoutDateTime?.toISOString() ?? null,
+                payoutDateTime: value.payoutDateTime?.toISOString() ?? null,
+            };
+
+            if (dualAccepted && priceChanged) {
+                if (!seedOffer.canRequestParticipantAmendment) {
+                    toast.error(
+                        {
+                            de: 'Änderung nicht möglich (Sperre, ausstehendes Amendment oder Zahlungsstatus).',
+                            en: 'Change not allowed (lock, pending amendment, or payment status).',
+                        }[locale],
+                    );
+                    return;
+                }
+                setPendingPriceInput({
+                    menuPriceCents: fees.menuPriceCents,
+                    travelExpensesCents: fees.travelExpensesCents,
+                    travelDistanceKm: fees.travelDistanceKm,
+                    ...timestampInput,
+                    priceChanged: true,
+                });
+                setConfirmOpen(true);
+                return;
+            }
+
             try {
                 const result = await updateOffer({
                     bookingRequestOfferId,
                     input: {
-                        menuPriceCents: fees.menuPriceCents,
-                        travelExpensesCents: fees.travelExpensesCents,
-                        travelDistanceKm: fees.travelDistanceKm,
-                        paymentDateTime: value.paymentDateTime?.toISOString() ?? null,
-                        plannedPayoutDateTime: value.plannedPayoutDateTime?.toISOString() ?? null,
-                        payoutDateTime: value.payoutDateTime?.toISOString() ?? null,
+                        ...(priceChanged
+                            ? {
+                                  menuPriceCents: fees.menuPriceCents,
+                                  travelExpensesCents: fees.travelExpensesCents,
+                                  travelDistanceKm: fees.travelDistanceKm,
+                              }
+                            : { travelDistanceKm: fees.travelDistanceKm }),
+                        ...timestampInput,
                     },
                 });
                 if (!result.data?.admin.bookingRequestOfferUpdate.success) {
                     throw new Error('update failed');
                 }
                 toast.success({ de: 'Preis aktualisiert.', en: 'Price updated.' }[locale]);
-                await navigate({
-                    to: '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId',
-                    params: { bookingRequestId, bookingRequestOfferId },
-                    search: { tab: 'costs' },
-                });
+                await navigateBackToCosts();
             } catch {
                 toast.error({ de: 'Aktualisierung fehlgeschlagen.', en: 'Update failed.' }[locale]);
             }
@@ -140,6 +257,16 @@ export function AdminBookingRequestOfferPriceEditPage({
         estimatedTravelExpensesCents: travelExpensesCents,
         promoMinimumTotalAmountCustomerCents: seedRequest.minOfferAmountHardCents,
     });
+
+    const previewPrice = bookingRequestOfferPriceCalculate({
+        menuPriceCents,
+        travelExpensesCents,
+    });
+    const discountCents = Math.max(
+        0,
+        seedOffer.totalWithoutDiscountsCentsCustomer - (seedOffer.totalCentsCustomer ?? seedOffer.totalWithoutDiscountsCentsCustomer),
+    );
+    const totalCentsCustomerAfter = Math.max(0, previewPrice.totalWithoutDiscountsCentsCustomer - discountCents);
 
     return (
         <AdminPageChrome
@@ -157,7 +284,7 @@ export function AdminBookingRequestOfferPriceEditPage({
                 contentClassName="grid w-full content-start gap-8"
                 footer={
                     <>
-                        <Button type="button" variant="outline" disabled={isSubmitting} asChild>
+                        <Button type="button" variant="outline" disabled={isSubmitting || confirmBusy} asChild>
                             <Link
                                 to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
                                 params={{ bookingRequestId, bookingRequestOfferId }}
@@ -166,7 +293,11 @@ export function AdminBookingRequestOfferPriceEditPage({
                                 {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
                             </Link>
                         </Button>
-                        <Button type="submit" form="admin-booking-request-offer-price-edit-form" disabled={isSubmitting || !priceValid}>
+                        <Button
+                            type="submit"
+                            form="admin-booking-request-offer-price-edit-form"
+                            disabled={isSubmitting || confirmBusy || !priceValid}
+                        >
                             {isSubmitting ? { de: 'Speichern…', en: 'Saving…' }[locale] : { de: 'Speichern', en: 'Save' }[locale]}
                         </Button>
                     </>
@@ -188,6 +319,29 @@ export function AdminBookingRequestOfferPriceEditPage({
                         void form.handleSubmit();
                     }}
                 >
+                    {dualAccepted ? (
+                        <label className="flex items-start gap-3 rounded-md border border-border p-3 text-sm">
+                            <Checkbox
+                                checked={bypassCookApproval}
+                                onCheckedChange={(checked) => setBypassCookApproval(checked === true)}
+                                className="mt-0.5"
+                            />
+                            <span className="grid gap-1">
+                                <span className="font-medium">
+                                    {{ de: 'Koch-Freigabe überspringen', en: 'Bypass cook approval' }[locale]}
+                                </span>
+                                <span className="text-muted-foreground">
+                                    {
+                                        {
+                                            de: 'Wenn aktiv, werden Preis und Zahlungsfolgen sofort angewendet. Sonst muss der Koch bestätigen.',
+                                            en: 'When on, price and payment effects apply immediately. Otherwise the chef must confirm.',
+                                        }[locale]
+                                    }
+                                </span>
+                            </span>
+                        </label>
+                    ) : null}
+
                     <form.Field name="travelExpensesEuros">
                         {(field) => (
                             <div className="grid gap-1.5">
@@ -238,7 +392,7 @@ export function AdminBookingRequestOfferPriceEditPage({
                         guidance={liveGuidance}
                         resetKey={`${bookingRequestOfferId}:${travelExpensesCents}`}
                         initialPricePerPersonCents={initialPricePerPersonCents}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || confirmBusy}
                         onMenuPriceCentsChange={setMenuPriceCents}
                         onValidChange={setPriceValid}
                     />
@@ -311,6 +465,20 @@ export function AdminBookingRequestOfferPriceEditPage({
                     </form.Field>
                 </form>
             </AdminPinnedFooterLayout>
+
+            <AdminBookingRequestOfferAmendmentConfirmDialog
+                open={confirmOpen}
+                onOpenChange={setConfirmOpen}
+                locale={locale}
+                bypassCookApproval={bypassCookApproval}
+                paymentStatus={seedOffer.paymentStatus}
+                totalCentsCustomerBefore={seedOffer.totalCentsCustomer ?? seedOffer.totalWithoutDiscountsCentsCustomer}
+                totalCentsCustomerAfter={totalCentsCustomerAfter}
+                payoutCentsCookBefore={seedOffer.payoutCentsCook}
+                payoutCentsCookAfter={previewPrice.payoutCentsCook}
+                busy={confirmBusy}
+                onConfirm={() => void applyConfirmedAmendment()}
+            />
         </AdminPageChrome>
     );
 }
