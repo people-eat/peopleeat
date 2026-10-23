@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    bookingRequestOfferAmendmentBlockReason,
     bookingRequestOfferCanCompletePreparations,
     bookingRequestOfferCanRequestParticipantAmendment,
 } from './bookingRequestOfferParticipantAmendmentGates';
@@ -93,6 +94,53 @@ describe('bookingRequestOfferCanRequestParticipantAmendment', () => {
                 bookingRequest: { dateTime: future, canceledAt: null },
             }),
         ).toBe(false);
+    });
+});
+
+describe('bookingRequestOfferAmendmentBlockReason', () => {
+    it('distinguishes unclaimed vs claimed pending amendments', () => {
+        expect(
+            bookingRequestOfferAmendmentBlockReason({
+                offer: {
+                    userAccepted: true,
+                    cookAccepted: true,
+                    paymentStatus: 'EMPTY',
+                    paymentData: { paymentIntentId: 'pi_1', clientSecret: 'sec' },
+                    preparationsCompletedAt: null,
+                    participantAmendment: {
+                        amendmentApplyId: 'amend_1',
+                        requestedAt: new Date().toISOString(),
+                        menuPriceCentsBefore: 1,
+                        travelExpensesCentsBefore: 0,
+                        totalCentsCustomerBefore: 1,
+                        payoutCentsCookBefore: 1,
+                    },
+                },
+                bookingRequest: { dateTime: future, canceledAt: null },
+            }),
+        ).toBe('PENDING_AMENDMENT');
+
+        expect(
+            bookingRequestOfferAmendmentBlockReason({
+                offer: {
+                    userAccepted: true,
+                    cookAccepted: true,
+                    paymentStatus: 'EMPTY',
+                    paymentData: { paymentIntentId: 'pi_1', clientSecret: 'sec' },
+                    preparationsCompletedAt: null,
+                    participantAmendment: {
+                        amendmentApplyId: 'amend_1',
+                        requestedAt: new Date().toISOString(),
+                        claimedAt: new Date().toISOString(),
+                        menuPriceCentsBefore: 1,
+                        travelExpensesCentsBefore: 0,
+                        totalCentsCustomerBefore: 1,
+                        payoutCentsCookBefore: 1,
+                    },
+                },
+                bookingRequest: { dateTime: future, canceledAt: null },
+            }),
+        ).toBe('PENDING_AMENDMENT_CLAIMED');
     });
 });
 

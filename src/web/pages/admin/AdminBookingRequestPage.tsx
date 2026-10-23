@@ -30,6 +30,7 @@ import { Separator } from '../../components/base/separator';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { Textarea } from '../../components/base/textarea';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
+import { BookingRequestOfferParticipantAmendmentAdminPendingAlert } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import type { BookingRequestOfferStatusKey } from '../../components/bookingRequestOfferStatus';
 import { adminBookingRequestStatusLabel, bookingRequestStatusClassName } from '../../components/bookingRequestStatus';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
@@ -887,6 +888,26 @@ function AdminBookingRequestOffersSection({
             {acceptedOffer ? (
                 <section className="grid gap-3">
                     <h2 className="text-base font-semibold">{{ de: 'Angenommenes Angebot', en: 'Accepted offer' }[locale]}</h2>
+                    {acceptedOffer.participantAmendment != null ? (
+                        <BookingRequestOfferParticipantAmendmentAdminPendingAlert
+                            locale={locale}
+                            amendment={acceptedOffer.participantAmendment}
+                            action={
+                                <Button type="button" size="sm" variant="outline" asChild>
+                                    <Link
+                                        to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
+                                        params={{
+                                            bookingRequestId,
+                                            bookingRequestOfferId: acceptedOffer.bookingRequestOfferId,
+                                        }}
+                                        search={{ tab: 'costs' }}
+                                    >
+                                        {{ de: 'Zum Angebot', en: 'View offer' }[locale]}
+                                    </Link>
+                                </Button>
+                            }
+                        />
+                    ) : null}
                     <div className="grid max-w-sm">
                         <AdminBookingRequestOfferCard bookingRequestId={bookingRequestId} offer={acceptedOffer} />
                     </div>

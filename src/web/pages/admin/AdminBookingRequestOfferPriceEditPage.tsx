@@ -15,9 +15,10 @@ import { AdminBookingRequestOfferAmendmentConfirmDialog } from '../../components
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
-import { Checkbox } from '../../components/base/checkbox';
 import { DateTimePicker } from '../../components/base/date-time-picker';
 import { Input } from '../../components/base/input';
+import { StatusAlert } from '../../components/base/status-alert';
+import { BookingRequestOfferParticipantAmendmentAdminPendingAlert } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import { BookingRequestOfferPriceConfigurationPanel } from '../../components/BookingRequestOfferPriceConfigurationPanel';
 import type {
     GqlCAdminBookingRequestOfferPriceEditPageOfferFragment,
@@ -30,9 +31,32 @@ import {
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
+import type { Locale } from '../../utils/locale';
 import { parseAdminOfferPriceInputs } from './adminBookingRequestOfferFeeForm';
 import type { AdminOfferPriceInputFormValues } from './adminBookingRequestOfferFeeForm';
 import { adminStubRouteBySlug } from './adminCatalog';
+
+const AMENDMENT_PAYMENT_STATUSES = new Set(['EMPTY', 'SETUP', 'PAYED']);
+
+function adminDualAcceptPriceEditBlockMessage(
+    offer: GqlCAdminBookingRequestOfferPriceEditPageOfferFragment,
+    locale: Locale,
+): string | null {
+    if (!(offer.userAccepted === true && offer.cookAccepted === true)) return null;
+    if (offer.preparationsCompletedAt != null) {
+        return {
+            de: 'Vorbereitung ist gesperrt. Hebe die Sperre auf dem Angebots-Tab auf, dann erneut speichern.',
+            en: 'Preparations are locked. Clear the lock on the Offer tab, then save again.',
+        }[locale];
+    }
+    if (!AMENDMENT_PAYMENT_STATUSES.has(offer.paymentStatus)) {
+        return {
+            de: `Zahlungsstatus ${offer.paymentStatus} erlaubt keine Preisänderung (nur EMPTY, SETUP oder PAYED).`,
+            en: `Payment status ${offer.paymentStatus} does not allow price changes (only EMPTY, SETUP, or PAYED).`,
+        }[locale];
+    }
+    return null;
+}
 
 const listRoute = adminStubRouteBySlug('booking-requests');
 
@@ -93,6 +117,7 @@ export function AdminBookingRequestOfferPriceEditPage({
     if (!seedRequest) throw notFound();
 
     const dualAccepted = seedOffer.userAccepted === true && seedOffer.cookAccepted === true;
+    const dualAcceptBlockMessage = dualAccepted ? adminDualAcceptPriceEditBlockMessage(seedOffer, locale) : null;
     const { adults, discounted } = participantCounts(seedRequest.participants);
     const paidParticipants = bookingRequestPaidParticipants(adults, discounted);
     const initialPricePerPersonCents =
@@ -104,7 +129,6 @@ export function AdminBookingRequestOfferPriceEditPage({
     const [menuPriceCents, setMenuPriceCents] = useState(seedOffer.menuPriceCents);
     const [priceValid, setPriceValid] = useState(true);
     const [travelExpensesCents, setTravelExpensesCents] = useState(seedOffer.travelExpensesCents);
-    const [bypassCookApproval, setBypassCookApproval] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [confirmBusy, setConfirmBusy] = useState(false);
     const [pendingPriceInput, setPendingPriceInput] = useState<{
@@ -139,7 +163,7 @@ export function AdminBookingRequestOfferPriceEditPage({
         }
     }
 
-    async function applyConfirmedAmendment() {
+    async function applyConfirmedAmendment(bypassCookApproval: boolean) {
         if (!pendingPriceInput) return;
         setConfirmBusy(true);
         try {
@@ -150,11 +174,13 @@ export function AdminBookingRequestOfferPriceEditPage({
             };
             if (bypassCookApproval) {
                 const result = await amendmentApply({ bookingRequestOfferId, input: amendmentInput });
+                if (result.error) throw result.error;
                 if (!result.data?.admin.bookingRequestOfferAmendmentApply.success) {
                     throw new Error('amendment failed');
                 }
             } else {
                 const result = await amendmentCreate({ bookingRequestOfferId, input: amendmentInput });
+                if (result.error) throw result.error;
                 if (!result.data?.admin.bookingRequestOfferAmendmentCreate.success) {
                     throw new Error('amendment failed');
                 }
@@ -173,8 +199,13 @@ export function AdminBookingRequestOfferPriceEditPage({
             );
             setConfirmOpen(false);
             await navigateBackToCosts();
-        } catch {
-            toast.error({ de: 'Aktualisierung fehlgeschlagen.', en: 'Update failed.' }[locale]);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : null;
+            toast.error(
+                message && !message.includes('amendment failed')
+                    ? message
+                    : { de: 'Aktualisierung fehlgeschlagen.', en: 'Update failed.' }[locale],
+            );
         } finally {
             setConfirmBusy(false);
         }
@@ -203,13 +234,9 @@ export function AdminBookingRequestOfferPriceEditPage({
             };
 
             if (dualAccepted && priceChanged) {
-                if (!seedOffer.canRequestParticipantAmendment) {
-                    toast.error(
-                        {
-                            de: 'Änderung nicht möglich (Sperre, ausstehendes Amendment oder Zahlungsstatus).',
-                            en: 'Change not allowed (lock, pending amendment, or payment status).',
-                        }[locale],
-                    );
+                const blockMessage = adminDualAcceptPriceEditBlockMessage(seedOffer, locale);
+                if (blockMessage) {
+                    toast.error(blockMessage);
                     return;
                 }
                 setPendingPriceInput({
@@ -310,6 +337,24 @@ export function AdminBookingRequestOfferPriceEditPage({
                     </p>
                 </div>
 
+                {dualAcceptBlockMessage ? (
+                    <StatusAlert tone="warning" title={{ de: 'Preisänderung blockiert', en: 'Price edit blocked' }[locale]}>
+                        {dualAcceptBlockMessage}
+                    </StatusAlert>
+                ) : null}
+                {dualAccepted && seedOffer.participantAmendment != null && dualAcceptBlockMessage == null ? (
+                    <BookingRequestOfferParticipantAmendmentAdminPendingAlert
+                        locale={locale}
+                        amendment={seedOffer.participantAmendment}
+                        footnote={
+                            {
+                                de: 'Speichern ersetzt diesen Vorschlag oder wendet ihn im Bestätigungsdialog sofort an.',
+                                en: 'Saving replaces this proposal, or applies it immediately from the confirm dialog.',
+                            }[locale]
+                        }
+                    />
+                ) : null}
+
                 <form
                     id="admin-booking-request-offer-price-edit-form"
                     className="grid max-w-xl gap-4"
@@ -319,29 +364,6 @@ export function AdminBookingRequestOfferPriceEditPage({
                         void form.handleSubmit();
                     }}
                 >
-                    {dualAccepted ? (
-                        <label className="flex items-start gap-3 rounded-md border border-border p-3 text-sm">
-                            <Checkbox
-                                checked={bypassCookApproval}
-                                onCheckedChange={(checked) => setBypassCookApproval(checked === true)}
-                                className="mt-0.5"
-                            />
-                            <span className="grid gap-1">
-                                <span className="font-medium">
-                                    {{ de: 'Koch-Freigabe überspringen', en: 'Bypass cook approval' }[locale]}
-                                </span>
-                                <span className="text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'Wenn aktiv, werden Preis und Zahlungsfolgen sofort angewendet. Sonst muss der Koch bestätigen.',
-                                            en: 'When on, price and payment effects apply immediately. Otherwise the chef must confirm.',
-                                        }[locale]
-                                    }
-                                </span>
-                            </span>
-                        </label>
-                    ) : null}
-
                     <form.Field name="travelExpensesEuros">
                         {(field) => (
                             <div className="grid gap-1.5">
@@ -470,14 +492,13 @@ export function AdminBookingRequestOfferPriceEditPage({
                 open={confirmOpen}
                 onOpenChange={setConfirmOpen}
                 locale={locale}
-                bypassCookApproval={bypassCookApproval}
                 paymentStatus={seedOffer.paymentStatus}
                 totalCentsCustomerBefore={seedOffer.totalCentsCustomer ?? seedOffer.totalWithoutDiscountsCentsCustomer}
                 totalCentsCustomerAfter={totalCentsCustomerAfter}
                 payoutCentsCookBefore={seedOffer.payoutCentsCook}
                 payoutCentsCookAfter={previewPrice.payoutCentsCook}
                 busy={confirmBusy}
-                onConfirm={() => void applyConfirmedAmendment()}
+                onConfirm={(bypassCookApproval) => void applyConfirmedAmendment(bypassCookApproval)}
             />
         </AdminPageChrome>
     );

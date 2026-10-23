@@ -7,7 +7,7 @@ import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant, Co
 import type { BookingRequestExactEventAddress, BookingRequestOfferParticipantAmendment } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import {
-    bookingRequestOfferCanRequestParticipantAmendment,
+    bookingRequestOfferAmendmentBlockReason,
     bookingRequestOfferHasPendingDeltaPayment,
     bookingRequestOfferIsDualAccepted,
     bookingRequestOfferParticipantAmendmentPaymentAllowed,
@@ -148,19 +148,33 @@ export async function bookingRequestOfferAdminAmendmentPrepare(
         throw new Error(`${errorPrefix}: offer is not dual-accepted`);
     }
     if (!bookingRequestOfferParticipantAmendmentPaymentAllowed(row.offer.paymentStatus)) {
-        throw new Error(`${errorPrefix}: payment status does not allow amendment`);
+        throw new Error(`${errorPrefix}: payment status ${row.offer.paymentStatus} does not allow amendment (need EMPTY, SETUP, or PAYED)`);
     }
     if (bookingRequestOfferHasPendingDeltaPayment(row.offer.paymentData)) {
         throw new Error(`${errorPrefix}: unpaid pending delta payment must be completed first`);
     }
-    if (
-        !bookingRequestOfferCanRequestParticipantAmendment({
-            offer: row.offer,
-            bookingRequest: row.bookingRequest,
-        })
-    ) {
-        throw new Error(`${errorPrefix}: amendment is not allowed`);
+
+    const blockReason = bookingRequestOfferAmendmentBlockReason({
+        offer: row.offer,
+        bookingRequest: row.bookingRequest,
+    });
+    // Admins may replace an unclaimed pending proposal; claimed means Stripe apply is in flight / stuck.
+    if (blockReason === 'PREPARATIONS_LOCKED') {
+        throw new Error(`${errorPrefix}: preparations are locked; clear the prep lock on the offer first`);
     }
+    if (blockReason === 'PENDING_AMENDMENT_CLAIMED') {
+        throw new Error(`${errorPrefix}: a pending amendment is already claimed (apply in progress or stuck)`);
+    }
+    if (blockReason === 'EVENT_PAST') {
+        throw new Error(`${errorPrefix}: event date is in the past`);
+    }
+    if (blockReason === 'CANCELED') {
+        throw new Error(`${errorPrefix}: booking request is canceled`);
+    }
+    if (blockReason === 'PENDING_DELTA_PAYMENT') {
+        throw new Error(`${errorPrefix}: unpaid pending delta payment must be completed first`);
+    }
+    // null / PENDING_AMENDMENT (replace) / already-thrown dual-accept & payment-status → continue
 
     const existingParticipants = await serverRuntime.db
         .select()

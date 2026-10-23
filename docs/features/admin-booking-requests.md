@@ -51,9 +51,10 @@ create offer → dedicated create route. Edit mirrors the customer form for occa
 default), and live `travelImpact` / `priceImpact` banners next to the venue and guest-count fields (admin also sees cook-payout deltas).
 Changing venue, guests, preferences, or restrictions resets cook acceptance and emits offer timeline events; venue/headcount changes also
 auto-adjust open-offer travel and menu prices (`priceAutoAdjustReason` + `SYSTEM_CHANGED_PRICE`, same as customer update). On a
-dual-accepted offer, venue/participant edits use the amendment create/apply path (bypass-cook checkbox + consequence dialog) instead of
-resetting acceptance. Other ops fields stay a non-resetting patch. Admin edit can set or clear `adjustedMessage`; clearing it while changing
-`originalMessage` re-enqueues the AI rewrite when the toggle is on — see [ai-booking-request-message.md](./ai-booking-request-message.md).
+dual-accepted offer, venue/participant edits use the amendment create/apply path (confirm dialog: propose to chef vs apply without cook
+approval) instead of resetting acceptance. Other ops fields stay a non-resetting patch. Admin edit can set or clear `adjustedMessage`;
+clearing it while changing `originalMessage` re-enqueues the AI rewrite when the toggle is on — see
+[ai-booking-request-message.md](./ai-booking-request-message.md).
 
 **Cancel request** uses the same cancelable statuses and customer/cook emails as self-serve cancel (`WAITING_FOR_OFFERS` /
 `OFFERS_WAITING_FOR_REVIEW` / `EXPIRED`). Reason required. Writes `USER_CANCELLED` offer timeline events.
@@ -70,7 +71,9 @@ dialog, including after send is closed), **offer** (cook / customer / accept met
 badge top-right, outline **Nutzer öffnen** to `/admin/users/$userId`; also used on `AdminCallPage`), an **Angebotsstatus** block (title
 above card; 2-column grid: offer id with copy, long created date-time, then accept `StatusBadge`s; decline reasons full-width below when
 present), and pending `queuedJobs`. Footer: **Edit offer** (`.../edit`, accept flags only) and hand over when dual-accepted. Offer status
-pill sits top-right above the tabs (no payment-status pill in that chrome).
+pill sits top-right above the tabs (no payment-status pill in that chrome). When `participantAmendment` is pending, a warning alert in the
+offer chrome (all tabs) shows the proposed deltas and host/cook price change, with a **View costs** shortcut; the same alert appears on
+request offers (accepted pin), request edit, and price edit (with a replace-on-save footnote).
 
 **Costs** is the ops economics surface: labeled cook/customer platform fees with stored percents, payment-provider fee, menu / travel /
 payout / customer totals, and **Plattformgewinn / Platform profit** (`platformFeeCentsCook + platformFeeCentsCustomer`) highlighted in the
@@ -89,10 +92,10 @@ takes menu price + travel; percents/amounts (including `totalWithoutDiscountsCen
 any gift/promo discount cents preserved) are always recalculated on write. Edit-price CTA (`.../edit-price`: menu price, travel,
 payment/payout timestamps) lives on this tab’s footer only. On dual-accepted offers (`EMPTY` / `SETUP` / `PAYED`), menu/travel edits use
 `bookingRequestOfferAmendmentCreate` (cook must accept) or `bookingRequestOfferAmendmentApply` (bypass cook approval). Both reuse amendment
-Stripe rules (`EMPTY` cancel and re-prepare, `SETUP` columns only, `PAYED` refund/top-up). UI: checkbox **Bypass cook approval** (default
-off) + consequence confirm dialog. No feature toggle. Same path applies from request edit for venue/participants. Blocked for `TRANSFERRED`
-/ `PAYED_OUT_OF_SYSTEM` / `FAILED` and when preparations are locked (clear prep first). Pre-accept price edits still use
-`bookingRequestOfferUpdate`.
+Stripe rules (`EMPTY` cancel and re-prepare, `SETUP` columns only, `PAYED` refund/top-up). UI: on save, a confirm dialog shows price/payment
+consequences and two explicit actions (**Propose to chef** / **Apply now (skip cook approval)**). No feature toggle. Same path applies from
+request edit for venue/participants. Blocked for `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED` and when preparations are locked (clear
+prep first). Pre-accept price edits still use `bookingRequestOfferUpdate`.
 
 **Menu** holds only configured / suggested menus (`OfferMenuConfigured` or `CookMenuCard` grid to `/admin/menus/$menuId`) — no cook/customer
 header. When a customer has frozen a configured menu, admins can open `.../edit-configured-menu` to replace title, description, and

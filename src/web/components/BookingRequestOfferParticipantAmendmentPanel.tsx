@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 
 import { formatCurrency, formatParticipants } from '../../shared';
@@ -285,6 +286,42 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
     );
 }
 
+/** Pending amendment notice for admin readonly / edit surfaces. */
+export function BookingRequestOfferParticipantAmendmentAdminPendingAlert(props: {
+    locale: Locale;
+    amendment: AmendmentPreview;
+    /** Extra sentence after the summary (e.g. save will replace the proposal). */
+    footnote?: string;
+    action?: ReactNode;
+}) {
+    const summary = amendmentSummary(props.amendment, props.locale);
+    const priceLine = {
+        de: `Gastgeberpreis ${formatCurrency(props.amendment.totalCentsCustomerBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}. Koch-Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}.`,
+        en: `Host price ${formatCurrency(props.amendment.totalCentsCustomerBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}. Cook payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}.`,
+    }[props.locale];
+
+    return (
+        <StatusAlert
+            tone="warning"
+            title={{ de: 'Offene Buchungsänderung', en: 'Pending booking change' }[props.locale]}
+            action={props.action}
+        >
+            <span className="grid gap-1">
+                <span>
+                    {
+                        {
+                            de: `Vorschlag wartet auf den Koch${summary ? `: ${summary}` : ''}.`,
+                            en: `Proposal waiting on the chef${summary ? `: ${summary}` : ''}.`,
+                        }[props.locale]
+                    }
+                </span>
+                <span>{priceLine}</span>
+                {props.footnote ? <span>{props.footnote}</span> : null}
+            </span>
+        </StatusAlert>
+    );
+}
+
 export function BookingRequestOfferParticipantAmendmentAdminPanel(props: {
     locale: Locale;
     amendment: AmendmentPreview | null;
@@ -298,14 +335,7 @@ export function BookingRequestOfferParticipantAmendmentAdminPanel(props: {
     return (
         <div className="grid gap-3">
             {props.amendment ? (
-                <StatusAlert tone="info" title={{ de: 'Offene Buchungsänderung', en: 'Pending booking amendment' }[props.locale]}>
-                    {
-                        {
-                            de: `Vorschlag wartet auf den Koch. Gastgeberpreis ${formatCurrency(props.amendment.totalCentsCustomerBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
-                            en: `Proposal waiting on the chef. Host price ${formatCurrency(props.amendment.totalCentsCustomerBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
-                        }[props.locale]
-                    }
-                </StatusAlert>
+                <BookingRequestOfferParticipantAmendmentAdminPendingAlert locale={props.locale} amendment={props.amendment} />
             ) : null}
             {props.preparationsCompletedAt ? (
                 <StatusAlert

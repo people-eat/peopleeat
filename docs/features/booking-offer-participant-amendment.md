@@ -33,9 +33,10 @@ preparations done. Gated by `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`.
    Admins can clear the lock for ops.
 9. Blocked when the event is past, the request is canceled, or payment is `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED`.
 10. Admins may propose or immediately apply venue / participants / absolute menu or travel on dual-accepted offers via
-    `bookingRequestOfferAmendmentCreate` / `Apply` (no feature toggle; optional cook-approval bypass checkbox; consequence confirm dialog).
-    Prep lock and payment-status gates still apply. Direct `adminBookingRequestUpdate` venue/participants and
-    `adminBookingRequestOfferUpdate` menu/travel on dual-accepted offers stay rejected.
+    `bookingRequestOfferAmendmentCreate` / `Apply` (no feature toggle; confirm dialog chooses propose vs apply without cook approval). Prep
+    lock and payment-status gates still apply. Pending proposals surface as a warning alert on admin offer chrome, request offers, request
+    edit, and price edit. Direct `adminBookingRequestUpdate` venue/participants and `adminBookingRequestOfferUpdate` menu/travel on
+    dual-accepted offers stay rejected.
 
 ## Decisions
 

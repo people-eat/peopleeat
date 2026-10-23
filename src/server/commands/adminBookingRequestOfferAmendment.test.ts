@@ -140,7 +140,38 @@ describe('adminBookingRequestOfferAmendmentCreate', () => {
                 admin.requestingSession,
                 admin.serverRuntime,
             ),
-        ).rejects.toThrow(/amendment is not allowed/);
+        ).rejects.toThrow(/preparations are locked/);
+    });
+
+    it('replaces an unclaimed pending amendment', async () => {
+        const { admin, bookingRequestOfferId } = await seedDualAcceptedOffer('EMPTY');
+
+        await adminBookingRequestOfferAmendmentCreate(
+            adminMutationParent(admin.user.userId),
+            {
+                bookingRequestOfferId,
+                input: { menuPriceCents: 50_000 },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        await adminBookingRequestOfferAmendmentCreate(
+            adminMutationParent(admin.user.userId),
+            {
+                bookingRequestOfferId,
+                input: { menuPriceCents: 62_000 },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.participantAmendment?.menuPriceCentsAfter).toBe(62_000);
+        expect(offer?.participantAmendment?.claimedAt).toBeUndefined();
     });
 });
 

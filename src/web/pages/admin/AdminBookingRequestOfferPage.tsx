@@ -58,7 +58,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/t
 import { BookingRequestOfferAttentionBanner } from '../../components/BookingRequestOfferAttentionBanner';
 import { BookingRequestOfferCallTab } from '../../components/BookingRequestOfferCallTab';
 import { BookingRequestOfferChat } from '../../components/BookingRequestOfferChat';
-import { BookingRequestOfferParticipantAmendmentAdminPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
+import {
+    BookingRequestOfferParticipantAmendmentAdminPanel,
+    BookingRequestOfferParticipantAmendmentAdminPendingAlert,
+} from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import { BookingRequestOfferCostOverviewPanel } from '../../components/BookingRequestOfferPriceConfigurationPanel';
 import { bookingRequestOfferStatusClassName } from '../../components/bookingRequestOfferStatus';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
@@ -511,6 +514,26 @@ export function AdminBookingRequestOfferPage({
                                         {adminBookingRequestOfferStatusLabel(offer.status, locale)}
                                     </BookingStatusPill>
                                 </div>
+                                {offer.participantAmendment ? (
+                                    <BookingRequestOfferParticipantAmendmentAdminPendingAlert
+                                        locale={locale}
+                                        amendment={offer.participantAmendment}
+                                        action={
+                                            tab !== 'costs' ? (
+                                                <Button type="button" size="sm" variant="outline" asChild>
+                                                    <Link
+                                                        to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
+                                                        params={{ bookingRequestId, bookingRequestOfferId }}
+                                                        search={{ tab: 'costs' }}
+                                                        replace
+                                                    >
+                                                        {{ de: 'Zu Kosten', en: 'View costs' }[locale]}
+                                                    </Link>
+                                                </Button>
+                                            ) : undefined
+                                        }
+                                    />
+                                ) : null}
                                 {pendingCall && showSchedule ? (
                                     <BookingRequestOfferAttentionBanner
                                         message={
@@ -898,7 +921,7 @@ function OfferMetaTabPanel({
         <div className="@container grid max-w-3xl gap-4">
             <BookingRequestOfferParticipantAmendmentAdminPanel
                 locale={locale}
-                amendment={offer.participantAmendment}
+                amendment={null}
                 preparationsCompletedAt={offer.preparationsCompletedAt}
                 busy={preparationsClearBusy}
                 onClearPreparations={async () => {

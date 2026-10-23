@@ -38,6 +38,27 @@ fragment AdminBookingRequestEditPageRequest on AdminBookingRequest {
         totalCentsCustomer
         totalWithoutDiscountsCentsCustomer
         payoutCentsCook
+        participantAmendment {
+            requestedAt
+            participants {
+                type
+                name
+                restrictions
+            }
+            exactEventAddress {
+                displayText
+                city
+            }
+            menuPriceCentsBefore
+            menuPriceCentsAfter
+            travelExpensesCentsBefore
+            travelExpensesCentsAfter
+            totalCentsCustomerBefore
+            totalCentsCustomerAfter
+            payoutCentsCookBefore
+            payoutCentsCookAfter
+            giftCardDeltaCents
+        }
     }
 }
 

@@ -17,7 +17,6 @@ import { AdminBookingRequestOfferAmendmentConfirmDialog } from '../../components
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Button } from '../../components/base/button';
-import { Checkbox } from '../../components/base/checkbox';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { DateTimePicker } from '../../components/base/date-time-picker';
 import { Input } from '../../components/base/input';
@@ -28,6 +27,7 @@ import {
     BookingRequestOfferPriceImpactPreview,
     BookingRequestOfferTravelImpactPreview,
 } from '../../components/BookingRequestOfferImpactPreviews';
+import { BookingRequestOfferParticipantAmendmentAdminPendingAlert } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import { BookingRequestParticipantsRestrictionsEditor } from '../../components/BookingRequestParticipantsRestrictionsEditor';
 import { SelectableChip } from '../../components/SelectableChip';
 import type {
@@ -203,7 +203,6 @@ export function AdminBookingRequestEditPage({
     const [participants, setParticipants] = useState<BookingRequestParticipantDraft[]>(() => participantsFromRequest(seedRequest));
     const seedParticipants = participantsFromRequest(seedRequest);
     const dualAcceptedOffer = seedRequest.offers.find((offer) => offer.userAccepted === true && offer.cookAccepted === true) ?? null;
-    const [bypassCookApproval, setBypassCookApproval] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [confirmBusy, setConfirmBusy] = useState(false);
     const [pendingSubmit, setPendingSubmit] = useState<{
@@ -235,7 +234,7 @@ export function AdminBookingRequestEditPage({
         }
     }
 
-    async function applyConfirmedDualAcceptEdit() {
+    async function applyConfirmedDualAcceptEdit(bypassCookApproval: boolean) {
         if (!pendingSubmit || !dualAcceptedOffer) return;
         setConfirmBusy(true);
         try {
@@ -311,11 +310,15 @@ export function AdminBookingRequestEditPage({
             const guestsChanged = value.adultCount !== seedAdultCount || value.childCount !== seedChildCount;
 
             if (dualAcceptedOffer && (venueChanged || guestsChanged)) {
-                if (!dualAcceptedOffer.canRequestParticipantAmendment) {
+                const allowedPayment =
+                    dualAcceptedOffer.paymentStatus === 'EMPTY' ||
+                    dualAcceptedOffer.paymentStatus === 'SETUP' ||
+                    dualAcceptedOffer.paymentStatus === 'PAYED';
+                if (!allowedPayment) {
                     toast.error(
                         {
-                            de: 'Änderung nicht möglich (Sperre, ausstehendes Amendment oder Zahlungsstatus).',
-                            en: 'Change not allowed (lock, pending amendment, or payment status).',
+                            de: `Zahlungsstatus ${dualAcceptedOffer.paymentStatus} erlaubt keine Änderung (nur EMPTY, SETUP oder PAYED).`,
+                            en: `Payment status ${dualAcceptedOffer.paymentStatus} does not allow changes (only EMPTY, SETUP, or PAYED).`,
                         }[locale],
                     );
                     return;
@@ -510,14 +513,27 @@ export function AdminBookingRequestEditPage({
                 >
                     {dualAcceptedOffer
                         ? {
-                              de: 'Preisfolgen und Zahlungsstatus siehst du vor dem Speichern im Bestätigungsdialog. Optional kannst du die Koch-Freigabe überspringen.',
-                              en: 'Price effects and payment status show in the confirm dialog before save. Optionally bypass cook approval.',
+                              de: 'Preisfolgen, Zahlungsstatus und ob du die Koch-Freigabe überspringst, wählst du vor dem Speichern im Bestätigungsdialog.',
+                              en: 'Price effects, payment status, and whether to skip cook approval are chosen in the confirm dialog before save.',
                           }[locale]
                         : {
                               de: 'Ändern sich Teilnehmerzahl oder Adresse, kann der Angebotspreis automatisch angepasst werden. Live-Vorschauen erscheinen direkt am Feld. Der Koch bestätigt danach erneut.',
                               en: 'If the guest count or address changes, the offer price may adjust automatically. Live previews appear next to the field. The chef confirms again afterwards.',
                           }[locale]}
                 </StatusAlert>
+
+                {dualAcceptedOffer?.participantAmendment != null ? (
+                    <BookingRequestOfferParticipantAmendmentAdminPendingAlert
+                        locale={locale}
+                        amendment={dualAcceptedOffer.participantAmendment}
+                        footnote={
+                            {
+                                de: 'Speichern ersetzt diesen Vorschlag oder wendet ihn im Bestätigungsdialog sofort an.',
+                                en: 'Saving replaces this proposal, or applies it immediately from the confirm dialog.',
+                            }[locale]
+                        }
+                    />
+                ) : null}
 
                 <form
                     id={FORM_ID}
@@ -528,28 +544,6 @@ export function AdminBookingRequestEditPage({
                         void form.handleSubmit();
                     }}
                 >
-                    {dualAcceptedOffer ? (
-                        <label className="flex items-start gap-3 rounded-md border border-border p-3 text-sm">
-                            <Checkbox
-                                checked={bypassCookApproval}
-                                onCheckedChange={(checked) => setBypassCookApproval(checked === true)}
-                                className="mt-0.5"
-                            />
-                            <span className="grid gap-1">
-                                <span className="font-medium">
-                                    {{ de: 'Koch-Freigabe überspringen', en: 'Bypass cook approval' }[locale]}
-                                </span>
-                                <span className="text-muted-foreground">
-                                    {
-                                        {
-                                            de: 'Wenn aktiv, werden Ort/Teilnehmer und Zahlungsfolgen sofort angewendet. Sonst muss der Koch bestätigen.',
-                                            en: 'When on, venue/participants and payment effects apply immediately. Otherwise the chef must confirm.',
-                                        }[locale]
-                                    }
-                                </span>
-                            </span>
-                        </label>
-                    ) : null}
                     <form.Field name="occasion">
                         {(field) => (
                             <div className="grid gap-4">
@@ -958,14 +952,13 @@ export function AdminBookingRequestEditPage({
                     open={confirmOpen}
                     onOpenChange={setConfirmOpen}
                     locale={locale}
-                    bypassCookApproval={bypassCookApproval}
                     paymentStatus={dualAcceptedOffer.paymentStatus}
                     totalCentsCustomerBefore={dualAcceptedOffer.totalCentsCustomer ?? dualAcceptedOffer.totalWithoutDiscountsCentsCustomer}
                     totalCentsCustomerAfter={previewTotalCustomer}
                     payoutCentsCookBefore={dualAcceptedOffer.payoutCentsCook}
                     payoutCentsCookAfter={previewPrice.payoutCentsCook}
                     busy={confirmBusy}
-                    onConfirm={() => void applyConfirmedDualAcceptEdit()}
+                    onConfirm={(bypassCookApproval) => void applyConfirmedDualAcceptEdit(bypassCookApproval)}
                 />
             ) : null}
         </AdminPageChrome>

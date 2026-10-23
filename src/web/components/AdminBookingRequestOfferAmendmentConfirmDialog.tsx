@@ -2,7 +2,6 @@ import { formatCurrency } from '../../shared';
 import type { Locale } from '../utils/locale';
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -10,6 +9,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from './base/alert-dialog';
+import { Button } from './base/button';
 
 export type AdminAmendmentPaymentStatus = 'EMPTY' | 'SETUP' | 'PAYED' | string;
 
@@ -42,25 +42,16 @@ export function AdminBookingRequestOfferAmendmentConfirmDialog(props: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     locale: Locale;
-    bypassCookApproval: boolean;
     paymentStatus: AdminAmendmentPaymentStatus;
     totalCentsCustomerBefore: number;
     totalCentsCustomerAfter: number;
     payoutCentsCookBefore: number;
     payoutCentsCookAfter: number;
     busy?: boolean;
-    onConfirm: () => void;
+    /** `bypassCookApproval` is chosen explicitly via the dialog actions. */
+    onConfirm: (bypassCookApproval: boolean) => void;
 }) {
     const { locale } = props;
-    const approvalLine = props.bypassCookApproval
-        ? {
-              de: 'Koch-Freigabe wird übersprungen. Änderung und Zahlung werden sofort angewendet.',
-              en: 'Cook approval is bypassed. The change and payment effects apply immediately.',
-          }[locale]
-        : {
-              de: 'Der Koch muss die Änderung noch annehmen, bevor Geld fließt.',
-              en: 'The chef must still accept the change before money moves.',
-          }[locale];
 
     return (
         <AlertDialog open={props.open} onOpenChange={props.onOpenChange}>
@@ -69,7 +60,6 @@ export function AdminBookingRequestOfferAmendmentConfirmDialog(props: {
                     <AlertDialogTitle>{{ de: 'Buchungsänderung bestätigen', en: 'Confirm booking change' }[locale]}</AlertDialogTitle>
                     <AlertDialogDescription asChild>
                         <div className="grid gap-3 text-sm text-muted-foreground">
-                            <p>{approvalLine}</p>
                             <p>
                                 {
                                     {
@@ -79,24 +69,47 @@ export function AdminBookingRequestOfferAmendmentConfirmDialog(props: {
                                 }
                             </p>
                             <p>{paymentConsequenceCopy(props.paymentStatus, locale)}</p>
+                            <p className="font-medium text-foreground">
+                                {
+                                    {
+                                        de: 'Wie soll die Änderung angewendet werden?',
+                                        en: 'How should this change be applied?',
+                                    }[locale]
+                                }
+                            </p>
                         </div>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel disabled={props.busy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
-                    <AlertDialogAction
+                <AlertDialogFooter className="flex-col gap-2 sm:flex-col sm:space-x-0">
+                    <Button
+                        type="button"
                         disabled={props.busy}
-                        onClick={(event) => {
-                            event.preventDefault();
-                            props.onConfirm();
+                        onClick={() => {
+                            props.onConfirm(false);
                         }}
                     >
                         {props.busy
-                            ? { de: 'Wird angewendet…', en: 'Applying…' }[locale]
-                            : props.bypassCookApproval
-                              ? { de: 'Sofort anwenden', en: 'Apply now' }[locale]
-                              : { de: 'Beim Koch vorschlagen', en: 'Propose to chef' }[locale]}
-                    </AlertDialogAction>
+                            ? { de: 'Wird gespeichert…', en: 'Saving…' }[locale]
+                            : { de: 'Beim Koch vorschlagen', en: 'Propose to chef' }[locale]}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        disabled={props.busy}
+                        onClick={() => {
+                            props.onConfirm(true);
+                        }}
+                    >
+                        {
+                            {
+                                de: 'Sofort anwenden (ohne Koch-Freigabe)',
+                                en: 'Apply now (skip cook approval)',
+                            }[locale]
+                        }
+                    </Button>
+                    <AlertDialogCancel disabled={props.busy} className="mt-0">
+                        {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                    </AlertDialogCancel>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
