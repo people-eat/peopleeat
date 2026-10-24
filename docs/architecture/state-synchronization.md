@@ -39,9 +39,15 @@ Key design decisions in `src/server/graphql/PubSubPostgres.ts`:
 The `/api/stream` endpoint (`src/routes/api/stream.ts`):
 
 - Sends an initial padding comment (2048 spaces) to force proxy flush
-- Formats events as standard SSE: `id: N\nevent: next\ndata: JSON\n\n`
+- Formats events per GraphQL-over-SSE: `id: N\nevent: next\ndata: JSON\n\n`, then `event: complete\ndata:\n\n` when the iterator ends (or
+  after a setup/runtime error framed as a `next` with `errors`)
+- Sends SSE comment keep-alive pings (`:\n\n`) every 12s so idle proxies do not drop long-lived subscriptions
 - Properly cleans up the subscription iterator when the client disconnects (`cancel()` on the `ReadableStream`)
-- Handles controller-closed errors gracefully
+- Handles controller-closed / client-abort errors gracefully (no error frame, no `Logs` noise)
+
+**Wire-format pitfall:** graphql-sse requires a named `event` (`next` | `complete`) on every message. A bare `data: …\n\n` frame makes the
+browser client throw `Missing message event`, which then shows up as `client graphql: …Updates: Missing message event` via RUM — masking the
+real subscription failure. Always emit `event: next` for ExecutionResults (including `{ errors }`).
 
 ### Subscription Channels
 

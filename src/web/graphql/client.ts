@@ -46,8 +46,8 @@ const urqlPostFetch: typeof fetch = async (url, options) => {
     });
 };
 
-// Subscriptions ride graphql-sse, which uses GET (the SSE standard); the POST
-// transcoding above only applies to the URQL fetch exchange.
+// Subscriptions ride graphql-sse in distinct-connections mode (POST + body to
+// `/api/stream`). The POST transcoding above only applies to the URQL fetch exchange.
 const sseClient = createSSEClient({
     url: '/api/stream',
     credentials: 'same-origin',

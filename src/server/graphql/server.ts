@@ -207,8 +207,8 @@ export async function executeGraphQLSubscription(
 
             // `subscribe()` returns a single `ExecutionResult` only when subscription
             // setup itself errored before the iterator was created (e.g. validation
-            // failure). Surface that as a thrown error so the SSE handler can convert
-            // it to an `errors` event.
+            // failure). Yield that once so `/api/stream` can emit a protocol-compliant
+            // `event: next` (with `errors`) then `event: complete`.
             const setupErrors = 'errors' in result ? result.errors : undefined;
             const errorClass = graphqlErrorClass(setupErrors);
             span.setAttribute('graphql.error.class', errorClass);
@@ -223,27 +223,27 @@ export async function executeGraphQLSubscription(
                 errorClass,
             });
             graphqlOperationWindowRecord(operationName, durationMs, true);
-            throw new Error('Subscription did not return an async iterable');
+            return (async function* () {
+                yield result;
+            })();
         } catch (error) {
-            if (!(error instanceof Error && error.message === 'Subscription did not return an async iterable')) {
-                span.recordException(error instanceof Error ? error : new Error(String(error)));
-                span.setStatus({
-                    code: SpanStatusCode.ERROR,
-                    message: error instanceof Error ? error.message : 'Subscription setup throw',
-                });
-                const errorClass = graphqlErrorClass([{ message: error instanceof Error ? error.message : String(error) }]);
-                span.setAttribute('graphql.error.class', errorClass);
-                span.setAttribute('graphql.error.count', 1);
-                const durationMs = Date.now() - startedAt;
-                graphqlOperationRecord({
-                    operationName,
-                    operationType: 'subscription',
-                    durationMs,
-                    errored: true,
-                    errorClass,
-                });
-                graphqlOperationWindowRecord(operationName, durationMs, true);
-            }
+            span.recordException(error instanceof Error ? error : new Error(String(error)));
+            span.setStatus({
+                code: SpanStatusCode.ERROR,
+                message: error instanceof Error ? error.message : 'Subscription setup throw',
+            });
+            const errorClass = graphqlErrorClass([{ message: error instanceof Error ? error.message : String(error) }]);
+            span.setAttribute('graphql.error.class', errorClass);
+            span.setAttribute('graphql.error.count', 1);
+            const durationMs = Date.now() - startedAt;
+            graphqlOperationRecord({
+                operationName,
+                operationType: 'subscription',
+                durationMs,
+                errored: true,
+                errorClass,
+            });
+            graphqlOperationWindowRecord(operationName, durationMs, true);
             throw error;
         } finally {
             span.end();

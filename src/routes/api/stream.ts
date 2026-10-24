@@ -6,11 +6,57 @@ import { executeGraphQLSubscription } from '../../server/graphql/server';
 import { graphqlOperationNameResolve } from '../../server/observability/graphqlOperationMeta';
 import { graphqlSubscriptionConnectionRecord } from '../../server/observability/redMetrics';
 import { clientIpFromRequest } from '../../server/utils/clientIpFromRequest';
+import { isClientConnectionAbortError } from '../../server/utils/isClientConnectionAbortError';
 import { loggerCreate } from '../../server/utils/loggerCreate';
 import { sessionUpsert } from '../../server/utils/sessionUpsert';
 import { sessionUtils } from '../../server/utils/sessionUtils';
 
 const log = loggerCreate(db);
+
+const encoder = new TextEncoder();
+
+/** GraphQL-over-SSE requires a named `event` (`next` | `complete`). Bare `data:` frames make graphql-sse throw "Missing message event". */
+function sseNext(eventId: number, data: unknown): Uint8Array {
+    return encoder.encode(`id: ${eventId}\nevent: next\ndata: ${JSON.stringify(data)}\n\n`);
+}
+
+function sseComplete(): Uint8Array {
+    return encoder.encode('event: complete\ndata:\n\n');
+}
+
+function isControllerClosedError(error: unknown): boolean {
+    if (!error || typeof error !== 'object') {
+        return false;
+    }
+    const { message, code } = error as { message?: unknown; code?: unknown };
+    return code === 'ERR_INVALID_STATE' || (typeof message === 'string' && message.includes('closed'));
+}
+
+function enqueueSafe(controller: ReadableStreamDefaultController<Uint8Array>, chunk: Uint8Array): boolean {
+    if (controller.desiredSize === null) {
+        return false;
+    }
+    try {
+        controller.enqueue(chunk);
+        return true;
+    } catch (error) {
+        if (isControllerClosedError(error) || isClientConnectionAbortError(error)) {
+            return false;
+        }
+        throw error;
+    }
+}
+
+function closeSafe(controller: ReadableStreamDefaultController<Uint8Array>): void {
+    if (controller.desiredSize === null) {
+        return;
+    }
+    try {
+        controller.close();
+    } catch {
+        // Already closed by a concurrent cancel.
+    }
+}
 
 function createSubscriptionStream(
     controller: ReadableStreamDefaultController<Uint8Array>,
@@ -19,18 +65,22 @@ function createSubscriptionStream(
     session: GqlSSession,
     operationName: string,
 ) {
-    const encoder = new TextEncoder();
     let activeSubscriptionIterator: AsyncIterator<any> | null = null;
     const connectionStartedAt = Date.now();
     let eventCount = 0;
     let connectionErrored = false;
     let connectionRecorded = false;
+    let pingTimer: ReturnType<typeof setInterval> | null = null;
 
     const recordConnection = () => {
         if (connectionRecorded) {
             return;
         }
         connectionRecorded = true;
+        if (pingTimer) {
+            clearInterval(pingTimer);
+            pingTimer = null;
+        }
         graphqlSubscriptionConnectionRecord({
             operationName,
             durationMs: Date.now() - connectionStartedAt,
@@ -43,7 +93,12 @@ function createSubscriptionStream(
     // receives the open event immediately instead of after the proxy buffer
     // fills.
     const initialPadding = ' '.repeat(2048);
-    controller.enqueue(encoder.encode(`: connected${initialPadding}\n\n`));
+    enqueueSafe(controller, encoder.encode(`: connected${initialPadding}\n\n`));
+
+    // Keep-alive pings (SSE comments) so idle proxies do not close long-lived subscriptions.
+    pingTimer = setInterval(() => {
+        enqueueSafe(controller, encoder.encode(':\n\n'));
+    }, 12_000);
 
     let eventId = 0;
     (async () => {
@@ -54,34 +109,27 @@ function createSubscriptionStream(
             activeSubscriptionIterator = subscriptionIterator;
 
             for await (const result of subscriptionIterator) {
-                if (controller.desiredSize === null) {
+                if (!enqueueSafe(controller, sseNext(++eventId, result))) {
                     break;
                 }
-
-                // GraphQL SSE wire format: id + named "next" event + JSON ExecutionResult.
-                const sseData = result;
-                const data = `id: ${++eventId}\nevent: next\ndata: ${JSON.stringify(sseData)}\n\n`;
-
-                try {
-                    controller.enqueue(encoder.encode(data));
-                    eventCount += 1;
-                } catch (enqueueError: any) {
-                    if (enqueueError.message?.includes('closed') || enqueueError.code === 'ERR_INVALID_STATE') {
-                        break;
-                    }
-                    throw enqueueError;
-                }
+                eventCount += 1;
             }
-        } catch (iterError: any) {
+
+            if (enqueueSafe(controller, sseComplete())) {
+                closeSafe(controller);
+            }
+        } catch (iterError: unknown) {
+            if (isClientConnectionAbortError(iterError) || isControllerClosedError(iterError)) {
+                return;
+            }
+
             connectionErrored = true;
-            if (controller.desiredSize !== null) {
-                const errorData = `data: ${JSON.stringify({ errors: [{ message: iterError.message }] })}\n\n`;
-                try {
-                    controller.enqueue(encoder.encode(errorData));
-                    controller.close();
-                } catch {
-                    // Already closed by a concurrent cancel — nothing to clean up.
-                }
+            const message = iterError instanceof Error ? iterError.message : String(iterError);
+            log.error(iterError instanceof Error ? iterError : new Error(message), session);
+
+            if (enqueueSafe(controller, sseNext(++eventId, { errors: [{ message }] }))) {
+                enqueueSafe(controller, sseComplete());
+                closeSafe(controller);
             }
         } finally {
             recordConnection();
@@ -146,10 +194,11 @@ export const Route = createFileRoute('/api/stream')({
                             try {
                                 const subscription = createSubscriptionStream(controller, query, variables, session, operationName);
                                 subscriptionCleanup = subscription.cleanup;
-                            } catch (error: any) {
-                                const errorData = `data: ${JSON.stringify({ errors: [{ message: error.message }] })}\n\n`;
-                                controller.enqueue(new TextEncoder().encode(errorData));
-                                controller.close();
+                            } catch (error: unknown) {
+                                const message = error instanceof Error ? error.message : String(error);
+                                enqueueSafe(controller, sseNext(1, { errors: [{ message }] }));
+                                enqueueSafe(controller, sseComplete());
+                                closeSafe(controller);
                             }
                         },
                         cancel() {
