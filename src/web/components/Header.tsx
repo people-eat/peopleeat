@@ -17,10 +17,10 @@ export type PublicHeaderUser =
     | null
     | undefined;
 
-/** Viewport band occupied by sticky header chrome — used for wordmark contrast. */
+/** Viewport band occupied by header chrome — used for wordmark contrast. */
 const HEADER_CONTRAST_BAND_PX = 80;
 
-/** Mark full-bleed dark media so the sticky header can invert the wordmark over it. */
+/** Mark full-bleed dark media so the header can invert the wordmark over it. */
 const HEADER_OVER_MEDIA_ATTR = 'data-over-media';
 
 function headerIsOverMedia(): boolean {
@@ -67,8 +67,17 @@ export function Header({
         };
     }, []);
 
-    const header = (
-        <header className={cn('z-10 flex w-full items-center justify-between gap-3 p-2 @6xl:gap-4 @6xl:p-4', !overMedia && 'sticky top-0')}>
+    // `overMedia` uses `fixed` (not sticky): Radix modal menus lock body scroll,
+    // which unsticks `position: sticky` and sends the bar back to its in-flow
+    // spot at the top of the document — off-screen when the page is scrolled.
+    // Fixed keeps chrome out of flow so `SectionHero` can stay `h-dvh`.
+    return (
+        <header
+            className={cn(
+                'z-10 flex w-full items-center justify-between gap-3 p-2 @6xl:gap-4 @6xl:p-4',
+                overMedia ? 'fixed inset-x-0 top-0' : 'sticky top-0',
+            )}
+        >
             <Link
                 to="/{-$locale}"
                 className="inline-flex min-w-0 shrink focus-visible:rounded-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
@@ -98,12 +107,4 @@ export function Header({
             </div>
         </header>
     );
-
-    if (!overMedia) {
-        return header;
-    }
-
-    // Zero-height sticky shell keeps chrome out of flow (`SectionHero` stays
-    // `h-dvh`) while pinning it to the viewport on scroll.
-    return <div className="sticky top-0 z-10 h-0">{header}</div>;
 }

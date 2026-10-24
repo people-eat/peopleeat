@@ -46,16 +46,17 @@ Ship a stable brand, auth, and content foundation first; deliver booking and mar
 
 - Site name / SEO: `src/web/seo/seoConstants.ts`
 - Theme + fonts: `src/styles.css`, `docs/styles/theme.md`, `docs/styles/fonts.md`
-- Landing: full marketing home — see [landing.md](./landing.md). `HomePage` composes sticky `Header` (`overMedia`) over `SectionHero`
+- Landing: full marketing home — see [landing.md](./landing.md). `HomePage` composes fixed `Header` (`overMedia`) over `SectionHero`
   (`/assets/dinner.mp4`), then experience selection, comparison, how-it-works, shared-experiences quote, static customer testimonials,
   known-from logos, shared FAQ `SectionQuestionsAndAnswers` (also on `/how-to-become-a-chef`; `FAQPage` JSON-LD), support CTA, and
-  `SectionCities` (`publicCity.findMany`), with `Footer` below. `overMedia` wraps the bar in a zero-height sticky shell so it stays pinned
-  without consuming layout height — `SectionHero`’s `h-dvh` still fills the viewport. Full-bleed dark media (hero, comparison scene,
-  shared-experiences band, …) sets `data-over-media`; the sticky bar inverts the wordmark while any of those regions sits under the chrome,
-  then switches back for contrast on light sections. Default `Header` (no `overMedia`) is sticky for light canvases (e.g. `SignInPage`).
-  Footer is four columns (logo + company, discover, social, WhatsApp via `Button`) plus bottom bar (copyright, privacy / terms / imprint,
-  language switcher). External URLs live in `seoConstants`. Header chrome uses `p-2 @6xl:p-4` on the header itself (tighter on compact
-  widths; roomier once the center nav appears). Session actions use glassy `HeaderButton` (`h-12` text / `size-11` icons); primary **Anfrage
+  `SectionCities` (`publicCity.findMany`), with `Footer` below. `overMedia` pins the bar with `position: fixed` so it stays in the viewport
+  without consuming layout height — `SectionHero`’s `h-dvh` still fills the viewport — and survives Radix modal scroll-lock (sticky would
+  unstick and leave the chrome at the document top, off-screen when scrolled). Full-bleed dark media (hero, comparison scene,
+  shared-experiences band, …) sets `data-over-media`; the bar inverts the wordmark while any of those regions sits under the chrome, then
+  switches back for contrast on light sections. Default `Header` (no `overMedia`) is sticky for light canvases (e.g. `SignInPage`). Footer
+  is four columns (logo + company, discover, social, WhatsApp via `Button`) plus bottom bar (copyright, privacy / terms / imprint, language
+  switcher). External URLs live in `seoConstants`. Header chrome uses `p-2 @6xl:p-4` on the header itself (tighter on compact widths;
+  roomier once the center nav appears). Session actions use glassy `HeaderButton` (`h-12` text / `size-11` icons); primary **Anfrage
   senden** / **Send request** uses `HeroButton` (`h-12` `rounded-3xl` primary pill) linking to `/booking-request/form`, always visible in
   the header bar when shown (never tucked into a menu), hidden when `User.cook` is present. Center nav (`/how-to-become-a-chef`,
   `/gift-card`, `/about-us`) in a frosted pill from `@6xl` (1152px container) with `text-gray-800` — later than Footer’s `@4xl` so

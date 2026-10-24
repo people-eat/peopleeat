@@ -6,7 +6,7 @@ The public home at `/` and `/en/` introduces peopleeat with hero video, experien
 
 Visitors see sections in order (generous vertical spacing between blocks):
 
-1. **Hero** — full-viewport dinner video, bilingual headline, sticky header over media
+1. **Hero** — full-viewport dinner video, bilingual headline, fixed header over media
 2. **Experience selection** — three experience cards (casual, signature, gift) with CTAs to booking form or gift card
 3. **Comparison** — at-home private chef vs restaurant, CTA to booking form
 4. **How it works** — four steps and WhatsApp CTA (reusable section; can hide CTA and use alternative media on partner pages)
