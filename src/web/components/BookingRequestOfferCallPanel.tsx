@@ -77,12 +77,7 @@ function DeviceToggle({
 
     return (
         <div className="flex">
-            <Button
-                type="button"
-                variant={enabled ? 'outline' : 'secondary'}
-                className="rounded-r-none border-r-0"
-                onClick={() => toggle()}
-            >
+            <Button type="button" variant="default" className="rounded-r-none" onClick={() => toggle()}>
                 {enabled ? enabledIcon : disabledIcon}
                 <span className="hidden sm:inline">{label}</span>
             </Button>
@@ -90,9 +85,9 @@ function DeviceToggle({
                 <DropdownMenuTrigger asChild>
                     <Button
                         type="button"
-                        variant={enabled ? 'outline' : 'secondary'}
+                        variant="default"
                         size="icon"
-                        className="rounded-l-none"
+                        className="rounded-l-none border-l border-primary-foreground/20"
                         aria-label={label}
                     >
                         <ChevronDownIcon className="size-3.5" aria-hidden />

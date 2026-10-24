@@ -89,10 +89,11 @@ one-sided (lane next to the classic scrollbar only) — do **not** use `both-edg
 nav/header.
 
 Pinned-footer layouts (`[data-pinned-footer-layout]`) and other nested-scroll owners (`[data-workspace-fill]`) introduce an inner
-scrollport. Shell panes marked `workspace-inset-scroll` use `:has()` to drop their own bottom spacer, `overflow-y-auto`, and
-`scrollbar-gutter: stable` while that child is mounted — otherwise the idle outer gutter shows as empty space to the right of the
-`w-[calc(100%+2rem)] -mx-4` breakout. Offer/chat pages that scroll inside tabs pass `contentScroll={false}` so the pinned-footer body does
-not reserve a second idle gutter either.
+scrollport. Shell panes marked `workspace-inset-scroll` use `:has([data-pinned-footer-layout])` / `:has([data-workspace-fill])` (descendant,
+not only direct child) to drop their own bottom spacer, `overflow-y-auto`, and `scrollbar-gutter: stable` while that owner is mounted —
+otherwise the idle outer gutter shows as empty space to the right of the `w-[calc(100%+2rem)] -mx-4` breakout, and the `::after` 1rem spacer
+leaves a gap under the action bar when a `display: contents` wrapper (e.g. LiveKit room) sits in between. Offer/chat pages that scroll
+inside tabs pass `contentScroll={false}` so the pinned-footer body does not reserve a second idle gutter either.
 
 Content-sized shell pages must not use `flex-1` / `min-h-0` on the page root: the inset is a flex column, and a flex-grown child prevents
 the shared `::after` bottom spacer from sitting past the last content. Leave bottom padding to `workspace-inset-scroll`; do not add

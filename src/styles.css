@@ -248,8 +248,10 @@
         height: 1rem;
     }
 
-    &:has(> [data-pinned-footer-layout]),
-    &:has(> [data-workspace-fill]) {
+    /* Descendant (not only direct child): wrappers such as LiveKitRoom with
+     * `display: contents` sit between the shell and the pinned footer. */
+    &:has([data-pinned-footer-layout]),
+    &:has([data-workspace-fill]) {
         overflow: hidden;
         scrollbar-gutter: auto;
 

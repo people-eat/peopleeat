@@ -125,7 +125,8 @@ CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’
 - `BookingRequestOfferCallTab` (start/join + schedule) composes `BookingRequestOfferScheduleTab` (appointments + pick/propose) and optional
   admin recordings children; while in-call it renders `BookingRequestOfferCallVideo` only (recording notice + grid)
 - `BookingRequestOfferCallControls` (mic / camera device menus + leave) render in `ProfilePinnedFooterLayout` / `AdminPinnedFooterLayout`
-  for the duration of the call (not floating over the video)
+  for the duration of the call (not floating over the video); toggles use solid `default` buttons on the cream footer, Leave stays
+  `destructive`
 - Appointment rows, pick/propose panels, and start/join share compact Card density (`bookingOfferCallCardClassName` /
   `bookingOfferCallCardSectionClassName`: `gap-4 py-4` + section `px-4`)
 - Pick/propose and start/join put the primary CTA in `CardFooter` (end-aligned); appointment rows keep inline action rows in `CardContent`
