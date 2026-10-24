@@ -19,6 +19,7 @@ cook payout. **Go-live path is live** (form, pool, offers, chat, payment, calls,
 | Call recordings / transcripts                                        | [call-recordings.md](./call-recordings.md)                                         |
 | Admin booking ops                                                    | [admin-booking-requests.md](./admin-booking-requests.md)                           |
 | Cook arrival identity check (QR at the door) — idea                  | [cook-arrival-identity-verification.md](./cook-arrival-identity-verification.md)   |
+| Readonly booking-request share link (family / friends) — idea        | [booking-request-share.md](./booking-request-share.md)                             |
 | Structural decisions (schema, GraphQL, fees)                         | [architecture/booking.md](../architecture/booking.md)                              |
 
 ## Journey (overview)

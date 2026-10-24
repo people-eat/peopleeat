@@ -59,6 +59,7 @@ docs/
 │   ├── booking-payment.md        # Checkout, pull payment, cook payout
 │   ├── booking-offer-participant-amendment.md # Post-accept headcount change + prep lock
 │   ├── cook-arrival-identity-verification.md # QR host check when cook arrives (idea)
+│   ├── booking-request-share.md # Readonly share link for family / friends (idea)
 │   ├── booking-request-offer-calls.md # LiveKit discovery calls + slots
 │   ├── call-recordings.md        # Call audio egress + transcripts (Garage + admin UI)
 │   ├── assistants.md             # Audience agent factories (scaffolds; wiring pending)

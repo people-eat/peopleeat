@@ -69,6 +69,11 @@ Conversational create at `/booking-request/chat` (AI-assisted). Do not add intak
 On `/profile/booking-requests`, name the next cultural occasion (Valentine’s, Mother’s Day, …) and optionally prefill form occasion /
 datetime via search params. Fixed calendar helper — no CMS for a first slice.
 
+### Readonly share with family and friends
+
+Owner generates a secret link so co-hosts and guests can follow offers and menus without write access — see
+[booking-request-share.md](./booking-request-share.md).
+
 ## Implementation
 
 ### Data model (request side)

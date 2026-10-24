@@ -159,6 +159,11 @@ path before the event. Exact venue address is already shared only after dual acc
 and/or customer offer detail), not expose the street earlier in the pool. Prefer an embedded directions preview over opening a blank
 external tab; opening the same route in Google Maps remains a useful secondary action.
 
+### Readonly booking-request share
+
+Family and friends follow the owner’s offer board (cards + menus) via a revocable link — no accept / chat / pay. See
+[booking-request-share.md](./booking-request-share.md).
+
 ## Implementation
 
 ### Data model (offer side)

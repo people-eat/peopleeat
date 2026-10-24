@@ -18,8 +18,8 @@ heroes pull full stored files through Node + Postgres, which feels slow under co
    pipeline.
 3. **Static marketing** — heavy `public/` photos are checked in as sized WebP. Regenerate with `npm run images:optimize-public`
    ([`scripts/optimizePublicImages.ts`](../../scripts/optimizePublicImages.ts)). Logos, favicons, and small known-from marks stay PNG.
-   Portrait / reusable faces (e.g. concierge Juliana, comparison chef Max) keep a long edge near the original (~1280 cap) so later larger
-   UI uses stay sharp; do not crush them to current display size.
+   Portrait / reusable faces (e.g. concierge Juliana, comparison chef Max) keep a long edge near the original (~1280 cap) so later larger UI
+   uses stay sharp; do not crush them to current display size.
 
 Bytes still flow through the authenticated download route with `Cache-Control` max-age. GraphQL never carries image bytes.
 
