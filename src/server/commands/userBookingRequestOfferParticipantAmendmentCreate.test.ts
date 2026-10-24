@@ -249,4 +249,37 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
         );
         expect(created.success).toBe(false);
     });
+
+    it('persists venue-recomputed travelExpensesCentsAfter on the pending amendment', async () => {
+        const { customer, bookingRequestOfferId } = await seedDualAcceptedOffer('SETUP');
+        vi.mocked(customer.serverRuntime.places.drivingDistanceKm).mockResolvedValue(10);
+
+        const nearby = {
+            ...berlin,
+            displayText: 'Nearby',
+            latitude: 52.53,
+            longitude: 13.41,
+            addressLine1: 'Nearby 1',
+        };
+
+        const created = await userBookingRequestOfferParticipantAmendmentCreate(
+            userMutationParent(customer.user.userId),
+            {
+                bookingRequestOfferId,
+                exactEventAddress: nearby,
+            },
+            customer.requestingSession,
+            customer.serverRuntime,
+        );
+        expect(created.success).toBe(true);
+
+        const [pending] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        // 10 km × 25 ¢/km × 2 = 500 (was 2_000 on the live offer)
+        expect(pending?.participantAmendment?.travelExpensesCentsAfter).toBe(500);
+        expect(pending?.participantAmendment?.travelExpensesCentsBefore).toBe(2_000);
+        expect(pending?.participantAmendment?.exactEventAddress?.addressLine1).toBe('Nearby 1');
+    });
 });

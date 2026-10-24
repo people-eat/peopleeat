@@ -61,7 +61,8 @@ a Stripe retrieve failure (stale or fixture `acct_…` id) marks the cook not pa
 `AdminMutation.bookingRequestOfferAmendmentCreate` proposes a cook-gated change (no feature toggle).
 `AdminMutation.bookingRequestOfferAmendmentApply` stages the same pending JSON then runs `bookingRequestOfferParticipantAmendmentApply`
 immediately (bypass cook approval). Absolute menu/travel overrides live on `participantAmendment.menuPriceCentsAfter` /
-`travelExpensesCentsAfter`. Money rules match customer amendments:
+`travelExpensesCentsAfter` (venue changes also persist recomputed `travelExpensesCentsAfter` for pending totals). Money rules match customer
+amendments:
 
 | `paymentStatus` | Behavior                                                                                                                               |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |

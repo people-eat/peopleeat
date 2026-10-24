@@ -312,7 +312,9 @@ export type BookingRequestOfferParticipantAmendment = {
      */
     menuPriceCentsAfter?: number;
     /**
-     * Absolute travel override (admin). When set, wins over venue-recomputed travel.
+     * Travel after the proposal: venue-recomputed (customer/admin address change) or absolute
+     * admin override. When set, wins over live-offer travel for pending GraphQL totals and apply.
+     * Absent on legacy pending rows created before venue travel was persisted on the amendment.
      */
     travelExpensesCentsAfter?: number;
     /**

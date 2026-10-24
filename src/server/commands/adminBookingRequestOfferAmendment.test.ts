@@ -123,6 +123,40 @@ describe('adminBookingRequestOfferAmendmentCreate', () => {
         expect(events.some((event) => event.type === 'ADMIN_PARTICIPANT_AMENDMENT_REQUESTED')).toBe(true);
     });
 
+    it('persists venue-recomputed travelExpensesCentsAfter without an absolute travel override', async () => {
+        const { admin, bookingRequestOfferId } = await seedDualAcceptedOffer('EMPTY');
+        vi.mocked(admin.serverRuntime.places.drivingDistanceKm).mockResolvedValue(10);
+
+        const nearby = {
+            ...berlin,
+            displayText: 'Nearby',
+            latitude: 52.53,
+            longitude: 13.41,
+            addressLine1: 'Nearby 1',
+        };
+
+        const result = await adminBookingRequestOfferAmendmentCreate(
+            adminMutationParent(admin.user.userId),
+            {
+                bookingRequestOfferId,
+                input: { exactEventAddress: nearby },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(result).toEqual({ success: true, referenceId: bookingRequestOfferId });
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        // 10 km × 25 ¢/km × 2 = 500
+        expect(offer?.participantAmendment?.travelExpensesCentsAfter).toBe(500);
+        expect(offer?.participantAmendment?.exactEventAddress?.addressLine1).toBe('Nearby 1');
+        expect(offer?.travelExpensesCents).toBe(2_000);
+    });
+
     it('rejects when preparations are locked', async () => {
         const { admin, bookingRequestOfferId } = await seedDualAcceptedOffer('SETUP');
         await testDb

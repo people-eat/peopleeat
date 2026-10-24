@@ -35,4 +35,50 @@ describe('toGqlBookingRequestOfferParticipantAmendment', () => {
         expect(gql.travelExpensesCentsBefore).toBe(2_500);
         expect(gql.travelExpensesCentsAfter).toBe(2_500);
     });
+
+    it('uses persisted travelExpensesCentsAfter for venue proposals so host-price totals change', () => {
+        const amendment: BookingRequestOfferParticipantAmendment = {
+            amendmentApplyId: 'amend-2',
+            requestedAt: '2026-10-01T12:00:00.000Z',
+            exactEventAddress: {
+                displayText: 'Nearby',
+                latitude: 52.53,
+                longitude: 13.41,
+                addressLine1: 'Nearby 1',
+                addressLine2: '',
+                city: 'Berlin',
+                postCode: '10115',
+                state: 'BE',
+                country: 'DE',
+            },
+            menuPriceCentsBefore: 40_000,
+            travelExpensesCentsBefore: 2_000,
+            travelExpensesCentsAfter: 500,
+            totalCentsCustomerBefore: 45_000,
+            payoutCentsCookBefore: 34_800,
+        };
+
+        const gql = toGqlBookingRequestOfferParticipantAmendment({
+            amendment,
+            offer: {
+                menuPriceCents: 40_000,
+                travelExpensesCents: 2_000,
+                totalWithoutDiscountsCentsCustomer: 45_000,
+                totalCentsCustomer: 45_000,
+                payoutCentsCook: 34_800,
+                giftCardAppliedCents: 0,
+                platformFeePercentCook: 18,
+                platformFeePercentCustomer: 4,
+            },
+            currentParticipants: [
+                { type: 'ADULT', name: 'A', restrictions: [] },
+                { type: 'ADULT', name: 'B', restrictions: [] },
+                { type: 'ADULT', name: 'C', restrictions: [] },
+                { type: 'ADULT', name: 'D', restrictions: [] },
+            ],
+        });
+
+        expect(gql.travelExpensesCentsAfter).toBe(500);
+        expect(gql.totalCentsCustomerAfter).toBeLessThan(gql.totalCentsCustomerBefore);
+    });
 });

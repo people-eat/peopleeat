@@ -68,8 +68,10 @@ latest).
 ## Implementation
 
 - Toggle: `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT` in `src/shared/featureToggle.ts` + GraphQL enum + admin labels
-- Schema: `BookingRequestOffers.preparationsCompletedAt`, `participantAmendment` JSONB, `giftCardAppliedCents`. Legacy pending JSON (created
-  before venue amendments) may omit `travelExpensesCentsBefore`; GraphQL falls back to the live offer travel.
+- Schema: `BookingRequestOffers.preparationsCompletedAt`, `participantAmendment` JSONB, `giftCardAppliedCents`. Venue proposals persist
+  `travelExpensesCentsAfter` (recomputed cook rate × distance) alongside `exactEventAddress` so pending GraphQL host-price labels match the
+  live `travelImpact` preview. Legacy pending JSON (created before travel snapshots) may omit `travelExpensesCentsBefore` /
+  `travelExpensesCentsAfter`; GraphQL falls back to the live offer travel when after is missing.
 - Domain events: `USER_PARTICIPANT_AMENDMENT_REQUESTED`, `USER_PARTICIPANT_AMENDMENT_CANCELED`, `COOK_PARTICIPANT_AMENDMENT_*`,
   `ADMIN_PARTICIPANT_AMENDMENT_REQUESTED`, `ADMIN_PARTICIPANT_AMENDMENT_APPLIED`, `COOK_PREPARATIONS_COMPLETED`,
   `ADMIN_PREPARATIONS_CLEARED`

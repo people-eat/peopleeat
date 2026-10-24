@@ -202,7 +202,13 @@ export async function userBookingRequestOfferParticipantAmendmentCreate(
             amendmentApplyId: idCreate(),
             requestedAt: new Date().toISOString(),
             ...(participantsChanged ? { participants: participantsAfter } : {}),
-            ...(nextAddress ? { exactEventAddress: nextAddress } : {}),
+            ...(nextAddress
+                ? {
+                      exactEventAddress: nextAddress,
+                      // Persist venue-recomputed travel so pending GraphQL totals match the live travelImpact preview.
+                      travelExpensesCentsAfter,
+                  }
+                : {}),
             menuPriceCentsBefore: row.offer.menuPriceCents,
             travelExpensesCentsBefore: row.offer.travelExpensesCents,
             totalCentsCustomerBefore,

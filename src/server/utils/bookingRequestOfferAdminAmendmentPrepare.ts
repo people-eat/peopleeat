@@ -324,7 +324,8 @@ export async function bookingRequestOfferAdminAmendmentPrepare(
         ...(participantsChanged ? { participants: participantsAfter } : {}),
         ...(nextAddress ? { exactEventAddress: nextAddress } : {}),
         ...(menuOverride != null ? { menuPriceCentsAfter: menuOverride } : {}),
-        ...(travelOverride != null ? { travelExpensesCentsAfter: travelOverride } : {}),
+        // Venue-recomputed or absolute override — needed so pending GraphQL totals match the travelImpact preview.
+        ...(nextAddress != null || travelOverride != null ? { travelExpensesCentsAfter } : {}),
         ...(platformFeePercentCookAfter != null ? { platformFeePercentCookAfter } : {}),
         ...(platformFeePercentCustomerAfter != null ? { platformFeePercentCustomerAfter } : {}),
         menuPriceCentsBefore: row.offer.menuPriceCents,
