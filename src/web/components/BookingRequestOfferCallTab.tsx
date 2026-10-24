@@ -1,8 +1,6 @@
 import type { DocumentInput } from '@urql/core';
 import type { ReactNode } from 'react';
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { useMutation } from 'urql';
+import { useEffect, useState } from 'react';
 
 import { isCallJoinable } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
@@ -10,17 +8,14 @@ import { cn } from '../utils/cn';
 import { Button } from './base/button';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from './base/card';
 import { StatusAlert } from './base/status-alert';
+import { BookingRequestOfferCallVideo } from './BookingRequestOfferCallPanel';
+import { useBookingRequestOfferCallSession } from './BookingRequestOfferCallSession';
 import type { BookingRequestOfferScheduleCallBooking, BookingRequestOfferScheduleCallSlot } from './BookingRequestOfferScheduleTab';
 import {
     bookingOfferCallCardClassName,
     bookingOfferCallCardSectionClassName,
     BookingRequestOfferScheduleTab,
 } from './BookingRequestOfferScheduleTab';
-
-const BookingRequestOfferCallPanel = lazy(async () => {
-    const mod = await import('./BookingRequestOfferCallPanel');
-    return { default: mod.BookingRequestOfferCallPanel };
-});
 
 type BookingRequestOfferCallRoom = {
     bookingRequestOfferCallRoomId: string;
@@ -32,9 +27,6 @@ export type BookingRequestOfferCallTabProps = {
     bookingRequestOfferId: string;
     callBookings: readonly BookingRequestOfferScheduleCallBooking[];
     activeCallRoom: BookingRequestOfferCallRoom;
-    createDocument: DocumentInput;
-    joinDocument: DocumentInput;
-    leaveDocument: DocumentInput;
     /** When false, only the live/start surface is shown (no schedule section). */
     showSchedule?: boolean;
     callSchedulingEnabled?: boolean;
@@ -49,61 +41,11 @@ export type BookingRequestOfferCallTabProps = {
     children?: ReactNode;
 };
 
-type CallSession = {
-    token: string;
-    serverUrl: string;
-    participantId: string;
-};
-
-function extractCallToken(data: unknown): CallSession | null {
-    if (!data || typeof data !== 'object') return null;
-    const walk = (value: unknown): CallSession | null => {
-        if (!value || typeof value !== 'object') return null;
-        const record = value as Record<string, unknown>;
-        if (
-            typeof record.token === 'string' &&
-            typeof record.url === 'string' &&
-            typeof record.bookingRequestOfferCallRoomParticipantId === 'string'
-        ) {
-            return {
-                token: record.token,
-                serverUrl: record.url,
-                participantId: record.bookingRequestOfferCallRoomParticipantId,
-            };
-        }
-        for (const child of Object.values(record)) {
-            const found = walk(child);
-            if (found) return found;
-        }
-        return null;
-    };
-    return walk(data);
-}
-
-function mutationSucceeded(data: unknown): boolean {
-    if (!data || typeof data !== 'object') return false;
-    const walk = (value: unknown): boolean | null => {
-        if (!value || typeof value !== 'object') return null;
-        if ('success' in value && typeof value.success === 'boolean') {
-            return value.success;
-        }
-        for (const child of Object.values(value)) {
-            const found = walk(child);
-            if (found != null) return found;
-        }
-        return null;
-    };
-    return walk(data) === true;
-}
-
 export function BookingRequestOfferCallTab({
     role,
     bookingRequestOfferId,
     callBookings,
     activeCallRoom,
-    createDocument,
-    joinDocument,
-    leaveDocument,
     showSchedule = true,
     callSchedulingEnabled = false,
     callDurationMinutes = 30,
@@ -116,13 +58,9 @@ export function BookingRequestOfferCallTab({
     children,
 }: BookingRequestOfferCallTabProps) {
     const locale = useLocale();
-    const [, createCall] = useMutation(createDocument);
-    const [, joinCall] = useMutation(joinDocument);
-    const [, leaveCall] = useMutation(leaveDocument);
+    const { inCall, busy, startOrJoin } = useBookingRequestOfferCallSession();
 
     const [now, setNow] = useState(() => new Date());
-    const [session, setSession] = useState<CallSession | null>(null);
-    const [busy, setBusy] = useState(false);
 
     useEffect(() => {
         const id = window.setInterval(() => setNow(new Date()), 1000);
@@ -132,49 +70,7 @@ export function BookingRequestOfferCallTab({
     const hasLiveRoom = activeCallRoom != null && activeCallRoom.status === 'ACTIVE';
     const joinableBooking = callBookings.find((booking) => isCallJoinable(booking, now)) ?? null;
 
-    async function startOrJoin(mode: 'create' | 'join') {
-        if (busy || session) return;
-        setBusy(true);
-        try {
-            const result =
-                mode === 'join' || hasLiveRoom ? await joinCall({ bookingRequestOfferId }) : await createCall({ bookingRequestOfferId });
-            const next = extractCallToken(result.data);
-            if (!next) {
-                throw new Error('token missing');
-            }
-            setSession(next);
-        } catch {
-            toast.error(
-                {
-                    de: 'Anruf konnte nicht gestartet werden.',
-                    en: 'Could not start the call.',
-                }[locale],
-            );
-        } finally {
-            setBusy(false);
-        }
-    }
-
-    async function onDisconnected() {
-        const participantId = session?.participantId;
-        setSession(null);
-        if (!participantId) return;
-        try {
-            const result = await leaveCall({ bookingRequestOfferCallRoomParticipantId: participantId });
-            if (!mutationSucceeded(result.data)) {
-                throw new Error('leave failed');
-            }
-        } catch {
-            toast.error(
-                {
-                    de: 'Anruf konnte nicht korrekt beendet werden.',
-                    en: 'Could not leave the call cleanly.',
-                }[locale],
-            );
-        }
-    }
-
-    if (session) {
+    if (inCall) {
         return (
             <div className="grid gap-3">
                 <StatusAlert tone="info" title={{ de: 'Aufnahme aktiv', en: 'Recording on' }[locale]}>
@@ -185,13 +81,7 @@ export function BookingRequestOfferCallTab({
                         }[locale]
                     }
                 </StatusAlert>
-                <Suspense fallback={null}>
-                    <BookingRequestOfferCallPanel
-                        token={session.token}
-                        serverUrl={session.serverUrl}
-                        onDisconnected={() => void onDisconnected()}
-                    />
-                </Suspense>
+                <BookingRequestOfferCallVideo />
             </div>
         );
     }
@@ -214,7 +104,7 @@ export function BookingRequestOfferCallTab({
                         tone="info"
                         title={{ de: 'Anruf läuft', en: 'Call in progress' }[locale]}
                         action={
-                            <Button type="button" size="sm" disabled={busy} onClick={() => void startOrJoin('join')}>
+                            <Button type="button" size="sm" disabled={busy} onClick={() => void startOrJoin('join', hasLiveRoom)}>
                                 {{ de: 'Beitreten', en: 'Join' }[locale]}
                             </Button>
                         }
@@ -257,11 +147,11 @@ export function BookingRequestOfferCallTab({
                     </CardHeader>
                     <CardFooter className={cn('justify-end', bookingOfferCallCardSectionClassName)}>
                         {hasLiveRoom ? (
-                            <Button type="button" disabled={busy} onClick={() => void startOrJoin('join')}>
+                            <Button type="button" disabled={busy} onClick={() => void startOrJoin('join', hasLiveRoom)}>
                                 {{ de: 'Beitreten', en: 'Join' }[locale]}
                             </Button>
                         ) : (
-                            <Button type="button" disabled={busy} onClick={() => void startOrJoin('create')}>
+                            <Button type="button" disabled={busy} onClick={() => void startOrJoin('create', hasLiveRoom)}>
                                 {
                                     {
                                         de: joinableBooking ? 'Geplanten Anruf starten' : 'Spontanen Anruf starten',

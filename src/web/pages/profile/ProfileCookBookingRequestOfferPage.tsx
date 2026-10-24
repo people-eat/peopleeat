@@ -23,6 +23,8 @@ import { StatusAlert } from '../../components/base/status-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { Textarea } from '../../components/base/textarea';
 import { BookingRequestOfferAttentionBanner } from '../../components/BookingRequestOfferAttentionBanner';
+import { BookingRequestOfferCallControls } from '../../components/BookingRequestOfferCallPanel';
+import { BookingRequestOfferCallSessionProvider } from '../../components/BookingRequestOfferCallSession';
 import { BookingRequestOfferCallTab } from '../../components/BookingRequestOfferCallTab';
 import { BookingRequestOfferChat } from '../../components/BookingRequestOfferChat';
 import {
@@ -270,362 +272,381 @@ export function ProfileCookBookingRequestOfferPage({
     }
 
     return (
-        <ProfilePinnedFooterLayout
-            className="@container min-w-0"
-            contentScroll={false}
-            contentClassName="flex w-full min-w-0 flex-col pb-0"
-            footer={
-                pendingParticipantAmendment != null ? (
-                    <>
-                        <Button type="button" variant="outline" disabled={actionsBusy} onClick={() => void onDeclineParticipantAmendment()}>
-                            {{ de: 'Ablehnen', en: 'Decline' }[locale]}
-                        </Button>
-                        <Button type="button" disabled={actionsBusy} onClick={() => void onAcceptParticipantAmendment()}>
-                            {{ de: 'Änderung annehmen', en: 'Accept change' }[locale]}
-                        </Button>
-                    </>
-                ) : canReAccept ? (
-                    <Button type="button" disabled={busy} onClick={() => void onAccept()}>
-                        {{ de: 'Änderungen bestätigen', en: 'Confirm changes' }[locale]}
-                    </Button>
-                ) : undefined
-            }
+        <BookingRequestOfferCallSessionProvider
+            bookingRequestOfferId={bookingRequestOfferId}
+            createDocument={ProfileCookBookingRequestOfferCallCreateDocument}
+            joinDocument={ProfileCookBookingRequestOfferCallJoinDocument}
+            leaveDocument={ProfileCookBookingRequestOfferCallLeaveDocument}
         >
-            <div className="grid shrink-0 gap-2 px-4">
-                <div className="flex items-center justify-end gap-2">
-                    <BookingStatusPill className={bookingRequestOfferStatusClassName(offer.status)}>
-                        {bookingRequestOfferStatusLabel(offer.status, locale, 'cook')}
-                    </BookingStatusPill>
-                    {canNegotiate ? (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
+            {(call) => (
+                <ProfilePinnedFooterLayout
+                    className="@container min-w-0"
+                    contentScroll={false}
+                    contentClassName="flex w-full min-w-0 flex-col pb-0"
+                    footer={
+                        call.inCall ? (
+                            <BookingRequestOfferCallControls />
+                        ) : pendingParticipantAmendment != null ? (
+                            <>
                                 <Button
                                     type="button"
                                     variant="outline"
-                                    size="icon"
-                                    disabled={busy}
-                                    aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                                    disabled={actionsBusy}
+                                    onClick={() => void onDeclineParticipantAmendment()}
                                 >
-                                    <MoreHorizontalIcon className="size-4" />
+                                    {{ de: 'Ablehnen', en: 'Decline' }[locale]}
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem
-                                    variant="destructive"
-                                    disabled={busy}
-                                    onSelect={() => {
-                                        setDeclineReason('');
-                                        setDeclineOpen(true);
+                                <Button type="button" disabled={actionsBusy} onClick={() => void onAcceptParticipantAmendment()}>
+                                    {{ de: 'Änderung annehmen', en: 'Accept change' }[locale]}
+                                </Button>
+                            </>
+                        ) : canReAccept ? (
+                            <Button type="button" disabled={busy} onClick={() => void onAccept()}>
+                                {{ de: 'Änderungen bestätigen', en: 'Confirm changes' }[locale]}
+                            </Button>
+                        ) : undefined
+                    }
+                >
+                    <div className="grid shrink-0 gap-2 px-4">
+                        <div className="flex items-center justify-end gap-2">
+                            <BookingStatusPill className={bookingRequestOfferStatusClassName(offer.status)}>
+                                {bookingRequestOfferStatusLabel(offer.status, locale, 'cook')}
+                            </BookingStatusPill>
+                            {canNegotiate ? (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            disabled={busy}
+                                            aria-label={{ de: 'Weitere Aktionen', en: 'More actions' }[locale]}
+                                        >
+                                            <MoreHorizontalIcon className="size-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                            variant="destructive"
+                                            disabled={busy}
+                                            onSelect={() => {
+                                                setDeclineReason('');
+                                                setDeclineOpen(true);
+                                            }}
+                                        >
+                                            {{ de: 'Zurückziehen', en: 'Withdraw' }[locale]}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            ) : null}
+                        </div>
+                        {pendingParticipantAmendment != null ? (
+                            <BookingRequestOfferParticipantAmendmentCookReview
+                                locale={locale}
+                                amendment={pendingParticipantAmendment}
+                                busy={actionsBusy}
+                                onAccept={onAcceptParticipantAmendment}
+                                onDecline={onDeclineParticipantAmendment}
+                                showActions={false}
+                            />
+                        ) : null}
+                        {canReAccept && pendingParticipantAmendment == null ? (
+                            <StatusAlert tone="warning" title={{ de: 'Änderungen bestätigen', en: 'Confirm changes' }[locale]}>
+                                {offer.priceAutoAdjustReason === 'PARTICIPANTS'
+                                    ? {
+                                          de: 'Dein Gast hat die Teilnehmerzahl geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
+                                          en: 'Your guest changed the guest count and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
+                                      }[locale]
+                                    : offer.priceAutoAdjustReason === 'PARTICIPANTS_AND_TRAVEL'
+                                      ? {
+                                            de: 'Dein Gast hat Teilnehmerzahl und Adresse geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
+                                            en: 'Your guest changed the guest count and address and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
+                                        }[locale]
+                                      : offer.priceAutoAdjustReason === 'TRAVEL'
+                                        ? {
+                                              de: 'Dein Gast hat die Adresse geändert und die Fahrtkosten wurden automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
+                                              en: 'Your guest changed the address and travel costs were adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
+                                          }[locale]
+                                        : offer.priceAutoAdjustReason != null
+                                          ? {
+                                                de: 'Dein Gast hat etwas geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
+                                                en: 'Your guest changed something and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
+                                            }[locale]
+                                          : {
+                                                de: 'Dein Gast hat eine Änderung gewünscht. Bestätige sie, damit die Buchung weitergehen kann.',
+                                                en: 'Your guest requested a change. Confirm it so the booking can continue.',
+                                            }[locale]}
+                            </StatusAlert>
+                        ) : null}
+                        {pendingIncomingCall ? (
+                            <BookingRequestOfferAttentionBanner
+                                message={
+                                    {
+                                        de: 'Terminanfrage vom Kunden: bitte bestätigen oder ablehnen',
+                                        en: 'Call request from the customer: please confirm or decline',
+                                    }[locale]
+                                }
+                                actionLabel={{ de: 'Zum Anruf', en: 'View call' }[locale]}
+                                actionLink={
+                                    tab !== 'call'
+                                        ? {
+                                              to: '/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId',
+                                              params: { bookingRequestOfferId },
+                                              search: { tab: 'call' },
+                                          }
+                                        : undefined
+                                }
+                            />
+                        ) : null}
+                    </div>
+
+                    <Tabs value={tab} className="flex min-h-0 flex-1 flex-col gap-0">
+                        <div className="px-4">
+                            <TabsList
+                                variant="line"
+                                className="shrink-0"
+                                aria-label={{ de: 'Angebotsbereiche', en: 'Offer sections' }[locale]}
+                            >
+                                {visibleTabDefs.map(({ id, label, Icon }) => (
+                                    <TabsTrigger key={id} value={id} asChild>
+                                        <Link
+                                            to="/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId"
+                                            params={{ bookingRequestOfferId }}
+                                            search={{
+                                                tab:
+                                                    id === 'testimonial' && testimonialTabMissing
+                                                        ? undefined
+                                                        : id === 'offer' && !testimonialTabMissing
+                                                          ? undefined
+                                                          : id,
+                                            }}
+                                            replace
+                                        >
+                                            <Icon aria-hidden />
+                                            {label[locale]}
+                                            {id === 'testimonial' && testimonialTabMissing ? (
+                                                <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] font-medium">
+                                                    1
+                                                </Badge>
+                                            ) : null}
+                                        </Link>
+                                    </TabsTrigger>
+                                ))}
+                            </TabsList>
+                        </div>
+
+                        <TabsContent value="chat" className="mt-4 flex min-h-0 flex-1 flex-col gap-3 data-[state=inactive]:hidden">
+                            {offer.activeCallRoom?.status === 'ACTIVE' || (!pendingIncomingCall && confirmedUpcomingCall) ? (
+                                <div className="grid shrink-0 gap-3 px-4">
+                                    {offer.activeCallRoom?.status === 'ACTIVE' ? (
+                                        <StatusAlert
+                                            tone="info"
+                                            title={{ de: 'Anruf läuft', en: 'Call in progress' }[locale]}
+                                            action={
+                                                <Button type="button" size="sm" asChild>
+                                                    <Link
+                                                        to="/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId"
+                                                        params={{ bookingRequestOfferId }}
+                                                        search={{ tab: 'call' }}
+                                                        replace
+                                                    >
+                                                        {{ de: 'Zum Anruf', en: 'Go to call' }[locale]}
+                                                    </Link>
+                                                </Button>
+                                            }
+                                        >
+                                            {
+                                                {
+                                                    de: 'Ein Videoanruf für dieses Angebot ist aktiv.',
+                                                    en: 'A video call for this offer is active.',
+                                                }[locale]
+                                            }
+                                        </StatusAlert>
+                                    ) : null}
+                                    {!pendingIncomingCall && confirmedUpcomingCall ? (
+                                        <StatusAlert
+                                            tone="info"
+                                            title={{ de: 'Gesprächstermin bestätigt', en: 'Discovery call confirmed' }[locale]}
+                                            action={
+                                                <Button type="button" size="sm" asChild>
+                                                    <Link
+                                                        to="/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId"
+                                                        params={{ bookingRequestOfferId }}
+                                                        search={{ tab: 'call' }}
+                                                        replace
+                                                    >
+                                                        {{ de: 'Zum Anruf', en: 'View call' }[locale]}
+                                                    </Link>
+                                                </Button>
+                                            }
+                                        >
+                                            {
+                                                {
+                                                    de: 'Dein bestätigter Termin erscheint unter Anruf.',
+                                                    en: 'Your confirmed appointment is on the Call tab.',
+                                                }[locale]
+                                            }
+                                        </StatusAlert>
+                                    ) : null}
+                                </div>
+                            ) : null}
+                            <BookingRequestOfferChat
+                                messages={offer.messages}
+                                canSend={bookingRequestOfferChatCanSend(offer.status)}
+                                peers={[
+                                    {
+                                        display: offer.bookingRequest.user.display,
+                                        profilePictureUrl: offer.bookingRequest.user.profilePicture?.url,
+                                    },
+                                ]}
+                                viewerRole="cook"
+                                onSend={async (message, fileUploadIds) => {
+                                    const result = await sendChatMessage({ bookingRequestOfferId, message, fileUploadIds });
+                                    if (result.error || !result.data?.user.cook.bookingRequestOfferChatMessageCreate.success) {
+                                        toast.error(
+                                            { de: 'Nachricht konnte nicht gesendet werden.', en: 'Could not send the message.' }[locale],
+                                        );
+                                        return false;
+                                    }
+                                    return true;
+                                }}
+                                onReactMessage={async (chatMessageId, emoji) => {
+                                    const result = await upsertOfferChatReaction({
+                                        bookingRequestOfferEventId: chatMessageId,
+                                        emoji,
+                                    });
+                                    if (result.error || !result.data?.user.cook.bookingRequestOfferChatMessageReactionUpsert.success) {
+                                        toast.error(
+                                            {
+                                                de: 'Reaktion konnte nicht gespeichert werden.',
+                                                en: 'Could not save the reaction.',
+                                            }[locale],
+                                        );
+                                        return false;
+                                    }
+                                    return true;
+                                }}
+                            />
+                        </TabsContent>
+
+                        <TabsContent
+                            value="offer"
+                            className="mt-4 min-h-0 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
+                        >
+                            <OfferTabPanel
+                                offer={offer}
+                                bookingRequestOfferId={bookingRequestOfferId}
+                                locale={locale}
+                                canNegotiate={canNegotiate}
+                                busy={actionsBusy}
+                                onAcceptParticipantAmendment={onAcceptParticipantAmendment}
+                                onDeclineParticipantAmendment={onDeclineParticipantAmendment}
+                                onPreparationsComplete={async () => {
+                                    const result = await completePreparations({ bookingRequestOfferId });
+                                    if (result.error || !result.data?.user.cook?.bookingRequestOfferPreparationsComplete.success) {
+                                        toast.error(
+                                            {
+                                                de: 'Einkauf konnte nicht markiert werden.',
+                                                en: 'Could not mark shopping as done.',
+                                            }[locale],
+                                        );
+                                        return;
+                                    }
+                                    toast.success(
+                                        {
+                                            de: 'Einkauf als erledigt markiert.',
+                                            en: 'Shopping marked as done.',
+                                        }[locale],
+                                    );
+                                }}
+                            />
+                        </TabsContent>
+
+                        <TabsContent
+                            value="request"
+                            className="mt-4 min-h-0 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
+                        >
+                            <RequestTabPanel
+                                offer={offer}
+                                locale={locale}
+                                timeZone={timeZone}
+                                revealExactAddress={offer.userAccepted === true && offer.cookAccepted === true}
+                            />
+                        </TabsContent>
+
+                        <TabsContent
+                            value="call"
+                            className="mt-4 min-h-0 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
+                        >
+                            <BookingRequestOfferCallTab
+                                role="cook"
+                                bookingRequestOfferId={bookingRequestOfferId}
+                                callBookings={offer.callBookings}
+                                activeCallRoom={offer.activeCallRoom ?? null}
+                                callSchedulingEnabled={cook.callSchedulingEnabled}
+                                callDurationMinutes={cook.callDurationMinutes}
+                                peerDisplayName={request.user.display}
+                                requestDocument={ProfileCookBookingRequestOfferCallSlotRequestDocument}
+                                confirmDocument={ProfileCookBookingRequestOfferCallSlotConfirmDocument}
+                                declineDocument={ProfileCookBookingRequestOfferCallSlotDeclineDocument}
+                                cancelDocument={ProfileCookBookingRequestOfferCallSlotCancelDocument}
+                            />
+                        </TabsContent>
+
+                        {visibleTabs.has('testimonial') ? (
+                            <TabsContent
+                                value="testimonial"
+                                className="mt-4 min-h-0 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
+                            >
+                                <BookingRequestOfferTestimonialPanel
+                                    bookingRequestOfferId={bookingRequestOfferId}
+                                    role="cook"
+                                    existing={
+                                        offer.cookTestimonial
+                                            ? {
+                                                  body: offer.cookTestimonial.body ?? '',
+                                                  rating: offer.cookTestimonial.rating ?? null,
+                                              }
+                                            : null
+                                    }
+                                    missing={offer.testimonialMissing}
+                                />
+                            </TabsContent>
+                        ) : null}
+                    </Tabs>
+
+                    <AlertDialog open={declineOpen} onOpenChange={setDeclineOpen}>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>{{ de: 'Angebot zurückziehen?', en: 'Withdraw this offer?' }[locale]}</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    {{ de: 'Bitte nenne kurz einen Grund.', en: 'Please briefly share a reason.' }[locale]}
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <Textarea
+                                id={declineReasonId}
+                                value={declineReason}
+                                onChange={(event) => setDeclineReason(event.target.value)}
+                                placeholder={{ de: 'Grund…', en: 'Reason…' }[locale]}
+                                rows={3}
+                            />
+                            <AlertDialogFooter>
+                                <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Back' }[locale]}</AlertDialogCancel>
+                                <AlertDialogAction
+                                    disabled={busy || declineReason.trim().length === 0}
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        void onDecline();
                                     }}
                                 >
                                     {{ de: 'Zurückziehen', en: 'Withdraw' }[locale]}
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    ) : null}
-                </div>
-                {pendingParticipantAmendment != null ? (
-                    <BookingRequestOfferParticipantAmendmentCookReview
-                        locale={locale}
-                        amendment={pendingParticipantAmendment}
-                        busy={actionsBusy}
-                        onAccept={onAcceptParticipantAmendment}
-                        onDecline={onDeclineParticipantAmendment}
-                        showActions={false}
-                    />
-                ) : null}
-                {canReAccept && pendingParticipantAmendment == null ? (
-                    <StatusAlert tone="warning" title={{ de: 'Änderungen bestätigen', en: 'Confirm changes' }[locale]}>
-                        {offer.priceAutoAdjustReason === 'PARTICIPANTS'
-                            ? {
-                                  de: 'Dein Gast hat die Teilnehmerzahl geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
-                                  en: 'Your guest changed the guest count and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
-                              }[locale]
-                            : offer.priceAutoAdjustReason === 'PARTICIPANTS_AND_TRAVEL'
-                              ? {
-                                    de: 'Dein Gast hat Teilnehmerzahl und Adresse geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
-                                    en: 'Your guest changed the guest count and address and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
-                                }[locale]
-                              : offer.priceAutoAdjustReason === 'TRAVEL'
-                                ? {
-                                      de: 'Dein Gast hat die Adresse geändert und die Fahrtkosten wurden automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
-                                      en: 'Your guest changed the address and travel costs were adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
-                                  }[locale]
-                                : offer.priceAutoAdjustReason != null
-                                  ? {
-                                        de: 'Dein Gast hat etwas geändert und der Preis wurde automatisch angepasst. Bestätige die Änderungen, damit die Buchung weitergehen kann. Du kannst den Preis vorher noch anpassen.',
-                                        en: 'Your guest changed something and the price was adjusted automatically. Confirm the changes so the booking can continue. You can still tweak the price first.',
-                                    }[locale]
-                                  : {
-                                        de: 'Dein Gast hat eine Änderung gewünscht. Bestätige sie, damit die Buchung weitergehen kann.',
-                                        en: 'Your guest requested a change. Confirm it so the booking can continue.',
-                                    }[locale]}
-                    </StatusAlert>
-                ) : null}
-                {pendingIncomingCall ? (
-                    <BookingRequestOfferAttentionBanner
-                        message={
-                            {
-                                de: 'Terminanfrage vom Kunden: bitte bestätigen oder ablehnen',
-                                en: 'Call request from the customer: please confirm or decline',
-                            }[locale]
-                        }
-                        actionLabel={{ de: 'Zum Anruf', en: 'View call' }[locale]}
-                        actionLink={
-                            tab !== 'call'
-                                ? {
-                                      to: '/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId',
-                                      params: { bookingRequestOfferId },
-                                      search: { tab: 'call' },
-                                  }
-                                : undefined
-                        }
-                    />
-                ) : null}
-            </div>
-
-            <Tabs value={tab} className="flex min-h-0 flex-1 flex-col gap-0">
-                <div className="px-4">
-                    <TabsList variant="line" className="shrink-0" aria-label={{ de: 'Angebotsbereiche', en: 'Offer sections' }[locale]}>
-                        {visibleTabDefs.map(({ id, label, Icon }) => (
-                            <TabsTrigger key={id} value={id} asChild>
-                                <Link
-                                    to="/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId"
-                                    params={{ bookingRequestOfferId }}
-                                    search={{
-                                        tab:
-                                            id === 'testimonial' && testimonialTabMissing
-                                                ? undefined
-                                                : id === 'offer' && !testimonialTabMissing
-                                                  ? undefined
-                                                  : id,
-                                    }}
-                                    replace
-                                >
-                                    <Icon aria-hidden />
-                                    {label[locale]}
-                                    {id === 'testimonial' && testimonialTabMissing ? (
-                                        <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] font-medium">
-                                            1
-                                        </Badge>
-                                    ) : null}
-                                </Link>
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                </div>
-
-                <TabsContent value="chat" className="mt-4 flex min-h-0 flex-1 flex-col gap-3 data-[state=inactive]:hidden">
-                    {offer.activeCallRoom?.status === 'ACTIVE' || (!pendingIncomingCall && confirmedUpcomingCall) ? (
-                        <div className="grid shrink-0 gap-3 px-4">
-                            {offer.activeCallRoom?.status === 'ACTIVE' ? (
-                                <StatusAlert
-                                    tone="info"
-                                    title={{ de: 'Anruf läuft', en: 'Call in progress' }[locale]}
-                                    action={
-                                        <Button type="button" size="sm" asChild>
-                                            <Link
-                                                to="/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId"
-                                                params={{ bookingRequestOfferId }}
-                                                search={{ tab: 'call' }}
-                                                replace
-                                            >
-                                                {{ de: 'Zum Anruf', en: 'Go to call' }[locale]}
-                                            </Link>
-                                        </Button>
-                                    }
-                                >
-                                    {
-                                        {
-                                            de: 'Ein Videoanruf für dieses Angebot ist aktiv.',
-                                            en: 'A video call for this offer is active.',
-                                        }[locale]
-                                    }
-                                </StatusAlert>
-                            ) : null}
-                            {!pendingIncomingCall && confirmedUpcomingCall ? (
-                                <StatusAlert
-                                    tone="info"
-                                    title={{ de: 'Gesprächstermin bestätigt', en: 'Discovery call confirmed' }[locale]}
-                                    action={
-                                        <Button type="button" size="sm" asChild>
-                                            <Link
-                                                to="/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId"
-                                                params={{ bookingRequestOfferId }}
-                                                search={{ tab: 'call' }}
-                                                replace
-                                            >
-                                                {{ de: 'Zum Anruf', en: 'View call' }[locale]}
-                                            </Link>
-                                        </Button>
-                                    }
-                                >
-                                    {
-                                        {
-                                            de: 'Dein bestätigter Termin erscheint unter Anruf.',
-                                            en: 'Your confirmed appointment is on the Call tab.',
-                                        }[locale]
-                                    }
-                                </StatusAlert>
-                            ) : null}
-                        </div>
-                    ) : null}
-                    <BookingRequestOfferChat
-                        messages={offer.messages}
-                        canSend={bookingRequestOfferChatCanSend(offer.status)}
-                        peers={[
-                            {
-                                display: offer.bookingRequest.user.display,
-                                profilePictureUrl: offer.bookingRequest.user.profilePicture?.url,
-                            },
-                        ]}
-                        viewerRole="cook"
-                        onSend={async (message, fileUploadIds) => {
-                            const result = await sendChatMessage({ bookingRequestOfferId, message, fileUploadIds });
-                            if (result.error || !result.data?.user.cook.bookingRequestOfferChatMessageCreate.success) {
-                                toast.error({ de: 'Nachricht konnte nicht gesendet werden.', en: 'Could not send the message.' }[locale]);
-                                return false;
-                            }
-                            return true;
-                        }}
-                        onReactMessage={async (chatMessageId, emoji) => {
-                            const result = await upsertOfferChatReaction({
-                                bookingRequestOfferEventId: chatMessageId,
-                                emoji,
-                            });
-                            if (result.error || !result.data?.user.cook.bookingRequestOfferChatMessageReactionUpsert.success) {
-                                toast.error(
-                                    {
-                                        de: 'Reaktion konnte nicht gespeichert werden.',
-                                        en: 'Could not save the reaction.',
-                                    }[locale],
-                                );
-                                return false;
-                            }
-                            return true;
-                        }}
-                    />
-                </TabsContent>
-
-                <TabsContent
-                    value="offer"
-                    className="mt-4 min-h-0 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
-                >
-                    <OfferTabPanel
-                        offer={offer}
-                        bookingRequestOfferId={bookingRequestOfferId}
-                        locale={locale}
-                        canNegotiate={canNegotiate}
-                        busy={actionsBusy}
-                        onAcceptParticipantAmendment={onAcceptParticipantAmendment}
-                        onDeclineParticipantAmendment={onDeclineParticipantAmendment}
-                        onPreparationsComplete={async () => {
-                            const result = await completePreparations({ bookingRequestOfferId });
-                            if (result.error || !result.data?.user.cook?.bookingRequestOfferPreparationsComplete.success) {
-                                toast.error(
-                                    {
-                                        de: 'Einkauf konnte nicht markiert werden.',
-                                        en: 'Could not mark shopping as done.',
-                                    }[locale],
-                                );
-                                return;
-                            }
-                            toast.success(
-                                {
-                                    de: 'Einkauf als erledigt markiert.',
-                                    en: 'Shopping marked as done.',
-                                }[locale],
-                            );
-                        }}
-                    />
-                </TabsContent>
-
-                <TabsContent
-                    value="request"
-                    className="mt-4 min-h-0 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
-                >
-                    <RequestTabPanel
-                        offer={offer}
-                        locale={locale}
-                        timeZone={timeZone}
-                        revealExactAddress={offer.userAccepted === true && offer.cookAccepted === true}
-                    />
-                </TabsContent>
-
-                <TabsContent
-                    value="call"
-                    className="mt-4 min-h-0 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
-                >
-                    <BookingRequestOfferCallTab
-                        role="cook"
-                        bookingRequestOfferId={bookingRequestOfferId}
-                        callBookings={offer.callBookings}
-                        activeCallRoom={offer.activeCallRoom ?? null}
-                        createDocument={ProfileCookBookingRequestOfferCallCreateDocument}
-                        joinDocument={ProfileCookBookingRequestOfferCallJoinDocument}
-                        leaveDocument={ProfileCookBookingRequestOfferCallLeaveDocument}
-                        callSchedulingEnabled={cook.callSchedulingEnabled}
-                        callDurationMinutes={cook.callDurationMinutes}
-                        peerDisplayName={request.user.display}
-                        requestDocument={ProfileCookBookingRequestOfferCallSlotRequestDocument}
-                        confirmDocument={ProfileCookBookingRequestOfferCallSlotConfirmDocument}
-                        declineDocument={ProfileCookBookingRequestOfferCallSlotDeclineDocument}
-                        cancelDocument={ProfileCookBookingRequestOfferCallSlotCancelDocument}
-                    />
-                </TabsContent>
-
-                {visibleTabs.has('testimonial') ? (
-                    <TabsContent
-                        value="testimonial"
-                        className="mt-4 min-h-0 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
-                    >
-                        <BookingRequestOfferTestimonialPanel
-                            bookingRequestOfferId={bookingRequestOfferId}
-                            role="cook"
-                            existing={
-                                offer.cookTestimonial
-                                    ? {
-                                          body: offer.cookTestimonial.body ?? '',
-                                          rating: offer.cookTestimonial.rating ?? null,
-                                      }
-                                    : null
-                            }
-                            missing={offer.testimonialMissing}
-                        />
-                    </TabsContent>
-                ) : null}
-            </Tabs>
-
-            <AlertDialog open={declineOpen} onOpenChange={setDeclineOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>{{ de: 'Angebot zurückziehen?', en: 'Withdraw this offer?' }[locale]}</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {{ de: 'Bitte nenne kurz einen Grund.', en: 'Please briefly share a reason.' }[locale]}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <Textarea
-                        id={declineReasonId}
-                        value={declineReason}
-                        onChange={(event) => setDeclineReason(event.target.value)}
-                        placeholder={{ de: 'Grund…', en: 'Reason…' }[locale]}
-                        rows={3}
-                    />
-                    <AlertDialogFooter>
-                        <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Back' }[locale]}</AlertDialogCancel>
-                        <AlertDialogAction
-                            disabled={busy || declineReason.trim().length === 0}
-                            onClick={(event) => {
-                                event.preventDefault();
-                                void onDecline();
-                            }}
-                        >
-                            {{ de: 'Zurückziehen', en: 'Withdraw' }[locale]}
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </ProfilePinnedFooterLayout>
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </ProfilePinnedFooterLayout>
+            )}
+        </BookingRequestOfferCallSessionProvider>
     );
 }
 

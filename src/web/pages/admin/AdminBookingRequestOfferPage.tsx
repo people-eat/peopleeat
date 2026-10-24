@@ -56,6 +56,8 @@ import { StatusBadge } from '../../components/base/status-badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import { BookingRequestOfferAttentionBanner } from '../../components/BookingRequestOfferAttentionBanner';
+import { BookingRequestOfferCallControls } from '../../components/BookingRequestOfferCallPanel';
+import { BookingRequestOfferCallSessionProvider } from '../../components/BookingRequestOfferCallSession';
 import { BookingRequestOfferCallTab } from '../../components/BookingRequestOfferCallTab';
 import { BookingRequestOfferChat } from '../../components/BookingRequestOfferChat';
 import {
@@ -458,391 +460,410 @@ export function AdminBookingRequestOfferPage({
                 ]}
                 contentClassName="min-h-0 overflow-hidden gap-0"
             >
-                <AdminPinnedFooterLayout
-                    className="@container min-w-0"
-                    contentScroll={false}
-                    contentClassName="flex w-full min-w-0 flex-col pb-0"
-                    footer={
-                        offer && (tab === 'offer' || tab === 'costs' || (tab === 'menu' && offer.configuredMenu)) ? (
-                            <>
-                                {tab === 'offer' ? (
+                <BookingRequestOfferCallSessionProvider
+                    bookingRequestOfferId={bookingRequestOfferId}
+                    createDocument={AdminBookingRequestOfferCallCreateDocument}
+                    joinDocument={AdminBookingRequestOfferCallJoinDocument}
+                    leaveDocument={AdminBookingRequestOfferCallLeaveDocument}
+                >
+                    {(call) => (
+                        <AdminPinnedFooterLayout
+                            className="@container min-w-0"
+                            contentScroll={false}
+                            contentClassName="flex w-full min-w-0 flex-col pb-0"
+                            footer={
+                                call.inCall ? (
+                                    <BookingRequestOfferCallControls />
+                                ) : offer && (tab === 'offer' || tab === 'costs' || (tab === 'menu' && offer.configuredMenu)) ? (
                                     <>
-                                        <Button type="button" variant="outline" asChild>
-                                            <Link
-                                                to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit"
-                                                params={{ bookingRequestId, bookingRequestOfferId }}
-                                            >
-                                                {{ de: 'Angebot bearbeiten', en: 'Edit offer' }[locale]}
-                                            </Link>
-                                        </Button>
-                                        {canHandover ? (
-                                            <Button type="button" variant="outline" onClick={() => setHandoverOpen(true)}>
-                                                {{ de: 'Übergeben', en: 'Hand over' }[locale]}
+                                        {tab === 'offer' ? (
+                                            <>
+                                                <Button type="button" variant="outline" asChild>
+                                                    <Link
+                                                        to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit"
+                                                        params={{ bookingRequestId, bookingRequestOfferId }}
+                                                    >
+                                                        {{ de: 'Angebot bearbeiten', en: 'Edit offer' }[locale]}
+                                                    </Link>
+                                                </Button>
+                                                {canHandover ? (
+                                                    <Button type="button" variant="outline" onClick={() => setHandoverOpen(true)}>
+                                                        {{ de: 'Übergeben', en: 'Hand over' }[locale]}
+                                                    </Button>
+                                                ) : null}
+                                            </>
+                                        ) : null}
+                                        {tab === 'menu' && offer.configuredMenu ? (
+                                            <Button type="button" variant="outline" asChild>
+                                                <Link
+                                                    to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu"
+                                                    params={{ bookingRequestId, bookingRequestOfferId }}
+                                                >
+                                                    {{ de: 'Menü bearbeiten', en: 'Edit menu' }[locale]}
+                                                </Link>
+                                            </Button>
+                                        ) : null}
+                                        {tab === 'costs' ? (
+                                            <Button type="button" variant="outline" asChild>
+                                                <Link
+                                                    to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price"
+                                                    params={{ bookingRequestId, bookingRequestOfferId }}
+                                                >
+                                                    {{ de: 'Preis bearbeiten', en: 'Edit price' }[locale]}
+                                                </Link>
                                             </Button>
                                         ) : null}
                                     </>
-                                ) : null}
-                                {tab === 'menu' && offer.configuredMenu ? (
-                                    <Button type="button" variant="outline" asChild>
-                                        <Link
-                                            to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-configured-menu"
-                                            params={{ bookingRequestId, bookingRequestOfferId }}
-                                        >
-                                            {{ de: 'Menü bearbeiten', en: 'Edit menu' }[locale]}
-                                        </Link>
-                                    </Button>
-                                ) : null}
-                                {tab === 'costs' ? (
-                                    <Button type="button" variant="outline" asChild>
-                                        <Link
-                                            to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/edit-price"
-                                            params={{ bookingRequestId, bookingRequestOfferId }}
-                                        >
-                                            {{ de: 'Preis bearbeiten', en: 'Edit price' }[locale]}
-                                        </Link>
-                                    </Button>
-                                ) : null}
-                            </>
-                        ) : undefined
-                    }
-                >
-                    {offer ? (
-                        <>
-                            <div className="grid shrink-0 gap-2 px-4 pb-1">
-                                <div className="flex flex-wrap items-center justify-end gap-3">
-                                    <BookingStatusPill className={bookingRequestOfferStatusClassName(offer.status)}>
-                                        {adminBookingRequestOfferStatusLabel(offer.status, locale)}
-                                    </BookingStatusPill>
-                                </div>
-                                {offer.participantAmendment ? (
-                                    <BookingRequestOfferParticipantAmendmentAdminPendingAlert
-                                        locale={locale}
-                                        amendment={offer.participantAmendment}
-                                        action={
-                                            tab !== 'costs' ? (
-                                                <Button type="button" size="sm" variant="outline" asChild>
-                                                    <Link
-                                                        to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
-                                                        params={{ bookingRequestId, bookingRequestOfferId }}
-                                                        search={{ tab: 'costs' }}
-                                                        replace
-                                                    >
-                                                        {{ de: 'Zu Kosten', en: 'View costs' }[locale]}
-                                                    </Link>
-                                                </Button>
-                                            ) : undefined
-                                        }
-                                    />
-                                ) : null}
-                                {pendingCall && showSchedule ? (
-                                    <BookingRequestOfferAttentionBanner
-                                        message={
-                                            {
-                                                de:
-                                                    pendingCall.initiator === 'CUSTOMER'
-                                                        ? 'Terminanfrage ausstehend: Kunde wartet auf den Koch'
-                                                        : 'Terminanfrage ausstehend: Koch wartet auf den Kunden',
-                                                en:
-                                                    pendingCall.initiator === 'CUSTOMER'
-                                                        ? 'Call request pending: customer awaiting chef'
-                                                        : 'Call request pending: chef awaiting customer',
-                                            }[locale]
-                                        }
-                                        actionLabel={{ de: 'Zum Anruf', en: 'View call' }[locale]}
-                                        actionLink={
-                                            tab !== 'call'
-                                                ? {
-                                                      to: '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId',
-                                                      params: { bookingRequestId, bookingRequestOfferId },
-                                                      search: { tab: 'call' },
-                                                  }
-                                                : undefined
-                                        }
-                                    />
-                                ) : null}
-                            </div>
-
-                            <Tabs value={tab} className="flex min-h-0 flex-1 flex-col gap-0">
-                                <div className="px-4">
-                                    <TabsList
-                                        variant="line"
-                                        className="shrink-0"
-                                        aria-label={{ de: 'Angebotsbereiche', en: 'Offer sections' }[locale]}
-                                    >
-                                        {visibleTabDefs.map(({ id, label, Icon }) => (
-                                            <TabsTrigger key={id} value={id} asChild>
-                                                <Link
-                                                    to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
-                                                    params={{ bookingRequestId, bookingRequestOfferId }}
-                                                    search={{ tab: id === 'chat' ? undefined : id }}
-                                                    replace
-                                                >
-                                                    <Icon aria-hidden />
-                                                    {label[locale]}
-                                                </Link>
-                                            </TabsTrigger>
-                                        ))}
-                                    </TabsList>
-                                </div>
-
-                                <TabsContent value="chat" className="mt-4 flex min-h-0 flex-1 flex-col gap-3 data-[state=inactive]:hidden">
-                                    {offer.activeCallRoom?.status === 'ACTIVE' || (!pendingCall && confirmedCall && showSchedule) ? (
-                                        <div className="grid shrink-0 gap-3 px-4">
-                                            {offer.activeCallRoom?.status === 'ACTIVE' ? (
-                                                <StatusAlert
-                                                    tone="info"
-                                                    title={{ de: 'Anruf läuft', en: 'Call in progress' }[locale]}
-                                                    action={
-                                                        <Button type="button" size="sm" asChild>
-                                                            <Link
-                                                                to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
-                                                                params={{ bookingRequestId, bookingRequestOfferId }}
-                                                                search={{ tab: 'call' }}
-                                                                replace
-                                                            >
-                                                                {{ de: 'Zum Anruf', en: 'Go to call' }[locale]}
-                                                            </Link>
-                                                        </Button>
-                                                    }
-                                                >
-                                                    {
-                                                        {
-                                                            de: 'Ein Videoanruf für dieses Angebot ist aktiv.',
-                                                            en: 'A video call for this offer is active.',
-                                                        }[locale]
-                                                    }
-                                                </StatusAlert>
-                                            ) : null}
-                                            {!pendingCall && confirmedCall && showSchedule ? (
-                                                <StatusAlert
-                                                    tone="info"
-                                                    title={{ de: 'Gesprächstermin bestätigt', en: 'Discovery call confirmed' }[locale]}
-                                                    action={
-                                                        <Button type="button" size="sm" asChild>
-                                                            <Link
-                                                                to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
-                                                                params={{ bookingRequestId, bookingRequestOfferId }}
-                                                                search={{ tab: 'call' }}
-                                                                replace
-                                                            >
-                                                                {{ de: 'Zum Anruf', en: 'View call' }[locale]}
-                                                            </Link>
-                                                        </Button>
-                                                    }
-                                                >
-                                                    {
-                                                        {
-                                                            de: 'Der bestätigte Termin erscheint unter Anruf (nur Ansicht).',
-                                                            en: 'The confirmed appointment is on the Call tab (read-only).',
-                                                        }[locale]
-                                                    }
-                                                </StatusAlert>
-                                            ) : null}
+                                ) : undefined
+                            }
+                        >
+                            {offer ? (
+                                <>
+                                    <div className="grid shrink-0 gap-2 px-4 pb-1">
+                                        <div className="flex flex-wrap items-center justify-end gap-3">
+                                            <BookingStatusPill className={bookingRequestOfferStatusClassName(offer.status)}>
+                                                {adminBookingRequestOfferStatusLabel(offer.status, locale)}
+                                            </BookingStatusPill>
                                         </div>
-                                    ) : null}
-                                    <BookingRequestOfferChat
-                                        messages={offer.messages}
-                                        canSend={canSend}
-                                        peers={[
-                                            ...(request
-                                                ? [
-                                                      {
-                                                          display: adminBookingRequestCustomerLabel(request.customer),
-                                                          profilePictureUrl: request.customer.profilePicture?.url,
-                                                          userId: request.customer.userId,
-                                                      },
-                                                  ]
-                                                : []),
-                                            {
-                                                display: userDisplayName(offer.cook.user),
-                                                profilePictureUrl: offer.cook.user.profilePicture?.url,
-                                                userId: offer.cook.user.userId,
-                                            },
-                                        ]}
-                                        viewerRole="admin"
-                                        onSend={async (message, fileUploadIds) => {
-                                            const result = await sendChatMessage({ bookingRequestOfferId, message, fileUploadIds });
-                                            if (result.error || !result.data?.admin.bookingRequestOfferChatMessageCreate.success) {
-                                                toast.error(
+                                        {offer.participantAmendment ? (
+                                            <BookingRequestOfferParticipantAmendmentAdminPendingAlert
+                                                locale={locale}
+                                                amendment={offer.participantAmendment}
+                                                action={
+                                                    tab !== 'costs' ? (
+                                                        <Button type="button" size="sm" variant="outline" asChild>
+                                                            <Link
+                                                                to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
+                                                                params={{ bookingRequestId, bookingRequestOfferId }}
+                                                                search={{ tab: 'costs' }}
+                                                                replace
+                                                            >
+                                                                {{ de: 'Zu Kosten', en: 'View costs' }[locale]}
+                                                            </Link>
+                                                        </Button>
+                                                    ) : undefined
+                                                }
+                                            />
+                                        ) : null}
+                                        {pendingCall && showSchedule ? (
+                                            <BookingRequestOfferAttentionBanner
+                                                message={
                                                     {
-                                                        de: 'Nachricht konnte nicht gesendet werden.',
-                                                        en: 'Could not send the message.',
-                                                    }[locale],
-                                                );
-                                                return false;
-                                            }
-                                            return true;
-                                        }}
-                                        onEditMessage={async (chatMessageId, message) => {
-                                            const result = await updateChatMessage({
-                                                bookingRequestOfferEventId: chatMessageId,
-                                                message,
-                                            });
-                                            if (result.error || !result.data?.admin.bookingRequestOfferChatMessageUpdate.success) {
-                                                toast.error(
-                                                    {
-                                                        de: 'Nachricht konnte nicht gespeichert werden.',
-                                                        en: 'Could not save the message.',
-                                                    }[locale],
-                                                );
-                                                return false;
-                                            }
-                                            return true;
-                                        }}
-                                        onVisibilityChangeMessage={async (chatMessageId, hiddenByAdmin) => {
-                                            const result = await updateChatMessageVisibility({
-                                                bookingRequestOfferEventId: chatMessageId,
-                                                hiddenByAdmin,
-                                            });
-                                            if (
-                                                result.error ||
-                                                !result.data?.admin.bookingRequestOfferChatMessageVisibilityUpdate.success
-                                            ) {
-                                                toast.error(
-                                                    hiddenByAdmin
+                                                        de:
+                                                            pendingCall.initiator === 'CUSTOMER'
+                                                                ? 'Terminanfrage ausstehend: Kunde wartet auf den Koch'
+                                                                : 'Terminanfrage ausstehend: Koch wartet auf den Kunden',
+                                                        en:
+                                                            pendingCall.initiator === 'CUSTOMER'
+                                                                ? 'Call request pending: customer awaiting chef'
+                                                                : 'Call request pending: chef awaiting customer',
+                                                    }[locale]
+                                                }
+                                                actionLabel={{ de: 'Zum Anruf', en: 'View call' }[locale]}
+                                                actionLink={
+                                                    tab !== 'call'
                                                         ? {
-                                                              de: 'Nachricht konnte nicht verborgen werden.',
-                                                              en: 'Could not hide the message.',
-                                                          }[locale]
-                                                        : {
-                                                              de: 'Nachricht konnte nicht wieder angezeigt werden.',
-                                                              en: 'Could not show the message again.',
-                                                          }[locale],
-                                                );
-                                                return false;
-                                            }
-                                            return true;
-                                        }}
-                                        onDeleteMessage={async (chatMessageId) => {
-                                            const result = await deleteChatMessage({
-                                                bookingRequestOfferEventId: chatMessageId,
-                                            });
-                                            if (result.error || !result.data?.admin.bookingRequestOfferChatMessageDelete.success) {
-                                                toast.error(
+                                                              to: '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId',
+                                                              params: { bookingRequestId, bookingRequestOfferId },
+                                                              search: { tab: 'call' },
+                                                          }
+                                                        : undefined
+                                                }
+                                            />
+                                        ) : null}
+                                    </div>
+
+                                    <Tabs value={tab} className="flex min-h-0 flex-1 flex-col gap-0">
+                                        <div className="px-4">
+                                            <TabsList
+                                                variant="line"
+                                                className="shrink-0"
+                                                aria-label={{ de: 'Angebotsbereiche', en: 'Offer sections' }[locale]}
+                                            >
+                                                {visibleTabDefs.map(({ id, label, Icon }) => (
+                                                    <TabsTrigger key={id} value={id} asChild>
+                                                        <Link
+                                                            to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
+                                                            params={{ bookingRequestId, bookingRequestOfferId }}
+                                                            search={{ tab: id === 'chat' ? undefined : id }}
+                                                            replace
+                                                        >
+                                                            <Icon aria-hidden />
+                                                            {label[locale]}
+                                                        </Link>
+                                                    </TabsTrigger>
+                                                ))}
+                                            </TabsList>
+                                        </div>
+
+                                        <TabsContent
+                                            value="chat"
+                                            className="mt-4 flex min-h-0 flex-1 flex-col gap-3 data-[state=inactive]:hidden"
+                                        >
+                                            {offer.activeCallRoom?.status === 'ACTIVE' ||
+                                            (!pendingCall && confirmedCall && showSchedule) ? (
+                                                <div className="grid shrink-0 gap-3 px-4">
+                                                    {offer.activeCallRoom?.status === 'ACTIVE' ? (
+                                                        <StatusAlert
+                                                            tone="info"
+                                                            title={{ de: 'Anruf läuft', en: 'Call in progress' }[locale]}
+                                                            action={
+                                                                <Button type="button" size="sm" asChild>
+                                                                    <Link
+                                                                        to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
+                                                                        params={{ bookingRequestId, bookingRequestOfferId }}
+                                                                        search={{ tab: 'call' }}
+                                                                        replace
+                                                                    >
+                                                                        {{ de: 'Zum Anruf', en: 'Go to call' }[locale]}
+                                                                    </Link>
+                                                                </Button>
+                                                            }
+                                                        >
+                                                            {
+                                                                {
+                                                                    de: 'Ein Videoanruf für dieses Angebot ist aktiv.',
+                                                                    en: 'A video call for this offer is active.',
+                                                                }[locale]
+                                                            }
+                                                        </StatusAlert>
+                                                    ) : null}
+                                                    {!pendingCall && confirmedCall && showSchedule ? (
+                                                        <StatusAlert
+                                                            tone="info"
+                                                            title={
+                                                                { de: 'Gesprächstermin bestätigt', en: 'Discovery call confirmed' }[locale]
+                                                            }
+                                                            action={
+                                                                <Button type="button" size="sm" asChild>
+                                                                    <Link
+                                                                        to="/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId"
+                                                                        params={{ bookingRequestId, bookingRequestOfferId }}
+                                                                        search={{ tab: 'call' }}
+                                                                        replace
+                                                                    >
+                                                                        {{ de: 'Zum Anruf', en: 'View call' }[locale]}
+                                                                    </Link>
+                                                                </Button>
+                                                            }
+                                                        >
+                                                            {
+                                                                {
+                                                                    de: 'Der bestätigte Termin erscheint unter Anruf (nur Ansicht).',
+                                                                    en: 'The confirmed appointment is on the Call tab (read-only).',
+                                                                }[locale]
+                                                            }
+                                                        </StatusAlert>
+                                                    ) : null}
+                                                </div>
+                                            ) : null}
+                                            <BookingRequestOfferChat
+                                                messages={offer.messages}
+                                                canSend={canSend}
+                                                peers={[
+                                                    ...(request
+                                                        ? [
+                                                              {
+                                                                  display: adminBookingRequestCustomerLabel(request.customer),
+                                                                  profilePictureUrl: request.customer.profilePicture?.url,
+                                                                  userId: request.customer.userId,
+                                                              },
+                                                          ]
+                                                        : []),
                                                     {
-                                                        de: 'Nachricht konnte nicht gelöscht werden.',
-                                                        en: 'Could not delete the message.',
-                                                    }[locale],
-                                                );
-                                                return false;
-                                            }
-                                            return true;
-                                        }}
-                                        onReactMessage={async (chatMessageId, emoji) => {
-                                            const result = await upsertOfferChatReaction({
-                                                bookingRequestOfferEventId: chatMessageId,
-                                                emoji,
-                                            });
-                                            if (result.error || !result.data?.admin.bookingRequestOfferChatMessageReactionUpsert.success) {
-                                                toast.error(
-                                                    {
-                                                        de: 'Reaktion konnte nicht gespeichert werden.',
-                                                        en: 'Could not save the reaction.',
-                                                    }[locale],
-                                                );
-                                                return false;
-                                            }
-                                            return true;
-                                        }}
-                                    />
-                                </TabsContent>
+                                                        display: userDisplayName(offer.cook.user),
+                                                        profilePictureUrl: offer.cook.user.profilePicture?.url,
+                                                        userId: offer.cook.user.userId,
+                                                    },
+                                                ]}
+                                                viewerRole="admin"
+                                                onSend={async (message, fileUploadIds) => {
+                                                    const result = await sendChatMessage({ bookingRequestOfferId, message, fileUploadIds });
+                                                    if (result.error || !result.data?.admin.bookingRequestOfferChatMessageCreate.success) {
+                                                        toast.error(
+                                                            {
+                                                                de: 'Nachricht konnte nicht gesendet werden.',
+                                                                en: 'Could not send the message.',
+                                                            }[locale],
+                                                        );
+                                                        return false;
+                                                    }
+                                                    return true;
+                                                }}
+                                                onEditMessage={async (chatMessageId, message) => {
+                                                    const result = await updateChatMessage({
+                                                        bookingRequestOfferEventId: chatMessageId,
+                                                        message,
+                                                    });
+                                                    if (result.error || !result.data?.admin.bookingRequestOfferChatMessageUpdate.success) {
+                                                        toast.error(
+                                                            {
+                                                                de: 'Nachricht konnte nicht gespeichert werden.',
+                                                                en: 'Could not save the message.',
+                                                            }[locale],
+                                                        );
+                                                        return false;
+                                                    }
+                                                    return true;
+                                                }}
+                                                onVisibilityChangeMessage={async (chatMessageId, hiddenByAdmin) => {
+                                                    const result = await updateChatMessageVisibility({
+                                                        bookingRequestOfferEventId: chatMessageId,
+                                                        hiddenByAdmin,
+                                                    });
+                                                    if (
+                                                        result.error ||
+                                                        !result.data?.admin.bookingRequestOfferChatMessageVisibilityUpdate.success
+                                                    ) {
+                                                        toast.error(
+                                                            hiddenByAdmin
+                                                                ? {
+                                                                      de: 'Nachricht konnte nicht verborgen werden.',
+                                                                      en: 'Could not hide the message.',
+                                                                  }[locale]
+                                                                : {
+                                                                      de: 'Nachricht konnte nicht wieder angezeigt werden.',
+                                                                      en: 'Could not show the message again.',
+                                                                  }[locale],
+                                                        );
+                                                        return false;
+                                                    }
+                                                    return true;
+                                                }}
+                                                onDeleteMessage={async (chatMessageId) => {
+                                                    const result = await deleteChatMessage({
+                                                        bookingRequestOfferEventId: chatMessageId,
+                                                    });
+                                                    if (result.error || !result.data?.admin.bookingRequestOfferChatMessageDelete.success) {
+                                                        toast.error(
+                                                            {
+                                                                de: 'Nachricht konnte nicht gelöscht werden.',
+                                                                en: 'Could not delete the message.',
+                                                            }[locale],
+                                                        );
+                                                        return false;
+                                                    }
+                                                    return true;
+                                                }}
+                                                onReactMessage={async (chatMessageId, emoji) => {
+                                                    const result = await upsertOfferChatReaction({
+                                                        bookingRequestOfferEventId: chatMessageId,
+                                                        emoji,
+                                                    });
+                                                    if (
+                                                        result.error ||
+                                                        !result.data?.admin.bookingRequestOfferChatMessageReactionUpsert.success
+                                                    ) {
+                                                        toast.error(
+                                                            {
+                                                                de: 'Reaktion konnte nicht gespeichert werden.',
+                                                                en: 'Could not save the reaction.',
+                                                            }[locale],
+                                                        );
+                                                        return false;
+                                                    }
+                                                    return true;
+                                                }}
+                                            />
+                                        </TabsContent>
 
-                                <TabsContent
-                                    value="offer"
-                                    className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
-                                >
-                                    <OfferMetaTabPanel offer={offer} request={request} locale={locale} timeZone={timeZone} />
-                                </TabsContent>
+                                        <TabsContent
+                                            value="offer"
+                                            className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
+                                        >
+                                            <OfferMetaTabPanel offer={offer} request={request} locale={locale} timeZone={timeZone} />
+                                        </TabsContent>
 
-                                <TabsContent
-                                    value="costs"
-                                    className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
-                                >
-                                    <CostsTabPanel offer={offer} request={request} locale={locale} timeZone={timeZone} />
-                                </TabsContent>
+                                        <TabsContent
+                                            value="costs"
+                                            className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
+                                        >
+                                            <CostsTabPanel offer={offer} request={request} locale={locale} timeZone={timeZone} />
+                                        </TabsContent>
 
-                                <TabsContent
-                                    value="menu"
-                                    className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
-                                >
-                                    <MenuTabPanel offer={offer} locale={locale} />
-                                </TabsContent>
+                                        <TabsContent
+                                            value="menu"
+                                            className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
+                                        >
+                                            <MenuTabPanel offer={offer} locale={locale} />
+                                        </TabsContent>
 
-                                <TabsContent
-                                    value="call"
-                                    className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
-                                >
-                                    <BookingRequestOfferCallTab
-                                        role="admin"
-                                        bookingRequestOfferId={bookingRequestOfferId}
-                                        callBookings={offer.callBookings}
-                                        activeCallRoom={offer.activeCallRoom ?? null}
-                                        createDocument={AdminBookingRequestOfferCallCreateDocument}
-                                        joinDocument={AdminBookingRequestOfferCallJoinDocument}
-                                        leaveDocument={AdminBookingRequestOfferCallLeaveDocument}
-                                        declineDocument={AdminBookingRequestOfferCallSlotDeclineDocument}
-                                        showSchedule={showSchedule}
-                                        callSchedulingEnabled={offer.cook.callSchedulingEnabled}
-                                        callDurationMinutes={offer.cook.callDurationMinutes}
-                                        peerDisplayName={request ? adminBookingRequestCustomerLabel(request.customer) : undefined}
-                                    >
-                                        <AdminBookingRequestOfferCallRecordingsSection recordings={offer.callRecordings} />
-                                    </BookingRequestOfferCallTab>
-                                </TabsContent>
+                                        <TabsContent
+                                            value="call"
+                                            className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
+                                        >
+                                            <BookingRequestOfferCallTab
+                                                role="admin"
+                                                bookingRequestOfferId={bookingRequestOfferId}
+                                                callBookings={offer.callBookings}
+                                                activeCallRoom={offer.activeCallRoom ?? null}
+                                                declineDocument={AdminBookingRequestOfferCallSlotDeclineDocument}
+                                                showSchedule={showSchedule}
+                                                callSchedulingEnabled={offer.cook.callSchedulingEnabled}
+                                                callDurationMinutes={offer.cook.callDurationMinutes}
+                                                peerDisplayName={request ? adminBookingRequestCustomerLabel(request.customer) : undefined}
+                                            >
+                                                <AdminBookingRequestOfferCallRecordingsSection recordings={offer.callRecordings} />
+                                            </BookingRequestOfferCallTab>
+                                        </TabsContent>
 
-                                {showTestimonialTab ? (
-                                    <TabsContent
-                                        value="testimonial"
-                                        className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
-                                    >
-                                        <AdminBookingRequestOfferTestimonialsSection
-                                            bookingRequestOfferId={offer.bookingRequestOfferId}
-                                            bookingRequestUserId={request?.customer.userId ?? ''}
-                                            cookId={offer.cook.cookId}
-                                            customerTestimonial={
-                                                offer.customerTestimonial
-                                                    ? {
-                                                          id: offer.customerTestimonial.customerTestimonialId,
-                                                          authorName: offer.customerTestimonial.authorName ?? null,
-                                                          displayAuthorName: offer.customerTestimonial.displayAuthorName,
-                                                          location: offer.customerTestimonial.location ?? null,
-                                                          displayLocation: offer.customerTestimonial.displayLocation ?? null,
-                                                          occasion: offer.customerTestimonial.occasion ?? null,
-                                                          displayOccasion: offer.customerTestimonial.displayOccasion ?? null,
-                                                          body: offer.customerTestimonial.body,
-                                                          imageUrls: offer.customerTestimonial.imageUrls,
-                                                          rating: offer.customerTestimonial.rating ?? null,
-                                                          publicationStatus: offer.customerTestimonial.publicationStatus,
-                                                      }
-                                                    : null
-                                            }
-                                            cookTestimonial={
-                                                offer.cookTestimonial
-                                                    ? {
-                                                          id: offer.cookTestimonial.cookTestimonialId,
-                                                          authorName: offer.cookTestimonial.authorName ?? null,
-                                                          displayAuthorName: offer.cookTestimonial.displayAuthorName,
-                                                          location: offer.cookTestimonial.location ?? null,
-                                                          displayLocation: offer.cookTestimonial.displayLocation ?? null,
-                                                          occasion: offer.cookTestimonial.occasion ?? null,
-                                                          displayOccasion: offer.cookTestimonial.displayOccasion ?? null,
-                                                          body: offer.cookTestimonial.body ?? '',
-                                                          imageUrls: offer.cookTestimonial.imageUrls,
-                                                          rating: offer.cookTestimonial.rating ?? null,
-                                                          publicationStatus: offer.cookTestimonial.publicationStatus,
-                                                          lowRatingAnswers: offer.cookTestimonial.lowRatingAnswers ?? null,
-                                                      }
-                                                    : null
-                                            }
-                                        />
-                                    </TabsContent>
-                                ) : null}
-                            </Tabs>
-                        </>
-                    ) : (
-                        <p className="text-sm text-muted-foreground">{{ de: 'Angebot nicht gefunden.', en: 'Offer not found.' }[locale]}</p>
+                                        {showTestimonialTab ? (
+                                            <TabsContent
+                                                value="testimonial"
+                                                className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-6 data-[state=inactive]:hidden"
+                                            >
+                                                <AdminBookingRequestOfferTestimonialsSection
+                                                    bookingRequestOfferId={offer.bookingRequestOfferId}
+                                                    bookingRequestUserId={request?.customer.userId ?? ''}
+                                                    cookId={offer.cook.cookId}
+                                                    customerTestimonial={
+                                                        offer.customerTestimonial
+                                                            ? {
+                                                                  id: offer.customerTestimonial.customerTestimonialId,
+                                                                  authorName: offer.customerTestimonial.authorName ?? null,
+                                                                  displayAuthorName: offer.customerTestimonial.displayAuthorName,
+                                                                  location: offer.customerTestimonial.location ?? null,
+                                                                  displayLocation: offer.customerTestimonial.displayLocation ?? null,
+                                                                  occasion: offer.customerTestimonial.occasion ?? null,
+                                                                  displayOccasion: offer.customerTestimonial.displayOccasion ?? null,
+                                                                  body: offer.customerTestimonial.body,
+                                                                  imageUrls: offer.customerTestimonial.imageUrls,
+                                                                  rating: offer.customerTestimonial.rating ?? null,
+                                                                  publicationStatus: offer.customerTestimonial.publicationStatus,
+                                                              }
+                                                            : null
+                                                    }
+                                                    cookTestimonial={
+                                                        offer.cookTestimonial
+                                                            ? {
+                                                                  id: offer.cookTestimonial.cookTestimonialId,
+                                                                  authorName: offer.cookTestimonial.authorName ?? null,
+                                                                  displayAuthorName: offer.cookTestimonial.displayAuthorName,
+                                                                  location: offer.cookTestimonial.location ?? null,
+                                                                  displayLocation: offer.cookTestimonial.displayLocation ?? null,
+                                                                  occasion: offer.cookTestimonial.occasion ?? null,
+                                                                  displayOccasion: offer.cookTestimonial.displayOccasion ?? null,
+                                                                  body: offer.cookTestimonial.body ?? '',
+                                                                  imageUrls: offer.cookTestimonial.imageUrls,
+                                                                  rating: offer.cookTestimonial.rating ?? null,
+                                                                  publicationStatus: offer.cookTestimonial.publicationStatus,
+                                                                  lowRatingAnswers: offer.cookTestimonial.lowRatingAnswers ?? null,
+                                                              }
+                                                            : null
+                                                    }
+                                                />
+                                            </TabsContent>
+                                        ) : null}
+                                    </Tabs>
+                                </>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">
+                                    {{ de: 'Angebot nicht gefunden.', en: 'Offer not found.' }[locale]}
+                                </p>
+                            )}
+                        </AdminPinnedFooterLayout>
                     )}
-                </AdminPinnedFooterLayout>
+                </BookingRequestOfferCallSessionProvider>
             </AdminPageChrome>
             {offer ? (
                 <AdminBookingRequestOfferHandoverDialog

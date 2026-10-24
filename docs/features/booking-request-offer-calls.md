@@ -28,6 +28,10 @@ On an open offer (customer, cook, or admin offer page), a single **Call** tab co
 Customer and cook offer pages show pending incoming calls as a **compact header strip** above the tabs (visible without displacing the
 fill-height chat grid); chat milestones include the slot time range. Unread counters clear when opening chat **or** Call.
 
+**In-call tab switching** — Starting or joining a call lifts the LiveKit session above the Offer / Chat / Call tabs, so cooks and customers
+can open chat or offer details without leaving the room. Mic, camera, and leave live in the pinned page footer for the whole call; the Call
+tab shows the video grid (and recording notice) while connected.
+
 **Add to calendar** — Confirmed slots expose a client-side calendar download on the Call tab schedule section and on cook `/profile/calls`
 (stable event id per slot booking).
 
@@ -54,6 +58,8 @@ Journey context: [booking.md](./booking.md), [booking-offers.md](./booking-offer
 | Feature toggles for video/scheduling                        | Rejected — always on; cook owns scheduling enablement                        |
 | UTC minute-of-day for availability                          | Rejected — wall clock uses the cook’s `Users.timeZone`                       |
 | Separate Schedule + Call offer tabs                         | Rejected — merged into one Call tab (start/join above, appointments below)   |
+| LiveKit session inside Call `TabsContent` only              | Rejected — unmount on tab change left the room; session lifted to page shell |
+| Floating in-video control bar                               | Rejected — pinned footer controls stay usable on Offer / Chat during a call  |
 
 ### Chosen
 
@@ -63,7 +69,8 @@ empty and delete room; recurring sweep for stale active rooms (~90s threshold). 
 
 ## Ideas
 
-- Custom LiveKit controls, screenshare, keep call alive across offer tabs.
+- Screenshare from the in-call footer controls.
+- Picture-in-picture / compact video while browsing Offer or Chat during a call.
 - Customer-side cross-offer calls hub (cook partial hub on `/profile/calls`; admin has `/admin/calls`).
 
 ## Implementation
@@ -113,8 +120,12 @@ CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’
 
 ### UI
 
-- `BookingRequestOfferCallTab` (start/join + in-call panel) composes `BookingRequestOfferScheduleTab` (appointments + pick/propose) and
-  optional admin recordings children; while in-call, only the LiveKit panel is shown
+- `BookingRequestOfferCallSessionProvider` owns create/join/leave + LiveKit room on customer, cook, and admin offer pages (above tabs) so
+  tab changes do not disconnect; exposes `inCall` / `startOrJoin` to `BookingRequestOfferCallTab`
+- `BookingRequestOfferCallTab` (start/join + schedule) composes `BookingRequestOfferScheduleTab` (appointments + pick/propose) and optional
+  admin recordings children; while in-call it renders `BookingRequestOfferCallVideo` only (recording notice + grid)
+- `BookingRequestOfferCallControls` (mic / camera device menus + leave) render in `ProfilePinnedFooterLayout` / `AdminPinnedFooterLayout`
+  for the duration of the call (not floating over the video)
 - Appointment rows, pick/propose panels, and start/join share compact Card density (`bookingOfferCallCardClassName` /
   `bookingOfferCallCardSectionClassName`: `gap-4 py-4` + section `px-4`)
 - Pick/propose and start/join put the primary CTA in `CardFooter` (end-aligned); appointment rows keep inline action rows in `CardContent`
