@@ -49,6 +49,8 @@ query ProfileCustomerBookingRequestEditPriceImpact($bookingRequestId: ID!, $part
                     menuPriceCentsAfter
                     totalWithoutDiscountsCentsCustomerBefore
                     totalWithoutDiscountsCentsCustomerAfter
+                    totalCentsCustomerBefore
+                    totalCentsCustomerAfter
                     payoutCentsCookBefore
                     payoutCentsCookAfter
                 }

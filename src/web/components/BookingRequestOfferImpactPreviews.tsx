@@ -87,6 +87,7 @@ function priceImpactMeaningful(impact: GqlCUserBookingRequestOfferPriceImpact): 
     return (
         impact.menuPriceCentsAfter !== impact.menuPriceCentsBefore ||
         impact.totalWithoutDiscountsCentsCustomerAfter !== impact.totalWithoutDiscountsCentsCustomerBefore ||
+        impact.totalCentsCustomerAfter !== impact.totalCentsCustomerBefore ||
         impact.payoutCentsCookAfter !== impact.payoutCentsCookBefore
     );
 }
@@ -140,7 +141,7 @@ export function BookingRequestOfferPriceImpactPreview({
         >
             <ul className="mt-2 grid gap-1.5 text-sm">
                 {changed.map((impact) => {
-                    const customerDelta = impact.totalWithoutDiscountsCentsCustomerAfter - impact.totalWithoutDiscountsCentsCustomerBefore;
+                    const customerDelta = impact.totalCentsCustomerAfter - impact.totalCentsCustomerBefore;
                     const cookDelta = impact.payoutCentsCookAfter - impact.payoutCentsCookBefore;
                     return (
                         <li key={impact.bookingRequestOfferId}>

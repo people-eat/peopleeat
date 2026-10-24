@@ -453,7 +453,11 @@ export function AdminBookingRequestEditPage({
                   (dualAcceptedOffer.totalCentsCustomer ?? dualAcceptedOffer.totalWithoutDiscountsCentsCustomer),
           )
         : 0;
-    const previewTotalCustomer = Math.max(0, previewPrice.totalWithoutDiscountsCentsCustomer - previewDiscountCents);
+    // Prefer server impact (promo + gift re-apply) for headcount-only; local estimate when travel also moves.
+    const previewTotalCustomer =
+        dualAcceptedPriceImpact != null && headcountChanged && !locationChanged
+            ? dualAcceptedPriceImpact.totalCentsCustomerAfter
+            : Math.max(0, previewPrice.totalWithoutDiscountsCentsCustomer - previewDiscountCents);
 
     return (
         <AdminPageChrome

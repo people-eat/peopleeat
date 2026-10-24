@@ -60,9 +60,7 @@ export function AdminBookingRequestOfferFeePreview({
     discountCents?: number;
 }) {
     const platformFeePercentCook =
-        parseLivePercent(platformFeePercentCookRaw) ??
-        baseline?.platformFeePercentCook ??
-        BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK;
+        parseLivePercent(platformFeePercentCookRaw) ?? baseline?.platformFeePercentCook ?? BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK;
     const platformFeePercentCustomer =
         parseLivePercent(platformFeePercentCustomerRaw) ??
         baseline?.platformFeePercentCustomer ??

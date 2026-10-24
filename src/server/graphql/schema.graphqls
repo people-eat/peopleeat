@@ -1850,6 +1850,9 @@ type UserBookingRequestOfferPriceImpact {
     menuPriceCentsAfter: Int!
     totalWithoutDiscountsCentsCustomerBefore: Int!
     totalWithoutDiscountsCentsCustomerAfter: Int!
+    # After promo + gift (same basis as amendment / checkout). Equals without-discounts when none applied.
+    totalCentsCustomerBefore: Int!
+    totalCentsCustomerAfter: Int!
     payoutCentsCookBefore: Int!
     payoutCentsCookAfter: Int!
 }

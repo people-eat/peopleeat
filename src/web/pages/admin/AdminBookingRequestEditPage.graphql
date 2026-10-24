@@ -158,6 +158,8 @@ query AdminBookingRequestEditPriceImpact($bookingRequestId: ID!, $participantsAd
                         menuPriceCentsAfter
                         totalWithoutDiscountsCentsCustomerBefore
                         totalWithoutDiscountsCentsCustomerAfter
+                        totalCentsCustomerBefore
+                        totalCentsCustomerAfter
                         payoutCentsCookBefore
                         payoutCentsCookAfter
                     }

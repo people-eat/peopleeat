@@ -4781,6 +4781,8 @@ export interface GqlSUserBookingRequestOfferPriceImpact {
     menuPriceCentsBefore: Scalars['Int']['output'];
     payoutCentsCookAfter: Scalars['Int']['output'];
     payoutCentsCookBefore: Scalars['Int']['output'];
+    totalCentsCustomerAfter: Scalars['Int']['output'];
+    totalCentsCustomerBefore: Scalars['Int']['output'];
     totalWithoutDiscountsCentsCustomerAfter: Scalars['Int']['output'];
     totalWithoutDiscountsCentsCustomerBefore: Scalars['Int']['output'];
 }
@@ -10728,6 +10730,8 @@ export type GqlSUserBookingRequestOfferPriceImpactResolvers<
     menuPriceCentsBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     payoutCentsCookAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     payoutCentsCookBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    totalCentsCustomerAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    totalCentsCustomerBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     totalWithoutDiscountsCentsCustomerAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     totalWithoutDiscountsCentsCustomerBefore?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;

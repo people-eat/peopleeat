@@ -11,8 +11,9 @@ preparations done. Gated by `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`.
    paid headcount; address changes may **auto-adjust travel expenses**. Both set `priceAutoAdjustReason`. The cook confirms with **Confirm
    changes** (not the amendment Accept flow).
 2. **After dual accept**, participant and/or venue changes use this amendment path only. Entry is the booking-request **Edit** / **Change
-   booking** control (same edit route, amendment mode: venue + headcount). Date, occasion, and preferences stay read-only. The offer page
-   shows status and links back to that edit path.
+   booking** control (same edit route, amendment mode: venue + headcount). Date, occasion, and preferences stay read-only. The edit form
+   shows the same live **price** and **travel** impact previews as before accept (scoped to the dual-accepted offer). The offer page shows
+   status and links back to that edit path.
 3. On a dual-accepted offer (payment `EMPTY` / `SETUP` / `PAYED`, event still ahead), the customer can **propose** when the feature toggle
    is on, preparations are not locked, and there is no unpaid `pendingDeltaPayment` from a prior increase.
 4. The booking stays dual-accepted. Live participants, venue, and money stay unchanged until the cook decides. The customer may **withdraw**
@@ -72,7 +73,8 @@ latest).
 - Domain events: `USER_PARTICIPANT_AMENDMENT_REQUESTED`, `USER_PARTICIPANT_AMENDMENT_CANCELED`, `COOK_PARTICIPANT_AMENDMENT_*`,
   `ADMIN_PARTICIPANT_AMENDMENT_REQUESTED`, `ADMIN_PARTICIPANT_AMENDMENT_APPLIED`, `COOK_PREPARATIONS_COMPLETED`,
   `ADMIN_PREPARATIONS_CLEARED`
-- Price helper: `bookingRequestOfferParticipantAmendmentPrice.ts` (menu scale, travel, promo + gift re-apply)
+- Price helper: `bookingRequestOfferParticipantAmendmentPrice.ts` (menu scale, travel, promo + gift re-apply); customer / admin edit
+  `priceImpact` uses the same helper for dual-accepted offers so the live customer-total preview matches the proposal
 - Gates: `bookingRequestOfferParticipantAmendmentGates.ts`
 - Apply + Stripe: `bookingRequestOfferParticipantAmendmentApply.ts`; claim-before-money; `setupIntentCancel` / status-tolerant
   `paymentIntentCancel`; refundable-cents + reversible-transfer chunking; idempotency keys; `pendingDeltaPayment` (+

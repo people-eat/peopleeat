@@ -345,9 +345,14 @@ export function ProfileCustomerBookingRequestEditPage({
     const [{ data: priceImpactData, fetching: priceImpactFetching }] = useQuery({
         query: ProfileCustomerBookingRequestEditPriceImpactDocument,
         variables: { bookingRequestId, participantsAdult: adultCount, participantsDiscounted: childCount },
-        pause: !headcountChanged || !hasOffers || isParticipantAmendmentMode,
+        pause: !headcountChanged || !hasOffers,
     });
-    const priceImpacts = priceImpactData?.currentSession.user?.bookingRequest?.priceImpact ?? [];
+    const priceImpactsRaw = priceImpactData?.currentSession.user?.bookingRequest?.priceImpact ?? [];
+    const amendmentOfferId = isParticipantAmendmentMode
+        ? (amendableOffer?.bookingRequestOfferId ?? pendingAmendmentOffer?.bookingRequestOfferId)
+        : null;
+    const priceImpacts =
+        amendmentOfferId != null ? priceImpactsRaw.filter((impact) => impact.bookingRequestOfferId === amendmentOfferId) : priceImpactsRaw;
 
     useEffect(() => {
         if (user == null) return;
@@ -623,7 +628,7 @@ export function ProfileCustomerBookingRequestEditPage({
                         )}
                     </form.Field>
                 </div>
-                {!isParticipantAmendmentMode && headcountChanged && hasOffers ? (
+                {headcountChanged && hasOffers ? (
                     <BookingRequestOfferPriceImpactPreview impacts={priceImpacts} fetching={priceImpactFetching} locale={locale} />
                 ) : null}
                 {!isParticipantAmendmentMode ? (

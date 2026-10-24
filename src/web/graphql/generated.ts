@@ -4784,6 +4784,8 @@ export interface GqlCUserBookingRequestOfferPriceImpact {
     menuPriceCentsBefore: Scalars['Int']['output'];
     payoutCentsCookAfter: Scalars['Int']['output'];
     payoutCentsCookBefore: Scalars['Int']['output'];
+    totalCentsCustomerAfter: Scalars['Int']['output'];
+    totalCentsCustomerBefore: Scalars['Int']['output'];
     totalWithoutDiscountsCentsCustomerAfter: Scalars['Int']['output'];
     totalWithoutDiscountsCentsCustomerBefore: Scalars['Int']['output'];
 }
@@ -9699,6 +9701,8 @@ export type GqlCAdminBookingRequestEditPriceImpactQuery = {
                         menuPriceCentsAfter: number;
                         totalWithoutDiscountsCentsCustomerBefore: number;
                         totalWithoutDiscountsCentsCustomerAfter: number;
+                        totalCentsCustomerBefore: number;
+                        totalCentsCustomerAfter: number;
                         payoutCentsCookBefore: number;
                         payoutCentsCookAfter: number;
                     }>;
@@ -19295,6 +19299,8 @@ export type GqlCProfileCustomerBookingRequestEditPriceImpactQuery = {
                     menuPriceCentsAfter: number;
                     totalWithoutDiscountsCentsCustomerBefore: number;
                     totalWithoutDiscountsCentsCustomerAfter: number;
+                    totalCentsCustomerBefore: number;
+                    totalCentsCustomerAfter: number;
                     payoutCentsCookBefore: number;
                     payoutCentsCookAfter: number;
                 }>;
@@ -45035,6 +45041,20 @@ export const AdminBookingRequestEditPriceImpactDocument = {
                                                                                     name: {
                                                                                         kind: 'Name',
                                                                                         value: 'totalWithoutDiscountsCentsCustomerAfter',
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'totalCentsCustomerBefore',
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'totalCentsCustomerAfter',
                                                                                     },
                                                                                 },
                                                                                 {
@@ -77131,6 +77151,14 @@ export const ProfileCustomerBookingRequestEditPriceImpactDocument = {
                                                                             kind: 'Name',
                                                                             value: 'totalWithoutDiscountsCentsCustomerAfter',
                                                                         },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'totalCentsCustomerBefore' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'totalCentsCustomerAfter' },
                                                                     },
                                                                     {
                                                                         kind: 'Field',
