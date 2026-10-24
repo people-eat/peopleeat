@@ -19477,15 +19477,6 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
             name: string;
             restrictions: Array<string>;
         }>;
-        supportRequest: {
-            supportRequestId: string;
-            subject: string;
-            status: Schema.GqlCSupportRequestStatus;
-            userUnreadNotificationCount: number;
-            createdAt: string;
-            resolvedAt: string | null;
-            bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
-        } | null;
         offers: Array<{
             bookingRequestOfferId: string;
             status: Schema.GqlCBookingRequestOfferStatus;
@@ -19650,15 +19641,6 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
                     name: string;
                     restrictions: Array<string>;
                 }>;
-                supportRequest: {
-                    supportRequestId: string;
-                    subject: string;
-                    status: Schema.GqlCSupportRequestStatus;
-                    userUnreadNotificationCount: number;
-                    createdAt: string;
-                    resolvedAt: string | null;
-                    bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
-                } | null;
                 offers: Array<{
                     bookingRequestOfferId: string;
                     status: Schema.GqlCBookingRequestOfferStatus;
@@ -19834,15 +19816,6 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
                 name: string;
                 restrictions: Array<string>;
             }>;
-            supportRequest: {
-                supportRequestId: string;
-                subject: string;
-                status: Schema.GqlCSupportRequestStatus;
-                userUnreadNotificationCount: number;
-                createdAt: string;
-                resolvedAt: string | null;
-                bookingRequest: { bookingRequestId: string; occasion: string; dateTime: string } | null;
-            } | null;
             offers: Array<{
                 bookingRequestOfferId: string;
                 status: Schema.GqlCBookingRequestOfferStatus;
@@ -32107,33 +32080,6 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'type' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'restrictions' } },
-                                        ],
-                                    },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'supportRequest' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'supportRequestId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'subject' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'userUnreadNotificationCount' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'resolvedAt' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'bookingRequest' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
-                                                    ],
-                                                },
-                                            },
                                         ],
                                     },
                                 },
@@ -77876,33 +77822,6 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                                 },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'supportRequest' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'supportRequestId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'subject' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'userUnreadNotificationCount' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'resolvedAt' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'bookingRequest' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                                {
-                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'offers' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -78478,33 +78397,6 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'type' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'restrictions' } },
-                                        ],
-                                    },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'supportRequest' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'supportRequestId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'subject' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'status' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'userUnreadNotificationCount' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'resolvedAt' } },
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'bookingRequest' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
-                                                    ],
-                                                },
-                                            },
                                         ],
                                     },
                                 },

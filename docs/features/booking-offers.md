@@ -40,8 +40,8 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
 3. **Customer** compares offers as cards on the request detail page (cook photo, city, cuisine / philosophy tags, menu hint, price,
    lifecycle pill, and a CTA into the offer). When at least one offer exists, an info banner above the cards asks them to review, compare
    menus, chat, or call before deciding. They then open `/profile/booking-requests/$id/offers/$offerId` (tabs: offer / chat / call /
-   testimonial; default Offer, clean URL; Chat uses `?tab=chat`). A stateful Support CTA beside the tabs opens create (`?bookingRequestId=`)
-   or the existing support chat. Offer tab shows menus, cook block, cost, and discount redeem / remove via `BookingRequestDiscountEditor`
+   testimonial; default Offer, clean URL; Chat uses `?tab=chat`). Offer tab shows menus, cook block, cost, and discount redeem / remove via
+   `BookingRequestDiscountEditor`
    below the cost card while unpaid and not yet dual-accepted (no empty-state copy; input hidden once a code is applied — remove first to
    enter another; UI follows server/`userUpdates` state only, no optimistic discount patch). When several menus are suggested, the customer
    picks via selectable menu cards (meal-image collage, clamped title / description, course count); courses for the selected menu stay

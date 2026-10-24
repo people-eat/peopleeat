@@ -43,19 +43,6 @@ fragment ProfileCustomerBookingRequestOfferPageUser on User {
             name
             restrictions
         }
-        supportRequest {
-            supportRequestId
-            subject
-            status
-            userUnreadNotificationCount
-            createdAt
-            resolvedAt
-            bookingRequest {
-                bookingRequestId
-                occasion
-                dateTime
-            }
-        }
         offers {
             bookingRequestOfferId
             status

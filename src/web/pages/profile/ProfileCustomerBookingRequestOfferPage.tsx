@@ -2,7 +2,6 @@ import { Link, notFound, useNavigate } from '@tanstack/react-router';
 import type { LucideIcon } from 'lucide-react';
 import {
     FileTextIcon,
-    HeadsetIcon,
     MapPinIcon,
     MessageSquareIcon,
     MoreHorizontalIcon,
@@ -229,8 +228,6 @@ export function ProfileCustomerBookingRequestOfferPage({
     const tab = resolveOfferTab(search.tab, visibleTabs, offer?.testimonialMissing ?? false);
     const visibleTabDefs = OFFER_TAB_DEFS.filter((entry) => visibleTabs.has(entry.id));
     const testimonialTabMissing = offer?.testimonialMissing ?? false;
-    const supportRequest = request?.supportRequest ?? null;
-    const supportUnread = supportRequest?.userUnreadNotificationCount ?? 0;
 
     useEffect(() => {
         if (offer == null) return;
@@ -446,7 +443,7 @@ export function ProfileCustomerBookingRequestOfferPage({
             </div>
 
             <Tabs value={tab} className="flex min-h-0 flex-1 flex-col gap-0">
-                <div className="flex flex-wrap items-center justify-between gap-2 px-4">
+                <div className="px-4">
                     <TabsList variant="line" className="shrink-0" aria-label={{ de: 'Angebotsbereiche', en: 'Offer sections' }[locale]}>
                         {visibleTabDefs.map(({ id, label, Icon }) => (
                             <TabsTrigger key={id} value={id} asChild>
@@ -474,27 +471,6 @@ export function ProfileCustomerBookingRequestOfferPage({
                             </TabsTrigger>
                         ))}
                     </TabsList>
-                    <Button type="button" variant="outline" size="sm" asChild>
-                        {supportRequest != null ? (
-                            <Link
-                                to="/{-$locale}/profile/support-requests/$supportRequestId"
-                                params={{ supportRequestId: supportRequest.supportRequestId }}
-                            >
-                                <HeadsetIcon className="size-4" />
-                                {{ de: 'Support öffnen', en: 'Open support' }[locale]}
-                                {supportUnread > 0 ? (
-                                    <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] font-medium">
-                                        {supportUnread}
-                                    </Badge>
-                                ) : null}
-                            </Link>
-                        ) : (
-                            <Link to="/{-$locale}/profile/support-requests/create" search={{ bookingRequestId }}>
-                                <HeadsetIcon className="size-4" />
-                                {{ de: 'Support', en: 'Support' }[locale]}
-                            </Link>
-                        )}
-                    </Button>
                 </div>
 
                 <TabsContent value="chat" className="mt-4 flex min-h-0 flex-1 flex-col gap-3 data-[state=inactive]:hidden">
