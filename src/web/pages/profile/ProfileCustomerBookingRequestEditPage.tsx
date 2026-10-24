@@ -156,7 +156,7 @@ export function ProfileCustomerBookingRequestEditPage({
 
     const user = useUserUpdatesSeed(seedUser, ProfileCustomerBookingRequestPageUpdatesDocument, { bookingRequestId });
     const request = user?.bookingRequest ?? null;
-    const participantAmendmentEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT');
+    const offerAmendmentEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_AMENDMENT');
     const canUpdate = request != null && bookingRequestCanUpdate(request);
     const amendableOffer =
         request?.offers.find((offer) => offer.canRequestParticipantAmendment) ??
@@ -166,8 +166,7 @@ export function ProfileCustomerBookingRequestEditPage({
         request?.offers.find((offer) => offer.participantAmendment != null) ??
         seedRequest.offers.find((offer) => offer.participantAmendment != null) ??
         null;
-    const isParticipantAmendmentMode =
-        !canUpdate && participantAmendmentEnabled && (amendableOffer != null || pendingAmendmentOffer != null);
+    const isParticipantAmendmentMode = !canUpdate && offerAmendmentEnabled && (amendableOffer != null || pendingAmendmentOffer != null);
     const canStayOnEdit = canUpdate || isParticipantAmendmentMode;
 
     const [locationSearchText, setLocationSearchText] = useState(seedRequest.exactEventAddress.displayText);

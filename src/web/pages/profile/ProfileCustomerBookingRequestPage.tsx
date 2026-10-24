@@ -100,7 +100,7 @@ export function ProfileCustomerBookingRequestPage({
 
     const [, cancelRequest] = useMutation(ProfileBookingRequestCancelDocument);
     const [, updateDiscount] = useMutation(ProfileBookingRequestDiscountUpdateDocument);
-    const participantAmendmentEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT');
+    const offerAmendmentEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_AMENDMENT');
 
     if (request == null || user == null) {
         return null;
@@ -110,7 +110,7 @@ export function ProfileCustomerBookingRequestPage({
     const canUpdate = UPDATABLE_STATUSES.has(request.status) && !request.canceledAt;
     const amendableOffer = request.offers.find((offer) => offer.canRequestParticipantAmendment) ?? null;
     const pendingAmendmentOffer = request.offers.find((offer) => offer.participantAmendment != null) ?? null;
-    const canAmendParticipants = participantAmendmentEnabled && amendableOffer != null;
+    const canAmendParticipants = offerAmendmentEnabled && amendableOffer != null;
     const canEdit = canUpdate || canAmendParticipants;
     const canEditDiscount = canUpdate;
     const offers = request.offers;

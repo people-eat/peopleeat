@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { FeatureToggleKey } from '../../shared/featureToggle';
 import { idCreate } from '../../shared/idCreate';
 import { bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks, featureToggles } from '../db/schema';
 import { commandSetup, cookMutationParent, testDb, userMutationParent } from '../test/commandTestUtils';
@@ -20,14 +21,11 @@ const berlin = {
     country: 'DE',
 };
 
-async function enableToggle(enabled: boolean) {
-    await testDb
-        .insert(featureToggles)
-        .values({ featureToggleKey: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT', enabled })
-        .onConflictDoUpdate({
-            target: featureToggles.featureToggleKey,
-            set: { enabled },
-        });
+async function setFeatureToggle(featureToggleKey: FeatureToggleKey, enabled: boolean) {
+    await testDb.insert(featureToggles).values({ featureToggleKey, enabled }).onConflictDoUpdate({
+        target: featureToggles.featureToggleKey,
+        set: { enabled },
+    });
 }
 
 async function seedDualAcceptedOffer(paymentStatus: 'SETUP' | 'PAYED' = 'SETUP') {
@@ -117,11 +115,12 @@ async function seedDualAcceptedOffer(paymentStatus: 'SETUP' | 'PAYED' = 'SETUP')
 
 describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
     beforeEach(async () => {
-        await enableToggle(true);
+        await setFeatureToggle('BOOKING_REQUEST_OFFER_AMENDMENT', true);
+        await setFeatureToggle('BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE', true);
     });
 
     it('rejects when the feature toggle is off', async () => {
-        await enableToggle(false);
+        await setFeatureToggle('BOOKING_REQUEST_OFFER_AMENDMENT', false);
         const { customer, bookingRequestOfferId } = await seedDualAcceptedOffer();
         const result = await userBookingRequestOfferParticipantAmendmentCreate(
             userMutationParent(customer.user.userId),

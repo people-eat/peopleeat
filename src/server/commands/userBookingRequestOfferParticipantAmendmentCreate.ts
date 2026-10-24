@@ -74,7 +74,7 @@ export async function userBookingRequestOfferParticipantAmendmentCreate(
     const { bookingRequestOfferId } = args;
 
     try {
-        const enabled = await featureToggleIsEnabled('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT', serverRuntime, userId);
+        const enabled = await featureToggleIsEnabled('BOOKING_REQUEST_OFFER_AMENDMENT', serverRuntime, userId);
         if (!enabled) {
             throw new Error('userBookingRequestOfferParticipantAmendmentCreate: feature is disabled');
         }

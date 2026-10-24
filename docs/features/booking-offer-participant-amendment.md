@@ -2,7 +2,8 @@
 
 After dual accept, customers can propose a new headcount and/or event venue; the cook must accept or decline. Accepting runs an automated
 Stripe charge or refund (and gift-card restore when unused credit remains). Cooks can lock further changes by marking groceries /
-preparations done. Gated by `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`.
+preparations done. Amendment propose is gated by `BOOKING_REQUEST_OFFER_AMENDMENT`; marking preparations done is gated by
+`BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE` (locking amendments is a side effect of that mark).
 
 ## Behavior
 
@@ -14,12 +15,12 @@ preparations done. Gated by `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`.
    booking** control (same edit route, amendment mode: venue + headcount). Date, occasion, and preferences stay read-only. The edit form
    shows the same live **price** and **travel** impact previews as before accept (scoped to the dual-accepted offer). The offer page shows
    status and links back to that edit path.
-3. On a dual-accepted offer (payment `EMPTY` / `SETUP` / `PAYED`, event still ahead), the customer can **propose** when the feature toggle
-   is on, preparations are not locked, and there is no unpaid `pendingDeltaPayment` from a prior increase.
+3. On a dual-accepted offer (payment `EMPTY` / `SETUP` / `PAYED`, event still ahead), the customer can **propose** when the amendment
+   feature toggle is on, preparations are not locked, and there is no unpaid `pendingDeltaPayment` from a prior increase.
 4. The booking stays dual-accepted. Live participants, venue, and money stay unchanged until the cook decides. The customer may **withdraw**
    a pending proposal (no money move).
 5. The cook sees the proposal on every offer tab (banner + pinned footer **Accept change** / **Decline**) with before/after headcount and/or
-   venue and payout. Pending proposals stay actionable even if the rollout toggle is turned off mid-flight.
+   venue and payout. Pending proposals stay actionable even if the amendment rollout toggle is turned off mid-flight.
 6. On accept, the platform applies participants and/or venue, scales the locked menu total by paid-headcount when headcount changed,
    recomputes travel when venue changed, re-applies promo + gift against the new pre-discount total (restoring unused gift balance), and:
    - `SETUP` / unpaid pull path: updates offer cents only (pull job charges the new total later)
@@ -30,8 +31,9 @@ preparations done. Gated by `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`.
      chunks across top-ups + amendment PI destination transfers + primary transfer
 7. On decline or customer cancel, the pending proposal is cleared (cancel is blocked once accept has claimed the amendment); the booking is
    unchanged.
-8. The cook can mark **shopping / preparations done** (confirmation dialog first). After that, the customer cannot open a new amendment.
-   Admins can clear the lock for ops.
+8. When `BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE` is on, the cook can mark **shopping / preparations done** (confirmation dialog first).
+   After that, the customer cannot open a new amendment (prep lock wins even if the amendment toggle stays on). Admins can clear the lock
+   for ops.
 9. Blocked when the event is past, the request is canceled, or payment is `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED`.
 10. Admins may propose or immediately apply venue / participants / absolute menu or travel on dual-accepted offers via
     `bookingRequestOfferAmendmentCreate` / `Apply` (no feature toggle; confirm dialog chooses propose vs apply without cook approval). Prep
@@ -54,20 +56,22 @@ preparations done. Gated by `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`.
 
 ### Chosen
 
-Cook-gated amendment with preparations lock, feature-toggle rollout, Stripe + gift deltas only on cook accept. Keep the booking-request edit
-route as the customer entry after accept (venue + participants). Keep pre-accept **Confirm changes** (+ optional menu/travel auto-adjust)
-separate from post-accept **Accept change**. Admin can clear the prep lock. Accept claims the pending JSON (`claimedAt`) before Stripe money
-moves; Stripe ops use `amendmentApplyId` idempotency keys; Connect top-ups append to `extraTransferIds` (legacy `extraTransferId` kept as
-latest).
+Cook-gated amendment with preparations lock, separate feature-toggle rollout for propose vs prep-complete, Stripe + gift deltas only on cook
+accept. Keep the booking-request edit route as the customer entry after accept (venue + participants). Keep pre-accept **Confirm changes**
+(+ optional menu/travel auto-adjust) separate from post-accept **Accept change**. Admin can clear the prep lock. Accept claims the pending
+JSON (`claimedAt`) before Stripe money moves; Stripe ops use `amendmentApplyId` idempotency keys; Connect top-ups append to
+`extraTransferIds` (legacy `extraTransferId` kept as latest).
 
 ## Next steps
 
-1. Rename feature toggle to `BOOKING_REQUEST_OFFER_AMENDMENT` once rollout is complete.
-2. Richer chat milestones for venue-only proposals.
+1. Richer chat milestones for venue-only proposals.
 
 ## Implementation
 
-- Toggle: `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT` in `src/shared/featureToggle.ts` + GraphQL enum + admin labels
+- Toggles: `BOOKING_REQUEST_OFFER_AMENDMENT` (customer propose / cancel for participants and/or venue; renamed from
+  `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT` via migration `0013_rename_booking_request_offer_amendment_toggle`) and
+  `BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE` (cook mark shopping/prep done → locks amendments) in `src/shared/featureToggle.ts` + GraphQL
+  enum + admin labels
 - Schema: `BookingRequestOffers.preparationsCompletedAt`, `participantAmendment` JSONB, `giftCardAppliedCents`. Venue proposals persist
   `travelExpensesCentsAfter` (recomputed cook rate × distance) alongside `exactEventAddress` so pending GraphQL host-price labels match the
   live `travelImpact` preview. Legacy pending JSON (created before travel snapshots) may omit `travelExpensesCentsBefore` /

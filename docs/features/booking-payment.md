@@ -44,8 +44,9 @@ finalize via client `giftCardPay` (not the booking webhook path).
 ## Next steps
 
 1. **Medium — Automatic cook payout job** — Release when due and Connect is ready (today admin-gated only).
-2. ~~**Participant / venue amendment deltas**~~ — Shipped behind `BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT` (gift restore + location);
-   see [booking-offer-participant-amendment.md](./booking-offer-participant-amendment.md).
+2. ~~**Participant / venue amendment deltas**~~ — Shipped behind `BOOKING_REQUEST_OFFER_AMENDMENT` (gift restore + location) with separate
+   `BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE` for the prep lock; see
+   [booking-offer-participant-amendment.md](./booking-offer-participant-amendment.md).
 
 ## Implementation
 

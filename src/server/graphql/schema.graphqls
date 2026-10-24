@@ -1032,11 +1032,12 @@ type CookMutation {
     # Re-accept after customer material changes reset cookAccepted.
     bookingRequestOfferAccept(bookingRequestOfferId: ID!): MutationResult!
     bookingRequestOfferDecline(bookingRequestOfferId: ID!, reason: String!): MutationResult!
-    # Accept a pending participant amendment (reprice + Stripe delta). Gated by
-    # BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT.
+    # Accept a pending participant amendment (reprice + Stripe delta). Stays available
+    # for in-flight proposals even when BOOKING_REQUEST_OFFER_AMENDMENT is off.
     bookingRequestOfferParticipantAmendmentAccept(bookingRequestOfferId: ID!): MutationResult!
     bookingRequestOfferParticipantAmendmentDecline(bookingRequestOfferId: ID!): MutationResult!
     # Mark groceries / preparations done — locks further customer amendments.
+    # Gated by BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE.
     bookingRequestOfferPreparationsComplete(bookingRequestOfferId: ID!): MutationResult!
     bookingRequestOfferPriceUpdate(input: BookingRequestOfferPriceUpdate!): MutationResult!
     bookingRequestOfferSuggestedMenusUpdate(input: BookingRequestOfferSuggestedMenusUpdate!): MutationResult!
@@ -2561,7 +2562,7 @@ type UserMutation {
     # Dual-accept an offer and prepare Stripe (SetupIntent / PaymentIntent / €0 transfer).
     bookingRequestOfferAccept(bookingRequestOfferId: ID!): MutationResult!
     # Propose a post–dual-accept booking change (participants and/or venue; cook must accept).
-    # Gated by BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT. Returns offer id as referenceId.
+    # Gated by BOOKING_REQUEST_OFFER_AMENDMENT. Returns offer id as referenceId.
     bookingRequestOfferParticipantAmendmentCreate(
         bookingRequestOfferId: ID!
         participants: [UserBookingRequestParticipantCreate!]
@@ -5296,7 +5297,8 @@ enum FeatureToggleKey {
     COOK_WALLET_STRIPE_BALANCE
     BOOKING_REQUEST_RESTRICTIONS
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS
-    BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT
+    BOOKING_REQUEST_OFFER_AMENDMENT
+    BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE
     ASSISTANT_CUSTOMER
     ASSISTANT_COOK
     PUBLICATION_MEALS

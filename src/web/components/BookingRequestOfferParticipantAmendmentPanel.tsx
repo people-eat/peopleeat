@@ -71,7 +71,7 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
     onCancelAmendment?: () => Promise<void>;
     cancelBusy?: boolean;
 }) {
-    const enabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT');
+    const enabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_AMENDMENT');
 
     if (!enabled && !props.amendment && !props.preparationsCompletedAt) return null;
 
@@ -197,16 +197,16 @@ export function BookingRequestOfferParticipantAmendmentCookPanel(props: {
     /** When true, amendment Accept/Decline are rendered elsewhere (page chrome / footer). */
     amendmentActionsElsewhere?: boolean;
 }) {
-    const enabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT');
+    const preparationsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE');
     const [preparationsConfirmOpen, setPreparationsConfirmOpen] = useState(false);
     const [preparationsConfirmBusy, setPreparationsConfirmBusy] = useState(false);
 
-    // Pending amendments stay visible even when the rollout toggle is off.
-    if (!props.amendment && !enabled) return null;
+    // Pending amendments stay visible even when the preparations rollout toggle is off.
+    if (!props.amendment && !preparationsEnabled && !props.preparationsCompletedAt) return null;
     if (!props.amendment && !props.preparationsCompletedAt && !props.canCompletePreparations) return null;
 
     const confirmBusy = preparationsConfirmBusy || props.busy;
-    const showPrep = enabled || props.preparationsCompletedAt != null;
+    const showPrep = preparationsEnabled || props.preparationsCompletedAt != null;
 
     return (
         <div className="grid gap-3">

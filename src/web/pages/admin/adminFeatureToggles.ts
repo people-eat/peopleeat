@@ -14,9 +14,13 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
         de: 'Angebots-Chat: Emoji-Reaktionen',
         en: 'Offer chat: emoji reactions',
     },
-    BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT: {
-        de: 'Angebot: Teilnehmeränderung nach Annahme',
-        en: 'Offer: participant amendment after accept',
+    BOOKING_REQUEST_OFFER_AMENDMENT: {
+        de: 'Angebot: Teilnehmer und Ort nach Annahme ändern',
+        en: 'Offer: participant and venue amendment after accept',
+    },
+    BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE: {
+        de: 'Angebot: Einkauf / Vorbereitung erledigt',
+        en: 'Offer: shopping / preparations done',
     },
     ASSISTANT_CUSTOMER: { de: 'Assistent: Kunden', en: 'Assistant: customer' },
     ASSISTANT_COOK: { de: 'Assistent: Köche', en: 'Assistant: cook' },
@@ -50,9 +54,13 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
         de: 'Aktiviert Emoji-Reaktionen auf Nachrichten im Angebots-Chat (Kunde, Koch und Admin).',
         en: 'Enables emoji reactions on offer chat messages for customers, cooks, and admins.',
     },
-    BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT: {
-        de: 'Erlaubt nach beiderseitiger Annahme eine Teilnehmeränderung (Kunde schlägt vor, Koch nimmt an oder lehnt ab) inklusive Vorbereitungssperre.',
-        en: 'Allows post-accept headcount changes (customer proposes, cook accepts or declines) plus the cook preparations lock.',
+    BOOKING_REQUEST_OFFER_AMENDMENT: {
+        de: 'Erlaubt nach beiderseitiger Annahme Änderungen an Teilnehmerzahl und Ort (Kunde schlägt vor, Koch nimmt an oder lehnt ab).',
+        en: 'Allows post-accept changes to participants and venue (customer proposes, cook accepts or declines).',
+    },
+    BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE: {
+        de: 'Erlaubt dem Koch, Einkauf bzw. Vorbereitung als erledigt zu markieren. Danach sind Kundenänderungen an Teilnehmerzahl und Ort gesperrt.',
+        en: 'Lets the cook mark shopping or preparations as done. That locks further customer changes to participants and venue.',
     },
     ASSISTANT_CUSTOMER: {
         de: 'Zeigt den Kunden-Assistenten im Profil (Trigger, Seitenleiste und Route).',

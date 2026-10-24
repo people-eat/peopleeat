@@ -1,0 +1,7 @@
+UPDATE "FeatureToggles"
+SET "featureToggleKey" = 'BOOKING_REQUEST_OFFER_AMENDMENT'
+WHERE "featureToggleKey" = 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT';
+--> statement-breakpoint
+UPDATE "FeatureToggleUserOverrides"
+SET "featureToggleKey" = 'BOOKING_REQUEST_OFFER_AMENDMENT'
+WHERE "featureToggleKey" = 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT';

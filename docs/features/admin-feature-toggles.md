@@ -19,7 +19,8 @@ Keys today:
 - Cook wallet Stripe balance (live Connect balance + recent transactions on `/profile/wallet`)
 - Booking request restrictions
 - Offer chat emoji reactions
-- Offer participant amendment after accept (cook-gated headcount change + prep lock)
+- Offer participant and venue amendment after accept (cook-gated propose / accept)
+- Offer shopping / preparations done (cook mark that locks further customer amendments)
 - Customer assistant
 - Cook assistant
 - Meal publication
@@ -94,11 +95,13 @@ Wired today:
   cook **and admin** offer chat; admin shells mount the session toggle provider and gate this key with `gateInAdminShell` (unlike
   publication / restrictions, which stay visible for ops when the end-user rollout is off). Mutation
   `bookingRequestOfferChatMessageReactionUpsert` rejects when off for the acting `userId`
-- **Offer participant amendment** (`BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT`) — post–dual-accept headcount change (customer propose via
-  booking-request edit → cook accept/decline → Stripe delta) plus cook preparations/groceries lock; see
-  [booking-offer-participant-amendment.md](./booking-offer-participant-amendment.md). Customer create + cook prep-complete reject when off
-  for the acting `userId`; cook accept/decline of an already-pending proposal stay available. Admin shells keep prep clear / amendment
-  visibility for ops
+- **Offer amendment** (`BOOKING_REQUEST_OFFER_AMENDMENT`) — post–dual-accept participants and/or venue change (customer propose via
+  booking-request edit → cook accept/decline → Stripe delta); see
+  [booking-offer-participant-amendment.md](./booking-offer-participant-amendment.md). Customer create / cancel reject when off for the
+  acting `userId`; cook accept/decline of an already-pending proposal stay available. Admin shells keep amendment visibility for ops
+- **Offer preparations complete** (`BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE`) — cook **shopping / preparations done** control that locks
+  further customer amendments as a side effect; cook prep-complete rejects when off for the cook `userId`. Already-locked offers still show
+  the lock state (and admin clear) when the toggle is off
 - **Cook biography AI writing** (`COOK_BIOGRAPHY_AI_WRITE`) — shows Write / Improve with AI on the cook chef-profile editor; cook and admin
   suggest mutations reject when off for the **cook** `userId`. Biography **summary** generation (auto job on cook save + admin Generate
   summary) is not toggled and always runs. Admin shells keep the AI write button visible for ops (same as publication / restrictions); the

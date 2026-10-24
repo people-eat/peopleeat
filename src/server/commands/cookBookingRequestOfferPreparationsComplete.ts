@@ -26,7 +26,7 @@ export async function cookBookingRequestOfferPreparationsComplete(
     const { bookingRequestOfferId } = args;
 
     try {
-        const enabled = await featureToggleIsEnabled('BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT', serverRuntime, cookId);
+        const enabled = await featureToggleIsEnabled('BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE', serverRuntime, cookId);
         if (!enabled) {
             throw new Error('cookBookingRequestOfferPreparationsComplete: feature is disabled');
         }
