@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useState } from 'react';
 
-import { STORYBOOK_TIME_ZONE, cardCanvasDecorator } from '../../../.storybook/decorators';
+import { cardCanvasDecorator, STORYBOOK_TIME_ZONE } from '../../../.storybook/decorators';
+import { useLocale } from '../hooks/useLocale';
 import { callBookingsByStatus } from '../storybook/fixtures/calls';
 import { fixtureCook, fixtureCustomer } from '../storybook/fixtures/people';
-import { useLocale } from '../hooks/useLocale';
-import { BookingRequestOfferCallBookingCard, type BookingRequestOfferCallBookingCardRole } from './BookingRequestOfferCallBookingCard';
+import { BookingRequestOfferCallBookingCard } from './BookingRequestOfferCallBookingCard';
+import type { BookingRequestOfferCallBookingCardRole } from './BookingRequestOfferCallBookingCard';
 
 const meta = {
     title: 'Booking/Call Booking Card',

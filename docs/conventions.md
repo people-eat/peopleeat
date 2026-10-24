@@ -813,6 +813,37 @@ Examples:
 Fix with `npm run lint`. The editor’s IntelliSense copy of this lint is turned off in `.vscode/settings.json`
 (`tailwindCSS.lint.suggestCanonicalClasses: ignore`) so you only see ESLint.
 
+## Storybook
+
+Component stories live next to the component as `*.stories.tsx` (discovered by `.storybook/main.ts`). Deploy / Coolify stays in
+[infrastructure.md](./infrastructure.md#storybook--email-preview-coolify).
+
+### Titles (hybrid taxonomy)
+
+| Sidebar group  | Use for                                                                                      |
+| -------------- | -------------------------------------------------------------------------------------------- |
+| `Base`         | Radix / shadcn primitives under `src/web/components/base/`                                   |
+| `Chat`         | Transcript atoms, composer, message variants, chat surfaces                                  |
+| `Booking`      | Request / offer / call / cost cards and banners                                              |
+| `Discovery`    | Public cook / meal / menu discovery tiles                                                    |
+| `Support`      | Support request list chrome                                                                  |
+| `Perspectives` | Side-by-side Customer · Cook · Admin galleries (composition-only; no new product components) |
+
+Titles match `Base/Button` style: `Chat/Composer`, `Booking/Customer Offer Card`, `Perspectives/Offer Cards`.
+
+### Authoring
+
+- Prefer presentational props and stub callbacks (`fn()` / async no-ops). Do not call production GraphQL from stories.
+- Shared fixtures live in [`src/web/storybook/fixtures/`](../src/web/storybook/fixtures/) (`people`, `booking`, `chat`, `calls`).
+- Global preview wraps locale toolbar (DE / EN), `TimeZoneProvider` (`Europe/Berlin`), `TooltipProvider`, stub urql, and a memory router
+  with `/$locale` so `useLocale` works.
+- Reusable decorators: [`.storybook/decorators.tsx`](../.storybook/decorators.tsx) (`cardCanvasDecorator`, `chatViewportDecorator`,
+  `perspectivesCanvasDecorator`, `withFeatureToggles`). Locale / timezone come from the global preview.
+- Use `interactive={false}` on cards that support it when the story is about chrome / status, not navigation.
+- Defer LiveKit call panels, mutation-bound schedule tabs, and assistant `ChatMessagePartsView` until they have presentational extracts.
+
+Local: `npm run storybook` (port 6006), `npm run storybook:build`.
+
 ## Quality Checks
 
 Run all checks before pushing:
