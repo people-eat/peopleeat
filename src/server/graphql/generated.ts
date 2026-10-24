@@ -3093,6 +3093,7 @@ export interface GqlSContentSectionQuote {
 
 export interface GqlSCook {
     __typename?: 'Cook';
+    analytics?: Maybe<GqlSCookAnalytics>;
     biography: Scalars['String']['output'];
     biographySummary: Scalars['String']['output'];
     biographySummaryGenerating: Scalars['Boolean']['output'];
@@ -3135,6 +3136,10 @@ export interface GqlSCook {
     stripeWallet?: Maybe<GqlSCookStripeWallet>;
     travelExpensesAmount: Scalars['Int']['output'];
 }
+
+export type GqlSCookAnalyticsArgs = {
+    period?: GqlSCookAnalyticsPeriod;
+};
 
 export type GqlSCookBookingRequestArgs = {
     bookingRequestId: Scalars['ID']['input'];
@@ -3185,6 +3190,37 @@ export type GqlSCookMenuArgs = {
 export type GqlSCookMenusCountsArgs = {
     criteria: Array<GqlSCookMenuCriterion>;
 };
+
+export interface GqlSCookAnalytics {
+    __typename?: 'CookAnalytics';
+    averageMenuPriceCents?: Maybe<Scalars['Int']['output']>;
+    averageParticipants?: Maybe<Scalars['Float']['output']>;
+    declineRate?: Maybe<Scalars['Float']['output']>;
+    hasInsights: Scalars['Boolean']['output'];
+    medianNotifyToOfferMinutes?: Maybe<Scalars['Float']['output']>;
+    medianNotifyToOpenMinutes?: Maybe<Scalars['Float']['output']>;
+    offerConversionRate?: Maybe<Scalars['Float']['output']>;
+    offerCreateRate?: Maybe<Scalars['Float']['output']>;
+    offersAcceptedCount: Scalars['Int']['output'];
+    offersCreatedCount: Scalars['Int']['output'];
+    offersPaidCount: Scalars['Int']['output'];
+    openRate?: Maybe<Scalars['Float']['output']>;
+    paidPayoutCentsCookTotal: Scalars['Int']['output'];
+    period: GqlSCookAnalyticsPeriod;
+    publicProfileViewCount: Scalars['Int']['output'];
+    range: GqlSCookAnalyticsRange;
+    requestsDeclinedCount: Scalars['Int']['output'];
+    requestsNotifiedCount: Scalars['Int']['output'];
+    requestsOpenedCount: Scalars['Int']['output'];
+}
+
+export type GqlSCookAnalyticsPeriod = 'PAST_MONTH' | 'PAST_QUARTER' | 'PAST_WEEK' | 'PAST_YEAR';
+
+export interface GqlSCookAnalyticsRange {
+    __typename?: 'CookAnalyticsRange';
+    endDateTime: Scalars['DateTime']['output'];
+    startDateTime: Scalars['DateTime']['output'];
+}
 
 export interface GqlSCookBookingRequest {
     __typename?: 'CookBookingRequest';
@@ -3916,6 +3952,7 @@ export type GqlSFeatureToggleKey =
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE'
     | 'BOOKING_REQUEST_RESTRICTIONS'
+    | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'PUBLICATION_MEALS'
@@ -5643,6 +5680,9 @@ export type GqlSResolversTypes = ResolversObject<{
             bookingRequests: Array<GqlSResolversTypes['CookBookingRequest']>;
         }
     >;
+    CookAnalytics: ResolverTypeWrapper<GqlSCookAnalytics>;
+    CookAnalyticsPeriod: GqlSCookAnalyticsPeriod;
+    CookAnalyticsRange: ResolverTypeWrapper<GqlSCookAnalyticsRange>;
     CookBookingRequest: ResolverTypeWrapper<
         Omit<GqlSCookBookingRequest, 'cookPoolDetails' | 'offers'> & {
             cookPoolDetails?: Maybe<GqlSResolversTypes['BookingRequestCookPoolDetails']>;
@@ -6160,6 +6200,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
         bookingRequestOffers: Array<GqlSResolversParentTypes['CookBookingRequestOffer']>;
         bookingRequests: Array<GqlSResolversParentTypes['CookBookingRequest']>;
     };
+    CookAnalytics: GqlSCookAnalytics;
+    CookAnalyticsRange: GqlSCookAnalyticsRange;
     CookBookingRequest: Omit<GqlSCookBookingRequest, 'cookPoolDetails' | 'offers'> & {
         cookPoolDetails?: Maybe<GqlSResolversParentTypes['BookingRequestCookPoolDetails']>;
         offers: Array<GqlSResolversParentTypes['CookBookingRequestOffer']>;
@@ -9115,6 +9157,12 @@ export type GqlSCookResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['Cook'] = GqlSResolversParentTypes['Cook'],
 > = ResolversObject<{
+    analytics?: Resolver<
+        Maybe<GqlSResolversTypes['CookAnalytics']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookAnalyticsArgs, 'period'>
+    >;
     biography?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     biographySummary?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     biographySummaryGenerating?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
@@ -9196,6 +9244,39 @@ export type GqlSCookResolvers<
     stripeStatus?: Resolver<GqlSResolversTypes['CookStripeStatus'], ParentType, ContextType>;
     stripeWallet?: Resolver<Maybe<GqlSResolversTypes['CookStripeWallet']>, ParentType, ContextType>;
     travelExpensesAmount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSCookAnalyticsResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookAnalytics'] = GqlSResolversParentTypes['CookAnalytics'],
+> = ResolversObject<{
+    averageMenuPriceCents?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
+    averageParticipants?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    declineRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    hasInsights?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    medianNotifyToOfferMinutes?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    medianNotifyToOpenMinutes?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    offerConversionRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    offerCreateRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    offersAcceptedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    offersCreatedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    offersPaidCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    openRate?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    paidPayoutCentsCookTotal?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    period?: Resolver<GqlSResolversTypes['CookAnalyticsPeriod'], ParentType, ContextType>;
+    publicProfileViewCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    range?: Resolver<GqlSResolversTypes['CookAnalyticsRange'], ParentType, ContextType>;
+    requestsDeclinedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    requestsNotifiedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    requestsOpenedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSCookAnalyticsRangeResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookAnalyticsRange'] = GqlSResolversParentTypes['CookAnalyticsRange'],
+> = ResolversObject<{
+    endDateTime?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    startDateTime?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
 
 export type GqlSCookBookingRequestResolvers<
@@ -11228,6 +11309,8 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     ContentSectionQaEntry?: GqlSContentSectionQaEntryResolvers<ContextType>;
     ContentSectionQuote?: GqlSContentSectionQuoteResolvers<ContextType>;
     Cook?: GqlSCookResolvers<ContextType>;
+    CookAnalytics?: GqlSCookAnalyticsResolvers<ContextType>;
+    CookAnalyticsRange?: GqlSCookAnalyticsRangeResolvers<ContextType>;
     CookBookingRequest?: GqlSCookBookingRequestResolvers<ContextType>;
     CookBookingRequestAvailable?: GqlSCookBookingRequestAvailableResolvers<ContextType>;
     CookBookingRequestCanceled?: GqlSCookBookingRequestCanceledResolvers<ContextType>;
@@ -11902,6 +11985,11 @@ export const GqlSContentSectionKindSchema: z.ZodType<
     'content' | 'cta' | 'image' | 'list' | 'qa' | 'quote'
 > = z.enum(['content', 'cta', 'image', 'list', 'qa', 'quote']);
 
+export const GqlSCookAnalyticsPeriodSchema: z.ZodType<
+    'PAST_MONTH' | 'PAST_QUARTER' | 'PAST_WEEK' | 'PAST_YEAR',
+    'PAST_MONTH' | 'PAST_QUARTER' | 'PAST_WEEK' | 'PAST_YEAR'
+> = z.enum(['PAST_MONTH', 'PAST_QUARTER', 'PAST_WEEK', 'PAST_YEAR']);
+
 export const GqlSCookBookingRequestOfferListBucketSchema: z.ZodType<
     'ACTIVE' | 'ARCHIVED' | 'COMPLETED',
     'ACTIVE' | 'ARCHIVED' | 'COMPLETED'
@@ -11960,6 +12048,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE'
     | 'BOOKING_REQUEST_RESTRICTIONS'
+    | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'PUBLICATION_MEALS'
@@ -11973,6 +12062,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE'
     | 'BOOKING_REQUEST_RESTRICTIONS'
+    | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'PUBLICATION_MEALS'
@@ -11987,6 +12077,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'BOOKING_REQUEST_OFFER_CHAT_REACTIONS',
     'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE',
     'BOOKING_REQUEST_RESTRICTIONS',
+    'COOK_ANALYTICS',
     'COOK_BIOGRAPHY_AI_WRITE',
     'COOK_WALLET_STRIPE_BALANCE',
     'PUBLICATION_MEALS',

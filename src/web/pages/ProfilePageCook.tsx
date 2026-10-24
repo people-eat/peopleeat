@@ -1,10 +1,13 @@
 import { Link } from '@tanstack/react-router';
+import { ChevronRightIcon } from 'lucide-react';
 
 import { Button } from '../components/base/button';
+import { Card, CardContent } from '../components/base/card';
 import { StatusAlert } from '../components/base/status-alert';
 import type { GqlCProfilePageCookStatusFragment } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
+import { cookAnalyticsFormatDurationMinutes, cookAnalyticsFormatPercent } from './profile/cookAnalyticsFormat';
 import type { CookOverviewAttentionItem, CookOverviewGettingStartedStep } from './profilePageCookOverview';
 import { profilePageCookOverview } from './profilePageCookOverview';
 
@@ -38,6 +41,66 @@ function GettingStartedAction({ step }: { step: CookOverviewGettingStartedStep }
         <Button asChild variant="outline" size="sm" className="sm:shrink-0">
             <Link to={step.href}>{step.actionLabel}</Link>
         </Button>
+    );
+}
+
+function OverviewAnalyticsStrip({ cook }: { cook: GqlCProfilePageCookStatusFragment }) {
+    const locale = useLocale();
+    const analytics = cook.analytics;
+    if (analytics == null || !analytics.hasInsights) {
+        return null;
+    }
+
+    const stats = [
+        {
+            key: 'views',
+            label: { de: 'Profilbesuche', en: 'Profile views' }[locale],
+            value: String(analytics.publicProfileViewCount),
+        },
+        {
+            key: 'response',
+            label: { de: 'Zeit bis Öffnen', en: 'Time to open' }[locale],
+            value: cookAnalyticsFormatDurationMinutes(analytics.medianNotifyToOpenMinutes, locale),
+        },
+        {
+            key: 'offers',
+            label: { de: 'Angebote', en: 'Offers' }[locale],
+            value: String(analytics.offersCreatedCount),
+        },
+        {
+            key: 'conversion',
+            label: { de: 'Conversion', en: 'Conversion' }[locale],
+            value: cookAnalyticsFormatPercent(analytics.offerConversionRate, locale),
+        },
+    ] as const;
+
+    return (
+        <section className="grid gap-3" aria-labelledby="cook-overview-analytics">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 id="cook-overview-analytics" className="text-sm font-medium text-foreground">
+                    {{ de: 'Analysen', en: 'Analytics' }[locale]}
+                </h2>
+                <p className="text-xs text-muted-foreground">{{ de: 'Vergangener Monat', en: 'Past month' }[locale]}</p>
+            </div>
+            <dl className="grid gap-3 sm:grid-cols-2">
+                {stats.map((stat) => (
+                    <Card key={stat.key} className="min-w-0 gap-1 py-3">
+                        <CardContent className="grid min-w-0 gap-1 px-4">
+                            <dt className="min-w-0 text-xs font-medium tracking-wide text-muted-foreground uppercase">{stat.label}</dt>
+                            <dd className="font-serif text-2xl/tight tabular-nums text-foreground">{stat.value}</dd>
+                        </CardContent>
+                    </Card>
+                ))}
+            </dl>
+            <div>
+                <Button asChild variant="outline" size="sm">
+                    <Link to="/{-$locale}/profile/analytics">
+                        {{ de: 'Alle Analysen', en: 'View all analytics' }[locale]}
+                        <ChevronRightIcon aria-hidden />
+                    </Link>
+                </Button>
+            </div>
+        </section>
     );
 }
 
@@ -85,6 +148,8 @@ export function ProfilePageCook({
                     </div>
                 </section>
             ) : null}
+
+            <OverviewAnalyticsStrip cook={cook} />
 
             {overview.gettingStarted.length > 0 ? (
                 <section className="grid gap-3" aria-labelledby="cook-overview-getting-started">

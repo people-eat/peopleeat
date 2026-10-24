@@ -88,6 +88,9 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 - High write volume from pageviews: add a retention/aggregation job when needed.
 - Admin visit time-buckets (`Admin.sessionEventWebPageVisitCreations`) use a partial index
   `SessionEvents_webPageVisit_webPageKey_createdAt_idx` on `(payload->>'webPageKey', createdAt)` where `type = 'WEB_PAGE_VISITED'`.
+- Cook analytics profile-view counts use a second partial index `SessionEvents_webPageVisit_chefs_cookId_createdAt_idx` on
+  `(payload->'params'->>'cookId', createdAt)` where `type = 'WEB_PAGE_VISITED'` and `webPageKey = 'CHEFS'` (human sessions only in the
+  query). See [cook-analytics.md](../features/cook-analytics.md).
 - Booking-form funnel queries exclude bots and sessions whose user is admin or cook. Cook offer funnel cohorts are notified cooks (excluding
   admins); create-UI mid-steps still come from human cook sessions.
 - Admin descriptions are bilingual (`descriptionDe` / `descriptionEn`); raw payload stays off the GraphQL surface unless a deep link is
@@ -117,5 +120,5 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 - Commands: `sessionWebPageVisitCreate`, `sessionWebPageInteractionCreate`, auth / user-create / legal / booking lifecycle emitters
 - Queries: `adminSessionEventFindMany`, `adminSessionEventCounts`, `adminAnalyticsBookingRequestFormFlow`, `adminAnalyticsGiftCardFlow`,
   `adminAnalyticsChefSignUpFlow`, `adminAnalyticsBookingRequestCheckoutFlow`, `adminAnalyticsCookBookingRequestOfferFlow`,
-  `adminSessionEventWebPageVisitCreationsFindMany`
-- Feature UI: [admin-analytics.md](../features/admin-analytics.md)
+  `adminSessionEventWebPageVisitCreationsFindMany`, `cookAnalyticsFind`
+- Feature UI: [admin-analytics.md](../features/admin-analytics.md), [cook-analytics.md](../features/cook-analytics.md)

@@ -29,6 +29,13 @@ fragment ProfilePageCookStatus on Cook {
             display
         }
     }
+    analytics(period: PAST_MONTH) {
+        hasInsights
+        publicProfileViewCount
+        medianNotifyToOpenMinutes
+        offersCreatedCount
+        offerConversionRate
+    }
     ...CookSidebarNavBadges
 }
 

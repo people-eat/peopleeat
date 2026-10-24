@@ -1,0 +1,47 @@
+# Cook analytics. Gated by COOK_ANALYTICS (null when off).
+# See docs/features/cook-analytics.md.
+
+fragment ProfileCookAnalytics on CookAnalytics {
+    period
+    hasInsights
+    range {
+        startDateTime
+        endDateTime
+    }
+    publicProfileViewCount
+    requestsNotifiedCount
+    requestsOpenedCount
+    requestsDeclinedCount
+    openRate
+    declineRate
+    offerCreateRate
+    medianNotifyToOpenMinutes
+    medianNotifyToOfferMinutes
+    offersCreatedCount
+    offersAcceptedCount
+    offerConversionRate
+    offersPaidCount
+    paidPayoutCentsCookTotal
+    averageMenuPriceCents
+    averageParticipants
+}
+
+fragment ProfileCookAnalyticsPageUser on User {
+    userId
+    cook {
+        cookId
+        analytics(period: $period) {
+            ...ProfileCookAnalytics
+        }
+    }
+}
+
+query ProfileCookAnalyticsPage($period: CookAnalyticsPeriod!) {
+    currentSession {
+        sessionId
+        activeFeatureToggleKeys
+        user {
+            ...ProfileCookAnalyticsPageUser
+        }
+    }
+}

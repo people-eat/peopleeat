@@ -6,6 +6,7 @@ import { contentLocaleItems, contentLocaleText, fileUploadPublicUrl } from '../.
 import type { Locale } from '../../shared/locale';
 import { SectionQuestionsAndAnswers } from '../sections/SectionQuestionsAndAnswers';
 import { cn } from '../utils/cn';
+import { AppImage } from './AppImage';
 import { Button } from './base/button';
 import { MarkdownBody } from './MarkdownBody';
 
@@ -45,7 +46,7 @@ function ContentSectionView({ section, locale }: { section: ContentSection; loca
             }
             return (
                 <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                    <img src={imageUrl} alt="" className="absolute inset-0 size-full object-cover" />
+                    <AppImage src={imageUrl} alt="" className="absolute inset-0 size-full object-cover" />
                 </div>
             );
         }
@@ -164,7 +165,7 @@ function ContentBlock({ section, locale }: { section: Extract<ContentSection, { 
     return (
         <div className={cn('flex items-start gap-6', imageFirst ? 'flex-col @md:flex-row' : 'flex-col-reverse @md:flex-row-reverse')}>
             <div className="min-w-0 w-full overflow-hidden rounded-lg bg-muted @md:flex-1">
-                <img src={imageUrl} alt="" className="aspect-square w-full object-cover" />
+                <AppImage src={imageUrl} alt="" className="aspect-square w-full object-cover" />
             </div>
             {text}
         </div>

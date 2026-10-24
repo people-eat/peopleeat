@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
+import { AppImage } from './AppImage';
 import { Badge } from './base/badge';
 import { Button } from './base/button';
 import { Popover, PopoverContent, PopoverTrigger } from './base/popover';
@@ -98,7 +99,7 @@ export function CookMealCard({
             aria-hidden={resolvedImageUrl == null ? true : undefined}
         >
             {resolvedImageUrl != null ? (
-                <img src={resolvedImageUrl} alt="" className="size-full object-cover" />
+                <AppImage src={resolvedImageUrl} alt="" className="size-full object-cover" />
             ) : (
                 <div className="flex size-full items-center justify-center">
                     <SoupIcon className={compact ? 'size-5' : 'size-6'} />

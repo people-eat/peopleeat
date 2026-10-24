@@ -21,6 +21,7 @@ function cookFixture(overrides: Partial<GqlCProfilePageCookStatusFragment> = {})
         upcomingCallSlotBookings: [],
         openBookingRequests: [],
         bookingRequestOffers: [{ bookingRequestOfferId: 'offer-1', cookUnreadNotificationCount: 0 }],
+        analytics: null,
         ...overrides,
     };
 }

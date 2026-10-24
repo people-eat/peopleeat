@@ -9,6 +9,7 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
     },
     COOK_BIOGRAPHY_AI_WRITE: { de: 'KI-Biografie schreiben', en: 'AI biography writing' },
     COOK_WALLET_STRIPE_BALANCE: { de: 'Wallet: Stripe-Guthaben', en: 'Wallet: Stripe balance' },
+    COOK_ANALYTICS: { de: 'Koch: Analysen', en: 'Cook: analytics' },
     BOOKING_REQUEST_RESTRICTIONS: { de: 'Buchungsanfrage: Einschränkungen', en: 'Booking request: restrictions' },
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS: {
         de: 'Angebots-Chat: Emoji-Reaktionen',
@@ -45,6 +46,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     COOK_WALLET_STRIPE_BALANCE: {
         de: 'Zeigt Live-Stripe-Connect-Guthaben und aktuelle Transaktionen auf der Wallet-Seite des Kochs.',
         en: 'Shows live Stripe Connect balance and recent transactions on the cook wallet page.',
+    },
+    COOK_ANALYTICS: {
+        de: 'Zeigt Analysen im Koch-Profil (Übersicht und /profile/analytics): Profilbesuche, Reaktionszeiten, Angebote und Conversion.',
+        en: 'Shows analytics in the cook profile (overview and /profile/analytics): profile views, response times, offers, and conversion.',
     },
     BOOKING_REQUEST_RESTRICTIONS: {
         de: 'Zeigt den Schritt für Ernährungseinschränkungen in der Anfrage und die zugehörigen Editoren. Bei Aus sind neue Werte serverseitig leer.',

@@ -87,6 +87,7 @@ import { Route as Char123LocaleChar125OccasionsPathNameRouteImport } from './rou
 import { Route as Char123LocaleChar125PartnersPathNameRouteImport } from './routes/{-$locale}/partners_.$pathName'
 import { Route as Char123LocaleChar125ProfileIndexRouteImport } from './routes/{-$locale}/profile/index'
 import { Route as Char123LocaleChar125ProfileAccountRouteImport } from './routes/{-$locale}/profile/account'
+import { Route as Char123LocaleChar125ProfileAnalyticsRouteImport } from './routes/{-$locale}/profile/analytics'
 import { Route as Char123LocaleChar125ProfileAssistantRouteImport } from './routes/{-$locale}/profile/assistant'
 import { Route as Char123LocaleChar125ProfileBookingRequestOffersRouteImport } from './routes/{-$locale}/profile/booking-request-offers'
 import { Route as Char123LocaleChar125ProfileBookingRequestPoolRouteImport } from './routes/{-$locale}/profile/booking-request-pool'
@@ -619,6 +620,12 @@ const Char123LocaleChar125ProfileAccountRoute =
   Char123LocaleChar125ProfileAccountRouteImport.update({
     id: '/account',
     path: '/account',
+    getParentRoute: () => Char123LocaleChar125ProfileRoute,
+  } as any)
+const Char123LocaleChar125ProfileAnalyticsRoute =
+  Char123LocaleChar125ProfileAnalyticsRouteImport.update({
+    id: '/analytics',
+    path: '/analytics',
     getParentRoute: () => Char123LocaleChar125ProfileRoute,
   } as any)
 const Char123LocaleChar125ProfileAssistantRoute =
@@ -1235,6 +1242,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/occasions/$pathName': typeof Char123LocaleChar125OccasionsPathNameRoute
   '/{-$locale}/partners/$pathName': typeof Char123LocaleChar125PartnersPathNameRoute
   '/{-$locale}/profile/account': typeof Char123LocaleChar125ProfileAccountRoute
+  '/{-$locale}/profile/analytics': typeof Char123LocaleChar125ProfileAnalyticsRoute
   '/{-$locale}/profile/assistant': typeof Char123LocaleChar125ProfileAssistantRoute
   '/{-$locale}/profile/booking-request-offers': typeof Char123LocaleChar125ProfileBookingRequestOffersRoute
   '/{-$locale}/profile/booking-request-pool': typeof Char123LocaleChar125ProfileBookingRequestPoolRoute
@@ -1395,6 +1403,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/occasions/$pathName': typeof Char123LocaleChar125OccasionsPathNameRoute
   '/{-$locale}/partners/$pathName': typeof Char123LocaleChar125PartnersPathNameRoute
   '/{-$locale}/profile/account': typeof Char123LocaleChar125ProfileAccountRoute
+  '/{-$locale}/profile/analytics': typeof Char123LocaleChar125ProfileAnalyticsRoute
   '/{-$locale}/profile/assistant': typeof Char123LocaleChar125ProfileAssistantRoute
   '/{-$locale}/profile/booking-request-offers': typeof Char123LocaleChar125ProfileBookingRequestOffersRoute
   '/{-$locale}/profile/booking-request-pool': typeof Char123LocaleChar125ProfileBookingRequestPoolRoute
@@ -1559,6 +1568,7 @@ export interface FileRoutesById {
   '/{-$locale}/occasions_/$pathName': typeof Char123LocaleChar125OccasionsPathNameRoute
   '/{-$locale}/partners_/$pathName': typeof Char123LocaleChar125PartnersPathNameRoute
   '/{-$locale}/profile/account': typeof Char123LocaleChar125ProfileAccountRoute
+  '/{-$locale}/profile/analytics': typeof Char123LocaleChar125ProfileAnalyticsRoute
   '/{-$locale}/profile/assistant': typeof Char123LocaleChar125ProfileAssistantRoute
   '/{-$locale}/profile/booking-request-offers': typeof Char123LocaleChar125ProfileBookingRequestOffersRoute
   '/{-$locale}/profile/booking-request-pool': typeof Char123LocaleChar125ProfileBookingRequestPoolRoute
@@ -1724,6 +1734,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/occasions/$pathName'
     | '/{-$locale}/partners/$pathName'
     | '/{-$locale}/profile/account'
+    | '/{-$locale}/profile/analytics'
     | '/{-$locale}/profile/assistant'
     | '/{-$locale}/profile/booking-request-offers'
     | '/{-$locale}/profile/booking-request-pool'
@@ -1884,6 +1895,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/occasions/$pathName'
     | '/{-$locale}/partners/$pathName'
     | '/{-$locale}/profile/account'
+    | '/{-$locale}/profile/analytics'
     | '/{-$locale}/profile/assistant'
     | '/{-$locale}/profile/booking-request-offers'
     | '/{-$locale}/profile/booking-request-pool'
@@ -2047,6 +2059,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/occasions_/$pathName'
     | '/{-$locale}/partners_/$pathName'
     | '/{-$locale}/profile/account'
+    | '/{-$locale}/profile/analytics'
     | '/{-$locale}/profile/assistant'
     | '/{-$locale}/profile/booking-request-offers'
     | '/{-$locale}/profile/booking-request-pool'
@@ -2705,6 +2718,13 @@ declare module '@tanstack/react-router' {
       path: '/account'
       fullPath: '/{-$locale}/profile/account'
       preLoaderRoute: typeof Char123LocaleChar125ProfileAccountRouteImport
+      parentRoute: typeof Char123LocaleChar125ProfileRoute
+    }
+    '/{-$locale}/profile/analytics': {
+      id: '/{-$locale}/profile/analytics'
+      path: '/analytics'
+      fullPath: '/{-$locale}/profile/analytics'
+      preLoaderRoute: typeof Char123LocaleChar125ProfileAnalyticsRouteImport
       parentRoute: typeof Char123LocaleChar125ProfileRoute
     }
     '/{-$locale}/profile/assistant': {
@@ -3531,6 +3551,7 @@ const Char123LocaleChar125AdminRouteWithChildren =
 
 interface Char123LocaleChar125ProfileRouteChildren {
   Char123LocaleChar125ProfileAccountRoute: typeof Char123LocaleChar125ProfileAccountRoute
+  Char123LocaleChar125ProfileAnalyticsRoute: typeof Char123LocaleChar125ProfileAnalyticsRoute
   Char123LocaleChar125ProfileAssistantRoute: typeof Char123LocaleChar125ProfileAssistantRoute
   Char123LocaleChar125ProfileBookingRequestOffersRoute: typeof Char123LocaleChar125ProfileBookingRequestOffersRoute
   Char123LocaleChar125ProfileBookingRequestPoolRoute: typeof Char123LocaleChar125ProfileBookingRequestPoolRoute
@@ -3569,6 +3590,8 @@ const Char123LocaleChar125ProfileRouteChildren: Char123LocaleChar125ProfileRoute
   {
     Char123LocaleChar125ProfileAccountRoute:
       Char123LocaleChar125ProfileAccountRoute,
+    Char123LocaleChar125ProfileAnalyticsRoute:
+      Char123LocaleChar125ProfileAnalyticsRoute,
     Char123LocaleChar125ProfileAssistantRoute:
       Char123LocaleChar125ProfileAssistantRoute,
     Char123LocaleChar125ProfileBookingRequestOffersRoute:

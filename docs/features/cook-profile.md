@@ -9,8 +9,10 @@ Signed-in cooks manage these areas under `/profile/*`:
 1. **Overview** (`/profile`) has two lanes: **Attention** (approval pending, Stripe wallet reset when Connect needs updated details, unread
    offer-chat messages deep-linking the busiest offer with `?tab=chat`, upcoming discovery calls in the next 14 days) and **Getting
    started** (incomplete setup only — wallet for `EMPTY` / `PREPARED`, travel origin, profile picture, chef bio/cuisine/philosophy, first
-   meal, first menu, first offer). `ACTIVE_WAS_RESET` is Attention (not Getting started). Completed steps disappear. When both lanes are
-   empty, a calm “you’re all set” note points to the sidebar.
+   meal, first menu, first offer). When `COOK_ANALYTICS` is on and the cook already has marketplace or discovery activity, a compact
+   past-month **Analytics** strip appears (profile views, time to open, offers, conversion) with a link to `/profile/analytics` — see
+   [cook-analytics.md](./cook-analytics.md). Brand-new cooks see no analytics zeros. `ACTIVE_WAS_RESET` is Attention (not Getting started).
+   Completed steps disappear. When both lanes are empty, a calm “you’re all set” note points to the sidebar.
 2. **Chef profile** (`/profile/chef-profile`) is a read-only view of biography, biography summary, and cuisine style / cooking philosophy as
    the shared `CookProfileTags` pills. **Edit** opens the form with a dirty-gated footer (Save only when the form is dirty; otherwise **Back
    to profile**). Profile picture can be changed or removed there (same crop/upload flow as account —
@@ -118,6 +120,7 @@ changes. Customers still only see city, never the pin or street.
 
 ## Implementation
 
+- Analytics overview strip: `Cook.analytics` on `ProfilePage` (past month); full page in [cook-analytics.md](./cook-analytics.md)
 - Schema: `Cooks` in `src/server/db/schema.ts` (`logoFileUploadId` → `FileUploads`; optional `stageName` public display name;
   `lastModifiedAt` bumped on cook-row writes; import-preserved `legacyCityName` / `legacyLatitude` / `legacyLongitude` — `legacyCityName`
   falls back for public cook city when exact origin city is empty; lat/lng stay storage-only); domain helpers `src/server/domain/cook.ts`

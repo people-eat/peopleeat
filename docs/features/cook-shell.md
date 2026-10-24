@@ -8,8 +8,9 @@ Visiting `/profile/*` as a cook shows:
 
 - **Header:** peopleeat logo linking to the public landing page.
 - **Nav:** Overview at `/profile`, then Booking request pool with a `NotificationBadge` for open requests to review, Sent offers with a
-  `NotificationBadge` for unread notifications across offers, Chef profile, Public profile, Travel settings, Meals, Menus, Wallet,
-  Gesprächstermine (call appointments). Wallet shows a warning `StatusBadge` when the cook is approved and payout setup is incomplete — see
+  `NotificationBadge` for unread notifications across offers, Analytics (when `COOK_ANALYTICS` is on — see
+  [cook-analytics.md](./cook-analytics.md)), Chef profile, Public profile, Travel settings, Meals, Menus, Wallet, Gesprächstermine (call
+  appointments). Wallet shows a warning `StatusBadge` when the cook is approved and payout setup is incomplete — see
   [status-messaging.md](../styles/status-messaging.md). Pool, offer counts, and wallet attention seed from the profile loader and stay live
   via real-time user updates.
 - **Footer:** Account at `/profile/account`. When the cook is also an admin, an Admin link appears above Account (same escape-hatch pattern
@@ -28,9 +29,10 @@ Mobile: the left nav sheet closes when the route changes after a nav selection.
 
 Stub routes show a bilingual “coming soon” placeholder until their features land. **Meals**, **Menus**, **Chef profile**, **Public profile**
 (Preview / Manage tabs: listing-card + detail WYSIWYG + share on Preview; visibility + additional picture on Manage), **Travel settings**,
-**Wallet**, **Gesprächstermine**, the **booking request pool**, and the **sent offers** inbox are implemented — see
-[cook-meals.md](./cook-meals.md), [cook-menus.md](./cook-menus.md), [cook-profile.md](./cook-profile.md),
-[cook-call-availability.md](./cook-call-availability.md), [booking.md](./booking.md), and [booking-offers.md](./booking-offers.md).
+**Wallet**, **Gesprächstermine**, **Analytics** (toggle-gated), the **booking request pool**, and the **sent offers** inbox are implemented
+— see [cook-meals.md](./cook-meals.md), [cook-menus.md](./cook-menus.md), [cook-profile.md](./cook-profile.md),
+[cook-analytics.md](./cook-analytics.md), [cook-call-availability.md](./cook-call-availability.md), [booking.md](./booking.md), and
+[booking-offers.md](./booking-offers.md).
 
 ### Breadcrumbs
 
@@ -49,6 +51,7 @@ Breadcrumbs answer “where within the cook profile?”, not “are you in profi
 - `/profile/menus/<menuId>` → Menus › Menu
 - `/profile/menus/<menuId>/edit` → Menus › Menu › Edit
 - `/profile/wallet` → Wallet
+- `/profile/analytics` → Analytics
 - `/profile/booking-request-pool` → Booking request pool
 - `/profile/booking-request-pool/<bookingRequestId>` → Booking request pool › Request
 - `/profile/booking-request-offers` → Sent offers

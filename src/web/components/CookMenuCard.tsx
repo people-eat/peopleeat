@@ -6,6 +6,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
+import { AppImage } from './AppImage';
 import { Badge } from './base/badge';
 import { MenuDetailsDialog } from './MenuDetailsDialog';
 
@@ -52,7 +53,7 @@ export function CookMenuCardMedia({
     if (tiles.length === 1) {
         return (
             <div className={cn('overflow-hidden rounded-lg', boxClass)} style={style} aria-hidden>
-                <img src={tiles[0]} alt="" className="size-full object-cover" />
+                <AppImage src={tiles[0]} alt="" className="size-full object-cover" />
             </div>
         );
     }
@@ -61,7 +62,7 @@ export function CookMenuCardMedia({
         return (
             <div className={cn('grid grid-cols-2 gap-0.5 overflow-hidden rounded-lg', boxClass)} style={style} aria-hidden>
                 {tiles.map((url) => (
-                    <img key={url} src={url} alt="" className="size-full min-h-0 object-cover" />
+                    <AppImage key={url} src={url} alt="" className="size-full min-h-0 object-cover" />
                 ))}
             </div>
         );
@@ -70,9 +71,9 @@ export function CookMenuCardMedia({
     if (tiles.length === 3) {
         return (
             <div className={cn('grid grid-cols-2 grid-rows-2 gap-0.5 overflow-hidden rounded-lg', boxClass)} style={style} aria-hidden>
-                <img src={tiles[0]} alt="" className="row-span-2 size-full min-h-0 object-cover" />
-                <img src={tiles[1]} alt="" className="size-full min-h-0 object-cover" />
-                <img src={tiles[2]} alt="" className="size-full min-h-0 object-cover" />
+                <AppImage src={tiles[0]} alt="" className="row-span-2 size-full min-h-0 object-cover" />
+                <AppImage src={tiles[1]} alt="" className="size-full min-h-0 object-cover" />
+                <AppImage src={tiles[2]} alt="" className="size-full min-h-0 object-cover" />
             </div>
         );
     }
@@ -80,7 +81,7 @@ export function CookMenuCardMedia({
     return (
         <div className={cn('grid grid-cols-2 grid-rows-2 gap-0.5 overflow-hidden rounded-lg', boxClass)} style={style} aria-hidden>
             {tiles.map((url) => (
-                <img key={url} src={url} alt="" className="size-full min-h-0 object-cover" />
+                <AppImage key={url} src={url} alt="" className="size-full min-h-0 object-cover" />
             ))}
         </div>
     );

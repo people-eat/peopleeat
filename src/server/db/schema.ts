@@ -191,6 +191,10 @@ export const sessionEvents = pgTable(
         index('SessionEvents_webPageVisit_webPageKey_createdAt_idx')
             .using('btree', sql`(${table.payload}->>'webPageKey')`, table.createdAt)
             .where(sql`${table.type} = 'WEB_PAGE_VISITED'`),
+        // Cook analytics: public chef detail visits by params.cookId + createdAt.
+        index('SessionEvents_webPageVisit_chefs_cookId_createdAt_idx')
+            .using('btree', sql`(${table.payload}->'params'->>'cookId')`, table.createdAt)
+            .where(sql`${table.type} = 'WEB_PAGE_VISITED' AND ${table.payload}->>'webPageKey' = 'CHEFS'`),
     ],
 );
 

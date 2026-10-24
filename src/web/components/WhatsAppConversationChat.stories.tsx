@@ -17,7 +17,7 @@ const fixtureWhatsAppTranscript = [
         chatMessageId: 'msgWaPeer000000001',
         isOwn: false,
         authorDisplay: 'Concierge Juliana',
-        authorPictureUrl: '/concierge-juliana.png',
+        authorPictureUrl: '/concierge-juliana.webp',
         body: 'Ja, Mara Keller ist für den 14.11. eingeplant. Soll ich euch die Menüdetails schicken?',
         createdAt: '2026-10-20T08:05:00.000Z',
         reactions: [{ emoji: '👍', isOwn: true }],

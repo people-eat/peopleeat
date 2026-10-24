@@ -22,8 +22,16 @@ function Avatar({
     );
 }
 
-function AvatarImage({ className, ...props }: ComponentProps<typeof AvatarPrimitive.Image>) {
-    return <AvatarPrimitive.Image data-slot="avatar-image" className={cn('aspect-square size-full', className)} {...props} />;
+function AvatarImage({ className, loading = 'lazy', decoding = 'async', ...props }: ComponentProps<typeof AvatarPrimitive.Image>) {
+    return (
+        <AvatarPrimitive.Image
+            data-slot="avatar-image"
+            loading={loading}
+            decoding={decoding}
+            className={cn('aspect-square size-full', className)}
+            {...props}
+        />
+    );
 }
 
 function AvatarFallback({ className, ...props }: ComponentProps<typeof AvatarPrimitive.Fallback>) {

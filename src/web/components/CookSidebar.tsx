@@ -6,6 +6,7 @@ import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { CookSidebarNavBadgesUpdatesDocument } from '../graphql/generated';
+import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import { useLocale } from '../hooks/useLocale';
 import { accountPageTitle } from '../pages/accountLabels';
 import { adminPageTitle } from '../pages/admin/adminShellLabels';
@@ -60,6 +61,7 @@ export function CookSidebar({
     const path = pathWithoutLocale(pathname, locale);
     const { setOpenMobile } = useSidebar();
     const client = useClient();
+    const analyticsEnabled = useFeatureToggleActive('COOK_ANALYTICS');
     const [poolReviewCount, setPoolReviewCount] = useState(poolReviewCountSeed);
     const [offersUnreadCount, setOffersUnreadCount] = useState(offersUnreadCountSeed);
     const [walletBadge, setWalletBadge] = useState(walletBadgeSeed);
@@ -107,7 +109,7 @@ export function CookSidebar({
             icon: <SummaryIcon />,
             isActive: path === '/profile',
         },
-        ...COOK_NAV_ROUTES.map((route) => {
+        ...COOK_NAV_ROUTES.filter((route) => route.slug !== 'analytics' || analyticsEnabled).map((route) => {
             const Icon = route.icon;
             const poolCount = route.slug === 'booking-request-pool' ? poolReviewCount : undefined;
             const offersCount = route.slug === 'booking-request-offers' ? offersUnreadCount : undefined;

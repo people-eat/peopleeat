@@ -101,6 +101,13 @@ export {
 } from './userBirthDate';
 export { featureToggleIsActive, featureToggleKeys } from './featureToggle';
 export type { FeatureToggleKey } from './featureToggle';
+export {
+    COOK_ANALYTICS_PERIOD_DEFAULT,
+    cookAnalyticsPeriodParse,
+    cookAnalyticsPeriodRange,
+    cookAnalyticsPeriods,
+} from './cookAnalyticsPeriod';
+export type { CookAnalyticsDateTimeRange, CookAnalyticsPeriod } from './cookAnalyticsPeriod';
 export { webPageDefaults, webPageKeys } from './webPage';
 export type { WebPageKey, WebPageSeoDefaults } from './webPage';
 export { webPageKeyFromPath } from './webPageKeyFromPath';

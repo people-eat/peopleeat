@@ -21,21 +21,21 @@ export const bookingRequestSubmittedPageDescription = {
 
 const SUBMITTED_STEP_IMAGES = [
     {
-        src: '/booking-request/submitted/1.png',
+        src: '/booking-request/submitted/1.webp',
         alt: {
             de: 'Lachs-Tartare mit essbaren Blüten, angerichtet für ein Event',
             en: 'Salmon tartare with edible flowers, plated for an event',
         },
     },
     {
-        src: '/booking-request/submitted/2.png',
+        src: '/booking-request/submitted/2.webp',
         alt: {
             de: 'Gebratene Jakobsmuscheln mit Kaviar und Babykarotten',
             en: 'Seared scallops with caviar and baby carrots',
         },
     },
     {
-        src: '/booking-request/submitted/3.png',
+        src: '/booking-request/submitted/3.webp',
         alt: {
             de: 'Gourmet-Desserts mit Beeren, Feige und Blattgold',
             en: 'Gourmet desserts with berries, fig, and gold leaf',

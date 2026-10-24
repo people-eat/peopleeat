@@ -783,7 +783,59 @@ type Cook {
     # See booking-offers.md.
     bookingRequestOffers(criterion: CookBookingRequestOfferFindManyCriterion): [CookBookingRequestOffer!]!
     bookingRequestOffer(bookingRequestOfferId: ID!): CookBookingRequestOffer
+    # Cook-facing marketplace / discovery KPIs. Null when `COOK_ANALYTICS` is off
+    # for this cook. See docs/features/cook-analytics.md.
+    analytics(period: CookAnalyticsPeriod! = PAST_MONTH): CookAnalytics
     lastModifiedAt: DateTime!
+}
+
+# Rolling window for `Cook.analytics`. Resolved from “now” (UTC instants).
+enum CookAnalyticsPeriod {
+    PAST_WEEK
+    PAST_MONTH
+    PAST_QUARTER
+    PAST_YEAR
+}
+
+# Resolved rolling window for `CookAnalytics` (output; distinct from input `DateTimeRange`).
+type CookAnalyticsRange {
+    startDateTime: DateTime!
+    endDateTime: DateTime!
+}
+
+# Aggregates for `/profile/analytics` and the cook overview strip.
+# Counts and rates are period-scoped unless noted. Nullable averages / rates
+# mean the denominator was zero (or no usable timestamp pairs for latencies).
+type CookAnalytics {
+    period: CookAnalyticsPeriod!
+    range: CookAnalyticsRange!
+    # Lifetime: any notified request, any offer, or any public chef-page visit.
+    # Overview hides the strip when false.
+    hasInsights: Boolean!
+    publicProfileViewCount: Int!
+    requestsNotifiedCount: Int!
+    requestsOpenedCount: Int!
+    requestsDeclinedCount: Int!
+    # opened / notified when notified > 0; else null.
+    openRate: Float
+    # declined / opened when opened > 0; else null.
+    declineRate: Float
+    # offers created / opened when opened > 0; else null.
+    offerCreateRate: Float
+    # Median minutes notifiedAt → firstOpenedAt (notified in range).
+    medianNotifyToOpenMinutes: Float
+    # Median minutes notifiedAt → first offer createdAt (notified in range).
+    medianNotifyToOfferMinutes: Float
+    offersCreatedCount: Int!
+    offersAcceptedCount: Int!
+    # accepted / created when created > 0; else null.
+    offerConversionRate: Float
+    offersPaidCount: Int!
+    paidPayoutCentsCookTotal: Int!
+    # Average menuPriceCents on offers created in range.
+    averageMenuPriceCents: Int
+    # Average participant count on booking requests for offers created in range.
+    averageParticipants: Float
 }
 
 # Result of `Cook.bookingRequestLookup` — stale email deep-links and live
@@ -5302,6 +5354,7 @@ enum FeatureToggleKey {
     AI_BOOKING_REQUEST_MESSAGE
     COOK_BIOGRAPHY_AI_WRITE
     COOK_WALLET_STRIPE_BALANCE
+    COOK_ANALYTICS
     BOOKING_REQUEST_RESTRICTIONS
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS
     BOOKING_REQUEST_OFFER_AMENDMENT

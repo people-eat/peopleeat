@@ -343,6 +343,7 @@ import { chatTurnsFindMany } from '../queries/chatTurnsFindMany';
 import { cityCooksInTravelRadiusFindMany } from '../queries/cityCooksInTravelRadiusFindMany';
 import { cityFeaturedCooksFindMany } from '../queries/cityFeaturedCooksFindMany';
 import { cityTestimonialsFindMany } from '../queries/cityTestimonialsFindMany';
+import { cookAnalyticsFind } from '../queries/cookAnalyticsFind';
 import { cookBookingRequestFindMany } from '../queries/cookBookingRequestFindMany';
 import { cookBookingRequestFindOne } from '../queries/cookBookingRequestFindOne';
 import { cookBookingRequestLookup } from '../queries/cookBookingRequestLookup';
@@ -629,6 +630,7 @@ import type {
     GqlSChatTurnUpdate,
     GqlSContentSection,
     GqlSCook,
+    GqlSCookAnalyticsArgs,
     GqlSCookBookingRequestArgs,
     GqlSCookBookingRequestLookupArgs,
     GqlSCookBookingRequestLookupResult,
@@ -1593,6 +1595,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             bookingRequestOffers(parent: GqlSCook, args: GqlSCookBookingRequestOffersArgs, requestingSession: GqlSSession) {
                 return cookBookingRequestOfferFindMany(parent, args, requestingSession, serverRuntime);
+            },
+            analytics(parent: GqlSCook, args: GqlSCookAnalyticsArgs, requestingSession: GqlSSession) {
+                return cookAnalyticsFind(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestOffer(parent: GqlSCook, args: GqlSCookBookingRequestOfferArgs, requestingSession: GqlSSession) {
                 return cookBookingRequestOfferFindOne(parent, args, requestingSession, serverRuntime);

@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import {
+    BarChart3Icon,
     BookOpenIcon,
     ChefHatIcon,
     EyeIcon,
@@ -14,7 +15,16 @@ import {
 import type { Locale } from '../../utils/locale';
 
 export type CookNavSlug =
-    'booking-request-pool' | 'booking-request-offers' | 'chef-profile' | 'travel' | 'public' | 'meals' | 'menus' | 'wallet' | 'calls';
+    | 'booking-request-pool'
+    | 'booking-request-offers'
+    | 'analytics'
+    | 'chef-profile'
+    | 'travel'
+    | 'public'
+    | 'meals'
+    | 'menus'
+    | 'wallet'
+    | 'calls';
 
 export type CookNavRoute = {
     slug: CookNavSlug;
@@ -44,6 +54,17 @@ export const COOK_NAV_ROUTES: readonly CookNavRoute[] = [
         title: { de: 'Angebote', en: 'Sent offers' },
         description: { de: 'Deine Angebote auf Buchungsanfragen.', en: 'Your offers on booking requests.' },
         icon: FileOutputIcon,
+    },
+    {
+        slug: 'analytics',
+        path: '/profile/analytics',
+        to: '/{-$locale}/profile/analytics',
+        title: { de: 'Analysen', en: 'Analytics' },
+        description: {
+            de: 'Profilbesuche, Reaktionszeiten, Angebote und Conversion.',
+            en: 'Profile views, response times, offers, and conversion.',
+        },
+        icon: BarChart3Icon,
     },
     {
         slug: 'chef-profile',

@@ -71,7 +71,7 @@ function ConciergePresenceBanner({
                     );
                 })}
                 <Avatar size="lg" className="size-12">
-                    <AvatarImage src="/concierge-juliana.png" alt="Concierge Juliana" />
+                    <AvatarImage src="/concierge-juliana.webp" alt="Concierge Juliana" />
                     <AvatarFallback>J</AvatarFallback>
                 </Avatar>
             </AvatarGroup>

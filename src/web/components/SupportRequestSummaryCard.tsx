@@ -87,7 +87,7 @@ export function SupportRequestSummaryCard({
             <span className="relative shrink-0">
                 <Avatar className="size-12">
                     {showConciergeAvatar ? (
-                        <AvatarImage src="/concierge-juliana.png" alt="Concierge Juliana" className="object-cover" />
+                        <AvatarImage src="/concierge-juliana.webp" alt="Concierge Juliana" className="object-cover" />
                     ) : customerProfilePictureUrl != null && customerProfilePictureUrl.length > 0 ? (
                         <AvatarImage src={customerProfilePictureUrl} alt="" className="object-cover" />
                     ) : null}

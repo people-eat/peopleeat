@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { cn } from '../utils/cn';
+import { AppImage } from './AppImage';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
 import { MealDetailsDialog } from './MealDetailsDialog';
 
@@ -59,7 +60,7 @@ export function CustomerMealCard({
                 >
                     {resolvedImageUrl != null ? (
                         <div className="aspect-square w-full overflow-hidden bg-muted">
-                            <img src={resolvedImageUrl} alt="" className="size-full object-cover" />
+                            <AppImage src={resolvedImageUrl} alt="" className="size-full object-cover" />
                         </div>
                     ) : (
                         <div
@@ -100,7 +101,7 @@ export function CustomerMealCard({
                 >
                     {resolvedImageUrl != null ? (
                         <div className="size-20 shrink-0 overflow-hidden rounded-lg sm:size-24">
-                            <img src={resolvedImageUrl} alt="" className="size-full object-cover" />
+                            <AppImage src={resolvedImageUrl} alt="" className="size-full object-cover" />
                         </div>
                     ) : (
                         <div

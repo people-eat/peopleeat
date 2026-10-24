@@ -17,6 +17,7 @@ Keys today:
   [ai-booking-request-message.md](./ai-booking-request-message.md))
 - Cook biography AI writing (Write / Improve with AI; short summary generation stays always on)
 - Cook wallet Stripe balance (live Connect balance + recent transactions on `/profile/wallet`)
+- Cook analytics (overview KPIs + `/profile/analytics`; see [cook-analytics.md](./cook-analytics.md))
 - Booking request restrictions
 - Offer chat emoji reactions
 - Offer participant and venue amendment after accept (cook-gated propose / accept)
@@ -108,6 +109,8 @@ Wired today:
   server still rejects when the effective toggle is off
 - **Cook wallet Stripe balance** (`COOK_WALLET_STRIPE_BALANCE`) — shows live Connect available/pending balance and recent balance
   transactions on `/profile/wallet`; `Cook.stripeWallet` returns null when off for the cook `userId` (no Stripe balance calls)
+- **Cook analytics** (`COOK_ANALYTICS`) — shows overview KPIs and `/profile/analytics`; `Cook.analytics` returns null when off for the cook
+  `userId`. See [cook-analytics.md](./cook-analytics.md)
 - **AI menu evaluation** (`AI_MENU_EVALUATION`) — cook open / refresh / apply gates use the cook `userId`
 - **WhatsApp English templates** (`WHATSAPP_ENGLISH_TEMPLATES`) — when off (default until approved EN templates exist), lifecycle template
   sends use Meta language `de` even when the recipient locale is `en`; when on, EN locale maps to Meta language `en`
