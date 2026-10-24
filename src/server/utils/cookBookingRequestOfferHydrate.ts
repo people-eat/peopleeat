@@ -27,7 +27,7 @@ export async function cookBookingRequestOfferHydrate(
     const customerUserIds = [...new Set(rows.map((row) => row.bookingRequest.userId))];
     const promoCodeIds = [...new Set(rows.map((row) => row.bookingRequest.promoCodeId).filter((id): id is string => id != null))];
 
-    const [callBookingRows, suggestedMenuRows, siblingOffers, participantRows, publicUsers, promoRows] = await Promise.all([
+    const [callBookingRows, suggestedMenuRows, siblingOffers, participantRows, publicUsersResult, promoRows] = await Promise.all([
         serverRuntime.db
             .select()
             .from(cookCallSlotBookings)
@@ -59,6 +59,7 @@ export async function cookBookingRequestOfferHydrate(
                   .from(promoCodes)
                   .where(inArray(promoCodes.promoCodeId, promoCodeIds)),
     ]);
+    const publicUsers = publicUsersResult.byId;
 
     const promoMinById = new Map(promoRows.map((row) => [row.promoCodeId, row.minimumTotalAmountCustomerCents ?? null] as const));
 

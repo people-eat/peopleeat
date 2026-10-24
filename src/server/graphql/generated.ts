@@ -3211,6 +3211,7 @@ export interface GqlSCookBookingRequest {
     priceClassType?: Maybe<GqlSBookingRequestPriceClassType>;
     status: GqlSBookingRequestStatus;
     suggestedOfferAmountCents: Scalars['Int']['output'];
+    suggestedOfferMessage: Scalars['String']['output'];
     user: GqlSPublicUser;
     userId: Scalars['ID']['output'];
 }
@@ -9224,6 +9225,7 @@ export type GqlSCookBookingRequestResolvers<
     priceClassType?: Resolver<Maybe<GqlSResolversTypes['BookingRequestPriceClassType']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestStatus'], ParentType, ContextType>;
     suggestedOfferAmountCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    suggestedOfferMessage?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     user?: Resolver<GqlSResolversTypes['PublicUser'], ParentType, ContextType>;
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
 }>;

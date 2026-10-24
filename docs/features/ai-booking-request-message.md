@@ -43,3 +43,6 @@ strip phone / email / street address, light polish, keep personality. Cooks alwa
 Related: [booking-request-create.md](./booking-request-create.md), [admin-booking-requests.md](./admin-booking-requests.md),
 [ai-generations.md](../architecture/ai-generations.md), [jobs.md](../architecture/jobs.md),
 [admin-feature-toggles.md](./admin-feature-toggles.md).
+
+Downstream idea: an AI **suggested offer message** on cook offer create that replies to this adjusted text — see
+[booking-offers.md — AI suggested offer message](./booking-offers.md#ai-suggested-offer-message).

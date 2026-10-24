@@ -229,11 +229,13 @@ export function ProfileCookBookingRequestOfferCreatePage({
     const menuEvaluationEnabled = useFeatureToggleActive('AI_MENU_EVALUATION');
     const messageFieldId = useId();
 
+    const seedSuggestedOfferMessage =
+        seedLookup.__typename === 'CookBookingRequestAvailable' ? seedLookup.bookingRequest.suggestedOfferMessage : '';
     const [priceSeedFromSearch] = useState(() => search.price);
     const [selectedMenuIds, setSelectedMenuIds] = useState(() => menuIdsFromOfferCreateSearch(search));
     const [menuPriceCents, setMenuPriceCents] = useState(() => search.price ?? 0);
     const [priceValid, setPriceValid] = useState(false);
-    const [message, setMessage] = useState(() => search.message ?? '');
+    const [message, setMessage] = useState(() => search.message ?? seedSuggestedOfferMessage);
     const [step, setStep] = useState<ProfileCookBookingRequestOfferCreateStep>(() => {
         const fromSearch = offerCreateStepFromSearch(search.step);
         if ((fromSearch === 'price' || fromSearch === 'message') && menuIdsFromOfferCreateSearch(search).length === 0) {

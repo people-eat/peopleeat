@@ -60,6 +60,7 @@ export type {
     BookingRequestOfferPriceGuidanceInput,
     BookingRequestOfferPriceGuidanceResult,
 } from './bookingRequestOfferPriceGuidance';
+export { bookingRequestSuggestedOfferMessage } from './bookingRequestSuggestedOfferMessage';
 export {
     stripeDashboardConnectAccountUrl,
     stripeDashboardIsTestMode,

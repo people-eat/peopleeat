@@ -27,16 +27,18 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    (2) set **price per person** (info banner that the cook owns the price; soft over-range guidance is `warning`; payout / customer-total
    preview; price step capped at `max-w-lg`, same as cook edit-price), then **Continue**; (3) optionally add a **personal note** to the
    guest (phone numbers blocked, same policy as offer chat) with a static customer offer-card preview below the note (cook photo, city,
-   tags, menu hint, total), then **Make offer**. The create UI emits funnel `step_entered` / `step_completed` interactions for admin
-   analytics. Footer **Back** moves to the previous step. Draft state is URL-backed (`?menus=&price=&message=&step=`) so return from menu
-   edit restores selection, price, message, and step (`step=price` / `step=message` only when on those steps; omitted defaults to menus;
-   later steps without a complete menu selection snap back to menus). A newly minted menu id (or an incomplete menu opened via
-   **Fertigstellen**) is included in `menus` and stays selected when complete. Incomplete inventory menus (any course missing a title or
-   meal options) stay visible with an **Incomplete** badge and a **Fertigstellen** / **Finish** CTA (cannot be selected until complete);
-   expanding that section shows a warning explaining why they cannot be picked. The create UI requires at least one complete menu:
-   **Continue** on step 1 stays disabled until then; if submit somehow lacks menus, a `StatusAlert` (`error`) appears above the menu picker
-   on step 1. The server still accepts an empty `suggestedMenuIds` list. The optional message is seeded as `COOK_MESSAGE_SIMPLE` after
-   `COOK_CREATED` in the offer chat. The customer is emailed that a new offer exists.
+   tags, menu hint, total), then **Make offer**. The note textarea is prefilled from `CookBookingRequest.suggestedOfferMessage` (static
+   DE/EN copy from `bookingRequestSuggestedOfferMessage`, keyed by the customer's `Users.locale`) when the URL has no `message` yet; the
+   cook can edit or clear it. The create UI emits funnel `step_entered` / `step_completed` interactions for admin analytics. Footer **Back**
+   moves to the previous step. Draft state is URL-backed (`?menus=&price=&message=&step=`) so return from menu edit restores selection,
+   price, message, and step (`step=price` / `step=message` only when on those steps; omitted defaults to menus; later steps without a
+   complete menu selection snap back to menus). A newly minted menu id (or an incomplete menu opened via **Fertigstellen**) is included in
+   `menus` and stays selected when complete. Incomplete inventory menus (any course missing a title or meal options) stay visible with an
+   **Incomplete** badge and a **Fertigstellen** / **Finish** CTA (cannot be selected until complete); expanding that section shows a warning
+   explaining why they cannot be picked. The create UI requires at least one complete menu: **Continue** on step 1 stays disabled until
+   then; if submit somehow lacks menus, a `StatusAlert` (`error`) appears above the menu picker on step 1. The server still accepts an empty
+   `suggestedMenuIds` list. The optional message is seeded as `COOK_MESSAGE_SIMPLE` after `COOK_CREATED` in the offer chat. The customer is
+   emailed that a new offer exists.
 3. **Customer** compares offers as cards on the request detail page (cook photo, city, cuisine / philosophy tags, menu hint, price,
    lifecycle pill, and a CTA into the offer). When at least one offer exists, an info banner above the cards asks them to review, compare
    menus, chat, or call before deciding. They then open `/profile/booking-requests/$id/offers/$offerId` (tabs: offer / chat / call /
@@ -108,8 +110,10 @@ locks.
 
 1. **High — Customer menu-change request** — Let the customer ask for menu tweaks before accepting (status path partly exists; customer
    mutation + cook email still missing). See [Ideas](#customer-menu-change-request).
-2. ~~**Low — AI menu evaluation**~~ — Shipped; see [ai-menu-evaluation.md](./ai-menu-evaluation.md).
-3. ~~**Post-accept participant amendment**~~ — Shipped behind feature toggle; see
+2. **Medium — AI suggested offer message** — Replace the static `suggestedOfferMessage` prefill with a one-shot LLM reply tailored to the
+   request’s adjusted message. See [Ideas](#ai-suggested-offer-message).
+3. ~~**Low — AI menu evaluation**~~ — Shipped; see [ai-menu-evaluation.md](./ai-menu-evaluation.md).
+4. ~~**Post-accept participant amendment**~~ — Shipped behind feature toggle; see
    [booking-offer-participant-amendment.md](./booking-offer-participant-amendment.md).
 
 ## Ideas
@@ -122,6 +126,26 @@ Customer likes an offer but wants menu tweaks before accepting:
 2. Cook responds by updating suggested menus (already clears the flag and emails the customer).
 
 Planned cook email: greet cook; name the customer; ask to review comments and adjust so the customer can decide; CTA to the cook offer page.
+
+### AI suggested offer message
+
+Today offer create prefills the personal note from a **static** DE/EN `suggestedOfferMessage` (customer `Users.locale`). Upgrade that field
+into an AI use case so the default note is a **perfect-fit reply** to the cook-facing booking-request message (`adjustedMessage` ??
+`originalMessage` — same text cooks already see as `CookBookingRequest.message`).
+
+Product intent:
+
+1. The prefilled note should sound like a warm, specific first chat message from this cook to this guest: acknowledge what they asked for,
+   reference occasion / preferences / dietary cues when present, and invite questions, without inventing menus or prices the cook has not
+   chosen yet.
+2. Language stays the **customer’s** profile locale (same rule as the static draft), so the guest reads a natural reply.
+3. The cook still edits or clears before send; AI only improves the default. Phone-number policy on create stays unchanged.
+4. When the adjusted-message job has not finished yet, or AI is off / fails, fall back to today’s static copy so create never blocks.
+
+Likely shape (when built): one-shot generation under [ai-generations.md](../architecture/ai-generations.md), feature-toggled like
+[ai-booking-request-message.md](./ai-booking-request-message.md) / [ai-menu-evaluation.md](./ai-menu-evaluation.md); generate on pool open
+or lazily when the cook reaches the message step; keep `suggestedOfferMessage` as the GraphQL surface so the create UI stays a simple
+prefill.
 
 ### Customer cross-offer calls hub
 
@@ -161,7 +185,10 @@ promo / gift (+ participant count) into each offer’s cost breakdown.
   (sidebar unread). List page aliases `activeOffers` / `completedOffers` / `archivedOffers`.
 - Cook: `bookingRequestLookup` (union: available / canceled / taken / expired / own offer / not-found), `bookingRequestOpen`,
   `bookingRequestDecline`, `bookingRequestOfferCreate` (seeds request message then `COOK_CREATED`, then optional cook `message` as
-  `COOK_MESSAGE_SIMPLE`), accept / decline / price / suggested-menus update — all publish `userUpdates` after commit
+  `COOK_MESSAGE_SIMPLE`), accept / decline / price / suggested-menus update — all publish `userUpdates` after commit.
+  `CookBookingRequest.suggestedOfferMessage` is a static DE/EN draft (`bookingRequestSuggestedOfferMessage`) from the customer's
+  `Users.locale` for offer-create prefill
+
 - Customer offer: accept / decline / configured-menu create / unread reset
 - Admin: `bookingRequestOfferConfiguredMenuUpdate` replaces an existing configured-menu snapshot (preserves `menuId`)
 - Pricing: `bookingRequestOfferPriceCalculate`, soft price-class guidance, promo hard min — see
@@ -185,6 +212,8 @@ promo / gift (+ participant count) into each offer’s cost breakdown.
   `ProfileCookBookingRequestOfferMenusEditPage.tsx`, `CookBookingRequestCard.tsx`, `CookBookingRequestOfferCard.tsx`,
   `CookBookingRequestSummaryCard.tsx`
 - Lookup query: `cookBookingRequestLookup.ts`, eligibility helper `cookBookingRequestPoolEligibility.ts`
+- Suggested create note: `src/shared/bookingRequestSuggestedOfferMessage.ts` → `CookBookingRequest.suggestedOfferMessage` via
+  `toGqlCookBookingRequest` / `cookBookingRequestHydrate`
 - Travel stamp: `bookingRequestCookTravelDistanceKmEnsure.ts` (open / offer create); hydrate prefers `BookingRequestCooks.travelDistanceKm`
   over haversine
 - Customer offer: `ProfileCustomerBookingRequestOfferPage.tsx`, `CustomerBookingRequestOfferDeclineDialog.tsx`,

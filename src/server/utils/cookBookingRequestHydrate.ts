@@ -51,7 +51,7 @@ export async function cookBookingRequestHydrate(
 
     const promoMinById = new Map(promoRows.map((row) => [row.promoCodeId, row.minimumTotalAmountCustomerCents ?? null] as const));
 
-    const publicUsers = await publicUsersByIdFindMany(
+    const { byId: publicUsers, localeById: customerLocales } = await publicUsersByIdFindMany(
         serverRuntime.db,
         visible.map((row) => row.bookingRequest.userId),
     );
@@ -79,7 +79,7 @@ export async function cookBookingRequestHydrate(
                 bookingRequest,
                 participants: participantsByRequest.get(bookingRequest.bookingRequestId) ?? [],
                 offers: [],
-                locale: DEFAULT_LOCALE,
+                customerLocale: customerLocales.get(bookingRequest.userId) ?? DEFAULT_LOCALE,
                 user,
                 estimatedTravelDistanceKm,
                 estimatedTravelExpensesCents,

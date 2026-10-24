@@ -3214,6 +3214,7 @@ export interface GqlCCookBookingRequest {
     priceClassType?: Maybe<GqlCBookingRequestPriceClassType>;
     status: GqlCBookingRequestStatus;
     suggestedOfferAmountCents: Scalars['Int']['output'];
+    suggestedOfferMessage: Scalars['String']['output'];
     user: GqlCPublicUser;
     userId: Scalars['ID']['output'];
 }
@@ -16425,6 +16426,7 @@ export type GqlCProfileCookBookingRequestOfferCreatePageUserFragment = {
                       minOfferAmountCents: number | null;
                       maxOfferAmountCents: number | null;
                       minOfferAmountHardCents: number | null;
+                      suggestedOfferMessage: string;
                       estimatedTravelDistanceKm: number | null;
                       estimatedTravelExpensesCents: number | null;
                       exactEventAddress: { displayText: string; city: string };
@@ -16506,6 +16508,7 @@ export type GqlCProfileCookBookingRequestOfferCreatePageQuery = {
                               minOfferAmountCents: number | null;
                               maxOfferAmountCents: number | null;
                               minOfferAmountHardCents: number | null;
+                              suggestedOfferMessage: string;
                               estimatedTravelDistanceKm: number | null;
                               estimatedTravelExpensesCents: number | null;
                               exactEventAddress: { displayText: string; city: string };
@@ -16588,6 +16591,7 @@ export type GqlCProfileCookBookingRequestOfferCreatePageUpdatesSubscription = {
                           minOfferAmountCents: number | null;
                           maxOfferAmountCents: number | null;
                           minOfferAmountHardCents: number | null;
+                          suggestedOfferMessage: string;
                           estimatedTravelDistanceKm: number | null;
                           estimatedTravelExpensesCents: number | null;
                           exactEventAddress: { displayText: string; city: string };
@@ -29096,6 +29100,10 @@ export const ProfileCookBookingRequestOfferCreatePageUserFragmentDoc = {
                                                                     {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'minOfferAmountHardCents' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'suggestedOfferMessage' },
                                                                     },
                                                                     {
                                                                         kind: 'Field',
@@ -68273,6 +68281,10 @@ export const ProfileCookBookingRequestOfferCreatePageDocument = {
                                                                     },
                                                                     {
                                                                         kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'suggestedOfferMessage' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
                                                                         name: { kind: 'Name', value: 'exactEventAddress' },
                                                                         selectionSet: {
                                                                             kind: 'SelectionSet',
@@ -68719,6 +68731,10 @@ export const ProfileCookBookingRequestOfferCreatePageUpdatesDocument = {
                                                                     {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'minOfferAmountHardCents' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'suggestedOfferMessage' },
                                                                     },
                                                                     {
                                                                         kind: 'Field',

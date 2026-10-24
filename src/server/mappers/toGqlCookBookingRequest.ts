@@ -1,4 +1,5 @@
 import { bookingRequestSuggestedCookPayoutCents } from '../../shared/bookingRequestOfferPrice';
+import { bookingRequestSuggestedOfferMessage } from '../../shared/bookingRequestSuggestedOfferMessage';
 import type { Locale } from '../../shared/locale';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant } from '../db/schema';
 import { bookingRequestStatusDerive } from '../domain/bookingRequest';
@@ -22,7 +23,8 @@ export type ToGqlCookBookingRequestInput = {
     participants?: BookingRequestParticipant[];
     offers?: GqlSCookBookingRequestOffer[];
     acceptedOfferPaymentStatus?: BookingRequestOffer['paymentStatus'] | null;
-    locale: Locale;
+    /** Customer's `Users.locale` — drives `suggestedOfferMessage`. */
+    customerLocale: Locale;
     now?: Date;
     user: GqlSPublicUser;
     estimatedTravelDistanceKm?: number | null;
@@ -37,6 +39,7 @@ export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): Gq
         participants = [],
         offers = [],
         acceptedOfferPaymentStatus,
+        customerLocale,
         now,
         user,
         estimatedTravelDistanceKm = null,
@@ -80,6 +83,7 @@ export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): Gq
         minOfferAmountCents: guidance.minOfferAmountCents,
         maxOfferAmountCents: guidance.maxOfferAmountCents,
         minOfferAmountHardCents: guidance.minOfferAmountHardCents,
+        suggestedOfferMessage: bookingRequestSuggestedOfferMessage(customerLocale),
         message: bookingRequestOfferInitialMessageResolve(bookingRequest),
         preferences: bookingRequest.preferences,
         invoiceAddress: bookingRequest.invoiceAddress ? toGqlInvoiceAddress(bookingRequest.invoiceAddress) : null,

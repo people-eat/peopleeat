@@ -49,7 +49,7 @@ export async function bookingRequestOfferMessagesFindMany(
             fallbackCreatedAt: parent.createdAt,
         });
 
-        const authorsByUserId = await publicUsersByIdFindMany(serverRuntime.db, [bookingRequest.userId, parent.cookId]);
+        const { byId: authorsByUserId } = await publicUsersByIdFindMany(serverRuntime.db, [bookingRequest.userId, parent.cookId]);
         const customer = authorsByUserId.get(bookingRequest.userId);
         const cook = authorsByUserId.get(parent.cookId);
         if (!customer) {

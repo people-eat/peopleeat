@@ -52,6 +52,7 @@ fragment ProfileCookBookingRequestOfferCreatePageUser on User {
                     minOfferAmountCents
                     maxOfferAmountCents
                     minOfferAmountHardCents
+                    suggestedOfferMessage
                     exactEventAddress {
                         displayText
                         city

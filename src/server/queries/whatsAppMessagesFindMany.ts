@@ -93,7 +93,7 @@ export async function whatsAppMessagesFindMany(
     }
 
     if (matchedUserId) {
-        const byId = await publicUsersByIdFindMany(serverRuntime.db, [matchedUserId]);
+        const { byId } = await publicUsersByIdFindMany(serverRuntime.db, [matchedUserId]);
         customer = byId.get(matchedUserId) ?? customer;
     }
 

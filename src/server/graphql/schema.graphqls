@@ -2009,6 +2009,8 @@ type CookBookingRequest {
     minOfferAmountCents: Int
     maxOfferAmountCents: Int
     minOfferAmountHardCents: Int
+    # Static personal-note draft for offer create, in the customer's profile language.
+    suggestedOfferMessage: String!
     # Resolved for the cook: adjustedMessage ?? originalMessage (trimmed).
     message: String!
     preferences: [String!]!
