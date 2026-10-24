@@ -5,11 +5,13 @@ import { idCreate } from '../../shared/idCreate';
 import {
     bookingRequestOfferCallRoomParticipants,
     bookingRequestOfferCallRooms,
+    bookingRequestOfferEvents,
     bookingRequestOffers,
     bookingRequests,
     cookCallSlotBookings,
     users,
 } from '../db/schema';
+import type { BookingRequestOfferEventType } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSBookingRequestOfferCallTokenResult } from '../graphql/generated';
 import { bookingRequestOfferCallRecordingStart } from './bookingRequestOfferCallRecordingStart';
@@ -113,6 +115,39 @@ export async function bookingRequestOfferCallTokenIssue(
                 .update(cookCallSlotBookings)
                 .set({ videoCallRoomId: bookingRequestOfferCallRoomId, lastModifiedAt: new Date() })
                 .where(eq(cookCallSlotBookings.cookCallSlotBookingId, joinable.cookCallSlotBookingId));
+        } else {
+            // Ad-hoc / spontaneous start (no joinable confirmed slot). Scheduled
+            // starts already have REQUESTED / CONFIRMED timeline milestones.
+            const eventType: BookingRequestOfferEventType =
+                actingUserId === row.bookingRequest.userId
+                    ? 'USER_CALL_STARTED'
+                    : actingUserId === row.offer.cookId
+                      ? 'COOK_CALL_STARTED'
+                      : 'ADMIN_CALL_STARTED';
+
+            await serverRuntime.db.transaction(async (transaction) => {
+                await transaction.insert(bookingRequestOfferEvents).values({
+                    bookingRequestOfferEventId: idCreate(),
+                    bookingRequestOfferId,
+                    type: eventType,
+                    payload: { bookingRequestOfferCallRoomId },
+                });
+
+                const unreadPatch =
+                    eventType === 'USER_CALL_STARTED'
+                        ? { cookUnreadNotificationCount: row.offer.cookUnreadNotificationCount + 1 }
+                        : eventType === 'COOK_CALL_STARTED'
+                          ? { userUnreadNotificationCount: row.offer.userUnreadNotificationCount + 1 }
+                          : {
+                                userUnreadNotificationCount: row.offer.userUnreadNotificationCount + 1,
+                                cookUnreadNotificationCount: row.offer.cookUnreadNotificationCount + 1,
+                            };
+
+                await transaction
+                    .update(bookingRequestOffers)
+                    .set(unreadPatch)
+                    .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+            });
         }
     }
 

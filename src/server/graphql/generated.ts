@@ -2700,6 +2700,7 @@ export interface GqlSChatMessageBookingRequestOfferEvent {
 }
 
 export type GqlSChatMessageBookingRequestOfferEventType =
+    | 'ADMIN_CALL_STARTED'
     | 'ADMIN_HANDED_OVER_CLOSED'
     | 'ADMIN_HANDED_OVER_TO_COOK'
     | 'ADMIN_PARTICIPANT_AMENDMENT_APPLIED'
@@ -2710,6 +2711,7 @@ export type GqlSChatMessageBookingRequestOfferEventType =
     | 'COOK_CALL_SLOT_CONFIRMED'
     | 'COOK_CALL_SLOT_DECLINED'
     | 'COOK_CALL_SLOT_REQUESTED'
+    | 'COOK_CALL_STARTED'
     | 'COOK_CHANGED_PRICE'
     | 'COOK_CREATED'
     | 'COOK_DECLINED'
@@ -2723,6 +2725,7 @@ export type GqlSChatMessageBookingRequestOfferEventType =
     | 'USER_CALL_SLOT_CONFIRMED'
     | 'USER_CALL_SLOT_DECLINED'
     | 'USER_CALL_SLOT_REQUESTED'
+    | 'USER_CALL_STARTED'
     | 'USER_CANCELLED'
     | 'USER_CONFIGURED_MENU'
     | 'USER_DATE_UPDATED'
@@ -11694,6 +11697,7 @@ export const GqlSBookingRequestStatusSchema: z.ZodType<
 ]);
 
 export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
+    | 'ADMIN_CALL_STARTED'
     | 'ADMIN_HANDED_OVER_CLOSED'
     | 'ADMIN_HANDED_OVER_TO_COOK'
     | 'ADMIN_PARTICIPANT_AMENDMENT_APPLIED'
@@ -11704,6 +11708,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'COOK_CALL_SLOT_CONFIRMED'
     | 'COOK_CALL_SLOT_DECLINED'
     | 'COOK_CALL_SLOT_REQUESTED'
+    | 'COOK_CALL_STARTED'
     | 'COOK_CHANGED_PRICE'
     | 'COOK_CREATED'
     | 'COOK_DECLINED'
@@ -11717,6 +11722,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_CALL_SLOT_CONFIRMED'
     | 'USER_CALL_SLOT_DECLINED'
     | 'USER_CALL_SLOT_REQUESTED'
+    | 'USER_CALL_STARTED'
     | 'USER_CANCELLED'
     | 'USER_CONFIGURED_MENU'
     | 'USER_DATE_UPDATED'
@@ -11729,6 +11735,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_REQUESTED_MENU_CHANGES'
     | 'USER_RESTRICTIONS_UPDATED'
     | 'USER_TIME_UPDATED',
+    | 'ADMIN_CALL_STARTED'
     | 'ADMIN_HANDED_OVER_CLOSED'
     | 'ADMIN_HANDED_OVER_TO_COOK'
     | 'ADMIN_PARTICIPANT_AMENDMENT_APPLIED'
@@ -11739,6 +11746,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'COOK_CALL_SLOT_CONFIRMED'
     | 'COOK_CALL_SLOT_DECLINED'
     | 'COOK_CALL_SLOT_REQUESTED'
+    | 'COOK_CALL_STARTED'
     | 'COOK_CHANGED_PRICE'
     | 'COOK_CREATED'
     | 'COOK_DECLINED'
@@ -11752,6 +11760,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_CALL_SLOT_CONFIRMED'
     | 'USER_CALL_SLOT_DECLINED'
     | 'USER_CALL_SLOT_REQUESTED'
+    | 'USER_CALL_STARTED'
     | 'USER_CANCELLED'
     | 'USER_CONFIGURED_MENU'
     | 'USER_DATE_UPDATED'
@@ -11765,6 +11774,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_RESTRICTIONS_UPDATED'
     | 'USER_TIME_UPDATED'
 > = z.enum([
+    'ADMIN_CALL_STARTED',
     'ADMIN_HANDED_OVER_CLOSED',
     'ADMIN_HANDED_OVER_TO_COOK',
     'ADMIN_PARTICIPANT_AMENDMENT_APPLIED',
@@ -11775,6 +11785,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     'COOK_CALL_SLOT_CONFIRMED',
     'COOK_CALL_SLOT_DECLINED',
     'COOK_CALL_SLOT_REQUESTED',
+    'COOK_CALL_STARTED',
     'COOK_CHANGED_PRICE',
     'COOK_CREATED',
     'COOK_DECLINED',
@@ -11788,6 +11799,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     'USER_CALL_SLOT_CONFIRMED',
     'USER_CALL_SLOT_DECLINED',
     'USER_CALL_SLOT_REQUESTED',
+    'USER_CALL_STARTED',
     'USER_CANCELLED',
     'USER_CONFIGURED_MENU',
     'USER_DATE_UPDATED',

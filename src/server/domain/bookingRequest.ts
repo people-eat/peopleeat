@@ -438,6 +438,9 @@ const bookingRequestOfferEventTypes = [
     'USER_CALL_SLOT_DECLINED',
     'USER_CALL_SLOT_CANCELLED',
     'COOK_CALL_SLOT_CANCELLED',
+    'USER_CALL_STARTED',
+    'COOK_CALL_STARTED',
+    'ADMIN_CALL_STARTED',
 ] as const;
 export type BookingRequestOfferEventType = (typeof bookingRequestOfferEventTypes)[number];
 
@@ -677,6 +680,15 @@ type BookingRequestOfferEventPayloadByType = {
         endAt: string;
         wasConfirmed: boolean;
         reason?: string;
+    };
+    USER_CALL_STARTED: {
+        bookingRequestOfferCallRoomId: string;
+    };
+    COOK_CALL_STARTED: {
+        bookingRequestOfferCallRoomId: string;
+    };
+    ADMIN_CALL_STARTED: {
+        bookingRequestOfferCallRoomId: string;
     };
 };
 

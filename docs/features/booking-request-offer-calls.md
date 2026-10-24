@@ -15,7 +15,9 @@ On an open offer (customer, cook, or admin offer page), a single **Call** tab co
    (no slot decline email). When the booking request expires or is canceled, PENDING slots on its offers are auto-canceled
    (`BOOKING_REQUEST_EXPIRED` / `BOOKING_REQUEST_CANCELED`). Confirmed slots are left alone on those paths.
 2. **Ad-hoc call** — Either party (or admin) starts a live room on the offer; the peer sees a live banner and can join. Start/join lives at
-   the top of the Call tab.
+   the top of the Call tab. Creating a room when there is no joinable confirmed slot writes a chat milestone (`USER_CALL_STARTED` /
+   `COOK_CALL_STARTED` / `ADMIN_CALL_STARTED`) and bumps the counterparty unread badge(s). Starting inside a confirmed join window only
+   links `videoCallRoomId` (slot REQUESTED / CONFIRMED milestones already cover that path).
 3. **Scheduled join** — For a confirmed slot, join is available from 60 minutes before start through 15 minutes after end (same top CTA).
 4. **Admin** — Can create, join, and leave rooms on any offer; can decline PENDING call requests on the offer Call tab on behalf of the
    counterparty (customer or cook). Confirm / cancel / propose stay with the parties. Hub at `/admin/calls` (overview attention board +

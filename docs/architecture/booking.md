@@ -99,8 +99,9 @@ back onto the inventory template — see [cook-menus.md](../features/cook-menus.
 Cook **availability** (rules / exceptions) already ships. `CookCallSlotBookings` is the booking row; offer events mirror request / confirm /
 decline / cancel. Slot **derivation** (`deriveCookCallSlots` / `cookCallSlotsFindMany`) and role-scoped request / confirm / decline / cancel
 commands are implemented. LiveKit rooms (`BookingRequestOfferCallRooms` + participants) support ad-hoc create/join/leave; confirmed slots
-link via `videoCallRoomId` when a room opens in the join window. Reminder / complete / empty-room sweep jobs are registered. Closing an
-offer (party decline, cook ban) auto-declines PENDING slots; booking-request expiry / cancel auto-cancels them
+link via `videoCallRoomId` when a room opens in the join window. Ad-hoc room create (no joinable confirmed slot) also appends
+`USER_CALL_STARTED` / `COOK_CALL_STARTED` / `ADMIN_CALL_STARTED` on the offer timeline. Reminder / complete / empty-room sweep jobs are
+registered. Closing an offer (party decline, cook ban) auto-declines PENDING slots; booking-request expiry / cancel auto-cancels them
 (`bookingRequestOfferPendingCallSlotsClose`). Admins may also decline PENDING slots on the offer Call tab on behalf of the counterparty
 (`adminBookingRequestOfferCallSlotDecline`). When `OBJECT_STORAGE_S3_*` is set, room create starts audio egress and room end enqueues
 transcript finalize (see [call-recordings.md](../features/call-recordings.md)). Travel distance uses **Google Routes driving km** via

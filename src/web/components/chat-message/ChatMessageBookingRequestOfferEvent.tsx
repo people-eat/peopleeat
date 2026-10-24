@@ -12,6 +12,7 @@ import {
     SlidersHorizontalIcon,
     UsersIcon,
     UtensilsIcon,
+    VideoIcon,
 } from 'lucide-react';
 
 import { bookingRequestOfferPriceCalculate, formatCurrency, formatDate, formatTime } from '../../../shared';
@@ -122,6 +123,10 @@ function offerEventIcon(type: GqlCChatMessageBookingRequestOfferEventType): Luci
         case 'USER_CALL_SLOT_REQUESTED':
         case 'COOK_CALL_SLOT_REQUESTED':
             return PhoneIcon;
+        case 'USER_CALL_STARTED':
+        case 'COOK_CALL_STARTED':
+        case 'ADMIN_CALL_STARTED':
+            return VideoIcon;
         case 'USER_PARTICIPANTS_UPDATED':
         case 'USER_PARTICIPANT_AMENDMENT_REQUESTED':
         case 'USER_PARTICIPANT_AMENDMENT_CANCELED':
@@ -203,6 +208,12 @@ function chatMessageBookingRequestOfferEventLabel(type: GqlCChatMessageBookingRe
             USER_CALL_SLOT_DECLINED: { de: 'Gesprächszeit abgelehnt', en: 'Call slot declined' },
             USER_CALL_SLOT_CANCELLED: { de: 'Gesprächszeit storniert', en: 'Call slot cancelled' },
             COOK_CALL_SLOT_CANCELLED: { de: 'Gesprächszeit storniert', en: 'Call slot cancelled' },
+            USER_CALL_STARTED: { de: 'Spontaner Anruf gestartet', en: 'Spontaneous call started' },
+            COOK_CALL_STARTED: { de: 'Spontaner Anruf gestartet', en: 'Spontaneous call started' },
+            ADMIN_CALL_STARTED: {
+                de: 'Concierge hat einen Anruf gestartet',
+                en: 'Concierge started a call',
+            },
         } as const
     )[type][locale];
 }

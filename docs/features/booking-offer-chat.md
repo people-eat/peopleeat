@@ -5,9 +5,9 @@ Customer, cook, and admin negotiate on an offer through a shared timeline chat w
 ## Behavior
 
 1. On the offer page, the **chat** tab shows the negotiation timeline (messages plus system events such as offer created, price changed,
-   accept / decline). Price milestones (`COOK_CREATED`, `COOK_CHANGED_PRICE`, `SYSTEM_CHANGED_PRICE`) show the **customer-facing total**
-   (`totalWithoutDiscountsCentsCustomer`: menu + fees + travel), not the cook menu price alone. Opening chat (or schedule) clears that
-   role’s unread badge.
+   accept / decline, call-slot lifecycle, and spontaneous call start). Price milestones (`COOK_CREATED`, `COOK_CHANGED_PRICE`,
+   `SYSTEM_CHANGED_PRICE`) show the **customer-facing total** (`totalWithoutDiscountsCentsCustomer`: menu + fees + travel), not the cook
+   menu price alone. Opening chat (or Call) clears that role’s unread badge.
 2. A **concierge presence** row shows the peer(s) together with Concierge Juliana — copy explains she is in the chat for special requests.
    Customer and cook each see the other party plus Juliana; admins see **customer, cook, and Juliana**. Layout: scrolls away with the
    transcript on small screens; stays pinned above the transcript from medium breakpoints up (same pattern as support chat). Transcript

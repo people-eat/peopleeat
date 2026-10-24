@@ -133,6 +133,9 @@ enum ChatMessageBookingRequestOfferEventType {
     USER_CALL_SLOT_DECLINED
     USER_CALL_SLOT_CANCELLED
     COOK_CALL_SLOT_CANCELLED
+    USER_CALL_STARTED
+    COOK_CALL_STARTED
+    ADMIN_CALL_STARTED
 }
 
 type ChatMessageBookingRequestOfferEvent {

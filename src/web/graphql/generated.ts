@@ -2703,6 +2703,7 @@ export interface GqlCChatMessageBookingRequestOfferEvent {
 }
 
 export type GqlCChatMessageBookingRequestOfferEventType =
+    | 'ADMIN_CALL_STARTED'
     | 'ADMIN_HANDED_OVER_CLOSED'
     | 'ADMIN_HANDED_OVER_TO_COOK'
     | 'ADMIN_PARTICIPANT_AMENDMENT_APPLIED'
@@ -2713,6 +2714,7 @@ export type GqlCChatMessageBookingRequestOfferEventType =
     | 'COOK_CALL_SLOT_CONFIRMED'
     | 'COOK_CALL_SLOT_DECLINED'
     | 'COOK_CALL_SLOT_REQUESTED'
+    | 'COOK_CALL_STARTED'
     | 'COOK_CHANGED_PRICE'
     | 'COOK_CREATED'
     | 'COOK_DECLINED'
@@ -2726,6 +2728,7 @@ export type GqlCChatMessageBookingRequestOfferEventType =
     | 'USER_CALL_SLOT_CONFIRMED'
     | 'USER_CALL_SLOT_DECLINED'
     | 'USER_CALL_SLOT_REQUESTED'
+    | 'USER_CALL_STARTED'
     | 'USER_CANCELLED'
     | 'USER_CONFIGURED_MENU'
     | 'USER_DATE_UPDATED'
