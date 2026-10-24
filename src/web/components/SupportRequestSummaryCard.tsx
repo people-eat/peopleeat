@@ -67,17 +67,43 @@ export function SupportRequestSummaryCard({
         : { de: 'Allgemeine Anfrage', en: 'General request' }[locale];
     const preview = customerLabel.length > 0 ? request.subject : contextLabel;
     const showContextUnderTitle = customerLabel.length > 0;
+    const showConciergeAvatar = customerLabel.length === 0;
 
     return (
-        <Link to={to} params={params} className={adminOverviewLinkCardClassName('flex h-full items-center gap-3 p-3 text-foreground')}>
-            <Avatar className="size-12 shrink-0">
-                {customerProfilePictureUrl != null && customerProfilePictureUrl.length > 0 ? (
-                    <AvatarImage src={customerProfilePictureUrl} alt="" className="object-cover" />
+        <Link
+            to={to}
+            params={params}
+            className={adminOverviewLinkCardClassName('relative flex h-full items-center gap-3 p-3 text-foreground')}
+        >
+            <NotificationBadge
+                count={unread}
+                label={
+                    {
+                        de: `${unread} ungelesene Nachrichten`,
+                        en: `${unread} unread messages`,
+                    }[locale]
+                }
+            />
+            <span className="relative shrink-0">
+                <Avatar className="size-12">
+                    {showConciergeAvatar ? (
+                        <AvatarImage src="/concierge-juliana.png" alt="Concierge Juliana" className="object-cover" />
+                    ) : customerProfilePictureUrl != null && customerProfilePictureUrl.length > 0 ? (
+                        <AvatarImage src={customerProfilePictureUrl} alt="" className="object-cover" />
+                    ) : null}
+                    <AvatarFallback className="bg-foreground/10 text-sm font-semibold text-foreground/75">
+                        {showConciergeAvatar ? 'J' : initialsFromName(customerLabel)}
+                    </AvatarFallback>
+                </Avatar>
+                {showConciergeAvatar ? (
+                    <span
+                        aria-hidden
+                        className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-card"
+                    >
+                        <HeadsetIcon className="size-2.5" strokeWidth={2.5} />
+                    </span>
                 ) : null}
-                <AvatarFallback className="bg-foreground/10 text-sm font-semibold text-foreground/75">
-                    {customerLabel.length > 0 ? initialsFromName(customerLabel) : <HeadsetIcon className="size-5 opacity-70" aria-hidden />}
-                </AvatarFallback>
-            </Avatar>
+            </span>
             <span className="grid min-w-0 flex-1 gap-0.5">
                 <span
                     className={cn('min-w-0 truncate text-sm', hasUnread ? 'font-semibold text-foreground' : 'font-medium text-foreground')}
@@ -92,17 +118,6 @@ export function SupportRequestSummaryCard({
                 <span className={cn('text-xs tabular-nums', hasUnread ? 'font-medium text-foreground' : 'text-muted-foreground')}>
                     {formatInboxListTimestamp(request.createdAt, { locale, timeZone })}
                 </span>
-                <NotificationBadge
-                    count={unread}
-                    label={
-                        {
-                            de: `${unread} ungelesene Nachrichten`,
-                            en: `${unread} unread messages`,
-                        }[locale]
-                    }
-                    placement="inline"
-                    className="size-5 text-[11px] shadow-none"
-                />
             </span>
         </Link>
     );

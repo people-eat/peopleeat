@@ -77,8 +77,9 @@ lifecycle emails; ops Slack threading.
   `supportRequestIds`), messages with attachments; admin assistant list tool `adminSupportRequestsFindMany` → `admin.supportRequestList`
   cards
 - Customer UI: catalog slug `support-requests`; create route `ProfileCustomerSupportRequestCreatePage` (`support-requests_.create.tsx`,
-  search `bookingRequestId`); `SupportRequestCreateForm`, `SupportRequestSummaryCard` (inbox-style row: avatar, title, booking meta,
-  single-line subject; status / inbox timestamp / unread on the right), `SupportRequestChat` (composer attachments; presence header scrolls
+  search `bookingRequestId`); `SupportRequestCreateForm`, `SupportRequestSummaryCard` (inbox-style row: customer list uses Concierge
+  Juliana avatar with a small headset chip; admin list uses the customer avatar; title, booking meta, single-line subject; status /
+  inbox timestamp; unread corner badge), `SupportRequestChat` (composer attachments; presence header scrolls
   below `md`, static from `md` — same as offer chat); booking/offer detail Support CTAs; nav badges
 - Admin UI: overview + list live via admin updates; nav badge; pinned bottom pagination (`page` / `pageSize`); list search params `status` /
   `sort` / `unreadFirst`; detail viewport-locked like WhatsApp chat (`AdminPinnedFooterLayout` + `SupportRequestChat` presence avatar / user
