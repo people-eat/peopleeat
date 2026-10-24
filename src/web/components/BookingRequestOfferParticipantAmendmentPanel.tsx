@@ -20,6 +20,7 @@ import { StatusAlert } from './base/status-alert';
 
 type AmendmentPreview = {
     requestedAt: string;
+    claimedAt?: string | null;
     participants: { type: 'ADULT' | 'DISCOUNTED'; name: string; restrictions: string[] }[] | null;
     exactEventAddress: { displayText: string; city: string } | null;
     menuPriceCentsBefore: number;
@@ -76,12 +77,18 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
     if (!enabled && !props.amendment && !props.preparationsCompletedAt) return null;
 
     if (props.amendment) {
+        const claimed = props.amendment.claimedAt != null;
         return (
             <StatusAlert
                 tone="info"
-                title={{ de: 'Änderung vorgeschlagen', en: 'Change proposed' }[props.locale]}
+                title={
+                    {
+                        de: claimed ? 'Änderung wird angewendet' : 'Änderung vorgeschlagen',
+                        en: claimed ? 'Change is being applied' : 'Change proposed',
+                    }[props.locale]
+                }
                 action={
-                    props.onCancelAmendment ? (
+                    !claimed && props.onCancelAmendment ? (
                         <Button
                             type="button"
                             size="sm"
@@ -94,12 +101,15 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
                     ) : undefined
                 }
             >
-                {
-                    {
-                        de: `Dein Vorschlag (${amendmentSummary(props.amendment, props.locale)}) wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
-                        en: `Your proposal (${amendmentSummary(props.amendment, props.locale)}) is waiting for the chef to confirm. New host price: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
-                    }[props.locale]
-                }
+                {claimed
+                    ? {
+                          de: `Dein Koch hat den Vorschlag (${amendmentSummary(props.amendment, props.locale)}) angenommen. Preis und Zahlung werden gerade aktualisiert. Neuer Gastgeberpreis: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
+                          en: `Your chef accepted the proposal (${amendmentSummary(props.amendment, props.locale)}). Price and payment are updating now. New host price: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
+                      }[props.locale]
+                    : {
+                          de: `Dein Vorschlag (${amendmentSummary(props.amendment, props.locale)}) wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
+                          en: `Your proposal (${amendmentSummary(props.amendment, props.locale)}) is waiting for the chef to confirm. New host price: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
+                      }[props.locale]}
             </StatusAlert>
         );
     }
@@ -151,6 +161,7 @@ export function BookingRequestOfferParticipantAmendmentCookReview(props: {
     showActions?: boolean;
 }) {
     const showActions = props.showActions !== false;
+    const claimed = props.amendment.claimedAt != null;
     const giftNote =
         props.amendment.giftCardDeltaCents < 0
             ? {
@@ -161,26 +172,41 @@ export function BookingRequestOfferParticipantAmendmentCookReview(props: {
     return (
         <StatusAlert
             tone="warning"
-            title={{ de: 'Buchungsänderung prüfen', en: 'Review booking change' }[props.locale]}
+            title={
+                {
+                    de: claimed ? 'Änderung wird angewendet' : 'Buchungsänderung prüfen',
+                    en: claimed ? 'Change is being applied' : 'Review booking change',
+                }[props.locale]
+            }
             action={
                 showActions ? (
                     <div className="flex flex-wrap gap-2">
-                        <Button type="button" size="sm" variant="outline" disabled={props.busy} onClick={() => void props.onDecline()}>
-                            {{ de: 'Ablehnen', en: 'Decline' }[props.locale]}
-                        </Button>
+                        {!claimed ? (
+                            <Button type="button" size="sm" variant="outline" disabled={props.busy} onClick={() => void props.onDecline()}>
+                                {{ de: 'Ablehnen', en: 'Decline' }[props.locale]}
+                            </Button>
+                        ) : null}
                         <Button type="button" size="sm" disabled={props.busy} onClick={() => void props.onAccept()}>
-                            {{ de: 'Änderung annehmen', en: 'Accept change' }[props.locale]}
+                            {
+                                {
+                                    de: claimed ? 'Erneut versuchen' : 'Änderung annehmen',
+                                    en: claimed ? 'Retry' : 'Accept change',
+                                }[props.locale]
+                            }
                         </Button>
                     </div>
                 ) : undefined
             }
         >
-            {
-                {
-                    de: `${amendmentSummary(props.amendment, props.locale)}. Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. Die Buchung bleibt bestätigt; Zahlung oder Erstattung folgen automatisch nach deiner Entscheidung.${giftNote}`,
-                    en: `${amendmentSummary(props.amendment, props.locale)}. Payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. The booking stays confirmed; charge or refund runs automatically after you decide.${giftNote}`,
-                }[props.locale]
-            }
+            {claimed
+                ? {
+                      de: `${amendmentSummary(props.amendment, props.locale)}. Die Annahme läuft noch (Zahlung/Erstattung). Wenn sie hängen bleibt, versuche es erneut.`,
+                      en: `${amendmentSummary(props.amendment, props.locale)}. Acceptance is still running (charge/refund). If it stalls, try again.`,
+                  }[props.locale]
+                : {
+                      de: `${amendmentSummary(props.amendment, props.locale)}. Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. Die Buchung bleibt bestätigt; Zahlung oder Erstattung folgen automatisch nach deiner Entscheidung.${giftNote}`,
+                      en: `${amendmentSummary(props.amendment, props.locale)}. Payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}. The booking stays confirmed; charge or refund runs automatically after you decide.${giftNote}`,
+                  }[props.locale]}
         </StatusAlert>
     );
 }
@@ -295,6 +321,7 @@ export function BookingRequestOfferParticipantAmendmentAdminPendingAlert(props: 
     action?: ReactNode;
 }) {
     const summary = amendmentSummary(props.amendment, props.locale);
+    const claimed = props.amendment.claimedAt != null;
     const priceLine = {
         de: `Gastgeberpreis ${formatCurrency(props.amendment.totalCentsCustomerBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}. Koch-Auszahlung ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}.`,
         en: `Host price ${formatCurrency(props.amendment.totalCentsCustomerBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}. Cook payout ${formatCurrency(props.amendment.payoutCentsCookBefore, { locale: props.locale })} → ${formatCurrency(props.amendment.payoutCentsCookAfter, { locale: props.locale })}.`,
@@ -303,17 +330,25 @@ export function BookingRequestOfferParticipantAmendmentAdminPendingAlert(props: 
     return (
         <StatusAlert
             tone="warning"
-            title={{ de: 'Offene Buchungsänderung', en: 'Pending booking change' }[props.locale]}
+            title={
+                {
+                    de: claimed ? 'Buchungsänderung wird angewendet' : 'Offene Buchungsänderung',
+                    en: claimed ? 'Booking change is being applied' : 'Pending booking change',
+                }[props.locale]
+            }
             action={props.action}
         >
             <span className="grid gap-1">
                 <span>
-                    {
-                        {
-                            de: `Vorschlag wartet auf den Koch${summary ? `: ${summary}` : ''}.`,
-                            en: `Proposal waiting on the chef${summary ? `: ${summary}` : ''}.`,
-                        }[props.locale]
-                    }
+                    {claimed
+                        ? {
+                              de: `Koch hat angenommen, Apply läuft noch${summary ? `: ${summary}` : ''}. Kunden-Zurückziehen ist gesperrt.`,
+                              en: `Chef accepted; apply still running${summary ? `: ${summary}` : ''}. Customer withdraw is blocked.`,
+                          }[props.locale]
+                        : {
+                              de: `Vorschlag wartet auf den Koch${summary ? `: ${summary}` : ''}.`,
+                              en: `Proposal waiting on the chef${summary ? `: ${summary}` : ''}.`,
+                          }[props.locale]}
                 </span>
                 <span>{priceLine}</span>
                 {props.footnote ? <span>{props.footnote}</span> : null}

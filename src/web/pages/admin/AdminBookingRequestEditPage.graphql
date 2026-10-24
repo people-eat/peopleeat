@@ -42,6 +42,7 @@ fragment AdminBookingRequestEditPageRequest on AdminBookingRequest {
         payoutCentsCook
         participantAmendment {
             requestedAt
+            claimedAt
             participants {
                 type
                 name

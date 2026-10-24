@@ -2586,6 +2586,7 @@ export type GqlSBookingRequestOfferCreate = {
 
 export interface GqlSBookingRequestOfferParticipantAmendment {
     __typename?: 'BookingRequestOfferParticipantAmendment';
+    claimedAt?: Maybe<Scalars['DateTime']['output']>;
     exactEventAddress?: Maybe<GqlSCookTravelOriginAddress>;
     giftCardDeltaCents: Scalars['Int']['output'];
     menuPriceCentsAfter: Scalars['Int']['output'];
@@ -8686,6 +8687,7 @@ export type GqlSBookingRequestOfferParticipantAmendmentResolvers<
     ParentType extends GqlSResolversParentTypes['BookingRequestOfferParticipantAmendment'] =
         GqlSResolversParentTypes['BookingRequestOfferParticipantAmendment'],
 > = ResolversObject<{
+    claimedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     exactEventAddress?: Resolver<Maybe<GqlSResolversTypes['CookTravelOriginAddress']>, ParentType, ContextType>;
     giftCardDeltaCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     menuPriceCentsAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;

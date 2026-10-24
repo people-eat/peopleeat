@@ -130,7 +130,7 @@ async function amendmentClaim(serverRuntime: ServerRuntime, offerId: string, app
 }
 
 /** Clear claim when apply fails before any Stripe mutation that may have moved money. */
-async function amendmentUnclaim(serverRuntime: ServerRuntime, offerId: string, applyId: string): Promise<void> {
+async function amendmentClearClaim(serverRuntime: ServerRuntime, offerId: string, applyId: string): Promise<void> {
     await serverRuntime.db
         .update(bookingRequestOffers)
         .set({
@@ -191,7 +191,7 @@ export async function bookingRequestOfferParticipantAmendmentApply(
     await amendmentClaim(serverRuntime, offer.bookingRequestOfferId, applyId);
 
     // Set after any Stripe call that may have mutated money / payment instruments succeeds.
-    // Failures before that unclaim so the customer can still withdraw and the cook can retry.
+    // Failures before that clear the claim so the customer can still withdraw and the cook can retry.
     let stripeMutationCompleted = false;
     try {
         const participantsAfter =
@@ -317,7 +317,7 @@ export async function bookingRequestOfferParticipantAmendmentApply(
                         payoutAmount: cookPayoutForSplit,
                         idempotencyKey: `${applyId}:charge`,
                     });
-                    // PI exists (may be processing); do not unclaim on later failure.
+                    // PI exists (may be processing); do not clear the claim on later failure.
                     stripeMutationCompleted = true;
                     const succeeded = await serverRuntime.stripe.paymentIntentSucceededCheck(paymentIntentId);
                     if (!succeeded) {
@@ -542,7 +542,7 @@ export async function bookingRequestOfferParticipantAmendmentApply(
         };
     } catch (error) {
         if (!stripeMutationCompleted) {
-            await amendmentUnclaim(serverRuntime, offer.bookingRequestOfferId, applyId);
+            await amendmentClearClaim(serverRuntime, offer.bookingRequestOfferId, applyId);
         }
         throw error;
     }

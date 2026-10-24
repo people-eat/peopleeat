@@ -215,13 +215,24 @@ export function ProfileCustomerBookingRequestPage({
                 </div>
 
                 {pendingAmendment != null ? (
-                    <StatusAlert tone="info" title={{ de: 'Änderung vorgeschlagen', en: 'Change proposed' }[locale]}>
-                        {
+                    <StatusAlert
+                        tone="info"
+                        title={
                             {
-                                de: `Dein Vorschlag wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
-                                en: `Your proposal is waiting for the chef to confirm. New host price: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
+                                de: pendingAmendment.claimedAt != null ? 'Änderung wird angewendet' : 'Änderung vorgeschlagen',
+                                en: pendingAmendment.claimedAt != null ? 'Change is being applied' : 'Change proposed',
                             }[locale]
                         }
+                    >
+                        {pendingAmendment.claimedAt != null
+                            ? {
+                                  de: `Dein Koch hat den Vorschlag angenommen. Preis und Zahlung werden gerade aktualisiert. Neuer Gastgeberpreis: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
+                                  en: `Your chef accepted the proposal. Price and payment are updating now. New host price: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
+                              }[locale]
+                            : {
+                                  de: `Dein Vorschlag wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
+                                  en: `Your proposal is waiting for the chef to confirm. New host price: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
+                              }[locale]}
                     </StatusAlert>
                 ) : null}
 

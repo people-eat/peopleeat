@@ -288,4 +288,56 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
                 (offer?.paymentProviderFeeCents ?? 0),
         ).toBe(offer?.totalWithoutDiscountsCentsCustomer);
     });
+
+    it('clears claim when PAYED Stripe charge fails before a PaymentIntent is created', async () => {
+        const { cook, bookingRequestOfferId } = await seedOfferWithPendingAmendment('PAYED');
+        const increaseAmendment: BookingRequestOfferParticipantAmendment = {
+            amendmentApplyId: idCreate(),
+            requestedAt: new Date().toISOString(),
+            participants: [
+                { type: 'ADULT', name: 'A', restrictions: [] },
+                { type: 'ADULT', name: 'B', restrictions: [] },
+                { type: 'ADULT', name: 'C', restrictions: [] },
+                { type: 'ADULT', name: 'D', restrictions: [] },
+                { type: 'ADULT', name: 'E', restrictions: [] },
+            ],
+            menuPriceCentsBefore: 40_000,
+            travelExpensesCentsBefore: 2_000,
+            totalCentsCustomerBefore: 45_000,
+            payoutCentsCookBefore: 34_800,
+        };
+        await testDb
+            .update(bookingRequestOffers)
+            .set({
+                paymentData: {
+                    paymentIntentId: 'pi_apply',
+                    clientSecret: 'pi_secret',
+                    transferId: 'tr_apply',
+                    setupIntentId: 'seti_apply',
+                },
+                participantAmendment: increaseAmendment,
+            })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+        vi.mocked(cook.serverRuntime.stripe.setupIntentPaymentMethodIdFindOne).mockResolvedValue('pm_apply');
+        vi.mocked(cook.serverRuntime.stripe.paymentIntentCreateFromPaymentMethodWithSplit).mockRejectedValue(
+            new Error('Amount must be at least €0.50 EUR'),
+        );
+
+        await expect(
+            cookBookingRequestOfferParticipantAmendmentAccept(
+                cookMutationParent(cook.user.userId),
+                { bookingRequestOfferId },
+                cook.requestingSession,
+                cook.serverRuntime,
+            ),
+        ).rejects.toThrow('Amount must be at least €0.50 EUR');
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.participantAmendment?.amendmentApplyId).toBe(increaseAmendment.amendmentApplyId);
+        expect(offer?.participantAmendment?.claimedAt).toBeUndefined();
+    });
 });

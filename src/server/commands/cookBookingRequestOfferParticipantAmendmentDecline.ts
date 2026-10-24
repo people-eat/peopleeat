@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
 import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequestParticipants, bookingRequests, users } from '../db/schema';
@@ -60,13 +60,24 @@ export async function cookBookingRequestOfferParticipantAmendmentDecline(
         const discountedAfter = proposedParticipants.filter((p) => p.type === 'DISCOUNTED').length;
 
         await serverRuntime.db.transaction(async (transaction) => {
-            await transaction
+            const cleared = await transaction
                 .update(bookingRequestOffers)
                 .set({
                     participantAmendment: null,
                     userUnreadNotificationCount: row.offer.userUnreadNotificationCount + 1,
                 })
-                .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+                .where(
+                    and(
+                        eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId),
+                        sql`${bookingRequestOffers.participantAmendment} IS NOT NULL`,
+                        sql`(${bookingRequestOffers.participantAmendment}->>'claimedAt') IS NULL`,
+                    ),
+                )
+                .returning({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId });
+
+            if (cleared.length === 0) {
+                throw new Error('cookBookingRequestOfferParticipantAmendmentDecline: amendment is already being applied');
+            }
 
             await transaction.insert(bookingRequestOfferEvents).values({
                 bookingRequestOfferEventId: idCreate(),

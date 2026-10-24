@@ -2589,6 +2589,7 @@ export type GqlCBookingRequestOfferCreate = {
 
 export interface GqlCBookingRequestOfferParticipantAmendment {
     __typename?: 'BookingRequestOfferParticipantAmendment';
+    claimedAt?: Maybe<Scalars['DateTime']['output']>;
     exactEventAddress?: Maybe<GqlCCookTravelOriginAddress>;
     giftCardDeltaCents: Scalars['Int']['output'];
     menuPriceCentsAfter: Scalars['Int']['output'];
@@ -9520,6 +9521,7 @@ export type GqlCAdminBookingRequestEditPageRequestFragment = {
         payoutCentsCook: number;
         participantAmendment: {
             requestedAt: string;
+            claimedAt: string | null;
             menuPriceCentsBefore: number;
             menuPriceCentsAfter: number;
             travelExpensesCentsBefore: number;
@@ -9604,6 +9606,7 @@ export type GqlCAdminBookingRequestEditPageQuery = {
                         payoutCentsCook: number;
                         participantAmendment: {
                             requestedAt: string;
+                            claimedAt: string | null;
                             menuPriceCentsBefore: number;
                             menuPriceCentsAfter: number;
                             travelExpensesCentsBefore: number;
@@ -9918,6 +9921,7 @@ export type GqlCAdminBookingRequestOfferPageOfferFragment = {
     createdAt: string;
     participantAmendment: {
         requestedAt: string;
+        claimedAt: string | null;
         menuPriceCentsBefore: number;
         menuPriceCentsAfter: number;
         travelExpensesCentsBefore: number;
@@ -10151,6 +10155,7 @@ export type GqlCAdminBookingRequestOfferPageQuery = {
                     createdAt: string;
                     participantAmendment: {
                         requestedAt: string;
+                        claimedAt: string | null;
                         menuPriceCentsBefore: number;
                         menuPriceCentsAfter: number;
                         travelExpensesCentsBefore: number;
@@ -10397,6 +10402,7 @@ export type GqlCAdminBookingRequestOfferPageUpdatesSubscription = {
             createdAt: string;
             participantAmendment: {
                 requestedAt: string;
+                claimedAt: string | null;
                 menuPriceCentsBefore: number;
                 menuPriceCentsAfter: number;
                 travelExpensesCentsBefore: number;
@@ -10704,6 +10710,7 @@ export type GqlCAdminBookingRequestOfferPriceEditPageOfferFragment = {
     payoutDateTime: string | null;
     participantAmendment: {
         requestedAt: string;
+        claimedAt: string | null;
         menuPriceCentsBefore: number;
         menuPriceCentsAfter: number;
         travelExpensesCentsBefore: number;
@@ -10774,6 +10781,7 @@ export type GqlCAdminBookingRequestOfferPriceEditPageQuery = {
                     payoutDateTime: string | null;
                     participantAmendment: {
                         requestedAt: string;
+                        claimedAt: string | null;
                         menuPriceCentsBefore: number;
                         menuPriceCentsAfter: number;
                         travelExpensesCentsBefore: number;
@@ -10896,6 +10904,7 @@ export type GqlCAdminBookingRequestPageRequestFragment = {
         totalCentsCustomer: number | null;
         participantAmendment: {
             requestedAt: string;
+            claimedAt: string | null;
             menuPriceCentsBefore: number;
             menuPriceCentsAfter: number;
             travelExpensesCentsBefore: number;
@@ -11022,6 +11031,7 @@ export type GqlCAdminBookingRequestPageQuery = {
                         totalCentsCustomer: number | null;
                         participantAmendment: {
                             requestedAt: string;
+                            claimedAt: string | null;
                             menuPriceCentsBefore: number;
                             menuPriceCentsAfter: number;
                             travelExpensesCentsBefore: number;
@@ -11148,6 +11158,7 @@ export type GqlCAdminBookingRequestPageUpdatesSubscription = {
                 totalCentsCustomer: number | null;
                 participantAmendment: {
                     requestedAt: string;
+                    claimedAt: string | null;
                     menuPriceCentsBefore: number;
                     menuPriceCentsAfter: number;
                     travelExpensesCentsBefore: number;
@@ -16764,6 +16775,7 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
             cookTestimonial: { cookTestimonialId: string; body: string | null; rating: number | null } | null;
             participantAmendment: {
                 requestedAt: string;
+                claimedAt: string | null;
                 menuPriceCentsBefore: number;
                 menuPriceCentsAfter: number;
                 travelExpensesCentsBefore: number;
@@ -16924,6 +16936,7 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                     cookTestimonial: { cookTestimonialId: string; body: string | null; rating: number | null } | null;
                     participantAmendment: {
                         requestedAt: string;
+                        claimedAt: string | null;
                         menuPriceCentsBefore: number;
                         menuPriceCentsAfter: number;
                         travelExpensesCentsBefore: number;
@@ -17095,6 +17108,7 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                 cookTestimonial: { cookTestimonialId: string; body: string | null; rating: number | null } | null;
                 participantAmendment: {
                     requestedAt: string;
+                    claimedAt: string | null;
                     menuPriceCentsBefore: number;
                     menuPriceCentsAfter: number;
                     travelExpensesCentsBefore: number;
@@ -19568,6 +19582,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
             payment: { clientSecret: string; publishableKey: string; type: Schema.GqlCBookingRequestOfferPaymentDataType } | null;
             participantAmendment: {
                 requestedAt: string;
+                claimedAt: string | null;
                 menuPriceCentsBefore: number;
                 menuPriceCentsAfter: number;
                 travelExpensesCentsBefore: number;
@@ -19732,6 +19747,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
                     payment: { clientSecret: string; publishableKey: string; type: Schema.GqlCBookingRequestOfferPaymentDataType } | null;
                     participantAmendment: {
                         requestedAt: string;
+                        claimedAt: string | null;
                         menuPriceCentsBefore: number;
                         menuPriceCentsAfter: number;
                         travelExpensesCentsBefore: number;
@@ -19907,6 +19923,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
                 payment: { clientSecret: string; publishableKey: string; type: Schema.GqlCBookingRequestOfferPaymentDataType } | null;
                 participantAmendment: {
                     requestedAt: string;
+                    claimedAt: string | null;
                     menuPriceCentsBefore: number;
                     menuPriceCentsAfter: number;
                     travelExpensesCentsBefore: number;
@@ -20149,6 +20166,7 @@ export type GqlCProfileCustomerBookingRequestPageUserFragment = {
             canRequestParticipantAmendment: boolean;
             participantAmendment: {
                 requestedAt: string;
+                claimedAt: string | null;
                 menuPriceCentsBefore: number;
                 menuPriceCentsAfter: number;
                 travelExpensesCentsBefore: number;
@@ -20241,6 +20259,7 @@ export type GqlCProfileCustomerBookingRequestPageQuery = {
                     canRequestParticipantAmendment: boolean;
                     participantAmendment: {
                         requestedAt: string;
+                        claimedAt: string | null;
                         menuPriceCentsBefore: number;
                         menuPriceCentsAfter: number;
                         travelExpensesCentsBefore: number;
@@ -20338,6 +20357,7 @@ export type GqlCProfileCustomerBookingRequestPageUpdatesSubscription = {
                 canRequestParticipantAmendment: boolean;
                 participantAmendment: {
                     requestedAt: string;
+                    claimedAt: string | null;
                     menuPriceCentsBefore: number;
                     menuPriceCentsAfter: number;
                     travelExpensesCentsBefore: number;
@@ -25182,6 +25202,7 @@ export const AdminBookingRequestEditPageRequestFragmentDoc = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'participants' },
@@ -25597,6 +25618,7 @@ export const AdminBookingRequestOfferPageOfferFragmentDoc = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'participants' },
@@ -26141,6 +26163,7 @@ export const AdminBookingRequestOfferPriceEditPageOfferFragmentDoc = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'participants' },
@@ -26468,6 +26491,7 @@ export const AdminBookingRequestPageRequestFragmentDoc = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'participants' },
@@ -29624,6 +29648,7 @@ export const ProfileCookBookingRequestOfferPageUserFragmentDoc = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'participants' },
@@ -32387,6 +32412,7 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'participants' },
@@ -32627,6 +32653,7 @@ export const ProfileCustomerBookingRequestPageUserFragmentDoc = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'participants' },
@@ -44570,6 +44597,7 @@ export const AdminBookingRequestEditPageDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'participants' },
@@ -46044,6 +46072,7 @@ export const AdminBookingRequestOfferPageDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'participants' },
@@ -46677,6 +46706,7 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'participants' },
@@ -47972,6 +48002,7 @@ export const AdminBookingRequestOfferPriceEditPageDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'participants' },
@@ -48466,6 +48497,7 @@ export const AdminBookingRequestPageDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'participants' },
@@ -48844,6 +48876,7 @@ export const AdminBookingRequestPageUpdatesDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'participants' },
@@ -69748,6 +69781,7 @@ export const ProfileCookBookingRequestOfferPageDocument = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'participants' },
@@ -70237,6 +70271,7 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'participants' },
@@ -78146,6 +78181,7 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'participants' },
@@ -78726,6 +78762,7 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'participants' },
@@ -79904,6 +79941,7 @@ export const ProfileCustomerBookingRequestPageDocument = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'participants' },
@@ -80186,6 +80224,7 @@ export const ProfileCustomerBookingRequestPageUpdatesDocument = {
                                                     kind: 'SelectionSet',
                                                     selections: [
                                                         { kind: 'Field', name: { kind: 'Name', value: 'requestedAt' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'claimedAt' } },
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'participants' },

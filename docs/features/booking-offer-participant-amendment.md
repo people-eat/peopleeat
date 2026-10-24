@@ -18,7 +18,8 @@ preparations done. Amendment propose is gated by `BOOKING_REQUEST_OFFER_AMENDMEN
 3. On a dual-accepted offer (payment `EMPTY` / `SETUP` / `PAYED`, event still ahead), the customer can **propose** when the amendment
    feature toggle is on, preparations are not locked, and there is no unpaid `pendingDeltaPayment` from a prior increase.
 4. The booking stays dual-accepted. Live participants, venue, and money stay unchanged until the cook decides. The customer may **withdraw**
-   a pending proposal (no money move).
+   a pending proposal (no money move) while it is still awaiting the cook. Once accept has claimed the proposal, withdraw and cook decline
+   are blocked; the UI switches to an “being applied” state (cook may **Retry** if apply stalled).
 5. The cook sees the proposal on every offer tab (banner + pinned footer **Accept change** / **Decline**) with before/after headcount and/or
    venue and payout. Pending proposals stay actionable even if the amendment rollout toggle is turned off mid-flight.
 6. On accept, the platform applies participants and/or venue, scales the locked menu total by paid-headcount when headcount changed,
@@ -33,8 +34,10 @@ preparations done. Amendment propose is gated by `BOOKING_REQUEST_OFFER_AMENDMEN
      `platformFeeCentsCustomer` (platform win) so offer line items equal the charged amount. When cook payout exceeds the pull, Connect
      still sends the delta PI to the cook and the win is a smaller platform top-up. Live `priceImpact` / `travelImpact` host totals and
      pending amendment GraphQL use the same rounded figure.
-7. On decline or customer cancel, the pending proposal is cleared (cancel is blocked once accept has claimed the amendment); the booking is
-   unchanged.
+7. On decline or customer cancel, the pending proposal is cleared (both are blocked once accept has claimed the amendment). If apply fails
+   **before** any Stripe mutation that may have moved money / payment instruments, the claim is cleared again so withdraw / decline / retry
+   work. After a successful Stripe mutation, the claim stays for idempotent cook **Retry**. The booking is otherwise unchanged on decline /
+   cancel.
 8. When `BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE` is on, the cook can mark **shopping / preparations done** (confirmation dialog first).
    After that, the customer cannot open a new amendment (prep lock wins even if the amendment toggle stays on). Admins can clear the lock
    for ops.
@@ -64,8 +67,9 @@ preparations done. Amendment propose is gated by `BOOKING_REQUEST_OFFER_AMENDMEN
 Cook-gated amendment with preparations lock, separate feature-toggle rollout for propose vs prep-complete, Stripe + gift deltas only on cook
 accept. Keep the booking-request edit route as the customer entry after accept (venue + participants). Keep pre-accept **Confirm changes**
 (+ optional menu/travel auto-adjust) separate from post-accept **Accept change**. Admin can clear the prep lock. Accept claims the pending
-JSON (`claimedAt`) before Stripe money moves; Stripe ops use `amendmentApplyId` idempotency keys; Connect top-ups append to
-`extraTransferIds` (legacy `extraTransferId` kept as latest).
+JSON (`claimedAt`, exposed on GraphQL) before Stripe money moves; failures before a completed Stripe mutation clear `claimedAt` so the
+customer is not stuck without Withdraw. Stripe ops use `amendmentApplyId` idempotency keys; Connect top-ups append to `extraTransferIds`
+(legacy `extraTransferId` kept as latest).
 
 ## Next steps
 
@@ -88,10 +92,12 @@ JSON (`claimedAt`) before Stripe money moves; Stripe ops use `amendmentApplyId` 
   `enforceStripeMinimumCustomerCharge` when `paymentStatus === 'PAYED'`); customer / admin edit `priceImpact` and dual-accepted
   `travelImpact` host totals use the same helper so the live customer-total preview matches the proposal / charge
 - Gates: `bookingRequestOfferParticipantAmendmentGates.ts`
-- Apply + Stripe: `bookingRequestOfferParticipantAmendmentApply.ts`; claim-before-money; `setupIntentCancel` / status-tolerant
-  `paymentIntentCancel`; refundable-cents + reversible-transfer chunking; idempotency keys; `pendingDeltaPayment` (+
-  `cookPayoutDeltaCents`); `extraTransferIds`; `giftCardCredit` / fail-closed `giftCardCharge`; webhook finalize via
-  `bookingRequestOfferPaymentIntentSucceededApply`
+- Apply + Stripe: `bookingRequestOfferParticipantAmendmentApply.ts`; claim-before-money; clear `claimedAt` when apply fails before a
+  completed Stripe mutation; `setupIntentCancel` / status-tolerant `paymentIntentCancel`; refundable-cents + reversible-transfer chunking;
+  idempotency keys; `pendingDeltaPayment` (+ `cookPayoutDeltaCents`); `extraTransferIds`; `giftCardCredit` / fail-closed `giftCardCharge`;
+  webhook finalize via `bookingRequestOfferPaymentIntentSucceededApply`
+- GraphQL: `BookingRequestOfferParticipantAmendment.claimedAt`; customer / cook / admin UIs hide withdraw/decline while claimed and show
+  apply-in-progress copy (cook **Retry**)
 - Commands: `userBookingRequestOfferParticipantAmendmentCreate` / `Cancel`, `cookBookingRequestOfferParticipantAmendmentAccept` / `Decline`,
   `cookBookingRequestOfferPreparationsComplete`, `adminBookingRequestOfferPreparationsClear`, `adminBookingRequestOfferAmendmentCreate` /
   `Apply` (shared prepare helper + absolute menu/travel overrides)

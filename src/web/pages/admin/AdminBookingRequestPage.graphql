@@ -107,6 +107,7 @@ fragment AdminBookingRequestPageRequest on AdminBookingRequest {
         totalCentsCustomer
         participantAmendment {
             requestedAt
+            claimedAt
             participants {
                 type
                 name

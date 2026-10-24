@@ -45,6 +45,7 @@ fragment ProfileCustomerBookingRequestPageUser on User {
             canRequestParticipantAmendment
             participantAmendment {
                 requestedAt
+                claimedAt
                 participants {
                     type
                     name

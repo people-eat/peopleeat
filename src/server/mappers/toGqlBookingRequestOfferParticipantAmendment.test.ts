@@ -35,6 +35,7 @@ describe('toGqlBookingRequestOfferParticipantAmendment', () => {
 
         expect(gql.travelExpensesCentsBefore).toBe(2_500);
         expect(gql.travelExpensesCentsAfter).toBe(2_500);
+        expect(gql.claimedAt).toBeNull();
     });
 
     it('uses persisted travelExpensesCentsAfter for venue proposals so host-price totals change', () => {

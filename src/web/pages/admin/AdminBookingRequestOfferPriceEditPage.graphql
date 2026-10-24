@@ -11,6 +11,7 @@ fragment AdminBookingRequestOfferPriceEditPageOffer on AdminBookingRequestOffer 
     preparationsCompletedAt
     participantAmendment {
         requestedAt
+        claimedAt
         participants {
             type
             name

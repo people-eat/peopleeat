@@ -288,16 +288,23 @@ export function ProfileCookBookingRequestOfferPage({
                             <BookingRequestOfferCallControls />
                         ) : pendingParticipantAmendment != null ? (
                             <>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    disabled={actionsBusy}
-                                    onClick={() => void onDeclineParticipantAmendment()}
-                                >
-                                    {{ de: 'Ablehnen', en: 'Decline' }[locale]}
-                                </Button>
+                                {pendingParticipantAmendment.claimedAt == null ? (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        disabled={actionsBusy}
+                                        onClick={() => void onDeclineParticipantAmendment()}
+                                    >
+                                        {{ de: 'Ablehnen', en: 'Decline' }[locale]}
+                                    </Button>
+                                ) : null}
                                 <Button type="button" disabled={actionsBusy} onClick={() => void onAcceptParticipantAmendment()}>
-                                    {{ de: 'Änderung annehmen', en: 'Accept change' }[locale]}
+                                    {
+                                        {
+                                            de: pendingParticipantAmendment.claimedAt != null ? 'Erneut versuchen' : 'Änderung annehmen',
+                                            en: pendingParticipantAmendment.claimedAt != null ? 'Retry' : 'Accept change',
+                                        }[locale]
+                                    }
                                 </Button>
                             </>
                         ) : canReAccept ? (

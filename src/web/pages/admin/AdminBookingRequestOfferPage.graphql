@@ -37,6 +37,7 @@ fragment AdminBookingRequestOfferPageOffer on AdminBookingRequestOffer {
     canCompletePreparations
     participantAmendment {
         requestedAt
+        claimedAt
         participants {
             type
             name

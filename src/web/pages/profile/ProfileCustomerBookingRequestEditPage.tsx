@@ -413,13 +413,24 @@ export function ProfileCustomerBookingRequestEditPage({
         >
             {isParticipantAmendmentMode ? (
                 pendingAmendment != null ? (
-                    <StatusAlert tone="info" title={{ de: 'Änderung vorgeschlagen', en: 'Change proposed' }[locale]}>
-                        {
+                    <StatusAlert
+                        tone="info"
+                        title={
                             {
-                                de: 'Dein Vorschlag wartet auf die Bestätigung des Kochs. Die aktuelle Buchung bleibt unverändert, bis er annimmt oder ablehnt.',
-                                en: 'Your proposal is waiting for the chef to confirm. The current booking stays unchanged until they accept or decline.',
+                                de: pendingAmendment.claimedAt != null ? 'Änderung wird angewendet' : 'Änderung vorgeschlagen',
+                                en: pendingAmendment.claimedAt != null ? 'Change is being applied' : 'Change proposed',
                             }[locale]
                         }
+                    >
+                        {pendingAmendment.claimedAt != null
+                            ? {
+                                  de: 'Dein Koch hat den Vorschlag angenommen. Preis und Zahlung werden gerade aktualisiert. Die Buchung bleibt bestätigt.',
+                                  en: 'Your chef accepted the proposal. Price and payment are updating now. The booking stays confirmed.',
+                              }[locale]
+                            : {
+                                  de: 'Dein Vorschlag wartet auf die Bestätigung des Kochs. Die aktuelle Buchung bleibt unverändert, bis er annimmt oder ablehnt.',
+                                  en: 'Your proposal is waiting for the chef to confirm. The current booking stays unchanged until they accept or decline.',
+                              }[locale]}
                     </StatusAlert>
                 ) : (
                     <StatusAlert

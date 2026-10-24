@@ -66,6 +66,7 @@ fragment ProfileCookBookingRequestOfferPageUser on User {
             canCompletePreparations
             participantAmendment {
                 requestedAt
+                claimedAt
                 participants {
                     type
                     name
