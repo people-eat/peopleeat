@@ -85,6 +85,7 @@ export async function userBookingRequestPriceImpactFindMany(
                     scaleMenuByParticipants: true,
                     platformFeePercentCook: row.offer.platformFeePercentCook,
                     platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
+                    enforceStripeMinimumCustomerCharge: row.offer.paymentStatus === 'PAYED',
                 },
                 row.offer.payoutCentsCook,
             );

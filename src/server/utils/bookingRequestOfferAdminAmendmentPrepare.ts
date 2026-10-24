@@ -314,6 +314,7 @@ export async function bookingRequestOfferAdminAmendmentPrepare(
             menuPriceCentsOverride: menuOverride,
             platformFeePercentCook,
             platformFeePercentCustomer,
+            enforceStripeMinimumCustomerCharge: row.offer.paymentStatus === 'PAYED',
         },
         row.offer.payoutCentsCook,
     );

@@ -28,7 +28,11 @@ preparations done. Amendment propose is gated by `BOOKING_REQUEST_OFFER_AMENDMEN
    - `PAYED`: partial customer refund (newest amendment PI first, then primary PI) or off-session delta charge (top-up transfer only after
      PI success); if no reusable payment method, creates an on-session delta PaymentIntent (`pendingDeltaPayment` with customer + cook
      deltas) so the customer can pay in checkout (finalize / Stripe webhook clear the pending delta and top up the cook); Connect reverse
-     chunks across top-ups + amendment PI destination transfers + primary transfer
+     chunks across top-ups + amendment PI destination transfers + primary transfer. Stripe’s EUR PaymentIntent floor is **€0.50**: a
+     positive customer delta under 50¢ is rounded up to 50¢; cook payout stays at the true delta; the surplus is added to
+     `platformFeeCentsCustomer` (platform win) so offer line items equal the charged amount. When cook payout exceeds the pull, Connect
+     still sends the delta PI to the cook and the win is a smaller platform top-up. Live `priceImpact` / `travelImpact` host totals and
+     pending amendment GraphQL use the same rounded figure.
 7. On decline or customer cancel, the pending proposal is cleared (cancel is blocked once accept has claimed the amendment); the booking is
    unchanged.
 8. When `BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE` is on, the cook can mark **shopping / preparations done** (confirmation dialog first).
@@ -45,14 +49,15 @@ preparations done. Amendment propose is gated by `BOOKING_REQUEST_OFFER_AMENDMEN
 
 ### Alternatives considered
 
-| Approach                                  | Notes                                                                  |
-| ----------------------------------------- | ---------------------------------------------------------------------- |
-| Auto-accept decreases with instant refund | Rejected — cooks may require a minimum headcount                       |
-| Free customer edit after accept           | Rejected — resets acceptance / money without cook consent              |
-| Reuse `COOK_NEEDS_TO_ACCEPT` after pay    | Rejected — would clear dual accept and break paid / pull payment state |
-| Change per-person price on amendment      | Rejected for v1 — scale locked menu total only                         |
-| Keep gift discount fixed on decrease      | Rejected — unused gift-card credit is restored to the card balance     |
-| Customer cancel of a pending amendment    | **Chosen** — customer may withdraw before cook decides                 |
+| Approach                                  | Notes                                                                        |
+| ----------------------------------------- | ---------------------------------------------------------------------------- |
+| Auto-accept decreases with instant refund | Rejected — cooks may require a minimum headcount                             |
+| Free customer edit after accept           | Rejected — resets acceptance / money without cook consent                    |
+| Reuse `COOK_NEEDS_TO_ACCEPT` after pay    | Rejected — would clear dual accept and break paid / pull payment state       |
+| Change per-person price on amendment      | Rejected for v1 — scale locked menu total only                               |
+| Keep gift discount fixed on decrease      | Rejected — unused gift-card credit is restored to the card balance           |
+| Customer cancel of a pending amendment    | **Chosen** — customer may withdraw before cook decides                       |
+| Skip / absorb sub-€0.50 PAYED top-ups     | Rejected — charge Stripe’s €0.50 floor; surplus → `platformFeeCentsCustomer` |
 
 ### Chosen
 
@@ -79,8 +84,9 @@ JSON (`claimedAt`) before Stripe money moves; Stripe ops use `amendmentApplyId` 
 - Domain events: `USER_PARTICIPANT_AMENDMENT_REQUESTED`, `USER_PARTICIPANT_AMENDMENT_CANCELED`, `COOK_PARTICIPANT_AMENDMENT_*`,
   `ADMIN_PARTICIPANT_AMENDMENT_REQUESTED`, `ADMIN_PARTICIPANT_AMENDMENT_APPLIED`, `COOK_PREPARATIONS_COMPLETED`,
   `ADMIN_PREPARATIONS_CLEARED`
-- Price helper: `bookingRequestOfferParticipantAmendmentPrice.ts` (menu scale, travel, promo + gift re-apply); customer / admin edit
-  `priceImpact` uses the same helper for dual-accepted offers so the live customer-total preview matches the proposal
+- Price helper: `bookingRequestOfferParticipantAmendmentPrice.ts` (menu scale, travel, promo + gift re-apply;
+  `enforceStripeMinimumCustomerCharge` when `paymentStatus === 'PAYED'`); customer / admin edit `priceImpact` and dual-accepted
+  `travelImpact` host totals use the same helper so the live customer-total preview matches the proposal / charge
 - Gates: `bookingRequestOfferParticipantAmendmentGates.ts`
 - Apply + Stripe: `bookingRequestOfferParticipantAmendmentApply.ts`; claim-before-money; `setupIntentCancel` / status-tolerant
   `paymentIntentCancel`; refundable-cents + reversible-transfer chunking; idempotency keys; `pendingDeltaPayment` (+

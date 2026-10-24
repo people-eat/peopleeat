@@ -1841,6 +1841,9 @@ type UserBookingRequestOfferTravelImpact {
     travelDistanceKmAfter: Float!
     travelExpensesCentsBefore: Int!
     travelExpensesCentsAfter: Int!
+    # Dual-accepted only: host totals after promo/gift (PAYED applies Stripe €0.50 delta floor).
+    totalCentsCustomerBefore: Int
+    totalCentsCustomerAfter: Int
 }
 
 # Per-offer menu / total preview when the customer considers a new headcount on edit.

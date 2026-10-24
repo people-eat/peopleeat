@@ -206,6 +206,7 @@ export async function bookingRequestOfferParticipantAmendmentApply(
             menuPriceCentsOverride: amendment.menuPriceCentsAfter,
             platformFeePercentCook: amendment.platformFeePercentCookAfter ?? offer.platformFeePercentCook,
             platformFeePercentCustomer: amendment.platformFeePercentCustomerAfter ?? offer.platformFeePercentCustomer,
+            enforceStripeMinimumCustomerCharge: offer.paymentStatus === 'PAYED',
         },
         offer.payoutCentsCook,
     );

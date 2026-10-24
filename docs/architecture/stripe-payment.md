@@ -64,11 +64,11 @@ immediately (bypass cook approval). Absolute menu/travel overrides live on `part
 `travelExpensesCentsAfter` (venue changes also persist recomputed `travelExpensesCentsAfter` for pending totals). Money rules match customer
 amendments:
 
-| `paymentStatus` | Behavior                                                                                                                               |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `EMPTY`         | Cancel unpaid PI/SI when present; re-prepare at new totals (SetupIntent path has no amount on the SI; near-term PI must be re-created) |
-| `SETUP`         | Update offer cents only; pull job charges the new total later                                                                          |
-| `PAYED`         | Partial refund / off-session top-up / `pendingDeltaPayment` on-session delta                                                           |
+| `paymentStatus` | Behavior                                                                                                                                                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EMPTY`         | Cancel unpaid PI/SI when present; re-prepare at new totals (SetupIntent path has no amount on the SI; near-term PI must be re-created)                                                                                                                  |
+| `SETUP`         | Update offer cents only; pull job charges the new total later                                                                                                                                                                                           |
+| `PAYED`         | Partial refund / off-session top-up / `pendingDeltaPayment` on-session delta. Customer pulls below Stripe’s €0.50 EUR floor round up to 50¢; surplus booked as `platformFeeCentsCustomer` (cook payout unchanged); offer totals match the PaymentIntent |
 
 Blocked for `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED`. Prep lock still applies unless cleared. Direct `bookingRequestOfferUpdate`
 menu/travel on dual-accepted offers is rejected.

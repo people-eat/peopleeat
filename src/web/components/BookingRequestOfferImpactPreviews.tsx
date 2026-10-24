@@ -21,7 +21,11 @@ function signedTravelExpenseLabel(deltaCents: number, locale: Locale): string {
 function travelImpactMeaningful(impact: GqlCUserBookingRequestOfferTravelImpact): boolean {
     const distanceDelta = impact.travelDistanceKmAfter - impact.travelDistanceKmBefore;
     const expenseDelta = impact.travelExpensesCentsAfter - impact.travelExpensesCentsBefore;
-    return Math.abs(distanceDelta) >= 0.05 || expenseDelta !== 0;
+    const hostDelta =
+        impact.totalCentsCustomerBefore != null && impact.totalCentsCustomerAfter != null
+            ? impact.totalCentsCustomerAfter - impact.totalCentsCustomerBefore
+            : 0;
+    return Math.abs(distanceDelta) >= 0.05 || expenseDelta !== 0 || hostDelta !== 0;
 }
 
 export function BookingRequestOfferTravelImpactPreview({
@@ -68,6 +72,9 @@ export function BookingRequestOfferTravelImpactPreview({
                 {changed.map((impact) => {
                     const distanceDelta = impact.travelDistanceKmAfter - impact.travelDistanceKmBefore;
                     const expenseDelta = impact.travelExpensesCentsAfter - impact.travelExpensesCentsBefore;
+                    const hostBefore = impact.totalCentsCustomerBefore;
+                    const hostAfter = impact.totalCentsCustomerAfter;
+                    const hostDelta = hostBefore != null && hostAfter != null ? hostAfter - hostBefore : null;
                     return (
                         <li key={impact.bookingRequestOfferId}>
                             <span className="font-medium">{impact.cookDisplay}</span>
@@ -75,6 +82,12 @@ export function BookingRequestOfferTravelImpactPreview({
                             {signedKmLabel(distanceDelta, locale)}
                             {' · '}
                             {signedTravelExpenseLabel(expenseDelta, locale)} {{ de: 'Fahrtkosten', en: 'travel' }[locale]}
+                            {hostDelta != null ? (
+                                <>
+                                    {' · '}
+                                    {signedTravelExpenseLabel(hostDelta, locale)} {{ de: 'Gastgeberpreis', en: 'host price' }[locale]}
+                                </>
+                            ) : null}
                         </li>
                     );
                 })}

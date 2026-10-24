@@ -219,4 +219,73 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
         expect(pending?.cookPayoutDeltaCents).toBeGreaterThan(0);
         expect(pending?.cookPayoutDeltaCents).toBeDefined();
     });
+
+    it('PAYED tiny venue increase charges Stripe minimum and parks surplus as customer platform fee', async () => {
+        const { cook, bookingRequestOfferId } = await seedOfferWithPendingAmendment('PAYED');
+        // Fee-consistent before totals (menu 40_000 / travel 2_000 → host 44_289).
+        const tinyVenueAmendment: BookingRequestOfferParticipantAmendment = {
+            amendmentApplyId: idCreate(),
+            requestedAt: new Date().toISOString(),
+            exactEventAddress: {
+                ...berlin,
+                displayText: 'Berlin Street 3',
+                addressLine1: 'Street 3',
+            },
+            menuPriceCentsBefore: 40_000,
+            travelExpensesCentsBefore: 2_000,
+            travelExpensesCentsAfter: 2_010,
+            totalCentsCustomerBefore: 44_289,
+            payoutCentsCookBefore: 34_800,
+        };
+        await testDb
+            .update(bookingRequestOffers)
+            .set({
+                paymentProviderFeeCents: 689,
+                totalWithoutDiscountsCentsCustomer: 44_289,
+                totalCentsCustomer: 44_289,
+                paymentData: {
+                    paymentIntentId: 'pi_apply',
+                    clientSecret: 'pi_secret',
+                    transferId: 'tr_apply',
+                    setupIntentId: 'seti_apply',
+                },
+                participantAmendment: tinyVenueAmendment,
+            })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+        vi.mocked(cook.serverRuntime.stripe.setupIntentPaymentMethodIdFindOne).mockResolvedValue('pm_apply');
+        vi.mocked(cook.serverRuntime.stripe.paymentIntentCreateFromPaymentMethodWithSplit).mockResolvedValue({
+            paymentIntentId: 'pi_delta_min',
+            clientSecret: 'pi_delta_min_secret',
+        });
+        vi.mocked(cook.serverRuntime.stripe.paymentIntentSucceededCheck).mockResolvedValue(true);
+
+        const accepted = await cookBookingRequestOfferParticipantAmendmentAccept(
+            cookMutationParent(cook.user.userId),
+            { bookingRequestOfferId },
+            cook.requestingSession,
+            cook.serverRuntime,
+        );
+        expect(accepted.success).toBe(true);
+
+        const chargeCall = vi.mocked(cook.serverRuntime.stripe.paymentIntentCreateFromPaymentMethodWithSplit).mock.calls[0]?.[0];
+        expect(chargeCall?.pullAmount).toBe(50);
+        expect(chargeCall?.payoutAmount).toBe(10);
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.totalCentsCustomer).toBe(44_339);
+        expect(offer?.travelExpensesCents).toBe(2_010);
+        expect(offer?.payoutCentsCook).toBe(34_810);
+        expect(offer?.paymentProviderFeeCents).toBe(689);
+        expect(offer?.platformFeeCentsCustomer).toBe(1_640);
+        expect(
+            (offer?.menuPriceCents ?? 0) +
+                (offer?.platformFeeCentsCustomer ?? 0) +
+                (offer?.travelExpensesCents ?? 0) +
+                (offer?.paymentProviderFeeCents ?? 0),
+        ).toBe(offer?.totalWithoutDiscountsCentsCustomer);
+    });
 });

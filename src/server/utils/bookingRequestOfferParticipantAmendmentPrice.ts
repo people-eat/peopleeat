@@ -5,6 +5,9 @@ import {
 import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
 import type { BookingRequestParticipantType } from '../domain/bookingRequest';
 
+/** Stripe EUR PaymentIntent floor. PAYED amendment top-ups below this are rounded up. */
+export const STRIPE_MINIMUM_CHARGE_CENTS = 50;
+
 export type BookingRequestOfferParticipantAmendmentPriceInput = {
     menuPriceCentsBefore: number;
     travelExpensesCentsAfter: number;
@@ -24,6 +27,13 @@ export type BookingRequestOfferParticipantAmendmentPriceInput = {
     /** Sticky offer fee % (required so amendments do not reset to marketplace defaults). */
     platformFeePercentCook: number;
     platformFeePercentCustomer: number;
+    /**
+     * When true (PAYED offers), round a positive customer delta up to
+     * {@link STRIPE_MINIMUM_CHARGE_CENTS}. Surplus is added to
+     * `platformFeeCentsCustomer` (platform win) so offer line items match the
+     * PaymentIntent amount. Cook payout stays at the true delta.
+     */
+    enforceStripeMinimumCustomerCharge?: boolean;
 };
 
 export type BookingRequestOfferParticipantAmendmentPriceResult = {
@@ -87,8 +97,24 @@ export function bookingRequestOfferParticipantAmendmentPriceCalculate(
     const afterPromo = Math.max(0, price.totalWithoutDiscountsCentsCustomer - promoAppliedCentsAfter);
     const giftCapacity = Math.max(0, input.giftCardAppliedCentsBefore) + Math.max(0, input.giftCardBalanceCents);
     const giftCardAppliedCentsAfter = Math.min(giftCapacity, afterPromo);
-    const totalCentsCustomerAfter = Math.max(0, afterPromo - giftCardAppliedCentsAfter);
+    let platformFeeCentsCustomer = price.platformFeeCentsCustomer;
+    let totalWithoutDiscountsCentsCustomerAfter = price.totalWithoutDiscountsCentsCustomer;
+    let totalCentsCustomerAfter = Math.max(0, afterPromo - giftCardAppliedCentsAfter);
     const giftCardDeltaCents = giftCardAppliedCentsAfter - input.giftCardAppliedCentsBefore;
+    let customerDeltaCents = totalCentsCustomerAfter - input.totalCentsCustomerBefore;
+
+    // PAYED delta PaymentIntents cannot be below Stripe's currency floor. Round the
+    // customer pull up and park the surplus in customer platform fee (platform win)
+    // so persisted line items stay equal to the charged amount. When cook payout
+    // exceeds the pull, Connect still routes the PI to the cook and the win shows
+    // up as a smaller platform top-up transfer — same platform economics.
+    if (input.enforceStripeMinimumCustomerCharge && customerDeltaCents > 0 && customerDeltaCents < STRIPE_MINIMUM_CHARGE_CENTS) {
+        const roundUpCents = STRIPE_MINIMUM_CHARGE_CENTS - customerDeltaCents;
+        platformFeeCentsCustomer += roundUpCents;
+        totalWithoutDiscountsCentsCustomerAfter += roundUpCents;
+        totalCentsCustomerAfter += roundUpCents;
+        customerDeltaCents = STRIPE_MINIMUM_CHARGE_CENTS;
+    }
 
     return {
         paidParticipantsBefore,
@@ -99,14 +125,14 @@ export function bookingRequestOfferParticipantAmendmentPriceCalculate(
         travelExpensesCents: price.travelExpensesCents,
         paymentProviderFeeCents: price.paymentProviderFeeCents,
         platformFeeCentsCook: price.platformFeeCentsCook,
-        platformFeeCentsCustomer: price.platformFeeCentsCustomer,
+        platformFeeCentsCustomer,
         payoutCentsCookAfter: price.payoutCentsCook,
-        totalWithoutDiscountsCentsCustomerAfter: price.totalWithoutDiscountsCentsCustomer,
+        totalWithoutDiscountsCentsCustomerAfter,
         promoAppliedCentsAfter,
         giftCardAppliedCentsAfter,
         giftCardDeltaCents,
         totalCentsCustomerAfter,
-        customerDeltaCents: totalCentsCustomerAfter - input.totalCentsCustomerBefore,
+        customerDeltaCents,
         cookPayoutDeltaCents: price.payoutCentsCook - payoutCentsCookBefore,
     };
 }

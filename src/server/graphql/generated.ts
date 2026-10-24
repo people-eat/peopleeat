@@ -4802,6 +4802,8 @@ export interface GqlSUserBookingRequestOfferTravelImpact {
     __typename?: 'UserBookingRequestOfferTravelImpact';
     bookingRequestOfferId: Scalars['ID']['output'];
     cookDisplay: Scalars['String']['output'];
+    totalCentsCustomerAfter?: Maybe<Scalars['Int']['output']>;
+    totalCentsCustomerBefore?: Maybe<Scalars['Int']['output']>;
     travelDistanceKmAfter: Scalars['Float']['output'];
     travelDistanceKmBefore: Scalars['Float']['output'];
     travelExpensesCentsAfter: Scalars['Int']['output'];
@@ -10744,6 +10746,8 @@ export type GqlSUserBookingRequestOfferTravelImpactResolvers<
 > = ResolversObject<{
     bookingRequestOfferId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     cookDisplay?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    totalCentsCustomerAfter?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
+    totalCentsCustomerBefore?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     travelDistanceKmAfter?: Resolver<GqlSResolversTypes['Float'], ParentType, ContextType>;
     travelDistanceKmBefore?: Resolver<GqlSResolversTypes['Float'], ParentType, ContextType>;
     travelExpensesCentsAfter?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;

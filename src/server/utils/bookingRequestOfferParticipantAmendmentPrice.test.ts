@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { bookingRequestOfferParticipantAmendmentPriceCalculate } from './bookingRequestOfferParticipantAmendmentPrice';
+import {
+    bookingRequestOfferParticipantAmendmentPriceCalculate,
+    STRIPE_MINIMUM_CHARGE_CENTS,
+} from './bookingRequestOfferParticipantAmendmentPrice';
 
 describe('bookingRequestOfferParticipantAmendmentPriceCalculate', () => {
     it('scales menu total by paid-headcount ratio and restores unused gift credit on decrease', () => {
@@ -126,5 +129,79 @@ describe('bookingRequestOfferParticipantAmendmentPriceCalculate', () => {
         expect(result.platformFeeCentsCook).toBe(2_000);
         expect(result.platformFeeCentsCustomer).toBe(400);
         expect(result.payoutCentsCookAfter).toBe(20_500);
+    });
+
+    it('PAYED rounds sub-minimum customer increases up and parks surplus in customer platform fee', () => {
+        const withoutFloor = bookingRequestOfferParticipantAmendmentPriceCalculate(
+            {
+                menuPriceCentsBefore: 40_000,
+                travelExpensesCentsAfter: 2_010,
+                totalWithoutDiscountsCentsCustomerBefore: 44_289,
+                totalCentsCustomerBefore: 44_289,
+                giftCardAppliedCentsBefore: 0,
+                giftCardBalanceCents: 0,
+                promoAmountCents: 0,
+                participantsBefore: [{ type: 'ADULT' }, { type: 'ADULT' }],
+                participantsAfter: [{ type: 'ADULT' }, { type: 'ADULT' }],
+                scaleMenuByParticipants: false,
+                platformFeePercentCook: 18,
+                platformFeePercentCustomer: 4,
+            },
+            34_800,
+        );
+        expect(withoutFloor.customerDeltaCents).toBeGreaterThan(0);
+        expect(withoutFloor.customerDeltaCents).toBeLessThan(STRIPE_MINIMUM_CHARGE_CENTS);
+
+        const withFloor = bookingRequestOfferParticipantAmendmentPriceCalculate(
+            {
+                menuPriceCentsBefore: 40_000,
+                travelExpensesCentsAfter: 2_010,
+                totalWithoutDiscountsCentsCustomerBefore: 44_289,
+                totalCentsCustomerBefore: 44_289,
+                giftCardAppliedCentsBefore: 0,
+                giftCardBalanceCents: 0,
+                promoAmountCents: 0,
+                participantsBefore: [{ type: 'ADULT' }, { type: 'ADULT' }],
+                participantsAfter: [{ type: 'ADULT' }, { type: 'ADULT' }],
+                scaleMenuByParticipants: false,
+                platformFeePercentCook: 18,
+                platformFeePercentCustomer: 4,
+                enforceStripeMinimumCustomerCharge: true,
+            },
+            34_800,
+        );
+
+        expect(withFloor.customerDeltaCents).toBe(STRIPE_MINIMUM_CHARGE_CENTS);
+        expect(withFloor.totalCentsCustomerAfter).toBe(44_289 + STRIPE_MINIMUM_CHARGE_CENTS);
+        expect(withFloor.platformFeeCentsCustomer - withoutFloor.platformFeeCentsCustomer).toBe(
+            STRIPE_MINIMUM_CHARGE_CENTS - withoutFloor.customerDeltaCents,
+        );
+        expect(withFloor.paymentProviderFeeCents).toBe(withoutFloor.paymentProviderFeeCents);
+        expect(withFloor.cookPayoutDeltaCents).toBe(withoutFloor.cookPayoutDeltaCents);
+        expect(withFloor.travelExpensesCents).toBe(2_010);
+    });
+
+    it('does not round when enforceStripeMinimumCustomerCharge is off', () => {
+        const result = bookingRequestOfferParticipantAmendmentPriceCalculate(
+            {
+                menuPriceCentsBefore: 40_000,
+                travelExpensesCentsAfter: 2_010,
+                totalWithoutDiscountsCentsCustomerBefore: 44_289,
+                totalCentsCustomerBefore: 44_289,
+                giftCardAppliedCentsBefore: 0,
+                giftCardBalanceCents: 0,
+                promoAmountCents: 0,
+                participantsBefore: [{ type: 'ADULT' }, { type: 'ADULT' }],
+                participantsAfter: [{ type: 'ADULT' }, { type: 'ADULT' }],
+                scaleMenuByParticipants: false,
+                platformFeePercentCook: 18,
+                platformFeePercentCustomer: 4,
+                enforceStripeMinimumCustomerCharge: false,
+            },
+            34_800,
+        );
+
+        expect(result.customerDeltaCents).toBeGreaterThan(0);
+        expect(result.customerDeltaCents).toBeLessThan(STRIPE_MINIMUM_CHARGE_CENTS);
     });
 });

@@ -1,18 +1,21 @@
 import { eq } from 'drizzle-orm';
 
 import { bookingRequestOfferPriceCalculate } from '../../shared/bookingRequestOfferPrice';
-import { bookingRequestOffers, bookingRequests, cooks, users } from '../db/schema';
+import { bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks, giftCards, promoCodes, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
     GqlSUserBookingRequest,
     GqlSUserBookingRequestOfferTravelImpact,
     GqlSUserBookingRequestTravelImpactArgs,
 } from '../graphql/generated';
+import { bookingRequestOfferParticipantAmendmentPriceCalculate } from '../utils/bookingRequestOfferParticipantAmendmentPrice';
 import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
 
 /**
  * Preview driving-distance travel fee changes for a proposed venue on an owned
  * booking request. Used by the customer edit form before save.
+ * Dual-accepted offers also return host totals via the amendment price helper
+ * (Stripe minimum charge floor when PAYED) so the preview matches accept.
  */
 export async function userBookingRequestTravelImpactFindMany(
     parent: Pick<GqlSUserBookingRequest, 'bookingRequestId' | 'exactEventAddress'>,
@@ -28,14 +31,24 @@ export async function userBookingRequestTravelImpactFindMany(
     const rows = await serverRuntime.db
         .select({
             offer: bookingRequestOffers,
+            bookingRequest: bookingRequests,
             cook: cooks,
             cookUser: users,
+            giftCard: giftCards,
+            promoCode: promoCodes,
         })
         .from(bookingRequestOffers)
         .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestOffers.bookingRequestId))
         .innerJoin(cooks, eq(cooks.cookId, bookingRequestOffers.cookId))
         .innerJoin(users, eq(users.userId, cooks.cookId))
+        .leftJoin(giftCards, eq(giftCards.giftCardId, bookingRequests.giftCardId))
+        .leftJoin(promoCodes, eq(promoCodes.promoCodeId, bookingRequests.promoCodeId))
         .where(eq(bookingRequestOffers.bookingRequestId, parent.bookingRequestId));
+
+    const existingParticipants = await serverRuntime.db
+        .select()
+        .from(bookingRequestParticipants)
+        .where(eq(bookingRequestParticipants.bookingRequestId, parent.bookingRequestId));
 
     const impacts: GqlSUserBookingRequestOfferTravelImpact[] = [];
 
@@ -68,6 +81,33 @@ export async function userBookingRequestTravelImpactFindMany(
             travelExpensesCents: Math.round(travelDistanceKmAfter * row.cook.travelExpensesAmount * 2),
         }).travelExpensesCents;
 
+        const dualAccepted = row.offer.userAccepted === true && row.offer.cookAccepted === true;
+        let totalCentsCustomerBefore: number | null = null;
+        let totalCentsCustomerAfter: number | null = null;
+        if (dualAccepted) {
+            const hostBefore = row.offer.totalCentsCustomer ?? row.offer.totalWithoutDiscountsCentsCustomer;
+            const pricePreview = bookingRequestOfferParticipantAmendmentPriceCalculate(
+                {
+                    menuPriceCentsBefore: row.offer.menuPriceCents,
+                    travelExpensesCentsAfter,
+                    totalWithoutDiscountsCentsCustomerBefore: row.offer.totalWithoutDiscountsCentsCustomer,
+                    totalCentsCustomerBefore: hostBefore,
+                    giftCardAppliedCentsBefore: row.offer.giftCardAppliedCents,
+                    giftCardBalanceCents: row.giftCard?.balanceCents ?? 0,
+                    promoAmountCents: row.promoCode?.amountCents ?? 0,
+                    participantsBefore: existingParticipants,
+                    participantsAfter: existingParticipants,
+                    scaleMenuByParticipants: false,
+                    platformFeePercentCook: row.offer.platformFeePercentCook,
+                    platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
+                    enforceStripeMinimumCustomerCharge: row.offer.paymentStatus === 'PAYED',
+                },
+                row.offer.payoutCentsCook,
+            );
+            totalCentsCustomerBefore = hostBefore;
+            totalCentsCustomerAfter = pricePreview.totalCentsCustomerAfter;
+        }
+
         impacts.push({
             bookingRequestOfferId: row.offer.bookingRequestOfferId,
             cookDisplay: row.cookUser.firstName.trim() || row.cookUser.emailAddress || 'Cook',
@@ -75,6 +115,8 @@ export async function userBookingRequestTravelImpactFindMany(
             travelDistanceKmAfter,
             travelExpensesCentsBefore,
             travelExpensesCentsAfter,
+            totalCentsCustomerBefore,
+            totalCentsCustomerAfter,
         });
     }
 

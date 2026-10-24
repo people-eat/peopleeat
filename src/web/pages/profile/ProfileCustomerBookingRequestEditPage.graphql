@@ -31,6 +31,8 @@ query ProfileCustomerBookingRequestEditTravelImpact($bookingRequestId: ID!, $exa
                     travelDistanceKmAfter
                     travelExpensesCentsBefore
                     travelExpensesCentsAfter
+                    totalCentsCustomerBefore
+                    totalCentsCustomerAfter
                 }
             }
         }

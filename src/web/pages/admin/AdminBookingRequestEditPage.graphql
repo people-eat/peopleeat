@@ -138,6 +138,8 @@ query AdminBookingRequestEditTravelImpact($bookingRequestId: ID!, $exactEventAdd
                         travelDistanceKmAfter
                         travelExpensesCentsBefore
                         travelExpensesCentsAfter
+                        totalCentsCustomerBefore
+                        totalCentsCustomerAfter
                     }
                 }
             }
