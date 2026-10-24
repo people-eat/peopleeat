@@ -41,15 +41,14 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    lifecycle pill, and a CTA into the offer). When at least one offer exists, an info banner above the cards asks them to review, compare
    menus, chat, or call before deciding. They then open `/profile/booking-requests/$id/offers/$offerId` (tabs: offer / chat / call /
    testimonial; default Offer, clean URL; Chat uses `?tab=chat`). Offer tab shows menus, cook block, cost, and discount redeem / remove via
-   `BookingRequestDiscountEditor`
-   below the cost card while unpaid and not yet dual-accepted (no empty-state copy; input hidden once a code is applied — remove first to
-   enter another; UI follows server/`userUpdates` state only, no optimistic discount patch). When several menus are suggested, the customer
-   picks via selectable menu cards (meal-image collage, clamped title / description, course count); courses for the selected menu stay
-   below. Long menu descriptions and the cook bio use expandable text (collapsed to a few lines with a fade; click to expand). Applied promo
-   / gift fold into `costBreakdown` (negative line items + total via `CostBreakdownPanel`; no per-person or before-discount rows; muted
-   footer notes that travel is included). On wider panes the menu sits left and cook / pricing sit right. While the customer still needs to
-   accept, a pinned footer on the Offer tab holds **Accept**; decline stays in the header overflow menu and opens a reason dialog (free-text
-   plus suggested chips for price / menus / special requests).
+   `BookingRequestDiscountEditor` below the cost card while unpaid and not yet dual-accepted (no empty-state copy; input hidden once a code
+   is applied — remove first to enter another; UI follows server/`userUpdates` state only, no optimistic discount patch). When several menus
+   are suggested, the customer picks via selectable menu cards (meal-image collage, clamped title / description, course count); courses for
+   the selected menu stay below. Long menu descriptions and the cook bio use expandable text (collapsed to a few lines with a fade; click to
+   expand). Applied promo / gift fold into `costBreakdown` (negative line items + total via `CostBreakdownPanel`; no per-person or
+   before-discount rows; muted footer notes that travel is included). On wider panes the menu sits left and cook / pricing sit right. While
+   the customer still needs to accept, a pinned footer on the Offer tab holds **Accept**; decline stays in the header overflow menu and
+   opens a reason dialog (free-text plus suggested chips for price / menus / special requests).
 4. **Cook** manages offers at `/profile/booking-request-offers` with Active / Completed (**Stattgefunden**) / Archive tabs
    (`?view=completed` / `?view=archived`; default Active omits `view`). Inbox cards show event date only; while negotiating, amount row is
    **Auftragswert** / **Order value** from `totalWithoutDiscountsCentsCustomer`; after mutual accept, **Auszahlungsbetrag** / **Payout
