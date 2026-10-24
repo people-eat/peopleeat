@@ -33,10 +33,10 @@ Dedicated careers or talent-acquisition link in **Want to join** once a destinat
 
 ## Implementation
 
-| Piece       | Location                                                                                                |
-| ----------- | ------------------------------------------------------------------------------------------------------- |
-| Page        | `src/web/pages/AboutUsPage.tsx` (+ `.graphql`)                                                          |
-| Route / SEO | `src/routes/{-$locale}/about-us.tsx` — `seoMeta` via `publicWebPage`                                    |
-| Sections    | `SectionHowWeStarted`, `SectionOurMission`, `SectionMeetOurTeam`, `SectionWantToJoinOurTeam`            |
-| Assets      | `public/about-us/how-we-started-section/founders.png`, `public/about-us/meet-our-team-section/team.jpg` |
-| Contact CTA | `mailto:` using `SITE_CONTACT_EMAIL` from `src/shared/siteBranding.ts`                                  |
+| Piece       | Location                                                                                                  |
+| ----------- | --------------------------------------------------------------------------------------------------------- |
+| Page        | `src/web/pages/AboutUsPage.tsx` (+ `.graphql`)                                                            |
+| Route / SEO | `src/routes/{-$locale}/about-us.tsx` — `seoMeta` via `publicWebPage`                                      |
+| Sections    | `SectionHowWeStarted`, `SectionOurMission`, `SectionMeetOurTeam`, `SectionWantToJoinOurTeam`              |
+| Assets      | `public/about-us/how-we-started-section/founders.webp`, `public/about-us/meet-our-team-section/team.webp` |
+| Contact CTA | `mailto:` using `SITE_CONTACT_EMAIL` from `src/shared/siteBranding.ts`                                    |

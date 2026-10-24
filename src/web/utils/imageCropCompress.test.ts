@@ -99,7 +99,7 @@ describe('imageCropCompress', () => {
         expect(drawImage).toHaveBeenCalled();
         expect(fillRect).toHaveBeenCalled();
         expect(file).toBeInstanceOf(File);
-        expect(file.name).toBe('avatar.jpg');
-        expect(file.type).toBe('image/jpeg');
+        expect(file.name).toBe('avatar.webp');
+        expect(file.type).toBe('image/webp');
     });
 });

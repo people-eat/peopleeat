@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
 import { Reveal } from '../components/Reveal';
 import { useLocale } from '../hooks/useLocale';
@@ -107,11 +108,11 @@ function SceneCaption() {
                     }[locale]
                 }
             </span>
-            <img
+            <AppImage
                 alt={{ de: 'Bild von Privatkoch Max', en: 'Photo of private chef Max' }[locale]}
                 className="size-16 rounded-full object-cover object-center shadow-lg shadow-white"
                 height={64}
-                src="/home/comparison-section/private-chef-max.jpg"
+                src="/home/comparison-section/private-chef-max.webp"
                 width={64}
             />
         </div>
@@ -129,11 +130,11 @@ export function SectionComparison() {
         <section>
             {/* Desktop: panel left, caption pinned bottom-right over the scene */}
             <Reveal className="relative hidden w-full overflow-hidden @lg:block" overMedia>
-                <img
+                <AppImage
                     alt={sceneAlt}
                     className="absolute inset-0 size-full object-cover object-center"
                     height={800}
-                    src="/home/comparison-section/dinner-mixed-friend-group.png"
+                    src="/home/comparison-section/dinner-mixed-friend-group.webp"
                     width={1200}
                 />
                 <div className="relative top-0 flex w-full justify-center py-8">
@@ -154,11 +155,11 @@ export function SectionComparison() {
                     <ComparisonPanel />
                 </Reveal>
                 <Reveal className="relative w-full overflow-hidden" overMedia>
-                    <img
+                    <AppImage
                         alt={sceneAlt}
                         className="absolute inset-0 size-full object-cover object-center"
                         height={800}
-                        src="/home/comparison-section/dinner-mixed-friend-group.png"
+                        src="/home/comparison-section/dinner-mixed-friend-group.webp"
                         width={1200}
                     />
                     <div className="relative top-0 flex w-full justify-center py-8">

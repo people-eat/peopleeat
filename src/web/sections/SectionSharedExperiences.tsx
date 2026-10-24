@@ -1,3 +1,4 @@
+import { AppImage } from '../components/AppImage';
 import { Reveal } from '../components/Reveal';
 import { useLocale } from '../hooks/useLocale';
 
@@ -12,7 +13,7 @@ export function SectionSharedExperiences() {
 
     return (
         <Reveal as="section" className="relative w-full overflow-hidden" overMedia>
-            <img
+            <AppImage
                 alt={
                     {
                         de: 'Ein kreativ dekorierter Tisch mit Obst, Gemüse, Kerzen, Sektgläsern und Käse steht draußen im Park an einem Herbsttag.',
@@ -21,7 +22,7 @@ export function SectionSharedExperiences() {
                 }
                 className="relative size-full object-cover object-center"
                 height={800}
-                src="/home/empty-section/dinner-table-in-nature.jpeg"
+                src="/home/empty-section/dinner-table-in-nature.webp"
                 width={1200}
             />
             <div className="absolute inset-0 bg-black/40" />

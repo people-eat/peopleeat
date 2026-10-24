@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { XIcon } from 'lucide-react';
 
+import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
 import { StatusAlert } from '../components/base/status-alert';
 import type { GqlCBookingRequestSubmittedPageQuery } from '../graphql/generated';
@@ -104,7 +105,8 @@ export function BookingRequestSubmittedPage({
                     to="/{-$locale}"
                     className="inline-flex shrink-0 rounded-lg bg-background/30 px-2 backdrop-blur-lg focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                 >
-                    <img
+                    <AppImage
+                        priority
                         src={SITE_LOGO}
                         srcSet={SITE_LOGO_SRC_SET}
                         alt={SITE_NAME}
@@ -154,7 +156,7 @@ export function BookingRequestSubmittedPage({
                                             </div>
                                         </div>
 
-                                        <img
+                                        <AppImage
                                             src={image.src}
                                             alt={image.alt[locale]}
                                             className={cn(
@@ -168,7 +170,7 @@ export function BookingRequestSubmittedPage({
 
                             <div className="grid grid-cols-3 gap-3 pt-2 lg:hidden">
                                 {SUBMITTED_STEP_IMAGES.map((image) => (
-                                    <img
+                                    <AppImage
                                         key={image.src}
                                         src={image.src}
                                         alt={image.alt[locale]}

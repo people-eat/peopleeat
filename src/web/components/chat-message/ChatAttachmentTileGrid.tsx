@@ -1,6 +1,7 @@
 import { FileIcon, MicIcon } from 'lucide-react';
 import type { GqlCFileUpload } from '../../graphql/generated';
 import { cn } from '../../utils/cn';
+import { AppImage } from '../AppImage';
 
 // Read-only attachment preview grid for a chat message. Capped at 4 tiles
 // regardless of viewport — the 4th becomes a `+{N - 3} more` square when
@@ -79,7 +80,7 @@ function AttachmentTileButton({ attachment, onClick }: { attachment: GqlCFileUpl
         >
             {isImage ? (
                 <>
-                    <img src={attachment.url} alt={attachment.filename} className="size-full object-cover" />
+                    <AppImage src={attachment.url} alt={attachment.filename} className="size-full object-cover" />
                     {/* Same wash as SelectItem focus (`accent/15`) — solid bg
                         can't show through a covering image. */}
                     <span

@@ -83,6 +83,7 @@ import { DEFAULT_LOCALE } from '../utils/locale';
 import type { Locale } from '../utils/locale';
 import { AdminPagesCommandDialog } from './AdminPagesCommandDialog';
 import { AdminSidebarNavFilter } from './AdminSidebarNavFilter';
+import { AppImage } from './AppImage';
 import { Button } from './base/button';
 import { NotificationBadge } from './base/notification-badge';
 import {
@@ -341,7 +342,7 @@ export function AdminSidebar({
         <Sidebar variant="floating" {...props}>
             <SidebarHeader>
                 <Link to="/{-$locale}" className="flex items-center rounded-md p-2 outline-hidden ring-sidebar-ring focus-visible:ring-2">
-                    <img
+                    <AppImage
                         src={SITE_LOGO}
                         srcSet={SITE_LOGO_SRC_SET}
                         alt={SITE_NAME}

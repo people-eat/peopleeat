@@ -1,3 +1,4 @@
+import { AppImage } from '../components/AppImage';
 import { CookAboutBenefitsFallback } from '../components/CookAboutBenefitsFallback';
 import { useLocale } from '../hooks/useLocale';
 
@@ -22,7 +23,7 @@ export function SectionCookAbout({ biography, logoUrl }: { biography: string; lo
                 </div>
                 {hasLogo ? (
                     <div className="mx-auto w-full max-w-md @3xl:mx-0 @3xl:max-w-none">
-                        <img
+                        <AppImage
                             src={logoUrl}
                             alt={{ de: 'Zusätzliches Bild des Kochs', en: 'Additional chef picture' }[locale]}
                             className="aspect-video h-auto w-full object-contain"

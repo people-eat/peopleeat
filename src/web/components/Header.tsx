@@ -4,6 +4,7 @@ import type { Locale } from '../../shared/locale';
 import { useLocale } from '../hooks/useLocale';
 import { SITE_LOGO, SITE_LOGO_DISPLAY, SITE_LOGO_SRC_SET, SITE_NAME } from '../seo/seoConstants';
 import { cn } from '../utils/cn';
+import { AppImage } from './AppImage';
 import { HeaderNav } from './HeaderNav';
 import { HeaderNavMenu } from './HeaderNavMenu';
 import { HeroButton } from './HeroButton';
@@ -82,7 +83,8 @@ export function Header({
                 to="/{-$locale}"
                 className="inline-flex min-w-0 shrink focus-visible:rounded-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
             >
-                <img
+                <AppImage
+                    priority
                     src={SITE_LOGO}
                     srcSet={SITE_LOGO_SRC_SET}
                     alt={SITE_NAME}

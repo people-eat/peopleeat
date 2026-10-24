@@ -1,6 +1,7 @@
 import { ImageOffIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { AppImage } from '../components/AppImage';
 import { cn } from '../utils/cn';
 
 export function SectionBlogHero({
@@ -31,7 +32,7 @@ export function SectionBlogHero({
             {hasLead ? <p className="text-base/relaxed text-foreground @md:text-lg/relaxed">{lead}</p> : null}
             {hasImage ? (
                 <div className="relative aspect-video w-full overflow-hidden rounded-2xl bg-muted">
-                    <img src={imageUrl!} alt={imageAlt ?? ''} className="absolute inset-0 size-full object-cover" />
+                    <AppImage priority src={imageUrl!} alt={imageAlt ?? ''} className="absolute inset-0 size-full object-cover" />
                 </div>
             ) : noMediaLabel ? (
                 <div className="flex aspect-video w-full flex-col items-center justify-center gap-3 rounded-2xl bg-muted text-muted-foreground">

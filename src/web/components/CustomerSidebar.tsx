@@ -14,6 +14,7 @@ import type { CustomerNavSlug } from '../pages/profile/customerCatalog';
 import { SITE_LOGO, SITE_LOGO_DISPLAY, SITE_LOGO_SRC_SET, SITE_NAME } from '../seo/seoConstants';
 import { DEFAULT_LOCALE } from '../utils/locale';
 import type { Locale } from '../utils/locale';
+import { AppImage } from './AppImage';
 import { NotificationBadge } from './base/notification-badge';
 import {
     Sidebar,
@@ -119,7 +120,7 @@ export function CustomerSidebar({
         <Sidebar variant="floating" {...props}>
             <SidebarHeader>
                 <Link to="/{-$locale}" className="flex items-center rounded-md p-2 outline-hidden ring-sidebar-ring focus-visible:ring-2">
-                    <img
+                    <AppImage
                         src={SITE_LOGO}
                         srcSet={SITE_LOGO_SRC_SET}
                         alt={SITE_NAME}

@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
 import { useLocale } from '../hooks/useLocale';
 
@@ -40,12 +41,13 @@ export function SectionHowToBecomeAChefMain({ isCook }: { isCook: boolean }) {
                             )}
                         </div>
                     </div>
-                    <img
+                    <AppImage
+                        priority
                         alt=""
                         className="mt-10 aspect-6/5 w-full max-w-lg select-none rounded-2xl object-cover @sm:mt-16 @lg:mt-0 @lg:max-w-none @xl:row-span-2 @xl:row-end-2 @xl:mt-36"
                         draggable={false}
                         height={400}
-                        src="/how-to-become-a-chef/main-section/chef.jpg"
+                        src="/how-to-become-a-chef/main-section/chef.webp"
                         width={500}
                     />
                 </div>

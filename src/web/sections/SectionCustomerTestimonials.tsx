@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
 import { useLocale } from '../hooks/useLocale';
 
@@ -20,7 +21,7 @@ function TestimonialCard({ testimonial, peopleLabel }: { testimonial: Testimonia
             <p className="text-muted-foreground">{testimonial.text}</p>
 
             {testimonial.imageUrl ? (
-                <img
+                <AppImage
                     alt={
                         {
                             de: `Foto zum Testimonial von ${testimonial.name}`,
@@ -60,7 +61,7 @@ export function SectionCustomerTestimonials() {
                 de: 'Ein unvergesslicher Abend dank einer perfekt organisierten Köchin! Das Engagement und die kleinen Extras haben unsere Gäste begeistert. Anfangs skeptisch, aber letztlich eine die beste Entscheidung.',
                 en: 'An unforgettable evening thanks to a perfectly organized chef! The dedication and little extras delighted our guests. Skeptical at first, but ultimately one of the best decisions.',
             }[locale],
-            imageUrl: '/home/testimonials-section/dinner-table-with-menu-card.png',
+            imageUrl: '/home/testimonials-section/dinner-table-with-menu-card.webp',
         },
         {
             id: '2',
@@ -81,7 +82,7 @@ export function SectionCustomerTestimonials() {
                 de: 'Super schönes, privates Event bei uns zu Hause. Das Essen war hervorragend! Gerne wieder.',
                 en: 'A wonderful private event at our home. The food was outstanding! Happy to do it again.',
             }[locale],
-            imageUrl: '/home/testimonials-section/rounded-dessert.png',
+            imageUrl: '/home/testimonials-section/rounded-dessert.webp',
         },
     ];
 

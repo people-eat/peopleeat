@@ -28,38 +28,40 @@ export const IMAGE_CROP_ASPECT: Record<ImageCropVariant, number> = {
 export const IMAGE_CROP_PRESETS: Record<ImageCropVariant, ImageCropCompressOptions> = {
     avatar: {
         maxEdgePx: 512,
-        mimeType: 'image/jpeg',
+        mimeType: 'image/webp',
         quality: 0.85,
-        fileName: 'avatar.jpg',
-        targetMaxBytes: 400_000,
+        fileName: 'avatar.webp',
+        targetMaxBytes: 200_000,
     },
     logo: {
-        maxEdgePx: 1280,
+        maxEdgePx: 960,
         mimeType: 'image/webp',
         quality: 0.85,
         fileName: 'logo.webp',
-        targetMaxBytes: 400_000,
+        targetMaxBytes: 250_000,
     },
+    // Single stored size serves both meal cards and detail dialogs until
+    // upload-time variants land — see docs/architecture/image-delivery.md.
     meal: {
-        maxEdgePx: 1280,
-        mimeType: 'image/jpeg',
+        maxEdgePx: 960,
+        mimeType: 'image/webp',
         quality: 0.85,
-        fileName: 'meal.jpg',
-        targetMaxBytes: 600_000,
+        fileName: 'meal.webp',
+        targetMaxBytes: 350_000,
     },
     content: {
-        maxEdgePx: 1280,
-        mimeType: 'image/jpeg',
+        maxEdgePx: 960,
+        mimeType: 'image/webp',
         quality: 0.85,
-        fileName: 'content.jpg',
-        targetMaxBytes: 600_000,
+        fileName: 'content.webp',
+        targetMaxBytes: 350_000,
     },
     contentWide: {
-        maxEdgePx: 1600,
-        mimeType: 'image/jpeg',
+        maxEdgePx: 1280,
+        mimeType: 'image/webp',
         quality: 0.85,
-        fileName: 'content-wide.jpg',
-        targetMaxBytes: 700_000,
+        fileName: 'content-wide.webp',
+        targetMaxBytes: 450_000,
     },
 };
 

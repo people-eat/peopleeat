@@ -49,7 +49,7 @@ stock hero and CTA image fallbacks.
 
 - Tables / GraphQL / CQRS: `Cities`, `CityCooks`, admin list and upsert, `publicCity` → `PublicCity`, `cityTestimonialsUpdate`
 - City columns: first-section bilingual copy and optional image (FK to `FileUploads`)
-- Static fallbacks: `public/city/find-a-chef-in-city-section/fine-dining.png`, `public/city/cta/chef-preparing.png` via
+- Static fallbacks: `public/city/find-a-chef-in-city-section/fine-dining.webp`, `public/city/cta/chef-preparing.webp` via
   `src/web/pages/cityPageAssets.ts`
 - Admin: `/admin/cities` (shared admin list cards; debounced client search; create requires map center), `/admin/cities/$cityId` (center,
   first section, cook assignment with listing warnings)

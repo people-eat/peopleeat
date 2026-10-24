@@ -42,4 +42,4 @@ Bilingual copy and layout; CTAs to chef sign-up and profile based on whether the
 | Page        | `src/web/pages/HowToBecomeAChefPage.tsx` (+ `.graphql`)                                                                                                                        |
 | Route / SEO | `src/routes/{-$locale}/how-to-become-a-chef.tsx` — `seoMeta` + FAQ JSON-LD                                                                                                     |
 | Sections    | `SectionHowToBecomeAChefMain`, `SectionChefOnboardingProcess`, `SectionBenefitsForChefs`, `SectionReadyToBecomeAChef`, `SectionChefTestimonials`, `SectionQuestionsAndAnswers` |
-| Assets      | `public/how-to-become-a-chef/main-section/chef.jpg`, `public/how-to-become-a-chef/benefits-for-chefs-section/{1,2,3}.jpg`                                                      |
+| Assets      | `public/how-to-become-a-chef/main-section/chef.webp`, `public/how-to-become-a-chef/benefits-for-chefs-section/{1,2,3}.webp`                                                    |

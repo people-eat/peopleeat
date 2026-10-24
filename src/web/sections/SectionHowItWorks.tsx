@@ -1,6 +1,7 @@
 import type { UIEvent } from 'react';
 import { useState } from 'react';
 
+import { AppImage } from '../components/AppImage';
 import { AutoplayVideo } from '../components/AutoplayVideo';
 import { Button } from '../components/base/button';
 import { Reveal } from '../components/Reveal';
@@ -48,7 +49,7 @@ export function SectionHowItWorks({
                 de: 'Du verbringst die Zeit mit deinen Gästen, während das Menü von deinem Chefkoch zubereitet wird.',
                 en: 'You spend time with your guests while your chef prepares the menu.',
             }[locale],
-            image: '/home/how-it-works-section/preparing-dinner.jpeg',
+            image: '/home/how-it-works-section/preparing-dinner.webp',
             alternativeText: {
                 de: 'Ein Privatkoch zaubert Lachstatar als Vorspeise beim Kunden zu Hause.',
                 en: "A private chef prepares salmon tartare as a starter at the customer's home.",
@@ -62,7 +63,7 @@ export function SectionHowItWorks({
                 en: 'Enjoy the menu, let yourself be pampered with culinary delights course after course, and create unforgettable moments.',
             }[locale],
             ...(useAlternativeMedia
-                ? { image: '/home/how-it-works-section/enjoying-dinner.alternative.jpg' }
+                ? { image: '/home/how-it-works-section/enjoying-dinner.alternative.webp' }
                 : { video: '/home/how-it-works-section/enjoying-dinner.mp4' }),
             alternativeText: {
                 de: 'Familie sitzt am dekorierten Tisch und genießt ein Menü vom Privatkoch zu Hause.',
@@ -76,7 +77,7 @@ export function SectionHowItWorks({
                 de: 'Du lässt den Abend ausklingen, während dein Koch die letzten Handgriffe in der Küche erledigt.',
                 en: 'You let the evening wind down while your cook finishes up the last tasks in the kitchen.',
             }[locale],
-            image: '/home/how-it-works-section/clean-kitchen.png',
+            image: '/home/how-it-works-section/clean-kitchen.webp',
             alternativeText: {
                 de: 'Ein Tisch wird mit einem gelben Schwamm gereinigt.',
                 en: 'A table is cleaned with a yellow sponge.',
@@ -127,7 +128,7 @@ export function SectionHowItWorks({
                             </div>
                             <span className="flex-1" />
                             {'image' in step ? (
-                                <img
+                                <AppImage
                                     alt={step.alternativeText}
                                     className="h-[500px] w-full rounded-lg object-cover"
                                     height={500}
@@ -173,7 +174,7 @@ export function SectionHowItWorks({
                                             {`0${step.id}`}
                                         </div>
                                         {'image' in step ? (
-                                            <img
+                                            <AppImage
                                                 alt={step.alternativeText}
                                                 className="h-[500px] w-full rounded-lg object-cover"
                                                 height={500}

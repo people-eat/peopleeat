@@ -1,6 +1,7 @@
 import { ImageOffIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { AppImage } from '../components/AppImage';
 import { AutoplayVideo } from '../components/AutoplayVideo';
 import { cn } from '../utils/cn';
 
@@ -42,7 +43,9 @@ export function SectionHero({
                     <p>{media.alt}</p>
                 </AutoplayVideo>
             ) : null}
-            {media?.type === 'image' ? <img src={media.src} alt={media.alt} className="absolute inset-0 size-full object-cover" /> : null}
+            {media?.type === 'image' ? (
+                <AppImage priority src={media.src} alt={media.alt} className="absolute inset-0 size-full object-cover" />
+            ) : null}
             {hasMedia && imageOverlay ? <div className="absolute inset-0 bg-black/40" /> : null}
             {!hasMedia && noMediaLabel ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-muted-foreground">

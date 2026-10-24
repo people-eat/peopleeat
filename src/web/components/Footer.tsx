@@ -15,6 +15,7 @@ import {
     SITE_NAME,
     SITE_WHATSAPP_URL,
 } from '../seo/seoConstants';
+import { AppImage } from './AppImage';
 import { Button } from './base/button';
 import { Input } from './base/input';
 import { useCookieConsent } from './CookieConsentContext';
@@ -91,7 +92,7 @@ export function Footer({
                         to="/{-$locale}"
                         className="mb-4 inline-flex shrink-0 focus-visible:rounded-sm focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                     >
-                        <img
+                        <AppImage
                             src={SITE_LOGO}
                             srcSet={SITE_LOGO_SRC_SET}
                             alt={SITE_NAME}

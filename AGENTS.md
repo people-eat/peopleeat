@@ -95,6 +95,7 @@ in `docs/styles/`.
 | Content model                         | [`content-model.md`](./docs/architecture/content-model.md)                 |
 | Content sections                      | [`content-sections.md`](./docs/architecture/content-sections.md)           |
 | File storage                          | [`file-storage.md`](./docs/architecture/file-storage.md)                   |
+| Image delivery                        | [`image-delivery.md`](./docs/architecture/image-delivery.md)               |
 | i18n                                  | [`i18n.md`](./docs/architecture/i18n.md)                                   |
 | Chat foundation                       | [`chat.md`](./docs/architecture/chat.md)                                   |
 | Chat persistence                      | [`chat-persistence.md`](./docs/architecture/chat-persistence.md)           |

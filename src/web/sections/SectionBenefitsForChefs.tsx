@@ -1,3 +1,4 @@
+import { AppImage } from '../components/AppImage';
 import { useLocale } from '../hooks/useLocale';
 
 export function SectionBenefitsForChefs() {
@@ -79,7 +80,7 @@ export function SectionBenefitsForChefs() {
             </div>
             <div>
                 <div className="aspect-square overflow-hidden rounded-lg bg-muted">
-                    <img
+                    <AppImage
                         alt={
                             {
                                 de: 'Schwarzer Wasserkocher mit langem Ausguss und schrägem Gehäuse auf einer Marmorplatte neben Tasse und Pour-over-System.',
@@ -89,13 +90,13 @@ export function SectionBenefitsForChefs() {
                         aria-hidden
                         className="size-full object-cover object-center"
                         height={800}
-                        src="/how-to-become-a-chef/benefits-for-chefs-section/1.jpg"
+                        src="/how-to-become-a-chef/benefits-for-chefs-section/1.webp"
                         width={800}
                     />
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-4 @sm:mt-6 @sm:gap-6 @lg:mt-8 @lg:gap-8">
                     <div className="aspect-square overflow-hidden rounded-lg bg-muted">
-                        <img
+                        <AppImage
                             alt={
                                 {
                                     de: 'Detail der Temperatureinstellung am Wasserkocher mit digitaler Gradanzeige.',
@@ -105,12 +106,12 @@ export function SectionBenefitsForChefs() {
                             aria-hidden
                             className="size-full object-cover object-center"
                             height={600}
-                            src="/how-to-become-a-chef/benefits-for-chefs-section/2.jpg"
+                            src="/how-to-become-a-chef/benefits-for-chefs-section/2.webp"
                             width={600}
                         />
                     </div>
                     <div className="aspect-square overflow-hidden rounded-lg bg-muted">
-                        <img
+                        <AppImage
                             alt={
                                 {
                                     de: 'Wasserkocher-Ausguss gießt kochendes Wasser über Kaffeemehl in eine Pour-over-Tasse.',
@@ -120,7 +121,7 @@ export function SectionBenefitsForChefs() {
                             aria-hidden
                             className="size-full object-cover object-center"
                             height={600}
-                            src="/how-to-become-a-chef/benefits-for-chefs-section/3.jpg"
+                            src="/how-to-become-a-chef/benefits-for-chefs-section/3.webp"
                             width={600}
                         />
                     </div>

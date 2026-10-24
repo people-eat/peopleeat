@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 
 import type { Locale } from '../../shared/locale';
 import { SITE_GOOGLE_MAPS_URL, SITE_WHATSAPP_URL } from '../../shared/siteBranding';
+import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
 import { cn } from '../utils/cn';
 
@@ -39,7 +40,7 @@ export function SectionChefCta({
     return (
         <div className={cn('overflow-hidden rounded-2xl bg-background shadow-md ring-1 ring-black/5', className)}>
             <div className="relative aspect-6/3 w-full bg-muted">
-                {imageUrl ? <img src={imageUrl} alt={displayName} className="absolute inset-0 size-full object-cover" /> : null}
+                {imageUrl ? <AppImage src={imageUrl} alt={displayName} className="absolute inset-0 size-full object-cover" /> : null}
                 {!hasImage && noImageLabel ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
                         <ImageOffIcon className="size-10" aria-hidden />

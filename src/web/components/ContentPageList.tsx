@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { contentLocaleText } from '../../shared/contentSection';
 import type { Locale } from '../../shared/locale';
 import { cn } from '../utils/cn';
+import { AppImage } from './AppImage';
 
 const CONTENT_PAGE_DETAIL_ROUTES = {
     '/cities': '/{-$locale}/cities/$pathName',
@@ -52,7 +53,7 @@ export function ContentPageList({
                         >
                             {showHeroImage ? (
                                 item.heroImageUrl ? (
-                                    <img
+                                    <AppImage
                                         src={item.heroImageUrl}
                                         alt=""
                                         className="aspect-video w-full object-cover transition-opacity group-hover:opacity-90"

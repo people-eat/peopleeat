@@ -28,6 +28,7 @@ docs/
 │   ├── discovery-seo.md          # SEO standards — seoMeta() helper, dynamic sitemap.xml, robots.txt
 │   ├── environment.md            # Validated EnvironmentVariables (no direct process.env)
 │   ├── file-storage.md           # Postgres FileUploads + shared Garage object store (OBJECT_STORAGE_S3_*)
+│   ├── image-delivery.md         # Client WebP presets, AppImage, public WebP; follow-ups (variants / CDN)
 │   ├── i18n.md                   # DE / EN locale strategy
 │   ├── jobs.md                   # pg-boss background jobs
 │   ├── logging.md                # PostgreSQL-backed logger

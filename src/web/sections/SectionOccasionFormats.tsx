@@ -3,6 +3,7 @@ import { ImageOffIcon } from 'lucide-react';
 import { contentLocaleText } from '../../shared/contentSection';
 import type { Locale } from '../../shared/locale';
 import { occasionFormatsSectionHasContent } from '../../shared/occasionFormatsSection';
+import { AppImage } from '../components/AppImage';
 import { cn } from '../utils/cn';
 
 type SectionOccasionFormatsCard = {
@@ -79,7 +80,7 @@ export function SectionOccasionFormats({
                         <article key={index} className="flex flex-col gap-4">
                             <div className="relative aspect-4/3 overflow-hidden rounded-lg bg-muted">
                                 {imageUrl ? (
-                                    <img src={imageUrl} alt={cardTitle || ''} className="size-full object-cover" />
+                                    <AppImage src={imageUrl} alt={cardTitle || ''} className="size-full object-cover" />
                                 ) : (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
                                         <ImageOffIcon className="size-10" aria-hidden />

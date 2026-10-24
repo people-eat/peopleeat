@@ -37,6 +37,7 @@ import {
     textNormalizeTitled,
 } from '../../shared';
 import type { BookingRequestFormFunnelStep, BookingRequestFormPriceClassType, BookingRequestParticipantDraft, Locale } from '../../shared';
+import { AppImage } from '../components/AppImage';
 import { AUTH_USER_PROFILE_FORM_ID, AuthIdentityGate } from '../components/auth/AuthIdentityGate';
 import { AuthPasskeyLogOn } from '../components/auth/AuthPasskeyLogOn';
 import { sessionAuthPhase } from '../components/auth/sessionAuthPhase';
@@ -564,7 +565,8 @@ export function BookingRequestFormPage({
                     to="/{-$locale}"
                     className="inline-flex shrink-0 rounded-lg bg-background/30 px-2 backdrop-blur-lg focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
                 >
-                    <img
+                    <AppImage
+                        priority
                         src={SITE_LOGO}
                         srcSet={SITE_LOGO_SRC_SET}
                         alt={SITE_NAME}

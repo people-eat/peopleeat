@@ -1,3 +1,4 @@
+import { AppImage } from '../components/AppImage';
 import { useLocale } from '../hooks/useLocale';
 
 export function SectionMeetOurTeam() {
@@ -20,11 +21,11 @@ export function SectionMeetOurTeam() {
             </div>
             <div className="mt-16 flow-root @sm:mt-24">
                 <div className="-m-2 rounded-xl bg-foreground/5 p-2 ring-1 ring-foreground/10 ring-inset @lg:-m-4 @lg:rounded-2xl @lg:p-4">
-                    <img
+                    <AppImage
                         alt={{ de: 'Das peopleeat Team', en: 'The peopleeat team' }[locale]}
                         className="rounded-md shadow-2xl ring-1 ring-foreground/10"
                         height={1442}
-                        src="/about-us/meet-our-team-section/team.jpg"
+                        src="/about-us/meet-our-team-section/team.webp"
                         width={2432}
                     />
                 </div>

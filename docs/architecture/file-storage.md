@@ -137,7 +137,8 @@ Env: `OBJECT_STORAGE_S3_*`. See [call-recordings.md](../features/call-recordings
 - **Database size grows with file volume.** Acceptable because per-file caps bound the rate, and the deployment is sized for a transactional
   workload anyway. Projects that expect large media volumes should plan a migration before that growth becomes the dominant cost driver.
 - **Reads route through the Node process.** Files served to clients flow through an authenticated route handler. This is the right shape for
-  short-lived, authorized access; it is the wrong shape for high-volume public CDN delivery.
+  short-lived, authorized access; it is the wrong shape for high-volume public CDN delivery. Image size, format, and loading defaults live
+  in [image-delivery.md](./image-delivery.md) (client WebP presets, `AppImage`, follow-ups for variants / CDN).
 - **Adding a new consumer is a one-table change.** Define a join row that FKs from the consumer entity to `FileUploads.fileUploadId`, layer
   per-consumer cascade and authorization rules on top, run `npm run db:generate`. No second system to wire, no parallel blob table to
   invent.

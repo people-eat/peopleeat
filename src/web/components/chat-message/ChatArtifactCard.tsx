@@ -1,5 +1,6 @@
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
+import { AppImage } from '../AppImage';
 import { Button } from '../base/button';
 
 export interface ChatArtifactCardData {
@@ -42,7 +43,7 @@ export function ChatArtifactCard({
             )}
         >
             {card.imageUrl ? (
-                <img
+                <AppImage
                     src={card.imageUrl}
                     alt=""
                     className={cn(
@@ -53,7 +54,6 @@ export function ChatArtifactCard({
                         responsive &&
                             '@min-[28rem]:aspect-2/3 @min-[28rem]:h-auto @min-[28rem]:max-h-56 @min-[28rem]:w-full @min-[28rem]:self-auto',
                     )}
-                    loading="lazy"
                     referrerPolicy="no-referrer"
                 />
             ) : null}
