@@ -69,7 +69,6 @@ empty and delete room; recurring sweep for stale active rooms (~90s threshold). 
 
 ## Ideas
 
-- Screenshare from the in-call footer controls.
 - Picture-in-picture / compact video while browsing Offer or Chat during a call.
 - Customer-side cross-offer calls hub (cook partial hub on `/profile/calls`; admin has `/admin/calls`).
 
@@ -124,9 +123,9 @@ CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’
   tab changes do not disconnect; exposes `inCall` / `startOrJoin` to `BookingRequestOfferCallTab`
 - `BookingRequestOfferCallTab` (start/join + schedule) composes `BookingRequestOfferScheduleTab` (appointments + pick/propose) and optional
   admin recordings children; while in-call it renders `BookingRequestOfferCallVideo` only (recording notice + grid)
-- `BookingRequestOfferCallControls` (mic / camera device menus + leave) render in `ProfilePinnedFooterLayout` / `AdminPinnedFooterLayout`
-  for the duration of the call (not floating over the video); toggles use solid `default` buttons on the cream footer, Leave stays
-  `destructive`
+- `BookingRequestOfferCallControls` (mic / camera device menus, screenshare, leave) render end-aligned in `ProfilePinnedFooterLayout` /
+  `AdminPinnedFooterLayout` for the duration of the call; mic / camera / screenshare use `outline` + `bg-secondary` (white on cream), Leave
+  stays `destructive`. Video grid already includes `Track.Source.ScreenShare` tiles.
 - Appointment rows, pick/propose panels, and start/join share compact Card density (`bookingOfferCallCardClassName` /
   `bookingOfferCallCardSectionClassName`: `gap-4 py-4` + section `px-4`)
 - Pick/propose and start/join put the primary CTA in `CardFooter` (end-aligned); appointment rows keep inline action rows in `CardContent`

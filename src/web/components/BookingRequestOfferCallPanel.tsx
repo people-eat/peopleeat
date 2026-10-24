@@ -10,7 +10,16 @@ import {
 } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { Track } from 'livekit-client';
-import { CameraIcon, CameraOffIcon, ChevronDownIcon, MicIcon, MicOffIcon, PhoneOffIcon } from 'lucide-react';
+import {
+    CameraIcon,
+    CameraOffIcon,
+    ChevronDownIcon,
+    MicIcon,
+    MicOffIcon,
+    PhoneOffIcon,
+    ScreenShareIcon,
+    ScreenShareOffIcon,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { useLocale } from '../hooks/useLocale';
@@ -77,23 +86,17 @@ function DeviceToggle({
 
     return (
         <div className="flex">
-            <Button type="button" variant="default" className="rounded-r-none" onClick={() => toggle()}>
+            <Button type="button" variant="outline" className="rounded-r-none border-r-0 bg-secondary" onClick={() => toggle()}>
                 {enabled ? enabledIcon : disabledIcon}
                 <span className="hidden sm:inline">{label}</span>
             </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button
-                        type="button"
-                        variant="default"
-                        size="icon"
-                        className="rounded-l-none border-l border-primary-foreground/20"
-                        aria-label={label}
-                    >
+                    <Button type="button" variant="outline" size="icon" className="rounded-l-none bg-secondary" aria-label={label}>
                         <ChevronDownIcon className="size-3.5" aria-hidden />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" side="top" className="min-w-[200px]">
+                <DropdownMenuContent align="end" side="top" className="min-w-[200px]">
                     {devices.length === 0 ? (
                         <DropdownMenuItem disabled>{emptyDevicesLabel}</DropdownMenuItem>
                     ) : (
@@ -114,6 +117,23 @@ function DeviceToggle({
     );
 }
 
+function ScreenShareToggle({ label }: { readonly label: string }) {
+    const { enabled, toggle } = useTrackToggle({ source: Track.Source.ScreenShare });
+
+    return (
+        <Button
+            type="button"
+            variant="outline"
+            className={cn('bg-secondary', enabled && 'border-foreground/40 bg-muted')}
+            onClick={() => void toggle()}
+            aria-pressed={enabled}
+        >
+            {enabled ? <ScreenShareOffIcon className="size-4" aria-hidden /> : <ScreenShareIcon className="size-4" aria-hidden />}
+            <span className="hidden sm:inline">{label}</span>
+        </Button>
+    );
+}
+
 function LeaveButton({ label }: { readonly label: string }) {
     const { buttonProps } = useDisconnectButton({});
 
@@ -125,12 +145,12 @@ function LeaveButton({ label }: { readonly label: string }) {
     );
 }
 
-/** Mic / camera / leave — for the pinned offer-page footer while a call is active. */
+/** Mic / camera / screenshare / leave — pinned offer-page footer while a call is active. */
 export function BookingRequestOfferCallControls() {
     const locale = useLocale();
 
     return (
-        <div className="flex w-full flex-wrap items-center justify-center gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
             <DeviceToggle
                 deviceKind="audioinput"
                 disabledIcon={<MicOffIcon className="size-4" aria-hidden />}
@@ -146,6 +166,14 @@ export function BookingRequestOfferCallControls() {
                 emptyDevicesLabel={{ de: 'Keine Kamera gefunden', en: 'No camera found' }[locale]}
                 label={{ de: 'Kamera', en: 'Camera' }[locale]}
                 source={Track.Source.Camera}
+            />
+            <ScreenShareToggle
+                label={
+                    {
+                        de: 'Bildschirm teilen',
+                        en: 'Share screen',
+                    }[locale]
+                }
             />
             <LeaveButton label={{ de: 'Verlassen', en: 'Leave' }[locale]} />
         </div>

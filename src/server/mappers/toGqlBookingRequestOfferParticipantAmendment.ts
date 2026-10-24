@@ -69,6 +69,7 @@ export function toGqlBookingRequestOfferParticipantAmendment(input: {
 
     return {
         requestedAt: new Date(amendment.requestedAt),
+        claimedAt: amendment.claimedAt ? new Date(amendment.claimedAt) : null,
         participants: amendment.participants
             ? amendment.participants.map((participant) => ({
                   type: participant.type,

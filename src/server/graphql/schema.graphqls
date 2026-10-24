@@ -1197,6 +1197,8 @@ type BookingRequestOfferParticipantAmendmentParticipant {
 
 type BookingRequestOfferParticipantAmendment {
     requestedAt: DateTime!
+    # Set while cook/admin accept is applying (blocks customer cancel). Null when still awaiting a decision.
+    claimedAt: DateTime
     # Null when the proposal is venue-only.
     participants: [BookingRequestOfferParticipantAmendmentParticipant!]
     # Null when the proposal is participants-only.

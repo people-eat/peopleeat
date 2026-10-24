@@ -44,6 +44,9 @@ export async function cookBookingRequestOfferParticipantAmendmentDecline(
         if (!amendment) {
             throw new Error('cookBookingRequestOfferParticipantAmendmentDecline: no pending amendment');
         }
+        if (amendment.claimedAt) {
+            throw new Error('cookBookingRequestOfferParticipantAmendmentDecline: amendment is already being applied');
+        }
 
         const existingParticipants = await serverRuntime.db
             .select()
