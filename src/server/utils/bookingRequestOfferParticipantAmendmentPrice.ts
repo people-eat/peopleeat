@@ -21,6 +21,9 @@ export type BookingRequestOfferParticipantAmendmentPriceInput = {
     scaleMenuByParticipants?: boolean;
     /** Absolute menu total (admin). When set, skips paid-headcount scaling. */
     menuPriceCentsOverride?: number;
+    /** Sticky offer fee % (required so amendments do not reset to marketplace defaults). */
+    platformFeePercentCook: number;
+    platformFeePercentCustomer: number;
 };
 
 export type BookingRequestOfferParticipantAmendmentPriceResult = {
@@ -76,6 +79,8 @@ export function bookingRequestOfferParticipantAmendmentPriceCalculate(
     const price = bookingRequestOfferPriceCalculate({
         menuPriceCents: menuPriceCentsAfter,
         travelExpensesCents: input.travelExpensesCentsAfter,
+        platformFeePercentCook: input.platformFeePercentCook,
+        platformFeePercentCustomer: input.platformFeePercentCustomer,
     });
 
     const promoAppliedCentsAfter = Math.min(Math.max(0, input.promoAmountCents), price.totalWithoutDiscountsCentsCustomer);

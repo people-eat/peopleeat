@@ -41,6 +41,8 @@ export type BookingRequestOfferAdminAmendmentPrepareInput = {
     exactEventAddress?: AdminAmendmentAddressInput | null;
     menuPriceCents?: number | null;
     travelExpensesCents?: number | null;
+    platformFeePercentCook?: number | null;
+    platformFeePercentCustomer?: number | null;
     travelDistanceKm?: number | null;
     errorPrefix: string;
 };
@@ -110,9 +112,13 @@ export async function bookingRequestOfferAdminAmendmentPrepare(
         input.participants == null &&
         input.exactEventAddress == null &&
         input.menuPriceCents == null &&
-        input.travelExpensesCents == null
+        input.travelExpensesCents == null &&
+        input.platformFeePercentCook == null &&
+        input.platformFeePercentCustomer == null
     ) {
-        throw new Error(`${errorPrefix}: participants, exactEventAddress, menuPriceCents, or travelExpensesCents required`);
+        throw new Error(
+            `${errorPrefix}: participants, exactEventAddress, menuPriceCents, travelExpensesCents, or platform fee percent required`,
+        );
     }
 
     if (input.menuPriceCents != null && (!Number.isInteger(input.menuPriceCents) || input.menuPriceCents <= 0)) {
@@ -120,6 +126,20 @@ export async function bookingRequestOfferAdminAmendmentPrepare(
     }
     if (input.travelExpensesCents != null && (!Number.isInteger(input.travelExpensesCents) || input.travelExpensesCents < 0)) {
         throw new Error(`${errorPrefix}: travelExpensesCents must be a non-negative integer`);
+    }
+    if (
+        input.platformFeePercentCook != null &&
+        (!Number.isInteger(input.platformFeePercentCook) || input.platformFeePercentCook < 0 || input.platformFeePercentCook > 100)
+    ) {
+        throw new Error(`${errorPrefix}: platformFeePercentCook must be an integer from 0 to 100`);
+    }
+    if (
+        input.platformFeePercentCustomer != null &&
+        (!Number.isInteger(input.platformFeePercentCustomer) ||
+            input.platformFeePercentCustomer < 0 ||
+            input.platformFeePercentCustomer > 100)
+    ) {
+        throw new Error(`${errorPrefix}: platformFeePercentCustomer must be an integer from 0 to 100`);
     }
 
     const [row] = await serverRuntime.db
@@ -207,7 +227,13 @@ export async function bookingRequestOfferAdminAmendmentPrepare(
                 name: participant.name,
                 restrictions: participant.restrictions,
             }));
-        } else if (input.exactEventAddress == null && input.menuPriceCents == null && input.travelExpensesCents == null) {
+        } else if (
+            input.exactEventAddress == null &&
+            input.menuPriceCents == null &&
+            input.travelExpensesCents == null &&
+            input.platformFeePercentCook == null &&
+            input.platformFeePercentCustomer == null
+        ) {
             throw new Error(`${errorPrefix}: participant counts unchanged`);
         }
     }
@@ -238,6 +264,14 @@ export async function bookingRequestOfferAdminAmendmentPrepare(
         input.travelExpensesCents != null && input.travelExpensesCents !== row.offer.travelExpensesCents
             ? input.travelExpensesCents
             : undefined;
+    const platformFeePercentCookAfter =
+        input.platformFeePercentCook != null && input.platformFeePercentCook !== row.offer.platformFeePercentCook
+            ? input.platformFeePercentCook
+            : undefined;
+    const platformFeePercentCustomerAfter =
+        input.platformFeePercentCustomer != null && input.platformFeePercentCustomer !== row.offer.platformFeePercentCustomer
+            ? input.platformFeePercentCustomer
+            : undefined;
 
     if (travelOverride != null) {
         travelExpensesCentsAfter = travelOverride;
@@ -246,7 +280,14 @@ export async function bookingRequestOfferAdminAmendmentPrepare(
         }
     }
 
-    if (!participantsChanged && nextAddress == null && menuOverride == null && travelOverride == null) {
+    if (
+        !participantsChanged &&
+        nextAddress == null &&
+        menuOverride == null &&
+        travelOverride == null &&
+        platformFeePercentCookAfter == null &&
+        platformFeePercentCustomerAfter == null
+    ) {
         throw new Error(`${errorPrefix}: no material change`);
     }
 
@@ -256,6 +297,8 @@ export async function bookingRequestOfferAdminAmendmentPrepare(
     const discountedAfter = participantsAfter.filter((p) => p.type === 'DISCOUNTED').length;
 
     const totalCentsCustomerBefore = row.offer.totalCentsCustomer ?? row.offer.totalWithoutDiscountsCentsCustomer;
+    const platformFeePercentCook = platformFeePercentCookAfter ?? row.offer.platformFeePercentCook;
+    const platformFeePercentCustomer = platformFeePercentCustomerAfter ?? row.offer.platformFeePercentCustomer;
     const pricePreview = bookingRequestOfferParticipantAmendmentPriceCalculate(
         {
             menuPriceCentsBefore: row.offer.menuPriceCents,
@@ -269,6 +312,8 @@ export async function bookingRequestOfferAdminAmendmentPrepare(
             participantsAfter,
             scaleMenuByParticipants: participantsChanged && menuOverride == null,
             menuPriceCentsOverride: menuOverride,
+            platformFeePercentCook,
+            platformFeePercentCustomer,
         },
         row.offer.payoutCentsCook,
     );
@@ -280,6 +325,8 @@ export async function bookingRequestOfferAdminAmendmentPrepare(
         ...(nextAddress ? { exactEventAddress: nextAddress } : {}),
         ...(menuOverride != null ? { menuPriceCentsAfter: menuOverride } : {}),
         ...(travelOverride != null ? { travelExpensesCentsAfter: travelOverride } : {}),
+        ...(platformFeePercentCookAfter != null ? { platformFeePercentCookAfter } : {}),
+        ...(platformFeePercentCustomerAfter != null ? { platformFeePercentCustomerAfter } : {}),
         menuPriceCentsBefore: row.offer.menuPriceCents,
         travelExpensesCentsBefore: row.offer.travelExpensesCents,
         totalCentsCustomerBefore,

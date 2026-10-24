@@ -803,6 +803,8 @@ export type GqlSAdminBookingRequestOfferAmendmentInput = {
     exactEventAddress?: InputMaybe<GqlSAdminBookingRequestExactEventAddressInput>;
     menuPriceCents?: InputMaybe<Scalars['Int']['input']>;
     participants?: InputMaybe<Array<GqlSUserBookingRequestParticipantCreate>>;
+    platformFeePercentCook?: InputMaybe<Scalars['Int']['input']>;
+    platformFeePercentCustomer?: InputMaybe<Scalars['Int']['input']>;
     travelDistanceKm?: InputMaybe<Scalars['Float']['input']>;
     travelExpensesCents?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -824,6 +826,8 @@ export type GqlSAdminBookingRequestOfferCreate = {
     paymentDateTime?: InputMaybe<Scalars['DateTime']['input']>;
     payoutDateTime?: InputMaybe<Scalars['DateTime']['input']>;
     plannedPayoutDateTime?: InputMaybe<Scalars['DateTime']['input']>;
+    platformFeePercentCook?: InputMaybe<Scalars['Int']['input']>;
+    platformFeePercentCustomer?: InputMaybe<Scalars['Int']['input']>;
     travelDistanceKm?: InputMaybe<Scalars['Float']['input']>;
     travelExpensesCents: Scalars['Int']['input'];
     userAccepted?: InputMaybe<Scalars['Boolean']['input']>;
@@ -873,6 +877,8 @@ export type GqlSAdminBookingRequestOfferUpdate = {
     paymentDateTime?: InputMaybe<Scalars['DateTime']['input']>;
     payoutDateTime?: InputMaybe<Scalars['DateTime']['input']>;
     plannedPayoutDateTime?: InputMaybe<Scalars['DateTime']['input']>;
+    platformFeePercentCook?: InputMaybe<Scalars['Int']['input']>;
+    platformFeePercentCustomer?: InputMaybe<Scalars['Int']['input']>;
     travelDistanceKm?: InputMaybe<Scalars['Float']['input']>;
     travelExpensesCents?: InputMaybe<Scalars['Int']['input']>;
     userAccepted?: InputMaybe<Scalars['Boolean']['input']>;
@@ -12135,6 +12141,8 @@ export function GqlSAdminBookingRequestOfferAmendmentInputSchema(): z.ZodObject<
         exactEventAddress: GqlSAdminBookingRequestExactEventAddressInputSchema().nullish(),
         menuPriceCents: z.number().nullish(),
         participants: z.array(z.lazy(() => GqlSUserBookingRequestParticipantCreateSchema())).nullish(),
+        platformFeePercentCook: z.number().nullish(),
+        platformFeePercentCustomer: z.number().nullish(),
         travelDistanceKm: z.number().nullish(),
         travelExpensesCents: z.number().nullish(),
     }) as z.ZodObject<Properties<GqlSAdminBookingRequestOfferAmendmentInput>>;
@@ -12152,6 +12160,8 @@ export function GqlSAdminBookingRequestOfferCreateSchema(): z.ZodObject<Properti
         paymentDateTime: z.date().nullish(),
         payoutDateTime: z.date().nullish(),
         plannedPayoutDateTime: z.date().nullish(),
+        platformFeePercentCook: z.number().nullish(),
+        platformFeePercentCustomer: z.number().nullish(),
         travelDistanceKm: z.number().nullish(),
         travelExpensesCents: z.number(),
         userAccepted: z.boolean().nullish(),
@@ -12195,6 +12205,8 @@ export function GqlSAdminBookingRequestOfferUpdateSchema(): z.ZodObject<Properti
         paymentDateTime: z.date().nullish(),
         payoutDateTime: z.date().nullish(),
         plannedPayoutDateTime: z.date().nullish(),
+        platformFeePercentCook: z.number().nullish(),
+        platformFeePercentCustomer: z.number().nullish(),
         travelDistanceKm: z.number().nullish(),
         travelExpensesCents: z.number().nullish(),
         userAccepted: z.boolean().nullish(),

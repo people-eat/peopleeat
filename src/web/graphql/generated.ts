@@ -806,6 +806,8 @@ export type GqlCAdminBookingRequestOfferAmendmentInput = {
     exactEventAddress?: InputMaybe<GqlCAdminBookingRequestExactEventAddressInput>;
     menuPriceCents?: InputMaybe<Scalars['Int']['input']>;
     participants?: InputMaybe<Array<GqlCUserBookingRequestParticipantCreate>>;
+    platformFeePercentCook?: InputMaybe<Scalars['Int']['input']>;
+    platformFeePercentCustomer?: InputMaybe<Scalars['Int']['input']>;
     travelDistanceKm?: InputMaybe<Scalars['Float']['input']>;
     travelExpensesCents?: InputMaybe<Scalars['Int']['input']>;
 };
@@ -827,6 +829,8 @@ export type GqlCAdminBookingRequestOfferCreate = {
     paymentDateTime?: InputMaybe<Scalars['DateTime']['input']>;
     payoutDateTime?: InputMaybe<Scalars['DateTime']['input']>;
     plannedPayoutDateTime?: InputMaybe<Scalars['DateTime']['input']>;
+    platformFeePercentCook?: InputMaybe<Scalars['Int']['input']>;
+    platformFeePercentCustomer?: InputMaybe<Scalars['Int']['input']>;
     travelDistanceKm?: InputMaybe<Scalars['Float']['input']>;
     travelExpensesCents: Scalars['Int']['input'];
     userAccepted?: InputMaybe<Scalars['Boolean']['input']>;
@@ -876,6 +880,8 @@ export type GqlCAdminBookingRequestOfferUpdate = {
     paymentDateTime?: InputMaybe<Scalars['DateTime']['input']>;
     payoutDateTime?: InputMaybe<Scalars['DateTime']['input']>;
     plannedPayoutDateTime?: InputMaybe<Scalars['DateTime']['input']>;
+    platformFeePercentCook?: InputMaybe<Scalars['Int']['input']>;
+    platformFeePercentCustomer?: InputMaybe<Scalars['Int']['input']>;
     travelDistanceKm?: InputMaybe<Scalars['Float']['input']>;
     travelExpensesCents?: InputMaybe<Scalars['Int']['input']>;
     userAccepted?: InputMaybe<Scalars['Boolean']['input']>;
@@ -9502,6 +9508,8 @@ export type GqlCAdminBookingRequestEditPageRequestFragment = {
         canRequestParticipantAmendment: boolean;
         menuPriceCents: number;
         travelExpensesCents: number;
+        platformFeePercentCook: number;
+        platformFeePercentCustomer: number;
         totalCentsCustomer: number | null;
         totalWithoutDiscountsCentsCustomer: number;
         payoutCentsCook: number;
@@ -9584,6 +9592,8 @@ export type GqlCAdminBookingRequestEditPageQuery = {
                         canRequestParticipantAmendment: boolean;
                         menuPriceCents: number;
                         travelExpensesCents: number;
+                        platformFeePercentCook: number;
+                        platformFeePercentCustomer: number;
                         totalCentsCustomer: number | null;
                         totalWithoutDiscountsCentsCustomer: number;
                         payoutCentsCook: number;
@@ -10672,6 +10682,11 @@ export type GqlCAdminBookingRequestOfferPriceEditPageOfferFragment = {
     menuPriceCents: number;
     travelExpensesCents: number;
     travelDistanceKm: number | null;
+    paymentProviderFeeCents: number;
+    platformFeePercentCook: number;
+    platformFeePercentCustomer: number;
+    platformFeeCentsCook: number;
+    platformFeeCentsCustomer: number;
     totalCentsCustomer: number | null;
     totalWithoutDiscountsCentsCustomer: number;
     payoutCentsCook: number;
@@ -10737,6 +10752,11 @@ export type GqlCAdminBookingRequestOfferPriceEditPageQuery = {
                     menuPriceCents: number;
                     travelExpensesCents: number;
                     travelDistanceKm: number | null;
+                    paymentProviderFeeCents: number;
+                    platformFeePercentCook: number;
+                    platformFeePercentCustomer: number;
+                    platformFeeCentsCook: number;
+                    platformFeeCentsCustomer: number;
                     totalCentsCustomer: number | null;
                     totalWithoutDiscountsCentsCustomer: number;
                     payoutCentsCook: number;
@@ -17340,6 +17360,8 @@ export type GqlCProfileCookBookingRequestOfferPriceEditPageUserFragment = {
             status: Schema.GqlCBookingRequestOfferStatus;
             menuPriceCents: number;
             travelExpensesCents: number;
+            platformFeePercentCook: number;
+            platformFeePercentCustomer: number;
             bookingRequest: {
                 bookingRequestId: string;
                 suggestedOfferAmountCents: number;
@@ -17368,6 +17390,8 @@ export type GqlCProfileCookBookingRequestOfferPriceEditPageQuery = {
                     status: Schema.GqlCBookingRequestOfferStatus;
                     menuPriceCents: number;
                     travelExpensesCents: number;
+                    platformFeePercentCook: number;
+                    platformFeePercentCustomer: number;
                     bookingRequest: {
                         bookingRequestId: string;
                         suggestedOfferAmountCents: number;
@@ -17397,6 +17421,8 @@ export type GqlCProfileCookBookingRequestOfferPriceEditPageUpdatesSubscription =
                 status: Schema.GqlCBookingRequestOfferStatus;
                 menuPriceCents: number;
                 travelExpensesCents: number;
+                platformFeePercentCook: number;
+                platformFeePercentCustomer: number;
                 bookingRequest: {
                     bookingRequestId: string;
                     suggestedOfferAmountCents: number;
@@ -25158,6 +25184,8 @@ export const AdminBookingRequestEditPageRequestFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'canRequestParticipantAmendment' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCook' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCustomer' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
@@ -26165,6 +26193,11 @@ export const AdminBookingRequestOfferPriceEditPageOfferFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'travelDistanceKm' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'paymentProviderFeeCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCook' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCustomer' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'platformFeeCentsCook' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'platformFeeCentsCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
@@ -29937,6 +29970,8 @@ export const ProfileCookBookingRequestOfferPriceEditPageUserFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCook' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCustomer' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'bookingRequest' },
@@ -44564,6 +44599,8 @@ export const AdminBookingRequestEditPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'canRequestParticipantAmendment' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCook' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCustomer' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
@@ -47986,6 +48023,11 @@ export const AdminBookingRequestOfferPriceEditPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'travelDistanceKm' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'paymentProviderFeeCents' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCook' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCustomer' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'platformFeeCentsCook' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'platformFeeCentsCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'totalCentsCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
@@ -71624,6 +71666,8 @@ export const ProfileCookBookingRequestOfferPriceEditPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCook' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCustomer' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'bookingRequest' },
@@ -71739,6 +71783,8 @@ export const ProfileCookBookingRequestOfferPriceEditPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'menuPriceCents' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCook' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platformFeePercentCustomer' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'bookingRequest' },

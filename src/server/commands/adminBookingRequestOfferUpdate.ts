@@ -20,6 +20,12 @@ function assertNonNegativeInt(value: number, fieldName: string): void {
     }
 }
 
+function assertPlatformFeePercent(value: number, fieldName: string): void {
+    if (!Number.isInteger(value) || value < 0 || value > 100) {
+        throw new Error(`adminBookingRequestOfferUpdate: ${fieldName} must be an integer from 0 to 100`);
+    }
+}
+
 export async function adminBookingRequestOfferUpdate(
     { adminId }: GqlSAdminMutation,
     args: GqlSAdminMutationBookingRequestOfferUpdateArgs,
@@ -78,7 +84,13 @@ export async function adminBookingRequestOfferUpdate(
 
         const nextMenuPriceCents = input.menuPriceCents ?? offer.menuPriceCents;
         const nextTravelExpensesCents = input.travelExpensesCents ?? offer.travelExpensesCents;
-        const priceInputsChanged = input.menuPriceCents != null || input.travelExpensesCents != null;
+        const nextPlatformFeePercentCook = input.platformFeePercentCook ?? offer.platformFeePercentCook;
+        const nextPlatformFeePercentCustomer = input.platformFeePercentCustomer ?? offer.platformFeePercentCustomer;
+        const priceInputsChanged =
+            input.menuPriceCents != null ||
+            input.travelExpensesCents != null ||
+            input.platformFeePercentCook != null ||
+            input.platformFeePercentCustomer != null;
 
         if (input.menuPriceCents != null) {
             assertNonNegativeInt(input.menuPriceCents, 'menuPriceCents');
@@ -88,6 +100,12 @@ export async function adminBookingRequestOfferUpdate(
         }
         if (input.travelExpensesCents != null) {
             assertNonNegativeInt(input.travelExpensesCents, 'travelExpensesCents');
+        }
+        if (input.platformFeePercentCook != null) {
+            assertPlatformFeePercent(input.platformFeePercentCook, 'platformFeePercentCook');
+        }
+        if (input.platformFeePercentCustomer != null) {
+            assertPlatformFeePercent(input.platformFeePercentCustomer, 'platformFeePercentCustomer');
         }
 
         if (priceInputsChanged) {
@@ -100,13 +118,15 @@ export async function adminBookingRequestOfferUpdate(
                 offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM'
             ) {
                 throw new Error(
-                    'adminBookingRequestOfferUpdate: cannot change menu/travel prices on dual-accepted or paid offers; use bookingRequestOfferAmendmentCreate / Apply',
+                    'adminBookingRequestOfferUpdate: cannot change menu/travel/fee prices on dual-accepted or paid offers; use bookingRequestOfferAmendmentCreate / Apply',
                 );
             }
 
             const price = bookingRequestOfferPriceCalculate({
                 menuPriceCents: nextMenuPriceCents,
                 travelExpensesCents: nextTravelExpensesCents,
+                platformFeePercentCook: nextPlatformFeePercentCook,
+                platformFeePercentCustomer: nextPlatformFeePercentCustomer,
             });
             offerPatch.menuPriceCents = price.menuPriceCents;
             offerPatch.travelExpensesCents = price.travelExpensesCents;

@@ -35,6 +35,8 @@ fragment AdminBookingRequestEditPageRequest on AdminBookingRequest {
         canRequestParticipantAmendment
         menuPriceCents
         travelExpensesCents
+        platformFeePercentCook
+        platformFeePercentCustomer
         totalCentsCustomer
         totalWithoutDiscountsCentsCustomer
         payoutCentsCook

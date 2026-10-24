@@ -4265,14 +4265,13 @@ type AdminMutation {
     # `expiresAt` unless `expiresAt` is also provided. Does not reset cook
     # acceptance or append offer-timeline events. Returns `bookingRequestId`.
     bookingRequestUpdate(bookingRequestId: ID!, input: AdminBookingRequestUpdate!): MutationResult!
-    # Creates an offer on behalf of a cook with a full manual fee breakdown
-    # (ops override — not cook auto-calc). Dual-accepted inserts land as
-    # `PAYED_OUT_OF_SYSTEM`. Seeds offer chat like cook create. Returns
-    # `bookingRequestOfferId` as `referenceId`.
+    # Creates an offer on behalf of a cook (menu + travel + optional fee %).
+    # Dual-accepted inserts land as `PAYED_OUT_OF_SYSTEM`. Seeds offer chat
+    # like cook create. Returns `bookingRequestOfferId` as `referenceId`.
     bookingRequestOfferCreate(input: AdminBookingRequestOfferCreate!): MutationResult!
-    # Partial admin ops update of accept flags / fees / payment timestamps.
-    # Dual-accept while `paymentStatus` is still `EMPTY` flips to
-    # `PAYED_OUT_OF_SYSTEM`. Returns `bookingRequestOfferId`.
+    # Partial admin ops update of accept flags / menu / travel / fee % /
+    # payment timestamps. Dual-accept while `paymentStatus` is still `EMPTY`
+    # flips to `PAYED_OUT_OF_SYSTEM`. Returns `bookingRequestOfferId`.
     bookingRequestOfferUpdate(bookingRequestOfferId: ID!, input: AdminBookingRequestOfferUpdate!): MutationResult!
     # Replaces an existing offer configured-menu JSON snapshot (title,
     # description, courses/meals). Requires a configured menu already present;
@@ -4441,11 +4440,11 @@ input AdminBookingRequestUpdate {
     participants: [UserBookingRequestParticipantCreate!]
 }
 
-# Admin-created offer with a full manual fee breakdown (cents). Dual accept
-# flags optional (null = pending). `notifyCustomer` bumps customer unread +
-# SSE only — no outbound email yet.
-# Admin offer create — only formula inputs. Fees / payout / customer total are
-# always derived via `bookingRequestOfferPriceCalculate` on the server.
+# Admin offer create — formula inputs (menu + travel + optional fee %).
+# Fee cents / payout / customer total are always derived via
+# `bookingRequestOfferPriceCalculate` on the server. Dual accept flags
+# optional (null = pending). `notifyCustomer` bumps customer unread + SSE
+# only — no outbound email yet.
 input AdminBookingRequestOfferCreate {
     bookingRequestId: ID!
     cookId: ID!
@@ -4453,6 +4452,9 @@ input AdminBookingRequestOfferCreate {
     cookAccepted: Boolean
     menuPriceCents: Int!
     travelExpensesCents: Int!
+    # Optional sticky platform fee % (0–100). Omit for marketplace defaults (18 / 4).
+    platformFeePercentCook: Int
+    platformFeePercentCustomer: Int
     travelDistanceKm: Float
     createdAt: DateTime
     paymentDateTime: DateTime
@@ -4463,13 +4465,16 @@ input AdminBookingRequestOfferCreate {
     message: String
 }
 
-# Admin ops partial offer update. Fee columns are never accepted — changing
-# menuPriceCents and/or travelExpensesCents recalculates the full fee snapshot.
+# Admin ops partial offer update. Changing menuPriceCents, travelExpensesCents,
+# and/or platform fee % recalculates the full fee snapshot (pre-accept only).
 input AdminBookingRequestOfferUpdate {
     userAccepted: Boolean
     cookAccepted: Boolean
     menuPriceCents: Int
     travelExpensesCents: Int
+    # Optional sticky platform fee % (0–100). When set, persists on the offer.
+    platformFeePercentCook: Int
+    platformFeePercentCustomer: Int
     travelDistanceKm: Float
     paymentDateTime: DateTime
     plannedPayoutDateTime: DateTime
@@ -4477,12 +4482,16 @@ input AdminBookingRequestOfferUpdate {
 }
 
 # Admin post–dual-accept booking change (propose or apply). At least one of
-# participants, venue, menuPriceCents, or travelExpensesCents must change.
+# participants, venue, menuPriceCents, travelExpensesCents, or platform fee %
+# must change.
 input AdminBookingRequestOfferAmendmentInput {
     participants: [UserBookingRequestParticipantCreate!]
     exactEventAddress: AdminBookingRequestExactEventAddressInput
     menuPriceCents: Int
     travelExpensesCents: Int
+    # Optional sticky platform fee % (0–100). When set, becomes the offer snapshot after apply.
+    platformFeePercentCook: Int
+    platformFeePercentCustomer: Int
     travelDistanceKm: Float
 }
 

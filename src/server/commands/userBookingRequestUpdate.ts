@@ -273,6 +273,8 @@ export async function userBookingRequestUpdate(
                     const price = bookingRequestOfferPriceCalculate({
                         menuPriceCents: offer.menuPriceCents,
                         travelExpensesCents,
+                        platformFeePercentCook: offer.platformFeePercentCook,
+                        platformFeePercentCustomer: offer.platformFeePercentCustomer,
                     });
                     const priceBefore = bookingRequestOfferPriceSnapshot(offer);
                     const priceAfter = bookingRequestOfferPriceSnapshot(price);
@@ -392,6 +394,8 @@ export async function userBookingRequestUpdate(
                         const price = bookingRequestOfferPriceCalculate({
                             menuPriceCents: menuPriceCentsAfter,
                             travelExpensesCents,
+                            platformFeePercentCook: offer.platformFeePercentCook,
+                            platformFeePercentCustomer: offer.platformFeePercentCustomer,
                         });
                         const priceBefore = bookingRequestOfferPriceSnapshot(offer);
                         const priceAfter = bookingRequestOfferPriceSnapshot(price);

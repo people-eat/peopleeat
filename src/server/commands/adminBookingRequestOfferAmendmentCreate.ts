@@ -38,6 +38,8 @@ export async function adminBookingRequestOfferAmendmentCreate(
             exactEventAddress: args.input.exactEventAddress,
             menuPriceCents: args.input.menuPriceCents,
             travelExpensesCents: args.input.travelExpensesCents,
+            platformFeePercentCook: args.input.platformFeePercentCook,
+            platformFeePercentCustomer: args.input.platformFeePercentCustomer,
             travelDistanceKm: args.input.travelDistanceKm,
             errorPrefix: 'adminBookingRequestOfferAmendmentCreate',
         });

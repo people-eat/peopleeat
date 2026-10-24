@@ -19,9 +19,9 @@ After dual acceptance, the customer pays (or completes a €0 path); later an ad
    cook Offer tab shows an info banner with the invoice amount (menu + travel before the platform fee) and notes that the fee was deducted
    at payout.
 
-Stripe Connect setup for cooks: [cook-profile.md](./cook-profile.md). Fee structure:
-[architecture/stripe-payment.md](../architecture/stripe-payment.md) and [architecture/booking.md](../architecture/booking.md). Admin payout
-UI: [admin-booking-requests.md](./admin-booking-requests.md).
+Stripe Connect setup for cooks: [cook-profile.md](./cook-profile.md). Fee structure (default 18% cook / 4% customer; admins may override
+percents per offer, sticky on that offer): [architecture/stripe-payment.md](../architecture/stripe-payment.md) and
+[architecture/booking.md](../architecture/booking.md). Admin payout UI: [admin-booking-requests.md](./admin-booking-requests.md).
 
 ## Decisions
 

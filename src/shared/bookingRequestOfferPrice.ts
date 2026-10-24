@@ -1,13 +1,17 @@
 /**
  * Booking-request offer fee breakdown (integer cents).
- * Platform: 18% cook / 4% customer on menu price. Stripe-style gross-up:
- * (menu + customer fee + travel + 25¢) / (1 - 1.5%).
+ * Platform: default 18% cook / 4% customer on menu price (overridable per offer).
+ * Stripe-style gross-up: (menu + customer fee + travel + 25¢) / (1 - 1.5%).
  * See docs/features/booking-payment.md and docs/features/booking-offers.md.
  */
 
 export type BookingRequestOfferPriceInput = {
     menuPriceCents: number;
     travelExpensesCents: number;
+    /** When omitted, defaults to {@link BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK}. */
+    platformFeePercentCook?: number;
+    /** When omitted, defaults to {@link BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER}. */
+    platformFeePercentCustomer?: number;
 };
 
 export type BookingRequestOfferPriceResult = {
@@ -22,8 +26,8 @@ export type BookingRequestOfferPriceResult = {
     totalWithoutDiscountsCentsCustomer: number;
 };
 
-const BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK = 18;
-const BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER = 4;
+export const BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK = 18;
+export const BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER = 4;
 const BOOKING_REQUEST_OFFER_PAYMENT_PROVIDER_FIXED_CENTS = 25;
 const BOOKING_REQUEST_OFFER_PAYMENT_PROVIDER_PERCENT = 1.5;
 
@@ -31,12 +35,27 @@ function roundCents(amount: number): number {
     return Math.round(amount);
 }
 
+function platformFeePercentResolve(value: number | undefined, fallback: number): number {
+    if (value === undefined) {
+        return fallback;
+    }
+    if (!Number.isInteger(value) || value < 0 || value > 100) {
+        throw new Error('bookingRequestOfferPriceCalculate: platform fee percent must be an integer from 0 to 100');
+    }
+    return value;
+}
+
 export function bookingRequestOfferPriceCalculate(input: BookingRequestOfferPriceInput): BookingRequestOfferPriceResult {
     const menuPriceCents = roundCents(input.menuPriceCents);
     const travelExpensesCents = roundCents(input.travelExpensesCents);
+    const platformFeePercentCook = platformFeePercentResolve(input.platformFeePercentCook, BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK);
+    const platformFeePercentCustomer = platformFeePercentResolve(
+        input.platformFeePercentCustomer,
+        BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER,
+    );
 
-    const platformFeeCentsCook = roundCents(menuPriceCents * (BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK / 100));
-    const platformFeeCentsCustomer = roundCents(menuPriceCents * (BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER / 100));
+    const platformFeeCentsCook = roundCents(menuPriceCents * (platformFeePercentCook / 100));
+    const platformFeeCentsCustomer = roundCents(menuPriceCents * (platformFeePercentCustomer / 100));
     const payoutCentsCook = roundCents(menuPriceCents - platformFeeCentsCook + travelExpensesCents);
     const totalWithoutDiscountsCentsCustomer = roundCents(
         (menuPriceCents + platformFeeCentsCustomer + travelExpensesCents + BOOKING_REQUEST_OFFER_PAYMENT_PROVIDER_FIXED_CENTS) /
@@ -47,8 +66,8 @@ export function bookingRequestOfferPriceCalculate(input: BookingRequestOfferPric
     );
 
     return {
-        platformFeePercentCook: BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK,
-        platformFeePercentCustomer: BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER,
+        platformFeePercentCook,
+        platformFeePercentCustomer,
         menuPriceCents,
         travelExpensesCents,
         paymentProviderFeeCents,

@@ -23,6 +23,8 @@ describe('toGqlBookingRequestOfferParticipantAmendment', () => {
                 totalCentsCustomer: 45_000,
                 payoutCentsCook: 34_800,
                 giftCardAppliedCents: 0,
+                platformFeePercentCook: 18,
+                platformFeePercentCustomer: 4,
             },
             currentParticipants: [
                 { type: 'ADULT', name: 'A', restrictions: [] },

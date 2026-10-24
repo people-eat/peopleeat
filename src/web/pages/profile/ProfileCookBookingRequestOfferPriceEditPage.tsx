@@ -159,6 +159,8 @@ export function ProfileCookBookingRequestOfferPriceEditPage({
                 }}
                 resetKey={offer.bookingRequestOfferId}
                 initialPricePerPersonCents={paid > 0 ? Math.round(offer.menuPriceCents / paid) : request.suggestedOfferAmountCents}
+                platformFeePercentCook={offer.platformFeePercentCook}
+                platformFeePercentCustomer={offer.platformFeePercentCustomer}
                 disabled={saving}
                 onMenuPriceCentsChange={setMenuPriceCents}
                 onValidChange={setPriceValid}

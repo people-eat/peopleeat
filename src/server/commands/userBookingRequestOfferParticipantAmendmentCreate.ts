@@ -192,6 +192,8 @@ export async function userBookingRequestOfferParticipantAmendmentCreate(
                 participantsBefore: existingParticipants,
                 participantsAfter,
                 scaleMenuByParticipants: participantsChanged,
+                platformFeePercentCook: row.offer.platformFeePercentCook,
+                platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
             },
             row.offer.payoutCentsCook,
         );

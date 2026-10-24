@@ -65,7 +65,12 @@ export async function cookBookingRequestOfferPriceUpdate(
                 },
             ));
         const travelExpensesCents = Math.round(travelDistanceKm * row.cook.travelExpensesAmount * 2);
-        const price = bookingRequestOfferPriceCalculate({ menuPriceCents, travelExpensesCents });
+        const price = bookingRequestOfferPriceCalculate({
+            menuPriceCents,
+            travelExpensesCents,
+            platformFeePercentCook: row.offer.platformFeePercentCook,
+            platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
+        });
 
         let promoMinimumTotalAmountCustomerCents: number | null = null;
         if (row.bookingRequest.promoCodeId != null) {

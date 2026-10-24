@@ -27,6 +27,8 @@ export function toGqlBookingRequestOfferParticipantAmendment(input: {
         | 'totalCentsCustomer'
         | 'payoutCentsCook'
         | 'giftCardAppliedCents'
+        | 'platformFeePercentCook'
+        | 'platformFeePercentCustomer'
     >;
     currentParticipants: Pick<BookingRequestParticipant, 'type' | 'name' | 'restrictions'>[];
     /** Precomputed travel after for venue proposals (cook rate × distance). */
@@ -57,6 +59,8 @@ export function toGqlBookingRequestOfferParticipantAmendment(input: {
             participantsAfter,
             scaleMenuByParticipants: headcountChanged && amendment.menuPriceCentsAfter == null,
             menuPriceCentsOverride: amendment.menuPriceCentsAfter,
+            platformFeePercentCook: amendment.platformFeePercentCookAfter ?? offer.platformFeePercentCook,
+            platformFeePercentCustomer: amendment.platformFeePercentCustomerAfter ?? offer.platformFeePercentCustomer,
         },
         offer.payoutCentsCook,
     );

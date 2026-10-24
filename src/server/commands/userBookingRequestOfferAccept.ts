@@ -103,6 +103,8 @@ export async function userBookingRequestOfferAccept(
         const price = bookingRequestOfferPriceCalculate({
             menuPriceCents: row.offer.menuPriceCents,
             travelExpensesCents,
+            platformFeePercentCook: row.offer.platformFeePercentCook,
+            platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
         });
 
         const discountCents = (row.giftCard?.balanceCents ?? 0) + (row.promoCode?.amountCents ?? 0);

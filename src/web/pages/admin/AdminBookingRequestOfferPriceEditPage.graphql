@@ -33,6 +33,11 @@ fragment AdminBookingRequestOfferPriceEditPageOffer on AdminBookingRequestOffer 
     menuPriceCents
     travelExpensesCents
     travelDistanceKm
+    paymentProviderFeeCents
+    platformFeePercentCook
+    platformFeePercentCustomer
+    platformFeeCentsCook
+    platformFeeCentsCustomer
     totalCentsCustomer
     totalWithoutDiscountsCentsCustomer
     payoutCentsCook

@@ -204,6 +204,8 @@ export async function bookingRequestOfferParticipantAmendmentApply(
             participantsAfter,
             scaleMenuByParticipants: headcountChanged && amendment.menuPriceCentsAfter == null,
             menuPriceCentsOverride: amendment.menuPriceCentsAfter,
+            platformFeePercentCook: amendment.platformFeePercentCookAfter ?? offer.platformFeePercentCook,
+            platformFeePercentCustomer: amendment.platformFeePercentCustomerAfter ?? offer.platformFeePercentCustomer,
         },
         offer.payoutCentsCook,
     );

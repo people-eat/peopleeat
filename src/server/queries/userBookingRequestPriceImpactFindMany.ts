@@ -60,6 +60,8 @@ export async function userBookingRequestPriceImpactFindMany(
         const priceAfter = bookingRequestOfferPriceCalculate({
             menuPriceCents: menuPriceCentsAfter,
             travelExpensesCents: row.offer.travelExpensesCents,
+            platformFeePercentCook: row.offer.platformFeePercentCook,
+            platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
         });
         return {
             bookingRequestOfferId: row.offer.bookingRequestOfferId,

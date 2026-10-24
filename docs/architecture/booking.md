@@ -117,12 +117,17 @@ Full fee columns on the offer (`menuPriceCents`, travel, provider fee, platform 
 `ServerRuntime.stripe`; checkout + webhook finalize; admin-gated cook bank payout after the event (see
 [stripe-payment.md](./stripe-payment.md)).
 
-**Pricing contract** (shared `bookingRequestOfferPriceCalculate` — 18% cook / 4% customer platform fee + Stripe-style 1.5%+25¢ gross-up):
+**Pricing contract** (shared `bookingRequestOfferPriceCalculate` — default 18% cook / 4% customer platform fee + Stripe-style 1.5%+25¢
+gross-up; fee **cents** always derived, never free-form):
 
-| Actor | Editable inputs                                     | Derived                                                               |
-| ----- | --------------------------------------------------- | --------------------------------------------------------------------- |
-| Cook  | Menu price per person (UI) → `menuPriceCents` total | Travel (distance × cook rate × 2), all fees / payout / customer total |
-| Admin | `menuPriceCents` + `travelExpensesCents`            | Same fee snapshot — never free-form fee amounts                       |
+| Actor | Editable inputs                                                                   | Derived                                                               |
+| ----- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Cook  | Menu price per person (UI) → `menuPriceCents` total                               | Travel (distance × cook rate × 2), all fees / payout / customer total |
+| Admin | `menuPriceCents` + `travelExpensesCents` + optional sticky platform fee % (0–100) | Same fee snapshot using the chosen (or default) percents              |
+
+Platform fee percents are **snapshotted on the offer** and sticky: cook price updates, customer accept, amendments, and headcount/venue
+auto-adjusts re-run the formula with the offer’s stored percents (not a silent reset to 18/4). New cook-created offers still start at the
+marketplace defaults.
 
 Soft price-class guidance (`suggestedOfferAmountCents` / `minOfferAmountCents` / `maxOfferAmountCents` via
 `bookingRequestOfferPriceGuidance`) is UX-only on cook/admin offer surfaces. `CookBookingRequest.estimatedCookPayoutCents` is the cook
@@ -153,10 +158,10 @@ participants / costs / configured-menu snapshots stay unprefixed.
 9. Mappers: `toGqlUserBookingRequest*`, `toGqlCookBookingRequest*`, `toGqlAdminBookingRequest*`, plus public cook/user/menu helpers
 10. Cook pool + customer list/detail + admin list/detail/offers are wired; admin overview/list/create/detail/**edit**/offer create+edit UI
     live (publication approve on blocked large-group requests); admin ops mutations for request update + offer create/update (menu + travel
-    inputs only; fees always recalculated); admin offer detail splits **offer** (people / accept metadata), **costs** (Plattformgewinn, fee
-    split/%, payment-provider fee, Stripe PI/SI Dashboard links, dual cost views with stored fees), and **menu**; radius cooks expose
-    suggested menu price + travel expenses; cook offer inbox UI live; customer offer cards → dedicated offer page + Stripe checkout;
-    chat-tab open resets role-scoped unread counters
+    - optional fee %; fee cents always recalculated); admin offer detail splits **offer** (people / accept metadata), **costs**
+      (Plattformgewinn, fee split/%, payment-provider fee, Stripe PI/SI Dashboard links, dual cost views with stored fees), and **menu**;
+      radius cooks expose suggested menu price + travel expenses; cook offer inbox UI live; customer offer cards → dedicated offer page +
+      Stripe checkout; chat-tab open resets role-scoped unread counters
 
 Drive UI with `status` + field presence.
 

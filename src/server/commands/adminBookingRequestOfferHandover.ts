@@ -271,7 +271,16 @@ export async function adminBookingRequestOfferHandover(
             throw new Error('adminBookingRequestOfferHandover: menuPriceCents must be a positive integer');
         }
 
-        const price = bookingRequestOfferPriceCalculate({ menuPriceCents, travelExpensesCents });
+        const price = bookingRequestOfferPriceCalculate({
+            menuPriceCents,
+            travelExpensesCents,
+            ...(input.copyPrice
+                ? {
+                      platformFeePercentCook: sourceOffer.platformFeePercentCook,
+                      platformFeePercentCustomer: sourceOffer.platformFeePercentCustomer,
+                  }
+                : {}),
+        });
         const travelDistanceKm = input.copyPrice
             ? (input.travelDistanceKm ?? sourceOffer.travelDistanceKm)
             : (input.travelDistanceKm ?? null);

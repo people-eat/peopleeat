@@ -47,6 +47,8 @@ export { isCallJoinable } from './callJoinWindow';
 export { COOK_CALL_AVAILABILITY_TIME_ZONE, deriveCookCallSlots, zonedMidnightToUtc } from './deriveCookCallSlots';
 export type { DerivedCallSlot } from './deriveCookCallSlots';
 export {
+    BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK,
+    BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER,
     bookingRequestOfferMenuPriceScaleByPaidParticipants,
     bookingRequestOfferPriceCalculate,
     bookingRequestSuggestedCookPayoutCents,

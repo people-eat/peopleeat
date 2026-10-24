@@ -87,15 +87,17 @@ SetupIntent path). When that instant is already past and `paymentStatus` is stil
 actions and dual cost views with **Kundensicht / Kochsicht** titles above, columns top-aligned. **Customer view** sits in a card around
 `CostBreakdownPanel` (promo / gift line items + total, muted travel-included footer). **Cook view** renders
 `BookingRequestOfferCostOverviewPanel` (`viewer: admin`) without an extra card wrapper (panel already has bordered sections) using
-**stored** offer fee amounts (not a live recalculation), so migrated or historical fee snapshots stay honest. Fee create/edit still only
-takes menu price + travel; percents/amounts (including `totalWithoutDiscountsCentsCustomer` and, when already set, `totalCentsCustomer` with
-any gift/promo discount cents preserved) are always recalculated on write. Edit-price CTA (`.../edit-price`: menu price, travel,
-payment/payout timestamps) lives on this tab’s footer only. On dual-accepted offers (`EMPTY` / `SETUP` / `PAYED`), menu/travel edits use
-`bookingRequestOfferAmendmentCreate` (cook must accept) or `bookingRequestOfferAmendmentApply` (bypass cook approval). Both reuse amendment
-Stripe rules (`EMPTY` cancel and re-prepare, `SETUP` columns only, `PAYED` refund/top-up). UI: on save, a confirm dialog shows price/payment
-consequences and two explicit actions (**Propose to chef** / **Apply now (skip cook approval)**). No feature toggle. Same path applies from
-request edit for venue/participants. Blocked for `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED` and when preparations are locked (clear
-prep first). Pre-accept price edits still use `bookingRequestOfferUpdate`.
+**stored** offer fee amounts (not a live recalculation), so migrated or historical fee snapshots stay honest. Admin create / edit-price take
+menu price, travel, and sticky platform fee **percentages** (cook / customer, 0–100; defaults 18 / 4). Fee cents, payout, provider estimate,
+and customer total (including `totalWithoutDiscountsCentsCustomer` and, when already set, `totalCentsCustomer` with any gift/promo discount
+cents preserved) are always recalculated on write via `bookingRequestOfferPriceCalculate`. Edit-price shows a live € preview with deltas vs
+the stored snapshot. Edit-price CTA (`.../edit-price`) lives on this tab’s footer only. On dual-accepted offers (`EMPTY` / `SETUP` /
+`PAYED`), menu/travel/fee-% edits use `bookingRequestOfferAmendmentCreate` (cook must accept) or `bookingRequestOfferAmendmentApply` (bypass
+cook approval). Both reuse amendment Stripe rules (`EMPTY` cancel and re-prepare, `SETUP` columns only, `PAYED` refund/top-up). UI: on save,
+a confirm dialog shows price/payment consequences and two explicit actions (**Propose to chef** / **Apply now (skip cook approval)**). No
+feature toggle. Same path applies from request edit for venue/participants. Blocked for `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED` and
+when preparations are locked (clear prep first). Pre-accept price edits still use `bookingRequestOfferUpdate`. Fee percents stay sticky on
+later cook price updates, customer accept, and amendments.
 
 **Menu** holds only configured / suggested menus (`OfferMenuConfigured` or `CookMenuCard` grid to `/admin/menus/$menuId`) — no cook/customer
 header. When a customer has frozen a configured menu, admins can open `.../edit-configured-menu` to replace title, description, and

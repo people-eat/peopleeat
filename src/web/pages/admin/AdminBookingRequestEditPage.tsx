@@ -439,6 +439,12 @@ export function AdminBookingRequestEditPage({
     const previewPrice = bookingRequestOfferPriceCalculate({
         menuPriceCents: previewMenuCents,
         travelExpensesCents: previewTravelCents,
+        ...(dualAcceptedOffer != null
+            ? {
+                  platformFeePercentCook: dualAcceptedOffer.platformFeePercentCook,
+                  platformFeePercentCustomer: dualAcceptedOffer.platformFeePercentCustomer,
+              }
+            : {}),
     });
     const previewDiscountCents = dualAcceptedOffer
         ? Math.max(

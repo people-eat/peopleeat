@@ -15,6 +15,8 @@ describe('bookingRequestOfferParticipantAmendmentPriceCalculate', () => {
                 promoAmountCents: 0,
                 participantsBefore: [{ type: 'ADULT' }, { type: 'ADULT' }, { type: 'ADULT' }, { type: 'ADULT' }],
                 participantsAfter: [{ type: 'ADULT' }, { type: 'ADULT' }],
+                platformFeePercentCook: 18,
+                platformFeePercentCustomer: 4,
             },
             34_800,
         );
@@ -41,6 +43,8 @@ describe('bookingRequestOfferParticipantAmendmentPriceCalculate', () => {
                 promoAmountCents: 0,
                 participantsBefore: [{ type: 'ADULT' }, { type: 'ADULT' }, { type: 'DISCOUNTED' }, { type: 'DISCOUNTED' }],
                 participantsAfter: [{ type: 'ADULT' }, { type: 'ADULT' }],
+                platformFeePercentCook: 18,
+                platformFeePercentCustomer: 4,
             },
             24_600,
         );
@@ -63,6 +67,8 @@ describe('bookingRequestOfferParticipantAmendmentPriceCalculate', () => {
                 participantsBefore: [{ type: 'ADULT' }, { type: 'ADULT' }],
                 participantsAfter: [{ type: 'ADULT' }, { type: 'ADULT' }],
                 scaleMenuByParticipants: false,
+                platformFeePercentCook: 18,
+                platformFeePercentCustomer: 4,
             },
             34_800,
         );
@@ -86,11 +92,39 @@ describe('bookingRequestOfferParticipantAmendmentPriceCalculate', () => {
                 participantsAfter: [{ type: 'ADULT' }, { type: 'ADULT' }, { type: 'ADULT' }],
                 scaleMenuByParticipants: true,
                 menuPriceCentsOverride: 55_000,
+                platformFeePercentCook: 18,
+                platformFeePercentCustomer: 4,
             },
             34_800,
         );
 
         expect(result.menuPriceCentsAfter).toBe(55_000);
         expect(result.paidParticipantsAfter).toBe(3);
+    });
+
+    it('keeps sticky platform fee percents instead of marketplace defaults', () => {
+        const result = bookingRequestOfferParticipantAmendmentPriceCalculate(
+            {
+                menuPriceCentsBefore: 20_000,
+                travelExpensesCentsAfter: 2_500,
+                totalWithoutDiscountsCentsCustomerBefore: 24_000,
+                totalCentsCustomerBefore: 24_000,
+                giftCardAppliedCentsBefore: 0,
+                giftCardBalanceCents: 0,
+                promoAmountCents: 0,
+                participantsBefore: [{ type: 'ADULT' }, { type: 'ADULT' }],
+                participantsAfter: [{ type: 'ADULT' }, { type: 'ADULT' }],
+                scaleMenuByParticipants: false,
+                platformFeePercentCook: 10,
+                platformFeePercentCustomer: 2,
+            },
+            20_500,
+        );
+
+        expect(result.platformFeePercentCook).toBe(10);
+        expect(result.platformFeePercentCustomer).toBe(2);
+        expect(result.platformFeeCentsCook).toBe(2_000);
+        expect(result.platformFeeCentsCustomer).toBe(400);
+        expect(result.payoutCentsCookAfter).toBe(20_500);
     });
 });

@@ -18,16 +18,22 @@ import type { GqlCAdminBookingRequestOfferCreatePageQuery } from '../../graphql/
 import { AdminBookingRequestOfferCreateDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
-import { acceptTriadToBool, ADMIN_OFFER_ACCEPT_OPTIONS, parseAdminOfferPriceInputs } from './adminBookingRequestOfferFeeForm';
+import {
+    acceptTriadToBool,
+    ADMIN_OFFER_ACCEPT_OPTIONS,
+    defaultAdminOfferFeePercentFormValues,
+    parseAdminOfferPriceInputs,
+} from './adminBookingRequestOfferFeeForm';
 import type { AdminOfferAcceptTriad, AdminOfferPriceInputFormValues } from './adminBookingRequestOfferFeeForm';
+import { AdminBookingRequestOfferFeePreview } from './AdminBookingRequestOfferFeePreview';
 import { adminStubRouteBySlug } from './adminCatalog';
 
 const listRoute = adminStubRouteBySlug('booking-requests');
 
 export const adminBookingRequestOfferCreatePageTitle = { de: 'Angebot anlegen', en: 'Create offer' } as const;
 export const adminBookingRequestOfferCreatePageDescription = {
-    de: 'Angebot manuell für einen Koch anlegen. Gebühren werden aus Menüpreis und Reisekosten berechnet.',
-    en: 'Create an offer manually for a cook. Fees are derived from menu price and travel expenses.',
+    de: 'Angebot manuell für einen Koch anlegen. Menüpreis, Reisekosten und Plattformgebühren (%) bestimmen die Beträge.',
+    en: 'Create an offer manually for a cook. Menu price, travel expenses, and platform fee percentages set the amounts.',
 } as const;
 
 export function adminBookingRequestOfferCreatePageVariables(bookingRequestId: string) {
@@ -104,6 +110,7 @@ export function AdminBookingRequestOfferCreatePage({
             createdAt: new Date(),
             travelExpensesEuros: initialCook != null ? centsToEuros(initialTravelExpensesCents) : '',
             travelDistanceKm: initialCook != null ? String(Math.round(initialCook.estimatedTravelDistanceKm * 10) / 10) : '',
+            ...defaultAdminOfferFeePercentFormValues(),
         } satisfies FormValues,
         onSubmit: async ({ value }) => {
             if (!value.cookId) {
@@ -140,6 +147,8 @@ export function AdminBookingRequestOfferCreatePage({
                         cookAccepted: acceptTriadToBool(value.cookAccepted),
                         menuPriceCents: fees.menuPriceCents,
                         travelExpensesCents: fees.travelExpensesCents,
+                        platformFeePercentCook: fees.platformFeePercentCook,
+                        platformFeePercentCustomer: fees.platformFeePercentCustomer,
                         travelDistanceKm: fees.travelDistanceKm,
                         createdAt: value.createdAt.toISOString(),
                         paymentDateTime: value.paymentDateTime?.toISOString() ?? null,
@@ -167,7 +176,11 @@ export function AdminBookingRequestOfferCreatePage({
     const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
     const selectedCookId = useSelector(form.store, (state) => state.values.cookId);
     const messageDraft = useSelector(form.store, (state) => state.values.message);
+    const platformFeePercentCookRaw = useSelector(form.store, (state) => state.values.platformFeePercentCook);
+    const platformFeePercentCustomerRaw = useSelector(form.store, (state) => state.values.platformFeePercentCustomer);
     const messageContainsPhoneNumber = containsPhoneNumber(messageDraft);
+    const previewPlatformFeePercentCook = Number.parseInt(platformFeePercentCookRaw, 10);
+    const previewPlatformFeePercentCustomer = Number.parseInt(platformFeePercentCustomerRaw, 10);
 
     const liveGuidance = bookingRequestOfferPriceGuidance({
         priceClassType: seedRequest.priceClassType,
@@ -342,6 +355,41 @@ export function AdminBookingRequestOfferCreatePage({
                             )}
                         </form.Field>
 
+                        <div className="grid gap-4 @md:grid-cols-2">
+                            <form.Field name="platformFeePercentCook">
+                                {(field) => (
+                                    <div className="grid gap-1.5">
+                                        <label htmlFor={`${formId}-fee-cook`} className="text-sm font-medium">
+                                            {{ de: 'Plattformgebühr Koch (%)', en: 'Platform fee cook (%)' }[locale]}
+                                        </label>
+                                        <Input
+                                            id={`${formId}-fee-cook`}
+                                            inputMode="numeric"
+                                            value={field.state.value}
+                                            onBlur={field.handleBlur}
+                                            onChange={(event) => field.handleChange(event.target.value)}
+                                        />
+                                    </div>
+                                )}
+                            </form.Field>
+                            <form.Field name="platformFeePercentCustomer">
+                                {(field) => (
+                                    <div className="grid gap-1.5">
+                                        <label htmlFor={`${formId}-fee-customer`} className="text-sm font-medium">
+                                            {{ de: 'Plattformgebühr Kunde (%)', en: 'Platform fee customer (%)' }[locale]}
+                                        </label>
+                                        <Input
+                                            id={`${formId}-fee-customer`}
+                                            inputMode="numeric"
+                                            value={field.state.value}
+                                            onBlur={field.handleBlur}
+                                            onChange={(event) => field.handleChange(event.target.value)}
+                                        />
+                                    </div>
+                                )}
+                            </form.Field>
+                        </div>
+
                         <BookingRequestOfferPriceConfigurationPanel
                             locale={locale}
                             viewer="admin"
@@ -353,6 +401,20 @@ export function AdminBookingRequestOfferCreatePage({
                             disabled={isSubmitting}
                             onMenuPriceCentsChange={setMenuPriceCents}
                             onValidChange={setPriceValid}
+                            platformFeePercentCook={
+                                Number.isInteger(previewPlatformFeePercentCook) ? previewPlatformFeePercentCook : undefined
+                            }
+                            platformFeePercentCustomer={
+                                Number.isInteger(previewPlatformFeePercentCustomer) ? previewPlatformFeePercentCustomer : undefined
+                            }
+                        />
+
+                        <AdminBookingRequestOfferFeePreview
+                            locale={locale}
+                            menuPriceCents={menuPriceCents}
+                            travelExpensesCents={travelExpensesCents}
+                            platformFeePercentCookRaw={platformFeePercentCookRaw}
+                            platformFeePercentCustomerRaw={platformFeePercentCustomerRaw}
                         />
 
                         <form.Field name="message">

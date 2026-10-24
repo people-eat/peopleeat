@@ -73,11 +73,13 @@ async function setupAdminOfferUpdate() {
 }
 
 describe('adminBookingRequestOfferUpdate', () => {
-    it('recalculates fees from menu and travel inputs', async () => {
+    it('recalculates fees from menu and travel inputs using sticky stored percents', async () => {
         const { admin, bookingRequestOfferId } = await setupAdminOfferUpdate();
         const expectedPrice = bookingRequestOfferPriceCalculate({
             menuPriceCents: 30_000,
             travelExpensesCents: 3_000,
+            platformFeePercentCook: 15,
+            platformFeePercentCustomer: 10,
         });
 
         const result = await adminBookingRequestOfferUpdate(
@@ -101,11 +103,47 @@ describe('adminBookingRequestOfferUpdate', () => {
             .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
         expect(offer?.menuPriceCents).toBe(expectedPrice.menuPriceCents);
         expect(offer?.travelExpensesCents).toBe(expectedPrice.travelExpensesCents);
-        expect(offer?.platformFeePercentCook).toBe(18);
+        expect(offer?.platformFeePercentCook).toBe(15);
+        expect(offer?.platformFeePercentCustomer).toBe(10);
         expect(offer?.payoutCentsCook).toBe(expectedPrice.payoutCentsCook);
         expect(offer?.totalWithoutDiscountsCentsCustomer).toBe(expectedPrice.totalWithoutDiscountsCentsCustomer);
         expect(offer?.totalCentsCustomer).toBe(expectedPrice.totalWithoutDiscountsCentsCustomer);
         expect(offer?.paymentStatus).toBe('EMPTY');
+    });
+
+    it('applies sticky platform fee percent overrides on recalculation', async () => {
+        const { admin, bookingRequestOfferId } = await setupAdminOfferUpdate();
+        const expectedPrice = bookingRequestOfferPriceCalculate({
+            menuPriceCents: 30_000,
+            travelExpensesCents: 3_000,
+            platformFeePercentCook: 10,
+            platformFeePercentCustomer: 2,
+        });
+
+        await adminBookingRequestOfferUpdate(
+            adminMutationParent(admin.user.userId),
+            {
+                bookingRequestOfferId,
+                input: {
+                    menuPriceCents: 30_000,
+                    travelExpensesCents: 3_000,
+                    platformFeePercentCook: 10,
+                    platformFeePercentCustomer: 2,
+                },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const [offer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(offer?.platformFeePercentCook).toBe(10);
+        expect(offer?.platformFeePercentCustomer).toBe(2);
+        expect(offer?.platformFeeCentsCook).toBe(expectedPrice.platformFeeCentsCook);
+        expect(offer?.platformFeeCentsCustomer).toBe(expectedPrice.platformFeeCentsCustomer);
+        expect(offer?.payoutCentsCook).toBe(expectedPrice.payoutCentsCook);
     });
 
     it('preserves gift/promo discount cents when recalculating totalCentsCustomer', async () => {
@@ -119,6 +157,8 @@ describe('adminBookingRequestOfferUpdate', () => {
         const expectedPrice = bookingRequestOfferPriceCalculate({
             menuPriceCents: 30_000,
             travelExpensesCents: 3_000,
+            platformFeePercentCook: 15,
+            platformFeePercentCustomer: 10,
         });
 
         await adminBookingRequestOfferUpdate(

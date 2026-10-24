@@ -21,6 +21,46 @@ describe('bookingRequestOfferPriceCalculate', () => {
         expect(result.totalWithoutDiscountsCentsCustomer).toBeGreaterThan(20_000 + 800 + 2_500);
         expect(result.paymentProviderFeeCents).toBe(result.totalWithoutDiscountsCentsCustomer - (20_000 + 800 + 2_500));
     });
+
+    it('applies sticky per-offer platform fee percent overrides', () => {
+        const result = bookingRequestOfferPriceCalculate({
+            menuPriceCents: 20_000,
+            travelExpensesCents: 2_500,
+            platformFeePercentCook: 10,
+            platformFeePercentCustomer: 2,
+        });
+
+        expect(result.platformFeePercentCook).toBe(10);
+        expect(result.platformFeePercentCustomer).toBe(2);
+        expect(result.platformFeeCentsCook).toBe(2_000);
+        expect(result.platformFeeCentsCustomer).toBe(400);
+        expect(result.payoutCentsCook).toBe(20_500);
+        expect(result.paymentProviderFeeCents).toBe(result.totalWithoutDiscountsCentsCustomer - (20_000 + 400 + 2_500));
+    });
+
+    it('rejects non-integer or out-of-range fee percents', () => {
+        expect(() =>
+            bookingRequestOfferPriceCalculate({
+                menuPriceCents: 20_000,
+                travelExpensesCents: 0,
+                platformFeePercentCook: -1,
+            }),
+        ).toThrow(/platform fee percent/);
+        expect(() =>
+            bookingRequestOfferPriceCalculate({
+                menuPriceCents: 20_000,
+                travelExpensesCents: 0,
+                platformFeePercentCustomer: 10.5,
+            }),
+        ).toThrow(/platform fee percent/);
+        expect(() =>
+            bookingRequestOfferPriceCalculate({
+                menuPriceCents: 20_000,
+                travelExpensesCents: 0,
+                platformFeePercentCook: 101,
+            }),
+        ).toThrow(/platform fee percent/);
+    });
 });
 
 describe('bookingRequestSuggestedCookPayoutCents', () => {

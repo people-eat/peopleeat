@@ -9,6 +9,8 @@ fragment ProfileCookBookingRequestOfferPriceEditPageUser on User {
             status
             menuPriceCents
             travelExpensesCents
+            platformFeePercentCook
+            platformFeePercentCustomer
             bookingRequest {
                 bookingRequestId
                 suggestedOfferAmountCents

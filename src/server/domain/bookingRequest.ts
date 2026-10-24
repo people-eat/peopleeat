@@ -315,6 +315,11 @@ export type BookingRequestOfferParticipantAmendment = {
      * Absolute travel override (admin). When set, wins over venue-recomputed travel.
      */
     travelExpensesCentsAfter?: number;
+    /**
+     * Sticky platform fee % after apply (admin). When set, wins over the live offer snapshot.
+     */
+    platformFeePercentCookAfter?: number;
+    platformFeePercentCustomerAfter?: number;
     menuPriceCentsBefore: number;
     /**
      * Absent on legacy pending rows created before venue amendments stored travel snapshots.

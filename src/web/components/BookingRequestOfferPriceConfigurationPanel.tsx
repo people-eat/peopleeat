@@ -23,6 +23,9 @@ export type BookingRequestOfferPriceConfigurationPanelProps = {
     /** Seed / reset key — when this changes, the per-person field re-seeds from guidance. */
     resetKey?: string;
     initialPricePerPersonCents?: number;
+    /** Sticky offer fee % (defaults to marketplace 18 / 4 when omitted). */
+    platformFeePercentCook?: number;
+    platformFeePercentCustomer?: number;
     disabled?: boolean;
     onMenuPriceCentsChange: (menuPriceCents: number) => void;
     onValidChange: (isValid: boolean) => void;
@@ -44,6 +47,9 @@ export type BookingRequestOfferCostOverviewPanelProps = {
     pricePerPersonCents: number;
     travelExpensesCents: number;
     menuPriceCents: number;
+    /** Sticky offer fee % for live calc (defaults to marketplace 18 / 4 when omitted). */
+    platformFeePercentCook?: number;
+    platformFeePercentCustomer?: number;
     /** When set (admin offer detail), prefer stored offer fees over a live recalculation. */
     storedPrice?: BookingRequestOfferCostOverviewStoredPrice;
 };
@@ -60,10 +66,20 @@ export function BookingRequestOfferCostOverviewPanel({
     pricePerPersonCents,
     travelExpensesCents,
     menuPriceCents,
+    platformFeePercentCook,
+    platformFeePercentCustomer,
     storedPrice,
 }: BookingRequestOfferCostOverviewPanelProps) {
     const [expandedSection, setExpandedSection] = useState<'cook' | 'customer' | undefined>();
-    const calculated = menuPriceCents > 0 ? bookingRequestOfferPriceCalculate({ menuPriceCents, travelExpensesCents }) : null;
+    const calculated =
+        menuPriceCents > 0
+            ? bookingRequestOfferPriceCalculate({
+                  menuPriceCents,
+                  travelExpensesCents,
+                  ...(platformFeePercentCook != null ? { platformFeePercentCook } : {}),
+                  ...(platformFeePercentCustomer != null ? { platformFeePercentCustomer } : {}),
+              })
+            : null;
     const priceCalculation =
         calculated == null
             ? null
@@ -215,6 +231,8 @@ export function BookingRequestOfferPriceConfigurationPanel({
     guidance,
     resetKey,
     initialPricePerPersonCents,
+    platformFeePercentCook,
+    platformFeePercentCustomer,
     disabled = false,
     onMenuPriceCentsChange,
     onValidChange,
@@ -228,7 +246,12 @@ export function BookingRequestOfferPriceConfigurationPanel({
     const pricePerPersonFinite = Number.isFinite(pricePerPersonCents) && pricePerPersonCents > 0;
     const menuPriceCents = pricePerPersonFinite && paidParticipants > 0 ? roundCents(pricePerPersonCents * paidParticipants) : 0;
 
-    const priceCalculation = menuPriceCents > 0 ? bookingRequestOfferPriceCalculate({ menuPriceCents, travelExpensesCents }) : null;
+    const feePercents = {
+        ...(platformFeePercentCook != null ? { platformFeePercentCook } : {}),
+        ...(platformFeePercentCustomer != null ? { platformFeePercentCustomer } : {}),
+    };
+    const priceCalculation =
+        menuPriceCents > 0 ? bookingRequestOfferPriceCalculate({ menuPriceCents, travelExpensesCents, ...feePercents }) : null;
 
     const pricePerPersonTooHigh =
         guidance.maxOfferAmountCents != null && pricePerPersonFinite && pricePerPersonCents > guidance.maxOfferAmountCents;
@@ -250,7 +273,9 @@ export function BookingRequestOfferPriceConfigurationPanel({
         const nextFinite = Number.isFinite(nextPricePerPerson) && nextPricePerPerson > 0;
         const nextMenuPrice = nextFinite && paidParticipants > 0 ? roundCents(nextPricePerPerson * paidParticipants) : 0;
         const nextCalc =
-            nextMenuPrice > 0 ? bookingRequestOfferPriceCalculate({ menuPriceCents: nextMenuPrice, travelExpensesCents }) : null;
+            nextMenuPrice > 0
+                ? bookingRequestOfferPriceCalculate({ menuPriceCents: nextMenuPrice, travelExpensesCents, ...feePercents })
+                : null;
         const nextHardFail =
             guidance.minOfferAmountHardCents != null &&
             nextCalc != null &&
@@ -268,7 +293,9 @@ export function BookingRequestOfferPriceConfigurationPanel({
         const nextFinite = Number.isFinite(nextPricePerPerson) && nextPricePerPerson > 0;
         const nextMenuPrice = nextFinite && paidParticipants > 0 ? roundCents(nextPricePerPerson * paidParticipants) : 0;
         const nextCalc =
-            nextMenuPrice > 0 ? bookingRequestOfferPriceCalculate({ menuPriceCents: nextMenuPrice, travelExpensesCents }) : null;
+            nextMenuPrice > 0
+                ? bookingRequestOfferPriceCalculate({ menuPriceCents: nextMenuPrice, travelExpensesCents, ...feePercents })
+                : null;
         const nextHardFail =
             guidance.minOfferAmountHardCents != null &&
             nextCalc != null &&
@@ -283,6 +310,8 @@ export function BookingRequestOfferPriceConfigurationPanel({
         initialPricePerPersonCents,
         travelExpensesCents,
         paidParticipants,
+        platformFeePercentCook,
+        platformFeePercentCustomer,
         onMenuPriceCentsChange,
         onValidChange,
     ]);

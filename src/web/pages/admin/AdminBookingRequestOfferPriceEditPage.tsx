@@ -32,8 +32,9 @@ import {
 import { useLocale } from '../../hooks/useLocale';
 import { DATE_FNS_LOCALE } from '../../utils/dateFnsLocale';
 import type { Locale } from '../../utils/locale';
-import { parseAdminOfferPriceInputs } from './adminBookingRequestOfferFeeForm';
+import { defaultAdminOfferFeePercentFormValues, parseAdminOfferPriceInputs } from './adminBookingRequestOfferFeeForm';
 import type { AdminOfferPriceInputFormValues } from './adminBookingRequestOfferFeeForm';
+import { AdminBookingRequestOfferFeePreview } from './AdminBookingRequestOfferFeePreview';
 import { adminStubRouteBySlug } from './adminCatalog';
 
 const AMENDMENT_PAYMENT_STATUSES = new Set(['EMPTY', 'SETUP', 'PAYED']);
@@ -62,8 +63,8 @@ const listRoute = adminStubRouteBySlug('booking-requests');
 
 export const adminBookingRequestOfferPriceEditPageTitle = { de: 'Preis bearbeiten', en: 'Edit price' } as const;
 export const adminBookingRequestOfferPriceEditPageDescription = {
-    de: 'Menüpreis und Reisekosten anpassen. Gebühren werden neu berechnet.',
-    en: 'Edit menu price and travel expenses. Fees are recalculated.',
+    de: 'Menüpreis, Reisekosten und Plattformgebühren (%) anpassen. Beträge werden live neu berechnet.',
+    en: 'Edit menu price, travel expenses, and platform fee percentages. Amounts recalculate live.',
 } as const;
 
 export function adminBookingRequestOfferPriceEditPageVariables(bookingRequestId: string, bookingRequestOfferId: string) {
@@ -93,6 +94,10 @@ function formFromOffer(offer: GqlCAdminBookingRequestOfferPriceEditPageOfferFrag
         payoutDateTime: offer.payoutDateTime ? new Date(offer.payoutDateTime) : undefined,
         travelExpensesEuros: centsToEuros(offer.travelExpensesCents),
         travelDistanceKm: offer.travelDistanceKm != null ? String(offer.travelDistanceKm) : '',
+        ...defaultAdminOfferFeePercentFormValues({
+            platformFeePercentCook: offer.platformFeePercentCook,
+            platformFeePercentCustomer: offer.platformFeePercentCustomer,
+        }),
     };
 }
 
@@ -135,6 +140,8 @@ export function AdminBookingRequestOfferPriceEditPage({
         menuPriceCents: number;
         travelExpensesCents: number;
         travelDistanceKm: number | null;
+        platformFeePercentCook: number;
+        platformFeePercentCustomer: number;
         paymentDateTime: string | null;
         plannedPayoutDateTime: string | null;
         payoutDateTime: string | null;
@@ -171,6 +178,8 @@ export function AdminBookingRequestOfferPriceEditPage({
                 menuPriceCents: pendingPriceInput.menuPriceCents,
                 travelExpensesCents: pendingPriceInput.travelExpensesCents,
                 travelDistanceKm: pendingPriceInput.travelDistanceKm,
+                platformFeePercentCook: pendingPriceInput.platformFeePercentCook,
+                platformFeePercentCustomer: pendingPriceInput.platformFeePercentCustomer,
             };
             if (bypassCookApproval) {
                 const result = await amendmentApply({ bookingRequestOfferId, input: amendmentInput });
@@ -226,7 +235,10 @@ export function AdminBookingRequestOfferPriceEditPage({
             }
 
             const priceChanged =
-                fees.menuPriceCents !== seedOffer.menuPriceCents || fees.travelExpensesCents !== seedOffer.travelExpensesCents;
+                fees.menuPriceCents !== seedOffer.menuPriceCents ||
+                fees.travelExpensesCents !== seedOffer.travelExpensesCents ||
+                fees.platformFeePercentCook !== seedOffer.platformFeePercentCook ||
+                fees.platformFeePercentCustomer !== seedOffer.platformFeePercentCustomer;
             const timestampInput = {
                 paymentDateTime: value.paymentDateTime?.toISOString() ?? null,
                 plannedPayoutDateTime: value.plannedPayoutDateTime?.toISOString() ?? null,
@@ -243,6 +255,8 @@ export function AdminBookingRequestOfferPriceEditPage({
                     menuPriceCents: fees.menuPriceCents,
                     travelExpensesCents: fees.travelExpensesCents,
                     travelDistanceKm: fees.travelDistanceKm,
+                    platformFeePercentCook: fees.platformFeePercentCook,
+                    platformFeePercentCustomer: fees.platformFeePercentCustomer,
                     ...timestampInput,
                     priceChanged: true,
                 });
@@ -259,6 +273,8 @@ export function AdminBookingRequestOfferPriceEditPage({
                                   menuPriceCents: fees.menuPriceCents,
                                   travelExpensesCents: fees.travelExpensesCents,
                                   travelDistanceKm: fees.travelDistanceKm,
+                                  platformFeePercentCook: fees.platformFeePercentCook,
+                                  platformFeePercentCustomer: fees.platformFeePercentCustomer,
                               }
                             : { travelDistanceKm: fees.travelDistanceKm }),
                         ...timestampInput,
@@ -276,6 +292,8 @@ export function AdminBookingRequestOfferPriceEditPage({
     });
 
     const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
+    const platformFeePercentCookRaw = useSelector(form.store, (state) => state.values.platformFeePercentCook);
+    const platformFeePercentCustomerRaw = useSelector(form.store, (state) => state.values.platformFeePercentCustomer);
 
     const liveGuidance = bookingRequestOfferPriceGuidance({
         priceClassType: seedRequest.priceClassType,
@@ -285,9 +303,17 @@ export function AdminBookingRequestOfferPriceEditPage({
         promoMinimumTotalAmountCustomerCents: seedRequest.minOfferAmountHardCents,
     });
 
+    const previewPlatformFeePercentCook = Number.parseInt(platformFeePercentCookRaw, 10);
+    const previewPlatformFeePercentCustomer = Number.parseInt(platformFeePercentCustomerRaw, 10);
     const previewPrice = bookingRequestOfferPriceCalculate({
         menuPriceCents,
         travelExpensesCents,
+        platformFeePercentCook: Number.isInteger(previewPlatformFeePercentCook)
+            ? previewPlatformFeePercentCook
+            : seedOffer.platformFeePercentCook,
+        platformFeePercentCustomer: Number.isInteger(previewPlatformFeePercentCustomer)
+            ? previewPlatformFeePercentCustomer
+            : seedOffer.platformFeePercentCustomer,
     });
     const discountCents = Math.max(
         0,
@@ -405,6 +431,41 @@ export function AdminBookingRequestOfferPriceEditPage({
                         )}
                     </form.Field>
 
+                    <div className="grid gap-4 @md:grid-cols-2">
+                        <form.Field name="platformFeePercentCook">
+                            {(field) => (
+                                <div className="grid gap-1.5">
+                                    <label htmlFor={`${formId}-fee-cook`} className="text-sm font-medium">
+                                        {{ de: 'Plattformgebühr Koch (%)', en: 'Platform fee cook (%)' }[locale]}
+                                    </label>
+                                    <Input
+                                        id={`${formId}-fee-cook`}
+                                        inputMode="numeric"
+                                        value={field.state.value}
+                                        onBlur={field.handleBlur}
+                                        onChange={(event) => field.handleChange(event.target.value)}
+                                    />
+                                </div>
+                            )}
+                        </form.Field>
+                        <form.Field name="platformFeePercentCustomer">
+                            {(field) => (
+                                <div className="grid gap-1.5">
+                                    <label htmlFor={`${formId}-fee-customer`} className="text-sm font-medium">
+                                        {{ de: 'Plattformgebühr Kunde (%)', en: 'Platform fee customer (%)' }[locale]}
+                                    </label>
+                                    <Input
+                                        id={`${formId}-fee-customer`}
+                                        inputMode="numeric"
+                                        value={field.state.value}
+                                        onBlur={field.handleBlur}
+                                        onChange={(event) => field.handleChange(event.target.value)}
+                                    />
+                                </div>
+                            )}
+                        </form.Field>
+                    </div>
+
                     <BookingRequestOfferPriceConfigurationPanel
                         locale={locale}
                         viewer="admin"
@@ -417,6 +478,35 @@ export function AdminBookingRequestOfferPriceEditPage({
                         disabled={isSubmitting || confirmBusy}
                         onMenuPriceCentsChange={setMenuPriceCents}
                         onValidChange={setPriceValid}
+                        platformFeePercentCook={
+                            Number.isInteger(previewPlatformFeePercentCook)
+                                ? previewPlatformFeePercentCook
+                                : seedOffer.platformFeePercentCook
+                        }
+                        platformFeePercentCustomer={
+                            Number.isInteger(previewPlatformFeePercentCustomer)
+                                ? previewPlatformFeePercentCustomer
+                                : seedOffer.platformFeePercentCustomer
+                        }
+                    />
+
+                    <AdminBookingRequestOfferFeePreview
+                        locale={locale}
+                        menuPriceCents={menuPriceCents}
+                        travelExpensesCents={travelExpensesCents}
+                        platformFeePercentCookRaw={platformFeePercentCookRaw}
+                        platformFeePercentCustomerRaw={platformFeePercentCustomerRaw}
+                        discountCents={discountCents}
+                        baseline={{
+                            platformFeePercentCook: seedOffer.platformFeePercentCook,
+                            platformFeePercentCustomer: seedOffer.platformFeePercentCustomer,
+                            platformFeeCentsCook: seedOffer.platformFeeCentsCook,
+                            platformFeeCentsCustomer: seedOffer.platformFeeCentsCustomer,
+                            paymentProviderFeeCents: seedOffer.paymentProviderFeeCents,
+                            payoutCentsCook: seedOffer.payoutCentsCook,
+                            totalWithoutDiscountsCentsCustomer: seedOffer.totalWithoutDiscountsCentsCustomer,
+                            totalCentsCustomer: seedOffer.totalCentsCustomer ?? null,
+                        }}
                     />
 
                     <form.Field name="paymentDateTime">

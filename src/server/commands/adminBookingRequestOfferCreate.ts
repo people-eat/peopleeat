@@ -27,6 +27,12 @@ function assertNonNegativeInt(value: number, fieldName: string): void {
     }
 }
 
+function assertPlatformFeePercent(value: number, fieldName: string): void {
+    if (!Number.isInteger(value) || value < 0 || value > 100) {
+        throw new Error(`adminBookingRequestOfferCreate: ${fieldName} must be an integer from 0 to 100`);
+    }
+}
+
 export async function adminBookingRequestOfferCreate(
     { adminId }: GqlSAdminMutation,
     args: GqlSAdminMutationBookingRequestOfferCreateArgs,
@@ -49,6 +55,12 @@ export async function adminBookingRequestOfferCreate(
 
     assertNonNegativeInt(input.menuPriceCents, 'menuPriceCents');
     assertNonNegativeInt(input.travelExpensesCents, 'travelExpensesCents');
+    if (input.platformFeePercentCook != null) {
+        assertPlatformFeePercent(input.platformFeePercentCook, 'platformFeePercentCook');
+    }
+    if (input.platformFeePercentCustomer != null) {
+        assertPlatformFeePercent(input.platformFeePercentCustomer, 'platformFeePercentCustomer');
+    }
 
     if (input.menuPriceCents <= 0) {
         throw new Error('adminBookingRequestOfferCreate: menuPriceCents must be a positive integer');
@@ -94,6 +106,8 @@ export async function adminBookingRequestOfferCreate(
         const price = bookingRequestOfferPriceCalculate({
             menuPriceCents: input.menuPriceCents,
             travelExpensesCents: input.travelExpensesCents,
+            ...(input.platformFeePercentCook != null ? { platformFeePercentCook: input.platformFeePercentCook } : {}),
+            ...(input.platformFeePercentCustomer != null ? { platformFeePercentCustomer: input.platformFeePercentCustomer } : {}),
         });
 
         const offerInsert: BookingRequestOfferCreate = {
