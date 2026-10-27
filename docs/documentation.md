@@ -51,6 +51,7 @@ docs/
 │   ├── chat.md                   # Thin index only — not a third chat product
 │   ├── booking.md                # Thin index — marketplace booking journey + slice links
 │   ├── booking-request-create.md # Form, publication, customer request surfaces
+│   ├── booking-request-plan.md   # Alternative 2-step plan funnel (partner deep-link)
 │   ├── booking-offers.md         # Cook pool, offer create, dual accept, negotiation
 │   ├── ai-menu-evaluation.md     # AI menu ranking + inventory recommendation on pool open
 │   ├── ai-booking-request-message.md # AI cook-facing booking-request message rewrite

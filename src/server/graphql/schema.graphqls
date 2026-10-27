@@ -4917,6 +4917,8 @@ type AdminPartner {
     firstSectionImageOverlay: Boolean!
     # HowItWorks alternative media variant. Default false.
     howItWorksAlternativeMedia: Boolean!
+    # Optional partner location address (reusable outside booking).
+    locationAddress: CookTravelOriginAddress
     # Assigned promo code id. Null when none. Assignment rejects scoped codes.
     promoCodeId: ID
     # Resolved promo for editor preview. Null when none / expired / scoped.
@@ -4956,6 +4958,8 @@ type PublicPartner {
     heroImageOverlay: Boolean!
     firstSectionImageOverlay: Boolean!
     howItWorksAlternativeMedia: Boolean!
+    # Optional partner location address (reusable outside booking).
+    locationAddress: CookTravelOriginAddress
     # Promo shown on the CTA card. Null when none / expired / scoped.
     promo: PartnerPromo
     sections: [ContentSection!]!
@@ -5188,6 +5192,8 @@ input PartnerUpsert {
     heroImageOverlay: Boolean!
     firstSectionImageOverlay: Boolean!
     howItWorksAlternativeMedia: Boolean!
+    # Optional partner location address. Null / omit clears.
+    locationAddress: UserBookingRequestExactEventAddressInput
     # Set to a promoCodeId to assign, or null to clear.
     promoCodeId: ID
     sections: [ContentSectionInput!]!
@@ -5241,6 +5247,7 @@ type PublicCityQuery {
 }
 
 type PublicPartnerQuery {
+    findOne(partnerId: ID!): PublicPartner
     findOneByPathName(pathName: String!): PublicPartner
     findMany: [PublicPartner!]!
 }

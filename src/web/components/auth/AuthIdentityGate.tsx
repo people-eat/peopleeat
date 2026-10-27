@@ -40,6 +40,7 @@ export function AuthIdentityGate({
     includeCook = false,
     requireProfileDetails = true,
     externalSubmit = false,
+    profileInitialValues,
 }: {
     initialSession: AuthSession;
     /** Called once when the session is signed in (profile collected at create). */
@@ -64,6 +65,8 @@ export function AuthIdentityGate({
      * can submit via `form={AUTH_USER_PROFILE_FORM_ID}`.
      */
     externalSubmit?: boolean;
+    /** Optional seed for registration profile fields (e.g. `firstName` from a partner deep-link). */
+    profileInitialValues?: Partial<UserProfileFormValues>;
 }) {
     const locale = useLocale();
     const client = useClient();
@@ -211,6 +214,7 @@ export function AuthIdentityGate({
                         busy={busy}
                         includeCook={includeCook}
                         requireProfileDetails={requireProfileDetails}
+                        initialValues={profileInitialValues}
                         submitLabel={
                             includeCook
                                 ? { de: 'Koch-Konto erstellen', en: 'Create chef account' }[locale]

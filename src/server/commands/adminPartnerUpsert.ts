@@ -1,13 +1,42 @@
 import { eq } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { textNormalizeSingleLine, textNormalizeTitled } from '../../shared/textNormalize';
 import { partners } from '../db/schema';
 import type { PartnerCreate } from '../db/schema';
+import type { BookingRequestExactEventAddress } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSAdminMutation, GqlSAdminMutationPartnerUpsertArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
+import type {
+    GqlSAdminMutation,
+    GqlSAdminMutationPartnerUpsertArgs,
+    GqlSMutationResult,
+    GqlSSession,
+    GqlSUserBookingRequestExactEventAddressInput,
+} from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { contentPathNameNormalize, contentSectionsParseOrThrow, previousPathNamesArchive } from '../utils/contentPageUtils';
 import { resolveAssignedPromoCodeId } from '../utils/resolveAssignedPromoCodeId';
+
+function locationAddressNormalize(
+    input: GqlSUserBookingRequestExactEventAddressInput | null | undefined,
+): BookingRequestExactEventAddress | null {
+    if (input == null) return null;
+    const exactEventAddress: BookingRequestExactEventAddress = {
+        displayText: textNormalizeSingleLine(input.displayText),
+        latitude: input.latitude,
+        longitude: input.longitude,
+        addressLine1: textNormalizeSingleLine(input.addressLine1),
+        addressLine2: textNormalizeSingleLine(input.addressLine2),
+        city: textNormalizeTitled(input.city),
+        postCode: textNormalizeSingleLine(input.postCode),
+        state: textNormalizeSingleLine(input.state),
+        country: textNormalizeSingleLine(input.country),
+    };
+    if (exactEventAddress.displayText.length === 0 || exactEventAddress.city.length === 0) {
+        throw new Error('adminPartnerUpsert: locationAddress requires displayText and city');
+    }
+    return exactEventAddress;
+}
 
 function firstSectionCtaUrlNormalize(value: string | null | undefined): string | null {
     if (value == null) return null;
@@ -51,6 +80,7 @@ export async function adminPartnerUpsert(
 
         const firstSectionCtaUrl = firstSectionCtaUrlNormalize(input.firstSectionCtaUrl);
         const promoCodeId = await resolveAssignedPromoCodeId(input.promoCodeId, serverRuntime);
+        const locationAddress = locationAddressNormalize(input.locationAddress);
 
         const now = new Date();
         const partnerId = input.partnerId ?? idCreate();
@@ -87,6 +117,7 @@ export async function adminPartnerUpsert(
             heroImageOverlay: input.heroImageOverlay,
             firstSectionImageOverlay: input.firstSectionImageOverlay,
             howItWorksAlternativeMedia: input.howItWorksAlternativeMedia,
+            locationAddress,
             promoCodeId,
             sections,
             publishedAt: input.publishedAt ?? null,
@@ -119,6 +150,7 @@ export async function adminPartnerUpsert(
                     heroImageOverlay: values.heroImageOverlay,
                     firstSectionImageOverlay: values.firstSectionImageOverlay,
                     howItWorksAlternativeMedia: values.howItWorksAlternativeMedia,
+                    locationAddress: values.locationAddress,
                     promoCodeId: values.promoCodeId,
                     sections: values.sections,
                     publishedAt: values.publishedAt,

@@ -57,7 +57,9 @@ idea under [Ideas](#ideas).
 
 1. **High — Customer publication status** — Show customers when a large-group request is waiting on admin review vs approved (today only
    admins see publication state).
-2. **Medium — Partner deep-link venue defaults** — Resolve `?partnerId=` on form load (see [partners.md](./partners.md)).
+
+Sibling create surface: [booking-request-plan.md](./booking-request-plan.md) (`/booking-request/plan`) — 2-step partner-friendly funnel that
+also creates via `bookingRequestCreate`. Partner `?partnerId=` + default venue live there (not on this multi-step form).
 
 ## Ideas
 

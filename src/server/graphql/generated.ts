@@ -2073,6 +2073,7 @@ export interface GqlSAdminPartner {
     heroImageOverlay: Scalars['Boolean']['output'];
     heroImageUrl?: Maybe<Scalars['String']['output']>;
     howItWorksAlternativeMedia: Scalars['Boolean']['output'];
+    locationAddress?: Maybe<GqlSCookTravelOriginAddress>;
     name: Scalars['String']['output'];
     partnerId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
@@ -4239,6 +4240,7 @@ export type GqlSPartnerUpsert = {
     heroImageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
     heroImageOverlay: Scalars['Boolean']['input'];
     howItWorksAlternativeMedia: Scalars['Boolean']['input'];
+    locationAddress?: InputMaybe<GqlSUserBookingRequestExactEventAddressInput>;
     name: Scalars['String']['input'];
     partnerId?: InputMaybe<Scalars['ID']['input']>;
     pathName: Scalars['String']['input'];
@@ -4499,6 +4501,7 @@ export interface GqlSPublicPartner {
     heroImageOverlay: Scalars['Boolean']['output'];
     heroImageUrl?: Maybe<Scalars['String']['output']>;
     howItWorksAlternativeMedia: Scalars['Boolean']['output'];
+    locationAddress?: Maybe<GqlSCookTravelOriginAddress>;
     name: Scalars['String']['output'];
     partnerId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
@@ -4517,8 +4520,13 @@ export interface GqlSPublicPartner {
 export interface GqlSPublicPartnerQuery {
     __typename?: 'PublicPartnerQuery';
     findMany: Array<GqlSPublicPartner>;
+    findOne?: Maybe<GqlSPublicPartner>;
     findOneByPathName?: Maybe<GqlSPublicPartner>;
 }
+
+export type GqlSPublicPartnerQueryFindOneArgs = {
+    partnerId: Scalars['ID']['input'];
+};
 
 export type GqlSPublicPartnerQueryFindOneByPathNameArgs = {
     pathName: Scalars['String']['input'];
@@ -5849,8 +5857,9 @@ export type GqlSResolversTypes = ResolversObject<{
         }
     >;
     PublicPartnerQuery: ResolverTypeWrapper<
-        Omit<GqlSPublicPartnerQuery, 'findMany' | 'findOneByPathName'> & {
+        Omit<GqlSPublicPartnerQuery, 'findMany' | 'findOne' | 'findOneByPathName'> & {
             findMany: Array<GqlSResolversTypes['PublicPartner']>;
+            findOne?: Maybe<GqlSResolversTypes['PublicPartner']>;
             findOneByPathName?: Maybe<GqlSResolversTypes['PublicPartner']>;
         }
     >;
@@ -6332,8 +6341,9 @@ export type GqlSResolversParentTypes = ResolversObject<{
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
         testimonials: Array<GqlSResolversParentTypes['PartnerTestimonial']>;
     };
-    PublicPartnerQuery: Omit<GqlSPublicPartnerQuery, 'findMany' | 'findOneByPathName'> & {
+    PublicPartnerQuery: Omit<GqlSPublicPartnerQuery, 'findMany' | 'findOne' | 'findOneByPathName'> & {
         findMany: Array<GqlSResolversParentTypes['PublicPartner']>;
+        findOne?: Maybe<GqlSResolversParentTypes['PublicPartner']>;
         findOneByPathName?: Maybe<GqlSResolversParentTypes['PublicPartner']>;
     };
     PublicUser: GqlSPublicUser;
@@ -8276,6 +8286,7 @@ export type GqlSAdminPartnerResolvers<
     heroImageOverlay?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     heroImageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     howItWorksAlternativeMedia?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    locationAddress?: Resolver<Maybe<GqlSResolversTypes['CookTravelOriginAddress']>, ParentType, ContextType>;
     name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     partnerId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -10506,6 +10517,7 @@ export type GqlSPublicPartnerResolvers<
     heroImageOverlay?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     heroImageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     howItWorksAlternativeMedia?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    locationAddress?: Resolver<Maybe<GqlSResolversTypes['CookTravelOriginAddress']>, ParentType, ContextType>;
     name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     partnerId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -10526,6 +10538,12 @@ export type GqlSPublicPartnerQueryResolvers<
     ParentType extends GqlSResolversParentTypes['PublicPartnerQuery'] = GqlSResolversParentTypes['PublicPartnerQuery'],
 > = ResolversObject<{
     findMany?: Resolver<Array<GqlSResolversTypes['PublicPartner']>, ParentType, ContextType>;
+    findOne?: Resolver<
+        Maybe<GqlSResolversTypes['PublicPartner']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSPublicPartnerQueryFindOneArgs, 'partnerId'>
+    >;
     findOneByPathName?: Resolver<
         Maybe<GqlSResolversTypes['PublicPartner']>,
         ParentType,
@@ -13015,6 +13033,7 @@ export function GqlSPartnerUpsertSchema(): z.ZodObject<Properties<GqlSPartnerUps
         heroImageFileUploadId: z.string().nullish(),
         heroImageOverlay: z.boolean(),
         howItWorksAlternativeMedia: z.boolean(),
+        locationAddress: z.lazy(() => GqlSUserBookingRequestExactEventAddressInputSchema().nullish()),
         name: z.string(),
         partnerId: z.string().nullish(),
         pathName: z.string(),

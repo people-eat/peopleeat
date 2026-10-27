@@ -1,0 +1,1 @@
+ALTER TABLE "Partners" RENAME COLUMN "defaultExactEventAddress" TO "locationAddress";

@@ -289,6 +289,17 @@ fragment AdminPartnerFields on AdminPartner {
     heroImageOverlay
     firstSectionImageOverlay
     howItWorksAlternativeMedia
+    locationAddress {
+        displayText
+        latitude
+        longitude
+        addressLine1
+        addressLine2
+        city
+        postCode
+        state
+        country
+    }
     promoCodeId
     promo {
         redeemCode
@@ -340,6 +351,17 @@ fragment PublicPartnerFields on PublicPartner {
     heroImageOverlay
     firstSectionImageOverlay
     howItWorksAlternativeMedia
+    locationAddress {
+        displayText
+        latitude
+        longitude
+        addressLine1
+        addressLine2
+        city
+        postCode
+        state
+        country
+    }
     promo {
         redeemCode
         amountCents

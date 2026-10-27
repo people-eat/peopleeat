@@ -28,6 +28,10 @@ By default the primary CTA and the sticky header booking button both link to the
 URL. An optional `firstSectionCtaUrl` overrides both (WhatsApp / Google stay fixed). Display-only promo on the card; redeem codes are not
 passed as query params today unless the custom URL includes them.
 
+Optional **location address** (`locationAddress`) on the partner record prefills
+[`/booking-request/plan?partnerId=…`](./booking-request-plan.md) and is reusable outside booking. Flat URL venue params still override.
+Admins set it under Standort / Location in the partner editor.
+
 ## Decisions
 
 ### Alternatives considered
@@ -47,8 +51,8 @@ for partnership campaigns and CTAs.
 
 ## Next steps
 
-- **Partner deep-link on booking form** — CTAs may open the form with a short partner id so default venue resolves from the partner record
-  (see [booking-request-create.md](./booking-request-create.md)).
+- Point partner CTAs at `/booking-request/plan?partnerId=…` (and optional stay bounds / `firstName`) when the 2-step funnel is preferred
+  over the multi-step form.
 
 ## Ideas
 
@@ -81,7 +85,9 @@ Direction: self-serve builder on the public partners surface, admins remain sole
   `partnerTestimonialsUpdate`
 - Partner columns: first-section bilingual copy and image, optional `firstSectionCtaUrl` (http(s) or site-relative; empty clears to default
   booking form), optional `promoCodeId` (FK; rejects missing and booking-request-scoped codes), `heroImageOverlay` /
-  `firstSectionImageOverlay` (default true), `howItWorksAlternativeMedia` (default false)
+  `firstSectionImageOverlay` (default true), `howItWorksAlternativeMedia` (default false), optional `locationAddress` (jsonb partner
+  location; plan deep-links and later reuse)
+- Public GraphQL: `publicPartner.findOne(partnerId)` (published-only) alongside `findOneByPathName`
 - Public/admin promo preview via `partnerPromoFindOne` — null when unassigned, scoped, or expired
 - UI: `SectionChefForAnyOccasion` + `SectionChefCta` after hero (always mounted when the partner slot is passed; empty headline/body and
   missing CTA image use muted italic / `ImageOffIcon` placeholders like content sections; `ctaUrl` / `firstSectionCtaUrl` overrides the

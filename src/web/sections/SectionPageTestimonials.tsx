@@ -40,14 +40,27 @@ function testimonialBody(entry: SectionPageTestimonial): string | null {
 }
 
 /** Curated city/partner testimonials — hidden entirely when empty. See docs/architecture/testimonials.md. */
-export function SectionPageTestimonials({ testimonials, locale }: { testimonials: ReadonlyArray<SectionPageTestimonial>; locale: Locale }) {
+export function SectionPageTestimonials({
+    testimonials,
+    locale,
+    title,
+    inset = true,
+    className,
+}: {
+    testimonials: ReadonlyArray<SectionPageTestimonial>;
+    locale: Locale;
+    title?: string;
+    /** Horizontal padding + max-width shell. Off when nested in a padded content column. */
+    inset?: boolean;
+    className?: string;
+}) {
     if (testimonials.length === 0) return null;
 
+    const heading = title ?? { de: 'Das sagen unsere Kunden', en: 'What our customers say' }[locale];
+
     return (
-        <section className="mx-auto w-full max-w-7xl px-4 py-16 @lg:px-6">
-            <h2 className="font-serif text-3xl font-light @md:text-4xl">
-                {{ de: 'Das sagen unsere Kunden', en: 'What our customers say' }[locale]}
-            </h2>
+        <section className={cn(inset ? 'mx-auto w-full max-w-7xl px-4 py-16 @lg:px-6' : 'w-full', className)}>
+            <h2 className="font-serif text-3xl font-light @md:text-4xl">{heading}</h2>
             <ul className="mt-10 grid gap-10 @sm:grid-cols-2 @lg:grid-cols-3">
                 {testimonials.map((entry) => {
                     const testimonial = entry.testimonial;

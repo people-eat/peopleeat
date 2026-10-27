@@ -2,6 +2,7 @@ import { fileUploadPublicUrl } from '../../shared/contentSection';
 import type { Partner } from '../db/schema';
 import type { GqlSAdminPartner, GqlSPublicPartner } from '../graphql/generated';
 import { toGqlContentSection } from './toGqlContentSection';
+import { toGqlCookTravelOriginAddress } from './toGqlCook';
 
 function partnerContentFields(row: Partner) {
     return {
@@ -29,6 +30,7 @@ function partnerContentFields(row: Partner) {
         heroImageOverlay: row.heroImageOverlay,
         firstSectionImageOverlay: row.firstSectionImageOverlay,
         howItWorksAlternativeMedia: row.howItWorksAlternativeMedia,
+        locationAddress: row.locationAddress ? toGqlCookTravelOriginAddress(row.locationAddress) : null,
         sections: row.sections.map(toGqlContentSection),
         publishedAt: row.publishedAt,
         createdAt: row.createdAt,

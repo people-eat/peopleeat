@@ -1,5 +1,6 @@
 import { notFound } from '@tanstack/react-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { createRequest, useClient, useMutation, useQuery } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
@@ -7,6 +8,7 @@ import { fileUploadPublicUrl, formatCurrency, userDisplayName } from '../../../s
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/base/card';
 import { Checkbox } from '../../components/base/checkbox';
+import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { Input } from '../../components/base/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import { Textarea } from '../../components/base/textarea';
@@ -17,11 +19,16 @@ import type { FeaturedCookOption } from '../../components/ContentPageFeaturedCoo
 import { ContentPageTestimonialsEditor } from '../../components/ContentPageTestimonialsEditor';
 import type { TestimonialCandidateOption, TestimonialEntry } from '../../components/ContentPageTestimonialsEditor';
 import { contentSectionsFromGql, contentSectionsToInput } from '../../components/contentSectionsMap';
-import type { GqlCAdminPartnerPageQuery } from '../../graphql/generated';
+import type {
+    GqlCAdminPartnerPageQuery,
+    GqlCLocationSuggestion,
+    GqlCUserBookingRequestExactEventAddressInput,
+} from '../../graphql/generated';
 import {
     AdminPartnerCooksUpdateDocument,
     AdminPartnerDeleteDocument,
     AdminPartnerPageCookSearchDocument,
+    AdminPartnerPageLocationSuggestionsDocument,
     AdminPartnerPagePromoCodesDocument,
     AdminPartnerPageUpdatesDocument,
     AdminPartnerTestimonialsUpdateDocument,
@@ -49,6 +56,8 @@ type PartnerEditorValues = ContentPageEditorValues & {
     heroImageOverlay: boolean;
     firstSectionImageOverlay: boolean;
     howItWorksAlternativeMedia: boolean;
+    locationAddress: GqlCUserBookingRequestExactEventAddressInput | null;
+    locationSearchText: string;
     promoCodeId: string | null;
 };
 
@@ -60,7 +69,38 @@ function testimonialEntryFromAdmin(row: PartnerRow['testimonials'][number]): Tes
         : { testimonialType: 'COOK', testimonialId: row.testimonial.cookTestimonialId };
 }
 
+function addressFromPartner(address: NonNullable<PartnerRow['locationAddress']>): GqlCUserBookingRequestExactEventAddressInput {
+    return {
+        displayText: address.displayText,
+        latitude: address.latitude,
+        longitude: address.longitude,
+        addressLine1: address.addressLine1,
+        addressLine2: address.addressLine2,
+        city: address.city,
+        postCode: address.postCode,
+        state: address.state,
+        country: address.country,
+    };
+}
+
+function addressFromSuggestion(suggestion: GqlCLocationSuggestion): GqlCUserBookingRequestExactEventAddressInput | null {
+    const structured = suggestion.structuredAddress;
+    if (!structured) return null;
+    return {
+        displayText: structured.displayText,
+        latitude: structured.latitude,
+        longitude: structured.longitude,
+        addressLine1: structured.addressLine1,
+        addressLine2: structured.addressLine2,
+        city: structured.city,
+        postCode: structured.postCode,
+        state: structured.state,
+        country: structured.country,
+    };
+}
+
 function valuesFromPartner(partner: PartnerRow): PartnerEditorValues {
+    const locationAddress = partner.locationAddress ? addressFromPartner(partner.locationAddress) : null;
     return {
         pathName: partner.pathName,
         name: partner.name,
@@ -82,6 +122,8 @@ function valuesFromPartner(partner: PartnerRow): PartnerEditorValues {
         heroImageOverlay: partner.heroImageOverlay,
         firstSectionImageOverlay: partner.firstSectionImageOverlay,
         howItWorksAlternativeMedia: partner.howItWorksAlternativeMedia,
+        locationAddress,
+        locationSearchText: locationAddress?.displayText ?? '',
         promoCodeId: partner.promoCodeId ?? null,
         sections: contentSectionsFromGql(partner.sections),
         publishedAt: partner.publishedAt,
@@ -154,6 +196,14 @@ export function AdminPartnerPage({
             criterion: { skip: 0, take: 100 },
         },
     });
+
+    const debouncedLocationSearch = useDebouncedValue(values.locationSearchText, 300);
+    const [{ data: suggestionsData, fetching: suggestionsFetching }] = useQuery({
+        query: AdminPartnerPageLocationSuggestionsDocument,
+        variables: { searchText: debouncedLocationSearch, onlyFullAddresses: true },
+        pause: debouncedLocationSearch.trim().length < 3 || values.locationAddress?.displayText === values.locationSearchText,
+    });
+    const suggestions = suggestionsData?.currentSession.locationSuggestions ?? [];
 
     useEffect(() => {
         if (!seedAdmin) return;
@@ -423,6 +473,83 @@ export function AdminPartnerPage({
                             </CardContent>
                         </Card>
 
+                        <Card className="gap-4 py-4" data-content-editor-anchor="location">
+                            <CardHeader className="px-4">
+                                <CardTitle>{{ de: 'Standort', en: 'Location' }[locale]}</CardTitle>
+                                <CardDescription>
+                                    {
+                                        {
+                                            de: 'Optional. Wird für /booking-request/plan?partnerId=… vorausgefüllt. URL-Parameter überschreiben den Ort.',
+                                            en: 'Optional. Prefills /booking-request/plan?partnerId=…. URL params override the venue.',
+                                        }[locale]
+                                    }
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex flex-col gap-3 px-4">
+                                <Combobox
+                                    filter={null}
+                                    items={suggestions.map((suggestion) => suggestion.displayText)}
+                                    value={values.locationAddress?.displayText ?? null}
+                                    inputValue={values.locationSearchText}
+                                    onValueChange={(next) => {
+                                        if (next == null) {
+                                            patchPartnerValues({ locationAddress: null, locationSearchText: '' });
+                                            return;
+                                        }
+                                        const match = suggestions.find((suggestion) => suggestion.displayText === next);
+                                        if (!match) return;
+                                        const address = addressFromSuggestion(match);
+                                        if (!address) {
+                                            toast.error(
+                                                {
+                                                    de: 'Bitte eine vollständige Adresse wählen.',
+                                                    en: 'Please choose a full address.',
+                                                }[locale],
+                                            );
+                                            return;
+                                        }
+                                        patchPartnerValues({
+                                            locationAddress: address,
+                                            locationSearchText: match.displayText,
+                                        });
+                                    }}
+                                    onInputValueChange={(next) => {
+                                        const clearAddress = values.locationAddress != null && next !== values.locationAddress.displayText;
+                                        patchPartnerValues({
+                                            locationSearchText: next,
+                                            ...(clearAddress ? { locationAddress: null } : {}),
+                                        });
+                                    }}
+                                    itemToStringLabel={(item: string) => item}
+                                >
+                                    <ComboboxInput
+                                        className="w-full"
+                                        placeholder={
+                                            {
+                                                de: 'Musterstraße 1, 80331 München',
+                                                en: '123 Main Street, 12345 Springfield',
+                                            }[locale]
+                                        }
+                                        showClear={values.locationAddress != null}
+                                    />
+                                    <ComboboxContent>
+                                        <ComboboxEmpty>
+                                            {suggestionsFetching
+                                                ? { de: 'Suche…', en: 'Searching…' }[locale]
+                                                : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                                        </ComboboxEmpty>
+                                        <ComboboxList>
+                                            {(item: string) => (
+                                                <ComboboxItem key={item} value={item}>
+                                                    {item}
+                                                </ComboboxItem>
+                                            )}
+                                        </ComboboxList>
+                                    </ComboboxContent>
+                                </Combobox>
+                            </CardContent>
+                        </Card>
+
                         <Card className="gap-4 py-4" data-content-editor-anchor="first-section">
                             <CardHeader className="px-4">
                                 <CardTitle>{{ de: 'Promo-Code', en: 'Promo code' }[locale]}</CardTitle>
@@ -613,6 +740,7 @@ export function AdminPartnerPage({
                                 heroImageOverlay: current.heroImageOverlay,
                                 firstSectionImageOverlay: current.firstSectionImageOverlay,
                                 howItWorksAlternativeMedia: current.howItWorksAlternativeMedia,
+                                locationAddress: current.locationAddress,
                                 promoCodeId: current.promoCodeId,
                                 sections: contentSectionsToInput(current.sections),
                                 // `next.publishedAt` may be newer than valuesRef when publish/schedule runs.

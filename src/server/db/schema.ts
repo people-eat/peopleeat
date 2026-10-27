@@ -1211,6 +1211,10 @@ export const partners = pgTable(
         firstSectionImageOverlay: boolean().notNull().default(true),
         // HowItWorks alternative assets (holiday-home style). See partners.md.
         howItWorksAlternativeMedia: boolean().notNull().default(false),
+        // Optional partner location (venue / property address). Used by
+        // `/booking-request/plan?partnerId=…` and reusable elsewhere.
+        // URL venue params override on the plan funnel. See booking-request-plan.md.
+        locationAddress: jsonb().$type<BookingRequestExactEventAddress>(),
     },
     (table) => [
         uniqueIndex('Partners_pathName_uidx').on(table.pathName),

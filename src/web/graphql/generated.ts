@@ -2076,6 +2076,7 @@ export interface GqlCAdminPartner {
     heroImageOverlay: Scalars['Boolean']['output'];
     heroImageUrl?: Maybe<Scalars['String']['output']>;
     howItWorksAlternativeMedia: Scalars['Boolean']['output'];
+    locationAddress?: Maybe<GqlCCookTravelOriginAddress>;
     name: Scalars['String']['output'];
     partnerId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
@@ -4242,6 +4243,7 @@ export type GqlCPartnerUpsert = {
     heroImageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
     heroImageOverlay: Scalars['Boolean']['input'];
     howItWorksAlternativeMedia: Scalars['Boolean']['input'];
+    locationAddress?: InputMaybe<GqlCUserBookingRequestExactEventAddressInput>;
     name: Scalars['String']['input'];
     partnerId?: InputMaybe<Scalars['ID']['input']>;
     pathName: Scalars['String']['input'];
@@ -4502,6 +4504,7 @@ export interface GqlCPublicPartner {
     heroImageOverlay: Scalars['Boolean']['output'];
     heroImageUrl?: Maybe<Scalars['String']['output']>;
     howItWorksAlternativeMedia: Scalars['Boolean']['output'];
+    locationAddress?: Maybe<GqlCCookTravelOriginAddress>;
     name: Scalars['String']['output'];
     partnerId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
@@ -4520,8 +4523,13 @@ export interface GqlCPublicPartner {
 export interface GqlCPublicPartnerQuery {
     __typename?: 'PublicPartnerQuery';
     findMany: Array<GqlCPublicPartner>;
+    findOne?: Maybe<GqlCPublicPartner>;
     findOneByPathName?: Maybe<GqlCPublicPartner>;
 }
+
+export type GqlCPublicPartnerQueryFindOneArgs = {
+    partnerId: Scalars['ID']['input'];
+};
 
 export type GqlCPublicPartnerQueryFindOneByPathNameArgs = {
     pathName: Scalars['String']['input'];
@@ -6487,6 +6495,17 @@ export type GqlCAdminPartnerFieldsFragment = {
     publishedAt: string | null;
     createdAt: string;
     updatedAt: string;
+    locationAddress: {
+        displayText: string;
+        latitude: number;
+        longitude: number;
+        addressLine1: string;
+        addressLine2: string;
+        city: string;
+        postCode: string;
+        state: string;
+        country: string;
+    } | null;
     promo: { redeemCode: string; amountCents: number } | null;
     sections: Array<
         | {
@@ -6606,6 +6625,17 @@ export type GqlCPublicPartnerFieldsFragment = {
     publishedAt: string | null;
     createdAt: string;
     updatedAt: string;
+    locationAddress: {
+        displayText: string;
+        latitude: number;
+        longitude: number;
+        addressLine1: string;
+        addressLine2: string;
+        city: string;
+        postCode: string;
+        state: string;
+        country: string;
+    } | null;
     promo: { redeemCode: string; amountCents: number } | null;
     sections: Array<
         | {
@@ -7832,6 +7862,199 @@ export type GqlCBookingRequestPageQuery = {
     publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
 };
 
+export type GqlCBookingRequestPlanPageQueryVariables = Exact<{
+    partnerId: string;
+    includePartner: boolean;
+}>;
+
+export type GqlCBookingRequestPlanPageQuery = {
+    currentSession: {
+        sessionId: string;
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
+        user: {
+            userId: string;
+            emailAddress: string | null;
+            firstName: string;
+            lastName: string;
+            phoneNumber: string | null;
+            birthDate: string | null;
+            preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
+            admin: { adminId: string } | null;
+            cook: { cookId: string } | null;
+        } | null;
+        authEmailOtp: {
+            authEmailOtpId: string;
+            emailAddress: string;
+            expiresAt: string;
+            verifiedAt: string | null;
+            createdAt: string;
+        } | null;
+        authTotpChallenge: { expiresAt: string } | null;
+    };
+    publicPartner: {
+        findOne?: {
+            partnerId: string;
+            pathName: string;
+            previousPathNames: Array<string>;
+            name: string;
+            titleDe: string;
+            titleEn: string;
+            descriptionDe: string;
+            descriptionEn: string;
+            headlineDe: string;
+            headlineEn: string;
+            subHeadlineDe: string;
+            subHeadlineEn: string;
+            heroImageFileUploadId: string | null;
+            heroImageUrl: string | null;
+            firstSectionHeadlineDe: string;
+            firstSectionHeadlineEn: string;
+            firstSectionBodyDe: string;
+            firstSectionBodyEn: string;
+            firstSectionImageFileUploadId: string | null;
+            firstSectionImageUrl: string | null;
+            firstSectionCtaUrl: string | null;
+            heroImageOverlay: boolean;
+            firstSectionImageOverlay: boolean;
+            howItWorksAlternativeMedia: boolean;
+            publishedAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+            locationAddress: {
+                displayText: string;
+                latitude: number;
+                longitude: number;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                state: string;
+                country: string;
+            } | null;
+            promo: { redeemCode: string; amountCents: number } | null;
+            sections: Array<
+                | {
+                      __typename: 'ContentSectionContent';
+                      sectionId: string;
+                      titleDe: string | null;
+                      titleEn: string | null;
+                      subtitleDe: string | null;
+                      subtitleEn: string | null;
+                      imageFirst: boolean | null;
+                      contentBodyDe: string;
+                      contentBodyEn: string;
+                      contentImageFileUploadId: string | null;
+                      contentImageUrl: string | null;
+                  }
+                | {
+                      __typename: 'ContentSectionCta';
+                      sectionId: string;
+                      headlineDe: string;
+                      headlineEn: string;
+                      buttonLabelDe: string;
+                      buttonLabelEn: string;
+                      href: string;
+                      ctaBodyDe: string | null;
+                      ctaBodyEn: string | null;
+                  }
+                | { __typename: 'ContentSectionImage'; sectionId: string; imageImageFileUploadId: string; imageImageUrl: string }
+                | {
+                      __typename: 'ContentSectionList';
+                      sectionId: string;
+                      titleDe: string | null;
+                      titleEn: string | null;
+                      style: Schema.GqlCContentListStyle;
+                      itemsDe: Array<string>;
+                      itemsEn: Array<string>;
+                  }
+                | {
+                      __typename: 'ContentSectionQa';
+                      sectionId: string;
+                      titleDe: string | null;
+                      titleEn: string | null;
+                      entries: Array<{ entryId: string; questionDe: string; questionEn: string; answerDe: string; answerEn: string }>;
+                  }
+                | {
+                      __typename: 'ContentSectionQuote';
+                      sectionId: string;
+                      quoteDe: string;
+                      quoteEn: string;
+                      attributionDe: string | null;
+                      attributionEn: string | null;
+                  }
+            >;
+            featuredCooks: Array<{
+                cookId: string;
+                cuisineStyle: string | null;
+                cookingPhilosophy: string | null;
+                city: string | null;
+                rating: { averageRating: number | null; reviewCount: number };
+                user: { display: string; profilePicture: { url: string } | null };
+            }>;
+            testimonials: Array<{
+                index: number;
+                testimonial:
+                    | {
+                          __typename: 'CookTestimonial';
+                          cookTestimonialId: string;
+                          authorName: string;
+                          location: string | null;
+                          occasion: string | null;
+                          imageUrls: Array<string>;
+                          rating: number | null;
+                          publishedAt: string | null;
+                          createdAt: string;
+                          cookBody: string | null;
+                      }
+                    | {
+                          __typename: 'CustomerTestimonial';
+                          customerTestimonialId: string;
+                          authorName: string;
+                          location: string | null;
+                          occasion: string | null;
+                          body: string;
+                          imageUrls: Array<string>;
+                          rating: number | null;
+                          publishedAt: string | null;
+                          createdAt: string;
+                      };
+            }>;
+        } | null;
+    };
+};
+
+export type GqlCBookingRequestPlanCreateMutationVariables = Exact<{
+    input: Schema.GqlCUserBookingRequestCreate;
+}>;
+
+export type GqlCBookingRequestPlanCreateMutation = { user: { bookingRequestCreate: { success: boolean; referenceId: string | null } } };
+
+export type GqlCBookingRequestPlanLocationSuggestionsQueryVariables = Exact<{
+    searchText: string;
+    onlyFullAddresses?: boolean;
+}>;
+
+export type GqlCBookingRequestPlanLocationSuggestionsQuery = {
+    currentSession: {
+        locationSuggestions: Array<{
+            displayText: string;
+            latitude: number;
+            longitude: number;
+            structuredAddress: {
+                displayText: string;
+                latitude: number;
+                longitude: number;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                state: string;
+                country: string;
+            } | null;
+        }>;
+    };
+};
+
 export type GqlCBookingRequestSubmittedPageQueryVariables = Exact<{
     bookingRequestId: string;
 }>;
@@ -8546,6 +8769,17 @@ export type GqlCPublicPartnerPageQuery = {
             publishedAt: string | null;
             createdAt: string;
             updatedAt: string;
+            locationAddress: {
+                displayText: string;
+                latitude: number;
+                longitude: number;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                state: string;
+                country: string;
+            } | null;
             promo: { redeemCode: string; amountCents: number } | null;
             sections: Array<
                 | {
@@ -14450,6 +14684,17 @@ export type GqlCAdminPartnerPageQuery = {
                     publishedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
+                    locationAddress: {
+                        displayText: string;
+                        latitude: number;
+                        longitude: number;
+                        addressLine1: string;
+                        addressLine2: string;
+                        city: string;
+                        postCode: string;
+                        state: string;
+                        country: string;
+                    } | null;
                     promo: { redeemCode: string; amountCents: number } | null;
                     sections: Array<
                         | {
@@ -14617,6 +14862,32 @@ export type GqlCAdminPartnerPageCookSearchQuery = {
     };
 };
 
+export type GqlCAdminPartnerPageLocationSuggestionsQueryVariables = Exact<{
+    searchText: string;
+    onlyFullAddresses: boolean;
+}>;
+
+export type GqlCAdminPartnerPageLocationSuggestionsQuery = {
+    currentSession: {
+        locationSuggestions: Array<{
+            displayText: string;
+            latitude: number;
+            longitude: number;
+            structuredAddress: {
+                displayText: string;
+                latitude: number;
+                longitude: number;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                state: string;
+                country: string;
+            } | null;
+        }>;
+    };
+};
+
 export type GqlCAdminPartnerPagePromoCodesQueryVariables = Exact<{
     criterion: Schema.GqlCAdminPromoCodeCriterion;
 }>;
@@ -14673,6 +14944,17 @@ export type GqlCAdminPartnerPageUpdatesSubscription = {
             publishedAt: string | null;
             createdAt: string;
             updatedAt: string;
+            locationAddress: {
+                displayText: string;
+                latitude: number;
+                longitude: number;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                state: string;
+                country: string;
+            } | null;
             promo: { redeemCode: string; amountCents: number } | null;
             sections: Array<
                 | {
@@ -22711,6 +22993,24 @@ export const AdminPartnerFieldsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'locationAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'promoCodeId' } },
                     {
                         kind: 'Field',
@@ -23027,6 +23327,24 @@ export const PublicPartnerFieldsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'locationAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'promo' },
@@ -38015,6 +38333,628 @@ export const BookingRequestPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCBookingRequestPageQuery, GqlCBookingRequestPageQueryVariables>;
+export const BookingRequestPlanPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'BookingRequestPlanPage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includePartner' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'FragmentSpread', name: { kind: 'Name', value: 'AuthSessionFields' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicHeaderUser' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPartner' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'findOne' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'partnerId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                                        },
+                                    ],
+                                    directives: [
+                                        {
+                                            kind: 'Directive',
+                                            name: { kind: 'Name', value: 'include' },
+                                            arguments: [
+                                                {
+                                                    kind: 'Argument',
+                                                    name: { kind: 'Name', value: 'if' },
+                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'includePartner' } },
+                                                },
+                                            ],
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicPartnerFields' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ContentSectionFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSection' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionContent' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'subtitleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'subtitleEn' } },
+                                { kind: 'Field', alias: { kind: 'Name', value: 'contentBodyDe' }, name: { kind: 'Name', value: 'bodyDe' } },
+                                { kind: 'Field', alias: { kind: 'Name', value: 'contentBodyEn' }, name: { kind: 'Name', value: 'bodyEn' } },
+                                {
+                                    kind: 'Field',
+                                    alias: { kind: 'Name', value: 'contentImageFileUploadId' },
+                                    name: { kind: 'Name', value: 'imageFileUploadId' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    alias: { kind: 'Name', value: 'contentImageUrl' },
+                                    name: { kind: 'Name', value: 'imageUrl' },
+                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageFirst' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionImage' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                {
+                                    kind: 'Field',
+                                    alias: { kind: 'Name', value: 'imageImageFileUploadId' },
+                                    name: { kind: 'Name', value: 'imageFileUploadId' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    alias: { kind: 'Name', value: 'imageImageUrl' },
+                                    name: { kind: 'Name', value: 'imageUrl' },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionQuote' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'quoteDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'quoteEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'attributionDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'attributionEn' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionList' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'style' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'itemsDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'itemsEn' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionCta' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
+                                { kind: 'Field', alias: { kind: 'Name', value: 'ctaBodyDe' }, name: { kind: 'Name', value: 'bodyDe' } },
+                                { kind: 'Field', alias: { kind: 'Name', value: 'ctaBodyEn' }, name: { kind: 'Name', value: 'bodyEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'buttonLabelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'buttonLabelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'href' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionQa' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'entries' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'entryId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'questionDe' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'questionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'answerDe' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'answerEn' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicCookCardFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicCook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'CustomerTestimonialCardFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CustomerTestimonial' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'location' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'TestimonialCardFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Testimonial' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CustomerTestimonial' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'CustomerTestimonialCardFields' } }],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTestimonial' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'location' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                                { kind: 'Field', alias: { kind: 'Name', value: 'cookBody' }, name: { kind: 'Name', value: 'body' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AuthSessionFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Session' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'admin' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'adminId' } }],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authEmailOtp' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'authEmailOtpId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authTotpChallenge' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } }] },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicHeaderUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'adminId' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }] },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicPartnerFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicPartner' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageFileUploadId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionCtaUrl' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'locationAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'promo' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'redeemCode' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'amountCents' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'sections' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ContentSectionFields' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'featuredCooks' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicCookCardFields' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'testimonials' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'testimonial' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'TestimonialCardFields' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCBookingRequestPlanPageQuery, GqlCBookingRequestPlanPageQueryVariables>;
+export const BookingRequestPlanCreateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'BookingRequestPlanCreate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestCreate' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestCreate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCBookingRequestPlanCreateMutation, GqlCBookingRequestPlanCreateMutationVariables>;
+export const BookingRequestPlanLocationSuggestionsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'BookingRequestPlanLocationSuggestions' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                    defaultValue: { kind: 'BooleanValue', value: true },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'locationSuggestions' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'searchText' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'onlyFullAddresses' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'structuredAddress' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCBookingRequestPlanLocationSuggestionsQuery, GqlCBookingRequestPlanLocationSuggestionsQueryVariables>;
 export const BookingRequestSubmittedPageDocument = {
     kind: 'Document',
     definitions: [
@@ -41127,6 +42067,24 @@ export const PublicPartnerPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'locationAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'promo' },
@@ -60916,6 +61874,24 @@ export const AdminPartnerPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'locationAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'promoCodeId' } },
                     {
                         kind: 'Field',
@@ -61289,6 +62265,84 @@ export const AdminPartnerPageCookSearchDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminPartnerPageCookSearchQuery, GqlCAdminPartnerPageCookSearchQueryVariables>;
+export const AdminPartnerPageLocationSuggestionsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminPartnerPageLocationSuggestions' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'locationSuggestions' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'searchText' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'searchText' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'onlyFullAddresses' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'onlyFullAddresses' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'structuredAddress' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminPartnerPageLocationSuggestionsQuery, GqlCAdminPartnerPageLocationSuggestionsQueryVariables>;
 export const AdminPartnerPagePromoCodesDocument = {
     kind: 'Document',
     definitions: [
@@ -61653,6 +62707,24 @@ export const AdminPartnerPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'locationAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'promoCodeId' } },
                     {
                         kind: 'Field',

@@ -81,6 +81,7 @@ import { Route as Char123LocaleChar125AdminWhatsAppChatsRouteImport } from './ro
 import { Route as Char123LocaleChar125BlogPostsPathNameRouteImport } from './routes/{-$locale}/blog-posts_.$pathName'
 import { Route as Char123LocaleChar125BookingRequestChatRouteImport } from './routes/{-$locale}/booking-request_.chat'
 import { Route as Char123LocaleChar125BookingRequestFormRouteImport } from './routes/{-$locale}/booking-request_.form'
+import { Route as Char123LocaleChar125BookingRequestPlanRouteImport } from './routes/{-$locale}/booking-request_.plan'
 import { Route as Char123LocaleChar125ChefsCookIdRouteImport } from './routes/{-$locale}/chefs_.$cookId'
 import { Route as Char123LocaleChar125CitiesPathNameRouteImport } from './routes/{-$locale}/cities_.$pathName'
 import { Route as Char123LocaleChar125OccasionsPathNameRouteImport } from './routes/{-$locale}/occasions_.$pathName'
@@ -584,6 +585,12 @@ const Char123LocaleChar125BookingRequestFormRoute =
   Char123LocaleChar125BookingRequestFormRouteImport.update({
     id: '/booking-request_/form',
     path: '/booking-request/form',
+    getParentRoute: () => Char123LocaleChar125Route,
+  } as any)
+const Char123LocaleChar125BookingRequestPlanRoute =
+  Char123LocaleChar125BookingRequestPlanRouteImport.update({
+    id: '/booking-request_/plan',
+    path: '/booking-request/plan',
     getParentRoute: () => Char123LocaleChar125Route,
   } as any)
 const Char123LocaleChar125ChefsCookIdRoute =
@@ -1237,6 +1244,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/blog-posts/$pathName': typeof Char123LocaleChar125BlogPostsPathNameRoute
   '/{-$locale}/booking-request/chat': typeof Char123LocaleChar125BookingRequestChatRoute
   '/{-$locale}/booking-request/form': typeof Char123LocaleChar125BookingRequestFormRoute
+  '/{-$locale}/booking-request/plan': typeof Char123LocaleChar125BookingRequestPlanRoute
   '/{-$locale}/chefs/$cookId': typeof Char123LocaleChar125ChefsCookIdRoute
   '/{-$locale}/cities/$pathName': typeof Char123LocaleChar125CitiesPathNameRoute
   '/{-$locale}/occasions/$pathName': typeof Char123LocaleChar125OccasionsPathNameRoute
@@ -1398,6 +1406,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/blog-posts/$pathName': typeof Char123LocaleChar125BlogPostsPathNameRoute
   '/{-$locale}/booking-request/chat': typeof Char123LocaleChar125BookingRequestChatRoute
   '/{-$locale}/booking-request/form': typeof Char123LocaleChar125BookingRequestFormRoute
+  '/{-$locale}/booking-request/plan': typeof Char123LocaleChar125BookingRequestPlanRoute
   '/{-$locale}/chefs/$cookId': typeof Char123LocaleChar125ChefsCookIdRoute
   '/{-$locale}/cities/$pathName': typeof Char123LocaleChar125CitiesPathNameRoute
   '/{-$locale}/occasions/$pathName': typeof Char123LocaleChar125OccasionsPathNameRoute
@@ -1563,6 +1572,7 @@ export interface FileRoutesById {
   '/{-$locale}/blog-posts_/$pathName': typeof Char123LocaleChar125BlogPostsPathNameRoute
   '/{-$locale}/booking-request_/chat': typeof Char123LocaleChar125BookingRequestChatRoute
   '/{-$locale}/booking-request_/form': typeof Char123LocaleChar125BookingRequestFormRoute
+  '/{-$locale}/booking-request_/plan': typeof Char123LocaleChar125BookingRequestPlanRoute
   '/{-$locale}/chefs_/$cookId': typeof Char123LocaleChar125ChefsCookIdRoute
   '/{-$locale}/cities_/$pathName': typeof Char123LocaleChar125CitiesPathNameRoute
   '/{-$locale}/occasions_/$pathName': typeof Char123LocaleChar125OccasionsPathNameRoute
@@ -1729,6 +1739,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/blog-posts/$pathName'
     | '/{-$locale}/booking-request/chat'
     | '/{-$locale}/booking-request/form'
+    | '/{-$locale}/booking-request/plan'
     | '/{-$locale}/chefs/$cookId'
     | '/{-$locale}/cities/$pathName'
     | '/{-$locale}/occasions/$pathName'
@@ -1890,6 +1901,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/blog-posts/$pathName'
     | '/{-$locale}/booking-request/chat'
     | '/{-$locale}/booking-request/form'
+    | '/{-$locale}/booking-request/plan'
     | '/{-$locale}/chefs/$cookId'
     | '/{-$locale}/cities/$pathName'
     | '/{-$locale}/occasions/$pathName'
@@ -2054,6 +2066,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/blog-posts_/$pathName'
     | '/{-$locale}/booking-request_/chat'
     | '/{-$locale}/booking-request_/form'
+    | '/{-$locale}/booking-request_/plan'
     | '/{-$locale}/chefs_/$cookId'
     | '/{-$locale}/cities_/$pathName'
     | '/{-$locale}/occasions_/$pathName'
@@ -2676,6 +2689,13 @@ declare module '@tanstack/react-router' {
       path: '/booking-request/form'
       fullPath: '/{-$locale}/booking-request/form'
       preLoaderRoute: typeof Char123LocaleChar125BookingRequestFormRouteImport
+      parentRoute: typeof Char123LocaleChar125Route
+    }
+    '/{-$locale}/booking-request_/plan': {
+      id: '/{-$locale}/booking-request_/plan'
+      path: '/booking-request/plan'
+      fullPath: '/{-$locale}/booking-request/plan'
+      preLoaderRoute: typeof Char123LocaleChar125BookingRequestPlanRouteImport
       parentRoute: typeof Char123LocaleChar125Route
     }
     '/{-$locale}/chefs_/$cookId': {
@@ -3685,6 +3705,7 @@ interface Char123LocaleChar125RouteChildren {
   Char123LocaleChar125BlogPostsPathNameRoute: typeof Char123LocaleChar125BlogPostsPathNameRoute
   Char123LocaleChar125BookingRequestChatRoute: typeof Char123LocaleChar125BookingRequestChatRoute
   Char123LocaleChar125BookingRequestFormRoute: typeof Char123LocaleChar125BookingRequestFormRoute
+  Char123LocaleChar125BookingRequestPlanRoute: typeof Char123LocaleChar125BookingRequestPlanRoute
   Char123LocaleChar125ChefsCookIdRoute: typeof Char123LocaleChar125ChefsCookIdRoute
   Char123LocaleChar125CitiesPathNameRoute: typeof Char123LocaleChar125CitiesPathNameRoute
   Char123LocaleChar125OccasionsPathNameRoute: typeof Char123LocaleChar125OccasionsPathNameRoute
@@ -3723,6 +3744,8 @@ const Char123LocaleChar125RouteChildren: Char123LocaleChar125RouteChildren = {
     Char123LocaleChar125BookingRequestChatRoute,
   Char123LocaleChar125BookingRequestFormRoute:
     Char123LocaleChar125BookingRequestFormRoute,
+  Char123LocaleChar125BookingRequestPlanRoute:
+    Char123LocaleChar125BookingRequestPlanRoute,
   Char123LocaleChar125ChefsCookIdRoute: Char123LocaleChar125ChefsCookIdRoute,
   Char123LocaleChar125CitiesPathNameRoute:
     Char123LocaleChar125CitiesPathNameRoute,

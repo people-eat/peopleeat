@@ -386,6 +386,7 @@ import { publicLegalFind } from '../queries/publicLegalFind';
 import { publicOccasionFindMany } from '../queries/publicOccasionFindMany';
 import { publicOccasionFindOneByPathName } from '../queries/publicOccasionFindOneByPathName';
 import { publicPartnerFindMany } from '../queries/publicPartnerFindMany';
+import { publicPartnerFindOne } from '../queries/publicPartnerFindOne';
 import { publicPartnerFindOneByPathName } from '../queries/publicPartnerFindOneByPathName';
 import { publicWebPageFindOne } from '../queries/publicWebPageFindOne';
 import { sessionAuthEmailOtpFindOne } from '../queries/sessionAuthEmailOtpFindOne';
@@ -717,6 +718,7 @@ import type {
     GqlSPublicOccasionQueryFindOneByPathNameArgs,
     GqlSPublicPartner,
     GqlSPublicPartnerQuery,
+    GqlSPublicPartnerQueryFindOneArgs,
     GqlSPublicPartnerQueryFindOneByPathNameArgs,
     GqlSPublicWebPageQuery,
     GqlSPublicWebPageQueryFindOneArgs,
@@ -2757,6 +2759,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
         PublicPartnerQuery: {
             findMany() {
                 return publicPartnerFindMany(serverRuntime);
+            },
+            findOne(_parent: unknown, args: GqlSPublicPartnerQueryFindOneArgs) {
+                return publicPartnerFindOne(args, serverRuntime);
             },
             findOneByPathName(_parent: unknown, args: GqlSPublicPartnerQueryFindOneByPathNameArgs) {
                 return publicPartnerFindOneByPathName(args, serverRuntime);
