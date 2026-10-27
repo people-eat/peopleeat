@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'src/web/components/**'
+      - 'src/web/storybook/**'
       - '.storybook/**'
       - 'Dockerfile.storybook'
       - 'Dockerfile.storybook.dockerignore'

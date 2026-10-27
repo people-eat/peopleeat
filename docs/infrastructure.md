@@ -406,7 +406,7 @@ parallel with CI — a CI failure on the same commit shows as a separate red che
 
 | Workflow      | Redeploys when these change                                                                                                  |
 | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Storybook     | `src/web/components/**`, `.storybook/**`, `Dockerfile.storybook`, `Dockerfile.storybook.dockerignore`, `docker/storybook/**` |
+| Storybook     | `src/web/components/**`, `src/web/storybook/**`, `.storybook/**`, `Dockerfile.storybook`, `Dockerfile.storybook.dockerignore`, `docker/storybook/**` |
 | Email preview | `src/server/email/**`, `Dockerfile.email`, `Dockerfile.email.dockerignore`                                                   |
 
 Deploy steps (same Coolify pattern as the main app, without `/api/health` SHA polling):

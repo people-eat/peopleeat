@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { ReactNode } from 'react';
 import { useState } from 'react';
 
 import { perspectivesCanvasDecorator, STORYBOOK_TIME_ZONE } from '../../../.storybook/decorators';
@@ -8,6 +7,7 @@ import type { BookingRequestOfferCallBookingCardRole } from '../components/Booki
 import { useLocale } from '../hooks/useLocale';
 import { callBookingsByStatus } from './fixtures/calls';
 import { fixtureCook, fixtureCustomer } from './fixtures/people';
+import { RoleColumn } from './gallery';
 
 const meta = {
     title: 'Perspectives/Call Booking Cards',
@@ -17,15 +17,6 @@ const meta = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-function RoleColumn({ label, children }: { label: string; children: ReactNode }) {
-    return (
-        <div className="grid min-w-0 gap-3">
-            <h3 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{label}</h3>
-            <div className="max-w-md">{children}</div>
-        </div>
-    );
-}
 
 function CallCardForRole({
     role,
@@ -77,13 +68,13 @@ export const PendingFromCustomer: Story = {
     name: 'Pending (customer initiated)',
     render: () => (
         <div className="grid gap-8 lg:grid-cols-3">
-            <RoleColumn label="Customer">
+            <RoleColumn label="Customer" contentClassName="max-w-md">
                 <CallCardForRole role="user" peerDisplayName={fixtureCook.display} />
             </RoleColumn>
-            <RoleColumn label="Cook">
+            <RoleColumn label="Cook" contentClassName="max-w-md">
                 <CallCardForRole role="cook" peerDisplayName={fixtureCustomer.display} />
             </RoleColumn>
-            <RoleColumn label="Admin">
+            <RoleColumn label="Admin" contentClassName="max-w-md">
                 <CallCardForRole role="admin" peerDisplayName={`${fixtureCustomer.display} · ${fixtureCook.display}`} />
             </RoleColumn>
         </div>
@@ -93,13 +84,13 @@ export const PendingFromCustomer: Story = {
 export const ConfirmedReadOnly: Story = {
     render: () => (
         <div className="grid gap-8 lg:grid-cols-3">
-            <RoleColumn label="Customer">
+            <RoleColumn label="Customer" contentClassName="max-w-md">
                 <CallCardForRole role="user" peerDisplayName={fixtureCook.display} booking={callBookingsByStatus.confirmed} readOnly />
             </RoleColumn>
-            <RoleColumn label="Cook">
+            <RoleColumn label="Cook" contentClassName="max-w-md">
                 <CallCardForRole role="cook" peerDisplayName={fixtureCustomer.display} booking={callBookingsByStatus.confirmed} readOnly />
             </RoleColumn>
-            <RoleColumn label="Admin">
+            <RoleColumn label="Admin" contentClassName="max-w-md">
                 <CallCardForRole
                     role="admin"
                     peerDisplayName={`${fixtureCustomer.display} · ${fixtureCook.display}`}

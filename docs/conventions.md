@@ -818,23 +818,35 @@ Fix with `npm run lint`. The editor’s IntelliSense copy of this lint is turned
 Component stories live next to the component as `*.stories.tsx` (discovered by `.storybook/main.ts`). Deploy / Coolify stays in
 [infrastructure.md](./infrastructure.md#storybook--email-preview-coolify).
 
+### Start here
+
+1. **`Foundations/Mood Board`** — product style and mood in one scroll (tokens, status vs brand, card family, chat)
+2. **`Foundations/Tokens`** — surface swatches, type scale, status / booking pill reference
+3. **`Perspectives/*`** — role parity (Customer · Cook · Admin) and surface collages (discovery, booking desk)
+4. Atomic groups (`Base`, `Chat`, `Booking`, …) — variant depth for a single component
+
+Composition stories only import existing components and fixtures. They do not introduce new product UI.
+
 ### Titles (hybrid taxonomy)
 
-| Sidebar group  | Use for                                                                                      |
-| -------------- | -------------------------------------------------------------------------------------------- |
-| `Base`         | Radix / shadcn primitives under `src/web/components/base/`                                   |
-| `Chat`         | Transcript atoms, composer, message variants, chat surfaces                                  |
-| `Booking`      | Request / offer / call / cost cards and banners                                              |
-| `Discovery`    | Public cook / meal / menu discovery tiles                                                    |
-| `Support`      | Support request list chrome                                                                  |
-| `Perspectives` | Side-by-side Customer · Cook · Admin galleries (composition-only; no new product components) |
+| Sidebar group  | Use for                                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------- |
+| `Foundations`  | Mood board and token / type reference (composition-only; no new product components)            |
+| `Base`         | Radix / shadcn primitives under `src/web/components/base/`                                     |
+| `Chat`         | Transcript atoms, composer, message variants, chat surfaces                                    |
+| `Booking`      | Request / offer / call / cost cards and banners                                                |
+| `Discovery`    | Public cook / meal / menu discovery tiles                                                      |
+| `Support`      | Support request list chrome                                                                    |
+| `Perspectives` | Side-by-side role galleries and surface collages (composition-only; no new product components) |
 
-Titles match `Base/Button` style: `Chat/Composer`, `Booking/Customer Offer Card`, `Perspectives/Offer Cards`.
+Titles match `Base/Button` style: `Foundations/Mood Board`, `Chat/Composer`, `Booking/Customer Offer Card`, `Perspectives/Offer Cards`.
 
 ### Authoring
 
 - Prefer presentational props and stub callbacks (`fn()` / async no-ops). Do not call production GraphQL from stories.
 - Shared fixtures live in [`src/web/storybook/fixtures/`](../src/web/storybook/fixtures/) (`people`, `booking`, `chat`, `calls`).
+- Gallery chrome for compositions: [`src/web/storybook/gallery.tsx`](../src/web/storybook/gallery.tsx) (`WarmPage`, `GallerySection`,
+  `RoleColumn`, `SurfaceColumn`). Prefer `WarmPage` (`bg-background`) so white / secondary surfaces lift off the warm canvas.
 - Global preview wraps locale toolbar (DE / EN), `TimeZoneProvider` (`Europe/Berlin`), `TooltipProvider`, stub urql, and a memory router
   with `/$locale` so `useLocale` works.
 - Reusable decorators: [`.storybook/decorators.tsx`](../.storybook/decorators.tsx) (`cardCanvasDecorator`, `chatViewportDecorator`,

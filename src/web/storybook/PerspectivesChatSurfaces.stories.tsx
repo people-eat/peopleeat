@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import type { ReactNode } from 'react';
 import { fn } from 'storybook/test';
 
 import { perspectivesCanvasDecorator, withFeatureToggles } from '../../../.storybook/decorators';
 import { BookingRequestOfferChat } from '../components/BookingRequestOfferChat';
 import { fixtureOfferChatTranscript } from './fixtures/chat';
 import { fixtureCook, fixtureCustomer } from './fixtures/people';
+import { RoleColumn } from './gallery';
 
 const meta = {
     title: 'Perspectives/Chat Surfaces',
@@ -16,21 +16,14 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function RoleColumn({ label, children }: { label: string; children: ReactNode }) {
-    return (
-        <div className="grid min-w-0 gap-3">
-            <h3 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{label}</h3>
-            <div className="h-[480px] max-w-md overflow-hidden rounded-xl border border-border">{children}</div>
-        </div>
-    );
-}
+const chatPaneClassName = 'h-[480px] max-w-md overflow-hidden rounded-xl border border-border';
 
 const onSend = fn(async () => true);
 
 export const OfferChatRoles: Story = {
     render: () => (
         <div className="grid gap-8 xl:grid-cols-3">
-            <RoleColumn label="Customer">
+            <RoleColumn label="Customer" contentClassName={chatPaneClassName}>
                 <BookingRequestOfferChat
                     messages={fixtureOfferChatTranscript}
                     canSend
@@ -41,7 +34,7 @@ export const OfferChatRoles: Story = {
                     className="h-full"
                 />
             </RoleColumn>
-            <RoleColumn label="Cook">
+            <RoleColumn label="Cook" contentClassName={chatPaneClassName}>
                 <BookingRequestOfferChat
                     messages={fixtureOfferChatTranscript}
                     canSend
@@ -57,7 +50,7 @@ export const OfferChatRoles: Story = {
                     className="h-full"
                 />
             </RoleColumn>
-            <RoleColumn label="Admin">
+            <RoleColumn label="Admin" contentClassName={chatPaneClassName}>
                 <BookingRequestOfferChat
                     messages={fixtureOfferChatTranscript}
                     canSend={false}
