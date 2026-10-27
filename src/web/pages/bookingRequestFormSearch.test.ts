@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    bookingRequestFormClampDateTime,
     bookingRequestFormExactAddressFromSearch,
+    bookingRequestFormHourOptions,
+    bookingRequestFormMinuteOptions,
     bookingRequestFormSearchEqual,
     bookingRequestFormSearchFromValues,
     bookingRequestFormValuesFromSearch,
@@ -25,6 +28,8 @@ describe('parseBookingRequestFormSearch', () => {
         expect(search).toEqual({
             occasion: 'Birthday',
             dateTime: '2030-06-15T18:00:00.000Z',
+            minDateTime: undefined,
+            maxDateTime: undefined,
             adults: 3,
             children: 1,
             message: 'Hello cooks',
@@ -42,6 +47,25 @@ describe('parseBookingRequestFormSearch', () => {
             country: undefined,
             step: 'message',
         });
+    });
+
+    it('parses optional minDateTime and maxDateTime ISO bounds', () => {
+        const search = parseBookingRequestFormSearch({
+            minDateTime: '2030-06-01T16:00:00.000Z',
+            maxDateTime: '2030-06-30T22:00:00.000Z',
+        });
+        expect(search.minDateTime).toBe('2030-06-01T16:00:00.000Z');
+        expect(search.maxDateTime).toBe('2030-06-30T22:00:00.000Z');
+    });
+
+    it('drops inverted or invalid datetime bounds', () => {
+        expect(
+            parseBookingRequestFormSearch({
+                minDateTime: '2030-07-01T00:00:00.000Z',
+                maxDateTime: '2030-06-01T00:00:00.000Z',
+            }),
+        ).toMatchObject({ minDateTime: undefined, maxDateTime: undefined });
+        expect(parseBookingRequestFormSearch({ minDateTime: 'not-a-date' }).minDateTime).toBeUndefined();
     });
 
     it('restores a complete venue from flat address params', () => {
@@ -108,5 +132,51 @@ describe('parseBookingRequestFormSearch', () => {
             dateTime: '2030-06-15T18:00:00.000Z',
         });
         expect(bookingRequestFormSearchEqual(a, b)).toBe(true);
+    });
+
+    it('preserves datetime bounds when rebuilding search from values', () => {
+        const values = bookingRequestFormValuesFromSearch({
+            occasion: 'Birthday',
+            adults: 4,
+            dateTime: '2030-06-15T18:00:00.000Z',
+            minDateTime: '2030-06-01T16:00:00.000Z',
+            maxDateTime: '2030-06-30T22:00:00.000Z',
+        });
+        const next = bookingRequestFormSearchFromValues({
+            values,
+            step: 'dateTime',
+            minDateTime: '2030-06-01T16:00:00.000Z',
+            maxDateTime: '2030-06-30T22:00:00.000Z',
+        });
+        expect(next.minDateTime).toBe('2030-06-01T16:00:00.000Z');
+        expect(next.maxDateTime).toBe('2030-06-30T22:00:00.000Z');
+    });
+
+    it('clamps seeded dateTime into optional bounds', () => {
+        const beforeMin = bookingRequestFormValuesFromSearch({
+            dateTime: '2030-05-01T12:00:00.000Z',
+            minDateTime: '2030-06-01T16:00:00.000Z',
+            maxDateTime: '2030-06-30T22:00:00.000Z',
+        });
+        expect(beforeMin.dateTime.toISOString()).toBe('2030-06-01T16:00:00.000Z');
+
+        const afterMax = bookingRequestFormValuesFromSearch({
+            dateTime: '2030-08-01T12:00:00.000Z',
+            minDateTime: '2030-06-01T16:00:00.000Z',
+            maxDateTime: '2030-06-30T22:00:00.000Z',
+        });
+        expect(afterMax.dateTime.toISOString()).toBe('2030-06-30T22:00:00.000Z');
+    });
+
+    it('filters hour and minute options by bounds on the boundary day', () => {
+        const day = new Date(2030, 5, 15, 12, 0, 0, 0);
+        const bounds = {
+            minDateTime: new Date(2030, 5, 15, 18, 0, 0, 0),
+            maxDateTime: new Date(2030, 5, 15, 20, 30, 0, 0),
+        };
+        expect(bookingRequestFormHourOptions(day, bounds)).toEqual([18, 19, 20]);
+        expect(bookingRequestFormMinuteOptions(day, 18, bounds)).toEqual([0, 15, 30, 45]);
+        expect(bookingRequestFormMinuteOptions(day, 20, bounds)).toEqual([0, 15, 30]);
+        expect(bookingRequestFormClampDateTime(new Date(2030, 5, 15, 17, 0, 0, 0), bounds).getTime()).toBe(bounds.minDateTime.getTime());
     });
 });

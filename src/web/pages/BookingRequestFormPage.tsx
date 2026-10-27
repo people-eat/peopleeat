@@ -73,7 +73,11 @@ import { SITE_LOGO, SITE_LOGO_DISPLAY, SITE_LOGO_SRC_SET, SITE_NAME } from '../s
 import { DATE_FNS_LOCALE } from '../utils/dateFnsLocale';
 import type { BookingRequestFormSearch } from './bookingRequestFormSearch';
 import {
+    bookingRequestFormClampDateTime,
     bookingRequestFormContentSteps,
+    bookingRequestFormDateTimeBoundsFromSearch,
+    bookingRequestFormHourOptions,
+    bookingRequestFormMinuteOptions,
     bookingRequestFormSearchEqual,
     bookingRequestFormSearchFromValues,
     bookingRequestFormValuesFromSearch,
@@ -319,6 +323,14 @@ export function BookingRequestFormPage({
     });
 
     const values = useSelector(form.store, (state) => state.values);
+    const dateTimeBounds = bookingRequestFormDateTimeBoundsFromSearch(search);
+    const datePickerMin = (() => {
+        const today = new Date();
+        if (dateTimeBounds.minDateTime && dateTimeBounds.minDateTime.getTime() > today.getTime()) {
+            return dateTimeBounds.minDateTime;
+        }
+        return today;
+    })();
 
     useEffect(() => {
         setParticipants((previous) =>
@@ -404,6 +416,8 @@ export function BookingRequestFormPage({
                 redeemCode: draft.redeemCode,
             },
             step: draft.step,
+            minDateTime: search.minDateTime,
+            maxDateTime: search.maxDateTime,
         });
         if (bookingRequestFormSearchEqual(nextSearch, search)) return;
         void navigate({ search: nextSearch, replace: true });
@@ -801,73 +815,92 @@ export function BookingRequestFormPage({
 
                             {step === 'dateTime' ? (
                                 <form.Field name="dateTime">
-                                    {(field) => (
-                                        <div className="grid max-w-md gap-4">
-                                            <div className="grid gap-2">
-                                                <span id="booking-request-date-label" className="text-sm font-medium">
-                                                    {{ de: 'Datum', en: 'Date' }[locale]}
-                                                </span>
-                                                <DatePicker
-                                                    value={field.state.value}
-                                                    onValueChange={(day) => {
-                                                        if (!day) return;
-                                                        const next = new Date(day);
-                                                        next.setHours(field.state.value.getHours(), field.state.value.getMinutes(), 0, 0);
-                                                        field.handleChange(next);
-                                                    }}
-                                                    placeholder={{ de: 'Datum wählen', en: 'Pick a date' }[locale]}
-                                                    locale={DATE_FNS_LOCALE[locale]}
-                                                    className="w-full"
-                                                    aria-labelledby="booking-request-date-label"
-                                                    aria-required
-                                                    disabled={busy || { before: new Date() }}
-                                                />
-                                            </div>
-                                            {dateDistanceInDaysToToday(field.state.value, 'Europe/Berlin') > 21 ? (
+                                    {(field) => {
+                                        const hourOptions = bookingRequestFormHourOptions(field.state.value, dateTimeBounds);
+                                        const minuteOptions = bookingRequestFormMinuteOptions(
+                                            field.state.value,
+                                            field.state.value.getHours(),
+                                            dateTimeBounds,
+                                        );
+                                        const dateDisabled = [
+                                            { before: datePickerMin },
+                                            ...(dateTimeBounds.maxDateTime ? [{ after: dateTimeBounds.maxDateTime }] : []),
+                                        ];
+                                        return (
+                                            <div className="grid max-w-md gap-4">
+                                                <div className="grid gap-2">
+                                                    <span id="booking-request-date-label" className="text-sm font-medium">
+                                                        {{ de: 'Datum', en: 'Date' }[locale]}
+                                                    </span>
+                                                    <DatePicker
+                                                        value={field.state.value}
+                                                        onValueChange={(day) => {
+                                                            if (!day) return;
+                                                            const next = new Date(day);
+                                                            next.setHours(
+                                                                field.state.value.getHours(),
+                                                                field.state.value.getMinutes(),
+                                                                0,
+                                                                0,
+                                                            );
+                                                            field.handleChange(bookingRequestFormClampDateTime(next, dateTimeBounds));
+                                                        }}
+                                                        placeholder={{ de: 'Datum wählen', en: 'Pick a date' }[locale]}
+                                                        locale={DATE_FNS_LOCALE[locale]}
+                                                        className="w-full"
+                                                        aria-labelledby="booking-request-date-label"
+                                                        aria-required
+                                                        startMonth={datePickerMin}
+                                                        endMonth={dateTimeBounds.maxDateTime}
+                                                        disabled={busy || dateDisabled}
+                                                    />
+                                                </div>
+                                                {dateDistanceInDaysToToday(field.state.value, 'Europe/Berlin') > 21 ? (
+                                                    <StatusAlert tone="success">
+                                                        {
+                                                            {
+                                                                de: 'Perfekt! Du bist genau richtig in der Zeit! Über 60% unserer Buchungen erfolgen mehr als 3 Wochen im Voraus.',
+                                                                en: "Perfect! You've hit the nail on the head! Over 60% of our bookings are made more than 3 weeks in advance.",
+                                                            }[locale]
+                                                        }
+                                                    </StatusAlert>
+                                                ) : null}
+                                                <div className="grid gap-2">
+                                                    <span id="booking-request-time-label" className="text-sm font-medium">
+                                                        {{ de: 'Uhrzeit', en: 'Time' }[locale]}
+                                                    </span>
+                                                    <TimePicker
+                                                        value={format(field.state.value, 'HH:mm')}
+                                                        onValueChange={(time) => {
+                                                            const [hoursRaw, minutesRaw] = time.split(':');
+                                                            const hours = Number(hoursRaw);
+                                                            const minutes = Number(minutesRaw);
+                                                            if (Number.isNaN(hours) || Number.isNaN(minutes)) return;
+                                                            const next = new Date(field.state.value);
+                                                            next.setHours(hours, minutes, 0, 0);
+                                                            field.handleChange(bookingRequestFormClampDateTime(next, dateTimeBounds));
+                                                        }}
+                                                        hourOptions={hourOptions}
+                                                        minuteOptions={minuteOptions}
+                                                        hourAriaLabel={{ de: 'Stunde', en: 'Hour' }[locale]}
+                                                        minuteAriaLabel={{ de: 'Minute', en: 'Minute' }[locale]}
+                                                        className="w-full"
+                                                        aria-labelledby="booking-request-time-label"
+                                                        aria-required
+                                                        disabled={busy}
+                                                    />
+                                                </div>
                                                 <StatusAlert tone="success">
                                                     {
                                                         {
-                                                            de: 'Perfekt! Du bist genau richtig in der Zeit! Über 60% unserer Buchungen erfolgen mehr als 3 Wochen im Voraus.',
-                                                            en: "Perfect! You've hit the nail on the head! Over 60% of our bookings are made more than 3 weeks in advance.",
+                                                            de: 'Die finale Uhrzeit kannst du mit dem Koch später kommunizieren.',
+                                                            en: 'You can discuss the final time with the chef later.',
                                                         }[locale]
                                                     }
                                                 </StatusAlert>
-                                            ) : null}
-                                            <div className="grid gap-2">
-                                                <span id="booking-request-time-label" className="text-sm font-medium">
-                                                    {{ de: 'Uhrzeit', en: 'Time' }[locale]}
-                                                </span>
-                                                <TimePicker
-                                                    value={format(field.state.value, 'HH:mm')}
-                                                    onValueChange={(time) => {
-                                                        const [hoursRaw, minutesRaw] = time.split(':');
-                                                        const hours = Number(hoursRaw);
-                                                        const minutes = Number(minutesRaw);
-                                                        if (Number.isNaN(hours) || Number.isNaN(minutes)) return;
-                                                        const next = new Date(field.state.value);
-                                                        next.setHours(hours, minutes, 0, 0);
-                                                        field.handleChange(next);
-                                                    }}
-                                                    hourOptions={[8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]}
-                                                    minuteOptions={[0, 15, 30, 45]}
-                                                    hourAriaLabel={{ de: 'Stunde', en: 'Hour' }[locale]}
-                                                    minuteAriaLabel={{ de: 'Minute', en: 'Minute' }[locale]}
-                                                    className="w-full"
-                                                    aria-labelledby="booking-request-time-label"
-                                                    aria-required
-                                                    disabled={busy}
-                                                />
                                             </div>
-                                            <StatusAlert tone="success">
-                                                {
-                                                    {
-                                                        de: 'Die finale Uhrzeit kannst du mit dem Koch später kommunizieren.',
-                                                        en: 'You can discuss the final time with the chef later.',
-                                                    }[locale]
-                                                }
-                                            </StatusAlert>
-                                        </div>
-                                    )}
+                                        );
+                                    }}
                                 </form.Field>
                             ) : null}
 

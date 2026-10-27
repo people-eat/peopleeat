@@ -23,6 +23,10 @@ export function bookingRequestFormContentSteps(restrictionsEnabled: boolean): re
 export type BookingRequestFormSearch = {
     occasion?: string;
     dateTime?: string;
+    /** Optional ISO lower bound for the selectable event datetime (inclusive). */
+    minDateTime?: string;
+    /** Optional ISO upper bound for the selectable event datetime (inclusive). */
+    maxDateTime?: string;
     adults?: number;
     children?: number;
     message?: string;
@@ -39,6 +43,11 @@ export type BookingRequestFormSearch = {
     state?: string;
     country?: string;
     step?: BookingRequestFormStep;
+};
+
+export type BookingRequestFormDateTimeBounds = {
+    minDateTime?: Date;
+    maxDateTime?: Date;
 };
 
 function parsePositiveInt(value: unknown, fallback: number): number {
@@ -89,9 +98,67 @@ function isFormStep(value: unknown): value is BookingRequestFormStep {
     return typeof value === 'string' && ([...ALL_CONTENT_STEPS, 'auth'] as readonly string[]).includes(value);
 }
 
+/** Parses an optional ISO datetime string; invalid / empty values become `undefined`. */
+function parseOptionalIsoDateTime(value: unknown): string | undefined {
+    if (typeof value !== 'string' || value.trim().length === 0) return undefined;
+    const trimmed = value.trim();
+    const parsed = new Date(trimmed);
+    if (Number.isNaN(parsed.getTime())) return undefined;
+    return trimmed;
+}
+
+export function bookingRequestFormDateTimeBoundsFromSearch(search: BookingRequestFormSearch): BookingRequestFormDateTimeBounds {
+    const minRaw = search.minDateTime ? new Date(search.minDateTime) : undefined;
+    const maxRaw = search.maxDateTime ? new Date(search.maxDateTime) : undefined;
+    const minDateTime = minRaw && !Number.isNaN(minRaw.getTime()) ? minRaw : undefined;
+    const maxDateTime = maxRaw && !Number.isNaN(maxRaw.getTime()) ? maxRaw : undefined;
+    if (minDateTime && maxDateTime && minDateTime.getTime() > maxDateTime.getTime()) {
+        return {};
+    }
+    return { minDateTime, maxDateTime };
+}
+
+export function bookingRequestFormClampDateTime(dateTime: Date, bounds: BookingRequestFormDateTimeBounds): Date {
+    let next = dateTime;
+    if (bounds.minDateTime && next.getTime() < bounds.minDateTime.getTime()) {
+        next = new Date(bounds.minDateTime);
+    }
+    if (bounds.maxDateTime && next.getTime() > bounds.maxDateTime.getTime()) {
+        next = new Date(bounds.maxDateTime);
+    }
+    return next;
+}
+
+const BOOKING_REQUEST_FORM_HOUR_OPTIONS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] as const;
+const BOOKING_REQUEST_FORM_MINUTE_OPTIONS = [0, 15, 30, 45] as const;
+
+export function bookingRequestFormHourOptions(date: Date, bounds: BookingRequestFormDateTimeBounds): number[] {
+    return BOOKING_REQUEST_FORM_HOUR_OPTIONS.filter((hour) =>
+        BOOKING_REQUEST_FORM_MINUTE_OPTIONS.some((minute) => {
+            const candidate = new Date(date);
+            candidate.setHours(hour, minute, 0, 0);
+            if (bounds.minDateTime && candidate.getTime() < bounds.minDateTime.getTime()) return false;
+            if (bounds.maxDateTime && candidate.getTime() > bounds.maxDateTime.getTime()) return false;
+            return true;
+        }),
+    );
+}
+
+export function bookingRequestFormMinuteOptions(date: Date, hour: number, bounds: BookingRequestFormDateTimeBounds): number[] {
+    return BOOKING_REQUEST_FORM_MINUTE_OPTIONS.filter((minute) => {
+        const candidate = new Date(date);
+        candidate.setHours(hour, minute, 0, 0);
+        if (bounds.minDateTime && candidate.getTime() < bounds.minDateTime.getTime()) return false;
+        if (bounds.maxDateTime && candidate.getTime() > bounds.maxDateTime.getTime()) return false;
+        return true;
+    });
+}
+
 export function parseBookingRequestFormSearch(search: Record<string, unknown>): BookingRequestFormSearch {
     const occasion = typeof search.occasion === 'string' && search.occasion.trim().length > 0 ? search.occasion.trim() : undefined;
     const dateTime = typeof search.dateTime === 'string' && search.dateTime.trim().length > 0 ? search.dateTime.trim() : undefined;
+    const minDateTime = parseOptionalIsoDateTime(search.minDateTime);
+    const maxDateTime = parseOptionalIsoDateTime(search.maxDateTime);
     const adultsRaw = search.adults ?? search.adultCount;
     const childrenRaw = search.children ?? search.discountedCount;
     const adults = adultsRaw == null ? undefined : Math.max(1, parsePositiveInt(adultsRaw, 4));
@@ -111,9 +178,13 @@ export function parseBookingRequestFormSearch(search: Record<string, unknown>): 
     const country = typeof search.country === 'string' && search.country.trim().length > 0 ? search.country : undefined;
     const step = isFormStep(search.step) ? search.step : undefined;
 
+    const bounds = bookingRequestFormDateTimeBoundsFromSearch({ minDateTime, maxDateTime });
+
     return {
         occasion,
         dateTime,
+        minDateTime: bounds.minDateTime ? minDateTime : undefined,
+        maxDateTime: bounds.maxDateTime ? maxDateTime : undefined,
         adults,
         children,
         message,
@@ -162,8 +233,10 @@ export function bookingRequestFormExactAddressFromSearch(
 
 export function bookingRequestFormValuesFromSearch(search: BookingRequestFormSearch) {
     const exactEventAddress = bookingRequestFormExactAddressFromSearch(search);
+    const bounds = bookingRequestFormDateTimeBoundsFromSearch(search);
     const parsedDate = search.dateTime ? new Date(search.dateTime) : null;
-    const dateTime = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : defaultBookingRequestDateTime();
+    const rawDateTime = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : defaultBookingRequestDateTime();
+    const dateTime = bookingRequestFormClampDateTime(rawDateTime, bounds);
 
     return {
         occasion: search.occasion ?? '',
@@ -193,12 +266,16 @@ export function bookingRequestFormSearchFromValues(input: {
         redeemCode: string;
     };
     step: BookingRequestFormStep;
+    minDateTime?: string;
+    maxDateTime?: string;
 }): BookingRequestFormSearch {
-    const { values, step } = input;
+    const { values, step, minDateTime, maxDateTime } = input;
     const address = values.exactEventAddress;
     return {
         occasion: values.occasion.trim() || undefined,
         dateTime: values.dateTime.toISOString(),
+        minDateTime,
+        maxDateTime,
         adults: values.adultCount,
         children: values.discountedCount > 0 ? values.discountedCount : undefined,
         message: values.originalMessage.trim() || undefined,
@@ -227,6 +304,8 @@ export function bookingRequestFormSearchEqual(a: BookingRequestFormSearch, b: Bo
     return (
         a.occasion === b.occasion &&
         a.dateTime === b.dateTime &&
+        a.minDateTime === b.minDateTime &&
+        a.maxDateTime === b.maxDateTime &&
         a.adults === b.adults &&
         a.children === b.children &&
         a.message === b.message &&
