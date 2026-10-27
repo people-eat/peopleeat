@@ -3,6 +3,13 @@ import { useState } from 'react';
 import { fn } from 'storybook/test';
 
 import { withFeatureToggles } from '../../../.storybook/decorators';
+import { Button } from '../components/base/button';
+import { Input } from '../components/base/input';
+import { NotificationBadge } from '../components/base/notification-badge';
+import { Separator } from '../components/base/separator';
+import { StatusAlert } from '../components/base/status-alert';
+import { StatusBadge } from '../components/base/status-badge';
+import { Textarea } from '../components/base/textarea';
 import { BookingRequestOfferAttentionBanner } from '../components/BookingRequestOfferAttentionBanner';
 import { BookingRequestOfferChat } from '../components/BookingRequestOfferChat';
 import { bookingRequestOfferStatusClassName, bookingRequestOfferStatusLabel } from '../components/bookingRequestOfferStatus';
@@ -14,13 +21,6 @@ import { CustomerBookingRequestCard } from '../components/CustomerBookingRequest
 import { CustomerBookingRequestOfferCard } from '../components/CustomerBookingRequestOfferCard';
 import { CustomerMealCard } from '../components/CustomerMealCard';
 import { PublicCookCard } from '../components/PublicCookCard';
-import { Button } from '../components/base/button';
-import { Input } from '../components/base/input';
-import { NotificationBadge } from '../components/base/notification-badge';
-import { Separator } from '../components/base/separator';
-import { StatusAlert } from '../components/base/status-alert';
-import { StatusBadge } from '../components/base/status-badge';
-import { Textarea } from '../components/base/textarea';
 import { useLocale } from '../hooks/useLocale';
 import {
     fixtureBookingRequestId,
