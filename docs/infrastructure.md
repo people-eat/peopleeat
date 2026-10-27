@@ -404,10 +404,10 @@ Both are protected with **Coolify Basic Auth** (Traefik middleware in the Coolif
 Each workflow runs on pushes to `main` that touch its surface (GitHub `paths` filter), or on manual `workflow_dispatch`. They run in
 parallel with CI — a CI failure on the same commit shows as a separate red check and does not block these deploys.
 
-| Workflow      | Redeploys when these change                                                                                                  |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Workflow      | Redeploys when these change                                                                                                                          |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Storybook     | `src/web/components/**`, `src/web/storybook/**`, `.storybook/**`, `Dockerfile.storybook`, `Dockerfile.storybook.dockerignore`, `docker/storybook/**` |
-| Email preview | `src/server/email/**`, `Dockerfile.email`, `Dockerfile.email.dockerignore`                                                   |
+| Email preview | `src/server/email/**`, `Dockerfile.email`, `Dockerfile.email.dockerignore`                                                                           |
 
 Deploy steps (same Coolify pattern as the main app, without `/api/health` SHA polling):
 
