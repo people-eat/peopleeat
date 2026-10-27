@@ -56,7 +56,11 @@ Transports default to **off** so local/test boot never requires vendor keys (sam
 - Trace ids are merged into `Logs.context` when an active span exists so admin log rows can be correlated with Grafana/Langfuse.
 - App code imports span processors from `@opentelemetry/sdk-trace` (not the deprecated `@opentelemetry/sdk-trace-base` shim). Stay on the
   OpenTelemetry JS **2.x** / experimental **0.223.x** line until `@langfuse/otel` peers allow SDK 3.0 (`@opentelemetry/core` ^3,
-  `@opentelemetry/sdk-trace` instead of `sdk-trace-base`).
+  `@opentelemetry/sdk-trace` instead of `sdk-trace-base`). That pin covers **all** of `@opentelemetry/sdk-node`,
+  `@opentelemetry/instrumentation`, `instrumentation-http`, `exporter-*-otlp-http`, and `instrumentation-pg` (≤0.76). Do **not** bump those
+  to the **0.300 / SDK 3** line while `@opentelemetry/api` is still **1.9.x**: nested `@opentelemetry/instrumentation@0.300` imports `logs`
+  from `@opentelemetry/api`, which only exists in **1.10+**, and the preload (`node --import ./ops/observability/register.mjs`) crashes at
+  boot.
 
 ## How it works
 
