@@ -285,6 +285,7 @@ function OfferCostViews({
                         <CostBreakdownPanel
                             locale={locale}
                             lineItems={offer.costBreakdown.lineItems}
+                            totalBeforeDiscount={offer.costBreakdown.totalBeforeDiscount}
                             total={offer.costBreakdown.total}
                             footer={
                                 {
@@ -1063,7 +1064,9 @@ function CostsTabPanel({
     const outOfSystem = offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM';
     const empty = { de: '—', en: '—' }[locale];
     const platformWinCents = offer.platformFeeCentsCook + offer.platformFeeCentsCustomer;
-    const customerTotalCents = offer.totalCentsCustomer ?? offer.totalWithoutDiscountsCentsCustomer;
+    const customerTotalCents = offer.costBreakdown.total?.amountCents ?? offer.totalWithoutDiscountsCentsCustomer;
+    const discountLineItems = offer.costBreakdown.lineItems.filter((line) => line.amountCents < 0);
+    const hasDiscounts = discountLineItems.length > 0 || offer.costBreakdown.totalBeforeDiscount != null;
     const payoutAmountLabel = money(offer.payoutCentsCook, locale);
 
     async function onPayoutRelease() {
@@ -1386,11 +1389,32 @@ function CostsTabPanel({
                                 value={money(offer.payoutCentsCook, locale)}
                                 emphasize
                             />
-                            <EconomicsRow
-                                label={{ de: 'Kundenpreis', en: 'Customer total' }[locale]}
-                                value={money(customerTotalCents, locale)}
-                                emphasize
-                            />
+                            {hasDiscounts ? (
+                                <>
+                                    <EconomicsRow
+                                        label={{ de: 'Kundenpreis vor Rabatt', en: 'Customer total before discount' }[locale]}
+                                        value={money(
+                                            offer.costBreakdown.totalBeforeDiscount?.amountCents ??
+                                                offer.totalWithoutDiscountsCentsCustomer,
+                                            locale,
+                                        )}
+                                    />
+                                    {discountLineItems.map((line) => (
+                                        <EconomicsRow key={line.title} label={line.title} value={money(line.amountCents, locale)} />
+                                    ))}
+                                    <EconomicsRow
+                                        label={{ de: 'Kundenpreis', en: 'Customer total' }[locale]}
+                                        value={money(customerTotalCents, locale)}
+                                        emphasize
+                                    />
+                                </>
+                            ) : (
+                                <EconomicsRow
+                                    label={{ de: 'Kundenpreis', en: 'Customer total' }[locale]}
+                                    value={money(customerTotalCents, locale)}
+                                    emphasize
+                                />
+                            )}
                             <EconomicsRow
                                 label={{ de: 'Plattformgewinn', en: 'Platform profit' }[locale]}
                                 value={money(platformWinCents, locale)}

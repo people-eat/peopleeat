@@ -77,27 +77,31 @@ request offers (accepted pin), request edit, and price edit (with a replace-on-s
 
 **Costs** is the ops economics surface: labeled cook/customer platform fees with stored percents, payment-provider fee, menu / travel /
 payout / customer totals, and **Plattformgewinn / Platform profit** (`platformFeeCentsCook + platformFeeCentsCustomer`) highlighted in the
-untitled economics card (no “Wirtschaftlichkeit” heading). The **Zahlung & Stripe** card explains `paymentStatus` with a bilingual
-`StatusAlert` (ops label + one-sentence meaning, plus the technical enum for Stripe debugging via `adminBookingRequestOfferPaymentStatus*`),
-**Geplanter Karteneinzug / Planned card pull** as a full date-time (`plannedPaymentPullDateTime`, event time minus 14 days on the
-SetupIntent path). When that instant is already past and `paymentStatus` is still `EMPTY` / `SETUP`, a muted note explains the overdue pull
+untitled economics card (no “Wirtschaftlichkeit” heading). When a promo or gift is applied, that card also shows **Kundenpreis vor Rabatt /
+Customer total before discount**, one negative row per discount (code label from `costBreakdown`), then the post-discount **Kundenpreis /
+Customer total** from `costBreakdown.total` (so pre-accept discounts are visible even while `totalCentsCustomer` is still null). Platform
+profit stays fee-only; discounts are separate rows. The **Zahlung & Stripe** card explains `paymentStatus` with a bilingual `StatusAlert`
+(ops label + one-sentence meaning, plus the technical enum for Stripe debugging via `adminBookingRequestOfferPaymentStatus*`), **Geplanter
+Karteneinzug / Planned card pull** as a full date-time (`plannedPaymentPullDateTime`, event time minus 14 days on the SetupIntent path).
+When that instant is already past and `paymentStatus` is still `EMPTY` / `SETUP`, a muted note explains the overdue pull
 (`adminBookingRequestOfferPlannedPullPastNote`: charge right after card entry, or automatic pull should run shortly). The `SETUP`
 `StatusAlert` description also switches to the overdue wording. Paid / payout timestamps the same way, and Stripe Dashboard deep links
 (`stripePaymentIntentUrl` / `stripeSetupIntentUrl` when `paymentData` has those ids; test vs live from `STRIPE_SECRET_KEY`). Payout release
 actions and dual cost views with **Kundensicht / Kochsicht** titles above, columns top-aligned. **Customer view** sits in a card around
-`CostBreakdownPanel` (promo / gift line items + total, muted travel-included footer). **Cook view** renders
-`BookingRequestOfferCostOverviewPanel` (`viewer: admin`) without an extra card wrapper (panel already has bordered sections) using
-**stored** offer fee amounts (not a live recalculation), so migrated or historical fee snapshots stay honest. Admin create / edit-price take
-menu price, travel, and sticky platform fee **percentages** (cook / customer, 0–100; defaults 18 / 4). Fee cents, payout, provider estimate,
-and customer total (including `totalWithoutDiscountsCentsCustomer` and, when already set, `totalCentsCustomer` with any gift/promo discount
-cents preserved) are always recalculated on write via `bookingRequestOfferPriceCalculate`. Edit-price shows a live € preview with deltas vs
-the stored snapshot. Edit-price CTA (`.../edit-price`) lives on this tab’s footer only. On dual-accepted offers (`EMPTY` / `SETUP` /
-`PAYED`), menu/travel/fee-% edits use `bookingRequestOfferAmendmentCreate` (cook must accept) or `bookingRequestOfferAmendmentApply` (bypass
-cook approval). Both reuse amendment Stripe rules (`EMPTY` cancel and re-prepare, `SETUP` columns only, `PAYED` refund/top-up). UI: on save,
-a confirm dialog shows price/payment consequences and two explicit actions (**Propose to chef** / **Apply now (skip cook approval)**). No
-feature toggle. Same path applies from request edit for venue/participants. Blocked for `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED` and
-when preparations are locked (clear prep first). Pre-accept price edits still use `bookingRequestOfferUpdate`. Fee percents stay sticky on
-later cook price updates, customer accept, and amendments.
+`CostBreakdownPanel` (promo / gift negatives, optional before-discount, total, muted travel-included footer; gift amount prefers
+`giftCardAppliedCents` after charge so the line survives a drained balance). **Cook view** renders `BookingRequestOfferCostOverviewPanel`
+(`viewer: admin`) without an extra card wrapper (panel already has bordered sections) using **stored** offer fee amounts (not a live
+recalculation), so migrated or historical fee snapshots stay honest; cook overview stays pre-discount by design. Admin create / edit-price
+take menu price, travel, and sticky platform fee **percentages** (cook / customer, 0–100; defaults 18 / 4). Fee cents, payout, provider
+estimate, and customer total (including `totalWithoutDiscountsCentsCustomer` and, when already set, `totalCentsCustomer` with any gift/promo
+discount cents preserved) are always recalculated on write via `bookingRequestOfferPriceCalculate`. Edit-price shows a live € preview with
+deltas vs the stored snapshot. Edit-price CTA (`.../edit-price`) lives on this tab’s footer only. On dual-accepted offers (`EMPTY` / `SETUP`
+/ `PAYED`), menu/travel/fee-% edits use `bookingRequestOfferAmendmentCreate` (cook must accept) or `bookingRequestOfferAmendmentApply`
+(bypass cook approval). Both reuse amendment Stripe rules (`EMPTY` cancel and re-prepare, `SETUP` columns only, `PAYED` refund/top-up). UI:
+on save, a confirm dialog shows price/payment consequences and two explicit actions (**Propose to chef** / **Apply now (skip cook
+approval)**). No feature toggle. Same path applies from request edit for venue/participants. Blocked for `TRANSFERRED` /
+`PAYED_OUT_OF_SYSTEM` / `FAILED` and when preparations are locked (clear prep first). Pre-accept price edits still use
+`bookingRequestOfferUpdate`. Fee percents stay sticky on later cook price updates, customer accept, and amendments.
 
 **Menu** holds only configured / suggested menus (`OfferMenuConfigured` or `CookMenuCard` grid to `/admin/menus/$menuId`) — no cook/customer
 header. When a customer has frozen a configured menu, admins can open `.../edit-configured-menu` to replace title, description, and

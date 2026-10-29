@@ -156,7 +156,8 @@ participants / costs / configured-menu snapshots stay unprefixed.
    `exactEventAddress` redacts street until dual-accept; offer context also gates `invoiceAddress` the same way (see Location above)
 6. Offer timeline projects onto `messages: [ChatMessage!]!` (`ChatMessageUser` + `ChatMessageBookingRequestOfferEvent`)
 7. Derived statuses: `bookingRequestStatusDerive` / `bookingRequestOfferStatusDerive` in `src/server/domain/bookingRequest.ts`
-8. `CostBreakdown` with `amountCents` (discounts negative) via `bookingRequestOfferCostBreakdownBuild`
+8. `CostBreakdown` with `amountCents` (discounts negative) via `bookingRequestOfferCostBreakdownBuild` — promo uses code `amountCents`; gift
+   uses `offer.giftCardAppliedCents` when set, otherwise live card `balanceCents` (preview before accept)
 9. Mappers: `toGqlUserBookingRequest*`, `toGqlCookBookingRequest*`, `toGqlAdminBookingRequest*`, plus public cook/user/menu helpers
 10. Cook pool + customer list/detail + admin list/detail/offers are wired; admin overview/list/create/detail/**edit**/offer create+edit UI
     live (publication approve on blocked large-group requests); admin ops mutations for request update + offer create/update (menu + travel

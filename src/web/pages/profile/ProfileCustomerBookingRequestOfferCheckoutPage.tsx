@@ -4,12 +4,13 @@ import { lazy, Suspense, useEffect, useEffectEvent, useRef, useState } from 'rea
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { formatCurrency, toStripeCountryCode, userDisplayName } from '../../../shared';
+import { toStripeCountryCode, userDisplayName } from '../../../shared';
 import { bookingRequestCheckoutFunnelArea } from '../../../shared/bookingRequestCheckoutFunnel';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/base/avatar';
 import { Button } from '../../components/base/button';
 import { StatusAlert } from '../../components/base/status-alert';
 import { CookProfileTags } from '../../components/CookProfileTags';
+import { CostBreakdownPanel } from '../../components/CostBreakdownPanel';
 import type {
     GqlCInvoiceAddressInput,
     GqlCProfileCustomerBookingRequestOfferCheckoutPageQuery,
@@ -126,31 +127,14 @@ function CheckoutMenuSummary({ menu, locale }: { menu: NonNullable<CheckoutOffer
 }
 
 function OfferCostSummary({ offer, locale }: { offer: CheckoutOffer; locale: Locale }) {
-    const lines = offer.costBreakdown.lineItems;
-    const total = offer.costBreakdown.total;
-    const beforeDiscount = offer.costBreakdown.totalBeforeDiscount;
-
     return (
-        <div className="grid gap-2 rounded-lg border border-border bg-secondary/40 p-4 text-sm">
-            {lines.map((line) => (
-                <div key={line.title} className="flex items-baseline justify-between gap-4">
-                    <span className="text-muted-foreground">{line.title}</span>
-                    <span className="font-medium tabular-nums">{formatCurrency(line.amountCents, { locale })}</span>
-                </div>
-            ))}
-            {beforeDiscount ? (
-                <div className="flex items-baseline justify-between gap-4 border-t border-border pt-2 text-muted-foreground">
-                    <span>{beforeDiscount.title}</span>
-                    <span className="tabular-nums">{formatCurrency(beforeDiscount.amountCents, { locale })}</span>
-                </div>
-            ) : null}
-            {total ? (
-                <div className="flex items-baseline justify-between gap-4 border-t border-border pt-2 font-medium">
-                    <span>{total.title}</span>
-                    <span className="tabular-nums">{formatCurrency(total.amountCents, { locale })}</span>
-                </div>
-            ) : null}
-        </div>
+        <CostBreakdownPanel
+            className="rounded-lg border border-border bg-secondary/40 p-4"
+            locale={locale}
+            lineItems={offer.costBreakdown.lineItems}
+            totalBeforeDiscount={offer.costBreakdown.totalBeforeDiscount}
+            total={offer.costBreakdown.total}
+        />
     );
 }
 

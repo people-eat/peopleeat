@@ -25,7 +25,8 @@ export type BookingRequestOfferCostBreakdownBuildInput = {
     totalCentsCustomer?: number | null;
     participantCount?: number | null;
     promoCode?: { redeemCode: string; amountCents: number } | null;
-    giftCard?: { redeemCode: string; balanceCents: number } | null;
+    /** Applied or preview gift amount (not necessarily the card's remaining balance). */
+    giftCard?: { redeemCode: string; amountCents: number } | null;
 };
 
 /**
@@ -34,7 +35,7 @@ export type BookingRequestOfferCostBreakdownBuildInput = {
  */
 export function bookingRequestOfferCostBreakdownBuild(input: BookingRequestOfferCostBreakdownBuildInput): CostBreakdown {
     const promoCents = input.promoCode?.amountCents ?? 0;
-    const giftCents = input.giftCard?.balanceCents ?? 0;
+    const giftCents = input.giftCard?.amountCents ?? 0;
     const discountCents = promoCents + giftCents;
     const computedTotal = Math.max(0, input.totalWithoutDiscountsCentsCustomer - discountCents);
     const totalCents = input.totalCentsCustomer ?? computedTotal;

@@ -143,6 +143,7 @@ function OfferCostSummary({ offer, locale }: { offer: CustomerOffer; locale: Loc
                 <CostBreakdownPanel
                     locale={locale}
                     lineItems={offer.costBreakdown.lineItems}
+                    totalBeforeDiscount={offer.costBreakdown.totalBeforeDiscount}
                     total={offer.costBreakdown.total}
                     footer={
                         {

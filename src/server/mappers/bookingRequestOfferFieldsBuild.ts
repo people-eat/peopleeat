@@ -117,6 +117,7 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
         now,
     });
 
+    const giftAmountCents = offer.giftCardAppliedCents > 0 ? offer.giftCardAppliedCents : (giftCard?.balanceCents ?? 0);
     const costBreakdown = bookingRequestOfferCostBreakdownBuild({
         locale,
         menuPriceCents: offer.menuPriceCents,
@@ -127,7 +128,7 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
         totalCentsCustomer: offer.totalCentsCustomer,
         participantCount,
         promoCode,
-        giftCard,
+        giftCard: giftCard != null && giftAmountCents > 0 ? { redeemCode: giftCard.redeemCode, amountCents: giftAmountCents } : null,
     });
 
     const pendingDelta =

@@ -31,7 +31,7 @@ describe('bookingRequestOfferCostBreakdownBuild', () => {
             paymentProviderFeeCents: 0,
             totalWithoutDiscountsCentsCustomer: 20_000,
             promoCode: { redeemCode: 'SAVE10', amountCents: 1_000 },
-            giftCard: { redeemCode: 'GIFT-1', balanceCents: 2_500 },
+            giftCard: { redeemCode: 'GIFT-1', amountCents: 2_500 },
             participantCount: 4,
         });
 
@@ -40,5 +40,25 @@ describe('bookingRequestOfferCostBreakdownBuild', () => {
         expect(breakdown.totalBeforeDiscount?.amountCents).toBe(20_000);
         expect(breakdown.total?.amountCents).toBe(16_500);
         expect(breakdown.totalPerPerson?.amountCents).toBe(4_125);
+    });
+
+    it('keeps a gift line from applied cents even when the card balance is drained', () => {
+        const breakdown = bookingRequestOfferCostBreakdownBuild({
+            locale: 'en',
+            menuPriceCents: 20_000,
+            travelExpensesCents: 0,
+            platformFeeCentsCustomer: 0,
+            paymentProviderFeeCents: 0,
+            totalWithoutDiscountsCentsCustomer: 20_000,
+            totalCentsCustomer: 15_000,
+            giftCard: { redeemCode: 'GIFT-1', amountCents: 5_000 },
+        });
+
+        expect(breakdown.lineItems.at(-1)).toEqual({
+            title: 'Voucher GIFT-1',
+            amountCents: -5_000,
+        });
+        expect(breakdown.totalBeforeDiscount?.amountCents).toBe(20_000);
+        expect(breakdown.total?.amountCents).toBe(15_000);
     });
 });
