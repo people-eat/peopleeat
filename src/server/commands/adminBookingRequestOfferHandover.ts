@@ -430,6 +430,11 @@ export async function adminBookingRequestOfferHandover(
                 .set({
                     userAccepted: false,
                     cookAccepted: false,
+                    paymentStatus: 'EMPTY',
+                    paymentData: null,
+                    paymentDateTime: null,
+                    plannedPaymentPullDateTime: null,
+                    plannedPayoutDateTime: null,
                 })
                 .where(eq(bookingRequestOffers.bookingRequestOfferId, sourceOfferId));
 

@@ -11,6 +11,7 @@ import {
     cooks,
     fileUploads,
 } from '../db/schema';
+import { bookingRequestOfferStatusDerive } from '../domain/bookingRequest';
 import { toGqlOfferChatMessages } from '../mappers/toGqlOfferChatMessages';
 import { toGqlPublicUser } from '../mappers/toGqlPublicUser';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
@@ -188,6 +189,29 @@ describe('adminBookingRequestOfferHandover', () => {
             .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
         expect(oldOffer?.userAccepted).toBe(false);
         expect(oldOffer?.cookAccepted).toBe(false);
+        expect(oldOffer?.paymentStatus).toBe('EMPTY');
+        expect(oldOffer?.paymentData).toBeNull();
+        expect(oldOffer?.paymentDateTime).toBeNull();
+        expect(oldOffer?.plannedPaymentPullDateTime).toBeNull();
+        expect(oldOffer?.plannedPayoutDateTime).toBeNull();
+
+        const [bookingRequest] = await testDb
+            .select()
+            .from(bookingRequests)
+            .where(eq(bookingRequests.bookingRequestId, oldOffer!.bookingRequestId));
+        expect(
+            bookingRequestOfferStatusDerive({
+                userAccepted: oldOffer!.userAccepted,
+                cookAccepted: oldOffer!.cookAccepted,
+                userRequestedMenuAdjustments: oldOffer!.userRequestedMenuAdjustments,
+                paymentStatus: oldOffer!.paymentStatus,
+                paymentDataPresent: Boolean(oldOffer!.paymentData),
+                bookingRequestCanceledAt: bookingRequest!.canceledAt,
+                bookingRequestExpiresAt: bookingRequest!.expiresAt,
+                bookingRequestDateTime: bookingRequest!.dateTime,
+                hasAcceptedAlternative: true,
+            }),
+        ).toBe('USER_CHOOSE_DIFFERENT_OFFER');
 
         const [newOffer] = await testDb
             .select()
@@ -297,6 +321,13 @@ describe('adminBookingRequestOfferHandover', () => {
         expect(admin.serverRuntime.stripe.transferCreate).toHaveBeenCalledWith(
             expect.objectContaining({ destinationAccountId: 'acct_target' }),
         );
+
+        const [oldOffer] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(oldOffer?.paymentStatus).toBe('EMPTY');
+        expect(oldOffer?.paymentData).toBeNull();
 
         const [newOffer] = await testDb
             .select()

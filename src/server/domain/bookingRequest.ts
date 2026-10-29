@@ -196,7 +196,7 @@ export function bookingRequestOfferStatusDerive(input: BookingRequestOfferStatus
         return 'PAYMENT_PULL_PENDING';
     }
 
-    if (input.paymentStatus !== 'EMPTY' && input.paymentStatus !== 'SETUP' && now <= eventDate) {
+    if (dualAccepted && input.paymentStatus !== 'EMPTY' && input.paymentStatus !== 'SETUP' && now <= eventDate) {
         return 'EVENT_PENDING';
     }
 

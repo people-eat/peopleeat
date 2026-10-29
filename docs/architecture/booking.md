@@ -46,7 +46,9 @@ dual-accept gate exposes `invoiceAddress` on `CookBookingRequestOfferContext` (n
 
 Nullable booleans on the offer: `null` = pending, `true` = accepted, `false` = declined. Typical create path sets `cookAccepted: true` and
 leaves `userAccepted` null. Customer edits can clear cook acceptance back to null. **Statuses are derived** (`bookingRequestStatusDerive` /
-`bookingRequestOfferStatusDerive`), not stored.
+`bookingRequestOfferStatusDerive`), not stored. Paid lifecycle statuses (`EVENT_PENDING`, `COMPLETED`, deposit / pull pending) require both
+accept flags `true`. Admin handover also clears payment columns on the closed offer (`EMPTY` / null schedule timestamps) so it derives
+`USER_CHOOSE_DIFFERENT_OFFER`, not a paid status.
 
 ### One accepted offer
 

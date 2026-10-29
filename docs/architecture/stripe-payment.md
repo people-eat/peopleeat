@@ -75,13 +75,15 @@ menu/travel on dual-accepted offers is rejected.
 
 ### Concierge offer handover money
 
-`AdminMutation.bookingRequestOfferHandover` closes a dual-accepted offer and opens another for a different cook (event still in the future):
+`AdminMutation.bookingRequestOfferHandover` closes a dual-accepted offer and opens another for a different cook (event still in the future).
+After money teardown / re-route, the **source** offer is reset to `paymentStatus: EMPTY` with `paymentData` and payment/payout schedule
+timestamps cleared (accept flags both `false`). The **target** offer carries the live payment state.
 
 | Old `paymentStatus`          | Behavior                                                                                                                                                      |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `EMPTY` / `SETUP` / `FAILED` | Cancel unpaid PI when present; cancel pull jobs; prepare payment for the new cook                                                                             |
 | `PAYED`                      | `transferReverse` on stored `transferId` / `extraTransferId` (or destination transfer lookup), then `transferCreate` to the new cook; new offer stays `PAYED` |
-| `PAYED_OUT_OF_SYSTEM`        | DB-only after admin confirm                                                                                                                                   |
+| `PAYED_OUT_OF_SYSTEM`        | DB-only after admin confirm; new offer stays `PAYED_OUT_OF_SYSTEM`                                                                                            |
 | `TRANSFERRED`                | Blocked (bank payout already left Connect)                                                                                                                    |
 
 Top-up Connect transfers persist as `paymentData.extraTransferIds` (and legacy `extraTransferId` as the latest). `paymentIntentRefund`

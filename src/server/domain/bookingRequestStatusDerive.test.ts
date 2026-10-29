@@ -173,6 +173,41 @@ describe('bookingRequestOfferStatusDerive', () => {
             }),
         ).toBe('USER_DECLINED');
     });
+
+    it('returns USER_CHOOSE_DIFFERENT_OFFER after handover closes a paid offer', () => {
+        expect(
+            bookingRequestOfferStatusDerive({
+                ...base,
+                userAccepted: false,
+                cookAccepted: false,
+                paymentStatus: 'PAYED_OUT_OF_SYSTEM',
+                hasAcceptedAlternative: true,
+            }),
+        ).toBe('USER_CHOOSE_DIFFERENT_OFFER');
+
+        expect(
+            bookingRequestOfferStatusDerive({
+                ...base,
+                userAccepted: false,
+                cookAccepted: false,
+                paymentStatus: 'PAYED',
+                paymentDataPresent: true,
+                hasAcceptedAlternative: true,
+            }),
+        ).toBe('USER_CHOOSE_DIFFERENT_OFFER');
+    });
+
+    it('returns EVENT_PENDING only when dual-accepted and paid', () => {
+        expect(
+            bookingRequestOfferStatusDerive({
+                ...base,
+                userAccepted: true,
+                cookAccepted: true,
+                paymentStatus: 'PAYED',
+                paymentDataPresent: true,
+            }),
+        ).toBe('EVENT_PENDING');
+    });
 });
 
 describe('bookingRequestOfferListBucketDerive', () => {

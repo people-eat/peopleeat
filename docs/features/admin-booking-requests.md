@@ -111,7 +111,8 @@ before `ADMIN_HANDED_OVER_TO_COOK`; prior cook messages carry `handedOverFrom` p
 events are not copied. New offers skip the usual request-message seed when chat is copied (it is already in the transcript). Timeline:
 `ADMIN_HANDED_OVER_CLOSED` on the old offer, `ADMIN_HANDED_OVER_TO_COOK` (with `chatCopied` when messages were copied) on the new one.
 Money: unpaid teardown + re-prepare; `PAYED` reverse Connect transfer(s) then transfer to the new cook; `PAYED_OUT_OF_SYSTEM` after explicit
-confirm; `TRANSFERRED` blocked. See [stripe-payment.md](../architecture/stripe-payment.md).
+confirm; `TRANSFERRED` blocked. The closed offer’s payment columns are cleared (`EMPTY`, no `paymentData` / schedule timestamps). See
+[stripe-payment.md](../architecture/stripe-payment.md).
 
 Payout actions when due (each with a confirmation dialog): **release** via Stripe Connect payout (gates on Connect readiness), **check if
 payout already took place** (asks Stripe for a matching Connect payout; marks `TRANSFERRED` only when found, otherwise leaves the offer
