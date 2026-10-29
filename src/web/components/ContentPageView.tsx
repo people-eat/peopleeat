@@ -36,6 +36,8 @@ export type ContentPageViewModel = {
     heroVariant?: ContentPageHeroVariant;
     sections: ContentSection[];
     featuredCooks?: ReadonlyArray<SectionFeaturedCook>;
+    /** Show travel-origin city on featured cook cards. Default true; partners may turn off. */
+    featuredCooksShowCity?: boolean;
     // Curated city/partner/occasion testimonials, shown after featured cooks.
     // Hidden when empty — see `SectionPageTestimonials`.
     testimonials?: ReadonlyArray<SectionPageTestimonial>;
@@ -145,7 +147,7 @@ export function ContentPageView({
                 ) : null}
                 {page.featuredCooks ? (
                     <div data-content-preview-anchor="featured-cooks">
-                        <SectionFeaturedCooks cooks={page.featuredCooks} locale={locale} />
+                        <SectionFeaturedCooks cooks={page.featuredCooks} locale={locale} showCity={page.featuredCooksShowCity} />
                     </div>
                 ) : null}
                 {page.testimonials ? (

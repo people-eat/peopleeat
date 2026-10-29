@@ -28,6 +28,7 @@ function partnerInput(overrides: Partial<GqlSPartnerUpsert> = {}): GqlSPartnerUp
         heroImageOverlay: true,
         firstSectionImageOverlay: true,
         howItWorksAlternativeMedia: false,
+        featuredCooksShowCity: true,
         sections: [],
         ...overrides,
     };

@@ -4,7 +4,16 @@ import { PublicCookCard } from '../components/PublicCookCard';
 
 export type SectionFeaturedCook = PublicCookCardCook;
 
-export function SectionFeaturedCooks({ cooks, locale }: { cooks: ReadonlyArray<SectionFeaturedCook>; locale: Locale }) {
+export function SectionFeaturedCooks({
+    cooks,
+    locale,
+    showCity = true,
+}: {
+    cooks: ReadonlyArray<SectionFeaturedCook>;
+    locale: Locale;
+    /** Show travel-origin city under the cook name. Partners may turn off. */
+    showCity?: boolean;
+}) {
     if (cooks.length === 0) return null;
 
     return (
@@ -13,7 +22,7 @@ export function SectionFeaturedCooks({ cooks, locale }: { cooks: ReadonlyArray<S
             <ul className="mt-10 grid grid-cols-1 gap-4 @sm:grid-cols-2 @md:grid-cols-3 @lg:grid-cols-4">
                 {cooks.map((cook) => (
                     <li key={cook.cookId}>
-                        <PublicCookCard cook={cook} />
+                        <PublicCookCard cook={cook} showCity={showCity} />
                     </li>
                 ))}
             </ul>

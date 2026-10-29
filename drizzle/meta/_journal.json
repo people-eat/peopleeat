@@ -120,6 +120,13 @@
             "when": 1793093655381,
             "tag": "0016_adorable_wither",
             "breakpoints": true
+        },
+        {
+            "idx": 17,
+            "version": "7",
+            "when": 1793293063749,
+            "tag": "0017_parched_nitro",
+            "breakpoints": true
         }
     ]
 }

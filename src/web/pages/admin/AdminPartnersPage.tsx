@@ -81,6 +81,7 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                     heroImageOverlay: true,
                     firstSectionImageOverlay: true,
                     howItWorksAlternativeMedia: false,
+                    featuredCooksShowCity: true,
                     sections: [],
                     publishedAt: null,
                 },

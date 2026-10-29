@@ -20,6 +20,7 @@ export function PartnerPage({ data }: { data: GqlCPublicPartnerPageQuery }) {
                 heroImageOverlay: partner.heroImageOverlay,
                 sections: contentSectionsFromGql(partner.sections),
                 featuredCooks: partner.featuredCooks,
+                featuredCooksShowCity: partner.featuredCooksShowCity,
                 testimonials: partner.testimonials,
                 chefForAnyOccasion: {
                     displayName: partner.name,

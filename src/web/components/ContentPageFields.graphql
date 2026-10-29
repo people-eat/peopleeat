@@ -289,6 +289,7 @@ fragment AdminPartnerFields on AdminPartner {
     heroImageOverlay
     firstSectionImageOverlay
     howItWorksAlternativeMedia
+    featuredCooksShowCity
     locationAddress {
         displayText
         latitude
@@ -351,6 +352,7 @@ fragment PublicPartnerFields on PublicPartner {
     heroImageOverlay
     firstSectionImageOverlay
     howItWorksAlternativeMedia
+    featuredCooksShowCity
     locationAddress {
         displayText
         latitude

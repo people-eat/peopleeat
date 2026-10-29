@@ -54,9 +54,9 @@ function CookCardRating({ rating, locale }: { rating: NonNullable<PublicCookCard
     );
 }
 
-function PublicCookCardBody({ cook, locale }: { cook: PublicCookCardCook; locale: Locale }) {
+function PublicCookCardBody({ cook, locale, showCity }: { cook: PublicCookCardCook; locale: Locale; showCity: boolean }) {
     const name = cook.user.display;
-    const city = cook.city?.trim() || null;
+    const city = showCity ? cook.city?.trim() || null : null;
 
     return (
         <>
@@ -103,10 +103,13 @@ export function PublicCookCard({
     cook,
     className,
     interactive = true,
+    showCity = true,
 }: {
     cook: PublicCookCardCook;
     className?: string;
     interactive?: boolean;
+    /** Show travel-origin city under the name. Partners may turn off. */
+    showCity?: boolean;
 }) {
     const locale = useLocale();
     const cardClassName = cn(
@@ -114,7 +117,7 @@ export function PublicCookCard({
         interactive && bookingRequestCardInteractionClassName,
         className,
     );
-    const body: ReactNode = <PublicCookCardBody cook={cook} locale={locale} />;
+    const body: ReactNode = <PublicCookCardBody cook={cook} locale={locale} showCity={showCity} />;
 
     if (!interactive) {
         return <div className={cardClassName}>{body}</div>;

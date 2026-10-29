@@ -121,6 +121,7 @@ export function ContentPageEditor({
     tab,
     user,
     featuredCooks,
+    featuredCooksShowCity,
     chefForAnyOccasion,
     formatsSection,
     heroImageFallbackUrl,
@@ -149,6 +150,7 @@ export function ContentPageEditor({
     tab: ContentPageEditorTab;
     user: PublicHeaderUser;
     featuredCooks?: ContentPageViewModel['featuredCooks'];
+    featuredCooksShowCity?: ContentPageViewModel['featuredCooksShowCity'];
     chefForAnyOccasion?: ContentPageViewModel['chefForAnyOccasion'];
     formatsSection?: ContentPageViewModel['formatsSection'];
     heroImageFallbackUrl?: ContentPageViewModel['heroImageFallbackUrl'];
@@ -265,6 +267,7 @@ export function ContentPageEditor({
                 heroVariant,
                 sections: values.sections,
                 featuredCooks,
+                featuredCooksShowCity,
                 chefForAnyOccasion,
                 formatsSection,
                 formatsSectionForceShow: Boolean(formatsSection),

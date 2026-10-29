@@ -2059,6 +2059,7 @@ export interface GqlSAdminPartner {
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    featuredCooksShowCity: Scalars['Boolean']['output'];
     firstSectionBodyDe: Scalars['String']['output'];
     firstSectionBodyEn: Scalars['String']['output'];
     firstSectionCtaUrl?: Maybe<Scalars['String']['output']>;
@@ -4228,6 +4229,7 @@ export interface GqlSPartnerTestimonial {
 export type GqlSPartnerUpsert = {
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
+    featuredCooksShowCity: Scalars['Boolean']['input'];
     firstSectionBodyDe: Scalars['String']['input'];
     firstSectionBodyEn: Scalars['String']['input'];
     firstSectionCtaUrl?: InputMaybe<Scalars['String']['input']>;
@@ -4487,6 +4489,7 @@ export interface GqlSPublicPartner {
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
     featuredCooks: Array<GqlSPublicCook>;
+    featuredCooksShowCity: Scalars['Boolean']['output'];
     firstSectionBodyDe: Scalars['String']['output'];
     firstSectionBodyEn: Scalars['String']['output'];
     firstSectionCtaUrl?: Maybe<Scalars['String']['output']>;
@@ -8272,6 +8275,7 @@ export type GqlSAdminPartnerResolvers<
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    featuredCooksShowCity?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     firstSectionBodyDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionBodyEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionCtaUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
@@ -10503,6 +10507,7 @@ export type GqlSPublicPartnerResolvers<
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     featuredCooks?: Resolver<Array<GqlSResolversTypes['PublicCook']>, ParentType, ContextType>;
+    featuredCooksShowCity?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     firstSectionBodyDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionBodyEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     firstSectionCtaUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
@@ -13021,6 +13026,7 @@ export function GqlSPartnerUpsertSchema(): z.ZodObject<Properties<GqlSPartnerUps
     return z.object({
         descriptionDe: z.string(),
         descriptionEn: z.string(),
+        featuredCooksShowCity: z.boolean(),
         firstSectionBodyDe: z.string(),
         firstSectionBodyEn: z.string(),
         firstSectionCtaUrl: z.string().nullish(),

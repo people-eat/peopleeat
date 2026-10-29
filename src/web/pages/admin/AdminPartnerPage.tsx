@@ -56,6 +56,7 @@ type PartnerEditorValues = ContentPageEditorValues & {
     heroImageOverlay: boolean;
     firstSectionImageOverlay: boolean;
     howItWorksAlternativeMedia: boolean;
+    featuredCooksShowCity: boolean;
     locationAddress: GqlCUserBookingRequestExactEventAddressInput | null;
     locationSearchText: string;
     promoCodeId: string | null;
@@ -122,6 +123,7 @@ function valuesFromPartner(partner: PartnerRow): PartnerEditorValues {
         heroImageOverlay: partner.heroImageOverlay,
         firstSectionImageOverlay: partner.firstSectionImageOverlay,
         howItWorksAlternativeMedia: partner.howItWorksAlternativeMedia,
+        featuredCooksShowCity: partner.featuredCooksShowCity,
         locationAddress,
         locationSearchText: locationAddress?.displayText ?? '',
         promoCodeId: partner.promoCodeId ?? null,
@@ -324,6 +326,7 @@ export function AdminPartnerPage({
                 tab={tab}
                 user={data.currentSession.user}
                 featuredCooks={previewCooks}
+                featuredCooksShowCity={values.featuredCooksShowCity}
                 heroImageOverlay={values.heroImageOverlay}
                 howItWorks
                 howItWorksHideCta
@@ -634,6 +637,42 @@ export function AdminPartnerPage({
                             </CardContent>
                         </Card>
 
+                        <Card className="gap-4 py-4" data-content-editor-anchor="featured-cooks-show-city">
+                            <CardHeader className="px-4">
+                                <CardTitle>{{ de: 'Koch-Karten', en: 'Cook cards' }[locale]}</CardTitle>
+                                <CardDescription>
+                                    {
+                                        {
+                                            de: 'Steuert, was auf den hervorgehobenen Koch-Karten der Partnerseite erscheint.',
+                                            en: 'Controls what appears on featured cook cards on the partner page.',
+                                        }[locale]
+                                    }
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex flex-col gap-3 px-4">
+                                <label className="flex items-start gap-2 text-sm">
+                                    <Checkbox
+                                        checked={values.featuredCooksShowCity}
+                                        onCheckedChange={(checked) => patchPartnerValues({ featuredCooksShowCity: checked === true })}
+                                        className="mt-0.5"
+                                    />
+                                    <span className="flex flex-col gap-0.5">
+                                        <span className="font-medium">
+                                            {{ de: 'Stadt auf Koch-Karten anzeigen', en: 'Show city on cook cards' }[locale]}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {
+                                                {
+                                                    de: 'Reise-Ursprungsstadt des Kochs unter dem Namen. Ausschalten, wenn die Stadt für diesen Partner irreführend ist.',
+                                                    en: 'Cook travel-origin city under the name. Turn off when city is misleading for this partner.',
+                                                }[locale]
+                                            }
+                                        </span>
+                                    </span>
+                                </label>
+                            </CardContent>
+                        </Card>
+
                         <ContentPageFeaturedCooksEditor
                             locale={locale}
                             assignedIds={assignedIds}
@@ -740,6 +779,7 @@ export function AdminPartnerPage({
                                 heroImageOverlay: current.heroImageOverlay,
                                 firstSectionImageOverlay: current.firstSectionImageOverlay,
                                 howItWorksAlternativeMedia: current.howItWorksAlternativeMedia,
+                                featuredCooksShowCity: current.featuredCooksShowCity,
                                 locationAddress: current.locationAddress,
                                 promoCodeId: current.promoCodeId,
                                 sections: contentSectionsToInput(current.sections),

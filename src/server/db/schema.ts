@@ -1211,6 +1211,9 @@ export const partners = pgTable(
         firstSectionImageOverlay: boolean().notNull().default(true),
         // HowItWorks alternative assets (holiday-home style). See partners.md.
         howItWorksAlternativeMedia: boolean().notNull().default(false),
+        // Show travel-origin city on featured cook cards. Admins turn off when
+        // cook city is misleading for this partner. See docs/features/partners.md.
+        featuredCooksShowCity: boolean().notNull().default(true),
         // Optional partner location (venue / property address). Used by
         // `/booking-request/plan?partnerId=…` and reusable elsewhere.
         // URL venue params override on the plan funnel. See booking-request-plan.md.

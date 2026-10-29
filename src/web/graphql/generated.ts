@@ -2062,6 +2062,7 @@ export interface GqlCAdminPartner {
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    featuredCooksShowCity: Scalars['Boolean']['output'];
     firstSectionBodyDe: Scalars['String']['output'];
     firstSectionBodyEn: Scalars['String']['output'];
     firstSectionCtaUrl?: Maybe<Scalars['String']['output']>;
@@ -4231,6 +4232,7 @@ export interface GqlCPartnerTestimonial {
 export type GqlCPartnerUpsert = {
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
+    featuredCooksShowCity: Scalars['Boolean']['input'];
     firstSectionBodyDe: Scalars['String']['input'];
     firstSectionBodyEn: Scalars['String']['input'];
     firstSectionCtaUrl?: InputMaybe<Scalars['String']['input']>;
@@ -4490,6 +4492,7 @@ export interface GqlCPublicPartner {
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
     featuredCooks: Array<GqlCPublicCook>;
+    featuredCooksShowCity: Scalars['Boolean']['output'];
     firstSectionBodyDe: Scalars['String']['output'];
     firstSectionBodyEn: Scalars['String']['output'];
     firstSectionCtaUrl?: Maybe<Scalars['String']['output']>;
@@ -6491,6 +6494,7 @@ export type GqlCAdminPartnerFieldsFragment = {
     heroImageOverlay: boolean;
     firstSectionImageOverlay: boolean;
     howItWorksAlternativeMedia: boolean;
+    featuredCooksShowCity: boolean;
     promoCodeId: string | null;
     publishedAt: string | null;
     createdAt: string;
@@ -6622,6 +6626,7 @@ export type GqlCPublicPartnerFieldsFragment = {
     heroImageOverlay: boolean;
     firstSectionImageOverlay: boolean;
     howItWorksAlternativeMedia: boolean;
+    featuredCooksShowCity: boolean;
     publishedAt: string | null;
     createdAt: string;
     updatedAt: string;
@@ -7917,6 +7922,7 @@ export type GqlCBookingRequestPlanPageQuery = {
             heroImageOverlay: boolean;
             firstSectionImageOverlay: boolean;
             howItWorksAlternativeMedia: boolean;
+            featuredCooksShowCity: boolean;
             publishedAt: string | null;
             createdAt: string;
             updatedAt: string;
@@ -8766,6 +8772,7 @@ export type GqlCPublicPartnerPageQuery = {
             heroImageOverlay: boolean;
             firstSectionImageOverlay: boolean;
             howItWorksAlternativeMedia: boolean;
+            featuredCooksShowCity: boolean;
             publishedAt: string | null;
             createdAt: string;
             updatedAt: string;
@@ -14680,6 +14687,7 @@ export type GqlCAdminPartnerPageQuery = {
                     heroImageOverlay: boolean;
                     firstSectionImageOverlay: boolean;
                     howItWorksAlternativeMedia: boolean;
+                    featuredCooksShowCity: boolean;
                     promoCodeId: string | null;
                     publishedAt: string | null;
                     createdAt: string;
@@ -14940,6 +14948,7 @@ export type GqlCAdminPartnerPageUpdatesSubscription = {
             heroImageOverlay: boolean;
             firstSectionImageOverlay: boolean;
             howItWorksAlternativeMedia: boolean;
+            featuredCooksShowCity: boolean;
             promoCodeId: string | null;
             publishedAt: string | null;
             createdAt: string;
@@ -22993,6 +23002,7 @@ export const AdminPartnerFieldsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'featuredCooksShowCity' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'locationAddress' },
@@ -23327,6 +23337,7 @@ export const PublicPartnerFieldsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'featuredCooksShowCity' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'locationAddress' },
@@ -38756,6 +38767,7 @@ export const BookingRequestPlanPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'featuredCooksShowCity' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'locationAddress' },
@@ -42067,6 +42079,7 @@ export const PublicPartnerPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'featuredCooksShowCity' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'locationAddress' },
@@ -61874,6 +61887,7 @@ export const AdminPartnerPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'featuredCooksShowCity' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'locationAddress' },
@@ -62707,6 +62721,7 @@ export const AdminPartnerPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'featuredCooksShowCity' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'locationAddress' },

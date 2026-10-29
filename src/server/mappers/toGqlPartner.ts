@@ -30,6 +30,7 @@ function partnerContentFields(row: Partner) {
         heroImageOverlay: row.heroImageOverlay,
         firstSectionImageOverlay: row.firstSectionImageOverlay,
         howItWorksAlternativeMedia: row.howItWorksAlternativeMedia,
+        featuredCooksShowCity: row.featuredCooksShowCity,
         locationAddress: row.locationAddress ? toGqlCookTravelOriginAddress(row.locationAddress) : null,
         sections: row.sections.map(toGqlContentSection),
         publishedAt: row.publishedAt,
