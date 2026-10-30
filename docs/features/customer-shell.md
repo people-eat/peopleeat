@@ -89,7 +89,12 @@ booking requests (full subtree), gift cards, and support. Other `/profile/*` pat
   Offer tab (same pattern as cook meal/menu view). Do not use CSS sticky for shell action bars — see
   [conventions](../conventions.md#profile-pinned-action-footers).
 - Admin footer link: `isAdmin` from the profile loader.
-- Overview model: `src/web/pages/profilePageCustomerOverview.ts` → `ProfilePageCustomer` (Next dinner uses `CustomerBookingRequestCard`).
+- Support nav badge: `CustomerSidebar.graphql` → `User.attentionCounts.supportRequestUnreadCount` (`userAttentionCountsFindOne`), live via
+  `userUpdates`. See [attention.md](../architecture/attention.md).
+- Overview model: `User.attention` (`userAttentionFindMany` → `userAttentionDerive`) supplies the ranked items; wording, tone, and card
+  badge labels come from `src/shared/attentionCopy.ts`. `src/web/pages/profilePageCustomerOverview.ts` attaches routes, caps at three, folds
+  into Next dinner, and picks the create mode → `ProfilePageCustomer` (Next dinner uses `CustomerBookingRequestCard`). See
+  [attention.md](../architecture/attention.md).
 - Key files: `src/web/pages/profile/ProfileLayout.tsx` (`CustomerShell`, `ProfileAssistantPane`), `src/web/components/CustomerSidebar.tsx`,
   `CustomerBreadcrumbs.tsx`, `CustomerBookingRequestCard.tsx`, `AssistantTriggerButton.tsx`, `ProfileAssistantSidebar.tsx`,
   `ProfilePinnedFooterLayout.tsx`, `customerCatalog.ts`, `ProfilePageCustomer.tsx`.

@@ -12,6 +12,7 @@ import {
     bookingRequestOfferPendingCallSlotsCompleteJobsCancel,
 } from './bookingRequestOfferPendingCallSlotsClose';
 import { bookingRequestOfferQueuedJobsCancel } from './bookingRequestOfferQueuedJobsCancel';
+import { bookingRequestPoolCooksPublish } from './bookingRequestPoolCooksPublish';
 import { bookingRequestQueuedJobsCancel } from './bookingRequestQueuedJobsCancel';
 
 export type BookingRequestCancelApplyResult = {
@@ -95,6 +96,7 @@ export async function bookingRequestCancelApply(
         serverRuntime.publish.userUpdates({ userId: customerUserId }),
         ...cookIds.map((cookId) => serverRuntime.publish.userUpdates({ userId: cookId })),
         serverRuntime.publish.adminUpdates(),
+        bookingRequestPoolCooksPublish(serverRuntime, [bookingRequest], cookIds),
     ]);
 
     await userBookingRequestCancelEmailSend(serverRuntime, {

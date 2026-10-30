@@ -33,7 +33,9 @@ hue for banners and chips. Separating status hues from brand tokens keeps “nee
 | `BookingStatusPill` | `src/web/components/BookingStatusPill.tsx`       | Booking request / offer lifecycle labels only — soft yellow/blue/green/purple/red palette          |
 
 Shared maps (`statusIcons`, surface classes) live in `src/web/components/base/status.ts` — keep tones and classes there so Sonner icons and
-future surfaces can stay in sync.
+future surfaces can stay in sync. The `StatusTone` type itself lives in `src/shared/statusTone.ts` (re-exported from `status.ts`) so status
+→ tone helpers in `src/shared` stay platform-neutral — see
+[conventions.md — Status labels, tones, and hues](../conventions.md#status-labels-tones-and-hues).
 
 ### Choosing the right affordance
 
@@ -47,8 +49,8 @@ future surfaces can stay in sync.
 4. **Explain a state** → `StatusAlert` with title + one short sentence. Put buttons in the `action` slot or beside the alert, not inside the
    title.
 5. **Transient feedback after an action** → Sonner toast (already uses the same Lucide set). Do not replace toasts with banners.
-6. **Booking request / offer lifecycle** → `BookingStatusPill` + `bookingRequestStatusClassName` / `bookingRequestOfferStatusClassName` (and
-   role-aware label helpers). Do not remap these through `StatusTone`.
+6. **Booking request / offer lifecycle** → `<BookingStatusPill hue={bookingRequestStatusHue(status)}>` /
+   `bookingRequestOfferStatusHue(status)` plus the audience-aware label helpers. Do not remap these through `StatusTone`.
 
 `Badge` (neutral meta: draft/published, non-unread counts) stays for non-status labels. Use `variant="outline"` for draft/published on cards
 and detail pages — `variant="secondary"` is white (`--secondary`) and disappears on `bg-card`. Do not stretch `Badge variant="destructive"`
@@ -74,20 +76,23 @@ or brand `--accent` into unread bubbles — use `NotificationBadge`.
 
 ## Booking lifecycle pills
 
-Marketplace booking request and offer statuses use a dedicated soft pill palette and role-aware labels (admin / customer / cook). Maps live
-in:
+Marketplace booking request and offer statuses use a dedicated soft pill palette and audience-aware labels (admin / customer / cook). Status
+→ hue + label lives in `src/shared` (platform-neutral, reused by future native clients):
 
-- `src/web/components/bookingRequestStatus.ts`
-- `src/web/components/bookingRequestOfferStatus.ts`
-- `src/web/components/adminBookingRequestOfferStatus.ts`
+- `src/shared/bookingRequestStatus.ts` — `bookingRequestStatusHue`, `bookingRequestStatusLabel(status, locale, audience)`
+- `src/shared/bookingRequestOfferStatus.ts` — `bookingRequestOfferStatusHue`, `bookingRequestOfferStatusLabel(status, locale, audience)`
 
-| Colour                          | Typical statuses                                         |
-| ------------------------------- | -------------------------------------------------------- |
-| `bg-yellow-100 text-yellow-700` | Waiting / cook must confirm / menu changes requested     |
-| `bg-blue-100 text-blue-700`     | Offers available / customer needs to accept              |
-| `bg-green-100 text-green-700`   | Confirmed path (deposit / payment pull / upcoming event) |
-| `bg-purple-100 text-purple-700` | Deposit pending (request) / completed                    |
-| `bg-red-100 text-red-700`       | Declined / expired / canceled / alternative offer chosen |
+Hue → classes lives only in `BookingStatusPill` (`hue` prop is required). Non-lifecycle pills that reuse the palette (cook pool "New
+request" / "Hidden", admin "Notified") pass a hue literal — never raw colour classes.
+
+| Hue      | Classes                         | Typical statuses                                         |
+| -------- | ------------------------------- | -------------------------------------------------------- |
+| `yellow` | `bg-yellow-100 text-yellow-700` | Waiting / cook must confirm / menu changes requested     |
+| `blue`   | `bg-blue-100 text-blue-700`     | Offers available / customer needs to accept              |
+| `green`  | `bg-green-100 text-green-700`   | Confirmed path (deposit / payment pull / upcoming event) |
+| `purple` | `bg-purple-100 text-purple-700` | Deposit pending (request) / completed                    |
+| `red`    | `bg-red-100 text-red-700`       | Declined / expired / canceled / alternative offer chosen |
+| `gray`   | `bg-gray-100 text-gray-700`     | Fallback for an unknown status value                     |
 
 Only statuses that exist in peopleeat’s derived booking enums are mapped.
 
@@ -100,10 +105,11 @@ Only statuses that exist in peopleeat’s derived booking enums are mapped.
 - Menu editor section summary → `StatusAlert` (`warning`) when any course is incomplete
 - Offer menu picker (`CookMenuSelectPanel`) incomplete inventory menus → separate grid below selectable menus; labeled `StatusBadge`
   (`warning`); Select button disabled
-- Wallet page Stripe / approval states → `StatusAlert` (`info` / `warning` / `success`)
+- Wallet page + admin cook finances Stripe / approval states → `StatusAlert` (`info` / `warning` / `success`), tones and copy from
+  `src/shared/cookStripe.ts` (audience `cook` / `admin`)
 - Booking request / offer lifecycle → `BookingStatusPill` (customer, cook, admin list/detail/cards)
 - Offer Call tab schedule section + cook `/profile/calls` appointment rows → labeled `StatusBadge` (pending warning/info, confirmed success,
-  declined/canceled error)
+  declined/canceled error), from `src/shared/cookCallSlotBookingStatus.ts` — warning only for the party that has to respond
 - Email OTP dialogs (log-on / account email change) → `StatusAlert` (`info`) via `AuthEmailOtpSpamHint` (check spam/junk)
 
 ## Anti-patterns

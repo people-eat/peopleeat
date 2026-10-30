@@ -19,6 +19,7 @@ docs/
 │   ├── e2e.md                    # Playwright multi-party UI e2e (not browser capture)
 │   ├── stripe-payment.md         # Stripe Connect on ServerRuntime.stripe
 │   ├── booking.md                # Booking requests / offers / offer events / call-slot bookings
+│   ├── attention.md              # Server-derived badges / to-dos; clients only present
 │   ├── outbound-email.md         # OutboundEmails table, send wrapper, Resend webhooks
 │   ├── chat.md                   # Chat foundation — polymorphic message model
 │   ├── chat-persistence.md       # Chat persistence — DB schema and AI SDK replay

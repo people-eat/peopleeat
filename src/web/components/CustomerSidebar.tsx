@@ -29,7 +29,6 @@ import {
     SidebarSeparator,
     useSidebar,
 } from './base/sidebar';
-import { customerSidebarNavBadgeCountsFromUser } from './customerSidebarNavBadges';
 
 function pathWithoutLocale(pathname: string, locale: Locale): string {
     if (locale !== DEFAULT_LOCALE && pathname.startsWith(`/${locale}/`)) {
@@ -71,9 +70,9 @@ export function CustomerSidebar({
         const { unsubscribe } = pipe(
             client.executeSubscription(request),
             subscribe((result) => {
-                const user = result.data?.userUpdates;
-                if (!user) return;
-                setSupportUnreadCount(customerSidebarNavBadgeCountsFromUser(user).supportUnreadCount);
+                const counts = result.data?.userUpdates.attentionCounts;
+                if (!counts) return;
+                setSupportUnreadCount(counts.supportRequestUnreadCount);
             }),
         );
         return unsubscribe;

@@ -481,6 +481,48 @@ type User {
     # Own-user gift-card purchases (`buyerUserId`). Null when the parent is
     # not the requesting user. Newest first. See docs/features/gift-card-purchase.md.
     giftCards: [UserGiftCard!]
+    # Own-user badge counts for the customer shell. Null when the parent is not
+    # the requesting user. See docs/features/customer-shell.md.
+    attentionCounts: UserAttentionCounts
+    # Own-user overview to-dos, highest priority first (clients pick how many to
+    # show). Null when the parent is not the requesting user. Copy lives in
+    # `src/shared/attentionCopy.ts`. See docs/architecture/attention.md.
+    attention: [UserAttentionItem!]
+}
+
+enum UserAttentionKind {
+    # Requests with offers waiting for a decision; `bookingRequestId` = soonest.
+    OFFERS_TO_REVIEW
+    # Soonest request whose accepted offer still needs the deposit payment.
+    PAYMENT_DUE
+    # Unread offer chat; `count` = total unread, target = offer with the most.
+    OFFER_CHAT_UNREAD
+    # Discovery call states (cook suggested → customer must answer, customer
+    # request awaiting the cook, confirmed).
+    CALL_RESPONSE_NEEDED
+    CALL_PENDING
+    CALL_CONFIRMED
+    # Most recent completed dinner without a customer review.
+    TESTIMONIAL_MISSING
+}
+
+type UserAttentionItem {
+    kind: UserAttentionKind!
+    # Requests (OFFERS_TO_REVIEW) or unread messages (OFFER_CHAT_UNREAD); otherwise 1.
+    count: Int!
+    bookingRequestId: ID!
+    # Null for OFFERS_TO_REVIEW.
+    bookingRequestOfferId: ID
+    occasion: String!
+    # Set for CALL_* kinds.
+    callStartAt: DateTime
+    callEndAt: DateTime
+}
+
+# Server-derived badge counts so web and native clients share one rule set.
+type UserAttentionCounts {
+    # Sum of `userUnreadNotificationCount` across the user's support requests.
+    supportRequestUnreadCount: Int!
 }
 
 # Filter + pagination for `User.assistantChats`. Optional `surface` scopes to
@@ -795,7 +837,55 @@ type Cook {
     # Cook-facing marketplace / discovery KPIs. Null when `COOK_ANALYTICS` is off
     # for this cook. See docs/features/cook-analytics.md.
     analytics(period: CookAnalyticsPeriod! = PAST_MONTH): CookAnalytics
+    # Badge counts for the cook shell. See docs/features/cook-shell.md.
+    attentionCounts: CookAttentionCounts!
+    # Overview to-dos, highest priority first. Copy lives in
+    # `src/shared/attentionCopy.ts`. See docs/architecture/attention.md.
+    attention: [CookAttentionItem!]!
+    # Remaining setup steps in display order; empty once the cook is set up.
+    onboardingSteps: [CookOnboardingStep!]!
     lastModifiedAt: DateTime!
+}
+
+enum CookAttentionKind {
+    APPROVAL_PENDING
+    # Stripe asked for updated details after the account was active.
+    WALLET_RESET
+    # Unread offer chat; `count` = total unread, target = offer with the most.
+    OFFER_CHAT_UNREAD
+    # Next PENDING / CONFIRMED discovery call starting within 14 days.
+    CALL_UPCOMING
+}
+
+type CookAttentionItem {
+    kind: CookAttentionKind!
+    # Unread messages (OFFER_CHAT_UNREAD); otherwise 1.
+    count: Int!
+    bookingRequestOfferId: ID
+    # Set for CALL_UPCOMING.
+    callStartAt: DateTime
+    customerDisplay: String
+}
+
+enum CookOnboardingStep {
+    WALLET
+    TRAVEL
+    PROFILE_PICTURE
+    CHEF_PROFILE
+    FIRST_MEAL
+    FIRST_MENU
+    FIRST_OFFER
+}
+
+# Server-derived badge counts so web and native clients share one rule set.
+type CookAttentionCounts {
+    # Open pool requests the cook can still answer — the same set as
+    # `Cook.bookingRequests(criterion: { onlyDeclined: false })`.
+    bookingRequestPoolCount: Int!
+    # Sum of `cookUnreadNotificationCount` across the cook's offers.
+    bookingRequestOfferUnreadCount: Int!
+    # Approved by admin and the Stripe wallet is not `COMPLETED` yet.
+    walletNeedsAttention: Boolean!
 }
 
 # Rolling window for `Cook.analytics`. Resolved from “now” (UTC instants).

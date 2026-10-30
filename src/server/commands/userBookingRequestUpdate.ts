@@ -26,6 +26,7 @@ import { userBookingRequestUpdateEmailSend } from '../utils/bookingRequestLifecy
 import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/bookingRequestOfferEventTomorrowNotifySchedule';
 import { bookingRequestOfferPriceSnapshot } from '../utils/bookingRequestOfferPriceSnapshot';
 import { bookingRequestParticipantsPrepareForWrite } from '../utils/bookingRequestParticipantsPrepareForWrite';
+import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
 import { scheduleTestimonialReminderJobs } from '../utils/scheduleTestimonialReminderJobs';
 import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
 import { userBookingRequestOwnedFindOne } from '../utils/userBookingRequestOwnedFindOne';
@@ -542,10 +543,14 @@ export async function userBookingRequestUpdate(
         }
 
         const cookUserIds = [...new Set(offers.map((row) => row.offer.cookId))];
+        const poolMembershipMayChange = requestPatch.exactEventAddress != null || requestPatch.expiresAt !== undefined;
         await Promise.all([
             serverRuntime.publish.userUpdates({ userId }),
             ...cookUserIds.map((cookId) => serverRuntime.publish.userUpdates({ userId: cookId })),
             serverRuntime.publish.adminUpdates(),
+            poolMembershipMayChange
+                ? bookingRequestPoolCooksPublish(serverRuntime, [bookingRequest, { ...bookingRequest, ...requestPatch }], cookUserIds)
+                : undefined,
         ]);
 
         if (resetCookAcceptance && cookUserIds.length > 0) {

@@ -1,34 +1,40 @@
-import type { Locale } from '../../shared/locale';
-import type { GqlCBookingRequestStatus } from '../graphql/generated';
+import type { BookingLifecycleHue } from './bookingLifecycleHue';
+import type { Locale } from './locale';
 
-export type BookingRequestStatusDisplayFor = 'admin' | 'customer';
+/** Derived request lifecycle — not stored on `BookingRequests`. */
+export type BookingRequestStatus =
+    | 'WAITING_FOR_OFFERS'
+    | 'OFFERS_WAITING_FOR_REVIEW'
+    | 'DEPOSIT_PAYMENT_PENDING'
+    | 'PAYMENT_PULL_PENDING'
+    | 'EVENT_PENDING'
+    | 'COMPLETED'
+    | 'EXPIRED'
+    | 'CANCELED';
 
-/** Booking lifecycle pill palette only. See `docs/styles/status-messaging.md`. */
-export function bookingRequestStatusClassName(status: GqlCBookingRequestStatus): string {
+export type BookingRequestStatusAudience = 'admin' | 'customer';
+
+export function bookingRequestStatusHue(status: BookingRequestStatus): BookingLifecycleHue {
     switch (status) {
         case 'WAITING_FOR_OFFERS':
-            return 'bg-yellow-100 text-yellow-700';
+            return 'yellow';
         case 'OFFERS_WAITING_FOR_REVIEW':
-            return 'bg-blue-100 text-blue-700';
+            return 'blue';
         case 'DEPOSIT_PAYMENT_PENDING':
         case 'COMPLETED':
-            return 'bg-purple-100 text-purple-700';
+            return 'purple';
         case 'PAYMENT_PULL_PENDING':
         case 'EVENT_PENDING':
-            return 'bg-green-100 text-green-700';
+            return 'green';
         case 'EXPIRED':
         case 'CANCELED':
-            return 'bg-red-100 text-red-700';
+            return 'red';
         default:
-            return 'bg-gray-100 text-gray-700';
+            return 'gray';
     }
 }
 
-export function bookingRequestStatusLabel(
-    status: GqlCBookingRequestStatus,
-    locale: Locale,
-    displayFor: BookingRequestStatusDisplayFor = 'admin',
-): string {
+export function bookingRequestStatusLabel(status: BookingRequestStatus, locale: Locale, audience: BookingRequestStatusAudience): string {
     switch (status) {
         case 'WAITING_FOR_OFFERS':
             return { de: 'Warten auf Angebote', en: 'Waiting for offers' }[locale];
@@ -38,7 +44,7 @@ export function bookingRequestStatusLabel(
                     admin: { de: 'Angebote erhalten', en: 'Offers available' },
                     customer: { de: 'Du hast Angebote bekommen', en: 'Offers available' },
                 } as const
-            )[displayFor][locale];
+            )[audience][locale];
         case 'DEPOSIT_PAYMENT_PENDING':
             return { de: 'Zahlungsmittel hinterlegen', en: 'Provide payment data' }[locale];
         case 'PAYMENT_PULL_PENDING':
@@ -47,7 +53,7 @@ export function bookingRequestStatusLabel(
                     admin: { de: 'Zahlungseinzug ausstehend', en: 'Payment outstanding' },
                     customer: { de: 'Bestätigt', en: 'Confirmed' },
                 } as const
-            )[displayFor][locale];
+            )[audience][locale];
         case 'EVENT_PENDING':
             return { de: 'Veranstaltung ausstehend', en: 'Upcoming event' }[locale];
         case 'COMPLETED':
@@ -59,8 +65,4 @@ export function bookingRequestStatusLabel(
         default:
             return status;
     }
-}
-
-export function adminBookingRequestStatusLabel(status: GqlCBookingRequestStatus, locale: Locale): string {
-    return bookingRequestStatusLabel(status, locale, 'admin');
 }

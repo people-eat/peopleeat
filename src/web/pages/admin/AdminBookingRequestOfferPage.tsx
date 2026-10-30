@@ -25,6 +25,7 @@ import {
     formatDateTime,
     userDisplayName,
 } from '../../../shared';
+import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../../shared/bookingRequestOfferStatus';
 import { AdminBookingRequestOfferCallRecordingsSection } from '../../components/AdminBookingRequestOfferCallRecordingsSection';
 import {
     adminBookingRequestOfferPaymentStatusDescription,
@@ -32,7 +33,6 @@ import {
     adminBookingRequestOfferPaymentStatusTone,
     adminBookingRequestOfferPlannedPullPastNote,
 } from '../../components/adminBookingRequestOfferPaymentStatus';
-import { adminBookingRequestOfferStatusLabel } from '../../components/adminBookingRequestOfferStatus';
 import { AdminBookingRequestOfferTestimonialsSection } from '../../components/AdminBookingRequestOfferTestimonialsSection';
 import { AdminOfferPartyCards } from '../../components/AdminOfferPartyCards';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
@@ -65,7 +65,6 @@ import {
     BookingRequestOfferParticipantAmendmentAdminPendingAlert,
 } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import { BookingRequestOfferCostOverviewPanel } from '../../components/BookingRequestOfferPriceConfigurationPanel';
-import { bookingRequestOfferStatusClassName } from '../../components/bookingRequestOfferStatus';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import { CookMenuCard } from '../../components/CookMenuCard';
 import { CostBreakdownPanel } from '../../components/CostBreakdownPanel';
@@ -522,8 +521,8 @@ export function AdminBookingRequestOfferPage({
                                 <>
                                     <div className="grid shrink-0 gap-2 px-4 pb-1">
                                         <div className="flex flex-wrap items-center justify-end gap-3">
-                                            <BookingStatusPill className={bookingRequestOfferStatusClassName(offer.status)}>
-                                                {adminBookingRequestOfferStatusLabel(offer.status, locale)}
+                                            <BookingStatusPill hue={bookingRequestOfferStatusHue(offer.status)}>
+                                                {bookingRequestOfferStatusLabel(offer.status, locale, 'admin')}
                                             </BookingStatusPill>
                                         </div>
                                         {offer.participantAmendment ? (

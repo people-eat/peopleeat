@@ -139,7 +139,9 @@ CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’
 - Offer pages: tabs offer / chat / call (plus role-specific tabs); legacy `?tab=schedule` aliases to `call`
 - Confirmed slots: calendar ICS download utility
 - Profile overviews: `callBookingOverviewHint` — cook inbox uses info `Popover` on `CookBookingRequestOfferCard`; customer/admin cards keep
-  inline hint text; `openCall` deep-links to `?tab=call`
+  inline hint text; `openCall` deep-links to `?tab=call`. Which call to surface (response needed → pending → confirmed) and the time window
+  wording come from `src/shared/cookCallSlotBookingStatus.ts`, shared with the server's `User.attention` call items
+  ([attention.md](../architecture/attention.md))
 - Cook `/profile/calls`: cross-offer pending/confirmed via cook call-slot bookings query
 - Admin `/admin/calls` overview + list; room rows / attention “Open call” → `AdminCallPage`; slot-only rows → offer Call tab
 - Admin offer cards use `callBookingOverviewHint(..., 'admin')` (neutral who-must-act copy)

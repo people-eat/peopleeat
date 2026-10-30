@@ -155,7 +155,8 @@ changes. Customers still only see city, never the pin or street.
   strings)
 - Chef sign-up: `/chef-sign-up` — one-shot create or upgrade form with shared travel fields
 - Profile UI: chef profile view/edit, travel view/edit, public page (Preview / Manage tabs via `?tab=manage`), wallet, calls, overview
-  Attention + Getting started on cook home (`profilePageCookOverview`, `ProfilePage` with upcoming-call window variables)
+  Attention + Getting started on cook home (server `Cook.attention` / `Cook.onboardingSteps`, routed by `profilePageCookOverview`; see
+  [attention.md](../architecture/attention.md))
 - Cook GraphQL: `mealsCounts` / `menusCounts` (`CookMealCriterion` / `CookMenuCriterion`);
   `callSlotBookings(criterion: CookCallSlotBookingCriterion)` for status + `startAt` window
 - Admin: pending-approval queue on `/admin`; cook-profile tab (read-only + approval/visibility; edit at

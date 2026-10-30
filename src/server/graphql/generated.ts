@@ -3105,6 +3105,8 @@ export interface GqlSContentSectionQuote {
 export interface GqlSCook {
     __typename?: 'Cook';
     analytics?: Maybe<GqlSCookAnalytics>;
+    attention: Array<GqlSCookAttentionItem>;
+    attentionCounts: GqlSCookAttentionCounts;
     biography: Scalars['String']['output'];
     biographySummary: Scalars['String']['output'];
     biographySummaryGenerating: Scalars['Boolean']['output'];
@@ -3140,6 +3142,7 @@ export interface GqlSCook {
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
     offerMenus: Array<GqlSCookMenu>;
+    onboardingSteps: Array<GqlSCookOnboardingStep>;
     rating: GqlSPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountDetails?: Maybe<GqlSCookStripeAccountDetails>;
@@ -3232,6 +3235,24 @@ export interface GqlSCookAnalyticsRange {
     endDateTime: Scalars['DateTime']['output'];
     startDateTime: Scalars['DateTime']['output'];
 }
+
+export interface GqlSCookAttentionCounts {
+    __typename?: 'CookAttentionCounts';
+    bookingRequestOfferUnreadCount: Scalars['Int']['output'];
+    bookingRequestPoolCount: Scalars['Int']['output'];
+    walletNeedsAttention: Scalars['Boolean']['output'];
+}
+
+export interface GqlSCookAttentionItem {
+    __typename?: 'CookAttentionItem';
+    bookingRequestOfferId?: Maybe<Scalars['ID']['output']>;
+    callStartAt?: Maybe<Scalars['DateTime']['output']>;
+    count: Scalars['Int']['output'];
+    customerDisplay?: Maybe<Scalars['String']['output']>;
+    kind: GqlSCookAttentionKind;
+}
+
+export type GqlSCookAttentionKind = 'APPROVAL_PENDING' | 'CALL_UPCOMING' | 'OFFER_CHAT_UNREAD' | 'WALLET_RESET';
 
 export interface GqlSCookBookingRequest {
     __typename?: 'CookBookingRequest';
@@ -3809,6 +3830,8 @@ export type GqlSCookMutationStripeOnboardingStartArgs = {
 export type GqlSCookMutationUpdateArgs = {
     input: GqlSCookUpdate;
 };
+
+export type GqlSCookOnboardingStep = 'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
 
 export interface GqlSCookStripeAccountDetails {
     __typename?: 'CookStripeAccountDetails';
@@ -4674,6 +4697,8 @@ export interface GqlSUser {
     admin?: Maybe<GqlSAdmin>;
     assistantChat?: Maybe<GqlSChat>;
     assistantChats?: Maybe<Array<GqlSChat>>;
+    attention?: Maybe<Array<GqlSUserAttentionItem>>;
+    attentionCounts?: Maybe<GqlSUserAttentionCounts>;
     birthDate?: Maybe<Scalars['Date']['output']>;
     bookingRequest?: Maybe<GqlSUserBookingRequest>;
     bookingRequests?: Maybe<Array<GqlSUserBookingRequest>>;
@@ -4722,6 +4747,31 @@ export type GqlSUserAssistantChatCriterion = {
     surface?: InputMaybe<GqlSChatSurface>;
     take?: Scalars['Int']['input'];
 };
+
+export interface GqlSUserAttentionCounts {
+    __typename?: 'UserAttentionCounts';
+    supportRequestUnreadCount: Scalars['Int']['output'];
+}
+
+export interface GqlSUserAttentionItem {
+    __typename?: 'UserAttentionItem';
+    bookingRequestId: Scalars['ID']['output'];
+    bookingRequestOfferId?: Maybe<Scalars['ID']['output']>;
+    callEndAt?: Maybe<Scalars['DateTime']['output']>;
+    callStartAt?: Maybe<Scalars['DateTime']['output']>;
+    count: Scalars['Int']['output'];
+    kind: GqlSUserAttentionKind;
+    occasion: Scalars['String']['output'];
+}
+
+export type GqlSUserAttentionKind =
+    | 'CALL_CONFIRMED'
+    | 'CALL_PENDING'
+    | 'CALL_RESPONSE_NEEDED'
+    | 'OFFERS_TO_REVIEW'
+    | 'OFFER_CHAT_UNREAD'
+    | 'PAYMENT_DUE'
+    | 'TESTIMONIAL_MISSING';
 
 export interface GqlSUserBookingRequest {
     __typename?: 'UserBookingRequest';
@@ -5703,6 +5753,9 @@ export type GqlSResolversTypes = ResolversObject<{
     CookAnalytics: ResolverTypeWrapper<GqlSCookAnalytics>;
     CookAnalyticsPeriod: GqlSCookAnalyticsPeriod;
     CookAnalyticsRange: ResolverTypeWrapper<GqlSCookAnalyticsRange>;
+    CookAttentionCounts: ResolverTypeWrapper<GqlSCookAttentionCounts>;
+    CookAttentionItem: ResolverTypeWrapper<GqlSCookAttentionItem>;
+    CookAttentionKind: GqlSCookAttentionKind;
     CookBookingRequest: ResolverTypeWrapper<
         Omit<GqlSCookBookingRequest, 'cookPoolDetails' | 'offers'> & {
             cookPoolDetails?: Maybe<GqlSResolversTypes['BookingRequestCookPoolDetails']>;
@@ -5758,6 +5811,7 @@ export type GqlSResolversTypes = ResolversObject<{
     CookMenuSuggestionMealOptionType: GqlSCookMenuSuggestionMealOptionType;
     CookMenuUpdate: GqlSCookMenuUpdate;
     CookMutation: ResolverTypeWrapper<GqlSCookMutation>;
+    CookOnboardingStep: GqlSCookOnboardingStep;
     CookStripeAccountDetails: ResolverTypeWrapper<GqlSCookStripeAccountDetails>;
     CookStripeBalanceTransaction: ResolverTypeWrapper<GqlSCookStripeBalanceTransaction>;
     CookStripeBalanceTransactionKind: GqlSCookStripeBalanceTransactionKind;
@@ -5917,6 +5971,9 @@ export type GqlSResolversTypes = ResolversObject<{
         }
     >;
     UserAssistantChatCriterion: GqlSUserAssistantChatCriterion;
+    UserAttentionCounts: ResolverTypeWrapper<GqlSUserAttentionCounts>;
+    UserAttentionItem: ResolverTypeWrapper<GqlSUserAttentionItem>;
+    UserAttentionKind: GqlSUserAttentionKind;
     UserBookingRequest: ResolverTypeWrapper<
         Omit<GqlSUserBookingRequest, 'offers' | 'supportRequest'> & {
             offers: Array<GqlSResolversTypes['UserBookingRequestOffer']>;
@@ -6223,6 +6280,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
     };
     CookAnalytics: GqlSCookAnalytics;
     CookAnalyticsRange: GqlSCookAnalyticsRange;
+    CookAttentionCounts: GqlSCookAttentionCounts;
+    CookAttentionItem: GqlSCookAttentionItem;
     CookBookingRequest: Omit<GqlSCookBookingRequest, 'cookPoolDetails' | 'offers'> & {
         cookPoolDetails?: Maybe<GqlSResolversParentTypes['BookingRequestCookPoolDetails']>;
         offers: Array<GqlSResolversParentTypes['CookBookingRequestOffer']>;
@@ -6387,6 +6446,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
         supportRequests?: Maybe<Array<GqlSResolversParentTypes['UserSupportRequest']>>;
     };
     UserAssistantChatCriterion: GqlSUserAssistantChatCriterion;
+    UserAttentionCounts: GqlSUserAttentionCounts;
+    UserAttentionItem: GqlSUserAttentionItem;
     UserBookingRequest: Omit<GqlSUserBookingRequest, 'offers' | 'supportRequest'> & {
         offers: Array<GqlSResolversParentTypes['UserBookingRequestOffer']>;
         supportRequest?: Maybe<GqlSResolversParentTypes['UserSupportRequest']>;
@@ -9187,6 +9248,8 @@ export type GqlSCookResolvers<
         ContextType,
         RequireFields<GqlSCookAnalyticsArgs, 'period'>
     >;
+    attention?: Resolver<Array<GqlSResolversTypes['CookAttentionItem']>, ParentType, ContextType>;
+    attentionCounts?: Resolver<GqlSResolversTypes['CookAttentionCounts'], ParentType, ContextType>;
     biography?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     biographySummary?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     biographySummaryGenerating?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
@@ -9262,6 +9325,7 @@ export type GqlSCookResolvers<
     minimumParticipants?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     minimumPriceAmount?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     offerMenus?: Resolver<Array<GqlSResolversTypes['CookMenu']>, ParentType, ContextType>;
+    onboardingSteps?: Resolver<Array<GqlSResolversTypes['CookOnboardingStep']>, ParentType, ContextType>;
     rating?: Resolver<GqlSResolversTypes['PublicCookRating'], ParentType, ContextType>;
     stageName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     stripeAccountDetails?: Resolver<Maybe<GqlSResolversTypes['CookStripeAccountDetails']>, ParentType, ContextType>;
@@ -9301,6 +9365,26 @@ export type GqlSCookAnalyticsRangeResolvers<
 > = ResolversObject<{
     endDateTime?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     startDateTime?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
+export type GqlSCookAttentionCountsResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookAttentionCounts'] = GqlSResolversParentTypes['CookAttentionCounts'],
+> = ResolversObject<{
+    bookingRequestOfferUnreadCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    bookingRequestPoolCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    walletNeedsAttention?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type GqlSCookAttentionItemResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookAttentionItem'] = GqlSResolversParentTypes['CookAttentionItem'],
+> = ResolversObject<{
+    bookingRequestOfferId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    callStartAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    customerDisplay?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    kind?: Resolver<GqlSResolversTypes['CookAttentionKind'], ParentType, ContextType>;
 }>;
 
 export type GqlSCookBookingRequestResolvers<
@@ -10709,6 +10793,8 @@ export type GqlSUserResolvers<
         ContextType,
         RequireFields<GqlSUserAssistantChatsArgs, 'criterion'>
     >;
+    attention?: Resolver<Maybe<Array<GqlSResolversTypes['UserAttentionItem']>>, ParentType, ContextType>;
+    attentionCounts?: Resolver<Maybe<GqlSResolversTypes['UserAttentionCounts']>, ParentType, ContextType>;
     birthDate?: Resolver<Maybe<GqlSResolversTypes['Date']>, ParentType, ContextType>;
     bookingRequest?: Resolver<
         Maybe<GqlSResolversTypes['UserBookingRequest']>,
@@ -10743,6 +10829,26 @@ export type GqlSUserResolvers<
     timeBasedOneTimePassword?: Resolver<Maybe<GqlSResolversTypes['AuthTimeBasedOneTimePassword']>, ParentType, ContextType>;
     timeZone?: Resolver<GqlSResolversTypes['TimeZone'], ParentType, ContextType>;
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type GqlSUserAttentionCountsResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['UserAttentionCounts'] = GqlSResolversParentTypes['UserAttentionCounts'],
+> = ResolversObject<{
+    supportRequestUnreadCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSUserAttentionItemResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['UserAttentionItem'] = GqlSResolversParentTypes['UserAttentionItem'],
+> = ResolversObject<{
+    bookingRequestId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    bookingRequestOfferId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    callEndAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
+    callStartAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
+    count?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    kind?: Resolver<GqlSResolversTypes['UserAttentionKind'], ParentType, ContextType>;
+    occasion?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type GqlSUserBookingRequestResolvers<
@@ -11343,6 +11449,8 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     Cook?: GqlSCookResolvers<ContextType>;
     CookAnalytics?: GqlSCookAnalyticsResolvers<ContextType>;
     CookAnalyticsRange?: GqlSCookAnalyticsRangeResolvers<ContextType>;
+    CookAttentionCounts?: GqlSCookAttentionCountsResolvers<ContextType>;
+    CookAttentionItem?: GqlSCookAttentionItemResolvers<ContextType>;
     CookBookingRequest?: GqlSCookBookingRequestResolvers<ContextType>;
     CookBookingRequestAvailable?: GqlSCookBookingRequestAvailableResolvers<ContextType>;
     CookBookingRequestCanceled?: GqlSCookBookingRequestCanceledResolvers<ContextType>;
@@ -11432,6 +11540,8 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     Testimonial?: GqlSTestimonialResolvers<ContextType>;
     TimeZone?: GraphQLScalarType;
     User?: GqlSUserResolvers<ContextType>;
+    UserAttentionCounts?: GqlSUserAttentionCountsResolvers<ContextType>;
+    UserAttentionItem?: GqlSUserAttentionItemResolvers<ContextType>;
     UserBookingRequest?: GqlSUserBookingRequestResolvers<ContextType>;
     UserBookingRequestGiftCard?: GqlSUserBookingRequestGiftCardResolvers<ContextType>;
     UserBookingRequestOffer?: GqlSUserBookingRequestOfferResolvers<ContextType>;
@@ -12049,6 +12159,11 @@ export const GqlSCookAnalyticsPeriodSchema: z.ZodType<
     'PAST_MONTH' | 'PAST_QUARTER' | 'PAST_WEEK' | 'PAST_YEAR'
 > = z.enum(['PAST_MONTH', 'PAST_QUARTER', 'PAST_WEEK', 'PAST_YEAR']);
 
+export const GqlSCookAttentionKindSchema: z.ZodType<
+    'APPROVAL_PENDING' | 'CALL_UPCOMING' | 'OFFER_CHAT_UNREAD' | 'WALLET_RESET',
+    'APPROVAL_PENDING' | 'CALL_UPCOMING' | 'OFFER_CHAT_UNREAD' | 'WALLET_RESET'
+> = z.enum(['APPROVAL_PENDING', 'CALL_UPCOMING', 'OFFER_CHAT_UNREAD', 'WALLET_RESET']);
+
 export const GqlSCookBookingRequestOfferListBucketSchema: z.ZodType<
     'ACTIVE' | 'ARCHIVED' | 'COMPLETED',
     'ACTIVE' | 'ARCHIVED' | 'COMPLETED'
@@ -12067,6 +12182,11 @@ export const GqlSCookMenuSuggestionMealOptionTypeSchema: z.ZodType<'EXISTING_MEA
     'EXISTING_MEAL',
     'NEW_MEAL',
 ]);
+
+export const GqlSCookOnboardingStepSchema: z.ZodType<
+    'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET',
+    'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET'
+> = z.enum(['CHEF_PROFILE', 'FIRST_MEAL', 'FIRST_MENU', 'FIRST_OFFER', 'PROFILE_PICTURE', 'TRAVEL', 'WALLET']);
 
 export const GqlSCookStripeBalanceTransactionKindSchema: z.ZodType<
     'ADJUSTMENT' | 'FEE' | 'OTHER' | 'PAYMENT' | 'PAYOUT' | 'TRANSFER',
@@ -12160,6 +12280,31 @@ export const GqlSTestimonialPublicationStatusSchema: z.ZodType<'PENDING_REVIEW' 
 ]);
 
 export const GqlSTestimonialTypeSchema: z.ZodType<'COOK' | 'CUSTOMER', 'COOK' | 'CUSTOMER'> = z.enum(['COOK', 'CUSTOMER']);
+
+export const GqlSUserAttentionKindSchema: z.ZodType<
+    | 'CALL_CONFIRMED'
+    | 'CALL_PENDING'
+    | 'CALL_RESPONSE_NEEDED'
+    | 'OFFERS_TO_REVIEW'
+    | 'OFFER_CHAT_UNREAD'
+    | 'PAYMENT_DUE'
+    | 'TESTIMONIAL_MISSING',
+    | 'CALL_CONFIRMED'
+    | 'CALL_PENDING'
+    | 'CALL_RESPONSE_NEEDED'
+    | 'OFFERS_TO_REVIEW'
+    | 'OFFER_CHAT_UNREAD'
+    | 'PAYMENT_DUE'
+    | 'TESTIMONIAL_MISSING'
+> = z.enum([
+    'CALL_CONFIRMED',
+    'CALL_PENDING',
+    'CALL_RESPONSE_NEEDED',
+    'OFFERS_TO_REVIEW',
+    'OFFER_CHAT_UNREAD',
+    'PAYMENT_DUE',
+    'TESTIMONIAL_MISSING',
+]);
 
 export const GqlSUserPreferredCommunicationSchema: z.ZodType<
     'CALL' | 'E_MAIL' | 'SMS' | 'WHATS_APP',

@@ -1,9 +1,8 @@
 import { getRouteApi } from '@tanstack/react-router';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense } from 'react';
 
 import { ProfilePageUpdatesDocument } from '../graphql/generated';
 import { useUserUpdatesSeed } from '../hooks/useUserUpdatesSeed';
-import { profilePageCookOverviewVariables } from './profilePageCookOverviewVariables';
 
 const ProfilePageCook = lazy(async () => {
     const mod = await import('./ProfilePageCook');
@@ -19,8 +18,7 @@ const profileRouteApi = getRouteApi('/{-$locale}/profile');
 export function ProfilePage() {
     const loaderData = profileRouteApi.useLoaderData();
     const seedUser = loaderData.currentSession.user ?? null;
-    const [overviewVariables] = useState(profilePageCookOverviewVariables);
-    const user = useUserUpdatesSeed(seedUser, ProfilePageUpdatesDocument, overviewVariables);
+    const user = useUserUpdatesSeed(seedUser, ProfilePageUpdatesDocument);
     if (!user) {
         // Route loader redirects unsigned sessions; this is a type/fallback guard.
         return null;
@@ -30,11 +28,7 @@ export function ProfilePage() {
 
     return (
         <Suspense fallback={null}>
-            {user.cook ? (
-                <ProfilePageCook name={firstName} profilePictureUrl={user.profilePicture?.url ?? null} cook={user.cook} />
-            ) : (
-                <ProfilePageCustomer name={firstName} user={user} />
-            )}
+            {user.cook ? <ProfilePageCook name={firstName} cook={user.cook} /> : <ProfilePageCustomer name={firstName} user={user} />}
         </Suspense>
     );
 }

@@ -4,20 +4,23 @@ import { toast } from 'sonner';
 import { useClient, useMutation } from 'urql';
 
 import { formatCurrency, formatDate } from '../../../shared';
+import {
+    cookStripeAccountDetailsCategories,
+    cookStripeAccountDetailsHasActionableContent,
+    cookStripeAccountDetailsTitle,
+    cookStripeAccountDetailsTone,
+    cookStripeBalanceTransactionKindLabel,
+    cookStripeBalanceTransactionStatusLabel,
+    cookStripeDisabledReasonLabel,
+    cookStripeRequirementCategoryLabel,
+    cookStripeStatusDescription,
+    cookStripeStatusLabel,
+    cookStripeStatusTone,
+} from '../../../shared/cookStripe';
 import { Button } from '../../components/base/button';
-import type { StatusTone } from '../../components/base/status';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/base/table';
-import type {
-    GqlCCookStripeAccountDetails,
-    GqlCCookStripeBalanceTransactionKind,
-    GqlCCookStripeBalanceTransactionStatus,
-    GqlCCookStripeDisabledReason,
-    GqlCCookStripeRequirementCategory,
-    GqlCCookStripeStatus,
-    GqlCCookStripeWallet,
-    GqlCProfileCookWalletPageQuery,
-} from '../../graphql/generated';
+import type { GqlCCookStripeAccountDetails, GqlCCookStripeWallet, GqlCProfileCookWalletPageQuery } from '../../graphql/generated';
 import {
     ProfileCookStripeDashboardUrlCreateDocument,
     ProfileCookStripeOnboardingStartDocument,
@@ -59,157 +62,6 @@ function walletUrls(locale: Locale): { returnUrl: string; refreshUrl: string } {
         returnUrl: `${base}?stripeReturn=1`,
         refreshUrl: `${base}?stripeRefresh=1`,
     };
-}
-
-function stripeStatusLabel(status: GqlCCookStripeStatus, locale: Locale): string {
-    return {
-        EMPTY: { de: 'Noch nicht eingerichtet', en: 'Not set up yet' },
-        PREPARED: { de: 'Einrichtung unvollständig', en: 'Setup incomplete' },
-        COMPLETED: { de: 'Bereit für Auszahlungen', en: 'Ready for payouts' },
-        ACTIVE_WAS_RESET: { de: 'Aktualisierung erforderlich', en: 'Update required' },
-    }[status][locale];
-}
-
-function stripeStatusTone(status: GqlCCookStripeStatus): StatusTone {
-    const tones = {
-        EMPTY: 'info',
-        PREPARED: 'warning',
-        COMPLETED: 'success',
-        ACTIVE_WAS_RESET: 'warning',
-    } as const satisfies Record<GqlCCookStripeStatus, StatusTone>;
-    return tones[status];
-}
-
-function stripeStatusDescription(status: GqlCCookStripeStatus, locale: Locale): string {
-    return {
-        EMPTY: {
-            de: 'Richte dein Stripe-Konto ein, damit Auszahlungen an dich möglich sind.',
-            en: 'Set up your Stripe account so payouts can reach you.',
-        },
-        PREPARED: {
-            de: 'Die Wallet-Einrichtung ist noch nicht abgeschlossen. Bitte fahre fort, um Auszahlungen zu aktivieren.',
-            en: 'Wallet setup is not finished yet. Continue to enable payouts.',
-        },
-        COMPLETED: {
-            de: 'Dein Wallet ist verbunden. Auszahlungen auf dein Bankkonto löst unser Team nach dem Event aus.',
-            en: 'Your wallet is connected. Bank payouts are released by our team after the event.',
-        },
-        ACTIVE_WAS_RESET: {
-            de: 'Stripe benötigt aktualisierte Angaben. Bitte aktualisiere dein Wallet, bevor Auszahlungen weiterlaufen.',
-            en: 'Stripe needs updated details. Please refresh your wallet before payouts can continue.',
-        },
-    }[status][locale];
-}
-
-function requirementCategoryLabel(category: GqlCCookStripeRequirementCategory, locale: Locale): string {
-    return {
-        IDENTITY_VERIFICATION: { de: 'Identitätsprüfung', en: 'Identity verification' },
-        BANK_ACCOUNT: { de: 'Bankkonto', en: 'Bank account' },
-        TERMS_OF_SERVICE: { de: 'Nutzungsbedingungen', en: 'Terms of service' },
-        BUSINESS_DETAILS: { de: 'Geschäftsangaben', en: 'Business details' },
-        PERSONAL_DETAILS: { de: 'Persönliche Angaben', en: 'Personal details' },
-        OTHER: { de: 'Weitere Angaben', en: 'Additional details' },
-    }[category][locale];
-}
-
-function disabledReasonLabel(reason: GqlCCookStripeDisabledReason, locale: Locale): string {
-    return {
-        PAST_DUE: {
-            de: 'Pflichtangaben sind überfällig. Bitte vervollständige sie in Stripe.',
-            en: 'Required details are overdue. Please complete them in Stripe.',
-        },
-        PENDING_VERIFICATION: {
-            de: 'Stripe prüft gerade deine Unterlagen.',
-            en: 'Stripe is reviewing your documents.',
-        },
-        REJECTED: {
-            de: 'Stripe hat die Freigabe abgelehnt. Bitte aktualisiere deine Angaben oder kontaktiere den Support.',
-            en: 'Stripe rejected the account. Please update your details or contact support.',
-        },
-        LISTED: {
-            de: 'Dein Stripe-Konto ist vorübergehend eingeschränkt.',
-            en: 'Your Stripe account is temporarily restricted.',
-        },
-        OTHER: {
-            de: 'Stripe hat das Konto vorübergehend eingeschränkt.',
-            en: 'Stripe has temporarily restricted the account.',
-        },
-    }[reason][locale];
-}
-
-function uniqueCategories(...lists: readonly (readonly GqlCCookStripeRequirementCategory[])[]): GqlCCookStripeRequirementCategory[] {
-    const seen = new Set<GqlCCookStripeRequirementCategory>();
-    const out: GqlCCookStripeRequirementCategory[] = [];
-    for (const list of lists) {
-        for (const category of list) {
-            if (seen.has(category)) continue;
-            seen.add(category);
-            out.push(category);
-        }
-    }
-    return out;
-}
-
-function stripeDetailsTone(details: GqlCCookStripeAccountDetails): StatusTone {
-    if (
-        details.pastDue.length > 0 ||
-        details.disabledReason === 'PAST_DUE' ||
-        details.disabledReason === 'REJECTED' ||
-        details.disabledReason === 'LISTED'
-    ) {
-        return 'error';
-    }
-    if (details.pendingVerification.length > 0 && details.currentlyDue.length === 0 && details.disabledReason !== 'OTHER') {
-        return 'info';
-    }
-    return 'warning';
-}
-
-function stripeDetailsTitle(details: GqlCCookStripeAccountDetails, locale: Locale): string {
-    if (details.pastDue.length > 0 || details.disabledReason === 'PAST_DUE') {
-        return { de: 'Angaben überfällig', en: 'Details overdue' }[locale];
-    }
-    if (details.disabledReason === 'REJECTED') {
-        return { de: 'Freigabe abgelehnt', en: 'Account rejected' }[locale];
-    }
-    if (details.disabledReason === 'LISTED') {
-        return { de: 'Konto eingeschränkt', en: 'Account restricted' }[locale];
-    }
-    if (details.pendingVerification.length > 0 && details.currentlyDue.length === 0) {
-        return { de: 'Prüfung läuft', en: 'Review in progress' }[locale];
-    }
-    return { de: 'Noch offen bei Stripe', en: 'Still needed in Stripe' }[locale];
-}
-
-function stripeDetailsHasActionableContent(details: GqlCCookStripeAccountDetails, status: GqlCCookStripeStatus): boolean {
-    if (details.pastDue.length > 0 || details.currentlyDue.length > 0 || details.pendingVerification.length > 0) {
-        return true;
-    }
-    if (details.disabledReason != null) {
-        return true;
-    }
-    if (status !== 'COMPLETED' && details.detailsSubmitted && (!details.chargesEnabled || !details.payoutsEnabled)) {
-        return true;
-    }
-    return false;
-}
-
-function balanceTransactionKindLabel(kind: GqlCCookStripeBalanceTransactionKind, locale: Locale): string {
-    return {
-        PAYMENT: { de: 'Zahlung', en: 'Payment' },
-        PAYOUT: { de: 'Auszahlung', en: 'Payout' },
-        TRANSFER: { de: 'Transfer', en: 'Transfer' },
-        FEE: { de: 'Gebühr', en: 'Fee' },
-        ADJUSTMENT: { de: 'Anpassung', en: 'Adjustment' },
-        OTHER: { de: 'Sonstiges', en: 'Other' },
-    }[kind][locale];
-}
-
-function balanceTransactionStatusLabel(status: GqlCCookStripeBalanceTransactionStatus, locale: Locale): string {
-    return {
-        AVAILABLE: { de: 'Verfügbar', en: 'Available' },
-        PENDING: { de: 'Ausstehend', en: 'Pending' },
-    }[status][locale];
 }
 
 export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookWalletPageQuery; search: ProfileWalletSearch }) {
@@ -375,10 +227,10 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
     }[cook.stripeStatus][locale];
 
     const detailsChecklist =
-        stripeDetails != null && stripeDetailsHasActionableContent(stripeDetails, cook.stripeStatus)
+        stripeDetails != null && cookStripeAccountDetailsHasActionableContent(stripeDetails, cook.stripeStatus)
             ? {
                   details: stripeDetails,
-                  categories: uniqueCategories(stripeDetails.pastDue, stripeDetails.currentlyDue, stripeDetails.pendingVerification),
+                  categories: cookStripeAccountDetailsCategories(stripeDetails),
               }
             : null;
 
@@ -409,22 +261,22 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                 </StatusAlert>
             ) : (
                 <div className="grid gap-4">
-                    <StatusAlert tone={stripeStatusTone(cook.stripeStatus)} title={stripeStatusLabel(cook.stripeStatus, locale)}>
-                        {stripeStatusDescription(cook.stripeStatus, locale)}
+                    <StatusAlert tone={cookStripeStatusTone(cook.stripeStatus)} title={cookStripeStatusLabel(cook.stripeStatus, locale)}>
+                        {cookStripeStatusDescription(cook.stripeStatus, locale, 'cook')}
                     </StatusAlert>
                     {detailsChecklist ? (
                         <StatusAlert
-                            tone={stripeDetailsTone(detailsChecklist.details)}
-                            title={stripeDetailsTitle(detailsChecklist.details, locale)}
+                            tone={cookStripeAccountDetailsTone(detailsChecklist.details)}
+                            title={cookStripeAccountDetailsTitle(detailsChecklist.details, locale)}
                         >
                             <div className="grid gap-2">
                                 {detailsChecklist.details.disabledReason != null ? (
-                                    <p>{disabledReasonLabel(detailsChecklist.details.disabledReason, locale)}</p>
+                                    <p>{cookStripeDisabledReasonLabel(detailsChecklist.details.disabledReason, locale, 'cook')}</p>
                                 ) : null}
                                 {detailsChecklist.categories.length > 0 ? (
                                     <ul className="list-disc pl-5">
                                         {detailsChecklist.categories.map((category) => (
-                                            <li key={category}>{requirementCategoryLabel(category, locale)}</li>
+                                            <li key={category}>{cookStripeRequirementCategoryLabel(category, locale)}</li>
                                         ))}
                                     </ul>
                                 ) : null}
@@ -543,13 +395,13 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                                             <TableCell>{formatDate(txn.createdAt, { locale, timeZone, dateStyle: 'medium' })}</TableCell>
                                             <TableCell>
                                                 <div className="grid gap-0.5">
-                                                    <span>{balanceTransactionKindLabel(txn.kind, locale)}</span>
+                                                    <span>{cookStripeBalanceTransactionKindLabel(txn.kind, locale)}</span>
                                                     {txn.description ? (
                                                         <span className="text-xs text-muted-foreground">{txn.description}</span>
                                                     ) : null}
                                                 </div>
                                             </TableCell>
-                                            <TableCell>{balanceTransactionStatusLabel(txn.status, locale)}</TableCell>
+                                            <TableCell>{cookStripeBalanceTransactionStatusLabel(txn.status, locale)}</TableCell>
                                             <TableCell
                                                 className={cn(
                                                     'text-right tabular-nums',

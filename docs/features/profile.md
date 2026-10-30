@@ -38,11 +38,13 @@ One profile route; shell and navigation depend on cook and admin membership on t
 
 ## Implementation
 
-- GraphQL: `ProfilePage($upcomingCallsFrom, $upcomingCallsTo)` loads `currentSession.user` (`ProfilePageUser` — name, cook, admin, sidebar
-  badges, cook overview counts/bio/upcoming calls, customer `bookingRequests` for overview Attention / Next dinner). Overview via
-  `useUserUpdatesSeed` + `ProfilePageUpdates` with the same variables.
-- UI: `ProfilePage` chooses cook vs customer child (`profilePageCookOverview` / `profilePageCustomerOverview`). Both use `ProfileLayout`
-  (sidebar, breadcrumbs, assistant rail, outlet). Cook-only routes show access denied for non-cooks.
+- GraphQL: `ProfilePage` (no variables) loads `currentSession.user` (`ProfilePageUser` — name, cook, admin, sidebar badges via
+  `attentionCounts`, server-derived `User.attention` / `Cook.attention` / `Cook.onboardingSteps`, cook analytics, customer `bookingRequests`
+  for the Next dinner card). Overview via `useUserUpdatesSeed` + `ProfilePageUpdates`. Rules and wording:
+  [attention.md](../architecture/attention.md).
+- UI: `ProfilePage` chooses cook vs customer child (`profilePageCookOverview` / `profilePageCustomerOverview` attach routes and shared copy
+  to the server items). Both use `ProfileLayout` (sidebar, breadcrumbs, assistant rail, outlet). Cook-only routes show access denied for
+  non-cooks.
 - Route: `src/routes/{-$locale}/profile.tsx` — loader redirects when user null; child routes under `profile/`; noindex, not in sitemap.
 - Public entry: `Header` + `PublicSessionNav` (`PublicHeaderUser` fragment) on marketing pages.
 

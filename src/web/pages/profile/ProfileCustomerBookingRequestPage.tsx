@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { bookingRequestPriceClassLabel, formatCurrency, formatDateTime, formatParticipants } from '../../../shared';
+import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -24,7 +25,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '../../components/base/p
 import { StatusAlert } from '../../components/base/status-alert';
 import { Textarea } from '../../components/base/textarea';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
-import { bookingRequestStatusClassName, bookingRequestStatusLabel } from '../../components/bookingRequestStatus';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import { CustomerBookingRequestOfferCard } from '../../components/CustomerBookingRequestOfferCard';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
@@ -209,7 +209,7 @@ export function ProfileCustomerBookingRequestPage({
                             </Link>
                         )}
                     </Button>
-                    <BookingStatusPill className={cn('w-fit', bookingRequestStatusClassName(statusForPill))}>
+                    <BookingStatusPill hue={bookingRequestStatusHue(statusForPill)} className="w-fit">
                         {bookingRequestStatusLabel(statusForPill, locale, 'customer')}
                     </BookingStatusPill>
                 </div>

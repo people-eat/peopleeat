@@ -1,12 +1,17 @@
 import { CalendarPlusIcon } from 'lucide-react';
 
 import { formatDate, formatTime } from '../../shared';
+import type {
+    CookCallSlotBookingActor,
+    CookCallSlotBookingAudience,
+    CookCallSlotBookingStatus,
+} from '../../shared/cookCallSlotBookingStatus';
+import { cookCallSlotBookingStatusLabel, cookCallSlotBookingStatusTone } from '../../shared/cookCallSlotBookingStatus';
 import { cn } from '../utils/cn';
 import { callCalendarEventCopy, downloadCalendarEvent } from '../utils/downloadCalendarEvent';
 import type { Locale } from '../utils/locale';
 import { Button } from './base/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from './base/card';
-import type { StatusTone } from './base/status';
 import { StatusBadge } from './base/status-badge';
 import { Textarea } from './base/textarea';
 
@@ -18,8 +23,8 @@ export type BookingRequestOfferCallBookingCardBooking = {
     cookCallSlotBookingId: string;
     startAt: string;
     endAt: string;
-    status: 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'COMPLETED' | 'DECLINED';
-    initiator: 'CUSTOMER' | 'COOK';
+    status: CookCallSlotBookingStatus;
+    initiator: CookCallSlotBookingActor;
     customerMessage?: string | null;
     cookMessage?: string | null;
     declineReason?: string | null;
@@ -28,6 +33,10 @@ export type BookingRequestOfferCallBookingCardBooking = {
 };
 
 export type BookingRequestOfferCallBookingCardRole = 'user' | 'cook' | 'admin';
+
+function callBookingAudience(role: BookingRequestOfferCallBookingCardRole): CookCallSlotBookingAudience {
+    return role === 'user' ? 'customer' : role;
+}
 
 export type BookingRequestOfferCallBookingCardProps = {
     booking: BookingRequestOfferCallBookingCardBooking;
@@ -63,60 +72,6 @@ function describeReason(reason: string | null | undefined, locale: Locale): stri
     return reason;
 }
 
-function statusLabel(
-    booking: BookingRequestOfferCallBookingCardBooking,
-    role: BookingRequestOfferCallBookingCardRole,
-    locale: Locale,
-): string {
-    switch (booking.status) {
-        case 'CONFIRMED':
-            return { de: 'Bestätigt', en: 'Confirmed' }[locale];
-        case 'DECLINED':
-            return { de: 'Abgelehnt', en: 'Declined' }[locale];
-        case 'CANCELED':
-            return { de: 'Abgesagt', en: 'Canceled' }[locale];
-        case 'COMPLETED':
-            return { de: 'Abgeschlossen', en: 'Completed' }[locale];
-        case 'PENDING':
-            if (role === 'user') {
-                return booking.initiator === 'CUSTOMER'
-                    ? { de: 'Warte auf Bestätigung', en: 'Awaiting confirmation' }[locale]
-                    : { de: 'Wartet auf deine Reaktion', en: 'Awaiting your response' }[locale];
-            }
-            if (role === 'cook') {
-                return booking.initiator === 'COOK'
-                    ? { de: 'Wartet auf Kunden', en: 'Awaiting customer' }[locale]
-                    : { de: 'Wartet auf deine Reaktion', en: 'Awaiting your response' }[locale];
-            }
-            return booking.initiator === 'COOK'
-                ? { de: 'Wartet auf Kunden', en: 'Awaiting customer' }[locale]
-                : { de: 'Wartet auf Koch', en: 'Awaiting chef' }[locale];
-        default:
-            return booking.status;
-    }
-}
-
-function statusTone(booking: BookingRequestOfferCallBookingCardBooking, role: BookingRequestOfferCallBookingCardRole): StatusTone {
-    switch (booking.status) {
-        case 'CONFIRMED':
-        case 'COMPLETED':
-            return 'success';
-        case 'DECLINED':
-        case 'CANCELED':
-            return 'error';
-        case 'PENDING':
-            if (role === 'user') {
-                return booking.initiator === 'COOK' ? 'warning' : 'info';
-            }
-            if (role === 'cook') {
-                return booking.initiator === 'CUSTOMER' ? 'warning' : 'info';
-            }
-            return 'warning';
-        default:
-            return 'info';
-    }
-}
-
 /** Presentational discovery-call booking card (confirm / decline / cancel UI, no GraphQL). */
 export function BookingRequestOfferCallBookingCard({
     booking,
@@ -148,6 +103,7 @@ export function BookingRequestOfferCallBookingCard({
     const isDeclining = decliningId === booking.cookCallSlotBookingId;
     const isCanceling = cancelingId === booking.cookCallSlotBookingId;
     const reasonText = describeReason(booking.declineReason ?? booking.canceledReason, locale);
+    const audience = callBookingAudience(role);
     const canRespondAsUser = role === 'user' && isPending && fromCook;
     const canRespondAsCook = role === 'cook' && isPending && fromCustomer;
     const canDeclineAsAdmin = role === 'admin' && isPending;
@@ -188,7 +144,9 @@ export function BookingRequestOfferCallBookingCard({
                     </CardDescription>
                 </div>
                 <CardAction>
-                    <StatusBadge tone={statusTone(booking, role)}>{statusLabel(booking, role, locale)}</StatusBadge>
+                    <StatusBadge tone={cookCallSlotBookingStatusTone(booking, audience)}>
+                        {cookCallSlotBookingStatusLabel(booking, audience, locale)}
+                    </StatusBadge>
                 </CardAction>
             </CardHeader>
 

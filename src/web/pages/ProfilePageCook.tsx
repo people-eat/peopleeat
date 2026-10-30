@@ -11,29 +11,21 @@ import { cookAnalyticsFormatDurationMinutes, cookAnalyticsFormatPercent } from '
 import type { CookOverviewAttentionItem, CookOverviewGettingStartedStep } from './profilePageCookOverview';
 import { profilePageCookOverview } from './profilePageCookOverview';
 
-function AttentionAction({ item }: { item: CookOverviewAttentionItem }) {
-    if (item.actionLabel == null) return null;
-    if (item.key === 'wallet-reset' && item.href != null) {
+function AttentionAction({ action }: { action: NonNullable<CookOverviewAttentionItem['action']> }) {
+    if (action.to === '/{-$locale}/profile/wallet') {
         return (
             <Button asChild size="sm">
-                <Link to={item.href}>{item.actionLabel}</Link>
+                <Link to={action.to}>{action.label}</Link>
             </Button>
         );
     }
-    if ((item.key === 'upcoming-call' || item.key === 'unread-offers') && item.params != null) {
-        return (
-            <Button asChild size="sm">
-                <Link
-                    to="/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId"
-                    params={{ bookingRequestOfferId: item.params.bookingRequestOfferId }}
-                    search={item.params.search}
-                >
-                    {item.actionLabel}
-                </Link>
-            </Button>
-        );
-    }
-    return null;
+    return (
+        <Button asChild size="sm">
+            <Link to={action.to} params={{ bookingRequestOfferId: action.bookingRequestOfferId }} search={action.search}>
+                {action.label}
+            </Link>
+        </Button>
+    );
 }
 
 function GettingStartedAction({ step }: { step: CookOverviewGettingStartedStep }) {
@@ -104,18 +96,10 @@ function OverviewAnalyticsStrip({ cook }: { cook: GqlCProfilePageCookStatusFragm
     );
 }
 
-export function ProfilePageCook({
-    name,
-    profilePictureUrl,
-    cook,
-}: {
-    name: string;
-    profilePictureUrl: string | null;
-    cook: GqlCProfilePageCookStatusFragment;
-}) {
+export function ProfilePageCook({ name, cook }: { name: string; cook: GqlCProfilePageCookStatusFragment }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const overview = profilePageCookOverview(cook, locale, timeZone, { hasProfilePicture: profilePictureUrl != null });
+    const overview = profilePageCookOverview(cook, locale, timeZone);
 
     return (
         <main id="main-content" className="mx-auto grid min-h-0 w-full max-w-3xl flex-1 content-start gap-8">
@@ -132,19 +116,16 @@ export function ProfilePageCook({
                         {{ de: 'Aufmerksamkeit', en: 'Attention' }[locale]}
                     </h2>
                     <div className="grid gap-3">
-                        {overview.attention.map((item) => {
-                            const action = <AttentionAction item={item} />;
-                            return (
-                                <StatusAlert
-                                    key={item.key}
-                                    tone={item.tone}
-                                    title={item.title}
-                                    action={item.actionLabel != null ? action : undefined}
-                                >
-                                    {item.body}
-                                </StatusAlert>
-                            );
-                        })}
+                        {overview.attention.map((item) => (
+                            <StatusAlert
+                                key={item.kind}
+                                tone={item.tone}
+                                title={item.title}
+                                action={item.action != null ? <AttentionAction action={item.action} /> : undefined}
+                            >
+                                {item.body}
+                            </StatusAlert>
+                        ))}
                     </div>
                 </section>
             ) : null}
@@ -159,7 +140,7 @@ export function ProfilePageCook({
                     <ul className="grid gap-3">
                         {overview.gettingStarted.map((step) => (
                             <li
-                                key={step.key}
+                                key={step.step}
                                 className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4 sm:flex-row sm:items-start sm:justify-between"
                             >
                                 <div className="grid gap-1">

@@ -5,6 +5,7 @@ import {
     bookingRequestOfferPendingCallSlotsClose,
     bookingRequestOfferPendingCallSlotsCompleteJobsCancel,
 } from '../../utils/bookingRequestOfferPendingCallSlotsClose';
+import { bookingRequestPoolCooksPublish } from '../../utils/bookingRequestPoolCooksPublish';
 import type { QueuedJobDefinition } from '../types';
 
 interface BookingRequestExpireNotifyData {
@@ -27,6 +28,8 @@ export const bookingRequestExpireNotify: QueuedJobDefinition<BookingRequestExpir
                 userId: bookingRequests.userId,
                 expiresAt: bookingRequests.expiresAt,
                 canceledAt: bookingRequests.canceledAt,
+                publicationStatus: bookingRequests.publicationStatus,
+                exactEventAddress: bookingRequests.exactEventAddress,
             })
             .from(bookingRequests)
             .where(eq(bookingRequests.bookingRequestId, data.bookingRequestId))
@@ -82,6 +85,7 @@ export const bookingRequestExpireNotify: QueuedJobDefinition<BookingRequestExpir
         }
 
         await Promise.all([...publishUserIds].map((userId) => serverRuntime.publish.userUpdates({ userId })));
+        await bookingRequestPoolCooksPublish(serverRuntime, [row], publishUserIds);
         await serverRuntime.publish.adminUpdates();
     },
     options: {

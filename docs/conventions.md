@@ -294,6 +294,28 @@ import from `src/shared`. `formatCurrency` always shows **2 fraction digits** by
 `maximumFractionDigits: 0` only for whole-euro admin overview summaries. Relative time and calendar pickers still use `date-fns` +
 `DATE_FNS_LOCALE` (see [i18n.md](./architecture/i18n.md)).
 
+### Status labels, tones, and hues
+
+Mapping a domain status to **what it says** and **how urgent it reads** is platform-neutral and lives in `src/shared`; mapping that result
+to **pixels** stays on the platform. This keeps web, server (emails / notifications), and future native clients on one vocabulary.
+
+| Lives in `src/shared`                                                      | Lives in `src/web`                                            |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Status unions (`BookingRequestOfferStatus`, `CookStripeStatus`, …)         | Tone → Tailwind classes (`src/web/components/base/status.ts`) |
+| Bilingual labels / descriptions per audience (`customer`, `cook`, `admin`) | Hue → pill classes (`BookingStatusPill`)                      |
+| Semantic `StatusTone` (`info` / `success` / `warning` / `error`)           | Icons (`statusIcons`), layout                                 |
+| Booking lifecycle `BookingLifecycleHue` (`yellow` / `blue` / …)            |                                                               |
+
+Modules: `bookingRequestStatus.ts`, `bookingRequestOfferStatus.ts`, `cookCallSlotBookingStatus.ts`, `cookStripe.ts`, `statusTone.ts`,
+`bookingLifecycleHue.ts`. Server domain (`src/server/domain/`) re-exports the status unions from these modules instead of redeclaring them.
+
+Rules:
+
+- Shared status helpers take an explicit `audience` argument when wording differs per viewer — no default audience.
+- Never return Tailwind classes, icons, or JSX from `src/shared`. Return a tone or hue and let the platform style it.
+- Do not add a page-local `fooStatusLabel` / `fooStatusTone` when the status is shown on more than one surface (or will be on mobile) — add
+  or extend the shared module instead.
+
 ## Comments
 
 Only add a comment if there is no other way to make the code self-explanatory. Reach for the alternatives first:

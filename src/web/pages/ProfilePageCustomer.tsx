@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 
+import { userAttentionKindBadgeLabel } from '../../shared/attentionCopy';
 import { Button } from '../components/base/button';
 import { StatusAlert } from '../components/base/status-alert';
 import type { CustomerBookingRequestCardAttention } from '../components/CustomerBookingRequestCard';
@@ -69,23 +70,8 @@ function GettingStartedAction({ step }: { step: CustomerOverviewGettingStartedSt
     );
 }
 
-function attentionBadgeLabel(item: CustomerOverviewAttentionItem, locale: 'de' | 'en'): string {
-    switch (item.key) {
-        case 'offers-to-review':
-            return { de: 'Entscheidung', en: 'Decision' }[locale];
-        case 'payment-due':
-            return { de: 'Zahlung', en: 'Payment' }[locale];
-        case 'unread-offers':
-            return { de: 'Nachricht', en: 'Message' }[locale];
-        case 'upcoming-call':
-            return { de: 'Termin', en: 'Call' }[locale];
-        case 'review-missing':
-            return { de: 'Bewertung', en: 'Review' }[locale];
-    }
-}
-
 function cardAttentionFromOverview(item: CustomerOverviewAttentionItem, locale: 'de' | 'en'): CustomerBookingRequestCardAttention | null {
-    const badgeLabel = attentionBadgeLabel(item, locale);
+    const badgeLabel = userAttentionKindBadgeLabel(item.kind, locale);
     if (item.target.kind === 'requests') return null;
     if (item.target.kind === 'request') {
         return {
@@ -130,7 +116,7 @@ function cardAttentionFromOverview(item: CustomerOverviewAttentionItem, locale: 
 export function ProfilePageCustomer({ name, user }: { name: string; user: GqlCProfilePageUserFragment }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
-    const overview = profilePageCustomerOverview(user.bookingRequests ?? [], locale, timeZone);
+    const overview = profilePageCustomerOverview(user.bookingRequests ?? [], user.attention ?? [], locale, timeZone);
     const showGettingStarted = overview.createMode !== 'primary' && overview.gettingStarted.length > 0;
     const nextDinner = overview.nextDinner;
     const inlineAttention = nextDinner?.inlineAttention ?? null;
@@ -156,7 +142,7 @@ export function ProfilePageCustomer({ name, user }: { name: string; user: GqlCPr
                     </h2>
                     <div className="grid gap-3">
                         {overview.attention.map((item) => (
-                            <StatusAlert key={item.key} tone={item.tone} title={item.title} action={<AttentionAction item={item} />}>
+                            <StatusAlert key={item.kind} tone={item.tone} title={item.title} action={<AttentionAction item={item} />}>
                                 {item.body}
                             </StatusAlert>
                         ))}

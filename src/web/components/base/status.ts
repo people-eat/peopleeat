@@ -1,10 +1,8 @@
 import { CircleCheckIcon, CircleXIcon, InfoIcon, TriangleAlertIcon } from 'lucide-react';
 
-/**
- * Shared status vocabulary for banners, badges, and icon chips.
- * See `docs/styles/status-messaging.md`.
- */
-export type StatusTone = 'info' | 'success' | 'warning' | 'error';
+import type { StatusTone } from '../../../shared/statusTone';
+
+export type { StatusTone } from '../../../shared/statusTone';
 
 export const statusIcons = {
     info: InfoIcon,

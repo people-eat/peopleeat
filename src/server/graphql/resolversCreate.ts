@@ -344,6 +344,8 @@ import { cityCooksInTravelRadiusFindMany } from '../queries/cityCooksInTravelRad
 import { cityFeaturedCooksFindMany } from '../queries/cityFeaturedCooksFindMany';
 import { cityTestimonialsFindMany } from '../queries/cityTestimonialsFindMany';
 import { cookAnalyticsFind } from '../queries/cookAnalyticsFind';
+import { cookAttentionCountsFindOne } from '../queries/cookAttentionCountsFindOne';
+import { cookAttentionFindMany } from '../queries/cookAttentionFindMany';
 import { cookBookingRequestFindMany } from '../queries/cookBookingRequestFindMany';
 import { cookBookingRequestFindOne } from '../queries/cookBookingRequestFindOne';
 import { cookBookingRequestLookup } from '../queries/cookBookingRequestLookup';
@@ -364,6 +366,7 @@ import { cookMenuFindMany } from '../queries/cookMenuFindMany';
 import { cookMenuFindOne } from '../queries/cookMenuFindOne';
 import { cookMenuTemplateFindOne } from '../queries/cookMenuTemplateFindOne';
 import { cookOfferMenuFindMany } from '../queries/cookOfferMenuFindMany';
+import { cookOnboardingStepsFindMany } from '../queries/cookOnboardingStepsFindMany';
 import { cookStripeAccountDetailsFindOne } from '../queries/cookStripeAccountDetailsFindOne';
 import { cookStripeWalletFindOne } from '../queries/cookStripeWalletFindOne';
 import { giftCardFileUploadFindOne } from '../queries/giftCardFileUploadFindOne';
@@ -403,6 +406,8 @@ import { supportRequestMessagesFindMany } from '../queries/supportRequestMessage
 import { userAdminFindOne } from '../queries/userAdminFindOne';
 import { userAssistantChatFindMany } from '../queries/userAssistantChatFindMany';
 import { userAssistantChatFindOne } from '../queries/userAssistantChatFindOne';
+import { userAttentionCountsFindOne } from '../queries/userAttentionCountsFindOne';
+import { userAttentionFindMany } from '../queries/userAttentionFindMany';
 import { userBookingRequestFindMany } from '../queries/userBookingRequestFindMany';
 import { userBookingRequestFindOne } from '../queries/userBookingRequestFindOne';
 import { userBookingRequestOfferCustomerTestimonialFindOne } from '../queries/userBookingRequestOfferCustomerTestimonialFindOne';
@@ -1082,6 +1087,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             giftCards(parentUser: GqlSUser, _: unknown, requestingSession: GqlSSession) {
                 return userGiftCardFindMany(parentUser, requestingSession, serverRuntime);
             },
+            attentionCounts(parentUser: GqlSUser, _: unknown, requestingSession: GqlSSession) {
+                return userAttentionCountsFindOne(parentUser, requestingSession, serverRuntime);
+            },
+            attention(parentUser: GqlSUser, _: unknown, requestingSession: GqlSSession) {
+                return userAttentionFindMany(parentUser, requestingSession, serverRuntime);
+            },
         },
 
         Admin: {
@@ -1603,6 +1614,15 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             bookingRequestOffer(parent: GqlSCook, args: GqlSCookBookingRequestOfferArgs, requestingSession: GqlSSession) {
                 return cookBookingRequestOfferFindOne(parent, args, requestingSession, serverRuntime);
+            },
+            attentionCounts(parent: GqlSCook, _: unknown, requestingSession: GqlSSession) {
+                return cookAttentionCountsFindOne(parent, requestingSession, serverRuntime);
+            },
+            attention(parent: GqlSCook, _: unknown, requestingSession: GqlSSession) {
+                return cookAttentionFindMany(parent, requestingSession, serverRuntime);
+            },
+            onboardingSteps(parent: GqlSCook, _: unknown, requestingSession: GqlSSession) {
+                return cookOnboardingStepsFindMany(parent, requestingSession, serverRuntime);
             },
         },
         CookCallSlotBooking: {

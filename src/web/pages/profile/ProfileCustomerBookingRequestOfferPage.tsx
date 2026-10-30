@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { bookingRequestOfferChatCanSend } from '../../../shared';
+import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../../shared/bookingRequestOfferStatus';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -38,7 +39,6 @@ import { BookingRequestOfferCallSessionProvider } from '../../components/Booking
 import { BookingRequestOfferCallTab } from '../../components/BookingRequestOfferCallTab';
 import { BookingRequestOfferChat } from '../../components/BookingRequestOfferChat';
 import { BookingRequestOfferParticipantAmendmentCustomerPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
-import { bookingRequestOfferStatusClassName, bookingRequestOfferStatusLabel } from '../../components/bookingRequestOfferStatus';
 import { BookingRequestOfferTestimonialPanel } from '../../components/BookingRequestOfferTestimonialPanel';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import { CookProfileTags } from '../../components/CookProfileTags';
@@ -369,7 +369,7 @@ export function ProfileCustomerBookingRequestOfferPage({
                 >
                     <div className="grid shrink-0 gap-2 px-4">
                         <div className="flex items-center justify-end gap-2">
-                            <BookingStatusPill className={bookingRequestOfferStatusClassName(offer.status)}>
+                            <BookingStatusPill hue={bookingRequestOfferStatusHue(offer.status)}>
                                 {bookingRequestOfferStatusLabel(offer.status, locale, 'customer')}
                             </BookingStatusPill>
                             {canDecline ? (

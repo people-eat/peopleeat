@@ -2,18 +2,19 @@ import { Link } from '@tanstack/react-router';
 import { CalendarIcon, MapPinIcon, UserIcon, UsersIcon } from 'lucide-react';
 
 import { formatDate, formatDateTime, formatParticipants, userDisplayName } from '../../shared';
+import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
+import { bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
+import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
 import type { Locale } from '../../shared/locale';
 import type { GqlCBookingRequestPublicationStatus, GqlCBookingRequestStatus } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { adminBookingRequestPublicationStatusLabel } from '../pages/admin/adminBookingRequestsColumns';
 import { cn } from '../utils/cn';
-import { adminBookingRequestOfferStatusLabel } from './adminBookingRequestOfferStatus';
 import { Avatar, AvatarFallback } from './base/avatar';
 import { Badge } from './base/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from './base/tooltip';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
-import { adminBookingRequestStatusLabel, bookingRequestStatusClassName } from './bookingRequestStatus';
 import { BookingStatusPill } from './BookingStatusPill';
 
 const ACCEPTED_PATH_OFFER_STATUSES = new Set(['USER_NEEDS_DEPOSIT_PAYMENT', 'PAYMENT_PULL_PENDING', 'EVENT_PENDING', 'COMPLETED']);
@@ -24,7 +25,7 @@ const BOOKING_REQUEST_ACCEPTED_OR_LATER = new Set(['DEPOSIT_PAYMENT_PENDING', 'P
 
 type AdminBookingRequestListCardOffer = {
     bookingRequestOfferId: string;
-    status: string;
+    status: BookingRequestOfferStatus;
     createdAt: string;
     userUnreadNotificationCount: number;
     cookUnreadNotificationCount: number;
@@ -53,7 +54,7 @@ type OfferChipModel = {
     firstName: string;
     lastName: string;
     createdAt: string;
-    status: string;
+    status: BookingRequestOfferStatus;
     unreadCount: number;
 };
 
@@ -104,7 +105,7 @@ function uniqueOfferChips(offers: readonly AdminBookingRequestListCardOffer[]): 
 
 function offerTooltipLabel(chip: OfferChipModel, locale: Locale, timeZone: string): string {
     const createdAtLabel = formatOfferCreatedAt(chip.createdAt, locale, timeZone);
-    const statusTitle = adminBookingRequestOfferStatusLabel(chip.status, locale);
+    const statusTitle = bookingRequestOfferStatusLabel(chip.status, locale, 'admin');
     const name = userDisplayName({ firstName: chip.firstName, lastName: chip.lastName });
     const unread =
         chip.unreadCount > 0
@@ -338,8 +339,8 @@ export function AdminBookingRequestListCard({ request }: { request: AdminBooking
                         {request.occasion}
                     </Link>
                     <div className="grid w-max shrink-0 justify-items-end gap-1">
-                        <BookingStatusPill className={bookingRequestStatusClassName(request.status)}>
-                            {adminBookingRequestStatusLabel(request.status, locale)}
+                        <BookingStatusPill hue={bookingRequestStatusHue(request.status)}>
+                            {bookingRequestStatusLabel(request.status, locale, 'admin')}
                         </BookingStatusPill>
                         {needsPublicationReview ? (
                             <Badge variant="outline">{adminBookingRequestPublicationStatusLabel(request.publicationStatus, locale)}</Badge>

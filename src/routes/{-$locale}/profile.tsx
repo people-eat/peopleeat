@@ -5,7 +5,6 @@ import { ProfilePageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { ProfileLayout } from '../../web/pages/profile/ProfileLayout';
 import { profileShellPreload } from '../../web/pages/profile/profileShellPreload';
-import { profilePageCookOverviewVariables } from '../../web/pages/profilePageCookOverviewVariables';
 import { seoMeta } from '../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
@@ -13,7 +12,7 @@ import { returnToFromLocation } from '../../web/utils/returnTo';
 
 export const Route = createFileRoute('/{-$locale}/profile')({
     loader: async ({ params, location }) => {
-        const data = await routeLoaderGraphqlClient(ProfilePageDocument, profilePageCookOverviewVariables())();
+        const data = await routeLoaderGraphqlClient(ProfilePageDocument)();
         const user = data.currentSession.user;
         if (!user) {
             throw redirect({

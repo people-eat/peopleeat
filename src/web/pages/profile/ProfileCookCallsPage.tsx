@@ -6,6 +6,7 @@ import { useMutation } from 'urql';
 
 import { formatDate, formatTime, isCallJoinable } from '../../../shared';
 import { COOK_CALL_DURATIONS_MINUTES, COOK_CALL_MAX_WEEKLY_RULES, formatMinuteOfDay } from '../../../shared/cookCallAvailability';
+import { cookCallSlotBookingStatusLabel, cookCallSlotBookingStatusTone } from '../../../shared/cookCallSlotBookingStatus';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -19,16 +20,11 @@ import {
 import { Button } from '../../components/base/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/base/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
-import type { StatusTone } from '../../components/base/status';
 import { StatusBadge } from '../../components/base/status-badge';
 import { Switch } from '../../components/base/switch';
 import { Textarea } from '../../components/base/textarea';
 import { bookingOfferCallCardClassName, bookingOfferCallCardSectionClassName } from '../../components/BookingRequestOfferScheduleTab';
-import type {
-    GqlCProfileCookCallsCookFragment,
-    GqlCProfileCookCallsPageQuery,
-    GqlCProfileCookCallsSlotBookingFragment,
-} from '../../graphql/generated';
+import type { GqlCProfileCookCallsCookFragment, GqlCProfileCookCallsPageQuery } from '../../graphql/generated';
 import {
     ProfileCookCallsCallSlotCancelDocument,
     ProfileCookCallsCallSlotConfirmDocument,
@@ -77,22 +73,6 @@ function sortExceptions(exceptions: GqlCProfileCookCallsCookFragment['callAvaila
 
 function formatCallTime(value: string, locale: Locale, timeZone: string): string {
     return formatTime(value, { locale, timeZone });
-}
-
-function bookingStatusLabel(booking: GqlCProfileCookCallsSlotBookingFragment, locale: Locale): string {
-    if (booking.status === 'CONFIRMED') {
-        return { de: 'Bestätigt', en: 'Confirmed' }[locale];
-    }
-    if (booking.initiator === 'COOK') {
-        return { de: 'Wartet auf Kunden', en: 'Awaiting customer' }[locale];
-    }
-    return { de: 'Wartet auf dich', en: 'Awaiting your response' }[locale];
-}
-
-function bookingStatusTone(booking: GqlCProfileCookCallsSlotBookingFragment): StatusTone {
-    if (booking.status === 'CONFIRMED') return 'success';
-    if (booking.initiator === 'CUSTOMER') return 'warning';
-    return 'info';
 }
 
 function schedulingEnabledConfirmCopy({ nextEnabled, locale }: { nextEnabled: boolean; locale: Locale }): {
@@ -385,8 +365,8 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                             <p className="text-sm text-foreground">{whenLabel}</p>
                                         </div>
                                         <CardAction>
-                                            <StatusBadge tone={bookingStatusTone(booking)}>
-                                                {bookingStatusLabel(booking, locale)}
+                                            <StatusBadge tone={cookCallSlotBookingStatusTone(booking, 'cook')}>
+                                                {cookCallSlotBookingStatusLabel(booking, 'cook', locale)}
                                             </StatusBadge>
                                         </CardAction>
                                     </CardHeader>

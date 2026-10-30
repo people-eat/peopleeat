@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import type { GqlCBookingRequestStatus } from '../graphql/generated';
+import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
+import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
+import type { BookingRequestStatus } from '../../shared/bookingRequestStatus';
+import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
 import { useLocale } from '../hooks/useLocale';
-import type { BookingRequestOfferStatusKey } from './bookingRequestOfferStatus';
-import { bookingRequestOfferStatusClassName, bookingRequestOfferStatusLabel } from './bookingRequestOfferStatus';
-import { bookingRequestStatusClassName, bookingRequestStatusLabel } from './bookingRequestStatus';
 import { BookingStatusPill } from './BookingStatusPill';
 
-const requestStatuses: GqlCBookingRequestStatus[] = [
+const requestStatuses: BookingRequestStatus[] = [
     'WAITING_FOR_OFFERS',
     'OFFERS_WAITING_FOR_REVIEW',
     'DEPOSIT_PAYMENT_PENDING',
@@ -18,7 +18,7 @@ const requestStatuses: GqlCBookingRequestStatus[] = [
     'CANCELED',
 ];
 
-const offerStatuses: BookingRequestOfferStatusKey[] = [
+const offerStatuses: BookingRequestOfferStatus[] = [
     'USER_NEEDS_TO_ACCEPT',
     'COOK_NEEDS_TO_ACCEPT',
     'USER_REQUESTED_MENU_CHANGES',
@@ -50,7 +50,7 @@ function StatusMatrix() {
                 <h3 className="text-sm font-semibold text-muted-foreground">Booking request</h3>
                 <div className="flex flex-wrap gap-2">
                     {requestStatuses.map((status) => (
-                        <BookingStatusPill key={status} className={bookingRequestStatusClassName(status)}>
+                        <BookingStatusPill key={status} hue={bookingRequestStatusHue(status)}>
                             {bookingRequestStatusLabel(status, locale, 'customer')}
                         </BookingStatusPill>
                     ))}
@@ -60,7 +60,7 @@ function StatusMatrix() {
                 <h3 className="text-sm font-semibold text-muted-foreground">Booking offer (customer)</h3>
                 <div className="flex flex-wrap gap-2">
                     {offerStatuses.map((status) => (
-                        <BookingStatusPill key={status} className={bookingRequestOfferStatusClassName(status)}>
+                        <BookingStatusPill key={status} hue={bookingRequestOfferStatusHue(status)}>
                             {bookingRequestOfferStatusLabel(status, locale, 'customer')}
                         </BookingStatusPill>
                     ))}
@@ -70,7 +70,7 @@ function StatusMatrix() {
                 <h3 className="text-sm font-semibold text-muted-foreground">Booking offer (cook)</h3>
                 <div className="flex flex-wrap gap-2">
                     {offerStatuses.map((status) => (
-                        <BookingStatusPill key={`cook-${status}`} className={bookingRequestOfferStatusClassName(status)}>
+                        <BookingStatusPill key={`cook-${status}`} hue={bookingRequestOfferStatusHue(status)}>
                             {bookingRequestOfferStatusLabel(status, locale, 'cook')}
                         </BookingStatusPill>
                     ))}

@@ -2,14 +2,14 @@ import { Link } from '@tanstack/react-router';
 import { MapPinIcon } from 'lucide-react';
 
 import { formatCurrency, userDisplayName } from '../../shared';
+import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
+import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
-import { adminBookingRequestOfferStatusLabel } from './adminBookingRequestOfferStatus';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { NotificationBadge } from './base/notification-badge';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
-import { bookingRequestOfferStatusClassName } from './bookingRequestOfferStatus';
 import { BookingStatusPill } from './BookingStatusPill';
 import { callBookingOverviewHint } from './callBookingOverviewHint';
 import type { CallBookingOverviewItem } from './callBookingOverviewHint';
@@ -17,7 +17,7 @@ import { CookProfileTags } from './CookProfileTags';
 
 export type AdminBookingRequestOfferCardOffer = {
     bookingRequestOfferId: string;
-    status: string;
+    status: BookingRequestOfferStatus;
     userUnreadNotificationCount: number;
     cookUnreadNotificationCount: number;
     totalCentsCustomer: number | null;
@@ -89,8 +89,8 @@ export function AdminBookingRequestOfferCard({
             />
 
             <div className="flex min-w-0 flex-col gap-3">
-                <BookingStatusPill className={cn('w-fit self-end', bookingRequestOfferStatusClassName(offer.status))}>
-                    {adminBookingRequestOfferStatusLabel(offer.status, locale)}
+                <BookingStatusPill hue={bookingRequestOfferStatusHue(offer.status)} className="w-fit self-end">
+                    {bookingRequestOfferStatusLabel(offer.status, locale, 'admin')}
                 </BookingStatusPill>
 
                 <div className="flex items-start gap-3">

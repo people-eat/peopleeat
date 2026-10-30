@@ -31,7 +31,6 @@ import {
     useSidebar,
 } from './base/sidebar';
 import { StatusBadge } from './base/status-badge';
-import { cookSidebarNavBadgeCountsFromCook } from './cookSidebarNavBadges';
 
 function pathWithoutLocale(pathname: string, locale: Locale): string {
     if (locale !== DEFAULT_LOCALE && pathname.startsWith(`/${locale}/`)) {
@@ -82,12 +81,11 @@ export function CookSidebar({
         const { unsubscribe } = pipe(
             client.executeSubscription(request),
             subscribe((result) => {
-                const cook = result.data?.userUpdates.cook;
-                if (!cook) return;
-                const next = cookSidebarNavBadgeCountsFromCook(cook);
-                setPoolReviewCount(next.poolReviewCount);
-                setOffersUnreadCount(next.offersUnreadCount);
-                setWalletBadge(next.walletBadge);
+                const counts = result.data?.userUpdates.cook?.attentionCounts;
+                if (!counts) return;
+                setPoolReviewCount(counts.bookingRequestPoolCount);
+                setOffersUnreadCount(counts.bookingRequestOfferUnreadCount);
+                setWalletBadge(counts.walletNeedsAttention);
             }),
         );
         return unsubscribe;

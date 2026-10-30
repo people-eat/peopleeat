@@ -14,6 +14,7 @@ import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCur
 import { slackNotifyOfferAccept } from '../slack/slackNotifyBooking';
 import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/bookingRequestOfferEventTomorrowNotifySchedule';
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
+import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
 import { scheduleTestimonialReminderJobs } from '../utils/scheduleTestimonialReminderJobs';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
@@ -80,6 +81,9 @@ export async function cookBookingRequestOfferAccept(
             serverRuntime.publish.userUpdates({ userId: cookId }),
             serverRuntime.publish.userUpdates({ userId: row.bookingRequest.userId }),
             serverRuntime.publish.adminUpdates(),
+            row.offer.userAccepted === true
+                ? bookingRequestPoolCooksPublish(serverRuntime, [row.bookingRequest], [cookId, row.bookingRequest.userId])
+                : undefined,
         ]);
 
         const [cookUser] = await serverRuntime.db

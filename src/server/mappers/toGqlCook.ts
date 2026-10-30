@@ -2,7 +2,7 @@ import type { Cook } from '../db/schema';
 import type { BookingRequestExactEventAddress } from '../domain/bookingRequest';
 import { cookCanCreateOffersDerive, cookStripeStatusDerive } from '../domain/cook';
 import type { UserStatus } from '../domain/user';
-import type { GqlSCook, GqlSCookTravelOriginAddress, GqlSPublicCookRating } from '../graphql/generated';
+import type { GqlSCook, GqlSCookAttentionCounts, GqlSCookTravelOriginAddress, GqlSPublicCookRating } from '../graphql/generated';
 
 export function toGqlCookTravelOriginAddress(address: NonNullable<Cook['exactTravelOriginAddress']>): GqlSCookTravelOriginAddress {
     return {
@@ -94,6 +94,11 @@ export function toGqlCook(row: Cook, userStatus: UserStatus): GqlSCook {
         // Field resolver populates; NotFound is the leak-safe default stub.
         bookingRequestLookup: { gqlTypeName: 'CookBookingRequestNotFound', _: null },
         bookingRequestOffers: [],
+        // Field resolver counts pool + unread rows for the session cook.
+        attentionCounts: undefined as unknown as GqlSCookAttentionCounts,
+        // Field resolvers derive overview to-dos and setup steps.
+        attention: [],
+        onboardingSteps: [],
         lastModifiedAt: row.lastModifiedAt,
     };
 }

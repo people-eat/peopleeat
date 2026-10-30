@@ -1,10 +1,10 @@
-# Lean customer-nav badge counts. Seeded from ProfilePage; live via userUpdates.
+# Customer-nav badge counts, derived server-side (`User.attentionCounts`). Seeded
+# from ProfilePage; live via userUpdates.
 
 fragment CustomerSidebarNavBadges on User {
     userId
-    supportRequests {
-        supportRequestId
-        userUnreadNotificationCount
+    attentionCounts {
+        supportRequestUnreadCount
     }
 }
 

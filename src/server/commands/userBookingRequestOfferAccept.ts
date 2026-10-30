@@ -23,8 +23,8 @@ import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOff
 import { bookingRequestOfferPaymentPrepare } from '../utils/bookingRequestOfferPaymentPrepare';
 import { bookingRequestOfferPaymentSucceededSessionEventCreate } from '../utils/bookingRequestOfferPaymentSessionEventCreate';
 import { bookingRequestOfferPriceSnapshot } from '../utils/bookingRequestOfferPriceSnapshot';
+import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
 import { bookingRequestReactionReminderCancel } from '../utils/bookingRequestReactionReminderSchedule';
-import { cookIdsCanCreateOffersFind } from '../utils/cookIdsCanCreateOffersFind';
 import { giftCardCharge } from '../utils/giftCardCharge';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
@@ -202,22 +202,12 @@ export async function userBookingRequestOfferAccept(
             await giftCardCharge(serverRuntime, row.giftCard, giftCardAppliedCents);
         }
 
-        const cookIdsCanCreateOffers = await cookIdsCanCreateOffersFind(
-            serverRuntime,
-            { latitude: eventAddress.latitude, longitude: eventAddress.longitude },
-            { excludeUserId: userId },
-        );
-
-        const publishUserIds = new Set<string>([
-            userId,
-            row.offer.cookId,
-            ...siblingOffers.map((sibling) => sibling.cookId),
-            ...cookIdsCanCreateOffers,
-        ]);
+        const publishUserIds = new Set<string>([userId, row.offer.cookId, ...siblingOffers.map((sibling) => sibling.cookId)]);
 
         await Promise.all([
             ...[...publishUserIds].map((id) => serverRuntime.publish.userUpdates({ userId: id })),
             serverRuntime.publish.adminUpdates(),
+            bookingRequestPoolCooksPublish(serverRuntime, [row.bookingRequest], publishUserIds),
         ]);
 
         await userBookingRequestOfferAcceptEmailSend(serverRuntime, {

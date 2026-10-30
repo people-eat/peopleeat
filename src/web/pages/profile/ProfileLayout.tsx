@@ -2,8 +2,6 @@ import { lazy, Suspense } from 'react';
 import type { ReactNode } from 'react';
 
 import { featureToggleIsActive } from '../../../shared/featureToggle';
-import { cookSidebarNavBadgeCountsFromCook } from '../../components/cookSidebarNavBadges';
-import { customerSidebarNavBadgeCountsFromUser } from '../../components/customerSidebarNavBadges';
 import { ProfileBanStatusUpdatesDocument } from '../../graphql/generated';
 import type { GqlCProfilePageQuery } from '../../graphql/generated';
 import { FeatureToggleKeysProvider } from '../../hooks/useFeatureToggleActive';
@@ -48,26 +46,25 @@ export function ProfileLayout({ loaderData }: { loaderData: GqlCProfilePageQuery
 
     let shell;
     if (user.cook) {
-        const { poolReviewCount, offersUnreadCount, walletBadge } = cookSidebarNavBadgeCountsFromCook(user.cook);
+        const { attentionCounts } = user.cook;
         shell = (
             <Suspense fallback={null}>
                 <ProfileCookShell
                     isAdmin={isAdmin}
-                    walletBadge={walletBadge}
-                    poolReviewCount={poolReviewCount}
-                    offersUnreadCount={offersUnreadCount}
+                    walletBadge={attentionCounts.walletNeedsAttention}
+                    poolReviewCount={attentionCounts.bookingRequestPoolCount}
+                    offersUnreadCount={attentionCounts.bookingRequestOfferUnreadCount}
                     assistantEnabled={featureToggleIsActive(activeFeatureToggleKeys, 'ASSISTANT_COOK')}
                     banner={banner}
                 />
             </Suspense>
         );
     } else {
-        const { supportUnreadCount } = customerSidebarNavBadgeCountsFromUser(user);
         shell = (
             <Suspense fallback={null}>
                 <ProfileCustomerShell
                     isAdmin={isAdmin}
-                    supportUnreadCount={supportUnreadCount}
+                    supportUnreadCount={user.attentionCounts?.supportRequestUnreadCount ?? 0}
                     assistantEnabled={featureToggleIsActive(activeFeatureToggleKeys, 'ASSISTANT_CUSTOMER')}
                     banner={banner}
                 />

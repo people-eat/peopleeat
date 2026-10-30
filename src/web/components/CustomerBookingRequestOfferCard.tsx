@@ -2,6 +2,8 @@ import { Link } from '@tanstack/react-router';
 import { MapPinIcon } from 'lucide-react';
 
 import { formatCurrency } from '../../shared';
+import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
+import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
@@ -9,7 +11,6 @@ import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { NotificationBadge } from './base/notification-badge';
 import { StatusBadge } from './base/status-badge';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
-import { bookingRequestOfferStatusClassName, bookingRequestOfferStatusLabel } from './bookingRequestOfferStatus';
 import { BookingStatusPill } from './BookingStatusPill';
 import { callBookingOverviewHint } from './callBookingOverviewHint';
 import type { CallBookingOverviewItem } from './callBookingOverviewHint';
@@ -17,7 +18,7 @@ import { CookProfileTags } from './CookProfileTags';
 
 export type CustomerBookingRequestOfferCardOffer = {
     bookingRequestOfferId: string;
-    status: string;
+    status: BookingRequestOfferStatus;
     userUnreadNotificationCount: number;
     testimonialMissing?: boolean;
     totalCentsCustomer: number | null;
@@ -100,7 +101,7 @@ export function CustomerBookingRequestOfferCard({
             <div className="flex min-w-0 flex-col gap-3">
                 <div className={cn('flex items-start gap-2', reviewMissing ? 'justify-between' : 'justify-end')}>
                     {reviewMissing ? <StatusBadge tone="warning">{{ de: 'Bewertung', en: 'Review' }[locale]}</StatusBadge> : null}
-                    <BookingStatusPill className={cn('w-fit shrink-0', bookingRequestOfferStatusClassName(offer.status))}>
+                    <BookingStatusPill hue={bookingRequestOfferStatusHue(offer.status)} className="w-fit shrink-0">
                         {bookingRequestOfferStatusLabel(offer.status, locale, 'customer')}
                     </BookingStatusPill>
                 </div>

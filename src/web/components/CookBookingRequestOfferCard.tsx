@@ -2,21 +2,21 @@ import { Link } from '@tanstack/react-router';
 import { CalendarIcon, InfoIcon, MapPinIcon, UserIcon, UsersIcon } from 'lucide-react';
 
 import { formatCurrency, formatDate, formatParticipants } from '../../shared';
+import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
+import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
 import { NotificationBadge } from './base/notification-badge';
 import { Popover, PopoverContent, PopoverTrigger } from './base/popover';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
-import type { BookingRequestOfferStatusKey } from './bookingRequestOfferStatus';
-import { bookingRequestOfferStatusClassName, bookingRequestOfferStatusLabel } from './bookingRequestOfferStatus';
 import { BookingStatusPill } from './BookingStatusPill';
 import type { CallBookingOverviewItem } from './callBookingOverviewHint';
 import { callBookingOverviewHint } from './callBookingOverviewHint';
 
 export type CookBookingRequestOfferCardOffer = {
     bookingRequestOfferId: string;
-    status: BookingRequestOfferStatusKey;
+    status: BookingRequestOfferStatus;
     cookAccepted?: boolean | null;
     userAccepted?: boolean | null;
     cookUnreadNotificationCount: number;
@@ -98,7 +98,7 @@ export function CookBookingRequestOfferCard({ offer }: { offer: CookBookingReque
                 </div>
             ) : null}
             <div className="flex min-w-0 flex-col gap-3">
-                <BookingStatusPill className={cn('w-fit self-end', bookingRequestOfferStatusClassName(offer.status))}>
+                <BookingStatusPill hue={bookingRequestOfferStatusHue(offer.status)} className="w-fit self-end">
                     {bookingRequestOfferStatusLabel(offer.status, locale, 'cook')}
                 </BookingStatusPill>
                 <h2 className="line-clamp-1 pr-8 font-semibold leading-snug">{request.occasion}</h2>

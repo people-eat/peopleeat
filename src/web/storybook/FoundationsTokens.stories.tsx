@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
+import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
 import type { StatusTone } from '../components/base/status';
 import { statusAlertToneClass, statusBadgeToneClass, statusIconToneClass } from '../components/base/status';
 import { StatusBadge } from '../components/base/status-badge';
 import { StatusIcon } from '../components/base/status-icon';
-import { bookingRequestOfferStatusClassName, bookingRequestOfferStatusLabel } from '../components/bookingRequestOfferStatus';
-import { bookingRequestStatusClassName, bookingRequestStatusLabel } from '../components/bookingRequestStatus';
 import { BookingStatusPill } from '../components/BookingStatusPill';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
@@ -148,14 +148,14 @@ function TokensBoard() {
                 <div className="grid gap-4">
                     <div className="flex flex-wrap gap-2">
                         {requestStatuses.map((status) => (
-                            <BookingStatusPill key={status} className={bookingRequestStatusClassName(status)}>
+                            <BookingStatusPill key={status} hue={bookingRequestStatusHue(status)}>
                                 {bookingRequestStatusLabel(status, locale, 'customer')}
                             </BookingStatusPill>
                         ))}
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {offerStatuses.map((status) => (
-                            <BookingStatusPill key={status} className={bookingRequestOfferStatusClassName(status)}>
+                            <BookingStatusPill key={status} hue={bookingRequestOfferStatusHue(status)}>
                                 {bookingRequestOfferStatusLabel(status, locale, 'customer')}
                             </BookingStatusPill>
                         ))}

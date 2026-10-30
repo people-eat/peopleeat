@@ -1,6 +1,7 @@
+import type { CookStripeStatus } from '../../shared/cookStripe';
 import type { UserStatus } from './user';
 
-export type CookStripeStatus = 'EMPTY' | 'PREPARED' | 'COMPLETED' | 'ACTIVE_WAS_RESET';
+export type { CookStripeStatus } from '../../shared/cookStripe';
 
 /** Exception kind for cook call availability — BLOCK removes a window; OPEN adds an ad-hoc window. */
 export type CookCallAvailabilityExceptionType = 'BLOCK' | 'OPEN';
@@ -34,6 +35,10 @@ export function cookStripeStatusDerive(cook: CookStripeColumns): CookStripeStatu
         return 'COMPLETED';
     }
     return 'PREPARED';
+}
+
+export function cookWalletNeedsAttentionDerive(cook: { isApprovedByAdmin: boolean } & CookStripeColumns): boolean {
+    return cook.isApprovedByAdmin && cookStripeStatusDerive(cook) !== 'COMPLETED';
 }
 
 export function cookCanCreateOffersDerive(cook: { isApprovedByAdmin: boolean } & CookStripeColumns, userStatus: UserStatus): boolean {

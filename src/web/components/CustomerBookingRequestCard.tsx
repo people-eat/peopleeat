@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { CalendarIcon, MapPinIcon, UsersIcon } from 'lucide-react';
 
 import { formatDate, formatParticipants } from '../../shared';
+import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
 import type { Locale } from '../../shared/locale';
 import type { GqlCBookingRequestStatus } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
@@ -12,7 +13,6 @@ import { NotificationBadge } from './base/notification-badge';
 import { StatusBadge } from './base/status-badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from './base/tooltip';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
-import { bookingRequestStatusClassName, bookingRequestStatusLabel } from './bookingRequestStatus';
 import { BookingStatusPill } from './BookingStatusPill';
 import { callBookingOverviewHintAcrossOffers } from './callBookingOverviewHint';
 import type { CallBookingOverviewItem } from './callBookingOverviewHint';
@@ -274,7 +274,7 @@ export function CustomerBookingRequestCard({
                     <div className={cn('flex items-start gap-2', showReviewBadge || attention != null ? 'justify-between' : 'justify-end')}>
                         {attention != null ? <StatusBadge tone={attention.tone}>{attention.badgeLabel}</StatusBadge> : null}
                         {showReviewBadge ? <StatusBadge tone="warning">{{ de: 'Bewertung', en: 'Review' }[locale]}</StatusBadge> : null}
-                        <BookingStatusPill className={cn('w-fit shrink-0', bookingRequestStatusClassName(request.status))}>
+                        <BookingStatusPill hue={bookingRequestStatusHue(request.status)} className="w-fit shrink-0">
                             {bookingRequestStatusLabel(request.status, locale, 'customer')}
                         </BookingStatusPill>
                     </div>

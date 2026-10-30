@@ -34,7 +34,7 @@ export function CookBookingRequestCard({ request, variant }: { request: CookBook
     const content = (
         <>
             <div className="flex flex-col gap-3">
-                <BookingStatusPill className={cn('w-fit self-end', isDeclined ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700')}>
+                <BookingStatusPill hue={isDeclined ? 'red' : 'green'} className="w-fit self-end">
                     {isDeclined ? { de: 'Ausgeblendet', en: 'Hidden' }[locale] : { de: 'Neue Anfrage', en: 'New request' }[locale]}
                 </BookingStatusPill>
                 <h2 className="line-clamp-1 font-semibold leading-snug">{request.occasion}</h2>

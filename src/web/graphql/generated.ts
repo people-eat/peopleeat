@@ -3108,6 +3108,8 @@ export interface GqlCContentSectionQuote {
 export interface GqlCCook {
     __typename?: 'Cook';
     analytics?: Maybe<GqlCCookAnalytics>;
+    attention: Array<GqlCCookAttentionItem>;
+    attentionCounts: GqlCCookAttentionCounts;
     biography: Scalars['String']['output'];
     biographySummary: Scalars['String']['output'];
     biographySummaryGenerating: Scalars['Boolean']['output'];
@@ -3143,6 +3145,7 @@ export interface GqlCCook {
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
     offerMenus: Array<GqlCCookMenu>;
+    onboardingSteps: Array<GqlCCookOnboardingStep>;
     rating: GqlCPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountDetails?: Maybe<GqlCCookStripeAccountDetails>;
@@ -3235,6 +3238,24 @@ export interface GqlCCookAnalyticsRange {
     endDateTime: Scalars['DateTime']['output'];
     startDateTime: Scalars['DateTime']['output'];
 }
+
+export interface GqlCCookAttentionCounts {
+    __typename?: 'CookAttentionCounts';
+    bookingRequestOfferUnreadCount: Scalars['Int']['output'];
+    bookingRequestPoolCount: Scalars['Int']['output'];
+    walletNeedsAttention: Scalars['Boolean']['output'];
+}
+
+export interface GqlCCookAttentionItem {
+    __typename?: 'CookAttentionItem';
+    bookingRequestOfferId?: Maybe<Scalars['ID']['output']>;
+    callStartAt?: Maybe<Scalars['DateTime']['output']>;
+    count: Scalars['Int']['output'];
+    customerDisplay?: Maybe<Scalars['String']['output']>;
+    kind: GqlCCookAttentionKind;
+}
+
+export type GqlCCookAttentionKind = 'APPROVAL_PENDING' | 'CALL_UPCOMING' | 'OFFER_CHAT_UNREAD' | 'WALLET_RESET';
 
 export interface GqlCCookBookingRequest {
     __typename?: 'CookBookingRequest';
@@ -3812,6 +3833,8 @@ export type GqlCCookMutationStripeOnboardingStartArgs = {
 export type GqlCCookMutationUpdateArgs = {
     input: GqlCCookUpdate;
 };
+
+export type GqlCCookOnboardingStep = 'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
 
 export interface GqlCCookStripeAccountDetails {
     __typename?: 'CookStripeAccountDetails';
@@ -4677,6 +4700,8 @@ export interface GqlCUser {
     admin?: Maybe<GqlCAdmin>;
     assistantChat?: Maybe<GqlCChat>;
     assistantChats?: Maybe<Array<GqlCChat>>;
+    attention?: Maybe<Array<GqlCUserAttentionItem>>;
+    attentionCounts?: Maybe<GqlCUserAttentionCounts>;
     birthDate?: Maybe<Scalars['Date']['output']>;
     bookingRequest?: Maybe<GqlCUserBookingRequest>;
     bookingRequests?: Maybe<Array<GqlCUserBookingRequest>>;
@@ -4725,6 +4750,31 @@ export type GqlCUserAssistantChatCriterion = {
     surface?: InputMaybe<GqlCChatSurface>;
     take?: Scalars['Int']['input'];
 };
+
+export interface GqlCUserAttentionCounts {
+    __typename?: 'UserAttentionCounts';
+    supportRequestUnreadCount: Scalars['Int']['output'];
+}
+
+export interface GqlCUserAttentionItem {
+    __typename?: 'UserAttentionItem';
+    bookingRequestId: Scalars['ID']['output'];
+    bookingRequestOfferId?: Maybe<Scalars['ID']['output']>;
+    callEndAt?: Maybe<Scalars['DateTime']['output']>;
+    callStartAt?: Maybe<Scalars['DateTime']['output']>;
+    count: Scalars['Int']['output'];
+    kind: GqlCUserAttentionKind;
+    occasion: Scalars['String']['output'];
+}
+
+export type GqlCUserAttentionKind =
+    | 'CALL_CONFIRMED'
+    | 'CALL_PENDING'
+    | 'CALL_RESPONSE_NEEDED'
+    | 'OFFERS_TO_REVIEW'
+    | 'OFFER_CHAT_UNREAD'
+    | 'PAYMENT_DUE'
+    | 'TESTIMONIAL_MISSING';
 
 export interface GqlCUserBookingRequest {
     __typename?: 'UserBookingRequest';
@@ -7210,20 +7260,14 @@ export type GqlCCookMealEditorMealUpdateMutation = { user: { cook: { mealUpdate:
 
 export type GqlCCookSidebarNavBadgesFragment = {
     cookId: string;
-    isApprovedByAdmin: boolean;
-    stripeStatus: Schema.GqlCCookStripeStatus;
-    openBookingRequests: Array<{ bookingRequestId: string }>;
-    bookingRequestOffers: Array<{ bookingRequestOfferId: string; cookUnreadNotificationCount: number }>;
+    attentionCounts: { bookingRequestPoolCount: number; bookingRequestOfferUnreadCount: number; walletNeedsAttention: boolean };
 };
 
 export type GqlCCookSidebarNavBadgesUserFragment = {
     userId: string;
     cook: {
         cookId: string;
-        isApprovedByAdmin: boolean;
-        stripeStatus: Schema.GqlCCookStripeStatus;
-        openBookingRequests: Array<{ bookingRequestId: string }>;
-        bookingRequestOffers: Array<{ bookingRequestOfferId: string; cookUnreadNotificationCount: number }>;
+        attentionCounts: { bookingRequestPoolCount: number; bookingRequestOfferUnreadCount: number; walletNeedsAttention: boolean };
     } | null;
 };
 
@@ -7234,23 +7278,17 @@ export type GqlCCookSidebarNavBadgesUpdatesSubscription = {
         userId: string;
         cook: {
             cookId: string;
-            isApprovedByAdmin: boolean;
-            stripeStatus: Schema.GqlCCookStripeStatus;
-            openBookingRequests: Array<{ bookingRequestId: string }>;
-            bookingRequestOffers: Array<{ bookingRequestOfferId: string; cookUnreadNotificationCount: number }>;
+            attentionCounts: { bookingRequestPoolCount: number; bookingRequestOfferUnreadCount: number; walletNeedsAttention: boolean };
         } | null;
     };
 };
 
-export type GqlCCustomerSidebarNavBadgesFragment = {
-    userId: string;
-    supportRequests: Array<{ supportRequestId: string; userUnreadNotificationCount: number }> | null;
-};
+export type GqlCCustomerSidebarNavBadgesFragment = { userId: string; attentionCounts: { supportRequestUnreadCount: number } | null };
 
 export type GqlCCustomerSidebarNavBadgesUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCCustomerSidebarNavBadgesUpdatesSubscription = {
-    userUpdates: { userId: string; supportRequests: Array<{ supportRequestId: string; userUnreadNotificationCount: number }> | null };
+    userUpdates: { userId: string; attentionCounts: { supportRequestUnreadCount: number } | null };
 };
 
 export type GqlCFooterNewsletterSubscriptionCreateMutationVariables = Exact<{
@@ -8935,20 +8973,13 @@ export type GqlCPublicPartnersPageQuery = {
 
 export type GqlCProfilePageCookStatusFragment = {
     cookId: string;
-    isApprovedByAdmin: boolean;
-    stripeStatus: Schema.GqlCCookStripeStatus;
-    biography: string;
-    cuisineStyle: string | null;
-    cookingPhilosophy: string | null;
-    mealsCounts: Array<number>;
-    menusCounts: Array<number>;
-    exactTravelOriginAddress: { displayText: string; city: string } | null;
-    upcomingCallSlotBookings: Array<{
-        cookCallSlotBookingId: string;
-        startAt: string;
-        status: Schema.GqlCCookCallSlotBookingStatus;
-        bookingRequestOfferId: string;
-        customer: { display: string };
+    onboardingSteps: Array<Schema.GqlCCookOnboardingStep>;
+    attention: Array<{
+        kind: Schema.GqlCCookAttentionKind;
+        count: number;
+        bookingRequestOfferId: string | null;
+        callStartAt: string | null;
+        customerDisplay: string | null;
     }>;
     analytics: {
         hasInsights: boolean;
@@ -8957,8 +8988,7 @@ export type GqlCProfilePageCookStatusFragment = {
         offersCreatedCount: number;
         offerConversionRate: number | null;
     } | null;
-    openBookingRequests: Array<{ bookingRequestId: string }>;
-    bookingRequestOffers: Array<{ bookingRequestOfferId: string; cookUnreadNotificationCount: number }>;
+    attentionCounts: { bookingRequestPoolCount: number; bookingRequestOfferUnreadCount: number; walletNeedsAttention: boolean };
 };
 
 export type GqlCProfilePageUserFragment = {
@@ -8966,23 +8996,15 @@ export type GqlCProfilePageUserFragment = {
     status: Schema.GqlCUserStatus;
     firstName: string;
     lastName: string;
-    profilePicture: { url: string } | null;
     cook: {
         cookId: string;
-        isApprovedByAdmin: boolean;
-        stripeStatus: Schema.GqlCCookStripeStatus;
-        biography: string;
-        cuisineStyle: string | null;
-        cookingPhilosophy: string | null;
-        mealsCounts: Array<number>;
-        menusCounts: Array<number>;
-        exactTravelOriginAddress: { displayText: string; city: string } | null;
-        upcomingCallSlotBookings: Array<{
-            cookCallSlotBookingId: string;
-            startAt: string;
-            status: Schema.GqlCCookCallSlotBookingStatus;
-            bookingRequestOfferId: string;
-            customer: { display: string };
+        onboardingSteps: Array<Schema.GqlCCookOnboardingStep>;
+        attention: Array<{
+            kind: Schema.GqlCCookAttentionKind;
+            count: number;
+            bookingRequestOfferId: string | null;
+            callStartAt: string | null;
+            customerDisplay: string | null;
         }>;
         analytics: {
             hasInsights: boolean;
@@ -8991,8 +9013,7 @@ export type GqlCProfilePageUserFragment = {
             offersCreatedCount: number;
             offerConversionRate: number | null;
         } | null;
-        openBookingRequests: Array<{ bookingRequestId: string }>;
-        bookingRequestOffers: Array<{ bookingRequestOfferId: string; cookUnreadNotificationCount: number }>;
+        attentionCounts: { bookingRequestPoolCount: number; bookingRequestOfferUnreadCount: number; walletNeedsAttention: boolean };
     } | null;
     admin: { adminId: string } | null;
     bookingRequests: Array<{
@@ -9017,13 +9038,19 @@ export type GqlCProfilePageUserFragment = {
             }>;
         }>;
     }> | null;
-    supportRequests: Array<{ supportRequestId: string; userUnreadNotificationCount: number }> | null;
+    attention: Array<{
+        kind: Schema.GqlCUserAttentionKind;
+        count: number;
+        bookingRequestId: string;
+        bookingRequestOfferId: string | null;
+        occasion: string;
+        callStartAt: string | null;
+        callEndAt: string | null;
+    }> | null;
+    attentionCounts: { supportRequestUnreadCount: number } | null;
 };
 
-export type GqlCProfilePageQueryVariables = Exact<{
-    upcomingCallsFrom: string;
-    upcomingCallsTo: string;
-}>;
+export type GqlCProfilePageQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCProfilePageQuery = {
     currentSession: {
@@ -9034,23 +9061,15 @@ export type GqlCProfilePageQuery = {
             status: Schema.GqlCUserStatus;
             firstName: string;
             lastName: string;
-            profilePicture: { url: string } | null;
             cook: {
                 cookId: string;
-                isApprovedByAdmin: boolean;
-                stripeStatus: Schema.GqlCCookStripeStatus;
-                biography: string;
-                cuisineStyle: string | null;
-                cookingPhilosophy: string | null;
-                mealsCounts: Array<number>;
-                menusCounts: Array<number>;
-                exactTravelOriginAddress: { displayText: string; city: string } | null;
-                upcomingCallSlotBookings: Array<{
-                    cookCallSlotBookingId: string;
-                    startAt: string;
-                    status: Schema.GqlCCookCallSlotBookingStatus;
-                    bookingRequestOfferId: string;
-                    customer: { display: string };
+                onboardingSteps: Array<Schema.GqlCCookOnboardingStep>;
+                attention: Array<{
+                    kind: Schema.GqlCCookAttentionKind;
+                    count: number;
+                    bookingRequestOfferId: string | null;
+                    callStartAt: string | null;
+                    customerDisplay: string | null;
                 }>;
                 analytics: {
                     hasInsights: boolean;
@@ -9059,8 +9078,7 @@ export type GqlCProfilePageQuery = {
                     offersCreatedCount: number;
                     offerConversionRate: number | null;
                 } | null;
-                openBookingRequests: Array<{ bookingRequestId: string }>;
-                bookingRequestOffers: Array<{ bookingRequestOfferId: string; cookUnreadNotificationCount: number }>;
+                attentionCounts: { bookingRequestPoolCount: number; bookingRequestOfferUnreadCount: number; walletNeedsAttention: boolean };
             } | null;
             admin: { adminId: string } | null;
             bookingRequests: Array<{
@@ -9085,16 +9103,22 @@ export type GqlCProfilePageQuery = {
                     }>;
                 }>;
             }> | null;
-            supportRequests: Array<{ supportRequestId: string; userUnreadNotificationCount: number }> | null;
+            attention: Array<{
+                kind: Schema.GqlCUserAttentionKind;
+                count: number;
+                bookingRequestId: string;
+                bookingRequestOfferId: string | null;
+                occasion: string;
+                callStartAt: string | null;
+                callEndAt: string | null;
+            }> | null;
+            attentionCounts: { supportRequestUnreadCount: number } | null;
         } | null;
     };
     publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
 };
 
-export type GqlCProfilePageUpdatesSubscriptionVariables = Exact<{
-    upcomingCallsFrom: string;
-    upcomingCallsTo: string;
-}>;
+export type GqlCProfilePageUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCProfilePageUpdatesSubscription = {
     userUpdates: {
@@ -9102,23 +9126,15 @@ export type GqlCProfilePageUpdatesSubscription = {
         status: Schema.GqlCUserStatus;
         firstName: string;
         lastName: string;
-        profilePicture: { url: string } | null;
         cook: {
             cookId: string;
-            isApprovedByAdmin: boolean;
-            stripeStatus: Schema.GqlCCookStripeStatus;
-            biography: string;
-            cuisineStyle: string | null;
-            cookingPhilosophy: string | null;
-            mealsCounts: Array<number>;
-            menusCounts: Array<number>;
-            exactTravelOriginAddress: { displayText: string; city: string } | null;
-            upcomingCallSlotBookings: Array<{
-                cookCallSlotBookingId: string;
-                startAt: string;
-                status: Schema.GqlCCookCallSlotBookingStatus;
-                bookingRequestOfferId: string;
-                customer: { display: string };
+            onboardingSteps: Array<Schema.GqlCCookOnboardingStep>;
+            attention: Array<{
+                kind: Schema.GqlCCookAttentionKind;
+                count: number;
+                bookingRequestOfferId: string | null;
+                callStartAt: string | null;
+                customerDisplay: string | null;
             }>;
             analytics: {
                 hasInsights: boolean;
@@ -9127,8 +9143,7 @@ export type GqlCProfilePageUpdatesSubscription = {
                 offersCreatedCount: number;
                 offerConversionRate: number | null;
             } | null;
-            openBookingRequests: Array<{ bookingRequestId: string }>;
-            bookingRequestOffers: Array<{ bookingRequestOfferId: string; cookUnreadNotificationCount: number }>;
+            attentionCounts: { bookingRequestPoolCount: number; bookingRequestOfferUnreadCount: number; walletNeedsAttention: boolean };
         } | null;
         admin: { adminId: string } | null;
         bookingRequests: Array<{
@@ -9153,7 +9168,16 @@ export type GqlCProfilePageUpdatesSubscription = {
                 }>;
             }>;
         }> | null;
-        supportRequests: Array<{ supportRequestId: string; userUnreadNotificationCount: number }> | null;
+        attention: Array<{
+            kind: Schema.GqlCUserAttentionKind;
+            count: number;
+            bookingRequestId: string;
+            bookingRequestOfferId: string | null;
+            occasion: string;
+            callStartAt: string | null;
+            callEndAt: string | null;
+        }> | null;
+        attentionCounts: { supportRequestUnreadCount: number } | null;
     };
 };
 
@@ -24774,41 +24798,15 @@ export const CookSidebarNavBadgesFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     {
                         kind: 'Field',
-                        alias: { kind: 'Name', value: 'openBookingRequests' },
-                        name: { kind: 'Name', value: 'bookingRequests' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criterion' },
-                                value: {
-                                    kind: 'ObjectValue',
-                                    fields: [
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'onlyDeclined' },
-                                            value: { kind: 'BooleanValue', value: false },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'bookingRequestOffers' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookUnreadNotificationCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestPoolCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferUnreadCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'walletNeedsAttention' } },
                             ],
                         },
                     },
@@ -24847,41 +24845,15 @@ export const CookSidebarNavBadgesUserFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     {
                         kind: 'Field',
-                        alias: { kind: 'Name', value: 'openBookingRequests' },
-                        name: { kind: 'Name', value: 'bookingRequests' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criterion' },
-                                value: {
-                                    kind: 'ObjectValue',
-                                    fields: [
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'onlyDeclined' },
-                                            value: { kind: 'BooleanValue', value: false },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'bookingRequestOffers' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookUnreadNotificationCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestPoolCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferUnreadCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'walletNeedsAttention' } },
                             ],
                         },
                     },
@@ -25193,87 +25165,21 @@ export const ProfilePageCookStatusFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        name: { kind: 'Name', value: 'attention' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'mealsCounts' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criteria' },
-                                value: { kind: 'ListValue', values: [{ kind: 'ObjectValue', fields: [] }] },
-                            },
-                        ],
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'menusCounts' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criteria' },
-                                value: { kind: 'ListValue', values: [{ kind: 'ObjectValue', fields: [] }] },
-                            },
-                        ],
-                    },
-                    {
-                        kind: 'Field',
-                        alias: { kind: 'Name', value: 'upcomingCallSlotBookings' },
-                        name: { kind: 'Name', value: 'callSlotBookings' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criterion' },
-                                value: {
-                                    kind: 'ObjectValue',
-                                    fields: [
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'from' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsFrom' } },
-                                        },
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'to' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsTo' } },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookCallSlotBookingId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'startAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'customer' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'display' } }],
-                                    },
-                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'callStartAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'customerDisplay' } },
                             ],
                         },
                     },
+                    { kind: 'Field', name: { kind: 'Name', value: 'onboardingSteps' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'analytics' },
@@ -25307,41 +25213,15 @@ export const ProfilePageCookStatusFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     {
                         kind: 'Field',
-                        alias: { kind: 'Name', value: 'openBookingRequests' },
-                        name: { kind: 'Name', value: 'bookingRequests' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criterion' },
-                                value: {
-                                    kind: 'ObjectValue',
-                                    fields: [
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'onlyDeclined' },
-                                            value: { kind: 'BooleanValue', value: false },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'bookingRequestOffers' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookUnreadNotificationCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestPoolCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferUnreadCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'walletNeedsAttention' } },
                             ],
                         },
                     },
@@ -25363,13 +25243,10 @@ export const CustomerSidebarNavBadgesFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'supportRequests' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'supportRequestId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'userUnreadNotificationCount' } },
-                            ],
+                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'supportRequestUnreadCount' } }],
                         },
                     },
                 ],
@@ -25391,11 +25268,6 @@ export const ProfilePageUserFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'profilePicture' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
-                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -25501,6 +25373,22 @@ export const ProfilePageUserFragmentDoc = {
                             ],
                         },
                     },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'attention' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'callStartAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'callEndAt' } },
+                            ],
+                        },
+                    },
                     { kind: 'FragmentSpread', name: { kind: 'Name', value: 'CustomerSidebarNavBadges' } },
                 ],
             },
@@ -25513,41 +25401,15 @@ export const ProfilePageUserFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     {
                         kind: 'Field',
-                        alias: { kind: 'Name', value: 'openBookingRequests' },
-                        name: { kind: 'Name', value: 'bookingRequests' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criterion' },
-                                value: {
-                                    kind: 'ObjectValue',
-                                    fields: [
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'onlyDeclined' },
-                                            value: { kind: 'BooleanValue', value: false },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'bookingRequestOffers' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookUnreadNotificationCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestPoolCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferUnreadCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'walletNeedsAttention' } },
                             ],
                         },
                     },
@@ -25562,87 +25424,21 @@ export const ProfilePageUserFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        name: { kind: 'Name', value: 'attention' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'mealsCounts' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criteria' },
-                                value: { kind: 'ListValue', values: [{ kind: 'ObjectValue', fields: [] }] },
-                            },
-                        ],
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'menusCounts' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criteria' },
-                                value: { kind: 'ListValue', values: [{ kind: 'ObjectValue', fields: [] }] },
-                            },
-                        ],
-                    },
-                    {
-                        kind: 'Field',
-                        alias: { kind: 'Name', value: 'upcomingCallSlotBookings' },
-                        name: { kind: 'Name', value: 'callSlotBookings' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criterion' },
-                                value: {
-                                    kind: 'ObjectValue',
-                                    fields: [
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'from' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsFrom' } },
-                                        },
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'to' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsTo' } },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookCallSlotBookingId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'startAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'customer' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'display' } }],
-                                    },
-                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'callStartAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'customerDisplay' } },
                             ],
                         },
                     },
+                    { kind: 'Field', name: { kind: 'Name', value: 'onboardingSteps' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'analytics' },
@@ -25678,13 +25474,10 @@ export const ProfilePageUserFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'supportRequests' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'supportRequestId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'userUnreadNotificationCount' } },
-                            ],
+                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'supportRequestUnreadCount' } }],
                         },
                     },
                 ],
@@ -35533,41 +35326,15 @@ export const CookSidebarNavBadgesUpdatesDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     {
                         kind: 'Field',
-                        alias: { kind: 'Name', value: 'openBookingRequests' },
-                        name: { kind: 'Name', value: 'bookingRequests' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criterion' },
-                                value: {
-                                    kind: 'ObjectValue',
-                                    fields: [
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'onlyDeclined' },
-                                            value: { kind: 'BooleanValue', value: false },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'bookingRequestOffers' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookUnreadNotificationCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestPoolCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferUnreadCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'walletNeedsAttention' } },
                             ],
                         },
                     },
@@ -35626,13 +35393,10 @@ export const CustomerSidebarNavBadgesUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'supportRequests' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'supportRequestId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'userUnreadNotificationCount' } },
-                            ],
+                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'supportRequestUnreadCount' } }],
                         },
                     },
                 ],
@@ -42386,18 +42150,6 @@ export const ProfilePageDocument = {
             kind: 'OperationDefinition',
             operation: 'query',
             name: { kind: 'Name', value: 'ProfilePage' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsFrom' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsTo' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } } },
-                },
-            ],
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
@@ -42460,41 +42212,15 @@ export const ProfilePageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     {
                         kind: 'Field',
-                        alias: { kind: 'Name', value: 'openBookingRequests' },
-                        name: { kind: 'Name', value: 'bookingRequests' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criterion' },
-                                value: {
-                                    kind: 'ObjectValue',
-                                    fields: [
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'onlyDeclined' },
-                                            value: { kind: 'BooleanValue', value: false },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'bookingRequestOffers' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookUnreadNotificationCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestPoolCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferUnreadCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'walletNeedsAttention' } },
                             ],
                         },
                     },
@@ -42509,87 +42235,21 @@ export const ProfilePageDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        name: { kind: 'Name', value: 'attention' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'mealsCounts' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criteria' },
-                                value: { kind: 'ListValue', values: [{ kind: 'ObjectValue', fields: [] }] },
-                            },
-                        ],
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'menusCounts' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criteria' },
-                                value: { kind: 'ListValue', values: [{ kind: 'ObjectValue', fields: [] }] },
-                            },
-                        ],
-                    },
-                    {
-                        kind: 'Field',
-                        alias: { kind: 'Name', value: 'upcomingCallSlotBookings' },
-                        name: { kind: 'Name', value: 'callSlotBookings' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criterion' },
-                                value: {
-                                    kind: 'ObjectValue',
-                                    fields: [
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'from' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsFrom' } },
-                                        },
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'to' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsTo' } },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookCallSlotBookingId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'startAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'customer' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'display' } }],
-                                    },
-                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'callStartAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'customerDisplay' } },
                             ],
                         },
                     },
+                    { kind: 'Field', name: { kind: 'Name', value: 'onboardingSteps' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'analytics' },
@@ -42625,13 +42285,10 @@ export const ProfilePageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'supportRequests' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'supportRequestId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'userUnreadNotificationCount' } },
-                            ],
+                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'supportRequestUnreadCount' } }],
                         },
                     },
                 ],
@@ -42648,11 +42305,6 @@ export const ProfilePageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'profilePicture' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
-                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -42758,6 +42410,22 @@ export const ProfilePageDocument = {
                             ],
                         },
                     },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'attention' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'callStartAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'callEndAt' } },
+                            ],
+                        },
+                    },
                     { kind: 'FragmentSpread', name: { kind: 'Name', value: 'CustomerSidebarNavBadges' } },
                 ],
             },
@@ -42771,18 +42439,6 @@ export const ProfilePageUpdatesDocument = {
             kind: 'OperationDefinition',
             operation: 'subscription',
             name: { kind: 'Name', value: 'ProfilePageUpdates' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsFrom' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsTo' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTime' } } },
-                },
-            ],
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
@@ -42805,41 +42461,15 @@ export const ProfilePageUpdatesDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
                     {
                         kind: 'Field',
-                        alias: { kind: 'Name', value: 'openBookingRequests' },
-                        name: { kind: 'Name', value: 'bookingRequests' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criterion' },
-                                value: {
-                                    kind: 'ObjectValue',
-                                    fields: [
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'onlyDeclined' },
-                                            value: { kind: 'BooleanValue', value: false },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'bookingRequestOffers' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookUnreadNotificationCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestPoolCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferUnreadCount' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'walletNeedsAttention' } },
                             ],
                         },
                     },
@@ -42854,87 +42484,21 @@ export const ProfilePageUpdatesDocument = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'isApprovedByAdmin' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'stripeStatus' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'biography' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'exactTravelOriginAddress' },
+                        name: { kind: 'Name', value: 'attention' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'mealsCounts' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criteria' },
-                                value: { kind: 'ListValue', values: [{ kind: 'ObjectValue', fields: [] }] },
-                            },
-                        ],
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'menusCounts' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criteria' },
-                                value: { kind: 'ListValue', values: [{ kind: 'ObjectValue', fields: [] }] },
-                            },
-                        ],
-                    },
-                    {
-                        kind: 'Field',
-                        alias: { kind: 'Name', value: 'upcomingCallSlotBookings' },
-                        name: { kind: 'Name', value: 'callSlotBookings' },
-                        arguments: [
-                            {
-                                kind: 'Argument',
-                                name: { kind: 'Name', value: 'criterion' },
-                                value: {
-                                    kind: 'ObjectValue',
-                                    fields: [
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'from' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsFrom' } },
-                                        },
-                                        {
-                                            kind: 'ObjectField',
-                                            name: { kind: 'Name', value: 'to' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'upcomingCallsTo' } },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookCallSlotBookingId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'startAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'customer' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'display' } }],
-                                    },
-                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'callStartAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'customerDisplay' } },
                             ],
                         },
                     },
+                    { kind: 'Field', name: { kind: 'Name', value: 'onboardingSteps' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'analytics' },
@@ -42970,13 +42534,10 @@ export const ProfilePageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'supportRequests' },
+                        name: { kind: 'Name', value: 'attentionCounts' },
                         selectionSet: {
                             kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'supportRequestId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'userUnreadNotificationCount' } },
-                            ],
+                            selections: [{ kind: 'Field', name: { kind: 'Name', value: 'supportRequestUnreadCount' } }],
                         },
                     },
                 ],
@@ -42993,11 +42554,6 @@ export const ProfilePageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'status' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'profilePicture' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
-                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -43100,6 +42656,22 @@ export const ProfilePageUpdatesDocument = {
                                         ],
                                     },
                                 },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'attention' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'callStartAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'callEndAt' } },
                             ],
                         },
                     },

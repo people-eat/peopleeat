@@ -1,6 +1,8 @@
-import type { Locale } from '../utils/locale';
+import type { BookingLifecycleHue } from './bookingLifecycleHue';
+import type { Locale } from './locale';
 
-export type BookingRequestOfferStatusKey =
+/** Derived offer lifecycle — not stored on `BookingRequestOffers`. */
+export type BookingRequestOfferStatus =
     | 'USER_NEEDS_TO_ACCEPT'
     | 'COOK_NEEDS_TO_ACCEPT'
     | 'USER_REQUESTED_MENU_CHANGES'
@@ -12,40 +14,39 @@ export type BookingRequestOfferStatusKey =
     | 'EVENT_PENDING'
     | 'COMPLETED'
     | 'EXPIRED'
-    | 'CANCELED'
-    | string;
+    | 'CANCELED';
 
-export type BookingRequestOfferStatusDisplayFor = 'customer' | 'cook';
+/** `admin` is neutral ops wording; `customer` / `cook` address the viewer directly. */
+export type BookingRequestOfferStatusAudience = 'customer' | 'cook' | 'admin';
 
-/** Booking lifecycle pill palette only. See `docs/styles/status-messaging.md`. */
-export function bookingRequestOfferStatusClassName(status: BookingRequestOfferStatusKey): string {
+export function bookingRequestOfferStatusHue(status: BookingRequestOfferStatus): BookingLifecycleHue {
     switch (status) {
         case 'USER_NEEDS_TO_ACCEPT':
-            return 'bg-blue-100 text-blue-700';
+            return 'blue';
         case 'COOK_NEEDS_TO_ACCEPT':
         case 'USER_REQUESTED_MENU_CHANGES':
-            return 'bg-yellow-100 text-yellow-700';
+            return 'yellow';
         case 'USER_NEEDS_DEPOSIT_PAYMENT':
         case 'PAYMENT_PULL_PENDING':
         case 'EVENT_PENDING':
-            return 'bg-green-100 text-green-700';
+            return 'green';
         case 'COMPLETED':
-            return 'bg-purple-100 text-purple-700';
+            return 'purple';
         case 'USER_DECLINED':
         case 'COOK_DECLINED':
         case 'USER_CHOOSE_DIFFERENT_OFFER':
         case 'EXPIRED':
         case 'CANCELED':
-            return 'bg-red-100 text-red-700';
+            return 'red';
         default:
-            return 'bg-gray-100 text-gray-700';
+            return 'gray';
     }
 }
 
 export function bookingRequestOfferStatusLabel(
-    status: BookingRequestOfferStatusKey,
+    status: BookingRequestOfferStatus,
     locale: Locale,
-    displayFor: BookingRequestOfferStatusDisplayFor = 'customer',
+    audience: BookingRequestOfferStatusAudience,
 ): string {
     switch (status) {
         case 'USER_NEEDS_TO_ACCEPT':
@@ -53,15 +54,17 @@ export function bookingRequestOfferStatusLabel(
                 {
                     customer: { de: 'Überprüfe das Angebot', en: 'Check offer' },
                     cook: { de: 'Kunde muss akzeptieren', en: 'Customer needs to accept' },
+                    admin: { de: 'Kunde muss akzeptieren', en: 'Customer needs to accept' },
                 } as const
-            )[displayFor][locale];
+            )[audience][locale];
         case 'COOK_NEEDS_TO_ACCEPT':
             return (
                 {
                     customer: { de: 'Koch muss Änderungen akzeptieren', en: 'Chef needs to confirm changes' },
                     cook: { de: 'Änderungen bestätigen', en: 'Confirm changes' },
+                    admin: { de: 'Koch muss Änderungen bestätigen', en: 'Chef needs to confirm changes' },
                 } as const
-            )[displayFor][locale];
+            )[audience][locale];
         case 'USER_REQUESTED_MENU_CHANGES':
             return { de: 'Menüänderungen angefragt', en: 'Menu changes requested' }[locale];
         case 'USER_DECLINED':
@@ -69,15 +72,17 @@ export function bookingRequestOfferStatusLabel(
                 {
                     customer: { de: 'Du hast abgelehnt', en: 'You rejected offer' },
                     cook: { de: 'Kunde hat Angebot abgelehnt', en: 'Customer rejected offer' },
+                    admin: { de: 'Kunde hat Angebot abgelehnt', en: 'Customer rejected offer' },
                 } as const
-            )[displayFor][locale];
+            )[audience][locale];
         case 'COOK_DECLINED':
             return (
                 {
                     customer: { de: 'Koch hat Angebot zurückgezogen', en: 'Chef has withdrawn offer' },
                     cook: { de: 'Du hast Angebot zurückgezogen', en: 'You have withdrawn offer' },
+                    admin: { de: 'Koch hat Angebot zurückgezogen', en: 'Chef has withdrawn offer' },
                 } as const
-            )[displayFor][locale];
+            )[audience][locale];
         case 'USER_CHOOSE_DIFFERENT_OFFER':
             return { de: 'Alternativangebot gewählt', en: 'Alternative offer chosen' }[locale];
         case 'USER_NEEDS_DEPOSIT_PAYMENT':
@@ -85,15 +90,17 @@ export function bookingRequestOfferStatusLabel(
                 {
                     customer: { de: 'Zahlungsmittel hinterlegen', en: 'Provide payment data' },
                     cook: { de: 'Bestätigt', en: 'Confirmed' },
+                    admin: { de: 'Kunde muss Zahlungsdaten hinterlegen', en: 'Customer needs to provide payment data' },
                 } as const
-            )[displayFor][locale];
+            )[audience][locale];
         case 'PAYMENT_PULL_PENDING':
             return (
                 {
                     customer: { de: 'Bestätigt', en: 'Confirmed' },
                     cook: { de: 'Bestätigt', en: 'Confirmed' },
+                    admin: { de: 'Zahlungseinzug ausstehend', en: 'Payment outstanding' },
                 } as const
-            )[displayFor][locale];
+            )[audience][locale];
         case 'EVENT_PENDING':
             return { de: 'Veranstaltung ausstehend', en: 'Upcoming event' }[locale];
         case 'COMPLETED':

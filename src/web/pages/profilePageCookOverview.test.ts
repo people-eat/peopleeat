@@ -7,114 +7,91 @@ import { profilePageCookOverview } from './profilePageCookOverview';
 function cookFixture(overrides: Partial<GqlCProfilePageCookStatusFragment> = {}): GqlCProfilePageCookStatusFragment {
     return {
         cookId: 'cook-1',
-        isApprovedByAdmin: true,
-        stripeStatus: 'COMPLETED',
-        biography: 'A long enough bio',
-        cuisineStyle: 'italian',
-        cookingPhilosophy: 'seasonal',
-        exactTravelOriginAddress: {
-            displayText: 'Berlin',
-            city: 'Berlin',
-        },
-        mealsCounts: [1],
-        menusCounts: [1],
-        upcomingCallSlotBookings: [],
-        openBookingRequests: [],
-        bookingRequestOffers: [{ bookingRequestOfferId: 'offer-1', cookUnreadNotificationCount: 0 }],
+        attention: [],
+        onboardingSteps: [],
+        attentionCounts: { bookingRequestPoolCount: 0, bookingRequestOfferUnreadCount: 0, walletNeedsAttention: false },
         analytics: null,
         ...overrides,
     };
 }
 
+function attentionItem(
+    overrides: Partial<GqlCProfilePageCookStatusFragment['attention'][number]>,
+): GqlCProfilePageCookStatusFragment['attention'][number] {
+    return { kind: 'APPROVAL_PENDING', count: 1, bookingRequestOfferId: null, callStartAt: null, customerDisplay: null, ...overrides };
+}
+
 describe('profilePageCookOverview', () => {
-    it('returns allClear when setup is complete and nothing needs attention', () => {
-        const overview = profilePageCookOverview(cookFixture(), 'en', DEFAULT_TIME_ZONE, { hasProfilePicture: true });
-        expect(overview.allClear).toBe(true);
-        expect(overview.attention).toEqual([]);
-        expect(overview.gettingStarted).toEqual([]);
+    it('returns allClear when the server reports nothing to do', () => {
+        // Act
+        const overview = profilePageCookOverview(cookFixture(), 'en', DEFAULT_TIME_ZONE);
+
+        // Assert
+        expect(overview).toEqual({ attention: [], gettingStarted: [], allClear: true });
     });
 
-    it('surfaces unread chat and incomplete onboarding steps', () => {
-        const overview = profilePageCookOverview(
-            cookFixture({
-                stripeStatus: 'EMPTY',
-                biography: '',
-                cuisineStyle: null,
-                cookingPhilosophy: null,
-                exactTravelOriginAddress: null,
-                mealsCounts: [0],
-                menusCounts: [0],
-                bookingRequestOffers: [{ bookingRequestOfferId: 'offer-1', cookUnreadNotificationCount: 2 }],
-                upcomingCallSlotBookings: [
-                    {
-                        cookCallSlotBookingId: 'slot-1',
-                        startAt: '2026-10-01T10:00:00.000Z',
-                        status: 'CONFIRMED',
-                        bookingRequestOfferId: 'offer-1',
-                        customer: { display: 'Ada' },
-                    },
-                ],
-            }),
-            'en',
-            DEFAULT_TIME_ZONE,
-        );
-
-        expect(overview.attention.map((item) => item.key)).toEqual(['unread-offers', 'upcoming-call']);
-        expect(overview.attention.find((item) => item.key === 'unread-offers')).toMatchObject({
-            params: { bookingRequestOfferId: 'offer-1', search: { tab: 'chat' } },
-            actionLabel: 'Open chat',
-        });
-        expect(overview.gettingStarted.map((step) => step.key)).toEqual([
-            'wallet',
-            'travel',
-            'profile-picture',
-            'chef-profile',
-            'first-meal',
-            'first-menu',
-        ]);
-        expect(overview.allClear).toBe(false);
-    });
-
-    it('hides wallet and offer steps until approved', () => {
-        const overview = profilePageCookOverview(
-            cookFixture({
-                isApprovedByAdmin: false,
-                stripeStatus: 'EMPTY',
-                bookingRequestOffers: [],
-                mealsCounts: [0],
-                menusCounts: [0],
-            }),
-            'de',
-            DEFAULT_TIME_ZONE,
-            { hasProfilePicture: true },
-        );
-
-        expect(overview.attention.map((item) => item.key)).toEqual(['approval-pending']);
-        expect(overview.gettingStarted.map((step) => step.key)).not.toContain('wallet');
-        expect(overview.gettingStarted.map((step) => step.key)).not.toContain('first-offer');
-    });
-
-    it('asks for a profile picture until one is set', () => {
-        const missing = profilePageCookOverview(cookFixture(), 'en', DEFAULT_TIME_ZONE, { hasProfilePicture: false });
-        expect(missing.gettingStarted.map((step) => step.key)).toEqual(['profile-picture']);
-        expect(missing.gettingStarted[0]?.href).toBe('/{-$locale}/profile/chef-profile/edit');
-
-        const present = profilePageCookOverview(cookFixture(), 'en', DEFAULT_TIME_ZONE, { hasProfilePicture: true });
-        expect(present.gettingStarted.map((step) => step.key)).not.toContain('profile-picture');
-    });
-
-    it('surfaces ACTIVE_WAS_RESET as Attention and not Getting started wallet', () => {
-        const overview = profilePageCookOverview(cookFixture({ stripeStatus: 'ACTIVE_WAS_RESET' }), 'en', DEFAULT_TIME_ZONE, {
-            hasProfilePicture: true,
+    it('links unread chat to the chat tab and the next call to the offer', () => {
+        // Arrange
+        const cook = cookFixture({
+            attention: [
+                attentionItem({ kind: 'OFFER_CHAT_UNREAD', count: 2, bookingRequestOfferId: 'offer-1' }),
+                attentionItem({
+                    kind: 'CALL_UPCOMING',
+                    bookingRequestOfferId: 'offer-2',
+                    callStartAt: '2026-10-01T10:00:00.000Z',
+                    customerDisplay: 'Ada',
+                }),
+            ],
         });
 
-        expect(overview.attention.map((item) => item.key)).toEqual(['wallet-reset']);
+        // Act
+        const overview = profilePageCookOverview(cook, 'en', DEFAULT_TIME_ZONE);
+
+        // Assert
+        expect(overview.attention.map((item) => item.kind)).toEqual(['OFFER_CHAT_UNREAD', 'CALL_UPCOMING']);
         expect(overview.attention[0]).toMatchObject({
             tone: 'warning',
-            href: '/{-$locale}/profile/wallet',
-            actionLabel: 'Go to wallet',
+            title: '2 new messages in offer chats',
+            action: {
+                to: '/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId',
+                bookingRequestOfferId: 'offer-1',
+                search: { tab: 'chat' },
+                label: 'Open chat',
+            },
         });
-        expect(overview.gettingStarted.map((step) => step.key)).not.toContain('wallet');
+        expect(overview.attention[1]?.action).toMatchObject({ bookingRequestOfferId: 'offer-2', search: undefined });
+        expect(overview.attention[1]?.body).toMatch(/^Ada · /);
+    });
+
+    it('shows pending approval without an action and wallet reset with one', () => {
+        // Arrange
+        const cook = cookFixture({ attention: [attentionItem({ kind: 'APPROVAL_PENDING' }), attentionItem({ kind: 'WALLET_RESET' })] });
+
+        // Act
+        const overview = profilePageCookOverview(cook, 'en', DEFAULT_TIME_ZONE);
+
+        // Assert
+        expect(overview.attention[0]).toMatchObject({ tone: 'info', action: null });
+        expect(overview.attention[1]).toMatchObject({
+            tone: 'warning',
+            action: { to: '/{-$locale}/profile/wallet', label: 'Go to wallet' },
+        });
+    });
+
+    it('maps onboarding steps to their pages in server order', () => {
+        // Arrange
+        const cook = cookFixture({ onboardingSteps: ['WALLET', 'PROFILE_PICTURE', 'FIRST_OFFER'] });
+
+        // Act
+        const overview = profilePageCookOverview(cook, 'de', DEFAULT_TIME_ZONE);
+
+        // Assert
+        expect(overview.gettingStarted.map((step) => step.href)).toEqual([
+            '/{-$locale}/profile/wallet',
+            '/{-$locale}/profile/chef-profile/edit',
+            '/{-$locale}/profile/booking-request-pool',
+        ]);
+        expect(overview.gettingStarted[1]?.actionLabel).toBe('Bild hinzufügen');
         expect(overview.allClear).toBe(false);
     });
 });

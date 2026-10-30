@@ -1,4 +1,9 @@
-import { formatDate, formatTime } from '../../shared';
+import {
+    cookCallSlotBookingNextStepIsBefore,
+    cookCallSlotBookingNextStepPick,
+    cookCallSlotBookingWhenFormat,
+} from '../../shared/cookCallSlotBookingStatus';
+import type { CookCallSlotBookingNextStep } from '../../shared/cookCallSlotBookingStatus';
 import type { Locale } from '../utils/locale';
 
 export type CallBookingOverviewItem = {
@@ -18,20 +23,36 @@ export type CallBookingOverviewHint = {
     openCall: boolean;
 };
 
-function formatCallWhen(booking: CallBookingOverviewItem, locale: Locale, timeZone: string): string {
-    const start = new Date(booking.startAt);
-    return `${formatDate(start, { locale, timeZone, weekday: true })} · ${formatTime(booking.startAt, { locale, timeZone })}–${formatTime(booking.endAt, { locale, timeZone })}${locale === 'de' ? ' Uhr' : ''}`;
-}
-
 function confirmedCallHint(booking: CallBookingOverviewItem, locale: Locale, timeZone: string): CallBookingOverviewHint {
+    const when = cookCallSlotBookingWhenFormat(booking, locale, timeZone);
     return {
         booking,
-        label: {
-            de: `Gesprächstermin bestätigt · ${formatCallWhen(booking, locale, timeZone)}`,
-            en: `Discovery call confirmed · ${formatCallWhen(booking, locale, timeZone)}`,
-        }[locale],
+        label: { de: `Gesprächstermin bestätigt · ${when}`, en: `Discovery call confirmed · ${when}` }[locale],
         openCall: true,
     };
+}
+
+function participantCallHint(
+    callBookings: readonly CallBookingOverviewItem[],
+    role: 'customer' | 'cook',
+    locale: Locale,
+    timeZone: string,
+): (CallBookingOverviewHint & { step: CookCallSlotBookingNextStep }) | null {
+    const picked = cookCallSlotBookingNextStepPick(callBookings, role);
+    if (!picked) return null;
+    const { booking, step } = picked;
+    if (step === 'CONFIRMED') return { ...confirmedCallHint(booking, locale, timeZone), step };
+
+    const when = cookCallSlotBookingWhenFormat(booking, locale, timeZone);
+    const label =
+        step === 'RESPONSE_NEEDED'
+            ? role === 'customer'
+                ? { de: `Terminvorschlag wartet auf dich · ${when}`, en: `Call suggestion awaiting your response · ${when}` }[locale]
+                : { de: `Terminanfrage wartet auf dich · ${when}`, en: `Call request awaiting your response · ${when}` }[locale]
+            : role === 'customer'
+              ? { de: `Terminanfrage ausstehend · ${when}`, en: `Call request pending · ${when}` }[locale]
+              : { de: `Terminvorschlag ausstehend · ${when}`, en: `Call suggestion pending · ${when}` }[locale];
+    return { booking, label, openCall: true, step };
 }
 
 /**
@@ -46,66 +67,29 @@ export function callBookingOverviewHint(
 ): CallBookingOverviewHint | null {
     if (!callBookings || callBookings.length === 0) return null;
 
-    if (role === 'admin') {
-        const pendingAwaitingCustomer = callBookings.find((booking) => booking.status === 'PENDING' && booking.initiator === 'COOK');
-        if (pendingAwaitingCustomer) {
-            return {
-                booking: pendingAwaitingCustomer,
-                label: {
-                    de: `Terminvorschlag wartet auf Kunden · ${formatCallWhen(pendingAwaitingCustomer, locale, timeZone)}`,
-                    en: `Call suggestion awaiting customer · ${formatCallWhen(pendingAwaitingCustomer, locale, timeZone)}`,
-                }[locale],
-                openCall: true,
-            };
-        }
-        const pendingAwaitingCook = callBookings.find((booking) => booking.status === 'PENDING' && booking.initiator === 'CUSTOMER');
-        if (pendingAwaitingCook) {
-            return {
-                booking: pendingAwaitingCook,
-                label: {
-                    de: `Terminanfrage wartet auf Koch · ${formatCallWhen(pendingAwaitingCook, locale, timeZone)}`,
-                    en: `Call request awaiting chef · ${formatCallWhen(pendingAwaitingCook, locale, timeZone)}`,
-                }[locale],
-                openCall: true,
-            };
-        }
-        const confirmed = callBookings.find((booking) => booking.status === 'CONFIRMED');
-        return confirmed ? confirmedCallHint(confirmed, locale, timeZone) : null;
+    if (role !== 'admin') {
+        const hint = participantCallHint(callBookings, role, locale, timeZone);
+        return hint ? { booking: hint.booking, label: hint.label, openCall: hint.openCall } : null;
     }
 
-    const incomingInitiator = role === 'customer' ? 'COOK' : 'CUSTOMER';
-    const outgoingInitiator = role === 'customer' ? 'CUSTOMER' : 'COOK';
-
-    const pendingIncoming = callBookings.find((booking) => booking.status === 'PENDING' && booking.initiator === incomingInitiator);
-    if (pendingIncoming) {
-        const label =
-            role === 'customer'
-                ? {
-                      de: `Terminvorschlag wartet auf dich · ${formatCallWhen(pendingIncoming, locale, timeZone)}`,
-                      en: `Call suggestion awaiting your response · ${formatCallWhen(pendingIncoming, locale, timeZone)}`,
-                  }[locale]
-                : {
-                      de: `Terminanfrage wartet auf dich · ${formatCallWhen(pendingIncoming, locale, timeZone)}`,
-                      en: `Call request awaiting your response · ${formatCallWhen(pendingIncoming, locale, timeZone)}`,
-                  }[locale];
-        return { booking: pendingIncoming, label, openCall: true };
+    const pendingAwaitingCustomer = callBookings.find((booking) => booking.status === 'PENDING' && booking.initiator === 'COOK');
+    if (pendingAwaitingCustomer) {
+        const when = cookCallSlotBookingWhenFormat(pendingAwaitingCustomer, locale, timeZone);
+        return {
+            booking: pendingAwaitingCustomer,
+            label: { de: `Terminvorschlag wartet auf Kunden · ${when}`, en: `Call suggestion awaiting customer · ${when}` }[locale],
+            openCall: true,
+        };
     }
-
-    const pendingOutgoing = callBookings.find((booking) => booking.status === 'PENDING' && booking.initiator === outgoingInitiator);
-    if (pendingOutgoing) {
-        const label =
-            role === 'customer'
-                ? {
-                      de: `Terminanfrage ausstehend · ${formatCallWhen(pendingOutgoing, locale, timeZone)}`,
-                      en: `Call request pending · ${formatCallWhen(pendingOutgoing, locale, timeZone)}`,
-                  }[locale]
-                : {
-                      de: `Terminvorschlag ausstehend · ${formatCallWhen(pendingOutgoing, locale, timeZone)}`,
-                      en: `Call suggestion pending · ${formatCallWhen(pendingOutgoing, locale, timeZone)}`,
-                  }[locale];
-        return { booking: pendingOutgoing, label, openCall: true };
+    const pendingAwaitingCook = callBookings.find((booking) => booking.status === 'PENDING' && booking.initiator === 'CUSTOMER');
+    if (pendingAwaitingCook) {
+        const when = cookCallSlotBookingWhenFormat(pendingAwaitingCook, locale, timeZone);
+        return {
+            booking: pendingAwaitingCook,
+            label: { de: `Terminanfrage wartet auf Koch · ${when}`, en: `Call request awaiting chef · ${when}` }[locale],
+            openCall: true,
+        };
     }
-
     const confirmed = callBookings.find((booking) => booking.status === 'CONFIRMED');
     return confirmed ? confirmedCallHint(confirmed, locale, timeZone) : null;
 }
@@ -120,16 +104,13 @@ export function callBookingOverviewHintAcrossOffers(
     timeZone: string,
 ): (CallBookingOverviewHint & { bookingRequestOfferId: string }) | null {
     let best: (CallBookingOverviewHint & { bookingRequestOfferId: string }) | null = null;
-    let bestRank = 99;
+    let bestStep: CookCallSlotBookingNextStep | null = null;
 
     for (const offer of offers) {
-        const hint = callBookingOverviewHint(offer.callBookings, 'customer', locale, timeZone);
-        if (!hint) continue;
-        const rank = hint.booking.status === 'PENDING' && hint.booking.initiator === 'COOK' ? 0 : hint.booking.status === 'PENDING' ? 1 : 2;
-        if (rank < bestRank) {
-            bestRank = rank;
-            best = { ...hint, bookingRequestOfferId: offer.bookingRequestOfferId };
-        }
+        const hint = participantCallHint(offer.callBookings ?? [], 'customer', locale, timeZone);
+        if (!hint || !cookCallSlotBookingNextStepIsBefore(hint.step, bestStep)) continue;
+        bestStep = hint.step;
+        best = { booking: hint.booking, label: hint.label, openCall: hint.openCall, bookingRequestOfferId: offer.bookingRequestOfferId };
     }
 
     return best;

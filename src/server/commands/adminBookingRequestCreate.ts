@@ -16,6 +16,7 @@ import { bookingRequestExpireNotifySchedule } from '../utils/bookingRequestExpir
 import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
 import { bookingRequestNoOffersNotifySchedule } from '../utils/bookingRequestNoOffersNotifySchedule';
 import { bookingRequestParticipantsPrepareForWrite } from '../utils/bookingRequestParticipantsPrepareForWrite';
+import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
 import { cookIdsCanCreateOffersFind } from '../utils/cookIdsCanCreateOffersFind';
 
 export async function adminBookingRequestCreate(
@@ -118,6 +119,11 @@ export async function adminBookingRequestCreate(
                 city: exactEventAddress.city,
             });
         }
+        await bookingRequestPoolCooksPublish(
+            serverRuntime,
+            [{ bookingRequestId, userId, publicationStatus, exactEventAddress }],
+            cookIdsToNotify,
+        );
 
         await bookingRequestExpireNotifySchedule(serverRuntime, {
             bookingRequestId,

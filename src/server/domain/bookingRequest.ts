@@ -4,8 +4,14 @@
  * See `docs/architecture/booking.md` and `docs/features/booking.md`.
  */
 
+import type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
+import type { BookingRequestStatus } from '../../shared/bookingRequestStatus';
 import type { CookTravelOriginAddress } from './cook';
 import type { GiftCardInvoiceAddress } from './giftCard';
+
+export type { BookingRequestOfferStatus } from '../../shared/bookingRequestOfferStatus';
+export type { BookingRequestStatus } from '../../shared/bookingRequestStatus';
+export type { CookCallSlotBookingActor, CookCallSlotBookingStatus } from '../../shared/cookCallSlotBookingStatus';
 
 /** Exact venue — same Places shape as `CookTravelOriginAddress`. */
 export type BookingRequestExactEventAddress = CookTravelOriginAddress;
@@ -48,42 +54,12 @@ export function bookingRequestOfferPaymentIsPaid(paymentStatus: BookingRequestOf
     return paymentStatus === 'PAYED' || paymentStatus === 'TRANSFERRED' || paymentStatus === 'PAYED_OUT_OF_SYSTEM';
 }
 
-/** Derived request lifecycle — not stored on `BookingRequests`. */
-const bookingRequestStatuses = [
-    'WAITING_FOR_OFFERS',
-    'OFFERS_WAITING_FOR_REVIEW',
-    'DEPOSIT_PAYMENT_PENDING',
-    'PAYMENT_PULL_PENDING',
-    'EVENT_PENDING',
-    'COMPLETED',
-    'EXPIRED',
-    'CANCELED',
-] as const;
-export type BookingRequestStatus = (typeof bookingRequestStatuses)[number];
-
 /** Statuses where a customer may still cancel. */
 export const bookingRequestCancelableStatuses: ReadonlySet<BookingRequestStatus> = new Set([
     'WAITING_FOR_OFFERS',
     'OFFERS_WAITING_FOR_REVIEW',
     'EXPIRED',
 ]);
-
-/** Derived offer lifecycle — not stored on `BookingRequestOffers`. */
-const bookingRequestOfferStatuses = [
-    'USER_NEEDS_TO_ACCEPT',
-    'COOK_NEEDS_TO_ACCEPT',
-    'USER_REQUESTED_MENU_CHANGES',
-    'USER_DECLINED',
-    'COOK_DECLINED',
-    'USER_CHOOSE_DIFFERENT_OFFER',
-    'USER_NEEDS_DEPOSIT_PAYMENT',
-    'PAYMENT_PULL_PENDING',
-    'EVENT_PENDING',
-    'COMPLETED',
-    'EXPIRED',
-    'CANCELED',
-] as const;
-export type BookingRequestOfferStatus = (typeof bookingRequestOfferStatuses)[number];
 
 export type BookingRequestStatusDeriveInput = {
     offerCount: number;
@@ -381,12 +357,6 @@ export type BookingRequestCookMenuEvaluation = {
         }[];
     } | null;
 };
-
-const cookCallSlotBookingStatuses = ['PENDING', 'CONFIRMED', 'CANCELED', 'COMPLETED', 'DECLINED'] as const;
-export type CookCallSlotBookingStatus = (typeof cookCallSlotBookingStatuses)[number];
-
-const cookCallSlotBookingActors = ['CUSTOMER', 'COOK'] as const;
-export type CookCallSlotBookingActor = (typeof cookCallSlotBookingActors)[number];
 
 const bookingRequestOfferCallRoomStatuses = ['ACTIVE', 'ENDED'] as const;
 export type BookingRequestOfferCallRoomStatus = (typeof bookingRequestOfferCallRoomStatuses)[number];

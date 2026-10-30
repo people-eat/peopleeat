@@ -1,34 +1,24 @@
 # Profile gate — unsigned sessions redirect in the route loader. Nullable
 # `User.cook` picks cook vs customer UI (same presence-probe pattern as
-# `User.admin`). Cook status fields drive cook overview; `bookingRequests`
-# drive customer Attention / Next dinner. Sidebar badge counts live on
+# `User.admin`). Server-derived `attention` / `onboardingSteps` drive the
+# overview to-dos (wording in `src/shared/attentionCopy.ts`); `bookingRequests`
+# drive the customer Next dinner card. Sidebar badge counts live on
 # `CookSidebarNavBadges` (see CookSidebar.graphql) and `CustomerSidebarNavBadges`
 # (see CustomerSidebar.graphql). Seed-and-subscribe via `userUpdates`.
-# See docs/architecture/state-synchronization.md, `docs/features/profile.md`,
-# `docs/features/cook-profile.md`, and `docs/features/customer-shell.md`.
+# See docs/architecture/attention.md, docs/architecture/state-synchronization.md,
+# `docs/features/profile.md`, `docs/features/cook-shell.md`, and
+# `docs/features/customer-shell.md`.
 
 fragment ProfilePageCookStatus on Cook {
     cookId
-    isApprovedByAdmin
-    stripeStatus
-    biography
-    cuisineStyle
-    cookingPhilosophy
-    exactTravelOriginAddress {
-        displayText
-        city
-    }
-    mealsCounts(criteria: [{}])
-    menusCounts(criteria: [{}])
-    upcomingCallSlotBookings: callSlotBookings(criterion: { from: $upcomingCallsFrom, to: $upcomingCallsTo }) {
-        cookCallSlotBookingId
-        startAt
-        status
+    attention {
+        kind
+        count
         bookingRequestOfferId
-        customer {
-            display
-        }
+        callStartAt
+        customerDisplay
     }
+    onboardingSteps
     analytics(period: PAST_MONTH) {
         hasInsights
         publicProfileViewCount
@@ -44,9 +34,6 @@ fragment ProfilePageUser on User {
     status
     firstName
     lastName
-    profilePicture {
-        url
-    }
     cook {
         ...ProfilePageCookStatus
     }
@@ -89,10 +76,19 @@ fragment ProfilePageUser on User {
             }
         }
     }
+    attention {
+        kind
+        count
+        bookingRequestId
+        bookingRequestOfferId
+        occasion
+        callStartAt
+        callEndAt
+    }
     ...CustomerSidebarNavBadges
 }
 
-query ProfilePage($upcomingCallsFrom: DateTime!, $upcomingCallsTo: DateTime!) {
+query ProfilePage {
     currentSession {
         sessionId
         activeFeatureToggleKeys
@@ -110,7 +106,7 @@ query ProfilePage($upcomingCallsFrom: DateTime!, $upcomingCallsTo: DateTime!) {
     }
 }
 
-subscription ProfilePageUpdates($upcomingCallsFrom: DateTime!, $upcomingCallsTo: DateTime!) {
+subscription ProfilePageUpdates {
     userUpdates {
         ...ProfilePageUser
     }

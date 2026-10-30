@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { fn } from 'storybook/test';
 
 import { withFeatureToggles } from '../../../.storybook/decorators';
+import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../shared/bookingRequestOfferStatus';
+import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../shared/bookingRequestStatus';
 import { Button } from '../components/base/button';
 import { Input } from '../components/base/input';
 import { NotificationBadge } from '../components/base/notification-badge';
@@ -12,8 +14,6 @@ import { StatusBadge } from '../components/base/status-badge';
 import { Textarea } from '../components/base/textarea';
 import { BookingRequestOfferAttentionBanner } from '../components/BookingRequestOfferAttentionBanner';
 import { BookingRequestOfferChat } from '../components/BookingRequestOfferChat';
-import { bookingRequestOfferStatusClassName, bookingRequestOfferStatusLabel } from '../components/bookingRequestOfferStatus';
-import { bookingRequestStatusClassName, bookingRequestStatusLabel } from '../components/bookingRequestStatus';
 import { BookingStatusPill } from '../components/BookingStatusPill';
 import { CookMenuCardMedia } from '../components/CookMenuCard';
 import { CookProfileTags } from '../components/CookProfileTags';
@@ -160,10 +160,10 @@ function MoodBoard() {
                         <StatusBadge tone="success" label={{ de: 'Bereit', en: 'Ready' }[locale]} />
                         <StatusBadge tone="warning" label={{ de: 'Unvollständig', en: 'Incomplete' }[locale]} />
                         <StatusBadge tone="error" label={{ de: 'Fehler', en: 'Error' }[locale]} />
-                        <BookingStatusPill className={bookingRequestStatusClassName('OFFERS_WAITING_FOR_REVIEW')}>
+                        <BookingStatusPill hue={bookingRequestStatusHue('OFFERS_WAITING_FOR_REVIEW')}>
                             {bookingRequestStatusLabel('OFFERS_WAITING_FOR_REVIEW', locale, 'customer')}
                         </BookingStatusPill>
-                        <BookingStatusPill className={bookingRequestOfferStatusClassName('USER_NEEDS_TO_ACCEPT')}>
+                        <BookingStatusPill hue={bookingRequestOfferStatusHue('USER_NEEDS_TO_ACCEPT')}>
                             {bookingRequestOfferStatusLabel('USER_NEEDS_TO_ACCEPT', locale, 'customer')}
                         </BookingStatusPill>
                         <Button size="sm" variant="outline" autoFocus>

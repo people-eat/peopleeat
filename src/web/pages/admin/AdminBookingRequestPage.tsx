@@ -7,6 +7,8 @@ import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { formatCurrency, formatDate, formatDateTime, formatParticipants, userDisplayName } from '../../../shared';
+import type { BookingRequestOfferStatus } from '../../../shared/bookingRequestOfferStatus';
+import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import { AdminBookingRequestCookWithoutOfferCard } from '../../components/AdminBookingRequestCookWithoutOfferCard';
 import { AdminBookingRequestOfferCard } from '../../components/AdminBookingRequestOfferCard';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
@@ -31,8 +33,6 @@ import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { Textarea } from '../../components/base/textarea';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
 import { BookingRequestOfferParticipantAmendmentAdminPendingAlert } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
-import type { BookingRequestOfferStatusKey } from '../../components/bookingRequestOfferStatus';
-import { adminBookingRequestStatusLabel, bookingRequestStatusClassName } from '../../components/bookingRequestStatus';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import type { GqlCAdminBookingRequestPageQuery, GqlCAdminBookingRequestPageRequestFragment } from '../../graphql/generated';
 import {
@@ -101,14 +101,14 @@ const ADMIN_BOOKING_REQUEST_TABS: readonly AdminBookingRequestTabDef[] = [
     { id: 'discount', label: { de: 'Rabatt', en: 'Discount' }, Icon: BadgePercentIcon },
 ];
 
-const ACCEPTED_PATH_OFFER_STATUSES = new Set<BookingRequestOfferStatusKey>([
+const ACCEPTED_PATH_OFFER_STATUSES = new Set<BookingRequestOfferStatus>([
     'USER_NEEDS_DEPOSIT_PAYMENT',
     'PAYMENT_PULL_PENDING',
     'EVENT_PENDING',
     'COMPLETED',
 ]);
 
-const INACTIVE_OFFER_STATUSES = new Set<BookingRequestOfferStatusKey>([
+const INACTIVE_OFFER_STATUSES = new Set<BookingRequestOfferStatus>([
     'USER_DECLINED',
     'COOK_DECLINED',
     'USER_CHOOSE_DIFFERENT_OFFER',
@@ -124,7 +124,7 @@ function acceptedOfferFind(offers: AdminBookingRequestOffer[]): AdminBookingRequ
     return offers.find((offer) => offer.userAccepted === true && offer.cookAccepted === true) ?? null;
 }
 
-function offerDisplayRank(status: string): number {
+function offerDisplayRank(status: BookingRequestOfferStatus): number {
     if (ACCEPTED_PATH_OFFER_STATUSES.has(status)) {
         return 0;
     }
@@ -599,8 +599,8 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                         {{ de: 'Status', en: 'Status' }[locale]}
                     </dt>
                     <dd className="flex flex-wrap items-center gap-2">
-                        <BookingStatusPill className={bookingRequestStatusClassName(bookingRequest.status)}>
-                            {adminBookingRequestStatusLabel(bookingRequest.status, locale)}
+                        <BookingStatusPill hue={bookingRequestStatusHue(bookingRequest.status)}>
+                            {bookingRequestStatusLabel(bookingRequest.status, locale, 'admin')}
                         </BookingStatusPill>
                         <Badge variant="outline">
                             {adminBookingRequestPublicationStatusLabel(bookingRequest.publicationStatus, locale)}

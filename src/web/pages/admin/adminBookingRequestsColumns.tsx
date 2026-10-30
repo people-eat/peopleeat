@@ -1,9 +1,9 @@
 import { createColumnHelper } from '@tanstack/react-table';
 
 import { formatDate, formatDateTime, userDisplayName } from '../../../shared';
+import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import type { Locale } from '../../../shared/locale';
 import { Badge } from '../../components/base/badge';
-import { adminBookingRequestStatusLabel, bookingRequestStatusClassName } from '../../components/bookingRequestStatus';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import type { GqlCBookingRequestPublicationStatus, GqlCBookingRequestStatus } from '../../graphql/generated';
 import type { AdminBookingRequestsDataTableFeatures } from './adminBookingRequestsDataTableFeatures';
@@ -86,8 +86,8 @@ export function adminBookingRequestsColumns(locale: Locale, timeZone: string) {
                 // `w-max`: Badge uses overflow-hidden, so as a grid item its min-width collapses to 0 and
                 // long labels (e.g. "Zahlungsmittel hinterlegen") paint over Offers/Cook. Size to content.
                 <div className="grid w-max gap-1">
-                    <BookingStatusPill className={bookingRequestStatusClassName(row.original.status)}>
-                        {adminBookingRequestStatusLabel(row.original.status, locale)}
+                    <BookingStatusPill hue={bookingRequestStatusHue(row.original.status)}>
+                        {bookingRequestStatusLabel(row.original.status, locale, 'admin')}
                     </BookingStatusPill>
                     {row.original.publicationStatus === 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW' ? (
                         <Badge variant="outline">{adminBookingRequestPublicationStatusLabel(row.original.publicationStatus, locale)}</Badge>

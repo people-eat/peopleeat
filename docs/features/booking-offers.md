@@ -233,6 +233,7 @@ promo / gift (+ participant count) into each offer’s cost breakdown.
 - Price UI: `BookingRequestOfferPriceConfigurationPanel.tsx` (exports editable panel + readonly `BookingRequestOfferCostOverviewPanel`)
 - Menu picker: `CookMenuSelectPanel.tsx` (container-query grid; `CookMenuCardMedia` collage from `courseMealOptionImages`; shared by offer
   create + edit-menus)
-- Status: `BookingStatusPill.tsx`, `bookingRequestStatus.ts`, `bookingRequestOfferStatus.ts`
+- Status: `BookingStatusPill.tsx` (hue → classes); labels + hues in `src/shared/bookingRequestStatus.ts` /
+  `src/shared/bookingRequestOfferStatus.ts` (audience `customer` / `cook` / `admin`)
 - Related: [booking-offer-chat.md](./booking-offer-chat.md), [booking-payment.md](./booking-payment.md),
   [booking-request-create.md](./booking-request-create.md)

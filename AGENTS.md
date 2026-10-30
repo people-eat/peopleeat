@@ -85,6 +85,7 @@ in `docs/styles/`.
 | Stripe Connect payments               | [`stripe-payment.md`](./docs/architecture/stripe-payment.md)               |
 | Testimonials / reviews                | [`testimonials.md`](./docs/architecture/testimonials.md)                   |
 | Booking requests / offers             | [`booking.md`](./docs/architecture/booking.md)                             |
+| Attention (badges / to-dos)           | [`attention.md`](./docs/architecture/attention.md)                         |
 | Outbound email tracking               | [`outbound-email.md`](./docs/architecture/outbound-email.md)               |
 | WhatsApp (Meta Cloud API)             | [`whatsapp.md`](./docs/architecture/whatsapp.md)                           |
 | Persistent logging                    | [`logging.md`](./docs/architecture/logging.md)                             |

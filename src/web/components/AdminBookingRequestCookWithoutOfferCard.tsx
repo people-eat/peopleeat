@@ -3,7 +3,6 @@ import { MapPinIcon } from 'lucide-react';
 
 import { formatCurrency, userDisplayName } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
-import { cn } from '../utils/cn';
 import type { Locale } from '../utils/locale';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { Button } from './base/button';
@@ -68,9 +67,7 @@ export function AdminBookingRequestCookWithoutOfferCard({
     return (
         <div className="relative flex h-full flex-col justify-between rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm">
             <div className="flex min-w-0 flex-col gap-3">
-                <BookingStatusPill
-                    className={cn('w-fit self-end', alreadyNotified ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700')}
-                >
+                <BookingStatusPill hue={alreadyNotified ? 'blue' : 'yellow'} className="w-fit self-end">
                     {alreadyNotified
                         ? { de: 'Benachrichtigt', en: 'Notified' }[locale]
                         : { de: 'Noch nicht benachrichtigt', en: 'Not yet notified' }[locale]}

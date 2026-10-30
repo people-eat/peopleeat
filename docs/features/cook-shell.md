@@ -11,8 +11,8 @@ Visiting `/profile/*` as a cook shows:
   `NotificationBadge` for unread notifications across offers, Analytics (when `COOK_ANALYTICS` is on — see
   [cook-analytics.md](./cook-analytics.md)), Chef profile, Public profile, Travel settings, Meals, Menus, Wallet, Gesprächstermine (call
   appointments). Wallet shows a warning `StatusBadge` when the cook is approved and payout setup is incomplete — see
-  [status-messaging.md](../styles/status-messaging.md). Pool, offer counts, and wallet attention seed from the profile loader and stay live
-  via real-time user updates.
+  [status-messaging.md](../styles/status-messaging.md). Pool, offer counts, and wallet attention are computed by the server (the pool badge
+  always matches the pool list), seed from the profile loader, and stay live via real-time user updates.
 - **Footer:** Account at `/profile/account`. When the cook is also an admin, an Admin link appears above Account (same escape-hatch pattern
   as Admin → Profile).
 - **Main pane header:** sidebar trigger + path breadcrumbs (no leading “Profile”) + accent assistant trigger on the right (soft orange pill,
@@ -105,6 +105,9 @@ destinations share a catalog until real pages replace them. `/profile/account` i
 - Key files: `src/web/pages/profile/ProfileLayout.tsx` (`CookShell`, `ProfileAssistantPane`), `src/web/components/CookSidebar.tsx`,
   `CookBreadcrumbs.tsx`, `CookAccessDenied.tsx`, `AssistantTriggerButton.tsx`, `ProfileAssistantSidebar.tsx`,
   `ProfilePinnedFooterLayout.tsx`.
-- Loader fields: `CookSidebar.graphql` — `isApprovedByAdmin` / stripe status plus pool/offer counts.
+- Loader fields: `CookSidebar.graphql` — `Cook.attentionCounts` (`cookAttentionCountsFindOne`: pool rows via
+  `cookBookingRequestPoolRowsFind`, summed offer unread, `cookWalletNeedsAttentionDerive`). Pool badge stays live for every eligible cook
+  via `bookingRequestPoolCooksPublish`. Overview: `Cook.attention` / `Cook.onboardingSteps` (`cookAttentionFindMany`,
+  `cookOnboardingStepsFindMany`) with wording from `src/shared/attentionCopy.ts`. See [attention.md](../architecture/attention.md).
 
 See also [profile.md](./profile.md), [customer-shell.md](./customer-shell.md), and [admin-shell.md](./admin-shell.md).

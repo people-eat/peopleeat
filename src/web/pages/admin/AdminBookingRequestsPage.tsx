@@ -4,6 +4,7 @@ import { LayoutGridIcon, ListIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { userDisplayName } from '../../../shared';
+import { bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import { AdminBookingRequestListCard } from '../../components/AdminBookingRequestListCard';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
@@ -12,7 +13,6 @@ import { Button } from '../../components/base/button';
 import { Input } from '../../components/base/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
-import { adminBookingRequestStatusLabel } from '../../components/bookingRequestStatus';
 import type {
     GqlCAdminBookingRequestsPageQuery,
     GqlCBookingRequestPublicationStatus,
@@ -346,7 +346,7 @@ export function AdminBookingRequestsPage({
                                 <SelectItem value="__all__">{{ de: 'Alle Status', en: 'All statuses' }[locale]}</SelectItem>
                                 {ADMIN_BOOKING_REQUEST_STATUSES.map((status) => (
                                     <SelectItem key={status} value={status}>
-                                        {adminBookingRequestStatusLabel(status, locale)}
+                                        {bookingRequestStatusLabel(status, locale, 'admin')}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
