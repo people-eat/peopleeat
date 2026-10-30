@@ -87,7 +87,6 @@ export async function slackNotifyBookingRequestRecall(
             { label: 'Kunde', value: customerName },
             { label: 'Telefon', value: args.phoneNumber ?? 'nicht hinterlegt' },
         ],
-        broadcast: true,
     });
 }
 
@@ -101,7 +100,6 @@ export async function slackNotifyBookingRequestCanceled(
         header: `Storniert · ${customerName}`,
         fields: [{ label: 'Kunde', value: customerName }],
         body: args.reason ? `Grund: ${args.reason}` : undefined,
-        broadcast: true,
     });
 }
 
@@ -131,7 +129,6 @@ export async function slackNotifyBookingRequestPublicationApproved(
         bookingRequestId: args.bookingRequestId,
         header: 'Veröffentlichung freigegeben',
         fields: args.cooksNotifiedCount != null ? [{ label: 'Benachrichtigte Köche', value: String(args.cooksNotifiedCount) }] : undefined,
-        broadcast: true,
     });
 }
 
@@ -198,7 +195,6 @@ export async function slackNotifyOfferAccept(
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: args.dualAccepted ? `Doppelte Annahme · ${args.name}` : `${who} hat angenommen · ${args.name}`,
-        broadcast: args.dualAccepted,
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -241,7 +237,6 @@ export async function slackNotifyPaymentConfirmed(
         bookingRequestId: args.bookingRequestId,
         header: 'Zahlung bestätigt',
         fields: [{ label: 'Betrag', value: slackFormatCents(args.amountCents) }],
-        broadcast: true,
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -255,7 +250,6 @@ export async function slackNotifyPaymentFinalizeMismatch(
         bookingRequestId: args.bookingRequestId,
         header: 'Zahlung Hinweis: Abweichung',
         body: args.detail,
-        broadcast: true,
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -268,7 +262,6 @@ export async function slackNotifyPaymentFailed(
         bookingRequestId: args.bookingRequestId,
         header: 'Zahlung fehlgeschlagen',
         body: args.detail,
-        broadcast: true,
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -281,7 +274,6 @@ export async function slackNotifyPayoutReleased(
         bookingRequestId: args.bookingRequestId,
         header: 'Auszahlung freigegeben',
         fields: [{ label: 'Betrag', value: slackFormatCents(args.amountCents) }],
-        broadcast: true,
         adminOfferId: args.bookingRequestOfferId,
     });
 }
@@ -296,7 +288,6 @@ export async function slackNotifyPayoutAlreadyTookPlace(
         header: 'Bestehende Stripe-Auszahlung bestätigt',
         body: 'Keine neue Auszahlung ausgelöst. Status auf TRANSFERRED gesetzt.',
         fields: [{ label: 'Betrag', value: slackFormatCents(args.amountCents) }],
-        broadcast: true,
         adminOfferId: args.bookingRequestOfferId,
     });
 }

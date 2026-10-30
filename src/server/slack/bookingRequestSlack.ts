@@ -24,7 +24,6 @@ export type BookingRequestSlackThreadReplyArgs = {
     header: string;
     fields?: SlackField[];
     body?: string;
-    broadcast?: boolean;
     adminOfferId?: string;
 };
 
@@ -125,7 +124,6 @@ export async function bookingRequestSlackThreadReply(
             text,
             blocks,
             threadTs: row?.references?.slackTs,
-            broadcast: args.broadcast,
         });
     } catch (error) {
         serverRuntime.log.error(error);

@@ -38,6 +38,5 @@ export async function whatsappBookingReactionSlackNotify(
     await bookingRequestSlackThreadReply(serverRuntime, {
         bookingRequestId: args.bookingRequestId,
         header: `Customer reacted on WhatsApp: ${args.reactionLabel}`,
-        broadcast: true,
     });
 }

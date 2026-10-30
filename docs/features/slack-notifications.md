@@ -6,15 +6,16 @@ Internal Slack posts keep ops aware of marketplace, support, sign-up, and gift-c
 
 Ops receives structured Slack messages (German copy — internal surface):
 
-- **Booking timeline** — one root message per booking request (channel by party size), then thread replies for lifecycle events
+- **Booking timeline** — one root message per booking request (channel by party size), then thread-only replies for lifecycle events (no
+  `reply_broadcast` into the main channel)
 - **Sign-ups** — customer and cook registration
 - **Support** — one root message per ticket, then thread replies for customer/admin messages and resolve
 - **Gift cards** — successful purchases
 - **Digests / alerts** — weekday booking report; 24h / 48h no-offer aging as a thread reply on the booking request; payment failures /
-  payouts as booking-thread replies (channel-broadcast when urgency/visibility matters); **daily admin action-item report** (08:00
-  Europe/Berlin, mirrors `/admin` queues) on the ops-alerts channel; **Resend quota at-risk alert** (00:00 and 19:00 Europe/Berlin, only
-  when monthly or free-tier daily quota is at risk) on the same channel; **observability ops alert** (hourly, GraphQL/job error rate or p95,
-  elevated error logs, or slow `pg_stat_statements`) on the same channel — see [observability.md](../architecture/observability.md)
+  payouts as booking-thread replies only (not channel-broadcast); **daily admin action-item report** (08:00 Europe/Berlin, mirrors `/admin`
+  queues) on the ops-alerts channel; **Resend quota at-risk alert** (00:00 and 19:00 Europe/Berlin, only when monthly or free-tier daily
+  quota is at risk) on the same channel; **observability ops alert** (hourly, GraphQL/job error rate or p95, elevated error logs, or slow
+  `pg_stat_statements`) on the same channel — see [observability.md](../architecture/observability.md)
 - **WhatsApp Concierge** — inbound customer messages on `SLACK_CHANNEL_WHATSAPP_MESSAGES`; known reaction quick-replies also reply on the
   booking-request Slack thread
 

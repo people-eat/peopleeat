@@ -14,7 +14,7 @@ import { userBookingRequestOwnedFindOne } from '../utils/userBookingRequestOwned
 
 /**
  * Customer requests a callback during churn win-back. Notifies ops via Slack
- * thread (broadcast) and publishes adminUpdates so connected admin UIs refresh.
+ * thread and publishes adminUpdates so connected admin UIs refresh.
  */
 export async function userBookingRequestRequestRecall(
     { userId }: GqlSUserMutation,
