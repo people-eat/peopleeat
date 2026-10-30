@@ -7,9 +7,9 @@ Customer, cook, and admin negotiate on an offer through a shared timeline chat w
 1. On the offer page, the **chat** tab shows the negotiation timeline (messages plus system events such as offer created, price changed,
    accept / decline, payment / payout lifecycle, call-slot lifecycle, and spontaneous call start). Price milestones (`COOK_CREATED`,
    `COOK_CHANGED_PRICE`, `SYSTEM_CHANGED_PRICE`) show the **customer-facing total** (`totalWithoutDiscountsCentsCustomer`: menu + fees +
-   travel), not the cook menu price alone. Payment milestones (`SYSTEM_PAYMENT_SETUP` / `SYSTEM_PAYMENT_SUCCEEDED` /
-   `SYSTEM_PAYMENT_FAILED` / `ADMIN_PAYOUT_RELEASED` / `ADMIN_PAYED_OUT_OF_SYSTEM`) are visible to all parties — see
-   [booking-payment.md](./booking-payment.md). Opening chat (or Call) clears that role’s unread badge.
+   travel), not the cook menu price alone. Payment milestones (`SYSTEM_PAYMENT_SETUP` / `SYSTEM_PAYMENT_SUCCEEDED` / `SYSTEM_PAYMENT_FAILED`
+   / `ADMIN_PAYOUT_RELEASED` / `ADMIN_PAYED_OUT_OF_SYSTEM`) are visible to all parties — see [booking-payment.md](./booking-payment.md).
+   Opening chat (or Call) clears that role’s unread badge.
 2. A **concierge presence** row shows the peer(s) together with Concierge Juliana — copy explains she is in the chat for special requests.
    Customer and cook each see the other party plus Juliana; admins see **customer, cook, and Juliana**. Layout: scrolls away with the
    transcript on small screens; stays pinned above the transcript from medium breakpoints up (same pattern as support chat). Transcript
