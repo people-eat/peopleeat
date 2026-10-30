@@ -251,12 +251,12 @@ CI. Revisit with `ubuntu-26.04` when ready to validate on the new image.
 `AGENTS.md` / `CLAUDE.md`. Empty diffs, missing bases (force push / `workflow_dispatch`), and any other path count as code. Outputs
 `code=true|false` for Check / Test / E2e.
 
-**check** — commit lint, codegen freshness (code change sets only), and static analysis in one job (one `npm ci`). Commitlint runs for PR and
-push events (same ranges as before). On **code** change sets: `graphql:generate` + `db:generate`, then `git diff --exit-code` on `*.gen.ts` /
-`*.generated.ts` / `drizzle/` (fails if codegen output differs from what was committed, or if new untracked files appear). Then format, spell,
-types, and usage run **in parallel**; lint runs after they all succeed (types before lint, matching local `npm run check`). On **docs-only**
-change sets: commitlint, then format + spell in parallel only (skip codegen / types / lint / knip). Parallel logs are printed in collapsible
-groups so one failure does not hide another.
+**check** — commit lint, codegen freshness (code change sets only), and static analysis in one job (one `npm ci`). Commitlint runs for PR
+and push events (same ranges as before). On **code** change sets: `graphql:generate` + `db:generate`, then `git diff --exit-code` on
+`*.gen.ts` / `*.generated.ts` / `drizzle/` (fails if codegen output differs from what was committed, or if new untracked files appear). Then
+format, spell, types, and usage run **in parallel**; lint runs after they all succeed (types before lint, matching local `npm run check`).
+On **docs-only** change sets: commitlint, then format + spell in parallel only (skip codegen / types / lint / knip). Parallel logs are
+printed in collapsible groups so one failure does not hide another.
 
 | Step (code PRs)   | Command                                                                                                                                                                                                                                                                                                                                           |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -311,7 +311,8 @@ test Coolify UUID + `WEB_APP_URL_TEST`, `production` → production Coolify UUID
 Uses a separate concurrency group (`deploy-test` / `deploy-production`, `cancel-in-progress: false`) so concurrent deploys to the same
 environment queue rather than abort.
 
-1. Builds a Docker image and pushes it to **GitHub Container Registry** (GHCR) with Docker layer caching (see [Docker build cache](#docker-build-cache))
+1. Builds a Docker image and pushes it to **GitHub Container Registry** (GHCR) with Docker layer caching (see
+   [Docker build cache](#docker-build-cache))
 2. Tags the image with the commit SHA and `latest`
 3. PATCHes the matching Coolify application to point to the new image tag
 4. Restarts that application via the Coolify API
@@ -323,10 +324,10 @@ environment queue rather than abort.
 The deploy job's `docker/build-push-action` restores and exports BuildKit **layer** cache from two backends (`mode=max` so intermediate
 multi-stage layers — deps, Playwright/Chromium, runtime npm allowlist — stay reusable when only app code changes):
 
-| Backend | Ref / scope | Why |
-| ------- | ----------- | --- |
-| GitHub Actions cache (`type=gha`) | Read `scope=main` and `scope=<branch>`; write `scope=<branch>` | Fast, co-located with runners. Scoping lets `production` (and other branches) reuse layers written on `main` instead of starting cold. |
-| GHCR registry (`type=registry`) | `ghcr.io/<owner>/<repo>:buildcache` | Survives the ~10 GiB per-repo GHA cache cap. This image carries Chromium; without a registry cache, large layers can thrash or miss under GHA alone. Coolify continues to pull `sha-…` / `latest` — `:buildcache` is cache-only. |
+| Backend                           | Ref / scope                                                    | Why                                                                                                                                                                                                                              |
+| --------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GitHub Actions cache (`type=gha`) | Read `scope=main` and `scope=<branch>`; write `scope=<branch>` | Fast, co-located with runners. Scoping lets `production` (and other branches) reuse layers written on `main` instead of starting cold.                                                                                           |
+| GHCR registry (`type=registry`)   | `ghcr.io/<owner>/<repo>:buildcache`                            | Survives the ~10 GiB per-repo GHA cache cap. This image carries Chromium; without a registry cache, large layers can thrash or miss under GHA alone. Coolify continues to pull `sha-…` / `latest` — `:buildcache` is cache-only. |
 
 BuildKit `--mount=type=cache` (npm tarballs, Playwright Chromium download in the Dockerfile) is **local to the builder** and is not exported
 by these remote backends. On ephemeral GitHub-hosted runners those mounts start cold whenever the corresponding `RUN` layer is invalidated
@@ -349,16 +350,16 @@ If deploy wall-clock is still dominated by Docker after the caches above are war
 
 ### Required secrets
 
-| Secret                               | Description                                                                                                                 |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `COOLIFY_URL`                        | Coolify instance URL (e.g. `https://coolify.example.com`)                                                                   |
-| `COOLIFY_API_TOKEN`                  | Coolify API token (instance/team-scoped; used for both test and production deploys)                                         |
-| `COOLIFY_APPLICATION_UUID_TEST`      | Test application UUID                                                                                                       |
-| `COOLIFY_APPLICATION_UUID_PROD`      | Production application UUID                                                                                                 |
-| `COOLIFY_APPLICATION_UUID_STORYBOOK` | Storybook Coolify application UUID (see [Storybook](#storybook--email-preview-coolify))                                     |
-| `COOLIFY_APPLICATION_UUID_EMAIL`     | React Email preview Coolify application UUID (see [Storybook](#storybook--email-preview-coolify))                           |
-| `WEB_APP_URL_TEST`                   | Public URL of the test app — polled by the post-deploy verification step                                                    |
-| `WEB_APP_URL_PROD`                   | Public URL of the production app — polled by the post-deploy verification step                                              |
+| Secret                               | Description                                                                                                                           |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `COOLIFY_URL`                        | Coolify instance URL (e.g. `https://coolify.example.com`)                                                                             |
+| `COOLIFY_API_TOKEN`                  | Coolify API token (instance/team-scoped; used for both test and production deploys)                                                   |
+| `COOLIFY_APPLICATION_UUID_TEST`      | Test application UUID                                                                                                                 |
+| `COOLIFY_APPLICATION_UUID_PROD`      | Production application UUID                                                                                                           |
+| `COOLIFY_APPLICATION_UUID_STORYBOOK` | Storybook Coolify application UUID (see [Storybook](#storybook--email-preview-coolify))                                               |
+| `COOLIFY_APPLICATION_UUID_EMAIL`     | React Email preview Coolify application UUID (see [Storybook](#storybook--email-preview-coolify))                                     |
+| `WEB_APP_URL_TEST`                   | Public URL of the test app — polled by the post-deploy verification step                                                              |
+| `WEB_APP_URL_PROD`                   | Public URL of the production app — polled by the post-deploy verification step                                                        |
 | `DATABASE_URL_TEST`                  | Connection string used by the test step of `migrations-check` — recommend a role with `SELECT` on `drizzle.__drizzle_migrations` only |
 | `DATABASE_URL_PROD`                  | Connection string used by the prod step of `migrations-check` — recommend a role with `SELECT` on `drizzle.__drizzle_migrations` only |
 
