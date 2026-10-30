@@ -224,17 +224,18 @@ test, `production` → production).
 
 ```
                       ┌─ changes (docs-only vs code) ──┐
-                      │                                ├─ test  / test-stub (same check name)
-                      │                                └─ e2e   / e2e-stub  (same check name)
+                      │                                ├─ test (matrix 1/2, 2/2) ─► test-gate (check name: Test)
+                      │                                ├─ e2e · run ───────────────► e2e-gate  (check name: End to end tests)
+                      │                                └─ check (full or format+spell)
                       ├─ commitlint ───────────────────┐
                       ├─ codegen ──────────────────────┤
-trigger ──────────────┼─ check ────────────────────────┼──── deploy (push to main → test /
+trigger ──────────────┼────────────────────────────────┼──── deploy (push to main → test /
                       └─ migrations-check ─────────────┘           push to production → production)
                           (matrix: prod, test)                   (Docker build + push + Coolify)
 ```
 
-Typical gate wall-clock on a code PR is ~3–4 minutes (limited by Check or Test); docs-only PRs skip the real Test / E2e jobs. Deploy adds ~4
-minutes on push.
+Typical gate wall-clock on a code PR is ~3–4 minutes (limited by Check or a Vitest shard); docs-only PRs skip Vitest shards and Playwright
+and run a lighter Check. Deploy adds ~4 minutes on push.
 
 All gate jobs that install dependencies share the composite action at `.github/actions/setup` which runs `actions/setup-node@v6`, pins the
 npm version from `package.json#packageManager`, and runs `npm ci`. Update there if you change the dependency-install flow.
@@ -246,7 +247,7 @@ CI. Revisit with `ubuntu-26.04` when ready to validate on the new image.
 
 **changes** — classifies the change set as docs-only or code. Docs-only means every changed path is under `docs/`, ends in `.md`, or is
 `AGENTS.md` / `CLAUDE.md`. Empty diffs, missing bases (force push / `workflow_dispatch`), and any other path count as code. Outputs
-`code=true|false` for the Test / E2e jobs.
+`code=true|false` for Check / Test / E2e.
 
 **commitlint** — validates commit messages against the conventional-commits config.
 
@@ -257,10 +258,11 @@ CI. Revisit with `ubuntu-26.04` when ready to validate on the new image.
 3. `git diff --exit-code` on `*.gen.ts` / `*.generated.ts` / `drizzle/` — fails if codegen output differs from what was committed, or if new
    untracked files appear
 
-**check** — static analysis (no database required). Format, spell, types, and usage run **in parallel**; lint runs after they all succeed
-(types before lint, matching local `npm run check`). Parallel logs are printed in collapsible groups so one failure does not hide another.
+**check** — static analysis (no database required). On **docs-only** change sets: format + spell in parallel only. On **code** change sets:
+format, spell, types, and usage run **in parallel**; lint runs after they all succeed (types before lint, matching local `npm run check`).
+Parallel logs are printed in collapsible groups so one failure does not hide another.
 
-| Step              | Command                                                                                                                                                                                                                                                                                                                                           |
+| Step (code PRs)   | Command                                                                                                                                                                                                                                                                                                                                           |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Format (parallel) | `prettier --check .`                                                                                                                                                                                                                                                                                                                              |
 | Spell (parallel)  | `cspell .`                                                                                                                                                                                                                                                                                                                                        |
@@ -268,26 +270,30 @@ CI. Revisit with `ubuntu-26.04` when ready to validate on the new image.
 | Usage (parallel)  | `knip`                                                                                                                                                                                                                                                                                                                                            |
 | Lint (after)      | `eslint .` with an 8 GiB Node heap (`NODE_OPTIONS=--max-old-space-size=8192`). Type-aware rules (`projectService`) run on `src/server/**` and `src/shared/**` only; other paths use `disableTypeChecked`. Still includes CQRS `commands`↔`queries` import bans and Tailwind canonical classes via `better-tailwindcss/enforce-canonical-classes`. |
 
-**test** — runs against a PostgreSQL 17 service container when `changes.code` is true:
+**test** — Vitest shards against a PostgreSQL 17 service container when `changes.code` is true (matrix `shard: [1, 2]`,
+`npx vitest run --shard=N/2`):
 
 1. `npm ci`
 2. `drizzle-kit push` (applies schema to the test database)
-3. `npm test`
+3. shard run
 
 Env for the job mirrors `.env.test.example`: always-required placeholders plus `EMAIL_TRANSPORT=console`, `SLACK_TRANSPORT=console`, and
 `WHATSAPP_TRANSPORT=console`. Stripe/email/AI/Slack/WhatsApp calls are stubbed via `serverRuntime` in unit tests; the placeholders satisfy
 boot validation when code paths touch the real `environmentVariables` proxy.
 
-On docs-only change sets a **test-stub** job with the same check name (`Test`) exits 0 immediately so required branch-protection checks stay
-green without installing dependencies or starting Postgres.
+**test-gate** (check name `Test`) — always runs. Docs-only: exits 0. Code: fails unless every Vitest shard succeeded. This is the required
+branch-protection check (shard jobs use distinct names `Test (1/2)` / `Test (2/2)` so the graph stays readable).
 
-**e2e** — Playwright UI suite against the same Postgres service pattern as `test` when `changes.code` is true: restore Chromium from an
-Actions cache keyed on `package-lock.json` (`~/.cache/ms-playwright`), run `npx playwright install --with-deps chromium` (no-op / fast on
-cache hit for the browser tarball; OS deps still install), apply schema (`db:push`), then `npm run test:e2e` (Playwright starts the app via
-`webServer`). Env mirrors `.env.test.example` (console email/Slack/WhatsApp transports) so `serverRuntimeCreate` can boot. Dual-accept e2e
-that needs live Stripe still uses real test keys when provided. Wired into `deploy.needs`.
+**e2e** (`End to end tests · run`) — Playwright UI suite against the same Postgres service pattern as `test` when `changes.code` is true:
+restore Chromium from an Actions cache keyed on `package-lock.json` (`~/.cache/ms-playwright`), run
+`npx playwright install --with-deps chromium` (no-op / fast on cache hit for the browser tarball; OS deps still install), apply schema
+(`db:push`), then `npm run test:e2e` (Playwright starts the app via `webServer`). CI uses **2 Playwright workers** with `fullyParallel`
+(specs isolate via nanoIds; no truncate) — see [e2e.md](./architecture/e2e.md). Env mirrors `.env.test.example` (console
+email/Slack/WhatsApp transports) so `serverRuntimeCreate` can boot. Dual-accept e2e that needs live Stripe still uses real test keys when
+provided.
 
-On docs-only change sets an **e2e-stub** job with the same check name (`End to end tests`) exits 0 immediately for branch protection.
+**e2e-gate** (check name `End to end tests`) — always runs. Docs-only: exits 0. Code: fails unless the Playwright job succeeded. Required
+branch-protection check.
 
 **migrations-check** — verifies that prod and test databases have applied every migration in the `drizzle/` folder. Runs as a matrix
 (`prod`, `test`) and fails the PR if any migration is missing — forces you to deploy migrations before merging schema-dependent code. The
@@ -298,11 +304,10 @@ PRs from forks have no access to the DB secrets and so the job is skipped on the
 
 ### Deploy job
 
-Runs only on `push` to `main` or `production`, and only after every gate passes. Real Test / E2e may be skipped on docs-only pushes; deploy
-treats a successful stub as satisfying that gate (`needs.test.result == 'success' || needs.test-stub.result == 'success'`, same for e2e).
-The job matrix is built with `fromJSON` so a push creates **one** deploy leg: `main` → test secrets, `production` → production secrets. (Do
-not filter with `matrix.exclude` while also listing both envs under `include` — GitHub applies `include` after `exclude` and re-adds the
-dropped combination.)
+Runs only on `push` to `main` or `production`, and only after every gate passes (`test-gate` and `e2e-gate` always report success or
+failure; docs-only pushes do not need Vitest or Playwright to have run). The job matrix is built with `fromJSON` so a push creates **one**
+deploy leg: `main` → test secrets, `production` → production secrets. (Do not filter with `matrix.exclude` while also listing both envs
+under `include` — GitHub applies `include` after `exclude` and re-adds the dropped combination.)
 
 Uses a separate concurrency group (`deploy-${{ matrix.environment }}`, `cancel-in-progress: false`) so concurrent deploys to the same
 environment queue rather than abort.

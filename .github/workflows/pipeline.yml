@@ -31,7 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           # Docs-only = every changed path is markdown or under docs/. Anything else is code
-          # (src, e2e, configs, lockfile, workflows, …) and must run Test / E2e.
+          # (src, e2e, configs, lockfile, workflows, …) and must run Test / E2e / full Check.
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE="${{ github.event.pull_request.base.sha }}"
           elif [ "${{ github.event_name }}" = "push" ] && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
@@ -116,6 +116,7 @@ jobs:
 
   check:
     name: Check
+    needs: changes
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -123,10 +124,40 @@ jobs:
 
       - uses: ./.github/actions/setup
 
+      # Docs-only: format + spell still matter; skip types / lint / knip.
+      - name: Format and spell (docs-only)
+        if: needs.changes.outputs.code != 'true'
+        run: |
+          set -uo pipefail
+          npm run format:check > /tmp/check-format.log 2>&1 &
+          pid_format=$!
+          npm run spell:check > /tmp/check-spell.log 2>&1 &
+          pid_spell=$!
+
+          set +e
+          wait "$pid_format"
+          status_format=$?
+          wait "$pid_spell"
+          status_spell=$?
+          set -e
+
+          echo "::group::Format"
+          cat /tmp/check-format.log
+          echo "::endgroup::"
+          echo "::group::Spell"
+          cat /tmp/check-spell.log
+          echo "::endgroup::"
+
+          failed=0
+          [ "$status_format" -eq 0 ] || { echo "Format failed (exit $status_format)"; failed=1; }
+          [ "$status_spell" -eq 0 ] || { echo "Spell failed (exit $status_spell)"; failed=1; }
+          [ "$failed" -eq 0 ] || exit 1
+
       # Format / spell / types / usage in parallel, then lint (types before lint, matching
       # local `npm run check`). Fail after printing every parallel log so one broken tool
       # does not hide the others.
       - name: Format, spell, types, usage (parallel), then lint
+        if: needs.changes.outputs.code == 'true'
         run: |
           set -uo pipefail
           npm run format:check > /tmp/check-format.log 2>&1 &
@@ -172,11 +203,15 @@ jobs:
           npm run lint:check
 
   test:
-    name: Test
+    name: Test (${{ matrix.shard }}/2)
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     services:
       postgres:
         image: postgres:17
@@ -226,22 +261,33 @@ jobs:
       - name: Run migrations
         run: npm run db:push
 
-      - name: Test
-        run: npm test
+      - name: Test shard ${{ matrix.shard }}/2
+        run: npx vitest run --shard=${{ matrix.shard }}/2
 
-  # Same check name as `test` so required branch-protection checks stay green on docs-only PRs.
-  test-stub:
+  # Single required check name for branch protection. Succeeds on docs-only; otherwise
+  # requires every Vitest shard to pass.
+  test-gate:
     name: Test
-    needs: changes
-    if: needs.changes.outputs.code != 'true'
+    needs: [changes, test]
+    if: always() && !cancelled()
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Skip unit tests (docs-only)
+      - name: Docs-only — unit tests not required
+        if: needs.changes.outputs.code != 'true'
         run: echo "Docs-only change set — skipping unit tests"
 
+      - name: Require Vitest shards
+        if: needs.changes.outputs.code == 'true'
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "Vitest shards did not succeed (result=${{ needs.test.result }})"
+            exit 1
+          fi
+          echo "All Vitest shards passed"
+
   e2e:
-    name: End to end tests
+    name: End to end tests · run
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
@@ -308,16 +354,25 @@ jobs:
       - name: End to end tests
         run: npm run test:e2e
 
-  # Same check name as `e2e` so required branch-protection checks stay green on docs-only PRs.
-  e2e-stub:
+  e2e-gate:
     name: End to end tests
-    needs: changes
-    if: needs.changes.outputs.code != 'true'
+    needs: [changes, e2e]
+    if: always() && !cancelled()
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Skip end to end tests (docs-only)
+      - name: Docs-only — end to end tests not required
+        if: needs.changes.outputs.code != 'true'
         run: echo "Docs-only change set — skipping end to end tests"
+
+      - name: Require end to end suite
+        if: needs.changes.outputs.code == 'true'
+        run: |
+          if [ "${{ needs.e2e.result }}" != "success" ]; then
+            echo "End to end tests did not succeed (result=${{ needs.e2e.result }})"
+            exit 1
+          fi
+          echo "End to end tests passed"
 
   migrations-check:
     name: Migrations applied (${{ matrix.env }})
@@ -341,12 +396,11 @@ jobs:
 
   deploy:
     name: Deploy (${{ matrix.environment }})
-    needs: [commitlint, codegen, check, test, test-stub, e2e, e2e-stub, migrations-check]
+    needs: [commitlint, codegen, check, test-gate, e2e-gate, migrations-check]
     # main → test only; production → production only. Build the matrix with fromJSON —
     # do not pair matrix.exclude with matrix.include: GitHub applies include *after*
     # exclude and re-adds the dropped combination (so both envs ran on push to main).
-    # Test / e2e may be skipped on docs-only pushes (stubs succeed instead); treat skipped
-    # real jobs as OK when the matching stub succeeded.
+    # test-gate / e2e-gate always run (docs-only succeeds without shards / Playwright).
     if: |
       always()
       && !cancelled()
@@ -355,8 +409,8 @@ jobs:
       && needs.commitlint.result == 'success'
       && needs.codegen.result == 'success'
       && needs.check.result == 'success'
-      && (needs.test.result == 'success' || needs.test-stub.result == 'success')
-      && (needs.e2e.result == 'success' || needs.e2e-stub.result == 'success')
+      && needs.test-gate.result == 'success'
+      && needs.e2e-gate.result == 'success'
       && (needs.migrations-check.result == 'success' || needs.migrations-check.result == 'skipped')
     runs-on: ubuntu-24.04
     timeout-minutes: 30

@@ -20,11 +20,12 @@ N actors.
 
 Typical shape:
 
-1. Arrange — seed via `e2e/fixtures/db.ts` (nanoId isolation, same as Vitest — no truncate). Sessions also get a mandatory `CookieSettings`
-   row so the consent banner does not mask dialogs. Seeded users set `locale: 'en'` so `/en/…` journeys do not open `LocaleMismatchGate`.
-   Seeded emails lower-case the nanoId (`e2e-customer-{userId.toLowerCase()}@…`) so OTP verify’s `emailNormalize` still matches. Content
-   publish specs use lower-case path tokens — `contentPathNameNormalize` / `pathNameSlugify` lowercases slugs on save. Root gates are
-   exclusive (`locale → legal → cookie`); seeding still clears locale and cookie so later surfaces are not blocked by an earlier one — see
+1. Arrange — seed via `e2e/fixtures/db.ts` (nanoId isolation, same as Vitest — no truncate; this is what lets CI run **2 Playwright
+   workers** with `fullyParallel` against one Postgres). Sessions also get a mandatory `CookieSettings` row so the consent banner does not
+   mask dialogs. Seeded users set `locale: 'en'` so `/en/…` journeys do not open `LocaleMismatchGate`. Seeded emails lower-case the nanoId
+   (`e2e-customer-{userId.toLowerCase()}@…`) so OTP verify’s `emailNormalize` still matches. Content publish specs use lower-case path
+   tokens — `contentPathNameNormalize` / `pathNameSlugify` lowercases slugs on save. Root gates are exclusive (`locale → legal → cookie`);
+   seeding still clears locale and cookie so later surfaces are not blocked by an earlier one — see
    [session-startup-gates.md](../features/session-startup-gates.md).
 2. Act — one actor drives a UI mutation (or seed the mutation when the form path is out of scope)
 3. Assert — other actors navigate their list/detail pages and assert presence/absence by a unique token in the copy
@@ -124,5 +125,6 @@ vars explicitly and starts the app via Playwright `webServer` — see [infrastru
 ## Consequences
 
 - Multi-party scenarios stay readable (named actors + unique occasion tokens).
-- CI needs Chromium install + a running app + Postgres (separate job from Vitest).
+- CI needs Chromium install + a running app + Postgres (separate job from Vitest). Playwright config uses `workers: 2` when `CI` is set and
+  `fullyParallel: true`; local stays one worker for quieter logs.
 - Capture and e2e must stay documented as distinct Playwright uses so agents do not conflate them.

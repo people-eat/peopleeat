@@ -10,10 +10,12 @@ const isCi = Boolean(process.env.CI);
 export default defineConfig({
     testDir: './e2e',
     testMatch: '**/*.spec.ts',
-    fullyParallel: false,
+    // Specs seed with nanoIds (no truncate), so workers can share one Postgres safely.
+    // Local stays single-worker for quieter logs; CI uses two against the service container.
+    fullyParallel: true,
     forbidOnly: isCi,
     retries: isCi ? 1 : 0,
-    workers: 1,
+    workers: isCi ? 2 : 1,
     reporter: isCi ? [['list'], ['html', { open: 'never' }]] : 'list',
     timeout: 60_000,
     expect: { timeout: 15_000 },
