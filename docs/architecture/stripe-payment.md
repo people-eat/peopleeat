@@ -147,16 +147,16 @@ catalog); `log.error` when the handler throws. Gift-card checkout still finalize
 
 **Handle (side effects):**
 
-| Event                           | Behavior                                                                                                                                                   |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `payment_intent.succeeded`      | Finalize matching offer → `PAYED`, or clear `pendingDeltaPayment` + cook top-up (`bookingRequestOfferPaymentIntentSucceededApply`)                         |
-| `payment_intent.processing`     | Same (async methods such as SEPA)                                                                                                                          |
-| `payment_intent.payment_failed` | Mark matching offer `FAILED` if not already paid/transferred; Slack fail notify                                                                            |
-| `payment_intent.canceled`       | Same as payment_failed                                                                                                                                     |
-| `setup_intent.succeeded`        | Finalize matching offer → `SETUP` (`bookingRequestOfferSetupIntentSucceededApply`)                                                                         |
-| `setup_intent.setup_failed`     | Mark matching offer `FAILED` if not terminal-paid                                                                                                          |
-| `setup_intent.canceled`         | Same as setup_failed                                                                                                                                       |
-| `account.updated`               | Lookup cook by `stripeAccountId`; sync `stripeAccountActive` / `stripeAccountActiveWasReset` via `cookStripeAccountStatusApply` (no wallet visit required) |
+| Event                           | Behavior                                                                                                                                                                                                                         |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `payment_intent.succeeded`      | Finalize matching offer → `PAYED`, or clear `pendingDeltaPayment` + cook top-up (`bookingRequestOfferPaymentIntentSucceededApply`). Shared helper claims status once (checkout mutation may race); only the winner Slack/emails. |
+| `payment_intent.processing`     | Same (async methods such as SEPA)                                                                                                                                                                                                |
+| `payment_intent.payment_failed` | Mark matching offer `FAILED` if not already paid/transferred; Slack fail notify                                                                                                                                                  |
+| `payment_intent.canceled`       | Same as payment_failed                                                                                                                                                                                                           |
+| `setup_intent.succeeded`        | Finalize matching offer → `SETUP` (`bookingRequestOfferSetupIntentSucceededApply`); same single-winner claim as PI success                                                                                                       |
+| `setup_intent.setup_failed`     | Mark matching offer `FAILED` if not terminal-paid                                                                                                                                                                                |
+| `setup_intent.canceled`         | Same as setup_failed                                                                                                                                                                                                             |
+| `account.updated`               | Lookup cook by `stripeAccountId`; sync `stripeAccountActive` / `stripeAccountActiveWasReset` via `cookStripeAccountStatusApply` (no wallet visit required)                                                                       |
 
 **Subscribe, ack only** (no DB write — unused product paths: no manual capture, no `customer_balance`):
 
@@ -208,6 +208,7 @@ Attention lane — see [cook-profile.md](../features/cook-profile.md).
 - `src/server/commands/cookStripeAccountStatusApply.ts` — shared Connect flag sync (mutation + webhook)
 - `src/server/commands/bookingRequestOfferPaymentIntentSucceededApply.ts` — PI success finalize
 - `src/server/commands/bookingRequestOfferSetupIntentSucceededApply.ts` — SI success finalize
+- `src/server/utils/bookingRequestOfferPaymentFinalize.ts` — shared SI/PI finalize; atomic `paymentStatus` claim; mismatch Slack warn
 - `src/server/commands/bookingRequestOfferPaymentFailedApply.ts` — PI/SI fail or cancel → `FAILED`
 - `src/server/domain/ServerRuntime.ts` — `stripe: StripePayment`
 - `src/server/domain/serverRuntimeCreate.ts` — wires the factory
@@ -234,5 +235,6 @@ Attention lane — see [cook-profile.md](../features/cook-profile.md).
 - Booking checkout mounts lazy `StripePaymentPanel` on `/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/checkout`
   when `offer.payment` is present (`USER_NEEDS_DEPOSIT_PAYMENT`). The offer page surfaces a pending-payment attention banner (and offer-tab
   alert) that links to that route; accept navigates there once payment is ready. After Elements confirm,
-  `bookingRequestOfferPaymentStatusUpdate` persists the invoice address (ISO country) on the booking request and advances `paymentStatus`.
-  Shared helper `toStripeCountryCode` maps long country names when copying the event venue into the Address Element.
+  `bookingRequestOfferPaymentStatusUpdate` persists the invoice address (ISO country) on the booking request and advances `paymentStatus`
+  via the same `bookingRequestOfferPaymentFinalize` helper as the webhook (single-winner Slack/email). Shared helper `toStripeCountryCode`
+  maps long country names when copying the event venue into the Address Element.

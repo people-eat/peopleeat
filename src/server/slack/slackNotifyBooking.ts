@@ -246,6 +246,20 @@ export async function slackNotifyPaymentConfirmed(
     });
 }
 
+/** Second finalize channel saw different amount / intent ids than the stored offer. */
+export async function slackNotifyPaymentFinalizeMismatch(
+    serverRuntime: ServerRuntime,
+    args: { bookingRequestId: string; bookingRequestOfferId: string; detail: string },
+): Promise<void> {
+    await bookingRequestSlackThreadReply(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        header: 'Zahlung Hinweis: Abweichung',
+        body: args.detail,
+        broadcast: true,
+        adminOfferId: args.bookingRequestOfferId,
+    });
+}
+
 export async function slackNotifyPaymentFailed(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; bookingRequestOfferId: string; detail?: string },

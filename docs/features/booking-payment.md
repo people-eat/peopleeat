@@ -55,8 +55,11 @@ finalize via client `giftCardPay` (not the booking webhook path).
 - Customer accept prepares SetupIntent / PaymentIntent / €0 transfer; gift-card / promo fold into `totalCentsCustomer`
 - Checkout: `/profile/booking-requests/$id/offers/$offerId/checkout` (`StripePaymentPanel`); `bookingRequestOfferPaymentStatusUpdate`;
   `useUserUpdatesSeed`
-- Checkout + Stripe webhook (`POST /api/webhooks/stripe` → `stripeWebhookApply`) share finalize helper for PI/SI success; fail/cancel mark
-  `paymentStatus: FAILED`. Event catalog + Dashboard setup: [stripe-payment.md](../architecture/stripe-payment.md#webhooks--dashboard-setup)
+- Checkout + Stripe webhook (`POST /api/webhooks/stripe` → `stripeWebhookApply`) share `bookingRequestOfferPaymentFinalize` for PI/SI
+  success; fail/cancel mark `paymentStatus: FAILED`. Dual channel is intentional: the status transition is an atomic claim (conditional
+  `paymentStatus` update). Only the winner sends Slack ("Zahlung bestätigt"), confirmation email, session event, and pull / testimonial /
+  event-tomorrow jobs. A second matching call is silent; mismatched amount / intent ids → `log.warn` + Slack "Zahlung Hinweis: Abweichung".
+  Event catalog + Dashboard setup: [stripe-payment.md](../architecture/stripe-payment.md#webhooks--dashboard-setup)
 - Jobs: `booking-request-offer-pull-payment`, `booking-request-offer-pull-payment-announcement` (emails
   `BookingRequestOfferPullPaymentAnnouncementForCustomerEmail`)
 - Admin: `bookingRequestOfferPayoutRelease` / `bookingRequestOfferPayoutAlreadyTookPlaceCheck` / `bookingRequestOfferPayoutMarkOutOfSystem`
