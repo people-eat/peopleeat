@@ -1,6 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
 
-import { bookingRequestOffers, bookingRequests } from '../db/schema';
+import { idCreate } from '../../shared/idCreate';
+import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { slackNotifyPaymentFailed } from '../slack/slackNotifyBooking';
 import { bookingRequestOfferPaymentFailedSessionEventCreate } from '../utils/bookingRequestOfferPaymentSessionEventCreate';
@@ -45,10 +46,22 @@ export async function bookingRequestOfferPaymentFailedApply(
         return true;
     }
 
-    await serverRuntime.db
-        .update(bookingRequestOffers)
-        .set({ paymentStatus: 'FAILED' })
-        .where(eq(bookingRequestOffers.bookingRequestOfferId, row.offer.bookingRequestOfferId));
+    await serverRuntime.db.transaction(async (transaction) => {
+        await transaction
+            .update(bookingRequestOffers)
+            .set({ paymentStatus: 'FAILED' })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, row.offer.bookingRequestOfferId));
+
+        await transaction.insert(bookingRequestOfferEvents).values({
+            bookingRequestOfferEventId: idCreate(),
+            bookingRequestOfferId: row.offer.bookingRequestOfferId,
+            type: 'SYSTEM_PAYMENT_FAILED',
+            payload: {
+                source: 'WEBHOOK',
+                ...(detail?.trim() ? { detail: detail.trim() } : {}),
+            },
+        });
+    });
 
     await Promise.all([
         serverRuntime.publish.userUpdates({ userId: row.bookingRequest.userId }),

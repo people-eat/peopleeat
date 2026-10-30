@@ -1,6 +1,7 @@
 import type { FileUploadMetadata } from '../db/fileUploadMetadata';
 import type { BookingRequestOfferEvent, BookingRequestOfferEventReaction } from '../db/schema';
 import type { BookingRequestOfferChatReactorRole, BookingRequestOfferEventType } from '../domain/bookingRequest';
+import { bookingRequestOfferEventTypeAdminOnlySet } from '../domain/bookingRequest';
 import type {
     GqlSChatMessageBookingRequestOfferEventType,
     GqlSChatMessageReaction,
@@ -49,8 +50,9 @@ function messageSimpleIsHiddenByAdmin(event: BookingRequestOfferEvent): boolean 
 /** Project offer timeline events onto the human chat message union. */
 export function toGqlOfferChatMessages(input: ToGqlOfferChatMessagesInput): GqlSHumanChatMessage[] {
     return input.events.flatMap((event) => {
-        if (input.viewerRole !== 'admin' && messageSimpleIsHiddenByAdmin(event)) {
-            return [];
+        if (input.viewerRole !== 'admin') {
+            if (messageSimpleIsHiddenByAdmin(event)) return [];
+            if (bookingRequestOfferEventTypeAdminOnlySet.has(event.type)) return [];
         }
         return [toGqlOfferChatMessage(event, input)];
     });

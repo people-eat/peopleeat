@@ -509,6 +509,15 @@ export async function bookingRequestOfferParticipantAmendmentApply(
                 });
             }
 
+            if (offer.paymentStatus === 'EMPTY' && nextPaymentStatus === 'PAYED') {
+                await transaction.insert(bookingRequestOfferEvents).values({
+                    bookingRequestOfferEventId: idCreate(),
+                    bookingRequestOfferId: offer.bookingRequestOfferId,
+                    type: 'SYSTEM_PAYMENT_SUCCEEDED',
+                    payload: { amountCents: price.totalCentsCustomerAfter, source: 'AMENDMENT' },
+                });
+            }
+
             return true;
         });
 

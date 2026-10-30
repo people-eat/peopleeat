@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 
-import { bookingRequestOffers } from '../db/schema';
+import { idCreate } from '../../shared/idCreate';
+import { bookingRequestOfferEvents, bookingRequestOffers } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
     GqlSAdminMutation,
@@ -46,15 +47,30 @@ export async function adminBookingRequestOfferPayoutMarkOutOfSystem(
 
         bookingRequestOfferPayoutDueAssert(offer, 'adminBookingRequestOfferPayoutMarkOutOfSystem');
 
-        await serverRuntime.db
-            .update(bookingRequestOffers)
-            .set({
-                paymentStatus: 'PAYED_OUT_OF_SYSTEM',
-                payoutDateTime: new Date(),
-            })
-            .where(
-                and(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId), eq(bookingRequestOffers.paymentStatus, 'PAYED')),
-            );
+        await serverRuntime.db.transaction(async (transaction) => {
+            const [updated] = await transaction
+                .update(bookingRequestOffers)
+                .set({
+                    paymentStatus: 'PAYED_OUT_OF_SYSTEM',
+                    payoutDateTime: new Date(),
+                })
+                .where(
+                    and(
+                        eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId),
+                        eq(bookingRequestOffers.paymentStatus, 'PAYED'),
+                    ),
+                )
+                .returning({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId });
+
+            if (updated) {
+                await transaction.insert(bookingRequestOfferEvents).values({
+                    bookingRequestOfferEventId: idCreate(),
+                    bookingRequestOfferId,
+                    type: 'ADMIN_PAYED_OUT_OF_SYSTEM',
+                    payload: { amountCents: offer.payoutCentsCook, source: 'MARK_OUT_OF_SYSTEM' },
+                });
+            }
+        });
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId: offer.cookId }), serverRuntime.publish.adminUpdates()]);
 

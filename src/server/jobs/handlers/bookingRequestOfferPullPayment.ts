@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 
-import { bookingRequestOffers, bookingRequests, cooks, users } from '../../db/schema';
+import { idCreate } from '../../../shared/idCreate';
+import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests, cooks, users } from '../../db/schema';
 import type { BookingRequestOfferPaymentData } from '../../domain/bookingRequest';
 import { bookingRequestOfferExtraTransferMaybeCreate } from '../../utils/bookingRequestOfferExtraTransferMaybeCreate';
 import { paymentDataWithExtraTransfer } from '../../utils/bookingRequestOfferPaymentDataTransfers';
@@ -107,27 +108,43 @@ export const bookingRequestOfferPullPayment: QueuedJobDefinition<BookingRequestO
                     paymentData = paymentDataWithExtraTransfer(paymentData, extraTransferId);
                 }
 
-                await serverRuntime.db
-                    .update(bookingRequestOffers)
-                    .set({
-                        paymentData,
-                        paymentStatus: 'PAYED',
-                        paymentDateTime: new Date(),
-                    })
-                    .where(eq(bookingRequestOffers.bookingRequestOfferId, data.bookingRequestOfferId));
+                await serverRuntime.db.transaction(async (transaction) => {
+                    await transaction
+                        .update(bookingRequestOffers)
+                        .set({
+                            paymentData,
+                            paymentStatus: 'PAYED',
+                            paymentDateTime: new Date(),
+                        })
+                        .where(eq(bookingRequestOffers.bookingRequestOfferId, data.bookingRequestOfferId));
+                    await transaction.insert(bookingRequestOfferEvents).values({
+                        bookingRequestOfferEventId: idCreate(),
+                        bookingRequestOfferId: data.bookingRequestOfferId,
+                        type: 'SYSTEM_PAYMENT_SUCCEEDED',
+                        payload: { amountCents: totalCentsCustomer, source: 'PULL' },
+                    });
+                });
             } else {
                 const { transferId } = await serverRuntime.stripe.transferCreate({
                     destinationAccountId: cook.stripeAccountId,
                     payoutAmount: offer.payoutCentsCook,
                 });
-                await serverRuntime.db
-                    .update(bookingRequestOffers)
-                    .set({
-                        paymentData: { transferId },
-                        paymentStatus: 'PAYED',
-                        paymentDateTime: new Date(),
-                    })
-                    .where(eq(bookingRequestOffers.bookingRequestOfferId, data.bookingRequestOfferId));
+                await serverRuntime.db.transaction(async (transaction) => {
+                    await transaction
+                        .update(bookingRequestOffers)
+                        .set({
+                            paymentData: { transferId },
+                            paymentStatus: 'PAYED',
+                            paymentDateTime: new Date(),
+                        })
+                        .where(eq(bookingRequestOffers.bookingRequestOfferId, data.bookingRequestOfferId));
+                    await transaction.insert(bookingRequestOfferEvents).values({
+                        bookingRequestOfferEventId: idCreate(),
+                        bookingRequestOfferId: data.bookingRequestOfferId,
+                        type: 'SYSTEM_PAYMENT_SUCCEEDED',
+                        payload: { amountCents: totalCentsCustomer, source: 'PULL' },
+                    });
+                });
             }
 
             await Promise.all([
@@ -163,10 +180,22 @@ export const bookingRequestOfferPullPayment: QueuedJobDefinition<BookingRequestO
                 amountCents: totalCentsCustomer,
             });
         } catch (error) {
-            await serverRuntime.db
-                .update(bookingRequestOffers)
-                .set({ paymentStatus: 'FAILED' })
-                .where(eq(bookingRequestOffers.bookingRequestOfferId, data.bookingRequestOfferId));
+            const failDetail = error instanceof Error ? error.message : undefined;
+            await serverRuntime.db.transaction(async (transaction) => {
+                await transaction
+                    .update(bookingRequestOffers)
+                    .set({ paymentStatus: 'FAILED' })
+                    .where(eq(bookingRequestOffers.bookingRequestOfferId, data.bookingRequestOfferId));
+                await transaction.insert(bookingRequestOfferEvents).values({
+                    bookingRequestOfferEventId: idCreate(),
+                    bookingRequestOfferId: data.bookingRequestOfferId,
+                    type: 'SYSTEM_PAYMENT_FAILED',
+                    payload: {
+                        source: 'PULL',
+                        ...(failDetail?.trim() ? { detail: failDetail.trim() } : {}),
+                    },
+                });
+            });
             await Promise.all([
                 serverRuntime.publish.userUpdates({ userId: customer.userId }),
                 serverRuntime.publish.userUpdates({ userId: cook.cookId }),
@@ -181,7 +210,7 @@ export const bookingRequestOfferPullPayment: QueuedJobDefinition<BookingRequestO
             await slackNotifyPaymentFailed(serverRuntime, {
                 bookingRequestId: bookingRequest.bookingRequestId,
                 bookingRequestOfferId: data.bookingRequestOfferId,
-                detail: error instanceof Error ? error.message : undefined,
+                detail: failDetail,
             });
             throw error;
         }

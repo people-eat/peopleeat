@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
 
+import { idCreate } from '../../shared/idCreate';
 import { textNormalizeProseTitled, textNormalizeTitled } from '../../shared/textNormalize';
-import { bookingRequestOffers, bookingRequests } from '../db/schema';
+import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests } from '../db/schema';
 import type { BookingRequestOfferConfiguredMenu } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
@@ -97,10 +98,19 @@ export async function adminBookingRequestOfferConfiguredMenuUpdate(
             courses,
         };
 
-        await serverRuntime.db
-            .update(bookingRequestOffers)
-            .set({ configuredMenu })
-            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        await serverRuntime.db.transaction(async (transaction) => {
+            await transaction
+                .update(bookingRequestOffers)
+                .set({ configuredMenu })
+                .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+            await transaction.insert(bookingRequestOfferEvents).values({
+                bookingRequestOfferEventId: idCreate(),
+                bookingRequestOfferId,
+                type: 'ADMIN_CONFIGURED_MENU_UPDATED',
+                payload: {},
+            });
+        });
 
         await Promise.all([
             serverRuntime.publish.userUpdates({ userId: row.bookingRequest.userId }),

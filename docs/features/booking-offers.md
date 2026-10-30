@@ -194,8 +194,11 @@ promo / gift (+ participant count) into each offer’s cost breakdown.
   `CookBookingRequest.suggestedOfferMessage` is a static DE/EN draft (`bookingRequestSuggestedOfferMessage`) from the customer's
   `Users.locale` for offer-create prefill
 
-- Customer offer: accept / decline / configured-menu create / unread reset
-- Admin: `bookingRequestOfferConfiguredMenuUpdate` replaces an existing configured-menu snapshot (preserves `menuId`)
+- Customer offer: accept / decline / configured-menu create / unread reset. Accept recalculates travel; when money moves it also emits
+  `SYSTEM_CHANGED_PRICE` before `USER_ACCEPTED`.
+- Admin: `bookingRequestOfferConfiguredMenuUpdate` replaces an existing configured-menu snapshot (preserves `menuId`) and emits
+  `ADMIN_CONFIGURED_MENU_UPDATED` (admin-only in chat). `bookingRequestOfferUpdate` emits admin-only price / acceptance / payment-schedule
+  milestones when those fields change.
 - Pricing: `bookingRequestOfferPriceCalculate`, soft price-class guidance, promo hard min — see
   [architecture/booking.md](../architecture/booking.md)
 

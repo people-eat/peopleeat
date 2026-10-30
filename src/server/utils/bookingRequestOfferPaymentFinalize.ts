@@ -1,6 +1,7 @@
 import { and, eq, notInArray, sql } from 'drizzle-orm';
 
-import { bookingRequestOffers, bookingRequests } from '../db/schema';
+import { idCreate } from '../../shared/idCreate';
+import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests } from '../db/schema';
 import type { BookingRequest, BookingRequestOffer } from '../db/schema';
 import type {
     BookingRequestInvoiceAddress,
@@ -310,6 +311,26 @@ export async function bookingRequestOfferPaymentFinalize(
                 ),
             )
             .returning({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId });
+
+        if (!row) {
+            return row;
+        }
+
+        if (nextPaymentStatus === 'SETUP') {
+            await transaction.insert(bookingRequestOfferEvents).values({
+                bookingRequestOfferEventId: idCreate(),
+                bookingRequestOfferId: offer.bookingRequestOfferId,
+                type: 'SYSTEM_PAYMENT_SETUP',
+                payload: { amountCents },
+            });
+        } else {
+            await transaction.insert(bookingRequestOfferEvents).values({
+                bookingRequestOfferEventId: idCreate(),
+                bookingRequestOfferId: offer.bookingRequestOfferId,
+                type: 'SYSTEM_PAYMENT_SUCCEEDED',
+                payload: { amountCents, source: 'CHECKOUT' },
+            });
+        }
 
         if (invoiceAddress) {
             await transaction

@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { bookingRequestOfferPriceCalculate } from '../../shared/bookingRequestOfferPrice';
 import { idCreate } from '../../shared/idCreate';
-import { admins, bookingRequestOffers, bookingRequests, cooks } from '../db/schema';
+import { admins, bookingRequestOfferEvents, bookingRequestOffers, bookingRequests, cooks } from '../db/schema';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
 import { adminBookingRequestOfferUpdate } from './adminBookingRequestOfferUpdate';
 
@@ -109,6 +109,13 @@ describe('adminBookingRequestOfferUpdate', () => {
         expect(offer?.totalWithoutDiscountsCentsCustomer).toBe(expectedPrice.totalWithoutDiscountsCentsCustomer);
         expect(offer?.totalCentsCustomer).toBe(expectedPrice.totalWithoutDiscountsCentsCustomer);
         expect(offer?.paymentStatus).toBe('EMPTY');
+
+        const events = await testDb
+            .select()
+            .from(bookingRequestOfferEvents)
+            .where(eq(bookingRequestOfferEvents.bookingRequestOfferId, bookingRequestOfferId));
+        expect(events.some((event) => event.type === 'ADMIN_CHANGED_PRICE')).toBe(true);
+        expect(events.some((event) => event.type === 'ADMIN_ACCEPTANCE_UPDATED')).toBe(false);
     });
 
     it('applies sticky platform fee percent overrides on recalculation', async () => {
@@ -226,6 +233,42 @@ describe('adminBookingRequestOfferUpdate', () => {
         expect(offer?.userAccepted).toBe(true);
         expect(offer?.cookAccepted).toBe(true);
         expect(offer?.paymentStatus).toBe('PAYED_OUT_OF_SYSTEM');
+
+        const events = await testDb
+            .select()
+            .from(bookingRequestOfferEvents)
+            .where(eq(bookingRequestOfferEvents.bookingRequestOfferId, bookingRequestOfferId));
+        expect(events.some((event) => event.type === 'ADMIN_ACCEPTANCE_UPDATED')).toBe(true);
+        expect(events.some((event) => event.type === 'ADMIN_PAYMENT_SCHEDULE_UPDATED')).toBe(true);
+        expect(events.some((event) => event.type === 'ADMIN_PAYED_OUT_OF_SYSTEM')).toBe(true);
+        expect(events.some((event) => event.type === 'ADMIN_CHANGED_PRICE')).toBe(false);
+    });
+
+    it('emits ADMIN_PAYMENT_SCHEDULE_UPDATED when payout timestamps change', async () => {
+        const { admin, bookingRequestOfferId } = await setupAdminOfferUpdate();
+        const plannedPayoutDateTime = new Date('2030-07-01T12:00:00.000Z');
+
+        await adminBookingRequestOfferUpdate(
+            adminMutationParent(admin.user.userId),
+            {
+                bookingRequestOfferId,
+                input: { plannedPayoutDateTime },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const events = await testDb
+            .select()
+            .from(bookingRequestOfferEvents)
+            .where(eq(bookingRequestOfferEvents.bookingRequestOfferId, bookingRequestOfferId));
+        const scheduleEvent = events.find((event) => event.type === 'ADMIN_PAYMENT_SCHEDULE_UPDATED');
+        expect(scheduleEvent?.payload).toMatchObject({
+            plannedPayoutDateTimeBefore: null,
+            plannedPayoutDateTimeAfter: plannedPayoutDateTime.toISOString(),
+            paymentStatusBefore: 'EMPTY',
+            paymentStatusAfter: 'EMPTY',
+        });
     });
 
     it('does not mark already dual-accepted EMPTY as PAYED_OUT_OF_SYSTEM on non-price updates', async () => {

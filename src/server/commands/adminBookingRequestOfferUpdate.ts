@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
 
 import { bookingRequestOfferPriceCalculate } from '../../shared/bookingRequestOfferPrice';
-import { bookingRequestOffers, bookingRequests } from '../db/schema';
+import { idCreate } from '../../shared/idCreate';
+import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests } from '../db/schema';
 import type { BookingRequestOfferPaymentStatus } from '../domain/bookingRequest';
 import { bookingRequestOfferPaymentIsPaid } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -13,6 +14,7 @@ import type {
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/bookingRequestOfferEventTomorrowNotifySchedule';
+import { bookingRequestOfferPriceSnapshot } from '../utils/bookingRequestOfferPriceSnapshot';
 
 function assertNonNegativeInt(value: number, fieldName: string): void {
     if (!Number.isInteger(value) || value < 0) {
@@ -24,6 +26,28 @@ function assertPlatformFeePercent(value: number, fieldName: string): void {
     if (!Number.isInteger(value) || value < 0 || value > 100) {
         throw new Error(`adminBookingRequestOfferUpdate: ${fieldName} must be an integer from 0 to 100`);
     }
+}
+
+function offerPriceMoneyChanged(
+    before: ReturnType<typeof bookingRequestOfferPriceSnapshot>,
+    after: ReturnType<typeof bookingRequestOfferPriceSnapshot>,
+): boolean {
+    return (
+        before.travelExpensesCents !== after.travelExpensesCents ||
+        before.menuPriceCents !== after.menuPriceCents ||
+        before.totalWithoutDiscountsCentsCustomer !== after.totalWithoutDiscountsCentsCustomer ||
+        before.payoutCentsCook !== after.payoutCentsCook ||
+        before.platformFeePercentCook !== after.platformFeePercentCook ||
+        before.platformFeePercentCustomer !== after.platformFeePercentCustomer ||
+        before.paymentProviderFeeCents !== after.paymentProviderFeeCents ||
+        before.platformFeeCentsCook !== after.platformFeeCentsCook ||
+        before.platformFeeCentsCustomer !== after.platformFeeCentsCustomer
+    );
+}
+
+function dateTimeIsoOrNull(value: Date | null | undefined): string | null {
+    if (value == null) return null;
+    return value.toISOString();
 }
 
 export async function adminBookingRequestOfferUpdate(
@@ -54,6 +78,7 @@ export async function adminBookingRequestOfferUpdate(
         }
 
         const { offer, bookingRequest } = row;
+        const priceBefore = bookingRequestOfferPriceSnapshot(offer);
 
         const offerPatch: {
             userAccepted?: boolean | null;
@@ -170,10 +195,110 @@ export async function adminBookingRequestOfferUpdate(
             return { success: true, referenceId: bookingRequestOfferId };
         }
 
-        await serverRuntime.db
-            .update(bookingRequestOffers)
-            .set(offerPatch)
-            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        const priceAfter = bookingRequestOfferPriceSnapshot({
+            platformFeePercentCook: offerPatch.platformFeePercentCook ?? offer.platformFeePercentCook,
+            platformFeePercentCustomer: offerPatch.platformFeePercentCustomer ?? offer.platformFeePercentCustomer,
+            travelExpensesCents: offerPatch.travelExpensesCents ?? offer.travelExpensesCents,
+            menuPriceCents: offerPatch.menuPriceCents ?? offer.menuPriceCents,
+            paymentProviderFeeCents: offerPatch.paymentProviderFeeCents ?? offer.paymentProviderFeeCents,
+            platformFeeCentsCook: offerPatch.platformFeeCentsCook ?? offer.platformFeeCentsCook,
+            platformFeeCentsCustomer: offerPatch.platformFeeCentsCustomer ?? offer.platformFeeCentsCustomer,
+            payoutCentsCook: offerPatch.payoutCentsCook ?? offer.payoutCentsCook,
+            totalWithoutDiscountsCentsCustomer: offerPatch.totalWithoutDiscountsCentsCustomer ?? offer.totalWithoutDiscountsCentsCustomer,
+        });
+
+        const acceptanceChanged =
+            (offerPatch.userAccepted !== undefined && offerPatch.userAccepted !== offer.userAccepted) ||
+            (offerPatch.cookAccepted !== undefined && offerPatch.cookAccepted !== offer.cookAccepted);
+
+        const nextPaymentStatus = offerPatch.paymentStatus ?? offer.paymentStatus;
+        const nextPaymentDateTime = offerPatch.paymentDateTime !== undefined ? offerPatch.paymentDateTime : offer.paymentDateTime;
+        const nextPlannedPayoutDateTime =
+            offerPatch.plannedPayoutDateTime !== undefined ? offerPatch.plannedPayoutDateTime : offer.plannedPayoutDateTime;
+        const nextPayoutDateTime = offerPatch.payoutDateTime !== undefined ? offerPatch.payoutDateTime : offer.payoutDateTime;
+        const paymentScheduleChanged =
+            nextPaymentStatus !== offer.paymentStatus ||
+            dateTimeIsoOrNull(nextPaymentDateTime) !== dateTimeIsoOrNull(offer.paymentDateTime) ||
+            dateTimeIsoOrNull(nextPlannedPayoutDateTime) !== dateTimeIsoOrNull(offer.plannedPayoutDateTime) ||
+            dateTimeIsoOrNull(nextPayoutDateTime) !== dateTimeIsoOrNull(offer.payoutDateTime);
+
+        const eventInserts: Array<{
+            bookingRequestOfferEventId: string;
+            bookingRequestOfferId: string;
+            type: 'ADMIN_CHANGED_PRICE' | 'ADMIN_ACCEPTANCE_UPDATED' | 'ADMIN_PAYMENT_SCHEDULE_UPDATED' | 'ADMIN_PAYED_OUT_OF_SYSTEM';
+            payload: Record<string, unknown>;
+        }> = [];
+
+        if (offerPriceMoneyChanged(priceBefore, priceAfter)) {
+            eventInserts.push({
+                bookingRequestOfferEventId: idCreate(),
+                bookingRequestOfferId,
+                type: 'ADMIN_CHANGED_PRICE',
+                payload: { priceBefore, priceAfter },
+            });
+        }
+
+        if (acceptanceChanged) {
+            eventInserts.push({
+                bookingRequestOfferEventId: idCreate(),
+                bookingRequestOfferId,
+                type: 'ADMIN_ACCEPTANCE_UPDATED',
+                payload: {
+                    userAcceptedBefore: offer.userAccepted,
+                    userAcceptedAfter: nextUserAccepted,
+                    cookAcceptedBefore: offer.cookAccepted,
+                    cookAcceptedAfter: nextCookAccepted,
+                },
+            });
+        }
+
+        if (paymentScheduleChanged) {
+            eventInserts.push({
+                bookingRequestOfferEventId: idCreate(),
+                bookingRequestOfferId,
+                type: 'ADMIN_PAYMENT_SCHEDULE_UPDATED',
+                payload: {
+                    paymentStatusBefore: offer.paymentStatus,
+                    paymentStatusAfter: nextPaymentStatus,
+                    paymentDateTimeBefore: dateTimeIsoOrNull(offer.paymentDateTime),
+                    paymentDateTimeAfter: dateTimeIsoOrNull(nextPaymentDateTime),
+                    plannedPayoutDateTimeBefore: dateTimeIsoOrNull(offer.plannedPayoutDateTime),
+                    plannedPayoutDateTimeAfter: dateTimeIsoOrNull(nextPlannedPayoutDateTime),
+                    payoutDateTimeBefore: dateTimeIsoOrNull(offer.payoutDateTime),
+                    payoutDateTimeAfter: dateTimeIsoOrNull(nextPayoutDateTime),
+                },
+            });
+        }
+
+        if (becamePaidOutOfSystem) {
+            eventInserts.push({
+                bookingRequestOfferEventId: idCreate(),
+                bookingRequestOfferId,
+                type: 'ADMIN_PAYED_OUT_OF_SYSTEM',
+                payload: {
+                    amountCents: offerPatch.payoutCentsCook ?? offer.payoutCentsCook,
+                    source: 'ADMIN_DUAL_ACCEPT',
+                },
+            });
+        }
+
+        await serverRuntime.db.transaction(async (transaction) => {
+            await transaction
+                .update(bookingRequestOffers)
+                .set(offerPatch)
+                .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+            if (eventInserts.length > 0) {
+                await transaction.insert(bookingRequestOfferEvents).values(
+                    eventInserts.map((event) => ({
+                        bookingRequestOfferEventId: event.bookingRequestOfferEventId,
+                        bookingRequestOfferId: event.bookingRequestOfferId,
+                        type: event.type,
+                        payload: event.payload as never,
+                    })),
+                );
+            }
+        });
 
         if (becamePaidOutOfSystem || (offerPatch.paymentStatus != null && bookingRequestOfferPaymentIsPaid(offerPatch.paymentStatus))) {
             await bookingRequestOfferEventTomorrowNotifySchedule(serverRuntime, {

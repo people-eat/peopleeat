@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { bookingRequestOffers, bookingRequests, cooks } from '../db/schema';
+import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests, cooks } from '../db/schema';
 import type { BookingRequestOfferPaymentData } from '../domain/bookingRequest';
 import { slackNotifyPaymentConfirmed, slackNotifyPaymentFinalizeMismatch } from '../slack/slackNotifyBooking';
 import { commandSetup, testDb } from '../test/commandTestUtils';
@@ -149,6 +149,12 @@ describe('bookingRequestOfferPaymentFinalize', () => {
             .from(bookingRequestOffers)
             .where(eq(bookingRequestOffers.bookingRequestOfferId, seeded.bookingRequestOfferId));
         expect(offer!.paymentStatus).toBe('PAYED');
+
+        const events = await testDb
+            .select()
+            .from(bookingRequestOfferEvents)
+            .where(eq(bookingRequestOfferEvents.bookingRequestOfferId, seeded.bookingRequestOfferId));
+        expect(events.some((event) => event.type === 'SYSTEM_PAYMENT_SUCCEEDED')).toBe(true);
     });
 
     it('second call with matching data does not notify again', async () => {

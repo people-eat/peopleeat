@@ -57,9 +57,14 @@ finalize via client `giftCardPay` (not the booking webhook path).
   `useUserUpdatesSeed`
 - Checkout + Stripe webhook (`POST /api/webhooks/stripe` → `stripeWebhookApply`) share `bookingRequestOfferPaymentFinalize` for PI/SI
   success; fail/cancel mark `paymentStatus: FAILED`. Dual channel is intentional: the status transition is an atomic claim (conditional
-  `paymentStatus` update). Only the winner sends Slack ("Zahlung bestätigt"), confirmation email, session event, and pull / testimonial /
-  event-tomorrow jobs. A second matching call is silent; mismatched amount / intent ids → `log.warn` + Slack "Zahlung Hinweis: Abweichung".
-  Event catalog + Dashboard setup: [stripe-payment.md](../architecture/stripe-payment.md#webhooks--dashboard-setup)
+  `paymentStatus` update). Only the winner sends Slack ("Zahlung bestätigt"), confirmation email, session event, offer-timeline milestones,
+  and pull / testimonial / event-tomorrow jobs. A second matching call is silent; mismatched amount / intent ids → `log.warn` + Slack
+  "Zahlung Hinweis: Abweichung". Event catalog + Dashboard setup:
+  [stripe-payment.md](../architecture/stripe-payment.md#webhooks--dashboard-setup)
+- Offer chat milestones (visible to customer, cook, and admin): `SYSTEM_PAYMENT_SETUP` (SI saved), `SYSTEM_PAYMENT_SUCCEEDED` (checkout /
+  €0 accept / pull / amendment; pull uses `source: PULL` for card-charge detail copy), `SYSTEM_PAYMENT_FAILED` (webhook or pull),
+  `ADMIN_PAYOUT_RELEASED` (release or already-took-place → `TRANSFERRED`), `ADMIN_PAYED_OUT_OF_SYSTEM` (mark OOS, admin dual-accept, or
+  dual-accepted admin create). Manual schedule tweaks stay admin-only via `ADMIN_PAYMENT_SCHEDULE_UPDATED`.
 - Jobs: `booking-request-offer-pull-payment`, `booking-request-offer-pull-payment-announcement` (emails
   `BookingRequestOfferPullPaymentAnnouncementForCustomerEmail`)
 - Admin: `bookingRequestOfferPayoutRelease` / `bookingRequestOfferPayoutAlreadyTookPlaceCheck` / `bookingRequestOfferPayoutMarkOutOfSystem`

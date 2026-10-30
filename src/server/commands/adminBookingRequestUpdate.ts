@@ -121,6 +121,8 @@ export async function adminBookingRequestUpdate(
                 | 'USER_RESTRICTIONS_UPDATED'
                 | 'USER_PREFERENCES_UPDATED'
                 | 'USER_LOCATION_UPDATED'
+                | 'USER_DATE_UPDATED'
+                | 'USER_TIME_UPDATED'
                 | 'SYSTEM_CHANGED_PRICE';
             payload: Record<string, unknown>;
         };
@@ -187,9 +189,27 @@ export async function adminBookingRequestUpdate(
             }
             if (nextDateTime.getTime() !== bookingRequest.dateTime.getTime()) {
                 dateTimeChanged = true;
+                resetCookAcceptance = true;
                 requestPatch.dateTime = nextDateTime;
                 if (input.expiresAt == null) {
                     requestPatch.expiresAt = bookingRequestExpiresAt(nextDateTime);
+                }
+
+                const sameUtcDay =
+                    nextDateTime.getUTCFullYear() === bookingRequest.dateTime.getUTCFullYear() &&
+                    nextDateTime.getUTCMonth() === bookingRequest.dateTime.getUTCMonth() &&
+                    nextDateTime.getUTCDate() === bookingRequest.dateTime.getUTCDate();
+
+                for (const { offer } of offers) {
+                    eventInserts.push({
+                        bookingRequestOfferEventId: idCreate(),
+                        bookingRequestOfferId: offer.bookingRequestOfferId,
+                        type: sameUtcDay ? 'USER_TIME_UPDATED' : 'USER_DATE_UPDATED',
+                        payload: {
+                            dateTimeBefore: bookingRequest.dateTime.toISOString(),
+                            dateTimeAfter: nextDateTime.toISOString(),
+                        },
+                    });
                 }
             }
         }

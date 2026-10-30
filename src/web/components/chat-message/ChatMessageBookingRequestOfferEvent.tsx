@@ -76,6 +76,10 @@ function offerEventTone(type: GqlCChatMessageBookingRequestOfferEventType): Stat
         case 'USER_ACCEPTED':
         case 'COOK_CALL_SLOT_CONFIRMED':
         case 'USER_CALL_SLOT_CONFIRMED':
+        case 'SYSTEM_PAYMENT_SETUP':
+        case 'SYSTEM_PAYMENT_SUCCEEDED':
+        case 'ADMIN_PAYOUT_RELEASED':
+        case 'ADMIN_PAYED_OUT_OF_SYSTEM':
             return 'success';
         case 'COOK_DECLINED':
         case 'USER_DECLINED':
@@ -85,6 +89,7 @@ function offerEventTone(type: GqlCChatMessageBookingRequestOfferEventType): Stat
         case 'USER_CALL_SLOT_DECLINED':
         case 'COOK_CALL_SLOT_CANCELLED':
         case 'USER_CALL_SLOT_CANCELLED':
+        case 'SYSTEM_PAYMENT_FAILED':
             return 'error';
         case 'ADMIN_HANDED_OVER_TO_COOK':
             return 'info';
@@ -115,11 +120,23 @@ function offerEventIcon(type: GqlCChatMessageBookingRequestOfferEventType): Luci
             return ArrowRightLeftIcon;
         case 'COOK_CHANGED_PRICE':
         case 'SYSTEM_CHANGED_PRICE':
+        case 'ADMIN_CHANGED_PRICE':
+        case 'SYSTEM_PAYMENT_SETUP':
+        case 'SYSTEM_PAYMENT_SUCCEEDED':
+        case 'ADMIN_PAYOUT_RELEASED':
+        case 'ADMIN_PAYED_OUT_OF_SYSTEM':
             return BanknoteIcon;
+        case 'SYSTEM_PAYMENT_FAILED':
+            return CircleXIcon;
         case 'COOK_UPDATED_SUGGESTED_MENU':
         case 'USER_REQUESTED_MENU_CHANGES':
         case 'USER_CONFIGURED_MENU':
+        case 'ADMIN_CONFIGURED_MENU_UPDATED':
             return UtensilsIcon;
+        case 'ADMIN_ACCEPTANCE_UPDATED':
+            return CircleCheckIcon;
+        case 'ADMIN_PAYMENT_SCHEDULE_UPDATED':
+            return CalendarIcon;
         case 'USER_CALL_SLOT_REQUESTED':
         case 'COOK_CALL_SLOT_REQUESTED':
             return PhoneIcon;
@@ -200,6 +217,27 @@ function chatMessageBookingRequestOfferEventLabel(type: GqlCChatMessageBookingRe
             USER_LOCATION_UPDATED: { de: 'Adresse aktualisiert', en: 'Location updated' },
             COOK_CHANGED_PRICE: { de: 'Preis geändert', en: 'Price changed' },
             SYSTEM_CHANGED_PRICE: { de: 'Preis automatisch angepasst', en: 'Price adjusted automatically' },
+            ADMIN_CHANGED_PRICE: { de: 'Concierge hat den Preis geändert', en: 'Concierge changed the price' },
+            ADMIN_ACCEPTANCE_UPDATED: {
+                de: 'Concierge hat die Annahme aktualisiert',
+                en: 'Concierge updated acceptance',
+            },
+            ADMIN_PAYMENT_SCHEDULE_UPDATED: {
+                de: 'Concierge hat den Zahlungsplan aktualisiert',
+                en: 'Concierge updated the payment schedule',
+            },
+            ADMIN_CONFIGURED_MENU_UPDATED: {
+                de: 'Concierge hat das konfigurierte Menü aktualisiert',
+                en: 'Concierge updated the configured menu',
+            },
+            SYSTEM_PAYMENT_SETUP: { de: 'Zahlungsmittel hinterlegt', en: 'Payment method saved' },
+            SYSTEM_PAYMENT_SUCCEEDED: { de: 'Zahlung bestätigt', en: 'Payment confirmed' },
+            SYSTEM_PAYMENT_FAILED: { de: 'Zahlung fehlgeschlagen', en: 'Payment failed' },
+            ADMIN_PAYOUT_RELEASED: { de: 'Auszahlung an den Koch ausgeführt', en: 'Payout released to cook' },
+            ADMIN_PAYED_OUT_OF_SYSTEM: {
+                de: 'Außerhalb von Stripe als bezahlt markiert',
+                en: 'Marked paid outside Stripe',
+            },
             USER_CALL_SLOT_REQUESTED: { de: 'Gesprächszeit angefragt', en: 'Call slot requested' },
             COOK_CALL_SLOT_REQUESTED: { de: 'Gesprächszeit angefragt', en: 'Call slot requested' },
             COOK_CALL_SLOT_CONFIRMED: { de: 'Gesprächszeit bestätigt', en: 'Call slot confirmed' },
@@ -275,6 +313,15 @@ function chatMessageBookingRequestOfferEventDetail(
     }
     if (typeof record.cookMessage === 'string' && record.cookMessage.trim().length > 0) {
         return record.cookMessage.trim();
+    }
+    if (typeof record.amountCents === 'number') {
+        if (message.type === 'SYSTEM_PAYMENT_SUCCEEDED' && record.source === 'PULL') {
+            return {
+                de: `Karteneinzug · ${formatCurrency(record.amountCents, { locale })}`,
+                en: `Card charge · ${formatCurrency(record.amountCents, { locale })}`,
+            }[locale];
+        }
+        return formatCurrency(record.amountCents, { locale });
     }
     if (typeof record.totalWithoutDiscountsCentsCustomer === 'number') {
         return formatCurrency(record.totalWithoutDiscountsCentsCustomer, { locale });

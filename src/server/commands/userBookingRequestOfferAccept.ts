@@ -22,6 +22,7 @@ import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/booking
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
 import { bookingRequestOfferPaymentPrepare } from '../utils/bookingRequestOfferPaymentPrepare';
 import { bookingRequestOfferPaymentSucceededSessionEventCreate } from '../utils/bookingRequestOfferPaymentSessionEventCreate';
+import { bookingRequestOfferPriceSnapshot } from '../utils/bookingRequestOfferPriceSnapshot';
 import { bookingRequestReactionReminderCancel } from '../utils/bookingRequestReactionReminderSchedule';
 import { cookIdsCanCreateOffersFind } from '../utils/cookIdsCanCreateOffersFind';
 import { giftCardCharge } from '../utils/giftCardCharge';
@@ -106,6 +107,13 @@ export async function userBookingRequestOfferAccept(
             platformFeePercentCook: row.offer.platformFeePercentCook,
             platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
         });
+        const priceBefore = bookingRequestOfferPriceSnapshot(row.offer);
+        const priceAfter = bookingRequestOfferPriceSnapshot(price);
+        const priceChanged =
+            priceBefore.travelExpensesCents !== priceAfter.travelExpensesCents ||
+            priceBefore.menuPriceCents !== priceAfter.menuPriceCents ||
+            priceBefore.totalWithoutDiscountsCentsCustomer !== priceAfter.totalWithoutDiscountsCentsCustomer ||
+            priceBefore.payoutCentsCook !== priceAfter.payoutCentsCook;
 
         const discountCents = (row.giftCard?.balanceCents ?? 0) + (row.promoCode?.amountCents ?? 0);
         const totalCentsCustomer = Math.max(0, price.totalWithoutDiscountsCentsCustomer - discountCents);
@@ -162,12 +170,30 @@ export async function userBookingRequestOfferAccept(
                 .set({ expiresAt: null })
                 .where(eq(bookingRequests.bookingRequestId, row.bookingRequest.bookingRequestId));
 
+            if (priceChanged) {
+                await transaction.insert(bookingRequestOfferEvents).values({
+                    bookingRequestOfferEventId: idCreate(),
+                    bookingRequestOfferId,
+                    type: 'SYSTEM_CHANGED_PRICE',
+                    payload: { priceBefore, priceAfter },
+                });
+            }
+
             await transaction.insert(bookingRequestOfferEvents).values({
                 bookingRequestOfferEventId: idCreate(),
                 bookingRequestOfferId,
                 type: 'USER_ACCEPTED',
                 payload: {},
             });
+
+            if (payment.paymentStatus === 'PAYED') {
+                await transaction.insert(bookingRequestOfferEvents).values({
+                    bookingRequestOfferEventId: idCreate(),
+                    bookingRequestOfferId,
+                    type: 'SYSTEM_PAYMENT_SUCCEEDED',
+                    payload: { amountCents: totalCentsCustomer, source: 'ACCEPT_ZERO' },
+                });
+            }
         });
 
         await bookingRequestExpireNotifyCancel(serverRuntime, row.bookingRequest.bookingRequestId);

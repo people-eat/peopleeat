@@ -437,6 +437,15 @@ const bookingRequestOfferEventTypes = [
     'USER_LOCATION_UPDATED',
     'COOK_CHANGED_PRICE',
     'SYSTEM_CHANGED_PRICE',
+    'ADMIN_CHANGED_PRICE',
+    'ADMIN_ACCEPTANCE_UPDATED',
+    'ADMIN_PAYMENT_SCHEDULE_UPDATED',
+    'ADMIN_CONFIGURED_MENU_UPDATED',
+    'SYSTEM_PAYMENT_SETUP',
+    'SYSTEM_PAYMENT_SUCCEEDED',
+    'SYSTEM_PAYMENT_FAILED',
+    'ADMIN_PAYOUT_RELEASED',
+    'ADMIN_PAYED_OUT_OF_SYSTEM',
     'USER_CALL_SLOT_REQUESTED',
     'COOK_CALL_SLOT_REQUESTED',
     'COOK_CALL_SLOT_CONFIRMED',
@@ -450,6 +459,22 @@ const bookingRequestOfferEventTypes = [
     'ADMIN_CALL_STARTED',
 ] as const;
 export type BookingRequestOfferEventType = (typeof bookingRequestOfferEventTypes)[number];
+
+/**
+ * Ops-only timeline milestones written by admin offer tools. Stored for every offer but
+ * projected into `messages` only for admin viewers — peer chat keeps existing public admin
+ * milestones (handover, amendments, preparations, call start, admin messages).
+ */
+export const bookingRequestOfferEventTypesAdminOnly = [
+    'ADMIN_CHANGED_PRICE',
+    'ADMIN_ACCEPTANCE_UPDATED',
+    'ADMIN_PAYMENT_SCHEDULE_UPDATED',
+    'ADMIN_CONFIGURED_MENU_UPDATED',
+] as const satisfies ReadonlyArray<BookingRequestOfferEventType>;
+export type BookingRequestOfferEventTypeAdminOnly = (typeof bookingRequestOfferEventTypesAdminOnly)[number];
+export const bookingRequestOfferEventTypeAdminOnlySet: ReadonlySet<BookingRequestOfferEventType> = new Set(
+    bookingRequestOfferEventTypesAdminOnly,
+);
 
 /** Party that applied an emoji reaction on a `*_MESSAGE_SIMPLE` event. */
 const bookingRequestOfferChatReactorRoles = ['USER', 'COOK', 'ADMIN'] as const;
@@ -639,6 +664,46 @@ type BookingRequestOfferEventPayloadByType = {
     SYSTEM_CHANGED_PRICE: {
         priceBefore: BookingRequestOfferPriceSnapshot;
         priceAfter: BookingRequestOfferPriceSnapshot;
+    };
+    ADMIN_CHANGED_PRICE: {
+        priceBefore: BookingRequestOfferPriceSnapshot;
+        priceAfter: BookingRequestOfferPriceSnapshot;
+    };
+    ADMIN_ACCEPTANCE_UPDATED: {
+        userAcceptedBefore: boolean | null;
+        userAcceptedAfter: boolean | null;
+        cookAcceptedBefore: boolean | null;
+        cookAcceptedAfter: boolean | null;
+    };
+    ADMIN_PAYMENT_SCHEDULE_UPDATED: {
+        paymentStatusBefore: BookingRequestOfferPaymentStatus;
+        paymentStatusAfter: BookingRequestOfferPaymentStatus;
+        paymentDateTimeBefore: string | null;
+        paymentDateTimeAfter: string | null;
+        plannedPayoutDateTimeBefore: string | null;
+        plannedPayoutDateTimeAfter: string | null;
+        payoutDateTimeBefore: string | null;
+        payoutDateTimeAfter: string | null;
+    };
+    ADMIN_CONFIGURED_MENU_UPDATED: Record<string, never>;
+    SYSTEM_PAYMENT_SETUP: {
+        amountCents: number;
+    };
+    SYSTEM_PAYMENT_SUCCEEDED: {
+        amountCents: number;
+        source: 'CHECKOUT' | 'PULL' | 'ACCEPT_ZERO' | 'AMENDMENT';
+    };
+    SYSTEM_PAYMENT_FAILED: {
+        source: 'WEBHOOK' | 'PULL';
+        detail?: string;
+    };
+    ADMIN_PAYOUT_RELEASED: {
+        amountCents: number;
+        source: 'RELEASE' | 'ALREADY_TOOK_PLACE';
+    };
+    ADMIN_PAYED_OUT_OF_SYSTEM: {
+        amountCents: number;
+        source: 'MARK_OUT_OF_SYSTEM' | 'ADMIN_DUAL_ACCEPT' | 'ADMIN_OFFER_CREATE';
     };
     USER_CALL_SLOT_REQUESTED: {
         cookCallSlotBookingId: string;

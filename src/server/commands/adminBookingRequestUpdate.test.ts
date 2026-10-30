@@ -2,7 +2,15 @@ import { eq } from 'drizzle-orm';
 import { describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { admins, bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks, featureToggles } from '../db/schema';
+import {
+    admins,
+    bookingRequestOfferEvents,
+    bookingRequestOffers,
+    bookingRequestParticipants,
+    bookingRequests,
+    cooks,
+    featureToggles,
+} from '../db/schema';
 import { bookingRequestAdjustedMessageGenerate } from '../jobs/handlers/bookingRequestAdjustedMessageGenerate';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
 import { phoneNumberCreate } from '../test/phoneNumberCreate';
@@ -159,6 +167,57 @@ describe('adminBookingRequestUpdate', () => {
 
         const [explicit] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, bookingRequestId));
         expect(explicit?.expiresAt?.toISOString()).toBe(explicitExpiresAt.toISOString());
+    });
+
+    it('emits date/time timeline events and resets cook acceptance when dateTime changes', async () => {
+        const { admin, bookingRequestId } = await setupAdminAndRequest();
+        const { offerId } = await insertOfferWithCook(bookingRequestId);
+        const nextDateTime = new Date('2030-08-01T19:00:00.000Z');
+
+        await adminBookingRequestUpdate(
+            adminMutationParent(admin.user.userId),
+            { bookingRequestId, input: { dateTime: nextDateTime } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const [offer] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
+        expect(offer?.cookAccepted).toBeNull();
+        expect(offer?.cookUnreadNotificationCount).toBe(1);
+
+        const events = await testDb
+            .select()
+            .from(bookingRequestOfferEvents)
+            .where(eq(bookingRequestOfferEvents.bookingRequestOfferId, offerId));
+        expect(events).toEqual([
+            expect.objectContaining({
+                type: 'USER_DATE_UPDATED',
+                payload: {
+                    dateTimeBefore: '2030-06-15T18:00:00.000Z',
+                    dateTimeAfter: nextDateTime.toISOString(),
+                },
+            }),
+        ]);
+    });
+
+    it('emits USER_TIME_UPDATED when only the clock changes on the same UTC day', async () => {
+        const { admin, bookingRequestId } = await setupAdminAndRequest();
+        const { offerId } = await insertOfferWithCook(bookingRequestId);
+        const nextDateTime = new Date('2030-06-15T21:30:00.000Z');
+
+        await adminBookingRequestUpdate(
+            adminMutationParent(admin.user.userId),
+            { bookingRequestId, input: { dateTime: nextDateTime } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const events = await testDb
+            .select()
+            .from(bookingRequestOfferEvents)
+            .where(eq(bookingRequestOfferEvents.bookingRequestOfferId, offerId));
+        expect(events.some((event) => event.type === 'USER_TIME_UPDATED')).toBe(true);
+        expect(events.some((event) => event.type === 'USER_DATE_UPDATED')).toBe(false);
     });
 
     it('patches preferences and resets cook acceptance on open offers', async () => {

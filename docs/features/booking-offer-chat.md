@@ -5,9 +5,11 @@ Customer, cook, and admin negotiate on an offer through a shared timeline chat w
 ## Behavior
 
 1. On the offer page, the **chat** tab shows the negotiation timeline (messages plus system events such as offer created, price changed,
-   accept / decline, call-slot lifecycle, and spontaneous call start). Price milestones (`COOK_CREATED`, `COOK_CHANGED_PRICE`,
-   `SYSTEM_CHANGED_PRICE`) show the **customer-facing total** (`totalWithoutDiscountsCentsCustomer`: menu + fees + travel), not the cook
-   menu price alone. Opening chat (or Call) clears that role’s unread badge.
+   accept / decline, payment / payout lifecycle, call-slot lifecycle, and spontaneous call start). Price milestones (`COOK_CREATED`,
+   `COOK_CHANGED_PRICE`, `SYSTEM_CHANGED_PRICE`) show the **customer-facing total** (`totalWithoutDiscountsCentsCustomer`: menu + fees +
+   travel), not the cook menu price alone. Payment milestones (`SYSTEM_PAYMENT_SETUP` / `SYSTEM_PAYMENT_SUCCEEDED` /
+   `SYSTEM_PAYMENT_FAILED` / `ADMIN_PAYOUT_RELEASED` / `ADMIN_PAYED_OUT_OF_SYSTEM`) are visible to all parties — see
+   [booking-payment.md](./booking-payment.md). Opening chat (or Call) clears that role’s unread badge.
 2. A **concierge presence** row shows the peer(s) together with Concierge Juliana — copy explains she is in the chat for special requests.
    Customer and cook each see the other party plus Juliana; admins see **customer, cook, and Juliana**. Layout: scrolls away with the
    transcript on small screens; stays pinned above the transcript from medium breakpoints up (same pattern as support chat). Transcript
@@ -95,7 +97,10 @@ offer-created email covers first contact). `COOK_CREATED` stores `menuPriceCents
 the customer total for create and price-change milestones.
 
 `toGqlOfferChatMessages` filters `hiddenByAdmin` rows for `user` / `cook` viewers; admin sees them with `ChatMessageUser.hiddenByAdmin` /
-`canHardDelete` stamped. Chat-notify email “latest peer body” skips hidden rows.
+`canHardDelete` stamped. It also omits **admin-only ops milestones** (`ADMIN_CHANGED_PRICE`, `ADMIN_ACCEPTANCE_UPDATED`,
+`ADMIN_PAYMENT_SCHEDULE_UPDATED`, `ADMIN_CONFIGURED_MENU_UPDATED`) for peer viewers — those stay in the DB for admin audit. Existing public
+admin milestones (handover, participant amendments, preparations clear, call start, admin messages) still show to cook and customer.
+Chat-notify email “latest peer body” skips hidden rows.
 
 Admin offer handover may optionally hard-copy `*_MESSAGE_SIMPLE` rows (+ attachment joins) onto the new offer
 ([admin-booking-requests.md](./admin-booking-requests.md)). Copied cook messages include `handedOverFrom` + `originalCreatedAt` in the

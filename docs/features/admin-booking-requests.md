@@ -103,12 +103,14 @@ Stripe rules (`EMPTY` cancel and re-prepare, `SETUP` columns only, `PAYED` refun
 consequences and two explicit actions (**Propose to chef** / **Apply now (skip cook approval)**). No feature toggle. Same path applies from
 request edit for venue/participants. Blocked for `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM` / `FAILED` and when preparations are locked (clear
 prep first). Pre-accept price edits still use `bookingRequestOfferUpdate`. Fee percents stay sticky on later cook price updates, customer
-accept, and amendments.
+accept, and amendments. Offer update writes admin-only timeline milestones when money, acceptance flags, or payment schedule fields change
+(`ADMIN_CHANGED_PRICE` / `ADMIN_ACCEPTANCE_UPDATED` / `ADMIN_PAYMENT_SCHEDULE_UPDATED` — visible in admin chat only). Request date/time
+edits emit the same `USER_DATE_UPDATED` / `USER_TIME_UPDATED` milestones as the customer path (and reset cook acceptance).
 
 **Menu** holds only configured / suggested menus (`OfferMenuConfigured` or `CookMenuCard` grid to `/admin/menus/$menuId`) — no cook/customer
 header. When a customer has frozen a configured menu, admins can open `.../edit-configured-menu` to replace title, description, and
-courses/meals (optional meal image URLs). Update-only: no create when the snapshot is missing. Accept-flag edits stay on `.../edit`; price
-edits on `.../edit-price`.
+courses/meals (optional meal image URLs). Update-only: no create when the snapshot is missing; write emits `ADMIN_CONFIGURED_MENU_UPDATED`
+(admin chat only). Accept-flag edits stay on `.../edit`; price edits on `.../edit-price`.
 
 **Hand over** (dual-accepted, event still in the future): closes the current offer and creates or upgrades a dual-accepted offer for another
 cook in travel radius. Never mutates `cookId` in place. Admin chooses what to copy (price, configured menu, payment/payout dates, chat

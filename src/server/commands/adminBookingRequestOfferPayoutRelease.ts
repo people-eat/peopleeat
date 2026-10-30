@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 
-import { bookingRequestOffers, cooks } from '../db/schema';
+import { idCreate } from '../../shared/idCreate';
+import { bookingRequestOfferEvents, bookingRequestOffers, cooks } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
     GqlSAdminMutation,
@@ -64,15 +65,30 @@ export async function adminBookingRequestOfferPayoutRelease(
             amount: offer.payoutCentsCook,
         });
 
-        await serverRuntime.db
-            .update(bookingRequestOffers)
-            .set({
-                paymentStatus: 'TRANSFERRED',
-                payoutDateTime: new Date(),
-            })
-            .where(
-                and(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId), eq(bookingRequestOffers.paymentStatus, 'PAYED')),
-            );
+        await serverRuntime.db.transaction(async (transaction) => {
+            const [updated] = await transaction
+                .update(bookingRequestOffers)
+                .set({
+                    paymentStatus: 'TRANSFERRED',
+                    payoutDateTime: new Date(),
+                })
+                .where(
+                    and(
+                        eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId),
+                        eq(bookingRequestOffers.paymentStatus, 'PAYED'),
+                    ),
+                )
+                .returning({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId });
+
+            if (updated) {
+                await transaction.insert(bookingRequestOfferEvents).values({
+                    bookingRequestOfferEventId: idCreate(),
+                    bookingRequestOfferId,
+                    type: 'ADMIN_PAYOUT_RELEASED',
+                    payload: { amountCents: offer.payoutCentsCook, source: 'RELEASE' },
+                });
+            }
+        });
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId: offer.cookId }), serverRuntime.publish.adminUpdates()]);
 

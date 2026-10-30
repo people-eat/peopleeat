@@ -1,6 +1,7 @@
 import { and, eq, inArray } from 'drizzle-orm';
 
-import { bookingRequestOffers, cooks } from '../db/schema';
+import { idCreate } from '../../shared/idCreate';
+import { bookingRequestOfferEvents, bookingRequestOffers, cooks } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
     GqlSAdminMutation,
@@ -84,18 +85,30 @@ export async function adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
             requestingSession,
         );
 
-        await serverRuntime.db
-            .update(bookingRequestOffers)
-            .set({
-                paymentStatus: 'TRANSFERRED',
-                payoutDateTime: offer.payoutDateTime ?? new Date(),
-            })
-            .where(
-                and(
-                    eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId),
-                    inArray(bookingRequestOffers.paymentStatus, ['PAYED', 'PAYED_OUT_OF_SYSTEM']),
-                ),
-            );
+        await serverRuntime.db.transaction(async (transaction) => {
+            const [updated] = await transaction
+                .update(bookingRequestOffers)
+                .set({
+                    paymentStatus: 'TRANSFERRED',
+                    payoutDateTime: offer.payoutDateTime ?? new Date(),
+                })
+                .where(
+                    and(
+                        eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId),
+                        inArray(bookingRequestOffers.paymentStatus, ['PAYED', 'PAYED_OUT_OF_SYSTEM']),
+                    ),
+                )
+                .returning({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId });
+
+            if (updated) {
+                await transaction.insert(bookingRequestOfferEvents).values({
+                    bookingRequestOfferEventId: idCreate(),
+                    bookingRequestOfferId,
+                    type: 'ADMIN_PAYOUT_RELEASED',
+                    payload: { amountCents: offer.payoutCentsCook, source: 'ALREADY_TOOK_PLACE' },
+                });
+            }
+        });
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId: offer.cookId }), serverRuntime.publish.adminUpdates()]);
 

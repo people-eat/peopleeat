@@ -168,6 +168,19 @@ export async function adminBookingRequestOfferCreate(
                     createdAt: new Date(cookCreatedAt.getTime() + 1),
                 });
             }
+
+            if (dualAccepted) {
+                await transaction.insert(bookingRequestOfferEvents).values({
+                    bookingRequestOfferEventId: idCreate(),
+                    bookingRequestOfferId,
+                    type: 'ADMIN_PAYED_OUT_OF_SYSTEM',
+                    payload: {
+                        amountCents: price.payoutCentsCook,
+                        source: 'ADMIN_OFFER_CREATE',
+                    },
+                    createdAt: new Date(cookCreatedAt.getTime() + (message.length > 0 ? 2 : 1)),
+                });
+            }
         });
 
         await bookingRequestNoOffersNotifyCancel(serverRuntime, bookingRequestId);

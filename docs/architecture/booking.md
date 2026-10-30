@@ -66,13 +66,15 @@ GraphQL **does** project the timeline onto the shared `ChatMessage` wire union:
   `BookingRequestOfferEventReactions` when present)
 - All other event types → `ChatMessageBookingRequestOfferEvent` (`type` + `payload: JSON`)
 
-Exposed as lazy `messages: [ChatMessage!]!` on `UserBookingRequestOffer` / `CookBookingRequestOffer` / `AdminBookingRequestOffer`. Sends go
-through role-scoped `bookingRequestOfferChatMessageCreate` mutations (optional `fileUploadIds` → `BookingRequestOfferEventAttachments` →
-`FileUploads`; peers download via GET peer-access). Admins may also `bookingRequestOfferChatMessageUpdate` to replace `payload.messageBody`
-on any `*_MESSAGE_SIMPLE` event (attachments unchanged; allowed after send is closed). Chat writes use
-`bookingRequestOfferChatWritableAssert` (blocks decline or request cancel only — dual-accept stays writable). Negotiation commands keep
-`bookingRequestOfferNegotiationAssert` (blocks decline **and** dual-accept). UI `canSend` mirrors that via shared
-`bookingRequestOfferChatCanSend(status)` (closed: `USER_DECLINED` / `COOK_DECLINED` / `CANCELED`). Day grouping stays client-side
+Exposed as lazy `messages: [ChatMessage!]!` on `UserBookingRequestOffer` / `CookBookingRequestOffer` / `AdminBookingRequestOffer`. Peer
+viewers omit soft-hidden messages and **admin-only ops milestones** (`ADMIN_CHANGED_PRICE`, `ADMIN_ACCEPTANCE_UPDATED`,
+`ADMIN_PAYMENT_SCHEDULE_UPDATED`, `ADMIN_CONFIGURED_MENU_UPDATED` — see `bookingRequestOfferEventTypesAdminOnly`); public admin milestones
+(handover, amendments, preparations, call start) remain. Sends go through role-scoped `bookingRequestOfferChatMessageCreate` mutations
+(optional `fileUploadIds` → `BookingRequestOfferEventAttachments` → `FileUploads`; peers download via GET peer-access). Admins may also
+`bookingRequestOfferChatMessageUpdate` to replace `payload.messageBody` on any `*_MESSAGE_SIMPLE` event (attachments unchanged; allowed
+after send is closed). Chat writes use `bookingRequestOfferChatWritableAssert` (blocks decline or request cancel only — dual-accept stays
+writable). Negotiation commands keep `bookingRequestOfferNegotiationAssert` (blocks decline **and** dual-accept). UI `canSend` mirrors that
+via shared `bookingRequestOfferChatCanSend(status)` (closed: `USER_DECLINED` / `COOK_DECLINED` / `CANCELED`). Day grouping stays client-side
 (`groupMessagesByDate`).
 
 Offer create (`cookBookingRequestOfferCreate` / `adminBookingRequestOfferCreate`) seeds the booking-request message (`adjustedMessage` ??

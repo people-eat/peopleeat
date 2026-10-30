@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { admins, bookingRequestOffers, bookingRequests, cooks } from '../db/schema';
+import { admins, bookingRequestOfferEvents, bookingRequestOffers, bookingRequests, cooks } from '../db/schema';
 import type { BookingRequestOfferConfiguredMenu } from '../domain/bookingRequest';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
 import { adminBookingRequestOfferConfiguredMenuUpdate } from './adminBookingRequestOfferConfiguredMenuUpdate';
@@ -150,6 +150,12 @@ describe('adminBookingRequestOfferConfiguredMenuUpdate', () => {
         expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
         expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalled();
+
+        const events = await testDb
+            .select()
+            .from(bookingRequestOfferEvents)
+            .where(eq(bookingRequestOfferEvents.bookingRequestOfferId, bookingRequestOfferId));
+        expect(events.some((event) => event.type === 'ADMIN_CONFIGURED_MENU_UPDATED')).toBe(true);
     });
 
     it('rejects empty title', async () => {
