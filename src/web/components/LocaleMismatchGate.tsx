@@ -6,7 +6,7 @@ import { useMutation } from 'urql';
 import type { Locale } from '../../shared';
 import { SessionStartupGatesLocaleUserUpdateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
-import { buildLocalePath, setLocaleCookie } from '../utils/locale';
+import { buildLocaleHref, setLocaleCookie } from '../utils/locale';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -57,7 +57,7 @@ export function LocaleMismatchGate({
     function onKeepProfile() {
         if (!profileLocale) return;
         setLocaleCookie(profileLocale);
-        navigate({ to: buildLocalePath(location.pathname, routeLocale, profileLocale) });
+        navigate({ href: buildLocaleHref(location, routeLocale, profileLocale) });
     }
 
     const dialogLocale = routeLocale;

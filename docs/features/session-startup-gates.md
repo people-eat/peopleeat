@@ -6,7 +6,8 @@ Exclusive root pipeline that shows at most one startup surface at a time: locale
 
 1. On every non-capture page load, one bootstrap query reads cookie settings, profile locale, and legal acceptance for the current session.
 2. Only the highest-priority eligible surface opens:
-   1. **Locale mismatch** — signed-in user, route locale ≠ profile locale (non-dismissible dialog).
+   1. **Locale mismatch** — signed-in user, route locale ≠ profile locale (non-dismissible dialog). Decline keeps profile language and
+      redirects via `buildLocaleHref` so search/hash survive.
    2. **Legal acceptance** — signed-in user must accept latest privacy/terms; suppressed on public privacy/terms pages so “Read full text”
       works.
    3. **Cookie banner** — undecided consent, or footer “Cookie settings” reopen; same bottom banner as before (not a dialog).

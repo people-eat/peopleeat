@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildLocalePath, isWorkspaceNoDocumentScrollPath, localePath, pathWithoutLocale } from './locale';
+import { buildLocaleHref, buildLocalePath, isWorkspaceNoDocumentScrollPath, localePath, pathWithoutLocale } from './locale';
 
 describe('localePath', () => {
     it('leaves default-locale paths unprefixed', () => {
@@ -52,6 +52,19 @@ describe('buildLocalePath', () => {
 
     it('strips to default locale from a prefixed path', () => {
         expect(buildLocalePath('/en/about', 'en', 'de')).toBe('/about');
+    });
+});
+
+describe('buildLocaleHref', () => {
+    it('preserves search and hash when rewriting locale', () => {
+        expect(
+            buildLocaleHref({ pathname: '/en/admin/booking-requests/a/offers/b', searchStr: '?tab=costs', hash: '#price' }, 'en', 'de'),
+        ).toBe('/admin/booking-requests/a/offers/b?tab=costs#price');
+        expect(buildLocaleHref({ pathname: '/about', searchStr: '?x=1' }, 'de', 'en')).toBe('/en/about?x=1');
+    });
+
+    it('works without search or hash', () => {
+        expect(buildLocaleHref({ pathname: '/en/about' }, 'en', 'de')).toBe('/about');
     });
 });
 

@@ -3,7 +3,7 @@ import { Fragment } from 'react';
 import type { Locale } from '../../shared/locale';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
-import { buildLocalePath, LOCALES, setLocaleCookie } from '../utils/locale';
+import { buildLocaleHref, LOCALES, setLocaleCookie } from '../utils/locale';
 
 const LOCALE_LABEL = { de: 'Deutsch', en: 'English' } as const;
 
@@ -31,7 +31,7 @@ export function LanguageSwitcher({ locale: localeProp, onLocaleChange }: { local
                                 return;
                             }
                             setLocaleCookie(locale);
-                            navigate({ to: buildLocalePath(location.pathname, currentLocale, locale) });
+                            navigate({ href: buildLocaleHref(location, currentLocale, locale) });
                         }}
                         aria-current={locale === currentLocale ? 'true' : undefined}
                         className={cn(

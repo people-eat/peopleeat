@@ -38,11 +38,11 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    explaining why they cannot be picked. The create UI requires at least one complete menu: **Continue** on step 1 stays disabled until
    then; if submit somehow lacks menus, a `StatusAlert` (`error`) appears above the menu picker on step 1. The server still accepts an empty
    `suggestedMenuIds` list. The optional message is seeded as `COOK_MESSAGE_SIMPLE` after `COOK_CREATED` in the offer chat. The customer is
-   emailed that a new offer exists.
-3. **Customer** compares offers as cards on the request detail page (cook photo, city, cuisine / philosophy tags, menu hint, price,
-   lifecycle pill, and a CTA into the offer). When at least one offer exists, an info banner above the cards asks them to review, compare
-   menus, chat, or call before deciding. They then open `/profile/booking-requests/$id/offers/$offerId` (tabs: offer / chat / call /
-   testimonial; default Offer, clean URL; Chat uses `?tab=chat`). Offer tab shows menus, cook block, cost, and discount redeem / remove via
+   emailed that a new offer exists. 3. **Customer** compares offers as cards on the request detail page (cook photo, city, cuisine /
+   philosophy tags, menu hint, price, lifecycle pill, and a CTA into the offer). While the request is `OFFERS_WAITING_FOR_REVIEW`, an info
+   banner above the cards asks them to review, compare menus, chat, or call before deciding (hidden once an offer is dual-accepted or the
+   request leaves that status). They then open `/profile/booking-requests/$id/offers/$offerId` (tabs: offer / chat / call / testimonial;
+   default Offer, clean URL; Chat uses `?tab=chat`). Offer tab shows menus, cook block, cost, and discount redeem / remove via
    `BookingRequestDiscountEditor` below the cost card while unpaid and not yet dual-accepted (no empty-state copy; input hidden once a code
    is applied — remove first to enter another; UI follows server/`userUpdates` state only, no optimistic discount patch). When several menus
    are suggested, the customer picks via selectable menu cards (meal-image collage, clamped title / description, course count); courses for
@@ -51,7 +51,7 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    before-discount rows; muted footer notes that travel is included). On wider panes the menu sits left and cook / pricing sit right. While
    the customer still needs to accept, a pinned footer on the Offer tab holds **Accept**; decline stays in the header overflow menu and
    opens a reason dialog (free-text plus suggested chips for price / menus / special requests).
-4. **Cook** manages offers at `/profile/booking-request-offers` with Active / Completed (**Stattgefunden**) / Archive tabs
+3. **Cook** manages offers at `/profile/booking-request-offers` with Active / Completed (**Stattgefunden**) / Archive tabs
    (`?view=completed` / `?view=archived`; default Active omits `view`). Inbox cards show event date only; while negotiating, amount row is
    **Auftragswert** / **Order value** from `totalWithoutDiscountsCentsCustomer`; after mutual accept, **Auszahlungsbetrag** / **Payout
    amount** from `payoutCentsCook`. Detail stays at `/profile/booking-request-offers/$offerId` (tabs: offer / chat / request / call; default
@@ -67,12 +67,12 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    cost overview (copy distinguishes guest-count vs travel vs both via `priceAutoAdjustReason`). After the event (`COMPLETED`), an info
    banner under the cost overview tells the cook which amount to invoice (menu + travel, before the peopleeat fee) and that the fee was
    deducted at payout; the guest invoice address stays on the Request tab. They can also re-accept or withdraw.
-5. Negotiation continues until both sides accept (at most one dual-accepted offer per request) or someone declines / the request is canceled
+4. Negotiation continues until both sides accept (at most one dual-accepted offer per request) or someone declines / the request is canceled
    / expires. Declining an offer (or a cook ban that auto-declines open offers) also declines PENDING discovery-call requests on that offer;
    request cancel / expiry cancel those PENDING slots. Customer request edits can clear cook acceptance and email cooks; paid-headcount
    changes auto-scale each open offer’s menu from that offer’s current per-person rate, and address changes may auto-adjust travel
    (`priceAutoAdjustReason`). Menu updates email the customer.
-6. Dual acceptance moves into payment — see [booking-payment.md](./booking-payment.md). Chat rules:
+5. Dual acceptance moves into payment — see [booking-payment.md](./booking-payment.md). Chat rules:
    [booking-offer-chat.md](./booking-offer-chat.md). Calls: [booking-request-offer-calls.md](./booking-request-offer-calls.md).
 
 Admins can create / edit offers, cancel cancelable requests, and hand a dual-accepted offer to another cook (close old + create/upgrade new;

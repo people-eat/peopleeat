@@ -79,6 +79,18 @@ export function buildLocalePath(pathname: string, _currentLocale: Locale, target
     return localePath(targetLocale, pathWithoutLocale(pathname) as `/${string}`);
 }
 
+/**
+ * Rewrite the current location to `targetLocale`, keeping `searchStr` and `hash`.
+ * Use for language switches and first-visit redirects so `?tab=` (and similar) survive.
+ */
+export function buildLocaleHref(
+    location: { pathname: string; searchStr?: string; hash?: string },
+    currentLocale: Locale,
+    targetLocale: Locale,
+): string {
+    return `${buildLocalePath(location.pathname, currentLocale, targetLocale)}${location.searchStr ?? ''}${location.hash ?? ''}`;
+}
+
 export function setLocaleCookie(locale: Locale): void {
     document.cookie = `locale=${locale}; Path=/; Max-Age=31536000; SameSite=Lax`;
 }

@@ -1,7 +1,7 @@
 import { createFileRoute, notFound, Outlet, redirect } from '@tanstack/react-router';
 import { createIsomorphicFn } from '@tanstack/react-start';
 import { getRequestHeader, setResponseHeader } from '@tanstack/react-start/server';
-import { buildLocalePath, DEFAULT_LOCALE, localeFromAcceptLanguage, LOCALES } from '../web/utils/locale';
+import { buildLocaleHref, DEFAULT_LOCALE, localeFromAcceptLanguage, LOCALES } from '../web/utils/locale';
 import type { Locale } from '../web/utils/locale';
 
 const LOCALE_COOKIE = 'locale';
@@ -29,7 +29,7 @@ export const Route = createFileRoute('/{-$locale}')({
         if (!params.locale) {
             const detected = detectLocale();
             if (detected !== DEFAULT_LOCALE) {
-                throw redirect({ href: buildLocalePath(location.pathname, DEFAULT_LOCALE, detected) });
+                throw redirect({ href: buildLocaleHref(location, DEFAULT_LOCALE, detected) });
             }
         }
     },

@@ -238,7 +238,7 @@ export function ProfileCustomerBookingRequestPage({
 
                 <section className="grid gap-4">
                     <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Angebote', en: 'Offers' }[locale]}</h2>
-                    {offers.length > 0 ? (
+                    {request.status === 'OFFERS_WAITING_FOR_REVIEW' && offers.length > 0 ? (
                         <StatusAlert
                             tone="info"
                             title={
