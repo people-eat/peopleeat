@@ -1,5 +1,11 @@
 # syntax=docker/dockerfile:1
 
+# Must be declared before any FROM — only global ARGs can expand in FROM.
+# Prebaked runtime (playwright + Chromium + pg + OTel); CD builds/pushes
+# `:runtime-base` before this image. See Dockerfile.runtime-base and
+# docs/infrastructure.md § Runtime base image.
+ARG RUNTIME_BASE=ghcr.io/people-eat/peopleeat:runtime-base
+
 FROM node:24.20.0-slim AS base
 
 FROM base AS deps
@@ -21,10 +27,6 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# Prebaked runtime (playwright + Chromium + pg + OTel). Built/pushed as
-# `:runtime-base` in CD before this image — see Dockerfile.runtime-base and
-# docs/infrastructure.md § Runtime base image.
-ARG RUNTIME_BASE=ghcr.io/people-eat/peopleeat:runtime-base
 FROM ${RUNTIME_BASE} AS runtime
 WORKDIR /app
 
