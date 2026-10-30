@@ -6,44 +6,79 @@ This project is deployed via **Coolify** as a **Docker** container.
 
 ### Docker Build
 
-The `Dockerfile` uses a multi-stage build:
+Production uses two images:
+
+| Image                                            | Dockerfile                | Contents                                                           |
+| ------------------------------------------------ | ------------------------- | ------------------------------------------------------------------ |
+| `ghcr.io/people-eat/peopleeat:runtime-base`      | `Dockerfile.runtime-base` | Node slim + allowlisted `node_modules` + Chromium (rarely changes) |
+| `ghcr.io/people-eat/peopleeat:sha-…` / `:latest` | `Dockerfile`              | App build (`.output`) layered on `:runtime-base` (every deploy)    |
+
+The app `Dockerfile` is a multi-stage build:
 
 1. **deps** — Installs all dependencies with `npm ci`
 2. **build** — Copies dependencies, runs `npm run build` (Vite production build via TanStack Start)
-3. **runtime** — Installs only the runtime package that cannot be bundled (`playwright`), downloads Chromium + its system libraries, then
-   copies the self-contained `.output/` bundle into a slim Node.js image
+3. **runtime** — `FROM` the prebaked [runtime base image](#runtime-base-image), then copies `.output/` and `ops/observability/register.mjs`
 
 The `deps` stage installs the npm version declared in `package.json#packageManager` before running `npm ci`, so Docker builds resolve the
 lockfile with the same npm version as CI. It strips `scripts.prepare` (husky) and `scripts.postinstall` (`npm dedupe`) before installing —
-neither is useful in the image, and Playwright's postinstall would try to fetch browsers (Chromium is installed only in the runtime stage).
+neither is useful in the image, and Playwright's postinstall would try to fetch browsers (Chromium lives only in the runtime base).
 `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is a second guard. A BuildKit cache mount on `/root/.npm` reuses tarballs when the lockfile changes
-instead of re-downloading the whole tree. CD also exports BuildKit **layer** cache to GitHub Actions (scoped) and GHCR `:buildcache` so
-ephemeral runners reuse deps / Chromium / runtime layers across deploys — see [Docker build cache](#docker-build-cache). `.dockerignore`
+instead of re-downloading the whole tree. CD also exports BuildKit **layer** cache to GitHub Actions (scoped) and GHCR `:buildcache` /
+`:runtime-base-buildcache` so ephemeral runners reuse layers across deploys — see [Docker build cache](#docker-build-cache). `.dockerignore`
 keeps tests, most of `docs/`, editor config, and similar out of the build context so `COPY . .` in the build stage stays small.
 **Exception:** `docs/features/**` is whitelisted so the admin product-docs wiki (`import.meta.glob` in
 `src/server/agents/productDocsWiki.ts`) can bundle feature markdown into `.output/` at build time. Architecture / styles / other docs stay
 out of the image context.
 
-**Runtime `node_modules` is a small allowlist** (not a full `npm ci --omit=dev`): `playwright` (Chromium-bidi cannot be inlined), `pg` /
-`pg-pool` (Nitro-external so OTel can patch queries), and `@opentelemetry/api` + `@opentelemetry/instrumentation` + `instrumentation-http` +
-`instrumentation-pg` for the `--import` preload in [`ops/observability/register.mjs`](../ops/observability/register.mjs). The runtime stage
-rewrites `package.json` to those lockfile-pinned versions and runs `npm install --omit=dev`. `npm ci` cannot be used after rewriting
-`package.json` (the lockfile would no longer match). See [architecture/observability.md](./architecture/observability.md).
+Nitro inlines most of the app; the runtime image still needs a small allowlist of packages that cannot be bundled — see
+[Runtime base image](#runtime-base-image). Local / Coolify still only run the **app** image (`sha-…` / `latest`); Coolify never pulls
+`:runtime-base` directly.
 
-The runtime stage then runs `npx playwright install-deps chromium` and `npx playwright install chromium` to add the system libraries
-Chromium needs (fonts, libnss, libatk, ...) and download the matching Chromium build. Chromium is installed into a BuildKit cache mount
-first (`id=playwright-chromium`) and copied into `/ms-playwright`, so a `package.json` change that invalidates the npm-install layer does
-not re-download the multi-hundred-megabyte browser. These steps live above the `COPY --from=build /app/.output` so they also cache across
-application code changes. The Debian-based `node:24-slim` base is required — Chromium's prebuilt binaries are linked against glibc and will
-not run on Alpine. See [architecture/browser-capture.md](./architecture/browser-capture.md) for the full design.
+```bash
+# Local: bake runtime base, then the app image (versions from the lockfile)
+docker build -f Dockerfile.runtime-base \
+  $(node scripts/runtimeBaseBuildArgs.mjs docker) \
+  -t ghcr.io/people-eat/peopleeat:runtime-base .
+docker build \
+  --build-arg BUILD_SHA="$(git rev-parse HEAD)" \
+  --build-arg RUNTIME_BASE=ghcr.io/people-eat/peopleeat:runtime-base \
+  -t app .
+docker run -p 3000:3000 \
+  -e DATABASE_URL=... \
+  -e sessionCookieName=... \
+  -e WEB_PAGE_URL=... \
+  -e VISITOR_IP_HASH_SALT=... \
+  -e GOOGLE_GENERATIVE_AI_API_KEY=... \
+  app
+```
 
-The runtime stage sets `ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` **before** those install steps. Playwright resolves browser binaries
-relative to `$HOME/.cache/ms-playwright`, but the install runs as `root` while the container serves as `USER node` — leaving Chromium in
-`/root/.cache` where the `node`-owned runtime process (searching `/home/node/.cache`) can't find it, which surfaces as
-`browserType.launch: Executable doesn't exist at /home/node/.cache/ms-playwright/...`. The fixed path makes install-time and run-time agree,
-and a `chmod -R a+rX /ms-playwright` after install lets the `node` user read the root-created files.
+### Runtime base image
 
-#### Build output: nitro + TanStack Start
+`Dockerfile.runtime-base` is the expensive, rarely invalidated half of production:
+
+- Debian-based `node:24.20.0-slim` (Chromium's prebuilt binaries need glibc; Alpine will not work)
+- npm pinned via `NPM_VERSION` build-arg (`package.json#packageManager`)
+- Allowlisted `node_modules` only (not a full `npm ci --omit=dev`): `playwright` (Chromium-bidi cannot be inlined), `pg` / `pg-pool`
+  (Nitro-external so OTel can patch queries), and `@opentelemetry/api` + `@opentelemetry/instrumentation` + `instrumentation-http` +
+  `instrumentation-pg` for the `--import` preload in [`ops/observability/register.mjs`](../ops/observability/register.mjs). See
+  [architecture/observability.md](./architecture/observability.md) and [architecture/browser-capture.md](./architecture/browser-capture.md).
+- `npx playwright install-deps chromium` + Chromium under `/ms-playwright` with `ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright`
+
+Versions are **build-args**, not `COPY package-lock.json`. `scripts/runtimeBaseBuildArgs.mjs` reads the lockfile and prints
+`PLAYWRIGHT_VERSION`, `PG_VERSION`, OTel package versions, and `NPM_VERSION`. Docker layer keys are therefore the allowlist only: bumping
+eslint (or any other unrelated dependency) does not re-download Chromium. A BuildKit cache mount (`id=playwright-chromium`) still avoids
+re-fetching the browser when only the npm layer invalidates (e.g. an npm version bump).
+
+`PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` is set before install. Playwright resolves browsers relative to `$HOME/.cache/ms-playwright` by
+default; install runs as `root` while the app container serves as `USER node`, so a shared path is required — otherwise Chromium lands under
+`/root/.cache` and the runtime process searching `/home/node/.cache` fails with `browserType.launch: Executable doesn't exist…`.
+`chmod -R a+rX /ms-playwright` lets the `node` user read root-created files.
+
+CD builds and pushes `:runtime-base` on every deploy **before** the app image, then passes
+`RUNTIME_BASE=ghcr.io/people-eat/peopleeat:runtime-base` into the app build. Warm GHA + registry cache for the base makes unchanged
+allowlist versions a short no-op; the app build then only needs deps / `npm run build` / copy `.output`.
+
+### Build output: nitro + TanStack Start
 
 The `tanstackStart()` Vite plugin alone emits only a fetch-handler module (`export default { fetch }`) at `dist/server/server.js`. That
 module has no top-level side effects — running it under Node imports the file and exits with code 0 without ever opening a port. To produce
@@ -71,19 +106,8 @@ nitro) ignores those headers unless `trustProxy` is enabled, so `Request.url` re
 [architecture/api-layer.md](./architecture/api-layer.md#session--cookie-handover).
 
 Nitro inlines most application runtime deps (`react`, `@tanstack/react-router`, etc.) into `.output/`, but keeps `pg` / `pg-pool` and
-`playwright` external. The Docker **runtime stage still keeps `package.json` / `node_modules`** for those packages plus the OTel
-instrumentation preload — see the Dockerfile notes above. Do not describe the image as "`.output` only."
-
-```bash
-docker build -t app .
-docker run -p 3000:3000 \
-  -e DATABASE_URL=... \
-  -e sessionCookieName=... \
-  -e WEB_PAGE_URL=... \
-  -e VISITOR_IP_HASH_SALT=... \
-  -e GOOGLE_GENERATIVE_AI_API_KEY=... \
-  app
-```
+`playwright` external. Those packages plus the OTel instrumentation preload live in `:runtime-base` — see above. Do not describe the app
+image as "`.output` only."
 
 ### Health Check
 
@@ -311,9 +335,10 @@ test Coolify UUID + `WEB_APP_URL_TEST`, `production` → production Coolify UUID
 Uses a separate concurrency group (`deploy-test` / `deploy-production`, `cancel-in-progress: false`) so concurrent deploys to the same
 environment queue rather than abort.
 
-1. Builds a Docker image and pushes it to **GitHub Container Registry** (GHCR) with Docker layer caching (see
+1. Resolves allowlist versions via `scripts/runtimeBaseBuildArgs.mjs`, builds/pushes [`:runtime-base`](#runtime-base-image), then
+   builds/pushes the app image to **GitHub Container Registry** (GHCR) with Docker layer caching (see
    [Docker build cache](#docker-build-cache))
-2. Tags the image with the commit SHA and `latest`
+2. Tags the **app** image with the commit SHA and `latest` (Coolify never pulls `:runtime-base`)
 3. PATCHes the matching Coolify application to point to the new image tag
 4. Restarts that application via the Coolify API
 5. Polls `${WEB_APP_URL_TEST|PROD}/api/health` until the response's `version` field equals the deployed commit SHA — fails the workflow on
@@ -321,31 +346,28 @@ environment queue rather than abort.
 
 ### Docker build cache
 
-The deploy job's `docker/build-push-action` restores and exports BuildKit **layer** cache from two backends (`mode=max` so intermediate
-multi-stage layers — deps, Playwright/Chromium, runtime npm allowlist — stay reusable when only app code changes):
+The deploy job's `docker/build-push-action` steps restore and export BuildKit **layer** cache from two backends (`mode=max` so intermediate
+multi-stage layers stay reusable when only app code changes):
 
-| Backend                           | Ref / scope                                                    | Why                                                                                                                                                                                                                              |
-| --------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GitHub Actions cache (`type=gha`) | Read `scope=main` and `scope=<branch>`; write `scope=<branch>` | Fast, co-located with runners. Scoping lets `production` (and other branches) reuse layers written on `main` instead of starting cold.                                                                                           |
-| GHCR registry (`type=registry`)   | `ghcr.io/<owner>/<repo>:buildcache`                            | Survives the ~10 GiB per-repo GHA cache cap. This image carries Chromium; without a registry cache, large layers can thrash or miss under GHA alone. Coolify continues to pull `sha-…` / `latest` — `:buildcache` is cache-only. |
+| Backend                           | Ref / scope                                                                                      | Why                                                                                                                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GitHub Actions cache (`type=gha`) | App: read `scope=main` and `scope=<branch>`, write `scope=<branch>`. Base: `scope=runtime-base`. | Fast, co-located with runners. App scoping lets `production` reuse layers written on `main`. Base uses its own scope so Chromium layers do not fight the app cache budget. |
+| GHCR registry (`type=registry`)   | App: `ghcr.io/<owner>/<repo>:buildcache`. Base: `…:runtime-base-buildcache`.                     | Survives the ~10 GiB per-repo GHA cache cap. Coolify continues to pull `sha-…` / `latest` — `*:buildcache` tags and `:runtime-base` are not Coolify app tags.              |
 
-BuildKit `--mount=type=cache` (npm tarballs, Playwright Chromium download in the Dockerfile) is **local to the builder** and is not exported
-by these remote backends. On ephemeral GitHub-hosted runners those mounts start cold whenever the corresponding `RUN` layer is invalidated
-(e.g. lockfile change). Layer cache with `mode=max` is what avoids re-running those steps when inputs are unchanged.
+BuildKit `--mount=type=cache` (npm tarballs, Playwright Chromium download) is **local to the builder** and is not exported by these remote
+backends. On ephemeral GitHub-hosted runners those mounts start cold whenever the corresponding `RUN` layer is invalidated. Layer cache with
+`mode=max`, plus version build-args on the runtime base, is what avoids re-running Chromium install when allowlist versions are unchanged.
 
 #### Future options (not implemented)
 
-If deploy wall-clock is still dominated by Docker after the caches above are warm, consider in order:
+If deploy wall-clock is still dominated by Docker after the caches and runtime base above are warm, consider in order:
 
 1. **Overlap image build with gate jobs** — run a `build` job in parallel with Check / Test / E2e (push a SHA-tagged image, or a staging
    tag), and have `deploy` only PATCH Coolify + restart + verify. Cuts push-to-live more than further Dockerfile micro-opts; keep gates
    required before Coolify restart so a red test never ships.
-2. **Prebaked runtime base image** — publish a rarely rebuilt `ghcr.io/<owner>/<repo>:runtime-base` with Node, Playwright/Chromium, `pg`,
-   and OTel instrumentation packages. The app Dockerfile then mostly runs `npm run build` and copies `.output`. Rebuild the base only when
-   those dependency versions change.
-3. **Skip attestations if unused** — set `provenance: false` and `sbom: false` on `build-push-action` when you do not need image
+2. **Skip attestations if unused** — set `provenance: false` and `sbom: false` on `build-push-action` when you do not need image
    attestations (modest overhead on every build).
-4. **Larger runners** — if `npm run build` inside the image dominates CPU time after layer hits, use a larger GitHub-hosted or self-hosted
+3. **Larger runners** — if `npm run build` inside the image dominates CPU time after layer hits, use a larger GitHub-hosted or self-hosted
    runner for the deploy (or parallel build) job only.
 
 ### Required secrets

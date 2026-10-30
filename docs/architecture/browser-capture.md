@@ -135,18 +135,17 @@ artifact resolved relative to the install location of the npm package. Three pla
 1. **`vite.config.ts`** — `optimizeDeps.exclude` lists `'playwright'` and `'playwright-core'` so the dev server doesn't pre-bundle them.
 2. **Nitro rollup** — `nitro({ rollupConfig: { external: ['playwright', 'playwright-core'] } })` keeps the production server bundle from
    inlining them. Imports stay as runtime `require`/`import` calls that resolve against `node_modules` at runtime.
-3. **`Dockerfile`** — because Playwright is the only runtime dependency that cannot be inlined into the nitro bundle, the production stage
-   must:
+3. **`Dockerfile.runtime-base`** — because Playwright cannot be inlined into the nitro bundle, the prebaked runtime base must:
    - Use a Debian-based Node image (`node:24-slim`), not Alpine — Chromium's prebuilt binaries are linked against glibc.
    - Set `ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` to pin the browser install to a fixed, user-independent location.
-   - Rewrite `package.json` to pin `playwright` to the lockfile version and `npm install` only that tree — not `npm ci --omit=dev` of the
-     full production closure.
+   - `npm install` only the allowlisted runtime packages (`playwright`, `pg`, OTel instrumentation) at lockfile versions passed as
+     build-args — not `npm ci --omit=dev` of the full production closure.
    - Run `npx playwright install-deps chromium` to install the system libraries Chromium needs (fonts, libnss, libatk, etc.).
    - Run `npx playwright install chromium` into a BuildKit cache mount, copy into `/ms-playwright`, then `chmod -R a+rX` it.
 
-These `RUN` steps are placed before the `COPY --from=build` of `.output/` so they cache across application code changes — Chromium downloads
-dominate image build time and rarely change. The cache mount keeps the browser tarball across `package.json` invalidations of the
-npm-install layer as well. See [infrastructure.md](../infrastructure.md#docker-build) for the full image layout.
+The app `Dockerfile` then `FROM`s `:runtime-base` and only copies `.output/` (plus the OTel preload). Chromium therefore does not rebuild on
+ordinary app deploys; the base is keyed by allowlist versions so unrelated lockfile bumps stay cache hits. See
+[infrastructure.md](../infrastructure.md#runtime-base-image) for the full image layout.
 
 **Why `PLAYWRIGHT_BROWSERS_PATH` matters.** Playwright resolves its browser binaries relative to `$HOME/.cache/ms-playwright` by default.
 The install steps run as `root` (HOME=`/root`), but the container drops to `USER node` (HOME=`/home/node`) before `CMD`. Without a shared

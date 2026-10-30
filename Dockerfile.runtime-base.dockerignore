@@ -1,0 +1,2 @@
+# Runtime base needs no build context — versions are build-args only.
+*

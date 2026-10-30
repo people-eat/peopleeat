@@ -1,0 +1,55 @@
+# syntax=docker/dockerfile:1
+#
+# Prebaked production runtime base: Node + allowlisted node_modules (playwright,
+# pg, OTel instrumentation) + Chromium. Rebuilt from version build-args so an
+# unrelated lockfile bump does not re-download Chromium. The app `Dockerfile`
+# does `FROM` this image and only copies `.output` + the OTel preload.
+# See docs/infrastructure.md § Runtime base image.
+
+FROM node:24.20.0-slim
+
+WORKDIR /app
+ENV NODE_ENV=production
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+
+# Versions come from package-lock.json via scripts/runtimeBaseBuildArgs.mjs —
+# not from COPY package-lock.json — so Docker layer keys are the allowlist only.
+ARG NPM_VERSION
+ARG PLAYWRIGHT_VERSION
+ARG PG_VERSION
+ARG OTEL_API_VERSION
+ARG OTEL_INSTRUMENTATION_VERSION
+ARG OTEL_INSTRUMENTATION_HTTP_VERSION
+ARG OTEL_INSTRUMENTATION_PG_VERSION
+
+RUN test -n "$NPM_VERSION" \
+    && test -n "$PLAYWRIGHT_VERSION" \
+    && test -n "$PG_VERSION" \
+    && test -n "$OTEL_API_VERSION" \
+    && test -n "$OTEL_INSTRUMENTATION_VERSION" \
+    && test -n "$OTEL_INSTRUMENTATION_HTTP_VERSION" \
+    && test -n "$OTEL_INSTRUMENTATION_PG_VERSION"
+
+RUN npm install -g "npm@${NPM_VERSION}"
+
+# Tiny package.json so npm has a project root; pg-pool installs transitively with pg.
+RUN --mount=type=cache,target=/root/.npm \
+    printf '%s\n' '{"name":"runtime-base","private":true}' > package.json \
+    && npm install --omit=dev --no-audit --no-fund \
+        "playwright@${PLAYWRIGHT_VERSION}" \
+        "pg@${PG_VERSION}" \
+        "@opentelemetry/api@${OTEL_API_VERSION}" \
+        "@opentelemetry/instrumentation@${OTEL_INSTRUMENTATION_VERSION}" \
+        "@opentelemetry/instrumentation-http@${OTEL_INSTRUMENTATION_HTTP_VERSION}" \
+        "@opentelemetry/instrumentation-pg@${OTEL_INSTRUMENTATION_PG_VERSION}"
+
+RUN npx playwright install-deps chromium
+
+# Cache mount avoids re-fetching Chromium when only npm layers invalidate (e.g.
+# npm version bump). Copy into /ms-playwright so files land in the image layer.
+RUN --mount=type=cache,id=playwright-chromium,target=/opt/playwright-cache \
+    PLAYWRIGHT_BROWSERS_PATH=/opt/playwright-cache npx playwright install chromium \
+    && mkdir -p /ms-playwright \
+    && cp -a /opt/playwright-cache/. /ms-playwright/ \
+    && chmod -R a+rX /ms-playwright

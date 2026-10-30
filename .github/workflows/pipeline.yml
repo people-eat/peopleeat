@@ -438,6 +438,37 @@ jobs:
             type=sha
             type=raw,value=latest
 
+      # Runtime base (Chromium + allowlisted node_modules) is keyed by lockfile
+      # versions via build-args — unrelated dependency bumps stay cache hits.
+      # Built every deploy so `:runtime-base` always matches this commit; warm
+      # cache makes unchanged allowlist versions a few seconds. See
+      # docs/infrastructure.md § Runtime base image.
+      - name: Resolve runtime base build-args
+        id: runtime_base_args
+        run: node scripts/runtimeBaseBuildArgs.mjs gha >> "$GITHUB_OUTPUT"
+
+      - name: Build and push runtime base
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./Dockerfile.runtime-base
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runtime-base
+          build-args: |
+            NPM_VERSION=${{ steps.runtime_base_args.outputs.NPM_VERSION }}
+            PLAYWRIGHT_VERSION=${{ steps.runtime_base_args.outputs.PLAYWRIGHT_VERSION }}
+            PG_VERSION=${{ steps.runtime_base_args.outputs.PG_VERSION }}
+            OTEL_API_VERSION=${{ steps.runtime_base_args.outputs.OTEL_API_VERSION }}
+            OTEL_INSTRUMENTATION_VERSION=${{ steps.runtime_base_args.outputs.OTEL_INSTRUMENTATION_VERSION }}
+            OTEL_INSTRUMENTATION_HTTP_VERSION=${{ steps.runtime_base_args.outputs.OTEL_INSTRUMENTATION_HTTP_VERSION }}
+            OTEL_INSTRUMENTATION_PG_VERSION=${{ steps.runtime_base_args.outputs.OTEL_INSTRUMENTATION_PG_VERSION }}
+          cache-from: |
+            type=gha,scope=runtime-base
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runtime-base-buildcache
+          cache-to: |
+            type=gha,mode=max,scope=runtime-base
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runtime-base-buildcache,mode=max
+
       - name: Build and push image
         uses: docker/build-push-action@v7
         with:
@@ -448,9 +479,10 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             BUILD_SHA=${{ github.sha }}
+            RUNTIME_BASE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runtime-base
           # Layer cache: GHA (scoped so production / feature branches reuse main)
-          # plus GHCR registry (survives the ~10 GiB GHA limit; Chromium layers
-          # are large). mode=max keeps intermediate multi-stage layers.
+          # plus GHCR registry (survives the ~10 GiB GHA limit). mode=max keeps
+          # intermediate multi-stage layers. Chromium lives in `:runtime-base`.
           # See docs/infrastructure.md § Docker build cache.
           cache-from: |
             type=gha,scope=main
