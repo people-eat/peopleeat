@@ -440,7 +440,10 @@ export function AdminBookingRequestOfferPriceEditPage({
                                     </label>
                                     <Input
                                         id={`${formId}-fee-cook`}
-                                        inputMode="numeric"
+                                        type="number"
+                                        min={0}
+                                        max={100}
+                                        step={1}
                                         value={field.state.value}
                                         onBlur={field.handleBlur}
                                         onChange={(event) => field.handleChange(event.target.value)}
@@ -456,7 +459,10 @@ export function AdminBookingRequestOfferPriceEditPage({
                                     </label>
                                     <Input
                                         id={`${formId}-fee-customer`}
-                                        inputMode="numeric"
+                                        type="number"
+                                        min={0}
+                                        max={100}
+                                        step={1}
                                         value={field.state.value}
                                         onBlur={field.handleBlur}
                                         onChange={(event) => field.handleChange(event.target.value)}

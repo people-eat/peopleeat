@@ -396,7 +396,7 @@ export function BookingRequestOfferPriceConfigurationPanel({
                 </StatusAlert>
             ) : null}
 
-            {priceCalculation ? (
+            {viewer === 'cook' && priceCalculation ? (
                 <BookingRequestOfferCostOverviewPanel
                     locale={locale}
                     viewer={viewer}

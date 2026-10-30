@@ -94,8 +94,9 @@ actions and dual cost views with **Kundensicht / Kochsicht** titles above, colum
 recalculation), so migrated or historical fee snapshots stay honest; cook overview stays pre-discount by design. Admin create / edit-price
 take menu price, travel, and sticky platform fee **percentages** (cook / customer, 0–100; defaults 18 / 4). Fee cents, payout, provider
 estimate, and customer total (including `totalWithoutDiscountsCentsCustomer` and, when already set, `totalCentsCustomer` with any gift/promo
-discount cents preserved) are always recalculated on write via `bookingRequestOfferPriceCalculate`. Edit-price shows a live € preview with
-deltas vs the stored snapshot. Edit-price CTA (`.../edit-price`) lives on this tab’s footer only. On dual-accepted offers (`EMPTY` / `SETUP`
+discount cents preserved) are always recalculated on write via `bookingRequestOfferPriceCalculate`. Create and edit-price show a live € fee
+preview (`AdminBookingRequestOfferFeePreview`) as the sole breakdown on those forms (edit-price also shows deltas vs the stored snapshot);
+they do not embed the collapsible cook/customer cost overview (that panel stays on the Costs tab cook view and on cook surfaces). Edit-price CTA (`.../edit-price`) lives on this tab’s footer only. On dual-accepted offers (`EMPTY` / `SETUP`
 / `PAYED`), menu/travel/fee-% edits use `bookingRequestOfferAmendmentCreate` (cook must accept) or `bookingRequestOfferAmendmentApply`
 (bypass cook approval). Both reuse amendment Stripe rules (`EMPTY` cancel and re-prepare, `SETUP` columns only, `PAYED` refund/top-up). UI:
 on save, a confirm dialog shows price/payment consequences and two explicit actions (**Propose to chef** / **Apply now (skip cook
