@@ -17,10 +17,12 @@ The `deps` stage installs the npm version declared in `package.json#packageManag
 lockfile with the same npm version as CI. It strips `scripts.prepare` (husky) and `scripts.postinstall` (`npm dedupe`) before installing —
 neither is useful in the image, and Playwright's postinstall would try to fetch browsers (Chromium is installed only in the runtime stage).
 `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is a second guard. A BuildKit cache mount on `/root/.npm` reuses tarballs when the lockfile changes
-instead of re-downloading the whole tree. `.dockerignore` keeps tests, most of `docs/`, editor config, and similar out of the build context
-so `COPY . .` in the build stage stays small. **Exception:** `docs/features/**` is whitelisted so the admin product-docs wiki
-(`import.meta.glob` in `src/server/agents/productDocsWiki.ts`) can bundle feature markdown into `.output/` at build time. Architecture /
-styles / other docs stay out of the image context.
+instead of re-downloading the whole tree. CD also exports BuildKit **layer** cache to GitHub Actions (scoped) and GHCR `:buildcache` so
+ephemeral runners reuse deps / Chromium / runtime layers across deploys — see [Docker build cache](#docker-build-cache). `.dockerignore`
+keeps tests, most of `docs/`, editor config, and similar out of the build context so `COPY . .` in the build stage stays small.
+**Exception:** `docs/features/**` is whitelisted so the admin product-docs wiki (`import.meta.glob` in
+`src/server/agents/productDocsWiki.ts`) can bundle feature markdown into `.output/` at build time. Architecture / styles / other docs stay
+out of the image context.
 
 **Runtime `node_modules` is a small allowlist** (not a full `npm ci --omit=dev`): `playwright` (Chromium-bidi cannot be inlined), `pg` /
 `pg-pool` (Nitro-external so OTel can patch queries), and `@opentelemetry/api` + `@opentelemetry/instrumentation` + `instrumentation-http` +
@@ -226,16 +228,16 @@ test, `production` → production).
                       ┌─ changes (docs-only vs code) ──┐
                       │                                ├─ test (matrix 1/2, 2/2) ─► test-gate (check name: Test)
                       │                                ├─ e2e  (matrix 1/2, 2/2) ─► e2e-gate  (check name: End to end tests)
-                      │                                └─ check (full or format+spell)
-                      ├─ commitlint ───────────────────┐
-                      ├─ codegen ──────────────────────┤
-trigger ──────────────┼────────────────────────────────┼──── deploy (push to main → test /
-                      └─ migrations-check ─────────────┘           push to production → production)
-                          (matrix: prod, test)                   (Docker build + push + Coolify)
+trigger ──────────────┤                                └─ check (commitlint + codegen + static analysis)
+                      │
+                      └─ migrations-check (test then prod) ──┐
+                                                             ├──── deploy (push to main → test /
+                      check / test-gate / e2e-gate ──────────┘           push to production → production)
+                                                                         (Docker build + push + Coolify)
 ```
 
-Typical gate wall-clock on a code PR is ~3–4 minutes (limited by Check or a Vitest shard); docs-only PRs skip Vitest shards and Playwright
-and run a lighter Check. Deploy adds ~4 minutes on push.
+Typical gate wall-clock on a code PR is ~3–4 minutes (limited by Check or E2e); docs-only PRs skip Vitest shards, Playwright, and codegen
+and run a lighter Check (commitlint + format + spell). Deploy adds ~4 minutes on push.
 
 All gate jobs that install dependencies share the composite action at `.github/actions/setup` which runs `actions/setup-node@v6`, pins the
 npm version from `package.json#packageManager`, and runs `npm ci`. Update there if you change the dependency-install flow.
@@ -249,21 +251,17 @@ CI. Revisit with `ubuntu-26.04` when ready to validate on the new image.
 `AGENTS.md` / `CLAUDE.md`. Empty diffs, missing bases (force push / `workflow_dispatch`), and any other path count as code. Outputs
 `code=true|false` for Check / Test / E2e.
 
-**commitlint** — validates commit messages against the conventional-commits config.
-
-**codegen** — verifies generated files are up to date (no database required):
-
-1. `npm ci`
-2. `npm run graphql:generate` and `npm run db:generate`
-3. `git diff --exit-code` on `*.gen.ts` / `*.generated.ts` / `drizzle/` — fails if codegen output differs from what was committed, or if new
-   untracked files appear
-
-**check** — static analysis (no database required). On **docs-only** change sets: format + spell in parallel only. On **code** change sets:
-format, spell, types, and usage run **in parallel**; lint runs after they all succeed (types before lint, matching local `npm run check`).
-Parallel logs are printed in collapsible groups so one failure does not hide another.
+**check** — commit lint, codegen freshness (code change sets only), and static analysis in one job (one `npm ci`). Commitlint runs for PR and
+push events (same ranges as before). On **code** change sets: `graphql:generate` + `db:generate`, then `git diff --exit-code` on `*.gen.ts` /
+`*.generated.ts` / `drizzle/` (fails if codegen output differs from what was committed, or if new untracked files appear). Then format, spell,
+types, and usage run **in parallel**; lint runs after they all succeed (types before lint, matching local `npm run check`). On **docs-only**
+change sets: commitlint, then format + spell in parallel only (skip codegen / types / lint / knip). Parallel logs are printed in collapsible
+groups so one failure does not hide another.
 
 | Step (code PRs)   | Command                                                                                                                                                                                                                                                                                                                                           |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Commitlint        | `commitlint --from … --to …` (PR base→head or push before→after)                                                                                                                                                                                                                                                                                  |
+| Codegen           | `npm run graphql:generate` + `npm run db:generate`, then diff committed generated files                                                                                                                                                                                                                                                           |
 | Format (parallel) | `prettier --check .`                                                                                                                                                                                                                                                                                                                              |
 | Spell (parallel)  | `cspell .`                                                                                                                                                                                                                                                                                                                                        |
 | Types (parallel)  | `tsc --noEmit`                                                                                                                                                                                                                                                                                                                                    |
@@ -293,29 +291,61 @@ boot. Dual-accept e2e that needs live Stripe still uses real test keys when prov
 **e2e-gate** (check name `End to end tests`) — always runs. Docs-only: exits 0. Code: fails unless every Playwright shard succeeded.
 Required branch-protection check (shard jobs use distinct names `End to end tests (1/2)` / `(2/2)`).
 
-**migrations-check** — verifies that prod and test databases have applied every migration in the `drizzle/` folder. Runs as a matrix
-(`prod`, `test`) and fails the PR if any migration is missing — forces you to deploy migrations before merging schema-dependent code. The
-script (`scripts/migrationsCheck.ts`) hashes each local migration's SQL with the same algorithm Drizzle uses internally
-(`sha256(file content)`) and compares against rows in `drizzle.__drizzle_migrations`.
+**migrations-check** — verifies that test and prod databases have applied every migration in the `drizzle/` folder. One job, one `npm ci`,
+then `db:check-applied` against test then prod (labeled log groups). Fails the PR if any migration is missing — forces you to deploy
+migrations before merging schema-dependent code. The script (`scripts/migrationsCheck.ts`) hashes each local migration's SQL with the same
+algorithm Drizzle uses internally (`sha256(file content)`) and compares against rows in `drizzle.__drizzle_migrations`.
 
 PRs from forks have no access to the DB secrets and so the job is skipped on them; require a maintainer push or branch to run the check.
+
+If branch protection still lists separate **Commit lint** or **Codegen freshness** checks from an older workflow shape, remove them —
+**Check** now covers both. Keep **Test**, **End to end tests**, and any other required names you already use (`Check`, `Migrations applied`,
+…).
 
 ### Deploy job
 
 Runs only on `push` to `main` or `production`, and only after every gate passes (`test-gate` and `e2e-gate` always report success or
-failure; docs-only pushes do not need Vitest or Playwright to have run). The job matrix is built with `fromJSON` so a push creates **one**
-deploy leg: `main` → test secrets, `production` → production secrets. (Do not filter with `matrix.exclude` while also listing both envs
-under `include` — GitHub applies `include` after `exclude` and re-adds the dropped combination.)
+failure; docs-only pushes do not need Vitest or Playwright to have run). A single non-matrix job picks secrets from the branch: `main` →
+test Coolify UUID + `WEB_APP_URL_TEST`, `production` → production Coolify UUID + `WEB_APP_URL_PROD`.
 
-Uses a separate concurrency group (`deploy-${{ matrix.environment }}`, `cancel-in-progress: false`) so concurrent deploys to the same
+Uses a separate concurrency group (`deploy-test` / `deploy-production`, `cancel-in-progress: false`) so concurrent deploys to the same
 environment queue rather than abort.
 
-1. Builds a Docker image and pushes it to **GitHub Container Registry** (GHCR) with Docker layer caching
+1. Builds a Docker image and pushes it to **GitHub Container Registry** (GHCR) with Docker layer caching (see [Docker build cache](#docker-build-cache))
 2. Tags the image with the commit SHA and `latest`
 3. PATCHes the matching Coolify application to point to the new image tag
 4. Restarts that application via the Coolify API
 5. Polls `${WEB_APP_URL_TEST|PROD}/api/health` until the response's `version` field equals the deployed commit SHA — fails the workflow on
    timeout (~5 minutes) so a Coolify restart that silently rolled back to the old image surfaces as a red deploy job
+
+### Docker build cache
+
+The deploy job's `docker/build-push-action` restores and exports BuildKit **layer** cache from two backends (`mode=max` so intermediate
+multi-stage layers — deps, Playwright/Chromium, runtime npm allowlist — stay reusable when only app code changes):
+
+| Backend | Ref / scope | Why |
+| ------- | ----------- | --- |
+| GitHub Actions cache (`type=gha`) | Read `scope=main` and `scope=<branch>`; write `scope=<branch>` | Fast, co-located with runners. Scoping lets `production` (and other branches) reuse layers written on `main` instead of starting cold. |
+| GHCR registry (`type=registry`) | `ghcr.io/<owner>/<repo>:buildcache` | Survives the ~10 GiB per-repo GHA cache cap. This image carries Chromium; without a registry cache, large layers can thrash or miss under GHA alone. Coolify continues to pull `sha-…` / `latest` — `:buildcache` is cache-only. |
+
+BuildKit `--mount=type=cache` (npm tarballs, Playwright Chromium download in the Dockerfile) is **local to the builder** and is not exported
+by these remote backends. On ephemeral GitHub-hosted runners those mounts start cold whenever the corresponding `RUN` layer is invalidated
+(e.g. lockfile change). Layer cache with `mode=max` is what avoids re-running those steps when inputs are unchanged.
+
+#### Future options (not implemented)
+
+If deploy wall-clock is still dominated by Docker after the caches above are warm, consider in order:
+
+1. **Overlap image build with gate jobs** — run a `build` job in parallel with Check / Test / E2e (push a SHA-tagged image, or a staging
+   tag), and have `deploy` only PATCH Coolify + restart + verify. Cuts push-to-live more than further Dockerfile micro-opts; keep gates
+   required before Coolify restart so a red test never ships.
+2. **Prebaked runtime base image** — publish a rarely rebuilt `ghcr.io/<owner>/<repo>:runtime-base` with Node, Playwright/Chromium, `pg`,
+   and OTel instrumentation packages. The app Dockerfile then mostly runs `npm run build` and copies `.output`. Rebuild the base only when
+   those dependency versions change.
+3. **Skip attestations if unused** — set `provenance: false` and `sbom: false` on `build-push-action` when you do not need image
+   attestations (modest overhead on every build).
+4. **Larger runners** — if `npm run build` inside the image dominates CPU time after layer hits, use a larger GitHub-hosted or self-hosted
+   runner for the deploy (or parallel build) job only.
 
 ### Required secrets
 
@@ -329,8 +359,8 @@ environment queue rather than abort.
 | `COOLIFY_APPLICATION_UUID_EMAIL`     | React Email preview Coolify application UUID (see [Storybook](#storybook--email-preview-coolify))                           |
 | `WEB_APP_URL_TEST`                   | Public URL of the test app — polled by the post-deploy verification step                                                    |
 | `WEB_APP_URL_PROD`                   | Public URL of the production app — polled by the post-deploy verification step                                              |
-| `DATABASE_URL_TEST`                  | Connection string used by `migrations-check (test)` — recommend a role with `SELECT` on `drizzle.__drizzle_migrations` only |
-| `DATABASE_URL_PROD`                  | Connection string used by `migrations-check (prod)` — recommend a role with `SELECT` on `drizzle.__drizzle_migrations` only |
+| `DATABASE_URL_TEST`                  | Connection string used by the test step of `migrations-check` — recommend a role with `SELECT` on `drizzle.__drizzle_migrations` only |
+| `DATABASE_URL_PROD`                  | Connection string used by the prod step of `migrations-check` — recommend a role with `SELECT` on `drizzle.__drizzle_migrations` only |
 
 > Note: the GitHub Actions secret `WEB_APP_URL` and the runtime env var `WEB_PAGE_URL` are different things. `WEB_APP_URL` is only read by
 > the post-deploy health-check polling step in `pipeline.yml`; the running app reads `WEB_PAGE_URL` for canonical URLs and SEO. Set both to
@@ -371,8 +401,7 @@ peopleeat runs **two Coolify applications**: test tracks `main`, production trac
 5. Configure the dual-env secrets listed in [Required secrets](#required-secrets)
 6. Optionally enable Preview Deployments on the **test** application
 
-The `deploy` job in `.github/workflows/pipeline.yml` builds a branch-scoped matrix via `fromJSON`: `main` → test secrets only, `production`
-→ production secrets only.
+The `deploy` job in `.github/workflows/pipeline.yml` picks secrets from the branch: `main` → test only, `production` → production only.
 
 ### Per-PR Preview Deployments
 
