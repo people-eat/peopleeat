@@ -306,7 +306,7 @@ function GiftCardPageInner({
                                 onReady={() => {
                                     void createAndGoToCheckout(values);
                                 }}
-                                footer={() => <AuthPasskeyLogOn />}
+                                footer={(_session, sessionRefresh) => <AuthPasskeyLogOn onSuccess={sessionRefresh} />}
                             />
                             <Button type="button" variant="ghost" onClick={() => setStep('configure')} disabled={busy}>
                                 {{ de: 'Zurück', en: 'Back' }[locale]}

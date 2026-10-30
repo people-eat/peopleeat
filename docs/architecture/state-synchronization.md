@@ -159,3 +159,17 @@ Admin catalog pages use the same loop on `adminUpdates` with an `Admin` fragment
 The sign-in page follows the same seed-and-subscribe contract as other live surfaces: loader seeds `currentSession` (including
 `authEmailOtp`), `sessionUpdates` replaces that state, and mutations only publish after commit — they never optimistically open/close the
 OTP dialog.
+
+**Exception: `AuthIdentityGate` re-reads the session after its own mutations.** Unlike owned-data pages, the auth gate is a step machine the
+user cannot leave: if the push for a verify is lost, the dialog stays open with a cleared input while the session is already bound, and the
+retry fails with `authEmailOtpVerify: already signed in` (seen in production on mobile). Mobile browsers drop the SSE stream while the user
+switches to their mail app to copy the code, and graphql-sse does not replay events published during the gap. So the gate:
+
+- runs `AuthSession` (`currentSession { ...AuthSessionFields }`, `network-only`) after every gate-owned mutation (OTP request / verify /
+  dismiss, register, discard, TOTP verify / dismiss, passkey verify via the `footer` render prop's `sessionRefresh`) and applies the result
+  exactly like a push;
+- on `visibilitychange` → visible and back/forward-cache `pageshow`, tears down and re-opens the `sessionUpdates` subscription and re-reads
+  the session;
+- suppresses the "invalid code" toast when a failed verify's re-read shows the session already moved past the OTP / TOTP step.
+
+Pushes still drive cross-tab and server-initiated changes. Do not copy this refetch into owned-data pages; they keep the no-refetch rule.

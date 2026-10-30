@@ -4,7 +4,12 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { AuthEmailOtpDeleteDocument, AuthSessionUpdatesDocument, AuthUserCreateDocument } from '../../graphql/generated';
+import {
+    AuthEmailOtpDeleteDocument,
+    AuthSessionDocument,
+    AuthSessionUpdatesDocument,
+    AuthUserCreateDocument,
+} from '../../graphql/generated';
 import type { GqlCAuthSessionFieldsFragment } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { fallbackTimeZone } from '../../hooks/useTimeZone';
@@ -28,6 +33,8 @@ import type { UserProfileFormValues } from './UserProfileForm';
 
 export type AuthSession = GqlCAuthSessionFieldsFragment;
 
+export type AuthSessionRefresh = () => Promise<AuthSession | null>;
+
 export const AUTH_USER_PROFILE_FORM_ID = 'auth-user-profile';
 
 export function AuthIdentityGate({
@@ -50,8 +57,11 @@ export function AuthIdentityGate({
     /** Fired when gate-owned async work starts/stops (OTP, register, …). */
     onBusyChange?: (busy: boolean) => void;
     children?: (session: AuthSession) => ReactNode;
-    /** Rendered below the email form while anonymous / OTP-pending (e.g. passkey). */
-    footer?: (session: AuthSession) => ReactNode;
+    /**
+     * Rendered below the email form while anonymous / OTP-pending (e.g. passkey).
+     * Call `sessionRefresh` after a footer-owned auth mutation succeeds.
+     */
+    footer?: (session: AuthSession, sessionRefresh: AuthSessionRefresh) => ReactNode;
     /** When true, registration collects cook profile fields and passes `cook` on `userCreate`. */
     includeCook?: boolean;
     /**
@@ -92,19 +102,54 @@ export function AuthIdentityGate({
         onSessionChangeRef.current?.(next);
     }
 
+    // The SSE push can be lost (mobile browsers drop the stream while the user is in their mail app, and
+    // missed events are not replayed), so gate-owned mutations re-read the session instead of only waiting for it.
+    async function sessionRefresh(): Promise<AuthSession | null> {
+        const result = await client.query(AuthSessionDocument, {}, { requestPolicy: 'network-only' }).toPromise();
+        const next = result.data?.currentSession ?? null;
+        if (next) {
+            applySession(next);
+        }
+        return next;
+    }
+
     useEffect(() => {
-        const request = createRequest(AuthSessionUpdatesDocument, {});
-        const operation = client.executeSubscription(request);
-        const { unsubscribe } = pipe(
-            operation,
-            subscribe((result) => {
-                const next = result.data?.sessionUpdates;
-                if (next) {
-                    applySession(next);
-                }
-            }),
-        );
-        return unsubscribe;
+        let unsubscribe: (() => void) | undefined;
+
+        function sessionUpdatesSubscribe() {
+            unsubscribe?.();
+            ({ unsubscribe } = pipe(
+                client.executeSubscription(createRequest(AuthSessionUpdatesDocument, {})),
+                subscribe((result) => {
+                    const next = result.data?.sessionUpdates;
+                    if (next) {
+                        applySession(next);
+                    }
+                }),
+            ));
+        }
+
+        function sessionResync() {
+            sessionUpdatesSubscribe();
+            void sessionRefresh();
+        }
+
+        function onVisibilityChange() {
+            if (document.visibilityState === 'visible') sessionResync();
+        }
+
+        function onPageShow(event: PageTransitionEvent) {
+            if (event.persisted) sessionResync();
+        }
+
+        sessionUpdatesSubscribe();
+        document.addEventListener('visibilitychange', onVisibilityChange);
+        window.addEventListener('pageshow', onPageShow);
+        return () => {
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            window.removeEventListener('pageshow', onPageShow);
+            unsubscribe?.();
+        };
     }, [client]);
 
     useEffect(() => {
@@ -135,6 +180,7 @@ export function AuthIdentityGate({
             if (result.error || !result.data?.userCreate.success) {
                 toast.error({ de: 'Registrierung fehlgeschlagen.', en: 'Could not complete registration.' }[locale]);
             }
+            await sessionRefresh();
         } finally {
             setBusy(false);
         }
@@ -154,6 +200,7 @@ export function AuthIdentityGate({
                     }[locale],
                 );
             }
+            await sessionRefresh();
         } finally {
             setBusy(false);
         }
@@ -164,7 +211,7 @@ export function AuthIdentityGate({
     }
 
     if (phase === 'totpPending') {
-        return <AuthTotpChallenge busy={busy} setBusy={setBusy} />;
+        return <AuthTotpChallenge busy={busy} setBusy={setBusy} sessionRefresh={sessionRefresh} />;
     }
 
     if (phase === 'register') {
@@ -229,8 +276,8 @@ export function AuthIdentityGate({
 
     return (
         <div className="grid gap-6">
-            <AuthEmailOtpFlow session={session} busy={busy} setBusy={setBusy} />
-            {footer?.(session)}
+            <AuthEmailOtpFlow session={session} busy={busy} setBusy={setBusy} sessionRefresh={sessionRefresh} />
+            {footer?.(session, sessionRefresh)}
         </div>
     );
 }

@@ -8,7 +8,7 @@ import { AuthPasskeyAuthenticateOptionsDocument, AuthPasskeyAuthenticateVerifyDo
 import { useLocale } from '../../hooks/useLocale';
 import { Button } from '../base/button';
 
-export function AuthPasskeyLogOn({ onSuccess }: { onSuccess?: () => void }) {
+export function AuthPasskeyLogOn({ onSuccess }: { onSuccess?: () => Promise<unknown> | void }) {
     const locale = useLocale();
     const [busy, setBusy] = useState(false);
     const [, passkeyAuthOptions] = useMutation(AuthPasskeyAuthenticateOptionsDocument);
@@ -41,7 +41,7 @@ export function AuthPasskeyLogOn({ onSuccess }: { onSuccess?: () => void }) {
             }
             // Success toast / navigation come from AuthIdentityGate `onReady`
             // after the session is fully signed in (including any TOTP step).
-            onSuccess?.();
+            await onSuccess?.();
         } catch {
             toast.error(
                 {

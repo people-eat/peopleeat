@@ -78,7 +78,7 @@ export function LogOnPage({ loaderData, returnTo }: { loaderData: GqlCLogOnPageQ
                         toast.success({ de: 'Angemeldet.', en: 'Logged on.' }[locale]);
                         navigateAfterLogOn();
                     }}
-                    footer={() => <AuthPasskeyLogOn />}
+                    footer={(_session, sessionRefresh) => <AuthPasskeyLogOn onSuccess={sessionRefresh} />}
                 >
                     {(nextSession: GqlCAuthSessionFieldsFragment) => (
                         <div className="grid gap-4">

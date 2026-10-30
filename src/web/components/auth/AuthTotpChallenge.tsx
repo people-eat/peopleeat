@@ -9,8 +9,17 @@ import { Button } from '../base/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../base/dialog';
 import { Input } from '../base/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../base/input-otp';
+import type { AuthSessionRefresh } from './AuthIdentityGate';
 
-export function AuthTotpChallenge({ busy, setBusy }: { busy: boolean; setBusy: (busy: boolean) => void }) {
+export function AuthTotpChallenge({
+    busy,
+    setBusy,
+    sessionRefresh,
+}: {
+    busy: boolean;
+    setBusy: (busy: boolean) => void;
+    sessionRefresh: AuthSessionRefresh;
+}) {
     const locale = useLocale();
     const [otpCode, setOtpCode] = useState('');
     const [recoveryMode, setRecoveryMode] = useState(false);
@@ -25,9 +34,12 @@ export function AuthTotpChallenge({ busy, setBusy }: { busy: boolean; setBusy: (
         setBusy(true);
         try {
             const result = await verifyTotp({ code });
+            const refreshed = await sessionRefresh();
             if (result.error || !result.data?.authTotpVerify.success) {
-                toast.error({ de: 'Code ungültig oder abgelaufen.', en: 'Invalid or expired code.' }[locale]);
-                verifyStarted.current = false;
+                if (!refreshed?.user) {
+                    toast.error({ de: 'Code ungültig oder abgelaufen.', en: 'Invalid or expired code.' }[locale]);
+                    verifyStarted.current = false;
+                }
                 return;
             }
             setOtpCode('');
@@ -55,6 +67,7 @@ export function AuthTotpChallenge({ busy, setBusy }: { busy: boolean; setBusy: (
             setOtpCode('');
             setRecoveryCode('');
             setRecoveryMode(false);
+            await sessionRefresh();
         } finally {
             setBusy(false);
         }

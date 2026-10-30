@@ -1182,7 +1182,7 @@ export function BookingRequestFormPage({
                                         onReady={() => {
                                             trySubmit();
                                         }}
-                                        footer={() => <AuthPasskeyLogOn />}
+                                        footer={(_session, sessionRefresh) => <AuthPasskeyLogOn onSuccess={sessionRefresh} />}
                                     />
                                 </div>
                             ) : null}

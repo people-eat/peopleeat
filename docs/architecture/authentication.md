@@ -88,7 +88,9 @@ the only runtime paths. We **keep** the column so email+password can be re-enabl
    for the **same** email reuses that row and sends the **same** code again after a 60s send cooldown (so late-arriving mail never
    invalidates an earlier code). A request for a **different** email replaces any prior unconsumed OTP for the session.
 3. Mutations publish `sessionUpdates` on channel `session-updates:{sessionId}`; the UI seeds from `currentSession` and replaces state from
-   the subscription (commands do not drive popup open/close).
+   the subscription (commands do not drive popup open/close). Because mobile browsers drop the SSE stream while the user fetches the code
+   from their mail app, `AuthIdentityGate` also re-reads `currentSession` after each of its own mutations and re-subscribes when the tab
+   becomes visible again — see [state-synchronization.md](./state-synchronization.md#session-owned-auth-ui).
 4. Close / dismiss of an unverified OTP calls `authEmailOtpDelete`, which soft-dismisses (`dismissedAt`) so the dialog stays closed but a
    retry can still resend the same code. Discarding a verified registration ticket hard-deletes the row.
 5. `authEmailOtpVerify` checks the hash:

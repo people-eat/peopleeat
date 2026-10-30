@@ -1229,7 +1229,7 @@ export function BookingRequestPlanPage({
                                         onReady={() => {
                                             void submitBooking();
                                         }}
-                                        footer={() => <AuthPasskeyLogOn />}
+                                        footer={(_session, sessionRefresh) => <AuthPasskeyLogOn onSuccess={sessionRefresh} />}
                                     />
                                     {signedIn ? (
                                         <div className="grid gap-3">

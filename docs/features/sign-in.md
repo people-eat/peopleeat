@@ -59,8 +59,9 @@ Keep identity keyed by email; layer OAuth on the current model. TOTP 2FA is live
 ## Implementation
 
 - At most one pending or verified OTP in `AuthEmailOtps` keyed by `sessionId`; UI seeds from `currentSession` and updates via
-  `sessionUpdates`. Unverified dismiss sets `dismissedAt` (hidden from `Session.authEmailOtp`); same-email retry clears it and sends the
-  stored code again.
+  `sessionUpdates`, plus an `AuthSession` re-read after each gate-owned mutation and a re-subscribe on tab resume (mobile SSE drops while
+  the user is in their mail app — see [state-synchronization.md](../architecture/state-synchronization.md#session-owned-auth-ui)).
+  Unverified dismiss sets `dismissedAt` (hidden from `Session.authEmailOtp`); same-email retry clears it and sends the stored code again.
 - Registration ticket: `verifiedAt` for new emails; `consumedAt` when binding an existing user or after user create.
 - Self-serve create requires name; phone, birth date, preferred communication optional on schema. When phone is provided it must be E.164
   with country code (`+49…`); `UserProfileForm` validates with shared `phoneNumberNormalize` before submit, and commands still run

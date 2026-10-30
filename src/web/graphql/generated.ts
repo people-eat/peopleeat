@@ -7350,6 +7350,34 @@ export type GqlCAuthTotpChallengeDeleteMutationVariables = Exact<{ [key: string]
 
 export type GqlCAuthTotpChallengeDeleteMutation = { authTotpChallengeDelete: { success: boolean; referenceId: string | null } };
 
+export type GqlCAuthSessionQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCAuthSessionQuery = {
+    currentSession: {
+        sessionId: string;
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
+        user: {
+            userId: string;
+            emailAddress: string | null;
+            firstName: string;
+            lastName: string;
+            phoneNumber: string | null;
+            birthDate: string | null;
+            preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
+            admin: { adminId: string } | null;
+            cook: { cookId: string } | null;
+        } | null;
+        authEmailOtp: {
+            authEmailOtpId: string;
+            emailAddress: string;
+            expiresAt: string;
+            verifiedAt: string | null;
+            createdAt: string;
+        } | null;
+        authTotpChallenge: { expiresAt: string } | null;
+    };
+};
+
 export type GqlCAuthSessionUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCAuthSessionUpdatesSubscription = {
@@ -36111,6 +36139,92 @@ export const AuthTotpChallengeDeleteDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAuthTotpChallengeDeleteMutation, GqlCAuthTotpChallengeDeleteMutationVariables>;
+export const AuthSessionDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AuthSession' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'AuthSessionFields' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AuthSessionFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Session' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'admin' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'adminId' } }],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authEmailOtp' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'authEmailOtpId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authTotpChallenge' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } }] },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAuthSessionQuery, GqlCAuthSessionQueryVariables>;
 export const AuthSessionUpdatesDocument = {
     kind: 'Document',
     definitions: [

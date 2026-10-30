@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '../base/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../base/input-otp';
 import { AuthEmailOtpSpamHint } from './AuthEmailOtpSpamHint';
+import type { AuthSessionRefresh } from './AuthIdentityGate';
+import { sessionAuthPhase } from './sessionAuthPhase';
 
 export type AuthEmailOtpSession = {
     authEmailOtp: {
@@ -39,10 +41,12 @@ export function AuthEmailOtpFlow({
     session,
     busy,
     setBusy,
+    sessionRefresh,
 }: {
     session: AuthEmailOtpSession;
     busy: boolean;
     setBusy: (busy: boolean) => void;
+    sessionRefresh: AuthSessionRefresh;
 }) {
     const locale = useLocale();
     const [otpCode, setOtpCode] = useState('');
@@ -64,6 +68,7 @@ export function AuthEmailOtpFlow({
                 if (result.error) {
                     toast.error({ de: 'Code konnte nicht gesendet werden.', en: 'Could not send the code.' }[locale]);
                 }
+                await sessionRefresh();
             } finally {
                 setBusy(false);
             }
@@ -84,9 +89,14 @@ export function AuthEmailOtpFlow({
         setBusy(true);
         try {
             const result = await verifyOtp({ email: activeOtp.emailAddress, code });
+            const refreshed = await sessionRefresh();
             if (result.error || !result.data?.authEmailOtpVerify.success) {
-                toast.error({ de: 'Code ungültig oder abgelaufen.', en: 'Invalid or expired code.' }[locale]);
-                verifyStarted.current = false;
+                const phase = refreshed ? sessionAuthPhase(refreshed) : null;
+                const verifiedEarlier = phase === 'signedIn' || phase === 'register' || phase === 'totpPending';
+                if (!verifiedEarlier) {
+                    toast.error({ de: 'Code ungültig oder abgelaufen.', en: 'Invalid or expired code.' }[locale]);
+                    verifyStarted.current = false;
+                }
                 return;
             }
             setOtpCode('');
@@ -107,6 +117,7 @@ export function AuthEmailOtpFlow({
         try {
             await deleteOtp({ authEmailOtpId: activeOtp.authEmailOtpId });
             setOtpCode('');
+            await sessionRefresh();
         } finally {
             setBusy(false);
         }
@@ -210,10 +221,7 @@ export function AuthEmailOtpFlow({
                             <InputOTP
                                 maxLength={6}
                                 value={otpCode}
-                                onChange={(next) => {
-                                    verifyStarted.current = false;
-                                    setOtpCode(next);
-                                }}
+                                onChange={setOtpCode}
                                 onComplete={(next) => {
                                     void onVerifyOtp(next);
                                 }}
