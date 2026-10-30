@@ -20,9 +20,9 @@ N actors.
 
 Typical shape:
 
-1. Arrange — seed via `e2e/fixtures/db.ts` (nanoId isolation, same as Vitest — no truncate; this is what lets CI run **2 Playwright
-   workers** with `fullyParallel` against one Postgres). Sessions also get a mandatory `CookieSettings` row so the consent banner does not
-   mask dialogs. Seeded users set `locale: 'en'` so `/en/…` journeys do not open `LocaleMismatchGate`. Seeded emails lower-case the nanoId
+1. Arrange — seed via `e2e/fixtures/db.ts` (nanoId isolation, same as Vitest — no truncate; this is what lets CI **shard** Playwright across
+   jobs that each own a Postgres). Sessions also get a mandatory `CookieSettings` row so the consent banner does not mask dialogs. Seeded
+   users set `locale: 'en'` so `/en/…` journeys do not open `LocaleMismatchGate`. Seeded emails lower-case the nanoId
    (`e2e-customer-{userId.toLowerCase()}@…`) so OTP verify’s `emailNormalize` still matches. Content publish specs use lower-case path
    tokens — `contentPathNameNormalize` / `pathNameSlugify` lowercases slugs on save. Root gates are exclusive (`locale → legal → cookie`);
    seeding still clears locale and cookie so later surfaces are not blocked by an earlier one — see
@@ -125,6 +125,7 @@ vars explicitly and starts the app via Playwright `webServer` — see [infrastru
 ## Consequences
 
 - Multi-party scenarios stay readable (named actors + unique occasion tokens).
-- CI needs Chromium install + a running app + Postgres (separate job from Vitest). Playwright config uses `workers: 2` when `CI` is set and
-  `fullyParallel: true`; local stays one worker for quieter logs.
+- CI needs Chromium install + a running app + Postgres (separate job from Vitest). Parallelism is **job sharding**
+  (`playwright test --shard=N/2`), not multiple workers on one Vite `webServer` — concurrent browsers against `vite dev` surface
+  `vite-error-overlay` and steal clicks. Config stays `workers: 1`.
 - Capture and e2e must stay documented as distinct Playwright uses so agents do not conflate them.

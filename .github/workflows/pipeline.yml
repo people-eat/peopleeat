@@ -287,11 +287,15 @@ jobs:
           echo "All Vitest shards passed"
 
   e2e:
-    name: End to end tests · run
+    name: End to end tests (${{ matrix.shard }}/2)
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     services:
       postgres:
         image: postgres:17
@@ -351,8 +355,8 @@ jobs:
       - name: Run migrations
         run: npm run db:push
 
-      - name: End to end tests
-        run: npm run test:e2e
+      - name: End to end tests shard ${{ matrix.shard }}/2
+        run: npx playwright test --shard=${{ matrix.shard }}/2
 
   e2e-gate:
     name: End to end tests
@@ -365,14 +369,14 @@ jobs:
         if: needs.changes.outputs.code != 'true'
         run: echo "Docs-only change set — skipping end to end tests"
 
-      - name: Require end to end suite
+      - name: Require end to end shards
         if: needs.changes.outputs.code == 'true'
         run: |
           if [ "${{ needs.e2e.result }}" != "success" ]; then
-            echo "End to end tests did not succeed (result=${{ needs.e2e.result }})"
+            echo "End to end shards did not succeed (result=${{ needs.e2e.result }})"
             exit 1
           fi
-          echo "End to end tests passed"
+          echo "All end to end shards passed"
 
   migrations-check:
     name: Migrations applied (${{ matrix.env }})

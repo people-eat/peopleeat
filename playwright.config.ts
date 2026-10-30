@@ -10,12 +10,13 @@ const isCi = Boolean(process.env.CI);
 export default defineConfig({
     testDir: './e2e',
     testMatch: '**/*.spec.ts',
-    // Specs seed with nanoIds (no truncate), so workers can share one Postgres safely.
-    // Local stays single-worker for quieter logs; CI uses two against the service container.
-    fullyParallel: true,
+    // One worker per process: the Vite `webServer` does not tolerate concurrent browsers
+    // (vite-error-overlay steals clicks). CI parallelizes with `--shard=N/2` across jobs
+    // instead, each with its own Postgres + dev server. Specs still use nanoId isolation.
+    fullyParallel: false,
     forbidOnly: isCi,
     retries: isCi ? 1 : 0,
-    workers: isCi ? 2 : 1,
+    workers: 1,
     reporter: isCi ? [['list'], ['html', { open: 'never' }]] : 'list',
     timeout: 60_000,
     expect: { timeout: 15_000 },

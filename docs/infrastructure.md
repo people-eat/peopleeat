@@ -225,7 +225,7 @@ test, `production` → production).
 ```
                       ┌─ changes (docs-only vs code) ──┐
                       │                                ├─ test (matrix 1/2, 2/2) ─► test-gate (check name: Test)
-                      │                                ├─ e2e · run ───────────────► e2e-gate  (check name: End to end tests)
+                      │                                ├─ e2e  (matrix 1/2, 2/2) ─► e2e-gate  (check name: End to end tests)
                       │                                └─ check (full or format+spell)
                       ├─ commitlint ───────────────────┐
                       ├─ codegen ──────────────────────┤
@@ -284,16 +284,14 @@ boot validation when code paths touch the real `environmentVariables` proxy.
 **test-gate** (check name `Test`) — always runs. Docs-only: exits 0. Code: fails unless every Vitest shard succeeded. This is the required
 branch-protection check (shard jobs use distinct names `Test (1/2)` / `Test (2/2)` so the graph stays readable).
 
-**e2e** (`End to end tests · run`) — Playwright UI suite against the same Postgres service pattern as `test` when `changes.code` is true:
-restore Chromium from an Actions cache keyed on `package-lock.json` (`~/.cache/ms-playwright`), run
-`npx playwright install --with-deps chromium` (no-op / fast on cache hit for the browser tarball; OS deps still install), apply schema
-(`db:push`), then `npm run test:e2e` (Playwright starts the app via `webServer`). CI uses **2 Playwright workers** with `fullyParallel`
-(specs isolate via nanoIds; no truncate) — see [e2e.md](./architecture/e2e.md). Env mirrors `.env.test.example` (console
-email/Slack/WhatsApp transports) so `serverRuntimeCreate` can boot. Dual-accept e2e that needs live Stripe still uses real test keys when
-provided.
+**e2e** — Playwright shards when `changes.code` is true (matrix `shard: [1, 2]`, `npx playwright test --shard=N/2`). Each shard gets its own
+runner, Postgres, Chromium cache restore, and Vite `webServer` — one browser worker per process, because concurrent browsers against a
+shared `vite dev` overlay clicks (`vite-error-overlay`). Specs still isolate via nanoIds (no truncate) — see
+[e2e.md](./architecture/e2e.md). Env mirrors `.env.test.example` (console email/Slack/WhatsApp transports) so `serverRuntimeCreate` can
+boot. Dual-accept e2e that needs live Stripe still uses real test keys when provided.
 
-**e2e-gate** (check name `End to end tests`) — always runs. Docs-only: exits 0. Code: fails unless the Playwright job succeeded. Required
-branch-protection check.
+**e2e-gate** (check name `End to end tests`) — always runs. Docs-only: exits 0. Code: fails unless every Playwright shard succeeded.
+Required branch-protection check (shard jobs use distinct names `End to end tests (1/2)` / `(2/2)`).
 
 **migrations-check** — verifies that prod and test databases have applied every migration in the `drizzle/` folder. Runs as a matrix
 (`prod`, `test`) and fails the PR if any migration is missing — forces you to deploy migrations before merging schema-dependent code. The
