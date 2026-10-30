@@ -15,6 +15,57 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Change set
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Detect code changes
+        id: filter
+        run: |
+          set -euo pipefail
+          # Docs-only = every changed path is markdown or under docs/. Anything else is code
+          # (src, e2e, configs, lockfile, workflows, …) and must run Test / E2e.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE="${{ github.event.pull_request.base.sha }}"
+          elif [ "${{ github.event_name }}" = "push" ] && git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
+            BASE="${{ github.event.before }}"
+          else
+            echo "No reliable base commit — treating as code changes"
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          mapfile -t CHANGED < <(git diff --name-only "$BASE"...${{ github.sha }})
+          if [ "${#CHANGED[@]}" -eq 0 ]; then
+            echo "Empty change set — treating as code changes"
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          NON_DOCS=()
+          for path in "${CHANGED[@]}"; do
+            case "$path" in
+              docs/*|*.md|AGENTS.md|CLAUDE.md) ;;
+              *) NON_DOCS+=("$path") ;;
+            esac
+          done
+
+          if [ "${#NON_DOCS[@]}" -eq 0 ]; then
+            echo "Docs-only change set (${#CHANGED[@]} path(s))"
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Code change set (${#NON_DOCS[@]} non-docs path(s))"
+            printf '%s\n' "${NON_DOCS[@]}"
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          fi
+
   commitlint:
     name: Commit lint
     if: github.event_name != 'workflow_dispatch'
@@ -72,23 +123,58 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      - name: Format
-        run: npm run format:check
+      # Format / spell / types / usage in parallel, then lint (types before lint, matching
+      # local `npm run check`). Fail after printing every parallel log so one broken tool
+      # does not hide the others.
+      - name: Format, spell, types, usage (parallel), then lint
+        run: |
+          set -uo pipefail
+          npm run format:check > /tmp/check-format.log 2>&1 &
+          pid_format=$!
+          npm run spell:check > /tmp/check-spell.log 2>&1 &
+          pid_spell=$!
+          npm run type:check > /tmp/check-types.log 2>&1 &
+          pid_types=$!
+          npm run usage:check > /tmp/check-usage.log 2>&1 &
+          pid_usage=$!
 
-      - name: Lint
-        run: npm run lint:check
+          set +e
+          wait "$pid_format"
+          status_format=$?
+          wait "$pid_spell"
+          status_spell=$?
+          wait "$pid_types"
+          status_types=$?
+          wait "$pid_usage"
+          status_usage=$?
+          set -e
 
-      - name: Spell
-        run: npm run spell:check
+          echo "::group::Format"
+          cat /tmp/check-format.log
+          echo "::endgroup::"
+          echo "::group::Spell"
+          cat /tmp/check-spell.log
+          echo "::endgroup::"
+          echo "::group::Types"
+          cat /tmp/check-types.log
+          echo "::endgroup::"
+          echo "::group::Usage"
+          cat /tmp/check-usage.log
+          echo "::endgroup::"
 
-      - name: Types
-        run: npm run type:check
+          failed=0
+          [ "$status_format" -eq 0 ] || { echo "Format failed (exit $status_format)"; failed=1; }
+          [ "$status_spell" -eq 0 ] || { echo "Spell failed (exit $status_spell)"; failed=1; }
+          [ "$status_types" -eq 0 ] || { echo "Types failed (exit $status_types)"; failed=1; }
+          [ "$status_usage" -eq 0 ] || { echo "Usage failed (exit $status_usage)"; failed=1; }
+          [ "$failed" -eq 0 ] || exit 1
 
-      - name: Usage
-        run: npm run usage:check
+          npm run lint:check
 
   test:
     name: Test
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     services:
@@ -143,8 +229,21 @@ jobs:
       - name: Test
         run: npm test
 
+  # Same check name as `test` so required branch-protection checks stay green on docs-only PRs.
+  test-stub:
+    name: Test
+    needs: changes
+    if: needs.changes.outputs.code != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Skip unit tests (docs-only)
+        run: echo "Docs-only change set — skipping unit tests"
+
   e2e:
     name: End to end tests
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     services:
@@ -194,6 +293,12 @@ jobs:
 
       - uses: ./.github/actions/setup
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
@@ -202,6 +307,17 @@ jobs:
 
       - name: End to end tests
         run: npm run test:e2e
+
+  # Same check name as `e2e` so required branch-protection checks stay green on docs-only PRs.
+  e2e-stub:
+    name: End to end tests
+    needs: changes
+    if: needs.changes.outputs.code != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Skip end to end tests (docs-only)
+        run: echo "Docs-only change set — skipping end to end tests"
 
   migrations-check:
     name: Migrations applied (${{ matrix.env }})
@@ -225,11 +341,23 @@ jobs:
 
   deploy:
     name: Deploy (${{ matrix.environment }})
-    needs: [commitlint, codegen, check, test, e2e, migrations-check]
+    needs: [commitlint, codegen, check, test, test-stub, e2e, e2e-stub, migrations-check]
     # main → test only; production → production only. Build the matrix with fromJSON —
     # do not pair matrix.exclude with matrix.include: GitHub applies include *after*
     # exclude and re-adds the dropped combination (so both envs ran on push to main).
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production')
+    # Test / e2e may be skipped on docs-only pushes (stubs succeed instead); treat skipped
+    # real jobs as OK when the matching stub succeeded.
+    if: |
+      always()
+      && !cancelled()
+      && github.event_name == 'push'
+      && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production')
+      && needs.commitlint.result == 'success'
+      && needs.codegen.result == 'success'
+      && needs.check.result == 'success'
+      && (needs.test.result == 'success' || needs.test-stub.result == 'success')
+      && (needs.e2e.result == 'success' || needs.e2e-stub.result == 'success')
+      && (needs.migrations-check.result == 'success' || needs.migrations-check.result == 'skipped')
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:

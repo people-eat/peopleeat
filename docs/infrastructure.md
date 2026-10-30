@@ -223,22 +223,30 @@ test, `production` → production).
 ### Job graph
 
 ```
-                      ┌─ commitlint ─────────┐
-                      ├─ codegen ────────────┤
-trigger ──────────────┼─ check ──────────────┼──── deploy (push to main → test /
-                      ├─ test ───────────────┤           push to production → production)
-                      ├─ e2e ────────────────┤        (Docker build + push + Coolify)
-                      └─ migrations-check ───┘
-                          (matrix: prod, test)
+                      ┌─ changes (docs-only vs code) ──┐
+                      │                                ├─ test  / test-stub (same check name)
+                      │                                └─ e2e   / e2e-stub  (same check name)
+                      ├─ commitlint ───────────────────┐
+                      ├─ codegen ──────────────────────┤
+trigger ──────────────┼─ check ────────────────────────┼──── deploy (push to main → test /
+                      └─ migrations-check ─────────────┘           push to production → production)
+                          (matrix: prod, test)                   (Docker build + push + Coolify)
 ```
 
-All gate jobs share the composite action at `.github/actions/setup` which runs `actions/setup-node@v6`, pins the npm version from
-`package.json#packageManager`, and runs `npm ci`. Update there if you change the dependency-install flow.
+Typical gate wall-clock on a code PR is ~3–4 minutes (limited by Check or Test); docs-only PRs skip the real Test / E2e jobs. Deploy adds ~4
+minutes on push.
+
+All gate jobs that install dependencies share the composite action at `.github/actions/setup` which runs `actions/setup-node@v6`, pins the
+npm version from `package.json#packageManager`, and runs `npm ci`. Update there if you change the dependency-install flow.
 
 Runners are pinned to `ubuntu-24.04` (not `ubuntu-latest`) so the Oct–Nov 2026 migration of `ubuntu-latest` → Ubuntu 26.04 does not surprise
 CI. Revisit with `ubuntu-26.04` when ready to validate on the new image.
 
 ### Gate jobs
+
+**changes** — classifies the change set as docs-only or code. Docs-only means every changed path is under `docs/`, ends in `.md`, or is
+`AGENTS.md` / `CLAUDE.md`. Empty diffs, missing bases (force push / `workflow_dispatch`), and any other path count as code. Outputs
+`code=true|false` for the Test / E2e jobs.
 
 **commitlint** — validates commit messages against the conventional-commits config.
 
@@ -249,17 +257,18 @@ CI. Revisit with `ubuntu-26.04` when ready to validate on the new image.
 3. `git diff --exit-code` on `*.gen.ts` / `*.generated.ts` / `drizzle/` — fails if codegen output differs from what was committed, or if new
    untracked files appear
 
-**check** — static analysis (no database required):
+**check** — static analysis (no database required). Format, spell, types, and usage run **in parallel**; lint runs after they all succeed
+(types before lint, matching local `npm run check`). Parallel logs are printed in collapsible groups so one failure does not hide another.
 
-| Step   | Command                                                                                                                                                                                                                                                                                                                                           |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Format | `prettier --check .`                                                                                                                                                                                                                                                                                                                              |
-| Types  | `tsc --noEmit` (before lint — type errors often make ESLint slow or misleading)                                                                                                                                                                                                                                                                   |
-| Lint   | `eslint .` with an 8 GiB Node heap (`NODE_OPTIONS=--max-old-space-size=8192`). Type-aware rules (`projectService`) run on `src/server/**` and `src/shared/**` only; other paths use `disableTypeChecked`. Still includes CQRS `commands`↔`queries` import bans and Tailwind canonical classes via `better-tailwindcss/enforce-canonical-classes`. |
-| Spell  | `cspell .`                                                                                                                                                                                                                                                                                                                                        |
-| Usage  | `knip`                                                                                                                                                                                                                                                                                                                                            |
+| Step              | Command                                                                                                                                                                                                                                                                                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Format (parallel) | `prettier --check .`                                                                                                                                                                                                                                                                                                                              |
+| Spell (parallel)  | `cspell .`                                                                                                                                                                                                                                                                                                                                        |
+| Types (parallel)  | `tsc --noEmit`                                                                                                                                                                                                                                                                                                                                    |
+| Usage (parallel)  | `knip`                                                                                                                                                                                                                                                                                                                                            |
+| Lint (after)      | `eslint .` with an 8 GiB Node heap (`NODE_OPTIONS=--max-old-space-size=8192`). Type-aware rules (`projectService`) run on `src/server/**` and `src/shared/**` only; other paths use `disableTypeChecked`. Still includes CQRS `commands`↔`queries` import bans and Tailwind canonical classes via `better-tailwindcss/enforce-canonical-classes`. |
 
-**test** — runs against a PostgreSQL 17 service container:
+**test** — runs against a PostgreSQL 17 service container when `changes.code` is true:
 
 1. `npm ci`
 2. `drizzle-kit push` (applies schema to the test database)
@@ -269,9 +278,16 @@ Env for the job mirrors `.env.test.example`: always-required placeholders plus `
 `WHATSAPP_TRANSPORT=console`. Stripe/email/AI/Slack/WhatsApp calls are stubbed via `serverRuntime` in unit tests; the placeholders satisfy
 boot validation when code paths touch the real `environmentVariables` proxy.
 
-**e2e** — Playwright UI suite against the same Postgres service pattern as `test`: install Chromium, apply schema (`db:push`), then
-`npm run test:e2e` (Playwright starts the app via `webServer`). Env mirrors `.env.test.example` (console email/Slack/WhatsApp transports) so
-`serverRuntimeCreate` can boot. Dual-accept e2e that needs live Stripe still uses real test keys when provided. Wired into `deploy.needs`.
+On docs-only change sets a **test-stub** job with the same check name (`Test`) exits 0 immediately so required branch-protection checks stay
+green without installing dependencies or starting Postgres.
+
+**e2e** — Playwright UI suite against the same Postgres service pattern as `test` when `changes.code` is true: restore Chromium from an
+Actions cache keyed on `package-lock.json` (`~/.cache/ms-playwright`), run `npx playwright install --with-deps chromium` (no-op / fast on
+cache hit for the browser tarball; OS deps still install), apply schema (`db:push`), then `npm run test:e2e` (Playwright starts the app via
+`webServer`). Env mirrors `.env.test.example` (console email/Slack/WhatsApp transports) so `serverRuntimeCreate` can boot. Dual-accept e2e
+that needs live Stripe still uses real test keys when provided. Wired into `deploy.needs`.
+
+On docs-only change sets an **e2e-stub** job with the same check name (`End to end tests`) exits 0 immediately for branch protection.
 
 **migrations-check** — verifies that prod and test databases have applied every migration in the `drizzle/` folder. Runs as a matrix
 (`prod`, `test`) and fails the PR if any migration is missing — forces you to deploy migrations before merging schema-dependent code. The
@@ -282,9 +298,11 @@ PRs from forks have no access to the DB secrets and so the job is skipped on the
 
 ### Deploy job
 
-Runs only on `push` to `main` or `production`, and only after every gate passes. The job matrix is built with `fromJSON` so a push creates
-**one** deploy leg: `main` → test secrets, `production` → production secrets. (Do not filter with `matrix.exclude` while also listing both
-envs under `include` — GitHub applies `include` after `exclude` and re-adds the dropped combination.)
+Runs only on `push` to `main` or `production`, and only after every gate passes. Real Test / E2e may be skipped on docs-only pushes; deploy
+treats a successful stub as satisfying that gate (`needs.test.result == 'success' || needs.test-stub.result == 'success'`, same for e2e).
+The job matrix is built with `fromJSON` so a push creates **one** deploy leg: `main` → test secrets, `production` → production secrets. (Do
+not filter with `matrix.exclude` while also listing both envs under `include` — GitHub applies `include` after `exclude` and re-adds the
+dropped combination.)
 
 Uses a separate concurrency group (`deploy-${{ matrix.environment }}`, `cancel-in-progress: false`) so concurrent deploys to the same
 environment queue rather than abort.
