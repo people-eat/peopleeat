@@ -19,7 +19,7 @@ export function SectionFeaturedCooks({
     return (
         <section className="mx-auto w-full max-w-7xl px-4 py-16 @lg:px-6">
             <h2 className="font-serif text-3xl font-light @md:text-4xl">{{ de: 'Unsere Köche', en: 'Our chefs' }[locale]}</h2>
-            <ul className="mt-10 grid grid-cols-1 gap-4 @sm:grid-cols-2 @md:grid-cols-3 @lg:grid-cols-4">
+            <ul className="mt-10 grid grid-cols-1 gap-4 @md:grid-cols-2 @lg:grid-cols-3 @xl:grid-cols-4">
                 {cooks.map((cook) => (
                     <li key={cook.cookId}>
                         <PublicCookCard cook={cook} showCity={showCity} />
