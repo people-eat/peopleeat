@@ -314,46 +314,36 @@ export function PageTestimonialDetailDialog({
     testimonial,
     open,
     onOpenChange,
-    imageIndex = 0,
-    onImageIndexChange,
+    initialImageIndex = 0,
 }: {
     testimonial: PageTestimonialCardModel;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    imageIndex?: number;
-    onImageIndexChange?: (index: number) => void;
+    /** Applied when the dialog opens (e.g. photo strip click). */
+    initialImageIndex?: number;
 }) {
     const imageUrls = testimonial.imageUrls ?? [];
     const hasImages = imageUrls.length > 0;
-    const [internalIndex, setInternalIndex] = useState(imageIndex);
-    const controlled = onImageIndexChange != null;
-    const index = controlled ? imageIndex : internalIndex;
-
-    const setIndex = (next: number) => {
-        if (onImageIndexChange) onImageIndexChange(next);
-        else setInternalIndex(next);
-    };
+    const [imageIndex, setImageIndex] = useState(initialImageIndex);
 
     useEffect(() => {
-        if (open && !controlled) setInternalIndex(imageIndex);
-    }, [open, imageIndex, controlled]);
+        if (open) setImageIndex(initialImageIndex);
+    }, [open, initialImageIndex]);
 
     useEffect(() => {
         if (!open || imageUrls.length < 2) return;
         const onKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'ArrowLeft') {
                 event.preventDefault();
-                setIndex((index - 1 + imageUrls.length) % imageUrls.length);
+                setImageIndex((current) => (current - 1 + imageUrls.length) % imageUrls.length);
             } else if (event.key === 'ArrowRight') {
                 event.preventDefault();
-                setIndex((index + 1) % imageUrls.length);
+                setImageIndex((current) => (current + 1) % imageUrls.length);
             }
         };
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
-        // setIndex closes over latest index / callbacks for the active open session.
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional open-session keyboard binding
-    }, [open, imageUrls.length, index]);
+    }, [open, imageUrls.length]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -363,7 +353,7 @@ export function PageTestimonialDetailDialog({
                 {hasImages ? (
                     <div className="grid @3xl:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.8fr)]">
                         <div className="bg-muted/30 p-4 @md:p-5">
-                            <TestimonialGallery imageUrls={imageUrls} index={index} onIndexChange={setIndex} />
+                            <TestimonialGallery imageUrls={imageUrls} index={imageIndex} onIndexChange={setImageIndex} />
                         </div>
                         <div className="p-6 pt-12 @md:p-8 @md:pt-12">
                             <TestimonialDetailCopy testimonial={testimonial} />
@@ -403,13 +393,7 @@ export function PageTestimonialCard({ testimonial, className }: { testimonial: P
                     </Button>
                 }
             />
-            <PageTestimonialDetailDialog
-                testimonial={testimonial}
-                open={open}
-                onOpenChange={setOpen}
-                imageIndex={imageIndex}
-                onImageIndexChange={setImageIndex}
-            />
+            <PageTestimonialDetailDialog testimonial={testimonial} open={open} onOpenChange={setOpen} initialImageIndex={imageIndex} />
         </>
     );
 }
