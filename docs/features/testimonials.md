@@ -42,9 +42,11 @@ cook booking list).
 - City and partner pages: curated testimonial section after featured cooks; hidden when empty. Each tile (`PageTestimonialCard`) shows stars
   with the numeric rating, occasion top-right, a 4-line clamped quote, a 4-column square photo strip (4th slot becomes “+N more” when there
   are more than four), and “Bewertung ansehen” / “View review” opening a detail dialog. With photos: gallery (selected image, arrows,
-  thumbnails) on the left and rating / occasion / author / full text on the right at wider dialog widths. Default grid is 3 columns; booking
-  request plan uses 2 beside the sticky sidebar. Attachment downloads need a published `imageUrls` hit (public) or any testimonial hit for
-  admins — see [file-storage.md](../architecture/file-storage.md).
+  thumbnails) on the left and rating / author / full text on the right at wider dialog widths. On content pages (`showBookingCta`), the
+  detail dialog mirrors the occasion as a question (or a generic private-chef ask when missing) and, after the quote, a primary CTA into
+  `/booking-request/form` with `occasion` prefilled on the occasion step (free, no obligation). Booking request plan keeps testimonials
+  proof-only (no CTA). Default grid is 3 columns; plan uses 2 beside the sticky sidebar. Attachment downloads need a published `imageUrls`
+  hit (public) or any testimonial hit for admins — see [file-storage.md](../architecture/file-storage.md).
 - Home: static marketing quotes in a marquee — [landing.md](./landing.md).
 - How to become a chef: static chef quotes (not database-driven).
 

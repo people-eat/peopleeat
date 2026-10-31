@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { ChevronLeftIcon, ChevronRightIcon, StarIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -227,8 +228,26 @@ function TestimonialGallery({
     );
 }
 
-function TestimonialDetailCopy({ testimonial }: { testimonial: PageTestimonialCardModel }) {
+function TestimonialDetailCopy({
+    testimonial,
+    showBookingCta = false,
+}: {
+    testimonial: PageTestimonialCardModel;
+    /** Content pages only. Plan funnel keeps testimonials proof-only. */
+    showBookingCta?: boolean;
+}) {
     const locale = useLocale();
+    const occasion = testimonial.occasion?.trim() || null;
+
+    const occasionQuestion = occasion
+        ? {
+              de: `Auch auf der Suche nach einer Experience wie „${occasion}“?`,
+              en: `Also looking for a ${occasion} experience?`,
+          }[locale]
+        : {
+              de: 'Lust auf euren eigenen Abend mit Privatkoch?',
+              en: 'Ready for your own private chef evening?',
+          }[locale];
 
     return (
         <div className="flex flex-col gap-6">
@@ -248,15 +267,35 @@ function TestimonialDetailCopy({ testimonial }: { testimonial: PageTestimonialCa
                 </div>
             </DialogHeader>
 
-            {testimonial.occasion ? (
+            {showBookingCta && occasion ? <p className="text-base font-medium text-foreground">{occasionQuestion}</p> : null}
+            {!showBookingCta && occasion ? (
                 <p className="text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">{{ de: 'Anlass', en: 'Occasion' }[locale]}:</span> {testimonial.occasion}
+                    <span className="font-medium text-foreground">{{ de: 'Anlass', en: 'Occasion' }[locale]}:</span> {occasion}
                 </p>
             ) : null}
 
             <blockquote className="border-l-2 border-accent/40 pl-4 text-base/relaxed text-foreground">
                 <p className="whitespace-pre-wrap">{testimonial.body}</p>
             </blockquote>
+
+            {showBookingCta ? (
+                <div className="flex flex-col gap-3 border-t border-border pt-6">
+                    {!occasion ? <p className="text-base font-medium text-foreground">{occasionQuestion}</p> : null}
+                    <div className="flex flex-col gap-2">
+                        <Button asChild className="w-full @sm:w-auto">
+                            <Link
+                                to="/{-$locale}/booking-request/form"
+                                search={occasion ? { occasion } : {}}
+                            >
+                                {{ de: 'Anfrage starten', en: 'Start a request' }[locale]}
+                            </Link>
+                        </Button>
+                        <p className="text-sm text-muted-foreground">
+                            {{ de: 'Kostenlos und unverbindlich', en: 'Free and no obligation' }[locale]}
+                        </p>
+                    </div>
+                </div>
+            ) : null}
         </div>
     );
 }
@@ -315,12 +354,15 @@ export function PageTestimonialDetailDialog({
     open,
     onOpenChange,
     initialImageIndex = 0,
+    showBookingCta = false,
 }: {
     testimonial: PageTestimonialCardModel;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     /** Applied when the dialog opens (e.g. photo strip click). */
     initialImageIndex?: number;
+    /** Content pages only. Plan funnel and admin preview keep this off. */
+    showBookingCta?: boolean;
 }) {
     const imageUrls = testimonial.imageUrls ?? [];
     const hasImages = imageUrls.length > 0;
@@ -356,12 +398,12 @@ export function PageTestimonialDetailDialog({
                             <TestimonialGallery imageUrls={imageUrls} index={imageIndex} onIndexChange={setImageIndex} />
                         </div>
                         <div className="p-6 pt-12 @md:p-8 @md:pt-12">
-                            <TestimonialDetailCopy testimonial={testimonial} />
+                            <TestimonialDetailCopy testimonial={testimonial} showBookingCta={showBookingCta} />
                         </div>
                     </div>
                 ) : (
                     <div className="pt-2">
-                        <TestimonialDetailCopy testimonial={testimonial} />
+                        <TestimonialDetailCopy testimonial={testimonial} showBookingCta={showBookingCta} />
                     </div>
                 )}
             </DialogContent>
@@ -370,7 +412,16 @@ export function PageTestimonialDetailDialog({
 }
 
 /** Curated public testimonial tile — clamped quote, photo strip, detail dialog. Used by `SectionPageTestimonials`. */
-export function PageTestimonialCard({ testimonial, className }: { testimonial: PageTestimonialCardModel; className?: string }) {
+export function PageTestimonialCard({
+    testimonial,
+    className,
+    showBookingCta = false,
+}: {
+    testimonial: PageTestimonialCardModel;
+    className?: string;
+    /** Content pages only. Plan funnel keeps testimonials proof-only. */
+    showBookingCta?: boolean;
+}) {
     const locale = useLocale();
     const [open, setOpen] = useState(false);
     const [imageIndex, setImageIndex] = useState(0);
@@ -393,7 +444,13 @@ export function PageTestimonialCard({ testimonial, className }: { testimonial: P
                     </Button>
                 }
             />
-            <PageTestimonialDetailDialog testimonial={testimonial} open={open} onOpenChange={setOpen} initialImageIndex={imageIndex} />
+            <PageTestimonialDetailDialog
+                testimonial={testimonial}
+                open={open}
+                onOpenChange={setOpen}
+                initialImageIndex={imageIndex}
+                showBookingCta={showBookingCta}
+            />
         </>
     );
 }

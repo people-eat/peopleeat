@@ -49,6 +49,7 @@ export function SectionPageTestimonials({
     title,
     inset = true,
     columns = 3,
+    showBookingCta = false,
     className,
 }: {
     testimonials: ReadonlyArray<SectionPageTestimonial>;
@@ -58,6 +59,8 @@ export function SectionPageTestimonials({
     inset?: boolean;
     /** Grid density from `@md` up. Mobile is always one column. Use `2` beside a sticky sidebar. Default `3`. */
     columns?: 2 | 3;
+    /** Content pages only. Plan funnel keeps testimonials proof-only. */
+    showBookingCta?: boolean;
     className?: string;
 }) {
     if (testimonials.length === 0) return null;
@@ -75,6 +78,7 @@ export function SectionPageTestimonials({
                     return (
                         <li key={testimonialKey(entry)}>
                             <PageTestimonialCard
+                                showBookingCta={showBookingCta}
                                 testimonial={{
                                     authorName: testimonial.authorName,
                                     authorProfilePictureUrl: testimonial.authorProfilePicture?.url ?? null,

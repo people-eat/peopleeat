@@ -155,7 +155,7 @@ export function ContentPageView({
                 ) : null}
                 {page.testimonials ? (
                     <div data-content-preview-anchor="testimonials">
-                        <SectionPageTestimonials testimonials={page.testimonials} locale={locale} />
+                        <SectionPageTestimonials testimonials={page.testimonials} locale={locale} showBookingCta />
                     </div>
                 ) : null}
                 {page.howItWorks ? (
