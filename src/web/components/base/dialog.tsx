@@ -62,12 +62,16 @@ function DialogContent({
                 <PortalContainerProvider container={portalContainer}>
                     {children}
                     {showCloseButton && (
-                        <DialogPrimitive.Close
-                            data-slot="dialog-close"
-                            className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-                        >
-                            <XIcon />
-                            <span className="sr-only">{closeLabel}</span>
+                        <DialogPrimitive.Close asChild>
+                            <Button
+                                data-slot="dialog-close"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-4 right-4"
+                                aria-label={closeLabel}
+                            >
+                                <XIcon />
+                            </Button>
                         </DialogPrimitive.Close>
                     )}
                     <div ref={setPortalContainer} data-slot="dialog-portal-container" className="absolute top-0 left-0 z-50 size-0" />

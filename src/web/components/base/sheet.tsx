@@ -5,6 +5,7 @@ import { Dialog as SheetPrimitive } from 'radix-ui';
 import type { ComponentProps } from 'react';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
+import { Button } from './button';
 
 function Sheet({ ...props }: ComponentProps<typeof SheetPrimitive.Root>) {
     return <SheetPrimitive.Root data-slot="sheet" {...props} />;
@@ -68,9 +69,16 @@ function SheetContent({
             >
                 {children}
                 {showCloseButton && (
-                    <SheetPrimitive.Close className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-secondary">
-                        <XIcon className="size-4" />
-                        <span className="sr-only">{closeLabel}</span>
+                    <SheetPrimitive.Close asChild>
+                        <Button
+                            data-slot="sheet-close"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-4 right-4"
+                            aria-label={closeLabel}
+                        >
+                            <XIcon />
+                        </Button>
                     </SheetPrimitive.Close>
                 )}
             </SheetPrimitive.Content>

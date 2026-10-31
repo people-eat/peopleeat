@@ -1,13 +1,26 @@
 import { useForm, useSelector } from '@tanstack/react-form';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { de as dateFnsDe, enUS as dateFnsEn } from 'date-fns/locale';
-import { ArrowRightIcon, CheckIcon, MinusIcon, PencilIcon, PlusIcon, ShoppingBagIcon, SparklesIcon, UtensilsIcon } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import {
+    ArrowRightIcon,
+    CheckIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    MinusIcon,
+    PencilIcon,
+    PlusIcon,
+    ShoppingBagIcon,
+    SparklesIcon,
+    StarIcon,
+    UtensilsIcon,
+} from 'lucide-react';
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
-import { bookingRequestPriceClassInfo, formatCurrency, formatDate, formatTime } from '../../shared';
+import type { BookingRequestFormPriceClassType } from '../../shared';
+import { bookingRequestPriceClassInfo, bookingRequestPriceClassTypes, formatCurrency, formatDate, formatTime } from '../../shared';
 import { AppImage } from '../components/AppImage';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
 import { AuthPasskeyLogOn } from '../components/auth/AuthPasskeyLogOn';
@@ -32,6 +45,7 @@ import { BookingRequestPlanCreateDocument, BookingRequestPlanLocationSuggestions
 import { useIsMobile } from '../hooks/use-mobile';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { SectionPageTestimonials } from '../sections/SectionPageTestimonials';
 import type { QuestionsAndAnswersEntry } from '../sections/SectionQuestionsAndAnswers';
 import { SectionQuestionsAndAnswers } from '../sections/SectionQuestionsAndAnswers';
@@ -51,6 +65,7 @@ import {
     bookingRequestPlanCuisineKeys,
     bookingRequestPlanCuisineLabel,
     bookingRequestPlanCuisinePreference,
+    bookingRequestPlanCuisineSubtitle,
     bookingRequestPlanSearchEqual,
     bookingRequestPlanSearchFromValues,
     bookingRequestPlanSelectableDays,
@@ -205,154 +220,176 @@ function planFaqs(locale: 'de' | 'en'): ReadonlyArray<QuestionsAndAnswersEntry> 
     ];
 }
 
-function sampleMenuCourses(cuisine: BookingRequestPlanCuisineKey, locale: 'de' | 'en') {
+function sampleMenuCopy(cuisine: BookingRequestPlanCuisineKey, locale: 'de' | 'en') {
+    const cuisineLabel = bookingRequestPlanCuisineLabel(cuisine, locale);
+    const description = {
+        de: `Ein Beispielmenü für „${cuisineLabel}“. Euer Chef stimmt Gerichte, Kinderportionen und Ernährungswünsche persönlich mit euch ab.`,
+        en: `A sample menu for “${cuisineLabel}”. Your chef personally coordinates dishes, children portions, and dietary needs with you.`,
+    }[locale];
     const menus = {
         mediterranean: {
-            de: [
-                {
-                    course: 'Vorspeise',
-                    title: 'Burrata, Tomaten & Basilikum',
-                    description: 'Mit geröstetem Brot und Olivenöl',
-                },
-                {
-                    course: 'Hauptgang',
-                    title: 'Gegrillter Fisch, Gemüse & Zitronenrisotto',
-                    description: 'Vegetarische Alternative: gegrilltes Gemüse',
-                },
-                {
-                    course: 'Dessert',
-                    title: 'Panna Cotta mit Beeren',
-                    description: 'Frisch und leicht zum Abschluss',
-                },
-            ],
-            en: [
-                {
-                    course: 'Starter',
-                    title: 'Burrata, tomatoes & basil',
-                    description: 'With toasted bread and olive oil',
-                },
-                {
-                    course: 'Main',
-                    title: 'Grilled fish, vegetables & lemon risotto',
-                    description: 'Vegetarian alternative: grilled vegetables',
-                },
-                {
-                    course: 'Dessert',
-                    title: 'Panna cotta with berries',
-                    description: 'A fresh, light finish',
-                },
-            ],
+            title: { de: 'Ein mediterraner Abend.', en: 'A Mediterranean evening.' },
+            courses: {
+                de: [
+                    {
+                        course: 'Vorspeise',
+                        title: 'Burrata, Tomaten & Basilikum',
+                        description: 'Mit geröstetem Sauerteigbrot und Olivenöl',
+                    },
+                    {
+                        course: 'Hauptgang',
+                        title: 'Dorade, Sommergemüse & Zitronen-Kartoffeln',
+                        description: 'Vegetarische Alternative: cremiges Safranrisotto',
+                    },
+                    {
+                        course: 'Dessert',
+                        title: 'Zitronencreme & Sommerbeeren',
+                        description: 'Fruchtig und leicht zum Abschluss',
+                    },
+                ],
+                en: [
+                    {
+                        course: 'Starter',
+                        title: 'Burrata, tomatoes & basil',
+                        description: 'With toasted sourdough and olive oil',
+                    },
+                    {
+                        course: 'Main',
+                        title: 'Sea bream, summer vegetables & lemon potatoes',
+                        description: 'Vegetarian alternative: creamy saffron risotto',
+                    },
+                    {
+                        course: 'Dessert',
+                        title: 'Lemon cream & summer berries',
+                        description: 'Fruity and light to finish',
+                    },
+                ],
+            },
         },
         regional: {
-            de: [
-                {
-                    course: 'Vorspeise',
-                    title: 'Saisonale Suppe mit Kräutern',
-                    description: 'Aus regionalen Zutaten',
-                },
-                {
-                    course: 'Hauptgang',
-                    title: 'Braten vom Hof, Knöterich & Beilagen',
-                    description: 'Vegetarische Alternative: Ofengemüse',
-                },
-                {
-                    course: 'Dessert',
-                    title: 'Apfeltarte mit Vanille',
-                    description: 'Ein klassischer Abschluss',
-                },
-            ],
-            en: [
-                {
-                    course: 'Starter',
-                    title: 'Seasonal soup with herbs',
-                    description: 'Made with regional produce',
-                },
-                {
-                    course: 'Main',
-                    title: 'Farm roast, greens & sides',
-                    description: 'Vegetarian alternative: roasted vegetables',
-                },
-                {
-                    course: 'Dessert',
-                    title: 'Apple tart with vanilla',
-                    description: 'A classic finish',
-                },
-            ],
+            title: { de: 'Saisonal genießen. Bei euch im Loft.', en: 'Seasonal enjoyment. At your loft.' },
+            courses: {
+                de: [
+                    {
+                        course: 'Vorspeise',
+                        title: 'Erbsen, Blattsalat & Ziegenkäse',
+                        description: 'Mit Kräutervinaigrette und knusprigem Brot',
+                    },
+                    {
+                        course: 'Hauptgang',
+                        title: 'Hähnchenbrust, Ofengemüse & Kartoffelstampf',
+                        description: 'Vegetarische Alternative: gebratener Sellerie',
+                    },
+                    {
+                        course: 'Dessert',
+                        title: 'Apfelküchlein & Vanille',
+                        description: 'Mit warmer Apfelkomponente und Vanilleeis',
+                    },
+                ],
+                en: [
+                    {
+                        course: 'Starter',
+                        title: 'Peas, leaf salad & goat cheese',
+                        description: 'With herb vinaigrette and crusty bread',
+                    },
+                    {
+                        course: 'Main',
+                        title: 'Chicken breast, roasted vegetables & mashed potatoes',
+                        description: 'Vegetarian alternative: pan-fried celeriac',
+                    },
+                    {
+                        course: 'Dessert',
+                        title: 'Apple fritters & vanilla',
+                        description: 'With a warm apple component and vanilla ice cream',
+                    },
+                ],
+            },
         },
         asian: {
-            de: [
-                {
-                    course: 'Vorspeise',
-                    title: 'Gurkensalat, Sesam & frische Kräuter',
-                    description: 'Mit Limetten-Dressing und knusprigen Akzenten',
-                },
-                {
-                    course: 'Hauptgang',
-                    title: 'Miso-Lachs, grünes Gemüse & Jasminreis',
-                    description: 'Vegetarische Alternative: knuspriger Tofu',
-                },
-                {
-                    course: 'Dessert',
-                    title: 'Kokoscreme, Mango & Limette',
-                    description: 'Ein frischer Abschluss mit tropischen Aromen',
-                },
-            ],
-            en: [
-                {
-                    course: 'Starter',
-                    title: 'Cucumber salad, sesame & fresh herbs',
-                    description: 'With lime dressing and crispy accents',
-                },
-                {
-                    course: 'Main',
-                    title: 'Miso salmon, greens & jasmine rice',
-                    description: 'Vegetarian alternative: crispy tofu',
-                },
-                {
-                    course: 'Dessert',
-                    title: 'Coconut cream, mango & lime',
-                    description: 'A fresh finish with tropical notes',
-                },
-            ],
+            title: { de: 'Ein Abend voller neuer Aromen.', en: 'An evening full of new flavors.' },
+            courses: {
+                de: [
+                    {
+                        course: 'Vorspeise',
+                        title: 'Gurkensalat, Sesam & frische Kräuter',
+                        description: 'Mit Limetten-Dressing und knusprigen Akzenten',
+                    },
+                    {
+                        course: 'Hauptgang',
+                        title: 'Miso-Lachs, grünes Gemüse & Jasminreis',
+                        description: 'Vegetarische Alternative: knuspriger Tofu',
+                    },
+                    {
+                        course: 'Dessert',
+                        title: 'Kokoscreme, Mango & Limette',
+                        description: 'Ein frischer Abschluss mit tropischen Aromen',
+                    },
+                ],
+                en: [
+                    {
+                        course: 'Starter',
+                        title: 'Cucumber salad, sesame & fresh herbs',
+                        description: 'With lime dressing and crispy accents',
+                    },
+                    {
+                        course: 'Main',
+                        title: 'Miso salmon, greens & jasmine rice',
+                        description: 'Vegetarian alternative: crispy tofu',
+                    },
+                    {
+                        course: 'Dessert',
+                        title: 'Coconut cream, mango & lime',
+                        description: 'A fresh finish with tropical notes',
+                    },
+                ],
+            },
         },
         chef: {
-            de: [
-                {
-                    course: 'Vorspeise',
-                    title: 'Überraschungsgang nach Saison',
-                    description: 'Euer Chef stimmt den Auftakt mit euch ab',
-                },
-                {
-                    course: 'Hauptgang',
-                    title: 'Signature-Hauptgericht',
-                    description: 'Passend zu Vorlieben und Ernährungswünschen',
-                },
-                {
-                    course: 'Dessert',
-                    title: 'Passender Süßabschluss',
-                    description: 'Frisch und persönlich abgestimmt',
-                },
-            ],
-            en: [
-                {
-                    course: 'Starter',
-                    title: 'Seasonal surprise course',
-                    description: 'Your chef aligns the opening with you',
-                },
-                {
-                    course: 'Main',
-                    title: 'Signature main',
-                    description: 'Matched to preferences and dietary needs',
-                },
-                {
-                    course: 'Dessert',
-                    title: 'A fitting sweet finish',
-                    description: 'Fresh and personally coordinated',
-                },
-            ],
+            title: { de: 'Ein Menü für euren Familienabend.', en: 'A menu for your family evening.' },
+            courses: {
+                de: [
+                    {
+                        course: 'Vorspeise',
+                        title: 'Burrata, sonnengereifte Tomaten & Basilikum',
+                        description: 'Geröstetes Sauerteigbrot und natives Olivenöl',
+                    },
+                    {
+                        course: 'Hauptgang',
+                        title: 'Dorade, Sommergemüse & Zitronen-Kartoffeln',
+                        description: 'Vegetarische Alternative: cremiges Safranrisotto',
+                    },
+                    {
+                        course: 'Dessert',
+                        title: 'Apfelküchlein & Vanille',
+                        description: 'Mit warmer Apfelkomponente und Vanilleeis',
+                    },
+                ],
+                en: [
+                    {
+                        course: 'Starter',
+                        title: 'Burrata, sun-ripened tomatoes & basil',
+                        description: 'Toasted sourdough and extra virgin olive oil',
+                    },
+                    {
+                        course: 'Main',
+                        title: 'Sea bream, summer vegetables & lemon potatoes',
+                        description: 'Vegetarian alternative: creamy saffron risotto',
+                    },
+                    {
+                        course: 'Dessert',
+                        title: 'Apple fritters & vanilla',
+                        description: 'With a warm apple component and vanilla ice cream',
+                    },
+                ],
+            },
         },
     } as const;
-    return menus[cuisine][locale];
+    const menu = menus[cuisine];
+    return {
+        title: menu.title[locale],
+        description,
+        courses: menu.courses[locale],
+    };
 }
 
 function buildCreateMessage(values: BookingRequestPlanValues, locale: 'de' | 'en'): string {
@@ -398,7 +435,7 @@ function createInputFromValues(values: BookingRequestPlanValues, locale: 'de' | 
         originalMessage: buildCreateMessage(values, locale),
         preferences: [bookingRequestPlanCuisinePreference(values.cuisine, locale)],
         participants,
-        priceClassType: 'MEDIUM',
+        priceClassType: values.priceClassType,
         redeemCode: values.redeemCode.trim() || null,
     };
 }
@@ -453,6 +490,109 @@ function ParticipantCountField({
     );
 }
 
+function BookingRequestPlanForetasteCarousel({ locale }: { locale: 'de' | 'en' }) {
+    const scrollerRef = useRef<HTMLDivElement>(null);
+    const prefersReducedMotion = usePrefersReducedMotion();
+    const [canScrollStart, setCanScrollStart] = useState(false);
+    const [canScrollEnd, setCanScrollEnd] = useState(false);
+
+    const updateScrollState = useEffectEvent(() => {
+        const scroller = scrollerRef.current;
+        if (scroller == null) return;
+        const maxScrollLeft = scroller.scrollWidth - scroller.clientWidth;
+        setCanScrollStart(scroller.scrollLeft > 4);
+        setCanScrollEnd(scroller.scrollLeft < maxScrollLeft - 4);
+    });
+
+    useEffect(() => {
+        const scroller = scrollerRef.current;
+        if (scroller == null) return;
+        updateScrollState();
+        scroller.addEventListener('scroll', updateScrollState, { passive: true });
+        const resizeObserver = new ResizeObserver(() => updateScrollState());
+        resizeObserver.observe(scroller);
+        return () => {
+            scroller.removeEventListener('scroll', updateScrollState);
+            resizeObserver.disconnect();
+        };
+    }, [updateScrollState]);
+
+    function scrollByCard(direction: -1 | 1) {
+        const scroller = scrollerRef.current;
+        if (scroller == null) return;
+        const card = scroller.querySelector('figure');
+        const cardWidth = card instanceof HTMLElement ? card.offsetWidth : scroller.clientWidth * 0.7;
+        const gap = 16;
+        scroller.scrollBy({
+            left: direction * (cardWidth + gap),
+            behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        });
+    }
+
+    return (
+        <div className="grid gap-4">
+            <div className="flex items-start justify-between gap-4">
+                <div className="grid min-w-0 gap-2">
+                    <h2 className="font-serif text-2xl tracking-tight">
+                        {{ de: 'Ein Vorgeschmack auf euren Abend', en: 'A taste of your evening' }[locale]}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Frisch gekocht. Mit Liebe serviert. Gemeinsam genossen.',
+                                en: 'Freshly cooked. Served with care. Enjoyed together.',
+                            }[locale]
+                        }
+                    </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="size-9 rounded-full"
+                        disabled={!canScrollStart}
+                        aria-label={{ de: 'Vorherige Bilder', en: 'Previous images' }[locale]}
+                        onClick={() => scrollByCard(-1)}
+                    >
+                        <ChevronLeftIcon className="size-4" aria-hidden />
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="size-9 rounded-full"
+                        disabled={!canScrollEnd}
+                        aria-label={{ de: 'Nächste Bilder', en: 'Next images' }[locale]}
+                        onClick={() => scrollByCard(1)}
+                    >
+                        <ChevronRightIcon className="size-4" aria-hidden />
+                    </Button>
+                </div>
+            </div>
+            <div ref={scrollerRef} className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 no-scrollbar">
+                {FORETASTE_ITEMS.map((item) => (
+                    <figure key={item.src} className="relative aspect-9/16 w-52 shrink-0 snap-start overflow-hidden rounded-2xl">
+                        <AppImage
+                            src={item.src}
+                            alt={item.caption[locale]}
+                            draggable={false}
+                            className="absolute inset-0 size-full object-cover select-none"
+                        />
+                        <div
+                            className="absolute inset-x-0 top-0 bg-linear-to-b from-black/70 via-black/35 to-transparent px-4 pt-4 pb-12"
+                            aria-hidden
+                        />
+                        <figcaption className="absolute inset-x-0 top-0 px-4 pt-4 text-sm font-medium text-white">
+                            {item.caption[locale]}
+                        </figcaption>
+                    </figure>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 export function BookingRequestPlanPage({
     loaderData,
     search,
@@ -490,7 +630,7 @@ export function BookingRequestPlanPage({
     const useDateChips = bookingRequestPlanUsesDateChips(bounds, selectableDays.length);
     const datePickerStartMonth = bounds.minDateTime ?? new Date();
     const datePickerEndMonth = bounds.maxDateTime;
-    const priceInfo = bookingRequestPriceClassInfo('MEDIUM', locale);
+    const priceInfo = bookingRequestPriceClassInfo(values.priceClassType, locale);
     const softPrice = formatCurrency(priceInfo.minimumAmountPerPersonCents, { locale });
 
     const greetingName = search.firstName?.trim() || session.user?.firstName?.trim() || '';
@@ -523,6 +663,7 @@ export function BookingRequestPlanPage({
         children: values.discountedCount,
         dateTime: values.dateTime.toISOString(),
         cuisine: values.cuisine,
+        priceClassType: values.priceClassType,
         address: values.exactEventAddress?.displayText ?? null,
         location: values.locationSearchText,
         message: values.originalMessage,
@@ -612,6 +753,7 @@ export function BookingRequestPlanPage({
     const selectedDayKey = `${values.dateTime.getFullYear()}-${values.dateTime.getMonth()}-${values.dateTime.getDate()}`;
     const hourOptions = bookingRequestFormHourOptions(values.dateTime, bounds);
     const minuteOptions = bookingRequestFormMinuteOptions(values.dateTime, values.dateTime.getHours(), bounds);
+    const sampleMenu = sampleMenuCopy(values.cuisine, locale);
 
     const summaryCard = (
         <aside
@@ -638,29 +780,32 @@ export function BookingRequestPlanPage({
                     </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">{{ de: 'Menübeginn', en: 'Menu start' }[locale]}</dt>
-                    <dd className="text-right font-medium">{formatTime(values.dateTime, { locale })}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
                     <dt className="text-muted-foreground">{{ de: 'Menürichtung', en: 'Cuisine' }[locale]}</dt>
                     <dd className="text-right font-medium">{bookingRequestPlanCuisineLabel(values.cuisine, locale)}</dd>
                 </div>
+                <div className="grid gap-1">
+                    <div className="flex justify-between gap-3">
+                        <dt className="text-muted-foreground">{{ de: 'Menübeginn', en: 'Menu start' }[locale]}</dt>
+                        <dd className="text-right font-medium">{formatTime(values.dateTime, { locale })}</dd>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{bookingRequestPlanChefArrivalHint(values.dateTime, locale)}</p>
+                </div>
             </dl>
 
-            <Button type="button" variant="ghost" size="sm" className="mt-3 px-0" onClick={() => setDetailsEditorOpen(true)}>
-                <PencilIcon className="size-3.5" />
-                {{ de: 'Angaben bearbeiten', en: 'Edit details' }[locale]}
-            </Button>
-
-            <p className="mt-3 text-sm text-muted-foreground">{bookingRequestPlanChefArrivalHint(values.dateTime, locale)}</p>
+            <div className="mt-3 flex justify-center">
+                <Button type="button" variant="ghost" size="sm" onClick={() => setDetailsEditorOpen(true)}>
+                    <PencilIcon className="size-3.5" />
+                    {{ de: 'Angaben bearbeiten', en: 'Edit details' }[locale]}
+                </Button>
+            </div>
 
             <div className="mt-5 border-t border-border pt-4">
                 <p className="text-lg font-medium">{{ de: `ab ${softPrice} p.P.`, en: `from ${softPrice} p.p.` }[locale]}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                     {
                         {
-                            de: 'Beispielpreis Signature-Menü. Finales Angebot setzt euer Chef. Kinderportionen günstiger.',
-                            en: 'Example Signature menu price. Your chef sets the final offer. Children portions cost less.',
+                            de: `Beispielpreis ${priceInfo.title}. Finales Angebot setzt euer Chef. Kinderportionen günstiger.`,
+                            en: `Example ${priceInfo.title} price. Your chef sets the final offer. Children portions cost less.`,
                         }[locale]
                     }
                 </p>
@@ -674,11 +819,6 @@ export function BookingRequestPlanPage({
             ) : null}
 
             <div className="mt-5 grid gap-2">
-                <Button type="button" variant="outline" size="sm" asChild>
-                    <a href={SITE_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                        {{ de: 'Noch Fragen? Talk to us', en: 'Still questions? Talk to us' }[locale]}
-                    </a>
-                </Button>
                 {step === 'details' ? (
                     <Button type="button" size="lg" className="w-full" onClick={goToContact} disabled={!canContinueToContact()}>
                         {{ de: 'Weiter zur Anfrage', en: 'Continue to request' }[locale]}
@@ -699,6 +839,11 @@ export function BookingRequestPlanPage({
                 <p className="text-center text-xs text-muted-foreground">
                     {{ de: 'Unverbindlich. Noch keine Zahlung.', en: 'Non-binding. No payment yet.' }[locale]}
                 </p>
+                <Button type="button" variant="secondary" size="sm" className="mt-3" asChild>
+                    <a href={SITE_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                        {{ de: 'Noch Fragen? Talk to us', en: 'Still questions? Talk to us' }[locale]}
+                    </a>
+                </Button>
             </div>
         </aside>
     );
@@ -779,6 +924,28 @@ export function BookingRequestPlanPage({
                     </SelectContent>
                 </Select>
             </div>
+            <div className="grid gap-2">
+                <span className="text-sm font-medium">{{ de: 'Preisklasse', en: 'Price class' }[locale]}</span>
+                <Select
+                    value={values.priceClassType}
+                    onValueChange={(value) => form.setFieldValue('priceClassType', value as BookingRequestFormPriceClassType)}
+                >
+                    <SelectTrigger className="w-full">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {bookingRequestPriceClassTypes.map((priceClass) => {
+                            const info = bookingRequestPriceClassInfo(priceClass, locale);
+                            const minimum = formatCurrency(info.minimumAmountPerPersonCents, { locale });
+                            return (
+                                <SelectItem key={priceClass} value={priceClass}>
+                                    {info.title} · {{ de: `ab ${minimum}`, en: `from ${minimum}` }[locale]}
+                                </SelectItem>
+                            );
+                        })}
+                    </SelectContent>
+                </Select>
+            </div>
         </div>
     );
 
@@ -788,7 +955,12 @@ export function BookingRequestPlanPage({
                 <SheetHeader>
                     <SheetTitle>{{ de: 'Euer Abend im Detail.', en: 'Your evening in detail.' }[locale]}</SheetTitle>
                     <SheetDescription>
-                        {{ de: 'Gäste, Startzeit und Menürichtung', en: 'Guests, start time, and cuisine' }[locale]}
+                        {
+                            {
+                                de: 'Gäste, Startzeit, Menürichtung und Preisklasse',
+                                en: 'Guests, start time, cuisine, and price class',
+                            }[locale]
+                        }
                     </SheetDescription>
                 </SheetHeader>
                 <div className="px-4 pb-2">{detailsEditorFields}</div>
@@ -805,12 +977,17 @@ export function BookingRequestPlanPage({
                 <DialogHeader>
                     <DialogTitle>{{ de: 'Euer Abend im Detail.', en: 'Your evening in detail.' }[locale]}</DialogTitle>
                     <DialogDescription>
-                        {{ de: 'Gäste, Startzeit und Menürichtung', en: 'Guests, start time, and cuisine' }[locale]}
+                        {
+                            {
+                                de: 'Gäste, Startzeit, Menürichtung und Preisklasse',
+                                en: 'Guests, start time, cuisine, and price class',
+                            }[locale]
+                        }
                     </DialogDescription>
                 </DialogHeader>
                 {detailsEditorFields}
                 <DialogFooter>
-                    <Button type="button" className="w-full" onClick={() => setDetailsEditorOpen(false)}>
+                    <Button type="button" onClick={() => setDetailsEditorOpen(false)}>
                         {{ de: 'Übernehmen', en: 'Apply' }[locale]}
                     </Button>
                 </DialogFooter>
@@ -837,7 +1014,7 @@ export function BookingRequestPlanPage({
                     <div className={cn('grid gap-6', partner ? '@lg:grid-cols-[minmax(0,1fr)_auto] @lg:items-start' : null)}>
                         <div className="grid gap-3">
                             {greetingName ? (
-                                <p className="text-sm text-muted-foreground">
+                                <p className="text-lg text-muted-foreground">
                                     {{ de: `Willkommen, ${greetingName}.`, en: `Welcome, ${greetingName}.` }[locale]}
                                 </p>
                             ) : null}
@@ -862,41 +1039,49 @@ export function BookingRequestPlanPage({
                                 to="/{-$locale}/partners/$pathName"
                                 params={{ pathName: partner.pathName }}
                                 className={cn(
-                                    'flex max-w-sm items-center gap-3 rounded-xl border border-border bg-secondary/60 p-3 @lg:w-64',
+                                    'flex w-fit max-w-md items-center gap-4 rounded-xl border border-border bg-secondary/60 p-4',
                                     selectionControlClassName,
                                     'hover:bg-muted active:bg-muted/80',
                                 )}
                             >
+                                <div className="min-w-0 text-right">
+                                    <p className="text-sm text-muted-foreground">
+                                        {{ de: 'Exklusiv für Gäste bei', en: 'Exclusive for guests at' }[locale]}
+                                    </p>
+                                    <p className="truncate text-base font-medium">{partner.name}</p>
+                                    {partnerCity ? <p className="truncate text-sm text-muted-foreground">{partnerCity}</p> : null}
+                                </div>
                                 {partner.firstSectionImageUrl || partner.heroImageUrl ? (
                                     <AppImage
                                         src={partner.firstSectionImageUrl || partner.heroImageUrl || HERO_FALLBACK_SRC}
                                         alt={partner.name}
-                                        className="size-14 shrink-0 rounded-lg object-cover"
+                                        className="size-18 shrink-0 rounded-xl object-cover"
                                     />
                                 ) : null}
-                                <div className="min-w-0">
-                                    <p className="text-xs text-muted-foreground">
-                                        {{ de: 'Exklusiv für Gäste bei', en: 'Exclusive for guests at' }[locale]}
-                                    </p>
-                                    <p className="truncate font-medium">{partner.name}</p>
-                                    {partnerCity ? <p className="truncate text-sm text-muted-foreground">{partnerCity}</p> : null}
-                                </div>
                             </Link>
                         ) : null}
                     </div>
                 ) : null}
 
-                <div className="grid items-start gap-10 @lg:grid-cols-[minmax(0,1fr)_20rem] @xl:grid-cols-[minmax(0,1fr)_22rem]">
+                <div className="grid items-start gap-10 @5xl:grid-cols-[minmax(0,1fr)_20rem] @6xl:grid-cols-[minmax(0,1fr)_22rem]">
                     <div className="grid gap-10">
                         {step === 'details' ? (
                             <>
                                 <div className="grid gap-3">
                                     <p className="text-sm font-medium">{{ de: 'Dinner-Datum', en: 'Dinner date' }[locale]}</p>
                                     {useDateChips ? (
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap gap-2.5">
                                             {selectableDays.map((day) => {
                                                 const key = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
                                                 const selected = key === selectedDayKey;
+                                                const languageTag = locale === 'de' ? 'de-DE' : 'en-US';
+                                                const weekday = new Intl.DateTimeFormat(languageTag, {
+                                                    weekday: 'short',
+                                                }).format(day);
+                                                const weekdayWithDot = weekday.endsWith('.') ? weekday : `${weekday}.`;
+                                                const month = new Intl.DateTimeFormat(languageTag, {
+                                                    month: 'short',
+                                                }).format(day);
                                                 return (
                                                     <button
                                                         key={key}
@@ -904,17 +1089,16 @@ export function BookingRequestPlanPage({
                                                         onClick={() => selectDay(day)}
                                                         aria-pressed={selected}
                                                         className={cn(
-                                                            'flex size-16 flex-col items-center justify-center rounded-xl border text-sm',
+                                                            'flex size-22 flex-col items-center justify-center gap-0.5 rounded-xl border',
                                                             selectionControlClassName,
                                                             selectionSurfaceClassName(selected),
                                                         )}
                                                     >
-                                                        <span className="text-[0.65rem] leading-none opacity-80">
-                                                            {new Intl.DateTimeFormat(locale === 'de' ? 'de-DE' : 'en-US', {
-                                                                weekday: 'short',
-                                                            }).format(day)}
+                                                        <span className="text-[0.7rem] leading-none opacity-80">{weekdayWithDot}</span>
+                                                        <span className="text-xl font-medium tabular-nums leading-none">
+                                                            {day.getDate()}
                                                         </span>
-                                                        <span className="font-medium tabular-nums">{day.getDate()}</span>
+                                                        <span className="text-[0.7rem] leading-none opacity-80">{month}</span>
                                                     </button>
                                                 );
                                             })}
@@ -951,7 +1135,7 @@ export function BookingRequestPlanPage({
                                     )}
                                 </div>
 
-                                <div className="overflow-hidden rounded-2xl border border-border">
+                                <div className="overflow-hidden rounded-2xl border border-border bg-card">
                                     <AppImage
                                         src={heroSrc}
                                         alt={
@@ -963,9 +1147,36 @@ export function BookingRequestPlanPage({
                                         className="aspect-video w-full object-cover"
                                     />
                                     <div className="grid gap-3 p-5 @md:p-6">
-                                        <p className="text-sm text-muted-foreground">
-                                            ★ 5.0 · {{ de: 'Private Dinner', en: 'Private dinner' }[locale]}
-                                        </p>
+                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                                            <div className="flex items-center gap-1.5">
+                                                <div
+                                                    className="flex items-center gap-0.5"
+                                                    role="img"
+                                                    aria-label={{ de: '5,0 von 5 Sternen', en: '5.0 out of 5 stars' }[locale]}
+                                                >
+                                                    {Array.from({ length: 5 }, (_, index) => (
+                                                        <StarIcon key={index} aria-hidden className="size-3.5 fill-accent text-accent" />
+                                                    ))}
+                                                </div>
+                                                <span className="text-sm text-muted-foreground">5.0</span>
+                                            </div>
+                                            {partner && partner.testimonials.length > 0 ? (
+                                                <Button
+                                                    type="button"
+                                                    variant="link"
+                                                    className="h-auto px-0 text-sm"
+                                                    onClick={() => {
+                                                        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                                                        document.getElementById('plan-testimonials')?.scrollIntoView({
+                                                            behavior: reducedMotion ? 'auto' : 'smooth',
+                                                            block: 'start',
+                                                        });
+                                                    }}
+                                                >
+                                                    {{ de: 'Bewertungen ansehen', en: 'View reviews' }[locale]}
+                                                </Button>
+                                            ) : null}
+                                        </div>
                                         <h2 className="font-serif text-2xl tracking-tight">
                                             {
                                                 {
@@ -974,24 +1185,36 @@ export function BookingRequestPlanPage({
                                                 }[locale]
                                             }
                                         </h2>
-                                        <p className="text-sm/relaxed text-muted-foreground">
-                                            {
+                                        <div className="grid gap-2 text-sm/relaxed text-muted-foreground">
+                                            <p>
                                                 {
-                                                    de: 'Drei Gänge, abgestimmt auf eure Wünsche. Einkauf, Zubereitung und Aufräumen inklusive.',
-                                                    en: 'Three courses tailored to your wishes. Shopping, cooking, and cleanup included.',
-                                                }[locale]
-                                            }
-                                        </p>
+                                                    {
+                                                        de: 'Euer Privatkoch serviert Gänge, frisch bei euch zubereitet und nach euren Wünschen abgestimmt.',
+                                                        en: 'Your private chef serves courses, freshly prepared at your place and tailored to your wishes.',
+                                                    }[locale]
+                                                }
+                                            </p>
+                                            <p>
+                                                {
+                                                    {
+                                                        de: 'Einkauf, Kochen und eine saubere Küche inklusive.',
+                                                        en: 'Shopping, cooking, and a clean kitchen included.',
+                                                    }[locale]
+                                                }
+                                            </p>
+                                        </div>
                                         <p className="font-medium">
                                             {{ de: `ab ${softPrice} / Erwachsener`, en: `from ${softPrice} / adult` }[locale]}
                                         </p>
-                                        <button
+                                        <Button
                                             type="button"
-                                            className="w-fit text-sm font-medium underline-offset-4 hover:underline"
+                                            variant="link"
+                                            className="h-auto w-fit -translate-x-3 justify-start"
                                             onClick={() => setMenuDialogOpen(true)}
                                         >
-                                            {{ de: 'Beispielmenü entdecken →', en: 'Discover sample menu →' }[locale]}
-                                        </button>
+                                            {{ de: 'Beispielmenü entdecken', en: 'Discover sample menu' }[locale]}
+                                            <ArrowRightIcon className="size-4" />
+                                        </Button>
                                     </div>
                                 </div>
 
@@ -1070,71 +1293,67 @@ export function BookingRequestPlanPage({
                                         {bookingRequestPlanCuisineKeys.map((key) => {
                                             const selected = values.cuisine === key;
                                             return (
-                                                <button
+                                                <div
                                                     key={key}
-                                                    type="button"
-                                                    onClick={() => form.setFieldValue('cuisine', key)}
-                                                    aria-pressed={selected}
                                                     className={cn(
-                                                        'flex items-start gap-3 rounded-xl border p-4 text-left',
-                                                        selectionControlClassName,
+                                                        'grid gap-3 rounded-xl border p-4 transition-colors',
                                                         selected
-                                                            ? 'border-transparent bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80'
-                                                            : 'border-border bg-secondary text-secondary-foreground hover:bg-muted active:bg-muted/80',
+                                                            ? 'border-transparent bg-primary text-primary-foreground'
+                                                            : 'border-border bg-secondary text-secondary-foreground',
                                                     )}
                                                 >
-                                                    <span
-                                                        className={cn(
-                                                            'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border',
-                                                            selected
-                                                                ? 'border-primary-foreground/40 bg-primary-foreground text-primary'
-                                                                : 'border-border bg-background',
-                                                        )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => form.setFieldValue('cuisine', key)}
+                                                        aria-pressed={selected}
+                                                        className={cn('flex w-full items-start gap-3 text-left', selectionControlClassName)}
                                                     >
-                                                        {selected ? <CheckIcon className="size-3" /> : null}
-                                                    </span>
-                                                    <span className="font-medium">{bookingRequestPlanCuisineLabel(key, locale)}</span>
-                                                </button>
+                                                        <span
+                                                            className={cn(
+                                                                'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border',
+                                                                selected
+                                                                    ? 'border-primary-foreground/40 bg-primary-foreground text-primary'
+                                                                    : 'border-border bg-background',
+                                                            )}
+                                                        >
+                                                            {selected ? <CheckIcon className="size-3" /> : null}
+                                                        </span>
+                                                        <span className="grid gap-0.5">
+                                                            <span className="font-medium">
+                                                                {bookingRequestPlanCuisineLabel(key, locale)}
+                                                            </span>
+                                                            <span
+                                                                className={cn(
+                                                                    'text-sm',
+                                                                    selected ? 'text-primary-foreground/80' : 'text-muted-foreground',
+                                                                )}
+                                                            >
+                                                                {bookingRequestPlanCuisineSubtitle(key, locale)}
+                                                            </span>
+                                                        </span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className={cn(
+                                                            'ml-8 w-fit text-sm underline-offset-4 hover:underline',
+                                                            selectionControlClassName,
+                                                            selected ? 'text-primary-foreground/85' : 'text-muted-foreground',
+                                                        )}
+                                                        onClick={() => {
+                                                            form.setFieldValue('cuisine', key);
+                                                            setMenuDialogOpen(true);
+                                                        }}
+                                                    >
+                                                        {{ de: 'Beispielmenü ansehen', en: 'View sample menu' }[locale]}
+                                                    </button>
+                                                </div>
                                             );
                                         })}
                                     </div>
                                 </div>
 
                                 <Reveal>
-                                    <div className="grid gap-4">
-                                        <h2 className="font-serif text-2xl tracking-tight">
-                                            {{ de: 'Ein Vorgeschmack auf euren Abend', en: 'A taste of your evening' }[locale]}
-                                        </h2>
-                                        <p className="text-sm text-muted-foreground">
-                                            {
-                                                {
-                                                    de: 'Frisch gekocht. Mit Liebe serviert. Gemeinsam genossen.',
-                                                    en: 'Freshly cooked. Served with care. Enjoyed together.',
-                                                }[locale]
-                                            }
-                                        </p>
-                                        <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1 @md:grid @md:grid-cols-5 @md:overflow-visible">
-                                            {FORETASTE_ITEMS.map((item) => (
-                                                <figure
-                                                    key={item.src}
-                                                    className="relative aspect-3/4 w-40 shrink-0 overflow-hidden rounded-xl @md:w-auto"
-                                                >
-                                                    <AppImage
-                                                        src={item.src}
-                                                        alt={item.caption[locale]}
-                                                        className="absolute inset-0 size-full object-cover"
-                                                    />
-                                                    <div
-                                                        className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 via-black/35 to-transparent px-3 pt-10 pb-3"
-                                                        aria-hidden
-                                                    />
-                                                    <figcaption className="absolute inset-x-0 bottom-0 px-3 pb-3 text-sm font-medium text-white">
-                                                        {item.caption[locale]}
-                                                    </figcaption>
-                                                </figure>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    <BookingRequestPlanForetasteCarousel locale={locale} />
                                 </Reveal>
 
                                 <Reveal>
@@ -1176,12 +1395,14 @@ export function BookingRequestPlanPage({
 
                                 {partner && partner.testimonials.length > 0 ? (
                                     <Reveal>
-                                        <SectionPageTestimonials
-                                            testimonials={partner.testimonials}
-                                            locale={locale}
-                                            title={{ de: 'Abende, die bleiben.', en: 'Evenings that stay with you.' }[locale]}
-                                            inset={false}
-                                        />
+                                        <div id="plan-testimonials">
+                                            <SectionPageTestimonials
+                                                testimonials={partner.testimonials}
+                                                locale={locale}
+                                                title={{ de: 'Abende, die bleiben.', en: 'Evenings that stay with you.' }[locale]}
+                                                inset={false}
+                                            />
+                                        </div>
                                     </Reveal>
                                 ) : null}
 
@@ -1278,12 +1499,12 @@ export function BookingRequestPlanPage({
                         )}
                     </div>
 
-                    <div className="hidden @lg:block">{summaryCard}</div>
+                    <div className="hidden @5xl:block">{summaryCard}</div>
                 </div>
             </div>
 
             {step === 'details' ? (
-                <div className="sticky bottom-0 z-40 border-t border-border bg-background/95 p-3 backdrop-blur @lg:hidden">
+                <div className="sticky bottom-0 z-40 border-t border-border bg-background/95 p-3 backdrop-blur @5xl:hidden">
                     <div className="mx-auto flex max-w-7xl items-center gap-3">
                         <button
                             type="button"
@@ -1316,24 +1537,17 @@ export function BookingRequestPlanPage({
             {detailsEditor}
 
             <Dialog open={menuDialogOpen} onOpenChange={setMenuDialogOpen}>
-                <DialogContent className="max-w-lg">
-                    <DialogHeader>
-                        <DialogTitle>{{ de: 'Ein Abend voller neuer Aromen.', en: 'An evening full of new flavors.' }[locale]}</DialogTitle>
-                        <DialogDescription>
-                            {
-                                {
-                                    de: `Ein Beispielmenü für „${bookingRequestPlanCuisineLabel(values.cuisine, locale)}“. Euer Chef stimmt Gerichte, Kinderportionen und Ernährungswünsche persönlich mit euch ab.`,
-                                    en: `A sample menu for “${bookingRequestPlanCuisineLabel(values.cuisine, locale)}”. Your chef personally coordinates dishes, children portions, and dietary needs with you.`,
-                                }[locale]
-                            }
-                        </DialogDescription>
+                <DialogContent className="max-w-xl gap-8 p-8 sm:p-10">
+                    <DialogHeader className="gap-3">
+                        <DialogTitle>{sampleMenu.title}</DialogTitle>
+                        <DialogDescription>{sampleMenu.description}</DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-5">
-                        {sampleMenuCourses(values.cuisine, locale).map((course) => (
-                            <div key={course.course} className="border-t border-border pt-4 first:border-t-0 first:pt-0">
+                    <div className="grid gap-7">
+                        {sampleMenu.courses.map((course) => (
+                            <div key={course.course} className="border-t border-border pt-6 first:border-t-0 first:pt-0">
                                 <p className="text-xs tracking-wide text-muted-foreground uppercase">{course.course}</p>
-                                <p className="mt-1 font-medium">{course.title}</p>
-                                <p className="text-sm text-muted-foreground">{course.description}</p>
+                                <p className="mt-2 font-medium">{course.title}</p>
+                                <p className="mt-1 text-sm text-muted-foreground">{course.description}</p>
                             </div>
                         ))}
                     </div>

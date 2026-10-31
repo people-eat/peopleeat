@@ -1,4 +1,5 @@
-import { defaultBookingRequestDateTime } from '../../shared/bookingRequestFormDefaults';
+import { bookingRequestPriceClassTypes, defaultBookingRequestDateTime } from '../../shared/bookingRequestFormDefaults';
+import type { BookingRequestFormPriceClassType } from '../../shared/bookingRequestFormDefaults';
 import type { GqlCUserBookingRequestExactEventAddressInput } from '../graphql/generated';
 import {
     bookingRequestFormClampDateTime,
@@ -37,6 +38,7 @@ export type BookingRequestPlanSearch = {
     firstName?: string;
     step?: BookingRequestPlanStep;
     cuisine?: BookingRequestPlanCuisineKey;
+    priceClass?: BookingRequestFormPriceClassType;
 };
 
 export type BookingRequestPlanValues = {
@@ -46,6 +48,7 @@ export type BookingRequestPlanValues = {
     exactEventAddress: GqlCUserBookingRequestExactEventAddressInput | null;
     dateTime: Date;
     cuisine: BookingRequestPlanCuisineKey;
+    priceClassType: BookingRequestFormPriceClassType;
     originalMessage: string;
     redeemCode: string;
     occasion: string;
@@ -87,6 +90,10 @@ function isCuisineKey(value: unknown): value is BookingRequestPlanCuisineKey {
     return typeof value === 'string' && (bookingRequestPlanCuisineKeys as readonly string[]).includes(value);
 }
 
+function isPriceClass(value: unknown): value is BookingRequestFormPriceClassType {
+    return typeof value === 'string' && (bookingRequestPriceClassTypes as readonly string[]).includes(value);
+}
+
 function cuisineFromPreferences(preferences: string[] | undefined): BookingRequestPlanCuisineKey | undefined {
     if (!preferences || preferences.length === 0) return undefined;
     const first = preferences[0]?.trim().toLowerCase() ?? '';
@@ -126,6 +133,15 @@ export function bookingRequestPlanCuisineLabel(key: BookingRequestPlanCuisineKey
     }[key][locale];
 }
 
+export function bookingRequestPlanCuisineSubtitle(key: BookingRequestPlanCuisineKey, locale: 'de' | 'en'): string {
+    return {
+        mediterranean: { de: 'Sonne, Kräuter & leichte Aromen', en: 'Sun, herbs & light flavors' },
+        regional: { de: 'Vertraute Zutaten, neu interpretiert', en: 'Familiar ingredients, newly interpreted' },
+        asian: { de: 'Frische Kräuter & spannende Aromen', en: 'Fresh herbs & exciting flavors' },
+        chef: { de: 'Wir finden gemeinsam eure Richtung', en: 'We find your direction together' },
+    }[key][locale];
+}
+
 export function bookingRequestPlanCuisinePreference(key: BookingRequestPlanCuisineKey, locale: 'de' | 'en'): string {
     return bookingRequestPlanCuisineLabel(key, locale);
 }
@@ -155,6 +171,7 @@ export function parseBookingRequestPlanSearch(search: Record<string, unknown>): 
     const firstName = typeof search.firstName === 'string' && search.firstName.trim().length > 0 ? search.firstName.trim() : undefined;
     const step = isPlanStep(search.step) ? search.step : undefined;
     const cuisine = isCuisineKey(search.cuisine) ? search.cuisine : cuisineFromPreferences(preferences);
+    const priceClass = isPriceClass(search.priceClass) ? search.priceClass : undefined;
 
     const bounds = bookingRequestFormDateTimeBoundsFromSearch({ minDateTime, maxDateTime });
 
@@ -181,6 +198,7 @@ export function parseBookingRequestPlanSearch(search: Record<string, unknown>): 
         firstName,
         step,
         cuisine,
+        priceClass,
     };
 }
 
@@ -236,6 +254,7 @@ export function bookingRequestPlanValuesFromSearch(
         exactEventAddress,
         dateTime,
         cuisine: search.cuisine ?? 'chef',
+        priceClassType: search.priceClass ?? 'MEDIUM',
         originalMessage: search.message ?? '',
         redeemCode: search.redeemCode ?? '',
         occasion: search.occasion ?? '',
@@ -263,6 +282,7 @@ export function bookingRequestPlanSearchFromValues(input: {
         message: values.originalMessage.trim() || undefined,
         preferences: [preference],
         cuisine: values.cuisine,
+        priceClass: values.priceClassType === 'MEDIUM' ? undefined : values.priceClassType,
         redeemCode: values.redeemCode.trim() || undefined,
         location: address?.displayText.trim() || values.locationSearchText.trim() || undefined,
         lat: address?.latitude,
@@ -302,7 +322,8 @@ export function bookingRequestPlanSearchEqual(a: BookingRequestPlanSearch, b: Bo
         a.partnerId === b.partnerId &&
         a.firstName === b.firstName &&
         a.step === b.step &&
-        a.cuisine === b.cuisine
+        a.cuisine === b.cuisine &&
+        a.priceClass === b.priceClass
     );
 }
 

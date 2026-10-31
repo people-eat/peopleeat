@@ -77,11 +77,12 @@ describe('bookingRequestPlanResolveVenue', () => {
 });
 
 describe('bookingRequestPlanValuesFromSearch / searchFromValues', () => {
-    it('round-trips cuisine and guests through URL draft helpers', () => {
+    it('round-trips cuisine, price class, and guests through URL draft helpers', () => {
         const search = parseBookingRequestPlanSearch({
             adults: 3,
             children: 1,
             cuisine: 'regional',
+            priceClass: 'HIGH',
             firstName: 'Sophia',
             partnerId: 'partner1',
         });
@@ -89,6 +90,7 @@ describe('bookingRequestPlanValuesFromSearch / searchFromValues', () => {
         expect(values.adultCount).toBe(3);
         expect(values.discountedCount).toBe(1);
         expect(values.cuisine).toBe('regional');
+        expect(values.priceClassType).toBe('HIGH');
         expect(values.dateTime.getHours()).toBe(19);
 
         const next = bookingRequestPlanSearchFromValues({
@@ -101,9 +103,17 @@ describe('bookingRequestPlanValuesFromSearch / searchFromValues', () => {
         });
         expect(next.step).toBe('contact');
         expect(next.cuisine).toBe('regional');
+        expect(next.priceClass).toBe('HIGH');
         expect(next.firstName).toBe('Sophia');
         expect(next.partnerId).toBe('partner1');
         expect(bookingRequestPlanSearchEqual(next, { ...next })).toBe(true);
+    });
+
+    it('defaults price class to MEDIUM and omits it from the URL draft', () => {
+        const values = bookingRequestPlanValuesFromSearch(parseBookingRequestPlanSearch({}));
+        expect(values.priceClassType).toBe('MEDIUM');
+        const next = bookingRequestPlanSearchFromValues({ values, step: 'details' });
+        expect(next.priceClass).toBeUndefined();
     });
 });
 
