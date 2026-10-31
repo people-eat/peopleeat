@@ -36,8 +36,11 @@ cook booking list).
 - Chef profile: hero star row and testimonials section from published customer reviews (section hidden when empty); cook’s own public
   preview omits both (no live public fetch there).
 - City and partner pages: curated testimonial section after featured cooks; hidden when empty. Each tile (`PageTestimonialCard`) shows stars
-  with the numeric rating, occasion top-right, a 4-line clamped quote, and “Bewertung ansehen” / “View review” opening a detail dialog (full
-  text + images). Default grid is 3 columns; booking request plan uses 2 beside the sticky sidebar.
+  with the numeric rating, occasion top-right, a 4-line clamped quote, a 4-column square photo strip (4th slot becomes “+N more” when there
+  are more than four), and “Bewertung ansehen” / “View review” opening a detail dialog. With photos: gallery (selected image, arrows,
+  thumbnails) on the left and rating / occasion / author / full text on the right at wider dialog widths. Default grid is 3 columns; booking
+  request plan uses 2 beside the sticky sidebar. Attachment downloads need a published `imageUrls` hit (public) or any testimonial hit for
+  admins — see [file-storage.md](../architecture/file-storage.md).
 - Home: static marketing quotes in a marquee — [landing.md](./landing.md).
 - How to become a chef: static chef quotes (not database-driven).
 
@@ -66,8 +69,10 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 - Commands / queries: `*Testimonial*` under commands and queries; admin assistant list tool `adminTestimonialsFindMany` (customer + cook,
   in-process filters) → `admin.testimonialList` cards
 - Utils: publication from rating, offer fallbacks, image URLs from file uploads, junction cleanup
-- Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `PageTestimonialCard` (detail dialog;
-  `columns={2|3}`), `ContentPageTestimonialsEditor`
+- Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `PageTestimonialCard` (photo strip, split detail
+  dialog with author avatar / occasion in body, mobile always 1 column, `columns={2|3}` from `@md`), `ContentPageTestimonialsEditor`
+- GraphQL: public `CustomerTestimonial` / `CookTestimonial.authorProfilePicture` (batch-loaded from the author’s current profile picture)
+- Download auth: `fileUploadReferencedByPublishedTestimonial` / `fileUploadReferencedByAnyTestimonial` on `GET /api/file-uploads/:id`
 - Capture UI: `BookingRequestOfferTestimonialPanel`, rating input/stars — Review tab on customer, cook, and admin offer pages
 - List nudges: customer cards read `testimonialMissing`, deep-link `?tab=testimonial`
 - Jobs: `bookingRequestOfferTestimonialReminder` (memory nudge, morning and evening reminders Europe/Berlin); schedule on payment success

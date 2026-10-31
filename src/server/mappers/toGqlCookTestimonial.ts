@@ -1,5 +1,5 @@
 import type { CookTestimonial } from '../db/schema';
-import type { GqlSCookTestimonial } from '../graphql/generated';
+import type { GqlSCookTestimonial, GqlSFileUpload } from '../graphql/generated';
 import type { TestimonialOfferFallbacks } from '../utils/testimonialOfferFallbacksLoad';
 
 /**
@@ -8,11 +8,16 @@ import type { TestimonialOfferFallbacks } from '../utils/testimonialOfferFallbac
  * `testimonialOfferFallbacksLoad.ts`) since the public type has no separate
  * `display*` fields.
  */
-export function toGqlCookTestimonial(row: CookTestimonial, fallbacks: TestimonialOfferFallbacks | null = null): GqlSCookTestimonial {
+export function toGqlCookTestimonial(
+    row: CookTestimonial,
+    fallbacks: TestimonialOfferFallbacks | null = null,
+    authorProfilePicture: GqlSFileUpload | null = null,
+): GqlSCookTestimonial {
     return {
         gqlTypeName: 'CookTestimonial',
         cookTestimonialId: row.cookTestimonialId,
         authorName: row.authorName?.trim() || fallbacks?.authorName || '',
+        authorProfilePicture,
         location: row.location?.trim() || fallbacks?.location || null,
         occasion: row.occasion?.trim() || fallbacks?.occasion || null,
         body: row.body ?? null,

@@ -3889,6 +3889,7 @@ export interface GqlSCookStripeWallet {
 export interface GqlSCookTestimonial {
     __typename?: 'CookTestimonial';
     authorName: Scalars['String']['output'];
+    authorProfilePicture?: Maybe<GqlSFileUpload>;
     body?: Maybe<Scalars['String']['output']>;
     cookTestimonialId: Scalars['ID']['output'];
     createdAt: Scalars['DateTime']['output'];
@@ -3962,6 +3963,7 @@ export interface GqlSCostLineItem {
 export interface GqlSCustomerTestimonial {
     __typename?: 'CustomerTestimonial';
     authorName: Scalars['String']['output'];
+    authorProfilePicture?: Maybe<GqlSFileUpload>;
     body: Scalars['String']['output'];
     createdAt: Scalars['DateTime']['output'];
     customerTestimonialId: Scalars['ID']['output'];
@@ -10012,6 +10014,7 @@ export type GqlSCookTestimonialResolvers<
     ParentType extends GqlSResolversParentTypes['CookTestimonial'] = GqlSResolversParentTypes['CookTestimonial'],
 > = ResolversObject<{
     authorName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    authorProfilePicture?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
     body?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     cookTestimonialId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
@@ -10072,6 +10075,7 @@ export type GqlSCustomerTestimonialResolvers<
     ParentType extends GqlSResolversParentTypes['CustomerTestimonial'] = GqlSResolversParentTypes['CustomerTestimonial'],
 > = ResolversObject<{
     authorName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    authorProfilePicture?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
     body?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     customerTestimonialId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;

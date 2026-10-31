@@ -10,10 +10,12 @@ import {
     fileUploadReferencedAsProfilePicture,
     fileUploadReferencedByAnyContent,
     fileUploadReferencedByAnyMeal,
+    fileUploadReferencedByAnyTestimonial,
     fileUploadReferencedByGiftCardPdf,
     fileUploadReferencedByOutboundEmailAttachment,
     fileUploadReferencedByPublishedContent,
     fileUploadReferencedByPublishedMeal,
+    fileUploadReferencedByPublishedTestimonial,
     fileUploadReferencedByWhatsAppAttachment,
     userIsAdmin,
 } from '../../server/utils/fileUploadContentAccess';
@@ -30,9 +32,11 @@ const log = loggerCreate(db);
 //   3. referenced as any cook's current logo (public)
 //   4. referenced by a published city/partner/blog hero or section image
 //   5. referenced by a published, non-deleted cook meal image
-//   6. signed-in peer on an offer / support chat that attaches the upload
-//   7. signed-in admin + referenced by any draft/published content page or any meal
-//   8. signed-in admin + gift-card receipt/voucher PDF or outbound-email attachment
+//   6. referenced by a published customer/cook testimonial `imageUrls` entry (public)
+//   7. signed-in peer on an offer / support chat that attaches the upload
+//   8. signed-in admin + referenced by any draft/published content page or any meal
+//   9. signed-in admin + referenced by any customer/cook testimonial `imageUrls`
+//  10. signed-in admin + gift-card receipt/voucher PDF or outbound-email attachment
 //
 // Same-origin only — `FileUpload.url` resolves to a server-rooted path,
 // so the browser sends the session cookie automatically with any `<img>` /
@@ -79,6 +83,9 @@ export const Route = createFileRoute('/api/file-uploads_/$fileUploadId')({
                 if (!allowed) {
                     allowed = await fileUploadReferencedByPublishedMeal(db, fileUpload.fileUploadId);
                 }
+                if (!allowed) {
+                    allowed = await fileUploadReferencedByPublishedTestimonial(db, fileUpload.fileUploadId);
+                }
                 if (!allowed && session.userId) {
                     isChatPeerAccess =
                         (await fileUploadAccessibleViaOfferChat(db, fileUpload.fileUploadId, session.userId)) ||
@@ -91,6 +98,7 @@ export const Route = createFileRoute('/api/file-uploads_/$fileUploadId')({
                         allowed =
                             (await fileUploadReferencedByAnyContent(db, fileUpload.fileUploadId)) ||
                             (await fileUploadReferencedByAnyMeal(db, fileUpload.fileUploadId)) ||
+                            (await fileUploadReferencedByAnyTestimonial(db, fileUpload.fileUploadId)) ||
                             (await fileUploadReferencedByGiftCardPdf(db, fileUpload.fileUploadId)) ||
                             (await fileUploadReferencedByOutboundEmailAttachment(db, fileUpload.fileUploadId)) ||
                             (await fileUploadReferencedByWhatsAppAttachment(db, fileUpload.fileUploadId));

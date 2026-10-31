@@ -3892,6 +3892,7 @@ export interface GqlCCookStripeWallet {
 export interface GqlCCookTestimonial {
     __typename?: 'CookTestimonial';
     authorName: Scalars['String']['output'];
+    authorProfilePicture?: Maybe<GqlCFileUpload>;
     body?: Maybe<Scalars['String']['output']>;
     cookTestimonialId: Scalars['ID']['output'];
     createdAt: Scalars['DateTime']['output'];
@@ -3965,6 +3966,7 @@ export interface GqlCCostLineItem {
 export interface GqlCCustomerTestimonial {
     __typename?: 'CustomerTestimonial';
     authorName: Scalars['String']['output'];
+    authorProfilePicture?: Maybe<GqlCFileUpload>;
     body: Scalars['String']['output'];
     createdAt: Scalars['DateTime']['output'];
     customerTestimonialId: Scalars['ID']['output'];
@@ -6188,6 +6190,7 @@ export type GqlCCustomerTestimonialCardFieldsFragment = {
     rating: number | null;
     publishedAt: string | null;
     createdAt: string;
+    authorProfilePicture: { url: string } | null;
 };
 
 export type GqlCCookTestimonialCardFieldsFragment = {
@@ -6200,6 +6203,7 @@ export type GqlCCookTestimonialCardFieldsFragment = {
     rating: number | null;
     publishedAt: string | null;
     createdAt: string;
+    authorProfilePicture: { url: string } | null;
 };
 
 type GqlCTestimonialCardFields_CookTestimonial_Fragment = {
@@ -6213,6 +6217,7 @@ type GqlCTestimonialCardFields_CookTestimonial_Fragment = {
     publishedAt: string | null;
     createdAt: string;
     cookBody: string | null;
+    authorProfilePicture: { url: string } | null;
 };
 
 type GqlCTestimonialCardFields_CustomerTestimonial_Fragment = {
@@ -6226,6 +6231,7 @@ type GqlCTestimonialCardFields_CustomerTestimonial_Fragment = {
     rating: number | null;
     publishedAt: string | null;
     createdAt: string;
+    authorProfilePicture: { url: string } | null;
 };
 
 export type GqlCTestimonialCardFieldsFragment =
@@ -6512,6 +6518,7 @@ export type GqlCPublicCityFieldsFragment = {
                   publishedAt: string | null;
                   createdAt: string;
                   cookBody: string | null;
+                  authorProfilePicture: { url: string } | null;
               }
             | {
                   __typename: 'CustomerTestimonial';
@@ -6524,6 +6531,7 @@ export type GqlCPublicCityFieldsFragment = {
                   rating: number | null;
                   publishedAt: string | null;
                   createdAt: string;
+                  authorProfilePicture: { url: string } | null;
               };
     }>;
 };
@@ -6774,6 +6782,7 @@ export type GqlCPublicPartnerFieldsFragment = {
                   publishedAt: string | null;
                   createdAt: string;
                   cookBody: string | null;
+                  authorProfilePicture: { url: string } | null;
               }
             | {
                   __typename: 'CustomerTestimonial';
@@ -6786,6 +6795,7 @@ export type GqlCPublicPartnerFieldsFragment = {
                   rating: number | null;
                   publishedAt: string | null;
                   createdAt: string;
+                  authorProfilePicture: { url: string } | null;
               };
     }>;
 };
@@ -7065,6 +7075,7 @@ export type GqlCPublicOccasionFieldsFragment = {
                   publishedAt: string | null;
                   createdAt: string;
                   cookBody: string | null;
+                  authorProfilePicture: { url: string } | null;
               }
             | {
                   __typename: 'CustomerTestimonial';
@@ -7077,6 +7088,7 @@ export type GqlCPublicOccasionFieldsFragment = {
                   rating: number | null;
                   publishedAt: string | null;
                   createdAt: string;
+                  authorProfilePicture: { url: string } | null;
               };
     }>;
 };
@@ -8086,6 +8098,7 @@ export type GqlCBookingRequestPlanPageQuery = {
                           publishedAt: string | null;
                           createdAt: string;
                           cookBody: string | null;
+                          authorProfilePicture: { url: string } | null;
                       }
                     | {
                           __typename: 'CustomerTestimonial';
@@ -8098,6 +8111,7 @@ export type GqlCBookingRequestPlanPageQuery = {
                           rating: number | null;
                           publishedAt: string | null;
                           createdAt: string;
+                          authorProfilePicture: { url: string } | null;
                       };
             }>;
         } | null;
@@ -8176,6 +8190,7 @@ export type GqlCChefPageQuery = {
                 rating: number | null;
                 publishedAt: string | null;
                 createdAt: string;
+                authorProfilePicture: { url: string } | null;
             }>;
             rating: { averageRating: number | null; reviewCount: number };
         } | null;
@@ -8372,6 +8387,7 @@ export type GqlCPublicCityPageQuery = {
                           publishedAt: string | null;
                           createdAt: string;
                           cookBody: string | null;
+                          authorProfilePicture: { url: string } | null;
                       }
                     | {
                           __typename: 'CustomerTestimonial';
@@ -8384,6 +8400,7 @@ export type GqlCPublicCityPageQuery = {
                           rating: number | null;
                           publishedAt: string | null;
                           createdAt: string;
+                          authorProfilePicture: { url: string } | null;
                       };
             }>;
         } | null;
@@ -8780,6 +8797,7 @@ export type GqlCPublicOccasionPageQuery = {
                           publishedAt: string | null;
                           createdAt: string;
                           cookBody: string | null;
+                          authorProfilePicture: { url: string } | null;
                       }
                     | {
                           __typename: 'CustomerTestimonial';
@@ -8792,6 +8810,7 @@ export type GqlCPublicOccasionPageQuery = {
                           rating: number | null;
                           publishedAt: string | null;
                           createdAt: string;
+                          authorProfilePicture: { url: string } | null;
                       };
             }>;
         } | null;
@@ -8936,6 +8955,7 @@ export type GqlCPublicPartnerPageQuery = {
                           publishedAt: string | null;
                           createdAt: string;
                           cookBody: string | null;
+                          authorProfilePicture: { url: string } | null;
                       }
                     | {
                           __typename: 'CustomerTestimonial';
@@ -8948,6 +8968,7 @@ export type GqlCPublicPartnerPageQuery = {
                           rating: number | null;
                           publishedAt: string | null;
                           createdAt: string;
+                          authorProfilePicture: { url: string } | null;
                       };
             }>;
         } | null;
@@ -21995,6 +22016,11 @@ export const CookTestimonialCardFieldsFragmentDoc = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
@@ -22652,6 +22678,11 @@ export const CustomerTestimonialCardFieldsFragmentDoc = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
@@ -22691,6 +22722,14 @@ export const TestimonialCardFieldsFragmentDoc = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'authorProfilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                                 { kind: 'Field', alias: { kind: 'Name', value: 'cookBody' }, name: { kind: 'Name', value: 'body' } },
@@ -22713,6 +22752,11 @@ export const TestimonialCardFieldsFragmentDoc = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
@@ -22807,6 +22851,11 @@ export const PublicCityFieldsFragmentDoc = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
@@ -23014,6 +23063,14 @@ export const PublicCityFieldsFragmentDoc = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'authorProfilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                                 { kind: 'Field', alias: { kind: 'Name', value: 'cookBody' }, name: { kind: 'Name', value: 'body' } },
@@ -23477,6 +23534,11 @@ export const PublicPartnerFieldsFragmentDoc = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
@@ -23684,6 +23746,14 @@ export const PublicPartnerFieldsFragmentDoc = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'authorProfilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                                 { kind: 'Field', alias: { kind: 'Name', value: 'cookBody' }, name: { kind: 'Name', value: 'body' } },
@@ -24192,6 +24262,11 @@ export const PublicOccasionFieldsFragmentDoc = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
@@ -24434,6 +24509,14 @@ export const PublicOccasionFieldsFragmentDoc = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'authorProfilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                                 { kind: 'Field', alias: { kind: 'Name', value: 'cookBody' }, name: { kind: 'Name', value: 'body' } },
@@ -38493,6 +38576,11 @@ export const BookingRequestPlanPageDocument = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
@@ -38527,6 +38615,14 @@ export const BookingRequestPlanPageDocument = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'authorProfilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                                 { kind: 'Field', alias: { kind: 'Name', value: 'cookBody' }, name: { kind: 'Name', value: 'body' } },
@@ -39076,6 +39172,11 @@ export const ChefPageDocument = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
@@ -39853,6 +39954,11 @@ export const PublicCityPageDocument = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
@@ -39887,6 +39993,14 @@ export const PublicCityPageDocument = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'authorProfilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                                 { kind: 'Field', alias: { kind: 'Name', value: 'cookBody' }, name: { kind: 'Name', value: 'body' } },
@@ -41365,6 +41479,11 @@ export const PublicOccasionPageDocument = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
@@ -41399,6 +41518,14 @@ export const PublicOccasionPageDocument = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'authorProfilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                                 { kind: 'Field', alias: { kind: 'Name', value: 'cookBody' }, name: { kind: 'Name', value: 'body' } },
@@ -41868,6 +41995,11 @@ export const PublicPartnerPageDocument = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
@@ -41902,6 +42034,14 @@ export const PublicPartnerPageDocument = {
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'authorProfilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'location' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                                 { kind: 'Field', alias: { kind: 'Name', value: 'cookBody' }, name: { kind: 'Name', value: 'body' } },

@@ -3,6 +3,8 @@ import { inArray } from 'drizzle-orm';
 import type { CityTestimonial, CookTestimonial, CustomerTestimonial, OccasionTestimonial, PartnerTestimonial } from '../db/schema';
 import { cookTestimonials, customerTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
+import type { GqlSFileUpload } from '../graphql/generated';
+import { testimonialAuthorProfilePicturesLoad } from './testimonialAuthorProfilePicturesLoad';
 import { testimonialOfferFallbacksLoad } from './testimonialOfferFallbacksLoad';
 import type { TestimonialOfferFallbacks } from './testimonialOfferFallbacksLoad';
 
@@ -21,8 +23,12 @@ export async function testimonialCatalogEntriesLoad<TCustomer, TCook>(
     serverRuntime: ServerRuntime,
     args: {
         publishedOnly: boolean;
-        toCustomer: (row: CustomerTestimonial, fallback: TestimonialOfferFallbacks | null) => TCustomer;
-        toCook: (row: CookTestimonial, fallback: TestimonialOfferFallbacks | null) => TCook;
+        toCustomer: (
+            row: CustomerTestimonial,
+            fallback: TestimonialOfferFallbacks | null,
+            authorProfilePicture: GqlSFileUpload | null,
+        ) => TCustomer;
+        toCook: (row: CookTestimonial, fallback: TestimonialOfferFallbacks | null, authorProfilePicture: GqlSFileUpload | null) => TCook;
     },
 ): Promise<Array<{ index: number; testimonial: TCustomer | TCook }>> {
     if (junctionRows.length === 0) return [];
@@ -44,9 +50,13 @@ export async function testimonialCatalogEntriesLoad<TCustomer, TCook>(
 
     const customerOfferIds = customerRows.flatMap((row) => (row.bookingRequestOfferId ? [row.bookingRequestOfferId] : []));
     const cookOfferIds = cookRows.flatMap((row) => (row.bookingRequestOfferId ? [row.bookingRequestOfferId] : []));
-    const [customerFallbacks, cookFallbacks] = await Promise.all([
+    const [customerFallbacks, cookFallbacks, authorPicturesByUserId] = await Promise.all([
         testimonialOfferFallbacksLoad(serverRuntime.db, customerOfferIds, 'customer'),
         testimonialOfferFallbacksLoad(serverRuntime.db, cookOfferIds, 'cook'),
+        testimonialAuthorProfilePicturesLoad(serverRuntime.db, [
+            ...customerRows.map((row) => row.userId),
+            ...cookRows.map((row) => row.userId),
+        ]),
     ]);
 
     const result: Array<{ index: number; testimonial: TCustomer | TCook }> = [];
@@ -56,13 +66,19 @@ export async function testimonialCatalogEntriesLoad<TCustomer, TCook>(
             if (!row) continue;
             if (args.publishedOnly && row.publicationStatus !== 'PUBLISHED') continue;
             const fallback = row.bookingRequestOfferId ? (customerFallbacks.get(row.bookingRequestOfferId) ?? null) : null;
-            result.push({ index: junction.index, testimonial: args.toCustomer(row, fallback) });
+            result.push({
+                index: junction.index,
+                testimonial: args.toCustomer(row, fallback, authorPicturesByUserId.get(row.userId) ?? null),
+            });
         } else {
             const row = cookById.get(junction.testimonialId);
             if (!row) continue;
             if (args.publishedOnly && row.publicationStatus !== 'PUBLISHED') continue;
             const fallback = row.bookingRequestOfferId ? (cookFallbacks.get(row.bookingRequestOfferId) ?? null) : null;
-            result.push({ index: junction.index, testimonial: args.toCook(row, fallback) });
+            result.push({
+                index: junction.index,
+                testimonial: args.toCook(row, fallback, authorPicturesByUserId.get(row.userId) ?? null),
+            });
         }
     }
     return result;

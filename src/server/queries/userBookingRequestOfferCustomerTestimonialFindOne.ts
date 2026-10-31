@@ -4,6 +4,7 @@ import { customerTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCustomerTestimonial, GqlSUserBookingRequestOffer } from '../graphql/generated';
 import { toGqlCustomerTestimonial } from '../mappers/toGqlCustomerTestimonial';
+import { testimonialAuthorProfilePicturesLoad } from '../utils/testimonialAuthorProfilePicturesLoad';
 import { testimonialOfferFallbacksLoad } from '../utils/testimonialOfferFallbacksLoad';
 
 /**
@@ -22,6 +23,13 @@ export async function userBookingRequestOfferCustomerTestimonialFindOne(
         .limit(1);
     if (!row) return null;
 
-    const fallbacksByOfferId = await testimonialOfferFallbacksLoad(serverRuntime.db, [parent.bookingRequestOfferId], 'customer');
-    return toGqlCustomerTestimonial(row, fallbacksByOfferId.get(parent.bookingRequestOfferId) ?? null);
+    const [fallbacksByOfferId, authorPicturesByUserId] = await Promise.all([
+        testimonialOfferFallbacksLoad(serverRuntime.db, [parent.bookingRequestOfferId], 'customer'),
+        testimonialAuthorProfilePicturesLoad(serverRuntime.db, [row.userId]),
+    ]);
+    return toGqlCustomerTestimonial(
+        row,
+        fallbacksByOfferId.get(parent.bookingRequestOfferId) ?? null,
+        authorPicturesByUserId.get(row.userId) ?? null,
+    );
 }

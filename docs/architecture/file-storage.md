@@ -55,12 +55,15 @@ The upload and download routes are likewise consumer-agnostic:
      [cook-profile.md](../features/cook-profile.md)), or
   4. a **published** city / partner / occasion / blog post references the id as hero or section image, or
   5. a **published, non-deleted** cook meal references the id as `imageFileUploadId` (see [cook-meals.md](../features/cook-meals.md)), or
-  6. the session user is a **peer** on an offer or support chat that attaches the upload (`BookingRequestOfferEventAttachments` /
+  6. a **published** customer or cook testimonial lists the public URL in `imageUrls` (JSON string array of `/api/file-uploads/{id}` — see
+     [testimonials.md](./testimonials.md)), or
+  7. the session user is a **peer** on an offer or support chat that attaches the upload (`BookingRequestOfferEventAttachments` /
      `SupportRequestMessageAttachments` — customer, cook, or admin for offers; owning customer or admin for support), or
-  7. the session user is an **admin** and any content page (draft or published) or any meal (including drafts / soft-deleted) references the
+  8. the session user is an **admin** and any content page (draft or published) or any meal (including drafts / soft-deleted) references the
      id (see [`content-sections.md`](./content-sections.md)), or
-  8. the session user is an **admin** and the id is a gift-card `invoiceFileUploadId`, an `OutboundEmailAttachments` row, or a
-     `WhatsAppMessageAttachments` row (Concierge inbound media). Unauthenticated public pages rely on (2), (3), (4), and (5).
+  9. the session user is an **admin** and any customer or cook testimonial (including `PENDING_REVIEW`) lists the URL in `imageUrls`, or
+  10. the session user is an **admin** and the id is a gift-card `invoiceFileUploadId`, an `OutboundEmailAttachments` row, or a
+      `WhatsAppMessageAttachments` row (Concierge inbound media). Unauthenticated public pages rely on (2), (3), (4), (5), and (6).
 
 ### Why `bytea` over `oid` / large objects
 

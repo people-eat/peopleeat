@@ -1,5 +1,5 @@
 import type { CustomerTestimonial } from '../db/schema';
-import type { GqlSCustomerTestimonial } from '../graphql/generated';
+import type { GqlSCustomerTestimonial, GqlSFileUpload } from '../graphql/generated';
 import type { TestimonialOfferFallbacks } from '../utils/testimonialOfferFallbacksLoad';
 
 /**
@@ -11,11 +11,13 @@ import type { TestimonialOfferFallbacks } from '../utils/testimonialOfferFallbac
 export function toGqlCustomerTestimonial(
     row: CustomerTestimonial,
     fallbacks: TestimonialOfferFallbacks | null = null,
+    authorProfilePicture: GqlSFileUpload | null = null,
 ): GqlSCustomerTestimonial {
     return {
         gqlTypeName: 'CustomerTestimonial',
         customerTestimonialId: row.customerTestimonialId,
         authorName: row.authorName?.trim() || fallbacks?.authorName || '',
+        authorProfilePicture,
         location: row.location?.trim() || fallbacks?.location || null,
         occasion: row.occasion?.trim() || fallbacks?.occasion || null,
         body: row.body,

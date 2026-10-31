@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
+import { fileUploadPublicUrl } from '../../shared/contentSection';
 import { idCreate } from '../../shared/idCreate';
 import { fileUploadCreate } from '../commands/fileUploadCreate';
-import { giftCards, outboundEmailAttachments, outboundEmails } from '../db/schema';
+import { customerTestimonials, giftCards, outboundEmailAttachments, outboundEmails } from '../db/schema';
 import { commandSetup, testDb } from '../test/commandTestUtils';
-import { fileUploadReferencedByGiftCardPdf, fileUploadReferencedByOutboundEmailAttachment } from './fileUploadContentAccess';
+import {
+    fileUploadReferencedByAnyTestimonial,
+    fileUploadReferencedByGiftCardPdf,
+    fileUploadReferencedByOutboundEmailAttachment,
+    fileUploadReferencedByPublishedTestimonial,
+} from './fileUploadContentAccess';
 
 describe('fileUploadContentAccess invoice helpers', () => {
     it('detects a gift-card invoice file upload', async () => {
@@ -93,5 +99,46 @@ describe('fileUploadContentAccess invoice helpers', () => {
 
         expect(await fileUploadReferencedByOutboundEmailAttachment(testDb, upload.fileUploadId)).toBe(true);
         expect(await fileUploadReferencedByOutboundEmailAttachment(testDb, idCreate())).toBe(false);
+    });
+});
+
+describe('fileUploadContentAccess testimonial helpers', () => {
+    it('detects published vs pending testimonial imageUrls', async () => {
+        const { user } = await commandSetup.withUser();
+        const publishedUpload = await fileUploadCreate(testDb, {
+            userId: user.userId,
+            filename: 'dinner.webp',
+            mediaType: 'image/webp',
+            bytes: Buffer.from('webp'),
+        });
+        const pendingUpload = await fileUploadCreate(testDb, {
+            userId: user.userId,
+            filename: 'pending.webp',
+            mediaType: 'image/webp',
+            bytes: Buffer.from('webp'),
+        });
+
+        await testDb.insert(customerTestimonials).values([
+            {
+                customerTestimonialId: idCreate(),
+                userId: user.userId,
+                body: 'Published dinner',
+                imageUrls: [fileUploadPublicUrl(publishedUpload.fileUploadId)],
+                publicationStatus: 'PUBLISHED',
+                publishedAt: new Date(),
+            },
+            {
+                customerTestimonialId: idCreate(),
+                userId: user.userId,
+                body: 'Pending dinner',
+                imageUrls: [fileUploadPublicUrl(pendingUpload.fileUploadId)],
+                publicationStatus: 'PENDING_REVIEW',
+            },
+        ]);
+
+        expect(await fileUploadReferencedByPublishedTestimonial(testDb, publishedUpload.fileUploadId)).toBe(true);
+        expect(await fileUploadReferencedByPublishedTestimonial(testDb, pendingUpload.fileUploadId)).toBe(false);
+        expect(await fileUploadReferencedByAnyTestimonial(testDb, pendingUpload.fileUploadId)).toBe(true);
+        expect(await fileUploadReferencedByAnyTestimonial(testDb, idCreate())).toBe(false);
     });
 });

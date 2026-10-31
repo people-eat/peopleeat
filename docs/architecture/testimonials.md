@@ -39,3 +39,5 @@ testimonial tab).
 - Delete commands must remove the city, partner, and occasion junction rows for the deleted testimonial (`testimonialJunctionRowsDelete`).
 - Display fallbacks load offer/booking context (author, **city only**, occasion, participants) — never street address.
 - Home / how-to-become-a-chef marketing quotes stay static (not DB-driven).
+- Testimonial `imageUrls` are `/api/file-uploads/{id}` paths. Download auth treats published testimonials as public references and any
+  testimonial (including `PENDING_REVIEW`) as an admin reference — see [file-storage.md](./file-storage.md).

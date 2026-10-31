@@ -12,6 +12,7 @@ export type SectionPageTestimonial = {
               __typename: 'CustomerTestimonial';
               customerTestimonialId: string;
               authorName: string;
+              authorProfilePicture?: { url: string } | null;
               location: string | null;
               occasion: string | null;
               body: string;
@@ -22,6 +23,7 @@ export type SectionPageTestimonial = {
               __typename: 'CookTestimonial';
               cookTestimonialId: string;
               authorName: string;
+              authorProfilePicture?: { url: string } | null;
               location: string | null;
               occasion: string | null;
               cookBody: string | null;
@@ -54,7 +56,7 @@ export function SectionPageTestimonials({
     title?: string;
     /** Horizontal padding + max-width shell. Off when nested in a padded content column. */
     inset?: boolean;
-    /** Grid density. Use `2` beside a sticky sidebar (booking request plan). Default `3`. */
+    /** Grid density from `@md` up. Mobile is always one column. Use `2` beside a sticky sidebar. Default `3`. */
     columns?: 2 | 3;
     className?: string;
 }) {
@@ -65,7 +67,7 @@ export function SectionPageTestimonials({
     return (
         <section className={cn(inset ? 'mx-auto w-full max-w-7xl px-4 py-16 @lg:px-6' : 'w-full', className)}>
             <h2 className="font-serif text-3xl font-light @md:text-4xl">{heading}</h2>
-            <ul className={cn('mt-10 grid gap-10', columns === 2 ? '@sm:grid-cols-2' : '@sm:grid-cols-2 @lg:grid-cols-3')}>
+            <ul className={cn('mt-10 grid grid-cols-1 gap-10', columns === 2 ? '@md:grid-cols-2' : '@md:grid-cols-2 @lg:grid-cols-3')}>
                 {testimonials.map((entry) => {
                     const testimonial = entry.testimonial;
                     const body = testimonialBody(entry);
@@ -75,6 +77,7 @@ export function SectionPageTestimonials({
                             <PageTestimonialCard
                                 testimonial={{
                                     authorName: testimonial.authorName,
+                                    authorProfilePictureUrl: testimonial.authorProfilePicture?.url ?? null,
                                     location: testimonial.location,
                                     occasion: testimonial.occasion,
                                     body,

@@ -76,6 +76,9 @@ fragment PublicCookCardFields on PublicCook {
 fragment CustomerTestimonialCardFields on CustomerTestimonial {
     customerTestimonialId
     authorName
+    authorProfilePicture {
+        url
+    }
     location
     occasion
     body
@@ -88,6 +91,9 @@ fragment CustomerTestimonialCardFields on CustomerTestimonial {
 fragment CookTestimonialCardFields on CookTestimonial {
     cookTestimonialId
     authorName
+    authorProfilePicture {
+        url
+    }
     location
     occasion
     body
@@ -110,6 +116,9 @@ fragment TestimonialCardFields on Testimonial {
     ... on CookTestimonial {
         cookTestimonialId
         authorName
+        authorProfilePicture {
+            url
+        }
         location
         occasion
         cookBody: body

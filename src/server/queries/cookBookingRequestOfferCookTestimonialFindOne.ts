@@ -4,6 +4,7 @@ import { cookTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookBookingRequestOffer, GqlSCookTestimonial } from '../graphql/generated';
 import { toGqlCookTestimonial } from '../mappers/toGqlCookTestimonial';
+import { testimonialAuthorProfilePicturesLoad } from '../utils/testimonialAuthorProfilePicturesLoad';
 import { testimonialOfferFallbacksLoad } from '../utils/testimonialOfferFallbacksLoad';
 
 /**
@@ -21,6 +22,13 @@ export async function cookBookingRequestOfferCookTestimonialFindOne(
         .limit(1);
     if (!row) return null;
 
-    const fallbacksByOfferId = await testimonialOfferFallbacksLoad(serverRuntime.db, [parent.bookingRequestOfferId], 'cook');
-    return toGqlCookTestimonial(row, fallbacksByOfferId.get(parent.bookingRequestOfferId) ?? null);
+    const [fallbacksByOfferId, authorPicturesByUserId] = await Promise.all([
+        testimonialOfferFallbacksLoad(serverRuntime.db, [parent.bookingRequestOfferId], 'cook'),
+        testimonialAuthorProfilePicturesLoad(serverRuntime.db, [row.userId]),
+    ]);
+    return toGqlCookTestimonial(
+        row,
+        fallbacksByOfferId.get(parent.bookingRequestOfferId) ?? null,
+        authorPicturesByUserId.get(row.userId) ?? null,
+    );
 }

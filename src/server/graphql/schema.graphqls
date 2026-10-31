@@ -1642,6 +1642,8 @@ enum TestimonialType {
 type CustomerTestimonial {
     customerTestimonialId: ID!
     authorName: String!
+    # Current profile picture of the authoring user, when set.
+    authorProfilePicture: FileUpload
     location: String
     occasion: String
     body: String!
@@ -1656,6 +1658,8 @@ type CustomerTestimonial {
 type CookTestimonial {
     cookTestimonialId: ID!
     authorName: String!
+    # Current profile picture of the authoring user, when set.
+    authorProfilePicture: FileUpload
     location: String
     occasion: String
     body: String

@@ -1,5 +1,6 @@
 import { and, eq, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
 
+import { fileUploadPublicUrl } from '../../shared/contentSection';
 import type { Database } from '../db';
 import {
     admins,
@@ -10,6 +11,8 @@ import {
     bookingRequests,
     cities,
     cooks,
+    cookTestimonials,
+    customerTestimonials,
     giftCards,
     meals,
     occasions,
@@ -21,6 +24,19 @@ import {
     users,
     whatsAppMessageAttachments,
 } from '../db/schema';
+
+/** JSONB array containment for `/api/file-uploads/{id}` stored on testimonial `imageUrls`. */
+function testimonialImageUrlsContain(
+    imageUrlsColumn: typeof customerTestimonials.imageUrls | typeof cookTestimonials.imageUrls,
+    fileUploadId: string,
+) {
+    const url = fileUploadPublicUrl(fileUploadId);
+    return sql`exists (
+        select 1
+        from jsonb_array_elements_text(coalesce(${imageUrlsColumn}, '[]'::jsonb)) as u(url)
+        where u.url = ${url}
+    )`;
+}
 
 /** True when a published content page references this upload as hero or section image. */
 export async function fileUploadReferencedByPublishedContent(db: Database, fileUploadId: string): Promise<boolean> {
@@ -220,6 +236,47 @@ export async function fileUploadReferencedByWhatsAppAttachment(db: Database, fil
         .where(eq(whatsAppMessageAttachments.fileUploadId, fileUploadId))
         .limit(1);
     return Boolean(hit);
+}
+
+/** True when a published customer or cook testimonial lists this upload in `imageUrls`. */
+export async function fileUploadReferencedByPublishedTestimonial(db: Database, fileUploadId: string): Promise<boolean> {
+    const [customerHit] = await db
+        .select({ customerTestimonialId: customerTestimonials.customerTestimonialId })
+        .from(customerTestimonials)
+        .where(
+            and(
+                eq(customerTestimonials.publicationStatus, 'PUBLISHED'),
+                testimonialImageUrlsContain(customerTestimonials.imageUrls, fileUploadId),
+            ),
+        )
+        .limit(1);
+    if (customerHit) return true;
+
+    const [cookHit] = await db
+        .select({ cookTestimonialId: cookTestimonials.cookTestimonialId })
+        .from(cookTestimonials)
+        .where(
+            and(eq(cookTestimonials.publicationStatus, 'PUBLISHED'), testimonialImageUrlsContain(cookTestimonials.imageUrls, fileUploadId)),
+        )
+        .limit(1);
+    return Boolean(cookHit);
+}
+
+/** True when any customer or cook testimonial (including pending review) lists this upload in `imageUrls`. */
+export async function fileUploadReferencedByAnyTestimonial(db: Database, fileUploadId: string): Promise<boolean> {
+    const [customerHit] = await db
+        .select({ customerTestimonialId: customerTestimonials.customerTestimonialId })
+        .from(customerTestimonials)
+        .where(testimonialImageUrlsContain(customerTestimonials.imageUrls, fileUploadId))
+        .limit(1);
+    if (customerHit) return true;
+
+    const [cookHit] = await db
+        .select({ cookTestimonialId: cookTestimonials.cookTestimonialId })
+        .from(cookTestimonials)
+        .where(testimonialImageUrlsContain(cookTestimonials.imageUrls, fileUploadId))
+        .limit(1);
+    return Boolean(cookHit);
 }
 
 /** True when a published, non-deleted meal references this upload as its image. */
