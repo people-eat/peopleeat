@@ -15604,6 +15604,7 @@ export type GqlCAdminTestimonialsListCustomerFragment = {
     occasion: string | null;
     displayOccasion: string | null;
     body: string;
+    imageUrls: Array<string>;
     rating: number | null;
     publicationStatus: Schema.GqlCTestimonialPublicationStatus;
     publishedAt: string | null;
@@ -15623,6 +15624,7 @@ export type GqlCAdminTestimonialsListCookFragment = {
     occasion: string | null;
     displayOccasion: string | null;
     body: string | null;
+    imageUrls: Array<string>;
     rating: number | null;
     publicationStatus: Schema.GqlCTestimonialPublicationStatus;
     publishedAt: string | null;
@@ -15648,6 +15650,7 @@ export type GqlCAdminTestimonialsPageQuery = {
                     occasion: string | null;
                     displayOccasion: string | null;
                     body: string;
+                    imageUrls: Array<string>;
                     rating: number | null;
                     publicationStatus: Schema.GqlCTestimonialPublicationStatus;
                     publishedAt: string | null;
@@ -15666,6 +15669,7 @@ export type GqlCAdminTestimonialsPageQuery = {
                     occasion: string | null;
                     displayOccasion: string | null;
                     body: string | null;
+                    imageUrls: Array<string>;
                     rating: number | null;
                     publicationStatus: Schema.GqlCTestimonialPublicationStatus;
                     publishedAt: string | null;
@@ -15692,6 +15696,7 @@ export type GqlCAdminTestimonialsPageUpdatesSubscription = {
             occasion: string | null;
             displayOccasion: string | null;
             body: string;
+            imageUrls: Array<string>;
             rating: number | null;
             publicationStatus: Schema.GqlCTestimonialPublicationStatus;
             publishedAt: string | null;
@@ -15710,6 +15715,7 @@ export type GqlCAdminTestimonialsPageUpdatesSubscription = {
             occasion: string | null;
             displayOccasion: string | null;
             body: string | null;
+            imageUrls: Array<string>;
             rating: number | null;
             publicationStatus: Schema.GqlCTestimonialPublicationStatus;
             publishedAt: string | null;
@@ -28760,6 +28766,7 @@ export const AdminTestimonialsListCustomerFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
@@ -28802,6 +28809,7 @@ export const AdminTestimonialsListCookFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
@@ -64520,6 +64528,7 @@ export const AdminTestimonialsPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
@@ -64557,6 +64566,7 @@ export const AdminTestimonialsPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
@@ -64647,6 +64657,7 @@ export const AdminTestimonialsPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
@@ -64684,6 +64695,7 @@ export const AdminTestimonialsPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },

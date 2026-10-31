@@ -914,7 +914,7 @@ function AdminUserTestimonialsSection({
             publicationStatus: testimonial.publicationStatus,
             publishedAt: testimonial.publishedAt ?? null,
             createdAt: testimonial.createdAt,
-            imageUrl: testimonial.imageUrls[0] ?? null,
+            imageUrls: testimonial.imageUrls,
         })),
         ...cookTestimonials.map((testimonial) => ({
             kind: 'cook' as const,
@@ -927,7 +927,7 @@ function AdminUserTestimonialsSection({
             publicationStatus: testimonial.publicationStatus,
             publishedAt: testimonial.publishedAt ?? null,
             createdAt: testimonial.createdAt,
-            imageUrl: testimonial.imageUrls[0] ?? null,
+            imageUrls: testimonial.imageUrls,
         })),
     ].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
 

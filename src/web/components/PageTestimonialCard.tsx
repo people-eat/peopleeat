@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, ChevronRightIcon, StarIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
@@ -74,45 +74,68 @@ function TestimonialAuthor({
 }
 
 /** Up to four square thumbs; when there are more than four, slot 4 is “+N more”. */
-function TestimonialImageStrip({ imageUrls, onOpen }: { imageUrls: ReadonlyArray<string>; onOpen: (index: number) => void }) {
+function TestimonialImageStrip({
+    imageUrls,
+    onOpen,
+}: {
+    imageUrls: ReadonlyArray<string>;
+    /** When omitted, thumbs are non-interactive (safe inside a surrounding Link). */
+    onOpen?: (index: number) => void;
+}) {
     const locale = useLocale();
     if (imageUrls.length === 0) return null;
 
     const overflow = imageUrls.length > CARD_IMAGE_SLOTS;
     const visibleCount = overflow ? CARD_IMAGE_SLOTS - 1 : Math.min(imageUrls.length, CARD_IMAGE_SLOTS);
     const moreCount = imageUrls.length - visibleCount;
+    const interactive = onOpen != null;
 
     return (
         <ul className="grid grid-cols-4 gap-1.5" aria-label={{ de: 'Fotos der Bewertung', en: 'Review photos' }[locale]}>
             {imageUrls.slice(0, visibleCount).map((url, index) => (
                 <li key={url}>
-                    <button
-                        type="button"
-                        className="group relative aspect-square w-full cursor-pointer overflow-hidden rounded-md bg-muted outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                        onClick={() => onOpen(index)}
-                        aria-label={{ de: `Foto ${index + 1} ansehen`, en: `View photo ${index + 1}` }[locale]}
-                    >
-                        <AppImage
-                            src={url}
-                            alt=""
-                            className="size-full object-cover transition-[filter] duration-300 ease-out group-hover:brightness-[0.92] group-active:brightness-[0.85]"
-                        />
-                    </button>
+                    {interactive ? (
+                        <button
+                            type="button"
+                            className="group relative aspect-square w-full cursor-pointer overflow-hidden rounded-md bg-muted outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                            onClick={() => onOpen(index)}
+                            aria-label={{ de: `Foto ${index + 1} ansehen`, en: `View photo ${index + 1}` }[locale]}
+                        >
+                            <AppImage
+                                src={url}
+                                alt=""
+                                className="size-full object-cover transition-[filter] duration-300 ease-out group-hover:brightness-[0.92] group-active:brightness-[0.85]"
+                            />
+                        </button>
+                    ) : (
+                        <div className="relative aspect-square w-full overflow-hidden rounded-md bg-muted">
+                            <AppImage src={url} alt="" className="size-full object-cover" />
+                        </div>
+                    )}
                 </li>
             ))}
             {overflow ? (
                 <li>
-                    <button
-                        type="button"
-                        className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-md bg-muted outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                        onClick={() => onOpen(visibleCount)}
-                        aria-label={{ de: `${moreCount} weitere Fotos ansehen`, en: `View ${moreCount} more photos` }[locale]}
-                    >
-                        <AppImage src={imageUrls[visibleCount]!} alt="" className="size-full object-cover brightness-[0.45]" />
-                        <span className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white tabular-nums">
-                            {{ de: `+${moreCount} mehr`, en: `+${moreCount} more` }[locale]}
-                        </span>
-                    </button>
+                    {interactive ? (
+                        <button
+                            type="button"
+                            className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-md bg-muted outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                            onClick={() => onOpen(visibleCount)}
+                            aria-label={{ de: `${moreCount} weitere Fotos ansehen`, en: `View ${moreCount} more photos` }[locale]}
+                        >
+                            <AppImage src={imageUrls[visibleCount]!} alt="" className="size-full object-cover brightness-[0.45]" />
+                            <span className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white tabular-nums">
+                                {{ de: `+${moreCount} mehr`, en: `+${moreCount} more` }[locale]}
+                            </span>
+                        </button>
+                    ) : (
+                        <div className="relative aspect-square w-full overflow-hidden rounded-md bg-muted">
+                            <AppImage src={imageUrls[visibleCount]!} alt="" className="size-full object-cover brightness-[0.45]" />
+                            <span className="absolute inset-0 flex items-center justify-center text-sm font-medium text-white tabular-nums">
+                                {{ de: `+${moreCount} mehr`, en: `+${moreCount} more` }[locale]}
+                            </span>
+                        </div>
+                    )}
                 </li>
             ) : null}
         </ul>
@@ -237,37 +260,27 @@ function TestimonialDetailCopy({ testimonial }: { testimonial: PageTestimonialCa
     );
 }
 
-/** Curated public testimonial tile — clamped quote, photo strip, detail dialog. Used by `SectionPageTestimonials`. */
-export function PageTestimonialCard({ testimonial, className }: { testimonial: PageTestimonialCardModel; className?: string }) {
-    const locale = useLocale();
-    const [open, setOpen] = useState(false);
-    const [imageIndex, setImageIndex] = useState(0);
+/** Presentational card face shared by public tiles and admin list cards. */
+export function PageTestimonialCardFace({
+    testimonial,
+    className,
+    header,
+    footerAction,
+    onOpenImage,
+}: {
+    testimonial: PageTestimonialCardModel;
+    className?: string;
+    /** Optional admin chips / meta above the rating row. */
+    header?: ReactNode;
+    footerAction?: ReactNode;
+    /** When set, the photo strip is interactive. Omit inside a surrounding Link. */
+    onOpenImage?: (index: number) => void;
+}) {
     const imageUrls = testimonial.imageUrls ?? [];
-    const hasImages = imageUrls.length > 0;
-    const viewLabel = { de: 'Bewertung ansehen', en: 'View review' }[locale];
-
-    const openAt = (index: number) => {
-        setImageIndex(index);
-        setOpen(true);
-    };
-
-    useEffect(() => {
-        if (!open || imageUrls.length < 2) return;
-        const onKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'ArrowLeft') {
-                event.preventDefault();
-                setImageIndex((current) => (current - 1 + imageUrls.length) % imageUrls.length);
-            } else if (event.key === 'ArrowRight') {
-                event.preventDefault();
-                setImageIndex((current) => (current + 1) % imageUrls.length);
-            }
-        };
-        window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, [open, imageUrls.length]);
 
     return (
         <figure className={cn('flex h-full flex-col gap-4', className)}>
+            {header}
             <div className="flex items-start justify-between gap-3">
                 {testimonial.rating != null ? <TestimonialRating rating={testimonial.rating} /> : <span />}
                 {testimonial.occasion ? (
@@ -279,7 +292,7 @@ export function PageTestimonialCard({ testimonial, className }: { testimonial: P
                 <p className="line-clamp-4">{testimonial.body}</p>
             </blockquote>
 
-            <TestimonialImageStrip imageUrls={imageUrls} onOpen={openAt} />
+            <TestimonialImageStrip imageUrls={imageUrls} onOpen={onOpenImage} />
 
             <div className="mt-auto flex items-center justify-between gap-3">
                 <figcaption className="min-w-0">
@@ -289,35 +302,113 @@ export function PageTestimonialCard({ testimonial, className }: { testimonial: P
                         location={testimonial.location}
                     />
                 </figcaption>
-
-                <Button type="button" variant="link" size="sm" className="h-auto shrink-0 px-0" onClick={() => openAt(0)}>
-                    {viewLabel}
-                </Button>
+                {footerAction}
             </div>
+        </figure>
+    );
+}
 
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent
-                    className={cn(
-                        '@container max-h-[90vh] overflow-y-auto',
-                        hasImages ? 'gap-0 p-0 sm:max-w-4xl lg:max-w-5xl' : 'sm:max-w-lg',
-                    )}
-                >
-                    {hasImages ? (
-                        <div className="grid @3xl:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.8fr)]">
-                            <div className="bg-muted/30 p-4 @md:p-5">
-                                <TestimonialGallery imageUrls={imageUrls} index={imageIndex} onIndexChange={setImageIndex} />
-                            </div>
-                            <div className="p-6 pt-12 @md:p-8 @md:pt-12">
-                                <TestimonialDetailCopy testimonial={testimonial} />
-                            </div>
+/** Controlled public detail dialog (gallery + full copy). Used by public cards and admin preview. */
+export function PageTestimonialDetailDialog({
+    testimonial,
+    open,
+    onOpenChange,
+    imageIndex = 0,
+    onImageIndexChange,
+}: {
+    testimonial: PageTestimonialCardModel;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    imageIndex?: number;
+    onImageIndexChange?: (index: number) => void;
+}) {
+    const imageUrls = testimonial.imageUrls ?? [];
+    const hasImages = imageUrls.length > 0;
+    const [internalIndex, setInternalIndex] = useState(imageIndex);
+    const controlled = onImageIndexChange != null;
+    const index = controlled ? imageIndex : internalIndex;
+
+    const setIndex = (next: number) => {
+        if (onImageIndexChange) onImageIndexChange(next);
+        else setInternalIndex(next);
+    };
+
+    useEffect(() => {
+        if (open && !controlled) setInternalIndex(imageIndex);
+    }, [open, imageIndex, controlled]);
+
+    useEffect(() => {
+        if (!open || imageUrls.length < 2) return;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                setIndex((index - 1 + imageUrls.length) % imageUrls.length);
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                setIndex((index + 1) % imageUrls.length);
+            }
+        };
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+        // setIndex closes over latest index / callbacks for the active open session.
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional open-session keyboard binding
+    }, [open, imageUrls.length, index]);
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent
+                className={cn('@container max-h-[90vh] overflow-y-auto', hasImages ? 'gap-0 p-0 sm:max-w-4xl lg:max-w-5xl' : 'sm:max-w-lg')}
+            >
+                {hasImages ? (
+                    <div className="grid @3xl:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.8fr)]">
+                        <div className="bg-muted/30 p-4 @md:p-5">
+                            <TestimonialGallery imageUrls={imageUrls} index={index} onIndexChange={setIndex} />
                         </div>
-                    ) : (
-                        <div className="pt-2">
+                        <div className="p-6 pt-12 @md:p-8 @md:pt-12">
                             <TestimonialDetailCopy testimonial={testimonial} />
                         </div>
-                    )}
-                </DialogContent>
-            </Dialog>
-        </figure>
+                    </div>
+                ) : (
+                    <div className="pt-2">
+                        <TestimonialDetailCopy testimonial={testimonial} />
+                    </div>
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+/** Curated public testimonial tile — clamped quote, photo strip, detail dialog. Used by `SectionPageTestimonials`. */
+export function PageTestimonialCard({ testimonial, className }: { testimonial: PageTestimonialCardModel; className?: string }) {
+    const locale = useLocale();
+    const [open, setOpen] = useState(false);
+    const [imageIndex, setImageIndex] = useState(0);
+    const viewLabel = { de: 'Bewertung ansehen', en: 'View review' }[locale];
+
+    const openAt = (index: number) => {
+        setImageIndex(index);
+        setOpen(true);
+    };
+
+    return (
+        <>
+            <PageTestimonialCardFace
+                testimonial={testimonial}
+                className={className}
+                onOpenImage={openAt}
+                footerAction={
+                    <Button type="button" variant="link" size="sm" className="h-auto shrink-0 px-0" onClick={() => openAt(0)}>
+                        {viewLabel}
+                    </Button>
+                }
+            />
+            <PageTestimonialDetailDialog
+                testimonial={testimonial}
+                open={open}
+                onOpenChange={setOpen}
+                imageIndex={imageIndex}
+                onImageIndexChange={setImageIndex}
+            />
+        </>
     );
 }

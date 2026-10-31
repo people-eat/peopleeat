@@ -1,27 +1,15 @@
-import { Link } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
-import { createRequest, useClient, useMutation } from 'urql';
+import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { formatDate } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
-import { AdminTestimonialOfferLink } from '../../components/AdminTestimonialOfferLink';
-import { Badge } from '../../components/base/badge';
+import { AdminTestimonialListCard } from '../../components/AdminTestimonialListCard';
+import type { AdminTestimonialListCardTestimonial } from '../../components/AdminTestimonialListCard';
 import { Button } from '../../components/base/button';
 import { Input } from '../../components/base/input';
-import { TestimonialRatingStars } from '../../components/TestimonialRatingStars';
 import type { GqlCAdminTestimonialsPageQuery } from '../../graphql/generated';
-import {
-    AdminCookTestimonialDeleteDocument,
-    AdminCookTestimonialPublishDocument,
-    AdminCustomerTestimonialDeleteDocument,
-    AdminCustomerTestimonialPublishDocument,
-    AdminTestimonialsPageUpdatesDocument,
-} from '../../graphql/generated';
+import { AdminTestimonialsPageUpdatesDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
-import { useTimeZone } from '../../hooks/useTimeZone';
-import { cn } from '../../utils/cn';
 import type { Locale } from '../../utils/locale';
 import { testimonialPublicationStatusLabel, testimonialTypeLabel } from './adminTestimonialsShared';
 import type { AdminTestimonialType } from './adminTestimonialsShared';
@@ -36,22 +24,9 @@ type TypeFilter = 'ALL' | AdminTestimonialType;
 type PublicationFilter = 'ALL' | 'PUBLISHED' | 'PENDING_REVIEW';
 type LinkFilter = 'ALL' | 'LINKED' | 'UNLINKED';
 
-type ListRow = {
-    kind: AdminTestimonialType;
-    id: string;
-    rating: number | null;
-    authorName: string;
-    body: string;
+type ListRow = AdminTestimonialListCardTestimonial & {
     bookingRequestOfferId: string | null;
-    publicationStatus: 'PUBLISHED' | 'PENDING_REVIEW';
-    createdAt: string;
 };
-
-function testimonialDetailTo(row: ListRow): { to: string; params: Record<string, string> } {
-    return row.kind === 'CUSTOMER'
-        ? { to: '/{-$locale}/admin/testimonials/customer/$customerTestimonialId', params: { customerTestimonialId: row.id } }
-        : { to: '/{-$locale}/admin/testimonials/cook/$cookTestimonialId', params: { cookTestimonialId: row.id } };
-}
 
 function typeFilterLabel(value: TypeFilter, locale: Locale): string {
     if (value === 'ALL') return { de: 'Alle', en: 'All' }[locale];
@@ -73,7 +48,6 @@ function linkFilterLabel(value: LinkFilter, locale: Locale): string {
 
 export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPageQuery }) {
     const locale = useLocale();
-    const timeZone = useTimeZone();
     const client = useClient();
     const seed = data.currentSession.user?.admin ?? null;
     const [admin, setAdmin] = useState(seed);
@@ -81,11 +55,6 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
     const [typeFilter, setTypeFilter] = useState<TypeFilter>('ALL');
     const [publicationFilter, setPublicationFilter] = useState<PublicationFilter>('ALL');
     const [linkFilter, setLinkFilter] = useState<LinkFilter>('ALL');
-
-    const [, publishCustomer] = useMutation(AdminCustomerTestimonialPublishDocument);
-    const [, publishCook] = useMutation(AdminCookTestimonialPublishDocument);
-    const [, deleteCustomer] = useMutation(AdminCustomerTestimonialDeleteDocument);
-    const [, deleteCook] = useMutation(AdminCookTestimonialDeleteDocument);
 
     useEffect(() => {
         setAdmin(seed);
@@ -113,24 +82,32 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
 
     const rows = useMemo<ListRow[]>(() => {
         const customerRows: ListRow[] = (admin?.customerTestimonials ?? []).map((testimonial) => ({
-            kind: 'CUSTOMER',
-            id: testimonial.customerTestimonialId,
-            rating: testimonial.rating ?? null,
-            authorName: testimonial.displayAuthorName || `${testimonial.user.firstName} ${testimonial.user.lastName}`,
+            kind: 'customer',
+            testimonialId: testimonial.customerTestimonialId,
+            displayAuthorName: testimonial.displayAuthorName || `${testimonial.user.firstName} ${testimonial.user.lastName}`,
+            displayLocation: testimonial.displayLocation ?? null,
+            displayOccasion: testimonial.displayOccasion ?? null,
             body: testimonial.body,
-            bookingRequestOfferId: testimonial.bookingRequestOfferId ?? null,
+            rating: testimonial.rating ?? null,
             publicationStatus: testimonial.publicationStatus,
+            publishedAt: testimonial.publishedAt ?? null,
             createdAt: testimonial.createdAt,
+            imageUrls: testimonial.imageUrls,
+            bookingRequestOfferId: testimonial.bookingRequestOfferId ?? null,
         }));
         const cookRows: ListRow[] = (admin?.cookTestimonials ?? []).map((testimonial) => ({
-            kind: 'COOK',
-            id: testimonial.cookTestimonialId,
+            kind: 'cook',
+            testimonialId: testimonial.cookTestimonialId,
+            displayAuthorName: testimonial.displayAuthorName || `${testimonial.cook.user.firstName} ${testimonial.cook.user.lastName}`,
+            displayLocation: testimonial.displayLocation ?? null,
+            displayOccasion: testimonial.displayOccasion ?? null,
+            body: testimonial.body ?? null,
             rating: testimonial.rating ?? null,
-            authorName: testimonial.displayAuthorName || `${testimonial.cook.user.firstName} ${testimonial.cook.user.lastName}`,
-            body: testimonial.body ?? '',
-            bookingRequestOfferId: testimonial.bookingRequestOfferId ?? null,
             publicationStatus: testimonial.publicationStatus,
+            publishedAt: testimonial.publishedAt ?? null,
             createdAt: testimonial.createdAt,
+            imageUrls: testimonial.imageUrls,
+            bookingRequestOfferId: testimonial.bookingRequestOfferId ?? null,
         }));
         return [...customerRows, ...cookRows].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     }, [admin]);
@@ -138,50 +115,15 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
     const filtered = useMemo(() => {
         const q = searchText.trim().toLowerCase();
         return rows.filter((row) => {
-            if (typeFilter !== 'ALL' && row.kind !== typeFilter) return false;
+            if (typeFilter !== 'ALL' && row.kind.toUpperCase() !== typeFilter) return false;
             if (publicationFilter !== 'ALL' && row.publicationStatus !== publicationFilter) return false;
             if (linkFilter === 'LINKED' && !row.bookingRequestOfferId) return false;
             if (linkFilter === 'UNLINKED' && row.bookingRequestOfferId) return false;
             if (!q) return true;
-            return row.authorName.toLowerCase().includes(q) || row.body.toLowerCase().includes(q);
+            const body = row.body ?? '';
+            return row.displayAuthorName.toLowerCase().includes(q) || body.toLowerCase().includes(q);
         });
     }, [rows, searchText, typeFilter, publicationFilter, linkFilter]);
-
-    async function togglePublish(row: ListRow) {
-        const next = row.publicationStatus === 'PUBLISHED' ? 'PENDING_REVIEW' : 'PUBLISHED';
-        if (row.kind === 'CUSTOMER') {
-            const result = await publishCustomer({ customerTestimonialId: row.id, publicationStatus: next });
-            if (result.error || !result.data?.admin.customerTestimonialPublish.success) {
-                toast.error({ de: 'Status konnte nicht geändert werden.', en: 'Could not update the status.' }[locale]);
-                return;
-            }
-        } else {
-            const result = await publishCook({ cookTestimonialId: row.id, publicationStatus: next });
-            if (result.error || !result.data?.admin.cookTestimonialPublish.success) {
-                toast.error({ de: 'Status konnte nicht geändert werden.', en: 'Could not update the status.' }[locale]);
-                return;
-            }
-        }
-        toast.success({ de: 'Status aktualisiert.', en: 'Status updated.' }[locale]);
-    }
-
-    async function remove(row: ListRow) {
-        if (!window.confirm({ de: 'Bewertung wirklich löschen?', en: 'Delete this testimonial?' }[locale])) return;
-        if (row.kind === 'CUSTOMER') {
-            const result = await deleteCustomer({ customerTestimonialId: row.id });
-            if (result.error || !result.data?.admin.customerTestimonialDelete.success) {
-                toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete the testimonial.' }[locale]);
-                return;
-            }
-        } else {
-            const result = await deleteCook({ cookTestimonialId: row.id });
-            if (result.error || !result.data?.admin.cookTestimonialDelete.success) {
-                toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete the testimonial.' }[locale]);
-                return;
-            }
-        }
-        toast.success({ de: 'Gelöscht.', en: 'Deleted.' }[locale]);
-    }
 
     return (
         <AdminPathPageChrome>
@@ -249,62 +191,19 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
                     }
                 </p>
 
-                <ul className="divide-y divide-border rounded-xl border border-border bg-secondary">
-                    {filtered.map((row) => {
-                        const detail = testimonialDetailTo(row);
-                        return (
-                            <li
-                                key={`${row.kind}-${row.id}`}
-                                className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-start sm:justify-between"
-                            >
-                                <div className="min-w-0 flex-1 space-y-1.5">
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <Badge variant="outline">{testimonialTypeLabel(row.kind, locale)}</Badge>
-                                        <Badge variant={row.publicationStatus === 'PUBLISHED' ? 'default' : 'secondary'}>
-                                            {testimonialPublicationStatusLabel(row.publicationStatus, locale)}
-                                        </Badge>
-                                        <TestimonialRatingStars rating={row.rating} />
-                                    </div>
-                                    <Link
-                                        to={detail.to as never}
-                                        params={detail.params as never}
-                                        className="block font-medium text-foreground hover:underline"
-                                    >
-                                        {row.authorName}
-                                    </Link>
-                                    <p className={cn('line-clamp-2 text-sm text-muted-foreground', !row.body && 'italic')}>
-                                        {row.body || { de: '(ohne Text)', en: '(no body)' }[locale]}
-                                    </p>
-                                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                                        <span className="tabular-nums">
-                                            {formatDate(row.createdAt, { locale, timeZone, dateStyle: 'medium' })}
-                                        </span>
-                                        {row.bookingRequestOfferId ? (
-                                            <AdminTestimonialOfferLink bookingRequestOfferId={row.bookingRequestOfferId} />
-                                        ) : (
-                                            <span>{{ de: 'Nicht verknüpft', en: 'Not linked' }[locale]}</span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex shrink-0 flex-wrap gap-2">
-                                    <Button type="button" size="sm" variant="outline" onClick={() => void togglePublish(row)}>
-                                        {row.publicationStatus === 'PUBLISHED'
-                                            ? { de: 'Zurückstellen', en: 'Unpublish' }[locale]
-                                            : { de: 'Veröffentlichen', en: 'Publish' }[locale]}
-                                    </Button>
-                                    <Button type="button" size="sm" variant="destructive" onClick={() => void remove(row)}>
-                                        {{ de: 'Löschen', en: 'Delete' }[locale]}
-                                    </Button>
-                                </div>
+                {filtered.length === 0 ? (
+                    <p className="rounded-xl border border-border bg-secondary p-8 text-center text-sm text-muted-foreground">
+                        {{ de: 'Keine Bewertungen gefunden.', en: 'No testimonials found.' }[locale]}
+                    </p>
+                ) : (
+                    <ul className="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                        {filtered.map((row) => (
+                            <li key={`${row.kind}-${row.testimonialId}`} className="min-h-0">
+                                <AdminTestimonialListCard testimonial={row} />
                             </li>
-                        );
-                    })}
-                    {filtered.length === 0 ? (
-                        <li className="p-8 text-center text-sm text-muted-foreground">
-                            {{ de: 'Keine Bewertungen gefunden.', en: 'No testimonials found.' }[locale]}
-                        </li>
-                    ) : null}
-                </ul>
+                        ))}
+                    </ul>
+                )}
             </main>
         </AdminPathPageChrome>
     );

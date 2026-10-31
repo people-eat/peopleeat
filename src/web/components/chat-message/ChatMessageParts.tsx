@@ -345,13 +345,28 @@ function ChatMessageDataPartView({ part }: { part: Extract<Part, { __typename: '
         );
     }
     if (part.dataType === ADMIN_TESTIMONIAL_LIST && part.data && typeof part.data === 'object') {
-        const testimonials = (part.data as { testimonials?: AdminTestimonialListCardTestimonial[] }).testimonials ?? [];
+        const testimonials =
+            (
+                part.data as {
+                    testimonials?: Array<
+                        Omit<AdminTestimonialListCardTestimonial, 'imageUrls'> & {
+                            imageUrl?: string | null;
+                            imageUrls?: ReadonlyArray<string>;
+                        }
+                    >;
+                }
+            ).testimonials ?? [];
         if (testimonials.length === 0) return null;
         return (
             <ChatCardList>
                 {testimonials.map((testimonial) => (
                     <li key={`${testimonial.kind}-${testimonial.testimonialId}`} className="min-h-0 min-w-0">
-                        <AdminTestimonialListCard testimonial={testimonial} />
+                        <AdminTestimonialListCard
+                            testimonial={{
+                                ...testimonial,
+                                imageUrls: testimonial.imageUrls ?? (testimonial.imageUrl ? [testimonial.imageUrl] : []),
+                            }}
+                        />
                     </li>
                 ))}
             </ChatCardList>

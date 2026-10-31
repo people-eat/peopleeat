@@ -17,13 +17,13 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-    AlertDialogTrigger,
 } from '../../components/base/alert-dialog';
 import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { Input } from '../../components/base/input';
 import { Separator } from '../../components/base/separator';
 import { Textarea } from '../../components/base/textarea';
+import { PageTestimonialDetailDialog } from '../../components/PageTestimonialCard';
 import { TestimonialRatingInput } from '../../components/TestimonialRatingInput';
 import { TestimonialRatingStars } from '../../components/TestimonialRatingStars';
 import type { GqlCAdminCustomerTestimonialPageQuery } from '../../graphql/generated';
@@ -89,6 +89,8 @@ export function AdminCustomerTestimonialPage({
     const [, updateImages] = useMutation(AdminCustomerTestimonialDetailImageUpdateDocument);
     const [publishBusy, setPublishBusy] = useState(false);
     const [deleteBusy, setDeleteBusy] = useState(false);
+    const [confirm, setConfirm] = useState<'publish' | 'unpublish' | 'delete' | null>(null);
+    const [previewOpen, setPreviewOpen] = useState(false);
 
     const form = useForm({
         defaultValues: testimonial
@@ -134,15 +136,20 @@ export function AdminCustomerTestimonialPage({
         return unsubscribe;
     }, [client, customerTestimonialId, seed]);
 
-    async function onTogglePublish() {
+    async function onConfirmPublish(next: 'PUBLISHED' | 'PENDING_REVIEW') {
         if (!testimonial || publishBusy) return;
         setPublishBusy(true);
         try {
-            const next = testimonial.publicationStatus === 'PUBLISHED' ? 'PENDING_REVIEW' : 'PUBLISHED';
             const result = await publishTestimonial({ customerTestimonialId, publicationStatus: next });
             if (result.error || !result.data?.admin.customerTestimonialPublish.success) {
                 throw new Error('publish failed');
             }
+            setConfirm(null);
+            toast.success(
+                next === 'PUBLISHED'
+                    ? { de: 'Veröffentlicht.', en: 'Published.' }[locale]
+                    : { de: 'Zurückgestellt.', en: 'Unpublished.' }[locale],
+            );
         } catch {
             toast.error({ de: 'Status konnte nicht geändert werden.', en: 'Could not update the status.' }[locale]);
         } finally {
@@ -157,6 +164,7 @@ export function AdminCustomerTestimonialPage({
             if (result.error || !result.data?.admin.customerTestimonialDelete.success) {
                 throw new Error('delete failed');
             }
+            setConfirm(null);
             await navigate({ to: listRoute.to });
         } catch {
             toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete the testimonial.' }[locale]);
@@ -190,41 +198,109 @@ export function AdminCustomerTestimonialPage({
                                 </p>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                <Button type="button" variant="outline" disabled={publishBusy} onClick={() => void onTogglePublish()}>
+                                <Button type="button" variant="outline" onClick={() => setPreviewOpen(true)}>
+                                    {{ de: 'Öffentliche Ansicht', en: 'Public view' }[locale]}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={publishBusy}
+                                    onClick={() => setConfirm(testimonial.publicationStatus === 'PUBLISHED' ? 'unpublish' : 'publish')}
+                                >
                                     {testimonial.publicationStatus === 'PUBLISHED'
                                         ? { de: 'Zurückstellen', en: 'Unpublish' }[locale]
                                         : { de: 'Veröffentlichen', en: 'Publish' }[locale]}
                                 </Button>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button type="button" variant="destructive" disabled={deleteBusy}>
-                                            {{ de: 'Löschen', en: 'Delete' }[locale]}
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>
-                                                {{ de: 'Bewertung löschen?', en: 'Delete this testimonial?' }[locale]}
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                {
-                                                    {
-                                                        de: 'Dies entfernt die Bewertung dauerhaft und aus allen Kurationslisten.',
-                                                        en: 'This permanently removes the testimonial and any curation entries.',
-                                                    }[locale]
-                                                }
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
-                                            <AlertDialogAction variant="destructive" onClick={() => void onDelete()}>
-                                                {{ de: 'Löschen', en: 'Delete' }[locale]}
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
+                                <Button type="button" variant="destructive" disabled={deleteBusy} onClick={() => setConfirm('delete')}>
+                                    {{ de: 'Löschen', en: 'Delete' }[locale]}
+                                </Button>
                             </div>
                         </div>
+
+                        <PageTestimonialDetailDialog
+                            testimonial={{
+                                authorName: testimonial.displayAuthorName,
+                                location: testimonial.displayLocation,
+                                occasion: testimonial.displayOccasion,
+                                body: testimonial.body,
+                                rating: testimonial.rating ?? null,
+                                imageUrls: testimonial.imageUrls,
+                            }}
+                            open={previewOpen}
+                            onOpenChange={setPreviewOpen}
+                        />
+
+                        <AlertDialog open={confirm === 'publish'} onOpenChange={(open) => !open && setConfirm(null)}>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>{{ de: 'Jetzt veröffentlichen?', en: 'Publish now?' }[locale]}</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        {
+                                            {
+                                                de: 'Die Bewertung wird auf öffentlichen Seiten sichtbar, sofern sie kuratiert oder dem Koch zugeordnet ist.',
+                                                en: 'The review becomes visible on public pages where it is curated or linked to the cook.',
+                                            }[locale]
+                                        }
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel disabled={publishBusy}>
+                                        {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction disabled={publishBusy} onClick={() => void onConfirmPublish('PUBLISHED')}>
+                                        {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+
+                        <AlertDialog open={confirm === 'unpublish'} onOpenChange={(open) => !open && setConfirm(null)}>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>{{ de: 'Zurückstellen?', en: 'Unpublish?' }[locale]}</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        {
+                                            {
+                                                de: 'Die Bewertung verschwindet von öffentlichen Seiten, bis sie erneut veröffentlicht wird.',
+                                                en: 'The review will disappear from public pages until it is published again.',
+                                            }[locale]
+                                        }
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel disabled={publishBusy}>
+                                        {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction disabled={publishBusy} onClick={() => void onConfirmPublish('PENDING_REVIEW')}>
+                                        {{ de: 'Zurückstellen', en: 'Unpublish' }[locale]}
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+
+                        <AlertDialog open={confirm === 'delete'} onOpenChange={(open) => !open && setConfirm(null)}>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>
+                                        {{ de: 'Bewertung löschen?', en: 'Delete this testimonial?' }[locale]}
+                                    </AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        {
+                                            {
+                                                de: 'Dies entfernt die Bewertung dauerhaft und aus allen Kurationslisten.',
+                                                en: 'This permanently removes the testimonial and any curation entries.',
+                                            }[locale]
+                                        }
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel disabled={deleteBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                                    <AlertDialogAction variant="destructive" disabled={deleteBusy} onClick={() => void onDelete()}>
+                                        {{ de: 'Löschen', en: 'Delete' }[locale]}
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
 
                         <div className="grid gap-2">
                             <h2 className="text-sm font-medium text-foreground">{{ de: 'Herkunft', en: 'Source' }[locale]}</h2>

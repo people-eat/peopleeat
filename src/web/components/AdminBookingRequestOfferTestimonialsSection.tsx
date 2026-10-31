@@ -18,6 +18,16 @@ import {
 import { useLocale } from '../hooks/useLocale';
 import { AdminTestimonialImageManager } from '../pages/admin/AdminTestimonialImageManager';
 import { testimonialPublicationStatusLabel } from '../pages/admin/adminTestimonialsShared';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from './base/alert-dialog';
 import { Badge } from './base/badge';
 import { Button } from './base/button';
 import { Input } from './base/input';
@@ -204,6 +214,7 @@ function TestimonialSide({
     const locale = useLocale();
     const [editing, setEditing] = useState(false);
     const [busy, setBusy] = useState(false);
+    const [confirm, setConfirm] = useState<'publish' | 'unpublish' | 'delete' | null>(null);
 
     const form = useForm({
         defaultValues: {
@@ -232,12 +243,17 @@ function TestimonialSide({
     });
     const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
 
-    async function onTogglePublish() {
+    async function onConfirmPublish(next: 'PUBLISHED' | 'PENDING_REVIEW') {
         if (!existing || busy) return;
         setBusy(true);
         try {
-            const next = existing.publicationStatus === 'PUBLISHED' ? 'PENDING_REVIEW' : 'PUBLISHED';
             if (!(await onPublish(existing.id, next))) throw new Error('publish failed');
+            setConfirm(null);
+            toast.success(
+                next === 'PUBLISHED'
+                    ? { de: 'Veröffentlicht.', en: 'Published.' }[locale]
+                    : { de: 'Zurückgestellt.', en: 'Unpublished.' }[locale],
+            );
         } catch {
             toast.error({ de: 'Status konnte nicht geändert werden.', en: 'Could not update the status.' }[locale]);
         } finally {
@@ -247,10 +263,10 @@ function TestimonialSide({
 
     async function onConfirmDelete() {
         if (!existing) return;
-        if (!window.confirm({ de: 'Bewertung wirklich löschen?', en: 'Delete this testimonial?' }[locale])) return;
         setBusy(true);
         try {
             if (!(await onDelete(existing.id))) throw new Error('delete failed');
+            setConfirm(null);
         } catch {
             toast.error({ de: 'Löschen fehlgeschlagen.', en: 'Could not delete the testimonial.' }[locale]);
         } finally {
@@ -282,15 +298,87 @@ function TestimonialSide({
                     <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => setEditing(true)}>
                         {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
                     </Button>
-                    <Button type="button" size="sm" variant="outline" disabled={busy} onClick={() => void onTogglePublish()}>
+                    <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => setConfirm(existing.publicationStatus === 'PUBLISHED' ? 'unpublish' : 'publish')}
+                    >
                         {existing.publicationStatus === 'PUBLISHED'
                             ? { de: 'Zurückstellen', en: 'Unpublish' }[locale]
                             : { de: 'Veröffentlichen', en: 'Publish' }[locale]}
                     </Button>
-                    <Button type="button" size="sm" variant="destructive" disabled={busy} onClick={() => void onConfirmDelete()}>
+                    <Button type="button" size="sm" variant="destructive" disabled={busy} onClick={() => setConfirm('delete')}>
                         {{ de: 'Löschen', en: 'Delete' }[locale]}
                     </Button>
                 </div>
+
+                <AlertDialog open={confirm === 'publish'} onOpenChange={(open) => !open && setConfirm(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{{ de: 'Jetzt veröffentlichen?', en: 'Publish now?' }[locale]}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {
+                                    {
+                                        de: 'Die Bewertung wird auf öffentlichen Seiten sichtbar, sofern sie kuratiert oder dem Koch zugeordnet ist.',
+                                        en: 'The review becomes visible on public pages where it is curated or linked to the cook.',
+                                    }[locale]
+                                }
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                            <AlertDialogAction disabled={busy} onClick={() => void onConfirmPublish('PUBLISHED')}>
+                                {{ de: 'Veröffentlichen', en: 'Publish' }[locale]}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={confirm === 'unpublish'} onOpenChange={(open) => !open && setConfirm(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{{ de: 'Zurückstellen?', en: 'Unpublish?' }[locale]}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {
+                                    {
+                                        de: 'Die Bewertung verschwindet von öffentlichen Seiten, bis sie erneut veröffentlicht wird.',
+                                        en: 'The review will disappear from public pages until it is published again.',
+                                    }[locale]
+                                }
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                            <AlertDialogAction disabled={busy} onClick={() => void onConfirmPublish('PENDING_REVIEW')}>
+                                {{ de: 'Zurückstellen', en: 'Unpublish' }[locale]}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                <AlertDialog open={confirm === 'delete'} onOpenChange={(open) => !open && setConfirm(null)}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{{ de: 'Bewertung löschen?', en: 'Delete this testimonial?' }[locale]}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {
+                                    {
+                                        de: 'Dies entfernt die Bewertung dauerhaft und aus allen Kurationslisten.',
+                                        en: 'This permanently removes the testimonial and any curation entries.',
+                                    }[locale]
+                                }
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                            <AlertDialogAction variant="destructive" disabled={busy} onClick={() => void onConfirmDelete()}>
+                                {{ de: 'Löschen', en: 'Delete' }[locale]}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
             </div>
         );
     }

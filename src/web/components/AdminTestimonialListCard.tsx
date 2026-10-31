@@ -7,6 +7,7 @@ import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
 import { Badge } from './base/badge';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
+import { PageTestimonialCardFace } from './PageTestimonialCard';
 
 export type AdminTestimonialListCardTestimonial = {
     kind: 'customer' | 'cook';
@@ -19,7 +20,7 @@ export type AdminTestimonialListCardTestimonial = {
     publicationStatus: GqlCTestimonialPublicationStatus | string;
     publishedAt: string | null;
     createdAt: string;
-    imageUrl: string | null;
+    imageUrls: ReadonlyArray<string>;
 };
 
 function publicationLabel(status: string, locale: 'de' | 'en'): string {
@@ -32,6 +33,8 @@ export function AdminTestimonialListCard({ testimonial }: { testimonial: AdminTe
     const timeZone = useTimeZone();
     const kindLabel = testimonial.kind === 'customer' ? { de: 'Kunde', en: 'Customer' }[locale] : { de: 'Koch', en: 'Cook' }[locale];
     const createdLabel = formatDate(testimonial.createdAt, { locale, timeZone, dateStyle: 'medium' });
+    const editLabel = { de: 'Bearbeiten', en: 'Edit' }[locale];
+    const body = testimonial.body?.trim() || { de: '(ohne Text)', en: '(no body)' }[locale];
     const to =
         testimonial.kind === 'customer'
             ? ('/{-$locale}/admin/testimonials/customer/$customerTestimonialId' as const)
@@ -46,31 +49,30 @@ export function AdminTestimonialListCard({ testimonial }: { testimonial: AdminTe
             to={to}
             params={params}
             className={cn(
-                'flex h-full flex-col gap-3 rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm',
+                'flex h-full flex-col rounded-xl border border-border bg-card p-4 text-card-foreground shadow-sm',
                 bookingRequestCardInteractionClassName,
             )}
         >
-            <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">{kindLabel}</Badge>
-                <Badge variant={testimonial.publicationStatus === 'PUBLISHED' ? 'default' : 'outline'}>
-                    {publicationLabel(testimonial.publicationStatus, locale)}
-                </Badge>
-                <span className="text-xs text-muted-foreground">{createdLabel}</span>
-            </div>
-            <p className="line-clamp-1 font-medium text-foreground">{testimonial.displayAuthorName}</p>
-            {testimonial.displayOccasion || testimonial.displayLocation ? (
-                <p className="truncate text-sm text-muted-foreground">
-                    {[testimonial.displayOccasion, testimonial.displayLocation].filter(Boolean).join(' · ')}
-                </p>
-            ) : null}
-            {testimonial.body ? <p className="line-clamp-3 text-sm text-muted-foreground">{testimonial.body}</p> : null}
-            {testimonial.rating != null ? (
-                <p className="mt-auto text-xs text-muted-foreground">
-                    {{ de: `Bewertung ${testimonial.rating}/5`, en: `Rating ${testimonial.rating}/5` }[locale]}
-                </p>
-            ) : (
-                <span className="mt-auto" />
-            )}
+            <PageTestimonialCardFace
+                testimonial={{
+                    authorName: testimonial.displayAuthorName,
+                    location: testimonial.displayLocation,
+                    occasion: testimonial.displayOccasion,
+                    body,
+                    rating: testimonial.rating,
+                    imageUrls: testimonial.imageUrls,
+                }}
+                header={
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="secondary">{kindLabel}</Badge>
+                        <Badge variant={testimonial.publicationStatus === 'PUBLISHED' ? 'default' : 'outline'}>
+                            {publicationLabel(testimonial.publicationStatus, locale)}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">{createdLabel}</span>
+                    </div>
+                }
+                footerAction={<span className="shrink-0 text-sm font-medium text-accent">{editLabel}</span>}
+            />
         </Link>
     );
 }
