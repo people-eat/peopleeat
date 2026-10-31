@@ -35,7 +35,9 @@ cook booking list).
 
 - Chef profile: hero star row and testimonials section from published customer reviews (section hidden when empty); cook’s own public
   preview omits both (no live public fetch there).
-- City and partner pages: curated testimonial section after featured cooks; hidden when empty.
+- City and partner pages: curated testimonial section after featured cooks; hidden when empty. Each tile (`PageTestimonialCard`) shows stars
+  with the numeric rating, occasion top-right, a 4-line clamped quote, and “Bewertung ansehen” / “View review” opening a detail dialog (full
+  text + images). Default grid is 3 columns; booking request plan uses 2 beside the sticky sidebar.
 - Home: static marketing quotes in a marquee — [landing.md](./landing.md).
 - How to become a chef: static chef quotes (not database-driven).
 
@@ -64,7 +66,8 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 - Commands / queries: `*Testimonial*` under commands and queries; admin assistant list tool `adminTestimonialsFindMany` (customer + cook,
   in-process filters) → `admin.testimonialList` cards
 - Utils: publication from rating, offer fallbacks, image URLs from file uploads, junction cleanup
-- Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials`, `ContentPageTestimonialsEditor`
+- Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `PageTestimonialCard` (detail dialog;
+  `columns={2|3}`), `ContentPageTestimonialsEditor`
 - Capture UI: `BookingRequestOfferTestimonialPanel`, rating input/stars — Review tab on customer, cook, and admin offer pages
 - List nudges: customer cards read `testimonialMissing`, deep-link `?tab=testimonial`
 - Jobs: `bookingRequestOfferTestimonialReminder` (memory nudge, morning and evening reminders Europe/Berlin); schedule on payment success

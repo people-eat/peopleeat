@@ -17,7 +17,8 @@ partner.
    Sheet on mobile and Dialog on desktop. Sticky summary sidebar only from `@5xl` (single-column + bottom bar below that, so the sidebar
    does not crowd mid widths). Foretaste section is a horizontal carousel (5 reel cards, captions at top, prev/next at top right on all
    widths). Without a resolved venue, address Combobox is shown. Care section (“Ihr genießt…”) uses three equal cards with line icons.
-   Partner testimonials reuse curated partner assignments.
+   Partner testimonials reuse curated partner assignments via `SectionPageTestimonials` with `columns={2}` (sidebar width) and per-card
+   detail dialogs.
 3. **Step 2 (contact)** — `AuthIdentityGate` (OTP / passkey / profile; `firstName` seeded from query when registering) plus optional wishes
    / allergies message. Submit calls `UserMutation.bookingRequestCreate` with the chosen `priceClassType` and lands on the existing
    submitted page.

@@ -1401,6 +1401,7 @@ export function BookingRequestPlanPage({
                                                 locale={locale}
                                                 title={{ de: 'Abende, die bleiben.', en: 'Evenings that stay with you.' }[locale]}
                                                 inset={false}
+                                                columns={2}
                                             />
                                         </div>
                                     </Reveal>
