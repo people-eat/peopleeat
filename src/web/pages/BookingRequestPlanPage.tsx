@@ -757,7 +757,7 @@ export function BookingRequestPlanPage({
 
     const summaryCard = (
         <aside
-            className={cn('rounded-xl border border-border bg-card p-5 shadow-xs', 'lg:sticky lg:top-20')}
+            className="rounded-xl border border-border bg-card p-5 shadow-xs"
             aria-label={{ de: 'Eure Auswahl', en: 'Your selection' }[locale]}
         >
             <p className="font-serif text-xl tracking-tight">{{ de: 'Eure Auswahl', en: 'Your selection' }[locale]}</p>
@@ -1011,15 +1011,16 @@ export function BookingRequestPlanPage({
                 ) : null}
 
                 {step === 'details' ? (
-                    <div className={cn('grid gap-6', partner ? '@lg:grid-cols-[minmax(0,1fr)_auto] @lg:items-start' : null)}>
+                    <div className={cn('grid gap-6', partner ? '@xl:grid-cols-[minmax(0,1fr)_auto] @xl:items-start' : null)}>
                         <div className="grid gap-3">
                             {greetingName ? (
                                 <p className="text-lg text-muted-foreground">
                                     {{ de: `Willkommen, ${greetingName}.`, en: `Welcome, ${greetingName}.` }[locale]}
                                 </p>
                             ) : null}
-                            <h1 className="font-serif text-4xl tracking-tight @md:text-5xl">
-                                {{ de: 'Euer Abend. Eure Experience.', en: 'Your evening. Your experience.' }[locale]}
+                            <h1 className="font-serif text-4xl tracking-tight @xl:text-5xl">
+                                <span className="block @xl:inline">{{ de: 'Euer Abend.', en: 'Your evening.' }[locale]}</span>{' '}
+                                <span className="block @xl:inline">{{ de: 'Eure Experience.', en: 'Your experience.' }[locale]}</span>
                             </h1>
                             <p className="max-w-2xl text-base/relaxed text-muted-foreground">
                                 {partner
@@ -1039,7 +1040,8 @@ export function BookingRequestPlanPage({
                                 to="/{-$locale}/partners/$pathName"
                                 params={{ pathName: partner.pathName }}
                                 className={cn(
-                                    'flex w-fit max-w-md items-center gap-4 rounded-xl border border-border bg-secondary/60 p-4',
+                                    'mx-auto flex w-fit max-w-full items-center gap-4 rounded-xl border border-border bg-secondary/60 p-4',
+                                    '@xl:mx-0 @xl:max-w-md',
                                     selectionControlClassName,
                                     'hover:bg-muted active:bg-muted/80',
                                 )}
@@ -1070,7 +1072,7 @@ export function BookingRequestPlanPage({
                                 <div className="grid gap-3">
                                     <p className="text-sm font-medium">{{ de: 'Dinner-Datum', en: 'Dinner date' }[locale]}</p>
                                     {useDateChips ? (
-                                        <div className="flex flex-wrap gap-2.5">
+                                        <div className="grid grid-cols-4 gap-2.5 @md:grid-cols-6 @2xl:grid-cols-8">
                                             {selectableDays.map((day) => {
                                                 const key = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
                                                 const selected = key === selectedDayKey;
@@ -1089,7 +1091,7 @@ export function BookingRequestPlanPage({
                                                         onClick={() => selectDay(day)}
                                                         aria-pressed={selected}
                                                         className={cn(
-                                                            'flex size-22 flex-col items-center justify-center gap-0.5 rounded-xl border',
+                                                            'flex aspect-square w-full flex-col items-center justify-center gap-0.5 rounded-xl border',
                                                             selectionControlClassName,
                                                             selectionSurfaceClassName(selected),
                                                         )}
@@ -1289,7 +1291,7 @@ export function BookingRequestPlanPage({
                                             }[locale]
                                         }
                                     </h2>
-                                    <div className="grid gap-3 @sm:grid-cols-2">
+                                    <div className="grid gap-3 @xl:grid-cols-2">
                                         {bookingRequestPlanCuisineKeys.map((key) => {
                                             const selected = values.cuisine === key;
                                             return (
@@ -1371,13 +1373,13 @@ export function BookingRequestPlanPage({
                                                 }
                                             </p>
                                         </div>
-                                        <div className="grid items-stretch gap-4 @md:grid-cols-3">
+                                        <div className="grid items-stretch gap-4 @xl:grid-cols-3">
                                             {CARE_ITEMS.map((item) => {
                                                 const Icon = item.icon;
                                                 return (
                                                     <div
                                                         key={item.de.title}
-                                                        className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-muted p-5 @md:p-6"
+                                                        className="flex h-full flex-col items-start gap-3 rounded-2xl border border-border bg-muted p-5 @xl:p-6"
                                                     >
                                                         <span className="flex size-8 shrink-0 items-center justify-center">
                                                             <Icon className="size-6 text-foreground" strokeWidth={1.5} aria-hidden />
@@ -1500,30 +1502,46 @@ export function BookingRequestPlanPage({
                         )}
                     </div>
 
-                    <div className="hidden @5xl:block">{summaryCard}</div>
+                    <div className="hidden @5xl:sticky @5xl:top-20 @5xl:block">{summaryCard}</div>
                 </div>
             </div>
 
             {step === 'details' ? (
-                <div className="sticky bottom-0 z-40 border-t border-border bg-background/95 p-3 backdrop-blur @5xl:hidden">
-                    <div className="mx-auto flex max-w-7xl items-center gap-3">
+                <div className="sticky bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur @5xl:hidden">
+                    <div className="mx-auto flex max-w-7xl items-center gap-4">
                         <button
                             type="button"
-                            className="min-w-0 flex-1 rounded-xl border border-border bg-secondary/50 px-3 py-2 text-left"
+                            className={cn(
+                                'min-w-0 flex-1 rounded-lg py-1 text-left',
+                                selectionControlClassName,
+                                'hover:bg-muted/60 active:bg-muted/80',
+                            )}
                             onClick={() => setDetailsEditorOpen(true)}
                             aria-label={{ de: 'Angaben bearbeiten', en: 'Edit details' }[locale]}
                         >
-                            <span className="flex items-center gap-2">
-                                <span className="min-w-0 flex-1">
-                                    <span className="block truncate text-sm font-medium">
-                                        {formatDate(values.dateTime, { locale, dateStyle: 'short' })} · {values.adultCount}
-                                        {values.discountedCount > 0 ? `+${values.discountedCount}` : ''}
+                            <span className="grid min-w-0 gap-0.5">
+                                <span className="truncate text-sm font-medium">
+                                    {
+                                        {
+                                            de: `${values.adultCount + values.discountedCount} Teilnehmer`,
+                                            en: `${values.adultCount + values.discountedCount} guests`,
+                                        }[locale]
+                                    }
+                                </span>
+                                <span className="inline-flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+                                    <span className="truncate">
+                                        {
+                                            {
+                                                de: `${priceInfo.title} · ab ${softPrice}`,
+                                                en: `${priceInfo.title} · from ${softPrice}`,
+                                            }[locale]
+                                        }
                                     </span>
-                                    <span className="text-xs text-muted-foreground">
-                                        {{ de: 'Tippen zum Bearbeiten', en: 'Tap to edit' }[locale]}
+                                    <span className="inline-flex shrink-0 items-center gap-1 underline-offset-2 hover:underline">
+                                        {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
+                                        <PencilIcon className="size-3 shrink-0" aria-hidden />
                                     </span>
                                 </span>
-                                <PencilIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                             </span>
                         </button>
                         <Button type="button" className="shrink-0" onClick={goToContact} disabled={!canContinueToContact()}>

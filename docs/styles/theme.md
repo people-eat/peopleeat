@@ -99,9 +99,11 @@ Content-sized shell pages must not use `flex-1` / `min-h-0` on the page root: th
 the shared `::after` bottom spacer from sitting past the last content. Leave bottom padding to `workspace-inset-scroll`; do not add
 page-level `pb-*` / `mb-*` for the same job.
 
-Radix modal layers (Select, Dialog, …) still run `react-remove-scroll`, which adds a matching `margin-right` / `padding-right` on
+Radix modal layers (Select, Dialog, Sheet, …) still run `react-remove-scroll`, which adds a matching `margin-right` / `padding-right` on
 `body[data-scroll-locked]`. With a stable gutter that second offset is a double reserve and shifts the layout left. The base stylesheet
-zeroes those injected offsets; do not remove that override without another way to keep Select/Dialog open from nudging the page.
+zeroes those injected offsets; do not remove that override without another way to keep Select/Dialog open from nudging the page. Public
+pages scroll `html`, so the stylesheet also sets `overflow: hidden` on `html:has(body[data-scroll-locked])` — otherwise the page behind a
+modal can still scroll even though `body` is locked. Overlay scrims use `bg-black/50 backdrop-blur-sm`.
 
 ## Rules
 

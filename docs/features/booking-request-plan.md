@@ -7,18 +7,22 @@ partner.
 
 1. Visitor opens `/booking-request/plan` (optional query: `partnerId`, `firstName`, `minDateTime` / `maxDateTime`, guests, venue, cuisine).
 2. **Step 1 (details)** — title / subtitle and partner card sit above the details + sticky-summary grid. Greeting when `firstName` (or
-   signed-in first name) is present. Date chips (larger square cards: short weekday with trailing dot, day number, short month) only when
-   both `minDateTime` and `maxDateTime` are set and the window has at most 14 days; otherwise the calendar DatePicker (with optional
-   min/max). Cuisine cards and date chips use the same pointer / hover / pressed / focus-visible interaction pattern as `SelectableChip`.
-   Partner card links to `/partners/$pathName` when `partnerId` resolves. Soft “ab / from” price guidance from the selected price class
-   (default MEDIUM / Signature; editable in the details editor; no fake cart total); hero card shows a five-star row (cook-card style) and,
-   when partner testimonials exist, “Bewertungen ansehen” scrolls to that section; per-cuisine sample-menu dialog (title + courses keyed to
-   the selected preference; each cuisine card also has “Beispielmenü ansehen”); edit guests / start time / cuisine / price class via bottom
-   Sheet on mobile and Dialog on desktop. Sticky summary sidebar only from `@5xl` (single-column + bottom bar below that, so the sidebar
-   does not crowd mid widths). Foretaste section is a horizontal carousel (5 reel cards, captions at top, prev/next at top right on all
-   widths). Without a resolved venue, address Combobox is shown. Care section (“Ihr genießt…”) uses three equal cards with line icons.
-   Partner testimonials reuse curated partner assignments via `SectionPageTestimonials` with `columns={2}` (sidebar width) and per-card
-   detail dialogs.
+   signed-in first name) is present. Title splits onto two lines below `@xl` (“Euer Abend.” / “Eure Experience.”); partner card sits beside
+   the title from `@xl` (stacked + centered `w-fit` card below that). Date chips (square cards: short weekday with trailing dot, day number,
+   short month) use `grid-cols-4` → `@md:grid-cols-6` → `@2xl:grid-cols-8`, only when both `minDateTime` and `maxDateTime` are set and the
+   window has at most 14 days; otherwise the calendar DatePicker (with optional min/max). Cuisine cards stay single-column below `@xl`, two
+   columns from `@xl`; cuisine cards and date chips use the same pointer / hover / pressed / focus-visible interaction pattern as
+   `SelectableChip`. Soft “ab / from” price guidance from the selected price class (default MEDIUM / Signature; editable in the details
+   editor; no fake cart total); hero card shows a five-star row (cook-card style) and, when partner testimonials exist, “Bewertungen
+   ansehen” scrolls to that section; per-cuisine sample-menu dialog (title + courses keyed to the selected preference; each cuisine card
+   also has “Beispielmenü ansehen”); edit guests / start time / cuisine / price class via bottom Sheet on mobile and Dialog on desktop
+   (scrim locks + blurs the page). Sticky summary sidebar only from `@5xl` (`@5xl:sticky @5xl:top-20` on the column wrapper so it tracks
+   while scrolling; single-column + bottom bar below that, so the sidebar does not crowd mid widths). Mobile bottom bar shows guest count
+   (“Teilnehmer” / “guests”) plus selected price class and soft “ab” price (no date; that lives in the date chips), with a borderless edit
+   affordance and primary Next CTA. Foretaste section is a horizontal carousel (5 reel cards, captions at top, prev/next at top right on all
+   widths). Without a resolved venue, address Combobox is shown. Care section (“Ihr genießt…”) stays stacked below `@xl`, three equal cards
+   from `@xl`. Partner testimonials reuse curated partner assignments via `SectionPageTestimonials` with `columns={2}` (sidebar width) and
+   per-card detail dialogs.
 3. **Step 2 (contact)** — `AuthIdentityGate` (OTP / passkey / profile; `firstName` seeded from query when registering) plus optional wishes
    / allergies message. Submit calls `UserMutation.bookingRequestCreate` with the chosen `priceClassType` and lands on the existing
    submitted page.
