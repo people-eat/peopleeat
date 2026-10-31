@@ -29,13 +29,8 @@ describe('adminOutboundEmailPurposeStatsFindMany', () => {
         // Arrange
         const { requestingSession, serverRuntime } = await commandSetup.withUser();
         const token = `purpose-${idCreate().slice(0, 8)}`;
-        const dayOffset =
-            Number.parseInt(
-                idCreate()
-                    .replace(/[^0-9a-f]/gi, '')
-                    .slice(0, 4),
-                16,
-            ) % 300;
+        // Base-36 over the nanoId alphabet (not hex-only): hex filtering can yield '' → NaN → Invalid Date.
+        const dayOffset = Number.parseInt(idCreate().slice(0, 8), 36) % 300;
         const createdAt = new Date(Date.UTC(2098, 0, 1 + dayOffset, 12, 0, 0));
         const range = {
             startDateTime: new Date(Date.UTC(2098, 0, 1 + dayOffset, 0, 0, 0)),
