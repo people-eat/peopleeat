@@ -15,6 +15,7 @@ import type { SectionOccasionFormatsModel } from '../sections/SectionOccasionFor
 import { SectionOccasionFormats } from '../sections/SectionOccasionFormats';
 import { SectionPageTestimonials } from '../sections/SectionPageTestimonials';
 import type { SectionPageTestimonial } from '../sections/SectionPageTestimonials';
+import { SectionPartnersExplore } from '../sections/SectionPartnersExplore';
 import { ContentSectionsRenderer } from './ContentSectionsRenderer';
 import { Footer } from './Footer';
 import { Header } from './Header';
@@ -67,6 +68,8 @@ export type ContentPageViewModel = {
     howItWorksAlternativeMedia?: boolean;
     /** City list below dynamic sections. Hidden when empty / omitted. */
     cities?: ReadonlyArray<SectionCitiesCity>;
+    /** Partner detail CTA to `/partners` (exploration path). */
+    partnersExplore?: boolean;
     /** Press logos after the cities list (city detail + landing + partners). */
     knownFrom?: boolean;
 };
@@ -164,6 +167,11 @@ export function ContentPageView({
                 {page.cities ? (
                     <div data-content-preview-anchor="cities">
                         <SectionCities cities={page.cities} />
+                    </div>
+                ) : null}
+                {page.partnersExplore ? (
+                    <div data-content-preview-anchor="partners-explore">
+                        <SectionPartnersExplore />
                     </div>
                 ) : null}
                 {page.knownFrom ? (

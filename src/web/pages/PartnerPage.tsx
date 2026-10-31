@@ -36,6 +36,7 @@ export function PartnerPage({ data }: { data: GqlCPublicPartnerPageQuery }) {
                 howItWorks: true,
                 howItWorksHideCta: true,
                 howItWorksAlternativeMedia: partner.howItWorksAlternativeMedia,
+                partnersExplore: true,
                 knownFrom: true,
             }}
         />

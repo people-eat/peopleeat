@@ -331,6 +331,7 @@ export function AdminPartnerPage({
                 howItWorks
                 howItWorksHideCta
                 howItWorksAlternativeMedia={values.howItWorksAlternativeMedia}
+                partnersExplore
                 knownFrom
                 chefForAnyOccasion={{
                     displayName: values.name.trim() || { de: 'Partner', en: 'Partner' }[locale],

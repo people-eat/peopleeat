@@ -132,6 +132,7 @@ export function ContentPageEditor({
     howItWorksHideCta,
     howItWorksAlternativeMedia,
     cities,
+    partnersExplore,
     knownFrom,
 }: {
     uiLocale: Locale;
@@ -163,6 +164,7 @@ export function ContentPageEditor({
     howItWorksHideCta?: ContentPageViewModel['howItWorksHideCta'];
     howItWorksAlternativeMedia?: ContentPageViewModel['howItWorksAlternativeMedia'];
     cities?: ContentPageViewModel['cities'];
+    partnersExplore?: ContentPageViewModel['partnersExplore'];
     knownFrom?: ContentPageViewModel['knownFrom'];
 }) {
     const navigate = useNavigate();
@@ -275,6 +277,7 @@ export function ContentPageEditor({
                 howItWorksHideCta,
                 howItWorksAlternativeMedia,
                 cities,
+                partnersExplore,
                 knownFrom,
             }}
         />
