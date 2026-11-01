@@ -93,6 +93,7 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
             publishedAt: testimonial.publishedAt ?? null,
             createdAt: testimonial.createdAt,
             imageUrls: testimonial.imageUrls,
+            publicPagePlacements: testimonial.publicPagePlacements,
             bookingRequestOfferId: testimonial.bookingRequestOfferId ?? null,
         }));
         const cookRows: ListRow[] = (admin?.cookTestimonials ?? []).map((testimonial) => ({
@@ -107,6 +108,7 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
             publishedAt: testimonial.publishedAt ?? null,
             createdAt: testimonial.createdAt,
             imageUrls: testimonial.imageUrls,
+            publicPagePlacements: testimonial.publicPagePlacements,
             bookingRequestOfferId: testimonial.bookingRequestOfferId ?? null,
         }));
         return [...customerRows, ...cookRows].sort((a, b) => b.createdAt.localeCompare(a.createdAt));

@@ -101,8 +101,9 @@ Direction: self-serve builder on the public partners surface, admins remain sole
   `/admin/partners/$partnerId` (cook search inside the choose-chefs dialog + listing warnings; cook/testimonial saves and in-flight image
   uploads mark the page dirty so the partner subscription does not reset unsaved form fields; hero/first-section image updates merge via
   functional setState so a completing upload cannot clobber newer edits)
-- Public: list + detail via `ContentPageView` (hero overlay, ChefForAnyOccasion, featured cooks, testimonials, HowItWorks with `hideCta` /
-  alternative media, sections, `SectionPartnersExplore` → `/partners`, KnownFrom); sitemap `/sitemap-partners.xml`
+- Public / admin preview: list + detail via `ContentPageView` (hero overlay, ChefForAnyOccasion, featured cooks, testimonials via
+  `contentPageTestimonialsForPreview`, HowItWorks with `hideCta` / alternative media, sections, `SectionPartnersExplore` → `/partners`,
+  KnownFrom); sitemap `/sitemap-partners.xml`
 - Alternative HowItWorks assets: `public/home/how-it-works-section/*.alternative.*`
 - Draft flag: unified `publishedAt` (null = draft)
 - Separate admin vs public GraphQL shapes (same pattern as other content pages)

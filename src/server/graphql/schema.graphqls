@@ -3086,6 +3086,28 @@ type AdminCookFeaturedLanding {
 #
 # See docs/architecture/testimonials.md.
 
+# Where a testimonial appears on public surfaces. City / partner / occasion rows
+# come from curation junctions; CHEF is auto for published customer reviews tied
+# to a cook offer. See docs/architecture/testimonials.md.
+enum AdminTestimonialPublicPageKind {
+    CITY
+    PARTNER
+    OCCASION
+    CHEF
+}
+
+type AdminTestimonialPublicPagePlacement {
+    kind: AdminTestimonialPublicPageKind!
+    # cityId / partnerId / occasionId / cookId.
+    entityId: ID!
+    labelDe: String!
+    labelEn: String!
+    # Content-page pathName when curated; null for CHEF (public route uses cookId).
+    pathName: String
+    # Curation order on city / partner / occasion; null for CHEF.
+    index: Int
+}
+
 type AdminCustomerTestimonial {
     customerTestimonialId: ID!
     userId: ID!
@@ -3105,6 +3127,9 @@ type AdminCustomerTestimonial {
     publicationStatus: TestimonialPublicationStatus!
     publishedAt: DateTime
     createdAt: DateTime!
+    # Curated city / partner / occasion pages, plus the cook public page when
+    # published and offer-linked. Batch-loaded in admin list / detail queries.
+    publicPagePlacements: [AdminTestimonialPublicPagePlacement!]!
 }
 
 type CookTestimonialLowRatingAnswers {
@@ -3135,6 +3160,9 @@ type AdminCookTestimonial {
     publicationStatus: TestimonialPublicationStatus!
     publishedAt: DateTime
     createdAt: DateTime!
+    # Curated city / partner / occasion pages (cook quotes are not auto-shown on
+    # chef profiles). Batch-loaded in admin list / detail queries.
+    publicPagePlacements: [AdminTestimonialPublicPagePlacement!]!
 }
 
 union AdminTestimonial = AdminCustomerTestimonial | AdminCookTestimonial

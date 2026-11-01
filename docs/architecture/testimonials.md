@@ -37,6 +37,8 @@ testimonial tab).
 ## Consequences
 
 - Delete commands must remove the city, partner, and occasion junction rows for the deleted testimonial (`testimonialJunctionRowsDelete`).
+- Admin list/detail expose reverse `publicPagePlacements` (batch-loaded from junctions + published offer-linked customer → chef page) via
+  `adminTestimonialPublicPagePlacementsLoad`.
 - Display fallbacks load offer/booking context (author, **city only**, occasion, participants) — never street address.
 - Home / how-to-become-a-chef marketing quotes stay static (not DB-driven).
 - Testimonial `imageUrls` are `/api/file-uploads/{id}` paths. Download auth treats published testimonials as public references and any

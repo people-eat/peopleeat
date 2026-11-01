@@ -5,6 +5,8 @@ import type { GqlCTestimonialPublicationStatus } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
+import { AdminTestimonialPublicPagePlacementBadges } from './AdminTestimonialPublicPagePlacements';
+import type { AdminTestimonialPublicPagePlacement } from './AdminTestimonialPublicPagePlacements';
 import { Badge } from './base/badge';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
 import { PageTestimonialCardFace } from './PageTestimonialCard';
@@ -21,6 +23,7 @@ export type AdminTestimonialListCardTestimonial = {
     publishedAt: string | null;
     createdAt: string;
     imageUrls: ReadonlyArray<string>;
+    publicPagePlacements?: ReadonlyArray<AdminTestimonialPublicPagePlacement>;
 };
 
 function publicationLabel(status: string, locale: 'de' | 'en'): string {
@@ -63,12 +66,15 @@ export function AdminTestimonialListCard({ testimonial }: { testimonial: AdminTe
                     imageUrls: testimonial.imageUrls,
                 }}
                 header={
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary">{kindLabel}</Badge>
-                        <Badge variant={testimonial.publicationStatus === 'PUBLISHED' ? 'default' : 'outline'}>
-                            {publicationLabel(testimonial.publicationStatus, locale)}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">{createdLabel}</span>
+                    <div className="grid gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="secondary">{kindLabel}</Badge>
+                            <Badge variant={testimonial.publicationStatus === 'PUBLISHED' ? 'default' : 'outline'}>
+                                {publicationLabel(testimonial.publicationStatus, locale)}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">{createdLabel}</span>
+                        </div>
+                        <AdminTestimonialPublicPagePlacementBadges placements={testimonial.publicPagePlacements ?? []} />
                     </div>
                 }
                 footerAction={<span className="shrink-0 text-sm font-medium text-accent">{editLabel}</span>}

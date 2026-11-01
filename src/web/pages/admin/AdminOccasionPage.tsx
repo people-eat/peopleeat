@@ -14,7 +14,10 @@ import { ContentImageField, ContentPageEditor, contentPageEditorTabFromSearch } 
 import type { ContentPageEditorSearch, ContentPageEditorValues } from '../../components/ContentPageEditor';
 import { ContentPageFeaturedCooksEditor } from '../../components/ContentPageFeaturedCooksEditor';
 import type { FeaturedCookOption } from '../../components/ContentPageFeaturedCooksEditor';
-import { ContentPageTestimonialsEditor } from '../../components/ContentPageTestimonialsEditor';
+import {
+    contentPageTestimonialsForPreview,
+    ContentPageTestimonialsEditor,
+} from '../../components/ContentPageTestimonialsEditor';
 import type { TestimonialCandidateOption, TestimonialEntry } from '../../components/ContentPageTestimonialsEditor';
 import { contentSectionsFromGql, contentSectionsToInput } from '../../components/contentSectionsMap';
 import type { GqlCAdminOccasionPageQuery } from '../../graphql/generated';
@@ -341,6 +344,7 @@ export function AdminOccasionPage({
                 tab={tab}
                 user={data.currentSession.user}
                 featuredCooks={previewCooks}
+                testimonials={contentPageTestimonialsForPreview(testimonialEntries, testimonialCandidates)}
                 chefForAnyOccasion={{
                     displayName: values.name.trim() || { de: 'Anlass', en: 'Occasion' }[locale],
                     headlineDe: values.firstSectionHeadlineDe,

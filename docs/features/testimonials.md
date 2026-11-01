@@ -28,9 +28,11 @@ cook booking list).
 
 - Combined customer and cook list with filters as a card grid matching the public testimonial face (stars, clamped quote, photo strip,
   author). Cards navigate to detail; no publish/delete on the list. Shared `AdminTestimonialListCard` also powers the user page and admin
-  chat `admin.testimonialList`.
+  chat `admin.testimonialList`. Cards and detail show **public page placements** (curated city / partner / occasion, plus chef profile for
+  published offer-linked customer reviews).
 - Detail editors for content, images, publish/unpublish/delete (AlertDialog confirms, not browser `confirm`). Star input, not numeric
-  dropdowns. **Public view** opens the same detail dialog customers see.
+  dropdowns. **Public view** opens the same detail dialog customers see. Placement links open the matching admin city / partner / occasion /
+  user editor.
 - Offer detail **Review** tab when completed or either side already has a testimonial — create, edit, publish, delete per side (separate
   from the Offer tab); publish/unpublish/delete use AlertDialogs.
 - City and partner editors: ordered picker across customer and cook testimonials; flags pending items not shown publicly yet.
@@ -76,10 +78,11 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
   in-process filters) → `admin.testimonialList` cards
 - Utils: publication from rating, offer fallbacks, image URLs from file uploads, junction cleanup
 - Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `PageTestimonialCard` / `PageTestimonialCardFace` /
-  `PageTestimonialDetailDialog` (photo strip, split detail dialog with author avatar / occasion in body, mobile always 1 column,
-  `columns={2|3}` from `@md`), `ContentPageTestimonialsEditor`
+  `PageTestimonialDetailDialog` (photo strip, split detail dialog with author avatar; content pages pass `showBookingCta` for occasion
+  question + form CTA; mobile always 1 column, `columns={2|3}` from `@md`), `ContentPageTestimonialsEditor`
 - Admin UI: `AdminTestimonialsPage` card grid via `AdminTestimonialListCard`; detail pages + offer Review tab AlertDialog confirms; detail
-  **Public view** reuses `PageTestimonialDetailDialog`
+  **Public view** reuses `PageTestimonialDetailDialog`; `publicPagePlacements` via `adminTestimonialPublicPagePlacementsLoad` /
+  `AdminTestimonialPublicPagePlacements*`
 - GraphQL: public `CustomerTestimonial` / `CookTestimonial.authorProfilePicture` (batch-loaded from the author’s current profile picture)
 - Download auth: `fileUploadReferencedByPublishedTestimonial` / `fileUploadReferencedByAnyTestimonial` on `GET /api/file-uploads/:id`
 - Capture UI: `BookingRequestOfferTestimonialPanel`, rating input/stars — Review tab on customer, cook, and admin offer pages

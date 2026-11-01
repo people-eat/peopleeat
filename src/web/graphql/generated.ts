@@ -1167,6 +1167,7 @@ export interface GqlCAdminCookTestimonial {
     location?: Maybe<Scalars['String']['output']>;
     lowRatingAnswers?: Maybe<GqlCCookTestimonialLowRatingAnswers>;
     occasion?: Maybe<Scalars['String']['output']>;
+    publicPagePlacements: Array<GqlCAdminTestimonialPublicPagePlacement>;
     publicationStatus: GqlCTestimonialPublicationStatus;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     rating?: Maybe<Scalars['Int']['output']>;
@@ -1211,6 +1212,7 @@ export interface GqlCAdminCustomerTestimonial {
     imageUrls: Array<Scalars['String']['output']>;
     location?: Maybe<Scalars['String']['output']>;
     occasion?: Maybe<Scalars['String']['output']>;
+    publicPagePlacements: Array<GqlCAdminTestimonialPublicPagePlacement>;
     publicationStatus: GqlCTestimonialPublicationStatus;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     rating?: Maybe<Scalars['Int']['output']>;
@@ -2252,6 +2254,18 @@ export type GqlCAdminSupportRequestCriterion = {
 export type GqlCAdminSupportRequestSortField = 'bookingDateTime' | 'createdAt' | 'lastMessageAt';
 
 export type GqlCAdminTestimonial = GqlCAdminCookTestimonial | GqlCAdminCustomerTestimonial;
+
+export type GqlCAdminTestimonialPublicPageKind = 'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER';
+
+export interface GqlCAdminTestimonialPublicPagePlacement {
+    __typename?: 'AdminTestimonialPublicPagePlacement';
+    entityId: Scalars['ID']['output'];
+    index?: Maybe<Scalars['Int']['output']>;
+    kind: GqlCAdminTestimonialPublicPageKind;
+    labelDe: Scalars['String']['output'];
+    labelEn: Scalars['String']['output'];
+    pathName?: Maybe<Scalars['String']['output']>;
+}
 
 export interface GqlCAdminTimeBucket {
     __typename?: 'AdminTimeBucket';
@@ -12420,6 +12434,14 @@ export type GqlCAdminCookTestimonialDetailFragment = {
     publishedAt: string | null;
     createdAt: string;
     lowRatingAnswers: { whatWentWrong: string | null; wouldRecommend: boolean | null; additionalFeedback: string | null } | null;
+    publicPagePlacements: Array<{
+        kind: Schema.GqlCAdminTestimonialPublicPageKind;
+        entityId: string;
+        labelDe: string;
+        labelEn: string;
+        pathName: string | null;
+        index: number | null;
+    }>;
     cook: { cookId: string; user: { userId: string; firstName: string; lastName: string; emailAddress: string | null } };
 };
 
@@ -12454,6 +12476,14 @@ export type GqlCAdminCookTestimonialPageQuery = {
                         wouldRecommend: boolean | null;
                         additionalFeedback: string | null;
                     } | null;
+                    publicPagePlacements: Array<{
+                        kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                        entityId: string;
+                        labelDe: string;
+                        labelEn: string;
+                        pathName: string | null;
+                        index: number | null;
+                    }>;
                     cook: { cookId: string; user: { userId: string; firstName: string; lastName: string; emailAddress: string | null } };
                 } | null;
             } | null;
@@ -12486,6 +12516,14 @@ export type GqlCAdminCookTestimonialPageUpdatesSubscription = {
             publishedAt: string | null;
             createdAt: string;
             lowRatingAnswers: { whatWentWrong: string | null; wouldRecommend: boolean | null; additionalFeedback: string | null } | null;
+            publicPagePlacements: Array<{
+                kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                entityId: string;
+                labelDe: string;
+                labelEn: string;
+                pathName: string | null;
+                index: number | null;
+            }>;
             cook: { cookId: string; user: { userId: string; firstName: string; lastName: string; emailAddress: string | null } };
         } | null;
     };
@@ -12542,6 +12580,14 @@ export type GqlCAdminCustomerTestimonialDetailFragment = {
     publicationStatus: Schema.GqlCTestimonialPublicationStatus;
     publishedAt: string | null;
     createdAt: string;
+    publicPagePlacements: Array<{
+        kind: Schema.GqlCAdminTestimonialPublicPageKind;
+        entityId: string;
+        labelDe: string;
+        labelEn: string;
+        pathName: string | null;
+        index: number | null;
+    }>;
     user: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
 };
 
@@ -12570,6 +12616,14 @@ export type GqlCAdminCustomerTestimonialPageQuery = {
                     publicationStatus: Schema.GqlCTestimonialPublicationStatus;
                     publishedAt: string | null;
                     createdAt: string;
+                    publicPagePlacements: Array<{
+                        kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                        entityId: string;
+                        labelDe: string;
+                        labelEn: string;
+                        pathName: string | null;
+                        index: number | null;
+                    }>;
                     user: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
                 } | null;
             } | null;
@@ -12600,6 +12654,14 @@ export type GqlCAdminCustomerTestimonialPageUpdatesSubscription = {
             publicationStatus: Schema.GqlCTestimonialPublicationStatus;
             publishedAt: string | null;
             createdAt: string;
+            publicPagePlacements: Array<{
+                kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                entityId: string;
+                labelDe: string;
+                labelEn: string;
+                pathName: string | null;
+                index: number | null;
+            }>;
             user: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
         } | null;
     };
@@ -15609,6 +15671,14 @@ export type GqlCAdminTestimonialsListCustomerFragment = {
     publicationStatus: Schema.GqlCTestimonialPublicationStatus;
     publishedAt: string | null;
     createdAt: string;
+    publicPagePlacements: Array<{
+        kind: Schema.GqlCAdminTestimonialPublicPageKind;
+        entityId: string;
+        labelDe: string;
+        labelEn: string;
+        pathName: string | null;
+        index: number | null;
+    }>;
     user: { userId: string; firstName: string; lastName: string };
 };
 
@@ -15629,6 +15699,14 @@ export type GqlCAdminTestimonialsListCookFragment = {
     publicationStatus: Schema.GqlCTestimonialPublicationStatus;
     publishedAt: string | null;
     createdAt: string;
+    publicPagePlacements: Array<{
+        kind: Schema.GqlCAdminTestimonialPublicPageKind;
+        entityId: string;
+        labelDe: string;
+        labelEn: string;
+        pathName: string | null;
+        index: number | null;
+    }>;
     cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
 };
 
@@ -15655,6 +15733,14 @@ export type GqlCAdminTestimonialsPageQuery = {
                     publicationStatus: Schema.GqlCTestimonialPublicationStatus;
                     publishedAt: string | null;
                     createdAt: string;
+                    publicPagePlacements: Array<{
+                        kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                        entityId: string;
+                        labelDe: string;
+                        labelEn: string;
+                        pathName: string | null;
+                        index: number | null;
+                    }>;
                     user: { userId: string; firstName: string; lastName: string };
                 }>;
                 cookTestimonials: Array<{
@@ -15674,6 +15760,14 @@ export type GqlCAdminTestimonialsPageQuery = {
                     publicationStatus: Schema.GqlCTestimonialPublicationStatus;
                     publishedAt: string | null;
                     createdAt: string;
+                    publicPagePlacements: Array<{
+                        kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                        entityId: string;
+                        labelDe: string;
+                        labelEn: string;
+                        pathName: string | null;
+                        index: number | null;
+                    }>;
                     cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
                 }>;
             } | null;
@@ -15701,6 +15795,14 @@ export type GqlCAdminTestimonialsPageUpdatesSubscription = {
             publicationStatus: Schema.GqlCTestimonialPublicationStatus;
             publishedAt: string | null;
             createdAt: string;
+            publicPagePlacements: Array<{
+                kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                entityId: string;
+                labelDe: string;
+                labelEn: string;
+                pathName: string | null;
+                index: number | null;
+            }>;
             user: { userId: string; firstName: string; lastName: string };
         }>;
         cookTestimonials: Array<{
@@ -15720,6 +15822,14 @@ export type GqlCAdminTestimonialsPageUpdatesSubscription = {
             publicationStatus: Schema.GqlCTestimonialPublicationStatus;
             publishedAt: string | null;
             createdAt: string;
+            publicPagePlacements: Array<{
+                kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                entityId: string;
+                labelDe: string;
+                labelEn: string;
+                pathName: string | null;
+                index: number | null;
+            }>;
             cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
         }>;
     };
@@ -16208,6 +16318,14 @@ export type GqlCAdminUserPageQuery = {
                     publishedAt: string | null;
                     createdAt: string;
                     imageUrls: Array<string>;
+                    publicPagePlacements: Array<{
+                        kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                        entityId: string;
+                        labelDe: string;
+                        labelEn: string;
+                        pathName: string | null;
+                        index: number | null;
+                    }>;
                 }>;
                 cookTestimonials?: Array<{
                     cookTestimonialId: string;
@@ -16220,6 +16338,14 @@ export type GqlCAdminUserPageQuery = {
                     publishedAt: string | null;
                     createdAt: string;
                     imageUrls: Array<string>;
+                    publicPagePlacements: Array<{
+                        kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                        entityId: string;
+                        labelDe: string;
+                        labelEn: string;
+                        pathName: string | null;
+                        index: number | null;
+                    }>;
                 }>;
                 bookingRequestOffers?: Array<{
                     bookingRequestOfferId: string;
@@ -27230,6 +27356,21 @@ export const AdminCookTestimonialDetailFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
                         selectionSet: {
                             kind: 'SelectionSet',
@@ -27281,6 +27422,21 @@ export const AdminCustomerTestimonialDetailFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'user' },
@@ -28773,6 +28929,21 @@ export const AdminTestimonialsListCustomerFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'user' },
                         selectionSet: {
                             kind: 'SelectionSet',
@@ -28814,6 +28985,21 @@ export const AdminTestimonialsListCookFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -53282,6 +53468,21 @@ export const AdminCookTestimonialPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
                         selectionSet: {
                             kind: 'SelectionSet',
@@ -53390,6 +53591,21 @@ export const AdminCookTestimonialPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -53748,6 +53964,21 @@ export const AdminCustomerTestimonialPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'user' },
                         selectionSet: {
                             kind: 'SelectionSet',
@@ -53833,6 +54064,21 @@ export const AdminCustomerTestimonialPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'user' },
@@ -64535,6 +64781,21 @@ export const AdminTestimonialsPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'user' },
                         selectionSet: {
                             kind: 'SelectionSet',
@@ -64571,6 +64832,21 @@ export const AdminTestimonialsPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -64664,6 +64940,21 @@ export const AdminTestimonialsPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'user' },
                         selectionSet: {
                             kind: 'SelectionSet',
@@ -64700,6 +64991,21 @@ export const AdminTestimonialsPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'cook' },
@@ -66766,6 +67072,27 @@ export const AdminUserPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'entityId' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'pathName' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                 ],
                                                             },
                                                         },
@@ -66811,6 +67138,27 @@ export const AdminUserPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'entityId' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'pathName' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                 ],
                                                             },
                                                         },

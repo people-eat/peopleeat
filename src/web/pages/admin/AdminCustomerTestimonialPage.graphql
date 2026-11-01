@@ -17,6 +17,14 @@ fragment AdminCustomerTestimonialDetail on AdminCustomerTestimonial {
     publicationStatus
     publishedAt
     createdAt
+    publicPagePlacements {
+        kind
+        entityId
+        labelDe
+        labelEn
+        pathName
+        index
+    }
     user {
         userId
         firstName

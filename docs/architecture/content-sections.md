@@ -77,9 +77,11 @@ separate section stack per entity.
 - Entity pages pass identity via `identityFields` and page-body extras via `extraFields` on `ContentPageEditor`.
 - Admin list views create/open entries only; destructive delete lives on the detail editor with an alert dialog.
 - Featured cooks and testimonials curation are shipped for cities/partners/occasions (see [`testimonials.md`](../features/testimonials.md));
-  the partner and occasion cook pickers use server-side search inside the choose-chefs dialog (cities filter travel-radius candidates
-  locally). Home HowItWorks / KnownFrom / promo bands are shipped on `/` (see [`landing.md`](../features/landing.md)); city detail pages
-  also mount HowItWorks, SectionCities, and KnownFrom (plus a fixed first-section CTA and stock hero/CTA image fallbacks — see
-  [`cities.md`](../features/cities.md)). Partner detail pages mount HowItWorks (CTA hidden; optional alternative media) and KnownFrom (see
-  [`partners.md`](../features/partners.md)). Occasion pages stay without them by design (see [`occasions.md`](../features/occasions.md)).
+  admin live preview receives both via `ContentPageEditor` (`featuredCooks` / `testimonials`, the latter from
+  `contentPageTestimonialsForPreview`). The partner and occasion cook pickers use server-side search inside the choose-chefs dialog
+  (cities filter travel-radius candidates locally). Home HowItWorks / KnownFrom / promo bands are shipped on `/` (see
+  [`landing.md`](../features/landing.md)); city detail pages also mount HowItWorks, SectionCities, and KnownFrom (plus a fixed
+  first-section CTA and stock hero/CTA image fallbacks — see [`cities.md`](../features/cities.md)). Partner detail pages mount
+  HowItWorks (CTA hidden; optional alternative media) and KnownFrom (see [`partners.md`](../features/partners.md)). Occasion pages stay
+  without them by design (see [`occasions.md`](../features/occasions.md)).
 - Public images need the widened file-upload GET rule documented in [`file-storage.md`](./file-storage.md).

@@ -283,10 +283,7 @@ function TestimonialDetailCopy({
                     {!occasion ? <p className="text-base font-medium text-foreground">{occasionQuestion}</p> : null}
                     <div className="flex flex-col gap-2">
                         <Button asChild className="w-full @sm:w-auto">
-                            <Link
-                                to="/{-$locale}/booking-request/form"
-                                search={occasion ? { occasion } : {}}
-                            >
+                            <Link to="/{-$locale}/booking-request/form" search={occasion ? { occasion } : {}}>
                                 {{ de: 'Anfrage starten', en: 'Start a request' }[locale]}
                             </Link>
                         </Button>

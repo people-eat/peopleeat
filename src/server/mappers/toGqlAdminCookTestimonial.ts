@@ -27,5 +27,7 @@ export function toGqlAdminCookTestimonial(
         publicationStatus: row.publicationStatus,
         publishedAt: row.publishedAt ?? null,
         createdAt: row.createdAt,
+        // Overwritten by list/detail queries via `adminTestimonialPublicPagePlacementsLoad`.
+        publicPagePlacements: [],
     };
 }

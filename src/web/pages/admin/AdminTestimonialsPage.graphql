@@ -16,6 +16,14 @@ fragment AdminTestimonialsListCustomer on AdminCustomerTestimonial {
     publicationStatus
     publishedAt
     createdAt
+    publicPagePlacements {
+        kind
+        entityId
+        labelDe
+        labelEn
+        pathName
+        index
+    }
     user {
         userId
         firstName
@@ -40,6 +48,14 @@ fragment AdminTestimonialsListCook on AdminCookTestimonial {
     publicationStatus
     publishedAt
     createdAt
+    publicPagePlacements {
+        kind
+        entityId
+        labelDe
+        labelEn
+        pathName
+        index
+    }
     cook {
         cookId
         user {

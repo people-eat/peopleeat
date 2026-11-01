@@ -327,6 +327,14 @@ query AdminUserPage(
                     publishedAt
                     createdAt
                     imageUrls
+                    publicPagePlacements {
+                        kind
+                        entityId
+                        labelDe
+                        labelEn
+                        pathName
+                        index
+                    }
                 }
                 cookTestimonials(criterion: $cookTestimonialsCriterion) @include(if: $includeTestimonials) {
                     cookTestimonialId
@@ -339,6 +347,14 @@ query AdminUserPage(
                     publishedAt
                     createdAt
                     imageUrls
+                    publicPagePlacements {
+                        kind
+                        entityId
+                        labelDe
+                        labelEn
+                        pathName
+                        index
+                    }
                 }
                 bookingRequestOffers(criterion: $bookingRequestOffersCriterion) @include(if: $includeOffers) {
                     bookingRequestOfferId

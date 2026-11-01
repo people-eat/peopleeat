@@ -4,6 +4,7 @@ import { cookTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminCookTestimonial, GqlSAdminCookTestimonialCriterion, GqlSSession } from '../graphql/generated';
 import { toGqlAdminCookTestimonial } from '../mappers/toGqlAdminCookTestimonial';
+import { adminTestimonialPublicPagePlacementsAttach } from '../utils/adminTestimonialPublicPagePlacementsLoad';
 import { findManySkip, findManyTake } from '../utils/findManyTake';
 import { testimonialOfferFallbacksLoad } from '../utils/testimonialOfferFallbacksLoad';
 
@@ -24,8 +25,18 @@ export async function adminCookTestimonialsFindMany(
         const offerIds = rows.flatMap((row) => (row.bookingRequestOfferId ? [row.bookingRequestOfferId] : []));
         const fallbacksByOfferId = await testimonialOfferFallbacksLoad(serverRuntime.db, offerIds, 'cook');
 
-        return rows.map((row) =>
+        const mapped = rows.map((row) =>
             toGqlAdminCookTestimonial(row, row.bookingRequestOfferId ? (fallbacksByOfferId.get(row.bookingRequestOfferId) ?? null) : null),
+        );
+        return adminTestimonialPublicPagePlacementsAttach(
+            serverRuntime.db,
+            mapped.map((testimonial) => ({
+                testimonialType: 'COOK' as const,
+                testimonialId: testimonial.cookTestimonialId,
+                testimonial,
+                publicationStatus: testimonial.publicationStatus,
+                bookingRequestOfferId: testimonial.bookingRequestOfferId,
+            })),
         );
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);

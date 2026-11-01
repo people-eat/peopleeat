@@ -8,6 +8,7 @@ import { pipe, subscribe } from 'wonka';
 import { formatDate, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminTestimonialOfferLink } from '../../components/AdminTestimonialOfferLink';
+import { AdminTestimonialPublicPagePlacementsSection } from '../../components/AdminTestimonialPublicPagePlacements';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -319,6 +320,8 @@ export function AdminCustomerTestimonialPage({
                                 )}
                             </div>
                         </div>
+
+                        <AdminTestimonialPublicPagePlacementsSection placements={testimonial.publicPagePlacements} />
 
                         <Separator />
 

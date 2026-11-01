@@ -15,7 +15,10 @@ import { ContentImageField, ContentPageEditor, contentPageEditorTabFromSearch } 
 import type { ContentPageEditorSearch, ContentPageEditorValues } from '../../components/ContentPageEditor';
 import { ContentPageFeaturedCooksEditor } from '../../components/ContentPageFeaturedCooksEditor';
 import type { FeaturedCookOption } from '../../components/ContentPageFeaturedCooksEditor';
-import { ContentPageTestimonialsEditor } from '../../components/ContentPageTestimonialsEditor';
+import {
+    contentPageTestimonialsForPreview,
+    ContentPageTestimonialsEditor,
+} from '../../components/ContentPageTestimonialsEditor';
 import type { TestimonialCandidateOption, TestimonialEntry } from '../../components/ContentPageTestimonialsEditor';
 import { contentSectionsFromGql, contentSectionsToInput } from '../../components/contentSectionsMap';
 import type { GqlCAdminCityPageQuery } from '../../graphql/generated';
@@ -231,6 +234,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                 tab={tab}
                 user={data.currentSession.user}
                 featuredCooks={previewCooks}
+                testimonials={contentPageTestimonialsForPreview(testimonialEntries, testimonialCandidates)}
                 heroImageFallbackUrl={CITY_HERO_FALLBACK_IMAGE}
                 howItWorks
                 cities={data.publicCity.findMany}

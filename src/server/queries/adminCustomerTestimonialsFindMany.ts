@@ -4,6 +4,7 @@ import { bookingRequestOffers, customerTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminCustomerTestimonial, GqlSAdminCustomerTestimonialCriterion, GqlSSession } from '../graphql/generated';
 import { toGqlAdminCustomerTestimonial } from '../mappers/toGqlAdminCustomerTestimonial';
+import { adminTestimonialPublicPagePlacementsAttach } from '../utils/adminTestimonialPublicPagePlacementsLoad';
 import { findManySkip, findManyTake } from '../utils/findManyTake';
 import { testimonialOfferFallbacksLoad } from '../utils/testimonialOfferFallbacksLoad';
 
@@ -21,11 +22,21 @@ export async function adminCustomerTestimonialsFindMany(
             const rows = await serverRuntime.db.select().from(customerTestimonials).orderBy(desc(customerTestimonials.createdAt));
             const offerIds = rows.flatMap((row) => (row.bookingRequestOfferId ? [row.bookingRequestOfferId] : []));
             const fallbacksByOfferId = await testimonialOfferFallbacksLoad(serverRuntime.db, offerIds, 'customer');
-            return rows.map((row) =>
+            const mapped = rows.map((row) =>
                 toGqlAdminCustomerTestimonial(
                     row,
                     row.bookingRequestOfferId ? (fallbacksByOfferId.get(row.bookingRequestOfferId) ?? null) : null,
                 ),
+            );
+            return adminTestimonialPublicPagePlacementsAttach(
+                serverRuntime.db,
+                mapped.map((testimonial) => ({
+                    testimonialType: 'CUSTOMER' as const,
+                    testimonialId: testimonial.customerTestimonialId,
+                    testimonial,
+                    publicationStatus: testimonial.publicationStatus,
+                    bookingRequestOfferId: testimonial.bookingRequestOfferId,
+                })),
             );
         }
 
@@ -53,11 +64,21 @@ export async function adminCustomerTestimonialsFindMany(
         const offerIds = testimonials.flatMap((row) => (row.bookingRequestOfferId ? [row.bookingRequestOfferId] : []));
         const fallbacksByOfferId = await testimonialOfferFallbacksLoad(serverRuntime.db, offerIds, 'customer');
 
-        return testimonials.map((row) =>
+        const mapped = testimonials.map((row) =>
             toGqlAdminCustomerTestimonial(
                 row,
                 row.bookingRequestOfferId ? (fallbacksByOfferId.get(row.bookingRequestOfferId) ?? null) : null,
             ),
+        );
+        return adminTestimonialPublicPagePlacementsAttach(
+            serverRuntime.db,
+            mapped.map((testimonial) => ({
+                testimonialType: 'CUSTOMER' as const,
+                testimonialId: testimonial.customerTestimonialId,
+                testimonial,
+                publicationStatus: testimonial.publicationStatus,
+                bookingRequestOfferId: testimonial.bookingRequestOfferId,
+            })),
         );
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);

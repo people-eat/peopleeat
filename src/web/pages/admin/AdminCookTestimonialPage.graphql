@@ -23,6 +23,14 @@ fragment AdminCookTestimonialDetail on AdminCookTestimonial {
     publicationStatus
     publishedAt
     createdAt
+    publicPagePlacements {
+        kind
+        entityId
+        labelDe
+        labelEn
+        pathName
+        index
+    }
     cook {
         cookId
         user {

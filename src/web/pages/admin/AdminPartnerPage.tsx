@@ -16,7 +16,10 @@ import { ContentImageField, ContentPageEditor, contentPageEditorTabFromSearch } 
 import type { ContentPageEditorSearch, ContentPageEditorValues } from '../../components/ContentPageEditor';
 import { ContentPageFeaturedCooksEditor } from '../../components/ContentPageFeaturedCooksEditor';
 import type { FeaturedCookOption } from '../../components/ContentPageFeaturedCooksEditor';
-import { ContentPageTestimonialsEditor } from '../../components/ContentPageTestimonialsEditor';
+import {
+    contentPageTestimonialsForPreview,
+    ContentPageTestimonialsEditor,
+} from '../../components/ContentPageTestimonialsEditor';
 import type { TestimonialCandidateOption, TestimonialEntry } from '../../components/ContentPageTestimonialsEditor';
 import { contentSectionsFromGql, contentSectionsToInput } from '../../components/contentSectionsMap';
 import type {
@@ -327,6 +330,7 @@ export function AdminPartnerPage({
                 user={data.currentSession.user}
                 featuredCooks={previewCooks}
                 featuredCooksShowCity={values.featuredCooksShowCity}
+                testimonials={contentPageTestimonialsForPreview(testimonialEntries, testimonialCandidates)}
                 heroImageOverlay={values.heroImageOverlay}
                 howItWorks
                 howItWorksHideCta

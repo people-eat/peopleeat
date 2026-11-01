@@ -8,6 +8,7 @@ import { pipe, subscribe } from 'wonka';
 import { formatDate, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminTestimonialOfferLink } from '../../components/AdminTestimonialOfferLink';
+import { AdminTestimonialPublicPagePlacementsSection } from '../../components/AdminTestimonialPublicPagePlacements';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -320,6 +321,8 @@ export function AdminCookTestimonialPage({
                                 )}
                             </div>
                         </div>
+
+                        <AdminTestimonialPublicPagePlacementsSection placements={testimonial.publicPagePlacements} />
 
                         {testimonial.lowRatingAnswers ? (
                             <StatusAlert tone="warning" title={{ de: 'Niedrige Bewertung', en: 'Low rating' }[locale]}>

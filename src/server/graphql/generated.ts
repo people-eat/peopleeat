@@ -1164,6 +1164,7 @@ export interface GqlSAdminCookTestimonial {
     location?: Maybe<Scalars['String']['output']>;
     lowRatingAnswers?: Maybe<GqlSCookTestimonialLowRatingAnswers>;
     occasion?: Maybe<Scalars['String']['output']>;
+    publicPagePlacements: Array<GqlSAdminTestimonialPublicPagePlacement>;
     publicationStatus: GqlSTestimonialPublicationStatus;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     rating?: Maybe<Scalars['Int']['output']>;
@@ -1208,6 +1209,7 @@ export interface GqlSAdminCustomerTestimonial {
     imageUrls: Array<Scalars['String']['output']>;
     location?: Maybe<Scalars['String']['output']>;
     occasion?: Maybe<Scalars['String']['output']>;
+    publicPagePlacements: Array<GqlSAdminTestimonialPublicPagePlacement>;
     publicationStatus: GqlSTestimonialPublicationStatus;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     rating?: Maybe<Scalars['Int']['output']>;
@@ -2249,6 +2251,18 @@ export type GqlSAdminSupportRequestCriterion = {
 export type GqlSAdminSupportRequestSortField = 'bookingDateTime' | 'createdAt' | 'lastMessageAt';
 
 export type GqlSAdminTestimonial = GqlSAdminCookTestimonial | GqlSAdminCustomerTestimonial;
+
+export type GqlSAdminTestimonialPublicPageKind = 'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER';
+
+export interface GqlSAdminTestimonialPublicPagePlacement {
+    __typename?: 'AdminTestimonialPublicPagePlacement';
+    entityId: Scalars['ID']['output'];
+    index?: Maybe<Scalars['Int']['output']>;
+    kind: GqlSAdminTestimonialPublicPageKind;
+    labelDe: Scalars['String']['output'];
+    labelEn: Scalars['String']['output'];
+    pathName?: Maybe<Scalars['String']['output']>;
+}
 
 export interface GqlSAdminTimeBucket {
     __typename?: 'AdminTimeBucket';
@@ -5628,6 +5642,8 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminSupportRequestCriterion: GqlSAdminSupportRequestCriterion;
     AdminSupportRequestSortField: GqlSAdminSupportRequestSortField;
     AdminTestimonial: ResolverTypeWrapper<GqlSResolversUnionTypes<GqlSResolversTypes>['AdminTestimonial']>;
+    AdminTestimonialPublicPageKind: GqlSAdminTestimonialPublicPageKind;
+    AdminTestimonialPublicPagePlacement: ResolverTypeWrapper<GqlSAdminTestimonialPublicPagePlacement>;
     AdminTimeBucket: ResolverTypeWrapper<GqlSAdminTimeBucket>;
     AdminTimeBucketGranularity: GqlSAdminTimeBucketGranularity;
     AdminUser: ResolverTypeWrapper<GqlSAdminUser>;
@@ -6186,6 +6202,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     };
     AdminSupportRequestCriterion: GqlSAdminSupportRequestCriterion;
     AdminTestimonial: GqlSResolversUnionTypes<GqlSResolversParentTypes>['AdminTestimonial'];
+    AdminTestimonialPublicPagePlacement: GqlSAdminTestimonialPublicPagePlacement;
     AdminTimeBucket: GqlSAdminTimeBucket;
     AdminUser: GqlSAdminUser;
     AdminUserCreate: GqlSAdminUserCreate;
@@ -7508,6 +7525,7 @@ export type GqlSAdminCookTestimonialResolvers<
     location?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     lowRatingAnswers?: Resolver<Maybe<GqlSResolversTypes['CookTestimonialLowRatingAnswers']>, ParentType, ContextType>;
     occasion?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    publicPagePlacements?: Resolver<Array<GqlSResolversTypes['AdminTestimonialPublicPagePlacement']>, ParentType, ContextType>;
     publicationStatus?: Resolver<GqlSResolversTypes['TestimonialPublicationStatus'], ParentType, ContextType>;
     publishedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     rating?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
@@ -7530,6 +7548,7 @@ export type GqlSAdminCustomerTestimonialResolvers<
     imageUrls?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
     location?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     occasion?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    publicPagePlacements?: Resolver<Array<GqlSResolversTypes['AdminTestimonialPublicPagePlacement']>, ParentType, ContextType>;
     publicationStatus?: Resolver<GqlSResolversTypes['TestimonialPublicationStatus'], ParentType, ContextType>;
     publishedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     rating?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
@@ -8500,6 +8519,19 @@ export type GqlSAdminTestimonialResolvers<
     ParentType extends GqlSResolversParentTypes['AdminTestimonial'] = GqlSResolversParentTypes['AdminTestimonial'],
 > = ResolversObject<{
     __resolveType: TypeResolveFn<'AdminCookTestimonial' | 'AdminCustomerTestimonial', ParentType, ContextType>;
+}>;
+
+export type GqlSAdminTestimonialPublicPagePlacementResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminTestimonialPublicPagePlacement'] =
+        GqlSResolversParentTypes['AdminTestimonialPublicPagePlacement'],
+> = ResolversObject<{
+    entityId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    index?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
+    kind?: Resolver<GqlSResolversTypes['AdminTestimonialPublicPageKind'], ParentType, ContextType>;
+    labelDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    labelEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    pathName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
 }>;
 
 export type GqlSAdminTimeBucketResolvers<
@@ -11386,6 +11418,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminSessionEvent?: GqlSAdminSessionEventResolvers<ContextType>;
     AdminSupportRequest?: GqlSAdminSupportRequestResolvers<ContextType>;
     AdminTestimonial?: GqlSAdminTestimonialResolvers<ContextType>;
+    AdminTestimonialPublicPagePlacement?: GqlSAdminTestimonialPublicPagePlacementResolvers<ContextType>;
     AdminTimeBucket?: GqlSAdminTimeBucketResolvers<ContextType>;
     AdminUser?: GqlSAdminUserResolvers<ContextType>;
     AdminUserInsights?: GqlSAdminUserInsightsResolvers<ContextType>;
@@ -11822,6 +11855,11 @@ export const GqlSAdminSupportRequestSortFieldSchema: z.ZodType<
     'bookingDateTime' | 'createdAt' | 'lastMessageAt',
     'bookingDateTime' | 'createdAt' | 'lastMessageAt'
 > = z.enum(['bookingDateTime', 'createdAt', 'lastMessageAt']);
+
+export const GqlSAdminTestimonialPublicPageKindSchema: z.ZodType<
+    'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER',
+    'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER'
+> = z.enum(['CHEF', 'CITY', 'OCCASION', 'PARTNER']);
 
 export const GqlSAdminTimeBucketGranularitySchema: z.ZodType<'day' | 'month' | 'week', 'day' | 'month' | 'week'> = z.enum([
     'day',
