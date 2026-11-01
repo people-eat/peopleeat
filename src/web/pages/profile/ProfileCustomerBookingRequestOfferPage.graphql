@@ -6,6 +6,9 @@ fragment ProfileCustomerBookingRequestOfferPageUser on User {
     emailAddress
     firstName
     lastName
+    profilePicture {
+        url
+    }
     bookingRequest(bookingRequestId: $bookingRequestId) {
         bookingRequestId
         occasion
@@ -86,9 +89,7 @@ fragment ProfileCustomerBookingRequestOfferPageUser on User {
                 }
             }
             customerTestimonial {
-                customerTestimonialId
-                body
-                rating
+                ...CustomerTestimonialCardFields
             }
             testimonialMissing
             callBookings {

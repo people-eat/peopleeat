@@ -1,90 +1,463 @@
-import { useState } from 'react';
+import { useForm, useSelector } from '@tanstack/react-form';
+import { PlusIcon, XIcon } from 'lucide-react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { CookBookingRequestOfferTestimonialCreateDocument, UserBookingRequestOfferTestimonialCreateDocument } from '../graphql/generated';
+import { fileUploadPublicUrl } from '../../shared';
+import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
+import {
+    CookBookingRequestOfferTestimonialCreateDocument,
+    CookBookingRequestOfferTestimonialUpdateDocument,
+    UserBookingRequestOfferTestimonialCreateDocument,
+    UserBookingRequestOfferTestimonialUpdateDocument,
+} from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { cn } from '../utils/cn';
+import type { Locale } from '../utils/locale';
 import { Button } from './base/button';
+import { Spinner } from './base/spinner';
 import { Textarea } from './base/textarea';
+import type { PageTestimonialCardModel } from './PageTestimonialCard';
+import { PageTestimonialCardFace, PageTestimonialDetailDialog } from './PageTestimonialCard';
 import { TestimonialRatingInput } from './TestimonialRatingInput';
-import { TestimonialRatingStars } from './TestimonialRatingStars';
+
+export const BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID = 'booking-request-offer-testimonial-form';
+export const BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID = 'booking-request-offer-testimonial-edit-form';
 
 const GOOGLE_REVIEW_URL = 'https://g.page/r/CTt2r08ker0wEAE/review';
+const MAX_IMAGES = 8;
 
 type ExistingTestimonial = {
     body: string;
     rating: number | null;
+    imageUrls?: string[];
+    authorName?: string;
+    authorProfilePictureUrl?: string | null;
+    location?: string | null;
+    occasion?: string | null;
     publicationStatus?: 'PUBLISHED' | 'PENDING_REVIEW';
 };
+
+type AuthorFallback = {
+    authorName: string;
+    authorProfilePictureUrl?: string | null;
+    location?: string | null;
+    occasion?: string | null;
+};
+
+type FormValues = {
+    rating: number | null;
+    body: string;
+    imageFileUploadIds: string[];
+    whatWentWrong: string;
+    wouldRecommend: boolean | null;
+    additionalFeedback: string;
+};
+
+type EditFormValues = {
+    body: string;
+};
+
+function fieldErrorText(errors: unknown[]): string | undefined {
+    const first = errors[0];
+    return typeof first === 'string' && first.length > 0 ? first : undefined;
+}
+
+function requiredRating(value: number | null, locale: Locale): string | undefined {
+    if (value == null || value < 1 || value > 5) {
+        return { de: 'Bitte wähle deine Sterne.', en: 'Please choose your star rating.' }[locale];
+    }
+    return undefined;
+}
+
+function requiredCustomerBody(value: string, locale: Locale): string | undefined {
+    if (value.trim().length === 0) {
+        return {
+            de: 'Erzähl kurz, wie der Abend für dich war.',
+            en: 'Share a few words about how the evening felt.',
+        }[locale];
+    }
+    return undefined;
+}
+
+function requiredWhatWentWrong(value: string, locale: Locale): string | undefined {
+    if (value.trim().length === 0) {
+        return {
+            de: 'Bitte beschreibe kurz, was nicht gut lief.',
+            en: 'Please briefly describe what did not go well.',
+        }[locale];
+    }
+    return undefined;
+}
+
+function toCardModel(shown: ExistingTestimonial, authorFallback: AuthorFallback): PageTestimonialCardModel {
+    return {
+        authorName: shown.authorName?.trim() || authorFallback.authorName,
+        authorProfilePictureUrl: shown.authorProfilePictureUrl ?? authorFallback.authorProfilePictureUrl ?? null,
+        location: shown.location ?? authorFallback.location ?? null,
+        occasion: shown.occasion ?? authorFallback.occasion ?? null,
+        body: shown.body,
+        rating: shown.rating,
+        imageUrls: shown.imageUrls ?? [],
+    };
+}
 
 /**
  * Rating + body submission for a completed booking request offer, shared by
  * the customer offer page and the cook offer detail page. When `role` is
  * `'cook'` and the chosen rating is below 5, a short structured follow-up
  * (`lowRatingAnswers`) is required — see `cookBookingRequestOfferTestimonialCreate`.
+ * Primary submit / edit Save live in the parent pinned footer via the exported
+ * form ids.
  */
 export function BookingRequestOfferTestimonialPanel({
     bookingRequestOfferId,
     role,
     existing,
     missing,
+    authorFallback,
+    editing = false,
+    onBusyChange,
+    onSubmitted,
+    onEditingChange,
 }: {
     bookingRequestOfferId: string;
     role: 'customer' | 'cook';
     existing: ExistingTestimonial | null;
     missing: boolean;
+    authorFallback: AuthorFallback;
+    editing?: boolean;
+    onBusyChange?: (busy: boolean) => void;
+    onSubmitted?: () => void;
+    onEditingChange?: (editing: boolean) => void;
 }) {
     const locale = useLocale();
-    const [rating, setRating] = useState<number | null>(null);
-    const [body, setBody] = useState('');
-    const [whatWentWrong, setWhatWentWrong] = useState('');
-    const [wouldRecommend, setWouldRecommend] = useState<boolean | null>(null);
-    const [additionalFeedback, setAdditionalFeedback] = useState('');
-    const [submittedBody, setSubmittedBody] = useState<string | null>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [uploadBusy, setUploadBusy] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [submitted, setSubmitted] = useState<ExistingTestimonial | null>(null);
+    const [localBody, setLocalBody] = useState<string | null>(null);
+    const [detailOpen, setDetailOpen] = useState(false);
+    const [detailImageIndex, setDetailImageIndex] = useState(0);
     const [, createCustomer] = useMutation(UserBookingRequestOfferTestimonialCreateDocument);
     const [, createCook] = useMutation(CookBookingRequestOfferTestimonialCreateDocument);
-    const [busy, setBusy] = useState(false);
+    const [, updateCustomer] = useMutation(UserBookingRequestOfferTestimonialUpdateDocument);
+    const [, updateCook] = useMutation(CookBookingRequestOfferTestimonialUpdateDocument);
 
+    const defaultValues: FormValues = {
+        rating: null,
+        body: '',
+        imageFileUploadIds: [],
+        whatWentWrong: '',
+        wouldRecommend: null,
+        additionalFeedback: '',
+    };
+
+    const form = useForm({
+        defaultValues,
+        onSubmit: async ({ value }) => {
+            const rating = value.rating;
+            if (rating == null) return;
+
+            const needsLowRatingAnswers = role === 'cook' && rating < 5;
+            try {
+                if (role === 'customer') {
+                    const result = await createCustomer({
+                        input: {
+                            bookingRequestOfferId,
+                            body: value.body.trim(),
+                            rating,
+                            imageFileUploadIds: value.imageFileUploadIds,
+                        },
+                    });
+                    if (result.error || !result.data?.user.bookingRequestOfferTestimonialCreate.success) {
+                        toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                        return;
+                    }
+                } else {
+                    const result = await createCook({
+                        input: {
+                            bookingRequestOfferId,
+                            body: value.body.trim() || null,
+                            rating,
+                            imageFileUploadIds: value.imageFileUploadIds,
+                            lowRatingAnswers: needsLowRatingAnswers
+                                ? {
+                                      whatWentWrong: value.whatWentWrong.trim(),
+                                      wouldRecommend: value.wouldRecommend,
+                                      additionalFeedback: value.additionalFeedback.trim() || null,
+                                  }
+                                : null,
+                        },
+                    });
+                    if (result.error || !result.data?.user.cook.bookingRequestOfferTestimonialCreate.success) {
+                        toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                        return;
+                    }
+                }
+                setSubmitted({
+                    body: value.body.trim(),
+                    rating,
+                    imageUrls: value.imageFileUploadIds.map(fileUploadPublicUrl),
+                    authorName: authorFallback.authorName,
+                    authorProfilePictureUrl: authorFallback.authorProfilePictureUrl,
+                    location: authorFallback.location,
+                    occasion: authorFallback.occasion,
+                    publicationStatus: rating <= 3 ? 'PENDING_REVIEW' : 'PUBLISHED',
+                });
+                onSubmitted?.();
+                toast.success({ de: 'Danke für deine Bewertung!', en: 'Thanks for your review!' }[locale]);
+            } catch {
+                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+            }
+        },
+    });
+
+    const shownBase = existing ?? submitted;
+    const shown = shownBase == null ? null : localBody != null ? { ...shownBase, body: localBody } : shownBase;
+
+    const editDefaultValues: EditFormValues = { body: shown?.body ?? '' };
+    const editForm = useForm({
+        defaultValues: editDefaultValues,
+        onSubmit: async ({ value }) => {
+            try {
+                if (role === 'customer') {
+                    const result = await updateCustomer({
+                        input: { bookingRequestOfferId, body: value.body.trim() },
+                    });
+                    if (result.error || !result.data?.user.bookingRequestOfferTestimonialUpdate.success) {
+                        toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                        return;
+                    }
+                } else {
+                    const result = await updateCook({
+                        input: { bookingRequestOfferId, body: value.body.trim() || null },
+                    });
+                    if (result.error || !result.data?.user.cook.bookingRequestOfferTestimonialUpdate.success) {
+                        toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                        return;
+                    }
+                }
+                setLocalBody(value.body.trim());
+                onEditingChange?.(false);
+                toast.success({ de: 'Text aktualisiert.', en: 'Text updated.' }[locale]);
+            } catch {
+                toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+            }
+        },
+    });
+
+    const submissionAttempts = useSelector(form.store, (state) => state.submissionAttempts);
+    const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
+    const rating = useSelector(form.store, (state) => state.values.rating);
+    const imageFileUploadIds = useSelector(form.store, (state) => state.values.imageFileUploadIds);
+    const editSubmissionAttempts = useSelector(editForm.store, (state) => state.submissionAttempts);
+    const isEditSubmitting = useSelector(editForm.store, (state) => state.isSubmitting);
     const needsLowRatingAnswers = role === 'cook' && rating != null && rating < 5;
-    const shown = existing ?? (submittedBody != null ? { body: submittedBody, rating, publicationStatus: 'PUBLISHED' as const } : null);
+    const busy = isSubmitting || isEditSubmitting || uploadBusy;
 
-    if (shown) {
+    const reportBusy = useEffectEvent((next: boolean) => {
+        onBusyChange?.(next);
+    });
+
+    useEffect(() => {
+        reportBusy(busy);
+        return () => reportBusy(false);
+    }, [busy, reportBusy]);
+
+    const syncEditForm = useEffectEvent((body: string) => {
+        editForm.reset({ body });
+    });
+
+    const shownBody = shown?.body;
+    useEffect(() => {
+        if (!editing || shownBody == null) return;
+        syncEditForm(shownBody);
+    }, [editing, shownBody, syncEditForm]);
+
+    async function addFile(file: File | undefined) {
+        if (!file) return;
+        setUploadError(null);
+        if (!file.type.startsWith('image/')) {
+            setUploadError(
+                {
+                    de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
+                    en: 'Please choose an image (JPEG, PNG, WebP, or GIF).',
+                }[locale],
+            );
+            if (inputRef.current) inputRef.current.value = '';
+            return;
+        }
+        if (imageFileUploadIds.length >= MAX_IMAGES) {
+            setUploadError(
+                {
+                    de: `Du kannst bis zu ${MAX_IMAGES} Bilder hinzufügen.`,
+                    en: `You can add up to ${MAX_IMAGES} photos.`,
+                }[locale],
+            );
+            if (inputRef.current) inputRef.current.value = '';
+            return;
+        }
+        setUploadBusy(true);
+        try {
+            const uploaded = await uploadFile(file);
+            form.setFieldValue('imageFileUploadIds', [...imageFileUploadIds, uploaded.fileUploadId]);
+        } catch (error) {
+            setUploadError(uploadErrorMessage(error, locale));
+        } finally {
+            setUploadBusy(false);
+            if (inputRef.current) inputRef.current.value = '';
+        }
+    }
+
+    function removeImage(fileUploadId: string) {
+        form.setFieldValue(
+            'imageFileUploadIds',
+            imageFileUploadIds.filter((id) => id !== fileUploadId),
+        );
+        setUploadError(null);
+    }
+
+    function openDetail(index: number) {
+        setDetailImageIndex(index);
+        setDetailOpen(true);
+    }
+
+    if (shown != null && editing) {
         return (
-            <div className="grid max-w-xl gap-4">
+            <form
+                id={BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID}
+                className="grid max-w-xl gap-5"
+                noValidate
+                onSubmit={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void editForm.handleSubmit();
+                }}
+            >
                 <div className="grid gap-1">
-                    <h2 className="text-base font-medium text-foreground">{{ de: 'Deine Bewertung', en: 'Your review' }[locale]}</h2>
+                    <h2 className="text-base font-medium text-foreground">{{ de: 'Text bearbeiten', en: 'Edit text' }[locale]}</h2>
                     <p className="text-sm text-muted-foreground">
                         {
                             {
-                                de: 'Danke! Deine Rückmeldung hilft uns und den Gästen.',
-                                en: 'Thanks! Your feedback helps us and future guests.',
+                                de: 'Korrigiere Tippfehler oder formuliere den Moment noch klarer.',
+                                en: 'Fix typos or sharpen how you describe the moment.',
                             }[locale]
                         }
                     </p>
                 </div>
-                <TestimonialRatingStars rating={shown.rating} className="gap-1 [&_svg]:size-5" />
-                {shown.body ? <p className="text-sm whitespace-pre-wrap text-foreground">{shown.body}</p> : null}
+                <editForm.Field
+                    name="body"
+                    validators={{
+                        onChange: ({ value }) => (role === 'customer' ? requiredCustomerBody(value, locale) : undefined),
+                        onBlur: ({ value }) => (role === 'customer' ? requiredCustomerBody(value, locale) : undefined),
+                        onSubmit: ({ value }) => (role === 'customer' ? requiredCustomerBody(value, locale) : undefined),
+                    }}
+                >
+                    {(field) => {
+                        const errorMessage = fieldErrorText(field.state.meta.errors);
+                        const showError = errorMessage != null && (field.state.meta.isBlurred || editSubmissionAttempts > 0);
+                        const errorId = `${field.name}-edit-error`;
+                        return (
+                            <div className="grid gap-2">
+                                <label htmlFor="testimonial-edit-body" className="text-sm font-medium text-foreground">
+                                    {role === 'customer'
+                                        ? { de: 'Dein Text', en: 'Your review' }[locale]
+                                        : { de: 'Dein Kommentar', en: 'Your comment' }[locale]}
+                                </label>
+                                <Textarea
+                                    id="testimonial-edit-body"
+                                    name={field.name}
+                                    value={field.state.value}
+                                    onBlur={field.handleBlur}
+                                    onChange={(event) => field.handleChange(event.target.value)}
+                                    rows={5}
+                                    className="text-base/relaxed"
+                                    aria-invalid={showError}
+                                    aria-describedby={showError ? errorId : undefined}
+                                />
+                                {showError ? (
+                                    <p id={errorId} className="text-sm text-destructive" role="alert">
+                                        {errorMessage}
+                                    </p>
+                                ) : null}
+                            </div>
+                        );
+                    }}
+                </editForm.Field>
+            </form>
+        );
+    }
+
+    if (shown != null) {
+        const card = toCardModel(shown, authorFallback);
+        const viewLabel = { de: 'Bewertung ansehen', en: 'View review' }[locale];
+        return (
+            <div className="grid max-w-xl gap-5">
+                <div className="grid gap-1">
+                    <h2 className="text-base font-medium text-foreground">
+                        {{ de: 'Danke für deine Stimme', en: 'Thank you for sharing' }[locale]}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Dein Feedback macht den nächsten Abend noch schöner für andere Gäste.',
+                                en: 'Your feedback helps the next guest look forward to their evening too.',
+                            }[locale]
+                        }
+                    </p>
+                </div>
+
+                <PageTestimonialCardFace
+                    testimonial={card}
+                    onOpenImage={card.imageUrls != null && card.imageUrls.length > 0 ? openDetail : undefined}
+                    footerAction={
+                        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                            <Button type="button" variant="outline" size="sm" onClick={() => onEditingChange?.(true)}>
+                                {{ de: 'Text bearbeiten', en: 'Edit text' }[locale]}
+                            </Button>
+                            <Button type="button" variant="link" size="sm" className="h-auto px-0" onClick={() => openDetail(0)}>
+                                {viewLabel}
+                            </Button>
+                        </div>
+                    }
+                />
+                <PageTestimonialDetailDialog
+                    testimonial={card}
+                    open={detailOpen}
+                    onOpenChange={setDetailOpen}
+                    initialImageIndex={detailImageIndex}
+                    showBookingCta={false}
+                />
+
                 {shown.publicationStatus === 'PENDING_REVIEW' ? (
                     <p className="text-sm text-muted-foreground">
                         {
                             {
-                                de: 'Deine Bewertung wird noch geprüft.',
-                                en: 'Your review is pending moderation.',
+                                de: 'Wir schauen uns deine Bewertung noch kurz an, bevor sie sichtbar wird.',
+                                en: 'We are reviewing your feedback briefly before it goes live.',
                             }[locale]
                         }
                     </p>
                 ) : null}
+
                 {role === 'customer' && shown.body ? (
                     <div className="grid gap-3 border-t border-border pt-4">
                         <div className="grid gap-1">
                             <p className="text-sm font-medium text-foreground">
-                                {{ de: 'Hilf uns auch mit einer Google-Bewertung', en: 'Help us with a Google review too' }[locale]}
+                                {
+                                    {
+                                        de: 'Magst du uns auch bei Google empfehlen?',
+                                        en: 'Want to recommend us on Google too?',
+                                    }[locale]
+                                }
                             </p>
                             <p className="text-sm text-muted-foreground">
                                 {
                                     {
-                                        de: 'Kopiere deinen Text und füge ihn bei Google ein.',
-                                        en: 'Copy your text and paste it into Google.',
+                                        de: 'Kopiere deinen Text und füge ihn bei Google ein. Das hilft uns enorm.',
+                                        en: 'Copy your text and paste it into Google. It means a lot to us.',
                                     }[locale]
                                 }
                             </p>
@@ -117,153 +490,279 @@ export function BookingRequestOfferTestimonialPanel({
         return null;
     }
 
-    async function submit() {
-        if (rating == null || rating < 1 || rating > 5) {
-            toast.error({ de: 'Bitte Sterne wählen.', en: 'Please choose a star rating.' }[locale]);
-            return;
-        }
-        if (role === 'customer' && body.trim().length === 0) {
-            toast.error({ de: 'Bitte einen Text schreiben.', en: 'Please write a short review.' }[locale]);
-            return;
-        }
-        if (needsLowRatingAnswers && whatWentWrong.trim().length === 0) {
-            toast.error({ de: 'Bitte kurz beschreiben, was nicht gut lief.', en: 'Please briefly describe what went wrong.' }[locale]);
-            return;
-        }
-        setBusy(true);
-        try {
-            if (role === 'customer') {
-                const result = await createCustomer({
-                    input: { bookingRequestOfferId, body: body.trim(), rating },
-                });
-                if (result.error || !result.data?.user.bookingRequestOfferTestimonialCreate.success) {
-                    toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
-                    return;
-                }
-            } else {
-                const result = await createCook({
-                    input: {
-                        bookingRequestOfferId,
-                        body: body.trim() || null,
-                        rating,
-                        lowRatingAnswers: needsLowRatingAnswers
-                            ? {
-                                  whatWentWrong: whatWentWrong.trim(),
-                                  wouldRecommend,
-                                  additionalFeedback: additionalFeedback.trim() || null,
-                              }
-                            : null,
-                    },
-                });
-                if (result.error || !result.data?.user.cook.bookingRequestOfferTestimonialCreate.success) {
-                    toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
-                    return;
-                }
-            }
-            setSubmittedBody(body.trim());
-            toast.success({ de: 'Danke für deine Bewertung!', en: 'Thanks for your review!' }[locale]);
-        } finally {
-            setBusy(false);
-        }
-    }
-
     return (
-        <div className="grid max-w-xl gap-5">
+        <form
+            id={BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID}
+            className="grid max-w-xl gap-5"
+            noValidate
+            onSubmit={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                void form.handleSubmit();
+            }}
+        >
             <div className="grid gap-1">
-                <h2 className="text-base font-medium text-foreground">{{ de: 'Bewertung abgeben', en: 'Leave a review' }[locale]}</h2>
+                <h2 className="text-base font-medium text-foreground">
+                    {role === 'customer'
+                        ? { de: 'Wie hat dir dein Event geschmeckt?', en: 'How did your evening taste?' }[locale]
+                        : { de: 'Wie war der Abend mit deinen Gästen?', en: 'How was the evening with your guests?' }[locale]}
+                </h2>
                 <p className="text-sm text-muted-foreground">
                     {role === 'customer'
                         ? {
-                              de: 'Wie war dein Event? Eine kurze Bewertung hilft anderen Gästen.',
-                              en: 'How was your event? A short review helps other guests.',
+                              de: 'Teile den Moment, der hängen geblieben ist. Deine Worte helfen dem nächsten Gast, sich zu freuen.',
+                              en: 'Share the moment that stayed with you. Your words help the next guest look forward to theirs.',
                           }[locale]
                         : {
-                              de: 'Wie war die Zusammenarbeit mit dem Gast?',
-                              en: 'How was working with the guest?',
+                              de: 'Ein paar ehrliche Worte zur Zusammenarbeit helfen uns, peopleeat für dich und deine Gäste besser zu machen.',
+                              en: 'A few honest words about the collaboration help us make peopleeat better for you and your guests.',
                           }[locale]}
                 </p>
             </div>
 
-            <div className="grid gap-2">
-                <span className="text-sm font-medium text-foreground">{{ de: 'Sterne', en: 'Stars' }[locale]}</span>
-                <TestimonialRatingInput value={rating} onChange={setRating} size="lg" />
-            </div>
+            <form.Field
+                name="rating"
+                validators={{
+                    onChange: ({ value }) => requiredRating(value, locale),
+                    onBlur: ({ value }) => requiredRating(value, locale),
+                    onSubmit: ({ value }) => requiredRating(value, locale),
+                }}
+            >
+                {(field) => {
+                    const errorMessage = fieldErrorText(field.state.meta.errors);
+                    const showError = errorMessage != null && (field.state.meta.isBlurred || submissionAttempts > 0);
+                    const errorId = `${field.name}-error`;
+                    return (
+                        <div className="grid gap-2">
+                            <span className="text-sm font-medium text-foreground" id={`${field.name}-label`}>
+                                {{ de: 'Deine Sterne', en: 'Your rating' }[locale]}
+                            </span>
+                            <div aria-invalid={showError} aria-describedby={showError ? errorId : undefined}>
+                                <TestimonialRatingInput
+                                    value={field.state.value}
+                                    onChange={(next) => {
+                                        field.handleChange(next);
+                                        field.handleBlur();
+                                    }}
+                                    size="lg"
+                                />
+                            </div>
+                            {showError ? (
+                                <p id={errorId} className="text-sm text-destructive" role="alert">
+                                    {errorMessage}
+                                </p>
+                            ) : null}
+                        </div>
+                    );
+                }}
+            </form.Field>
 
-            <div className="grid gap-2">
-                <label htmlFor="testimonial-body" className="text-sm font-medium text-foreground">
-                    {role === 'customer'
-                        ? { de: 'Dein Text', en: 'Your review' }[locale]
-                        : { de: 'Kommentar (optional)', en: 'Comment (optional)' }[locale]}
-                </label>
-                <Textarea
-                    id="testimonial-body"
-                    value={body}
-                    onChange={(event) => setBody(event.target.value)}
-                    rows={4}
-                    placeholder={
-                        role === 'customer'
-                            ? { de: 'Wie war dein Event?', en: 'How was your event?' }[locale]
-                            : { de: 'Optionaler Kommentar', en: 'Optional comment' }[locale]
-                    }
-                />
-            </div>
+            <form.Field
+                name="body"
+                validators={{
+                    onChange: ({ value }) => (role === 'customer' ? requiredCustomerBody(value, locale) : undefined),
+                    onBlur: ({ value }) => (role === 'customer' ? requiredCustomerBody(value, locale) : undefined),
+                    onSubmit: ({ value }) => (role === 'customer' ? requiredCustomerBody(value, locale) : undefined),
+                }}
+            >
+                {(field) => {
+                    const errorMessage = fieldErrorText(field.state.meta.errors);
+                    const showError = errorMessage != null && (field.state.meta.isBlurred || submissionAttempts > 0);
+                    const errorId = `${field.name}-error`;
+                    return (
+                        <div className="grid gap-2">
+                            <label htmlFor="testimonial-body" className="text-sm font-medium text-foreground">
+                                {role === 'customer'
+                                    ? { de: 'Erzähl von dem Moment', en: 'Tell us about the moment' }[locale]
+                                    : { de: 'Dein Kommentar (optional)', en: 'Your comment (optional)' }[locale]}
+                            </label>
+                            <Textarea
+                                id="testimonial-body"
+                                name={field.name}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                rows={4}
+                                className="text-base/relaxed"
+                                aria-invalid={showError}
+                                aria-describedby={showError ? errorId : undefined}
+                                placeholder={
+                                    role === 'customer'
+                                        ? {
+                                              de: 'Was hat dich am meisten berührt? Das Essen, die Atmosphäre, ein Lächeln…',
+                                              en: 'What moved you most? The food, the atmosphere, a smile…',
+                                          }[locale]
+                                        : {
+                                              de: 'Was solltest du dem nächsten Koch mitgeben?',
+                                              en: 'What would you want the next cook to know?',
+                                          }[locale]
+                                }
+                            />
+                            {showError ? (
+                                <p id={errorId} className="text-sm text-destructive" role="alert">
+                                    {errorMessage}
+                                </p>
+                            ) : null}
+                        </div>
+                    );
+                }}
+            </form.Field>
+
+            <form.Field name="imageFileUploadIds">
+                {(field) => (
+                    <div className="grid gap-2">
+                        <div className="grid gap-1">
+                            <span className="text-sm font-medium text-foreground">
+                                {{ de: 'Bilder vom Abend hinzufügen', en: 'Add photos from the evening' }[locale]}
+                            </span>
+                            <p className="text-sm text-muted-foreground">
+                                {
+                                    {
+                                        de: 'Optional, aber ein Foto sagt oft mehr als Worte.',
+                                        en: 'Optional, but a photo often says more than words.',
+                                    }[locale]
+                                }
+                            </p>
+                        </div>
+                        <ul className="grid grid-cols-4 gap-1.5" aria-label={{ de: 'Fotos der Bewertung', en: 'Review photos' }[locale]}>
+                            {field.state.value.map((fileUploadId) => {
+                                const url = fileUploadPublicUrl(fileUploadId);
+                                return (
+                                    <li key={fileUploadId} className="group relative aspect-square overflow-hidden rounded-md bg-muted">
+                                        <img src={url} alt="" className="size-full object-cover" />
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
+                                            size="icon-xs"
+                                            disabled={busy}
+                                            onClick={() => removeImage(fileUploadId)}
+                                            aria-label={{ de: 'Bild entfernen', en: 'Remove image' }[locale]}
+                                            className={cn(
+                                                'absolute top-1 right-1 rounded-full opacity-0 shadow-sm group-hover:opacity-100',
+                                                'pointer-fine:opacity-0 focus-visible:opacity-100',
+                                            )}
+                                        >
+                                            <XIcon className="size-3" aria-hidden />
+                                        </Button>
+                                    </li>
+                                );
+                            })}
+                            {field.state.value.length < MAX_IMAGES ? (
+                                <li>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        disabled={busy}
+                                        onClick={() => inputRef.current?.click()}
+                                        className="aspect-square size-full min-h-0 border-dashed text-muted-foreground"
+                                        aria-label={{ de: 'Bild hinzufügen', en: 'Add image' }[locale]}
+                                    >
+                                        {uploadBusy ? <Spinner className="size-4" /> : <PlusIcon className="size-4" aria-hidden />}
+                                    </Button>
+                                </li>
+                            ) : null}
+                        </ul>
+                        <input
+                            ref={inputRef}
+                            type="file"
+                            accept="image/*"
+                            className="sr-only"
+                            onChange={(event) => void addFile(event.target.files?.[0])}
+                        />
+                        {uploadError != null ? (
+                            <p className="text-sm text-destructive" role="alert">
+                                {uploadError}
+                            </p>
+                        ) : null}
+                    </div>
+                )}
+            </form.Field>
 
             {needsLowRatingAnswers ? (
                 <div className="grid gap-3 rounded-lg border border-border bg-muted/30 p-4">
                     <p className="text-sm font-medium text-foreground">
-                        {{ de: 'Hilf uns, uns zu verbessern', en: 'Help us improve' }[locale]}
+                        {{ de: 'Was können wir besser machen?', en: 'What can we do better?' }[locale]}
                     </p>
-                    <div className="grid gap-2">
-                        <label htmlFor="what-went-wrong" className="text-sm text-muted-foreground">
-                            {{ de: 'Was ist nicht gut gelaufen?', en: 'What went wrong?' }[locale]}
-                        </label>
-                        <Textarea
-                            id="what-went-wrong"
-                            value={whatWentWrong}
-                            onChange={(event) => setWhatWentWrong(event.target.value)}
-                            rows={3}
-                        />
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                            {{ de: 'Würdest du peopleeat weiterempfehlen?', en: 'Would you recommend peopleeat?' }[locale]}
-                        </span>
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant={wouldRecommend === true ? 'default' : 'outline'}
-                            onClick={() => setWouldRecommend(true)}
-                        >
-                            {{ de: 'Ja', en: 'Yes' }[locale]}
-                        </Button>
-                        <Button
-                            type="button"
-                            size="sm"
-                            variant={wouldRecommend === false ? 'default' : 'outline'}
-                            onClick={() => setWouldRecommend(false)}
-                        >
-                            {{ de: 'Nein', en: 'No' }[locale]}
-                        </Button>
-                    </div>
-                    <div className="grid gap-2">
-                        <label htmlFor="additional-feedback" className="text-sm text-muted-foreground">
-                            {{ de: 'Weiteres Feedback (optional)', en: 'Additional feedback (optional)' }[locale]}
-                        </label>
-                        <Textarea
-                            id="additional-feedback"
-                            value={additionalFeedback}
-                            onChange={(event) => setAdditionalFeedback(event.target.value)}
-                            rows={2}
-                        />
-                    </div>
+                    <form.Field
+                        name="whatWentWrong"
+                        validators={{
+                            onChange: ({ value }) => requiredWhatWentWrong(value, locale),
+                            onBlur: ({ value }) => requiredWhatWentWrong(value, locale),
+                            onSubmit: ({ value }) => requiredWhatWentWrong(value, locale),
+                        }}
+                    >
+                        {(field) => {
+                            const errorMessage = fieldErrorText(field.state.meta.errors);
+                            const showError = errorMessage != null && (field.state.meta.isBlurred || submissionAttempts > 0);
+                            const errorId = `${field.name}-error`;
+                            return (
+                                <div className="grid gap-2">
+                                    <label htmlFor="what-went-wrong" className="text-sm text-muted-foreground">
+                                        {{ de: 'Was ist nicht gut gelaufen?', en: 'What did not go well?' }[locale]}
+                                    </label>
+                                    <Textarea
+                                        id="what-went-wrong"
+                                        name={field.name}
+                                        value={field.state.value}
+                                        onBlur={field.handleBlur}
+                                        onChange={(event) => field.handleChange(event.target.value)}
+                                        rows={3}
+                                        aria-invalid={showError}
+                                        aria-describedby={showError ? errorId : undefined}
+                                    />
+                                    {showError ? (
+                                        <p id={errorId} className="text-sm text-destructive" role="alert">
+                                            {errorMessage}
+                                        </p>
+                                    ) : null}
+                                </div>
+                            );
+                        }}
+                    </form.Field>
+                    <form.Field name="wouldRecommend">
+                        {(field) => (
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-sm text-muted-foreground">
+                                    {{ de: 'Würdest du peopleeat weiterempfehlen?', en: 'Would you recommend peopleeat?' }[locale]}
+                                </span>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant={field.state.value === true ? 'default' : 'outline'}
+                                    onClick={() => field.handleChange(true)}
+                                >
+                                    {{ de: 'Ja', en: 'Yes' }[locale]}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant={field.state.value === false ? 'default' : 'outline'}
+                                    onClick={() => field.handleChange(false)}
+                                >
+                                    {{ de: 'Nein', en: 'No' }[locale]}
+                                </Button>
+                            </div>
+                        )}
+                    </form.Field>
+                    <form.Field name="additionalFeedback">
+                        {(field) => (
+                            <div className="grid gap-2">
+                                <label htmlFor="additional-feedback" className="text-sm text-muted-foreground">
+                                    {{ de: 'Weiteres Feedback (optional)', en: 'Anything else (optional)' }[locale]}
+                                </label>
+                                <Textarea
+                                    id="additional-feedback"
+                                    name={field.name}
+                                    value={field.state.value}
+                                    onBlur={field.handleBlur}
+                                    onChange={(event) => field.handleChange(event.target.value)}
+                                    rows={2}
+                                />
+                            </div>
+                        )}
+                    </form.Field>
                 </div>
             ) : null}
-
-            <div>
-                <Button type="button" disabled={busy} onClick={() => void submit()}>
-                    {{ de: 'Absenden', en: 'Submit' }[locale]}
-                </Button>
-            </div>
-        </div>
+        </form>
     );
 }

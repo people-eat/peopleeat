@@ -3387,6 +3387,11 @@ export type GqlSCookBookingRequestOfferTestimonialCreate = {
     rating?: InputMaybe<Scalars['Int']['input']>;
 };
 
+export type GqlSCookBookingRequestOfferTestimonialUpdate = {
+    body?: InputMaybe<Scalars['String']['input']>;
+    bookingRequestOfferId: Scalars['ID']['input'];
+};
+
 export interface GqlSCookBookingRequestTaken {
     __typename?: 'CookBookingRequestTaken';
     _?: Maybe<Scalars['Boolean']['output']>;
@@ -3617,6 +3622,7 @@ export interface GqlSCookMutation {
     bookingRequestOfferPriceUpdate: GqlSMutationResult;
     bookingRequestOfferSuggestedMenusUpdate: GqlSMutationResult;
     bookingRequestOfferTestimonialCreate: GqlSMutationResult;
+    bookingRequestOfferTestimonialUpdate: GqlSMutationResult;
     bookingRequestOfferUnreadNotificationCountReset: GqlSMutationResult;
     bookingRequestOpen: GqlSMutationResult;
     callAvailabilityExceptionCreate: GqlSMutationResult;
@@ -3735,6 +3741,10 @@ export type GqlSCookMutationBookingRequestOfferSuggestedMenusUpdateArgs = {
 
 export type GqlSCookMutationBookingRequestOfferTestimonialCreateArgs = {
     input: GqlSCookBookingRequestOfferTestimonialCreate;
+};
+
+export type GqlSCookMutationBookingRequestOfferTestimonialUpdateArgs = {
+    input: GqlSCookBookingRequestOfferTestimonialUpdate;
 };
 
 export type GqlSCookMutationBookingRequestOfferUnreadNotificationCountResetArgs = {
@@ -4886,6 +4896,11 @@ export type GqlSUserBookingRequestOfferTestimonialCreate = {
     rating?: InputMaybe<Scalars['Int']['input']>;
 };
 
+export type GqlSUserBookingRequestOfferTestimonialUpdate = {
+    body: Scalars['String']['input'];
+    bookingRequestOfferId: Scalars['ID']['input'];
+};
+
 export interface GqlSUserBookingRequestOfferTravelImpact {
     __typename?: 'UserBookingRequestOfferTravelImpact';
     bookingRequestOfferId: Scalars['ID']['output'];
@@ -4978,6 +4993,7 @@ export interface GqlSUserMutation {
     bookingRequestOfferParticipantAmendmentCreate: GqlSMutationResult;
     bookingRequestOfferPaymentStatusUpdate: GqlSMutationResult;
     bookingRequestOfferTestimonialCreate: GqlSMutationResult;
+    bookingRequestOfferTestimonialUpdate: GqlSMutationResult;
     bookingRequestOfferUnreadNotificationCountReset: GqlSMutationResult;
     bookingRequestRequestRecall: GqlSMutationResult;
     bookingRequestUpdate: GqlSMutationResult;
@@ -5111,6 +5127,10 @@ export type GqlSUserMutationBookingRequestOfferPaymentStatusUpdateArgs = {
 
 export type GqlSUserMutationBookingRequestOfferTestimonialCreateArgs = {
     input: GqlSUserBookingRequestOfferTestimonialCreate;
+};
+
+export type GqlSUserMutationBookingRequestOfferTestimonialUpdateArgs = {
+    input: GqlSUserBookingRequestOfferTestimonialUpdate;
 };
 
 export type GqlSUserMutationBookingRequestOfferUnreadNotificationCountResetArgs = {
@@ -5753,6 +5773,7 @@ export type GqlSResolversTypes = ResolversObject<{
     CookBookingRequestOfferFindManyCriterion: GqlSCookBookingRequestOfferFindManyCriterion;
     CookBookingRequestOfferListBucket: GqlSCookBookingRequestOfferListBucket;
     CookBookingRequestOfferTestimonialCreate: GqlSCookBookingRequestOfferTestimonialCreate;
+    CookBookingRequestOfferTestimonialUpdate: GqlSCookBookingRequestOfferTestimonialUpdate;
     CookBookingRequestTaken: ResolverTypeWrapper<GqlSCookBookingRequestTaken>;
     CookCallAvailabilityException: ResolverTypeWrapper<GqlSCookCallAvailabilityException>;
     CookCallAvailabilityExceptionCreate: GqlSCookCallAvailabilityExceptionCreate;
@@ -5958,6 +5979,7 @@ export type GqlSResolversTypes = ResolversObject<{
     >;
     UserBookingRequestOfferPriceImpact: ResolverTypeWrapper<GqlSUserBookingRequestOfferPriceImpact>;
     UserBookingRequestOfferTestimonialCreate: GqlSUserBookingRequestOfferTestimonialCreate;
+    UserBookingRequestOfferTestimonialUpdate: GqlSUserBookingRequestOfferTestimonialUpdate;
     UserBookingRequestOfferTravelImpact: ResolverTypeWrapper<GqlSUserBookingRequestOfferTravelImpact>;
     UserBookingRequestParticipantCreate: GqlSUserBookingRequestParticipantCreate;
     UserBookingRequestPromoCode: ResolverTypeWrapper<GqlSUserBookingRequestPromoCode>;
@@ -6261,6 +6283,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     CookBookingRequestOfferContext: GqlSCookBookingRequestOfferContext;
     CookBookingRequestOfferFindManyCriterion: GqlSCookBookingRequestOfferFindManyCriterion;
     CookBookingRequestOfferTestimonialCreate: GqlSCookBookingRequestOfferTestimonialCreate;
+    CookBookingRequestOfferTestimonialUpdate: GqlSCookBookingRequestOfferTestimonialUpdate;
     CookBookingRequestTaken: GqlSCookBookingRequestTaken;
     CookCallAvailabilityException: GqlSCookCallAvailabilityException;
     CookCallAvailabilityExceptionCreate: GqlSCookCallAvailabilityExceptionCreate;
@@ -6419,6 +6442,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     };
     UserBookingRequestOfferPriceImpact: GqlSUserBookingRequestOfferPriceImpact;
     UserBookingRequestOfferTestimonialCreate: GqlSUserBookingRequestOfferTestimonialCreate;
+    UserBookingRequestOfferTestimonialUpdate: GqlSUserBookingRequestOfferTestimonialUpdate;
     UserBookingRequestOfferTravelImpact: GqlSUserBookingRequestOfferTravelImpact;
     UserBookingRequestParticipantCreate: GqlSUserBookingRequestParticipantCreate;
     UserBookingRequestPromoCode: GqlSUserBookingRequestPromoCode;
@@ -9786,6 +9810,12 @@ export type GqlSCookMutationResolvers<
         ContextType,
         RequireFields<GqlSCookMutationBookingRequestOfferTestimonialCreateArgs, 'input'>
     >;
+    bookingRequestOfferTestimonialUpdate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationBookingRequestOfferTestimonialUpdateArgs, 'input'>
+    >;
     bookingRequestOfferUnreadNotificationCountReset?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -11093,6 +11123,12 @@ export type GqlSUserMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSUserMutationBookingRequestOfferTestimonialCreateArgs, 'input'>
+    >;
+    bookingRequestOfferTestimonialUpdate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserMutationBookingRequestOfferTestimonialUpdateArgs, 'input'>
     >;
     bookingRequestOfferUnreadNotificationCountReset?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -12922,6 +12958,15 @@ export function GqlSCookBookingRequestOfferTestimonialCreateSchema(): z.ZodObjec
     }) as z.ZodObject<Properties<GqlSCookBookingRequestOfferTestimonialCreate>>;
 }
 
+export function GqlSCookBookingRequestOfferTestimonialUpdateSchema(): z.ZodObject<
+    Properties<GqlSCookBookingRequestOfferTestimonialUpdate>
+> {
+    return z.object({
+        body: z.string().nullish(),
+        bookingRequestOfferId: z.string(),
+    });
+}
+
 export function GqlSCookCallAvailabilityExceptionCreateSchema(): z.ZodObject<Properties<GqlSCookCallAvailabilityExceptionCreate>> {
     return z.object({
         date: z.string(),
@@ -13245,6 +13290,15 @@ export function GqlSUserBookingRequestOfferTestimonialCreateSchema(): z.ZodObjec
         location: z.string().nullish(),
         occasion: z.string().nullish(),
         rating: z.number().nullish(),
+    });
+}
+
+export function GqlSUserBookingRequestOfferTestimonialUpdateSchema(): z.ZodObject<
+    Properties<GqlSUserBookingRequestOfferTestimonialUpdate>
+> {
+    return z.object({
+        body: z.string(),
+        bookingRequestOfferId: z.string(),
     });
 }
 

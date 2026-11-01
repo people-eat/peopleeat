@@ -2,6 +2,11 @@
 
 fragment ProfileCookBookingRequestOfferPageUser on User {
     userId
+    firstName
+    lastName
+    profilePicture {
+        url
+    }
     cook {
         cookId
         callSchedulingEnabled
@@ -57,9 +62,7 @@ fragment ProfileCookBookingRequestOfferPageUser on User {
                 }
             }
             cookTestimonial {
-                cookTestimonialId
-                body
-                rating
+                ...CookTestimonialCardFields
             }
             testimonialMissing
             preparationsCompletedAt

@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { bookingRequestOfferChatCanSend } from '../../../shared';
+import { bookingRequestOfferChatCanSend, userDisplayName } from '../../../shared';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../../shared/bookingRequestOfferStatus';
 import {
     AlertDialog,
@@ -26,10 +26,10 @@ import {
     AlertDialogTitle,
 } from '../../components/base/alert-dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/base/avatar';
-import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { Card, CardContent } from '../../components/base/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/base/dropdown-menu';
+import { NotificationBadge } from '../../components/base/notification-badge';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
@@ -39,7 +39,11 @@ import { BookingRequestOfferCallSessionProvider } from '../../components/Booking
 import { BookingRequestOfferCallTab } from '../../components/BookingRequestOfferCallTab';
 import { BookingRequestOfferChat } from '../../components/BookingRequestOfferChat';
 import { BookingRequestOfferParticipantAmendmentCustomerPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
-import { BookingRequestOfferTestimonialPanel } from '../../components/BookingRequestOfferTestimonialPanel';
+import {
+    BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID,
+    BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID,
+    BookingRequestOfferTestimonialPanel,
+} from '../../components/BookingRequestOfferTestimonialPanel';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import { CookProfileTags } from '../../components/CookProfileTags';
 import { CostBreakdownPanel } from '../../components/CostBreakdownPanel';
@@ -195,6 +199,9 @@ export function ProfileCustomerBookingRequestOfferPage({
     const [acceptOpen, setAcceptOpen] = useState(false);
     const [acceptBusy, setAcceptBusy] = useState(false);
     const [openCheckoutAfterAccept, setOpenCheckoutAfterAccept] = useState(false);
+    const [testimonialBusy, setTestimonialBusy] = useState(false);
+    const [testimonialSubmitted, setTestimonialSubmitted] = useState(false);
+    const [testimonialEditing, setTestimonialEditing] = useState(false);
 
     const [, acceptOffer] = useMutation(ProfileCustomerBookingRequestOfferAcceptDocument);
     const [, configureMenu] = useMutation(ProfileCustomerBookingRequestOfferConfiguredMenuCreateDocument);
@@ -313,6 +320,14 @@ export function ProfileCustomerBookingRequestOfferPage({
 
     const liveOffer = offer;
     const showOfferAcceptFooter = tab === 'offer' && canAccept;
+    const showTestimonialComposeFooter =
+        tab === 'testimonial' &&
+        offer != null &&
+        offer.testimonialMissing &&
+        offer.customerTestimonial == null &&
+        !testimonialSubmitted &&
+        !testimonialEditing;
+    const showTestimonialEditFooter = tab === 'testimonial' && testimonialEditing;
 
     async function onAcceptConfirm() {
         if (acceptBusy) return;
@@ -360,6 +375,30 @@ export function ProfileCustomerBookingRequestOfferPage({
                     footer={
                         call.inCall ? (
                             <BookingRequestOfferCallControls />
+                        ) : showTestimonialEditFooter ? (
+                            <>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="flex-1 md:flex-initial"
+                                    disabled={testimonialBusy}
+                                    onClick={() => setTestimonialEditing(false)}
+                                >
+                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    form={BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID}
+                                    className="flex-1 md:flex-initial"
+                                    disabled={testimonialBusy}
+                                >
+                                    {{ de: 'Speichern', en: 'Save' }[locale]}
+                                </Button>
+                            </>
+                        ) : showTestimonialComposeFooter ? (
+                            <Button type="submit" form={BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID} disabled={testimonialBusy}>
+                                {{ de: 'Bewertung absenden', en: 'Share your review' }[locale]}
+                            </Button>
                         ) : showOfferAcceptFooter ? (
                             <Button type="button" disabled={acceptBusy} onClick={() => setAcceptOpen(true)}>
                                 {{ de: 'Annehmen', en: 'Accept' }[locale]}
@@ -479,9 +518,12 @@ export function ProfileCustomerBookingRequestOfferPage({
                                             <Icon aria-hidden />
                                             {label[locale]}
                                             {id === 'testimonial' && testimonialTabMissing ? (
-                                                <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] font-medium">
-                                                    1
-                                                </Badge>
+                                                <NotificationBadge
+                                                    count={1}
+                                                    placement="inline"
+                                                    className="ml-1"
+                                                    label={{ de: 'Bewertung ausstehend', en: 'Review outstanding' }[locale]}
+                                                />
                                             ) : null}
                                         </Link>
                                     </TabsTrigger>
@@ -660,11 +702,28 @@ export function ProfileCustomerBookingRequestOfferPage({
                                             ? {
                                                   body: offer.customerTestimonial.body,
                                                   rating: offer.customerTestimonial.rating ?? null,
-                                                  publicationStatus: undefined,
+                                                  imageUrls: offer.customerTestimonial.imageUrls,
+                                                  authorName: offer.customerTestimonial.authorName,
+                                                  authorProfilePictureUrl: offer.customerTestimonial.authorProfilePicture?.url ?? null,
+                                                  location: offer.customerTestimonial.location,
+                                                  occasion: offer.customerTestimonial.occasion,
                                               }
                                             : null
                                     }
                                     missing={offer.testimonialMissing}
+                                    authorFallback={{
+                                        authorName: userDisplayName({
+                                            firstName: user?.firstName ?? '',
+                                            lastName: user?.lastName ?? '',
+                                        }),
+                                        authorProfilePictureUrl: user?.profilePicture?.url ?? null,
+                                        location: request?.exactEventAddress?.city ?? null,
+                                        occasion: request?.occasion ?? null,
+                                    }}
+                                    editing={testimonialEditing}
+                                    onBusyChange={setTestimonialBusy}
+                                    onSubmitted={() => setTestimonialSubmitted(true)}
+                                    onEditingChange={setTestimonialEditing}
                                 />
                             </TabsContent>
                         ) : null}

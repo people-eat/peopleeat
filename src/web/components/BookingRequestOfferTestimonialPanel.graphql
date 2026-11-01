@@ -17,3 +17,23 @@ mutation CookBookingRequestOfferTestimonialCreate($input: CookBookingRequestOffe
         }
     }
 }
+
+mutation UserBookingRequestOfferTestimonialUpdate($input: UserBookingRequestOfferTestimonialUpdate!) {
+    user {
+        bookingRequestOfferTestimonialUpdate(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation CookBookingRequestOfferTestimonialUpdate($input: CookBookingRequestOfferTestimonialUpdate!) {
+    user {
+        cook {
+            bookingRequestOfferTestimonialUpdate(input: $input) {
+                success
+                referenceId
+            }
+        }
+    }
+}

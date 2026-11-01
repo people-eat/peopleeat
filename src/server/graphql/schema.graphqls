@@ -1214,6 +1214,8 @@ type CookMutation {
     # offer. Low `rating` (<= 3) defaults to `PENDING_REVIEW` instead of
     # auto-publishing. Returns `cookTestimonialId` as `referenceId`.
     bookingRequestOfferTestimonialCreate(input: CookBookingRequestOfferTestimonialCreate!): MutationResult!
+    # Body-only edit of the cook's own offer-linked review.
+    bookingRequestOfferTestimonialUpdate(input: CookBookingRequestOfferTestimonialUpdate!): MutationResult!
 }
 
 # --- Booking requests / offers -------------------------------------------------
@@ -1697,6 +1699,13 @@ input UserBookingRequestOfferTestimonialCreate {
     imageFileUploadIds: [ID!]
 }
 
+# Body-only self-edit after create (spelling / wording). Does not change rating,
+# images, or publicationStatus.
+input UserBookingRequestOfferTestimonialUpdate {
+    bookingRequestOfferId: ID!
+    body: String!
+}
+
 # Follow-up survey required when `rating < 5` — see `publicationStatusFromRating.ts`
 # and `cookBookingRequestOfferTestimonialCreate.ts`.
 input CookTestimonialLowRatingAnswersInput {
@@ -1715,6 +1724,13 @@ input CookBookingRequestOfferTestimonialCreate {
     imageFileUploadIds: [ID!]
     # Required when `rating` is present and `< 5`.
     lowRatingAnswers: CookTestimonialLowRatingAnswersInput
+}
+
+# Body-only self-edit after create (spelling / wording). Empty clears the
+# optional cook comment. Does not change rating, images, or publicationStatus.
+input CookBookingRequestOfferTestimonialUpdate {
+    bookingRequestOfferId: ID!
+    body: String
 }
 
 # Why an open offer's price was auto-adjusted after a customer pre-accept edit.
@@ -2759,6 +2775,8 @@ type UserMutation {
     # (<= 3) defaults to `PENDING_REVIEW` instead of auto-publishing. Returns
     # `customerTestimonialId` as `referenceId`.
     bookingRequestOfferTestimonialCreate(input: UserBookingRequestOfferTestimonialCreate!): MutationResult!
+    # Body-only edit of the customer's own offer-linked review.
+    bookingRequestOfferTestimonialUpdate(input: UserBookingRequestOfferTestimonialUpdate!): MutationResult!
     # Inserts Cooks membership for the signed-in user (existing customers → chefs).
     cookCreate(input: CookCreate!): MutationResult!
     chatMessageCreate(

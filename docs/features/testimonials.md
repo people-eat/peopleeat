@@ -7,21 +7,24 @@ pages.
 
 ### Customer
 
-On a dual-accepted, paid offer whose event datetime is in the past, the customer submits rating and text on the offer **Review** tab.
-Ratings 4–5 publish immediately; 1–3 wait for admin approval. After submit, the UI suggests posting the same text on Google reviews.
+On a dual-accepted, paid offer whose event datetime is in the past, the customer submits rating, text, and optional event photos on the
+offer **Review** tab (TanStack Form with under-field validation; primary Submit sits in the pinned profile action bar). Ratings 4–5 publish
+immediately; 1–3 wait for admin approval. After submit, the thank-you view reuses the public `PageTestimonialCardFace` / detail dialog, and
+the customer can body-edit for spelling. The UI also suggests posting the same text on Google reviews.
 
 When a review is still owed:
 
 - Opening the offer without an explicit tab defaults to Review (Offer keeps a clean URL; Chat uses `?tab=chat`).
-- Review tab shows a badge while missing.
+- Review tab shows a red inline `NotificationBadge` (count `1`) while missing.
 - Booking list and offer cards show a warning `StatusBadge` (“Review” / “Bewertung”) in the status row and morph the primary CTA to “Leave a
   review” / “Bewertung abgeben” when Review is the winning deep-link (call schedule links can still win navigation; the badge still shows).
 - Reminder emails deep-link to Review (session sign-in, no magic tokens).
 
 ### Cook
 
-Same completion gate. Cooks rate the experience (text optional). Ratings below 5 unlock a short structured follow-up; submission requires
-those fields. Same publish rules for low stars. Default tab and badge match the customer when a review is owed (no list-card pill on the
+Same completion gate. Cooks rate the experience (text and photos optional). Ratings below 5 unlock a short structured follow-up; submission
+requires those fields. Same publish rules for low stars. Same form patterns as the customer (TanStack Form, pinned Submit, public-face
+preview, body-only self-edit). Default tab and red `NotificationBadge` match the customer when a review is owed (no list-card pill on the
 cook booking list).
 
 ### Admin
@@ -75,9 +78,10 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 
 - Tables: `CustomerTestimonials`, `CookTestimonials`, `CityTestimonials`, `PartnerTestimonials`
 - Domain: `src/server/domain/testimonial.ts`
-- GraphQL: public and admin types, offer fields, city/partner curation, user/cook create mutations
-- Commands / queries: `*Testimonial*` under commands and queries; admin assistant list tool `adminTestimonialsFindMany` (customer + cook,
-  in-process filters) → `admin.testimonialList` cards
+- GraphQL: public and admin types, offer fields, city/partner curation, user/cook create + body-only update mutations
+- Commands / queries: `*Testimonial*` under commands and queries (incl. `userBookingRequestOfferTestimonialUpdate` /
+  `cookBookingRequestOfferTestimonialUpdate`); admin assistant list tool `adminTestimonialsFindMany` (customer + cook, in-process filters) →
+  `admin.testimonialList` cards
 - Utils: publication from rating, offer fallbacks, image URLs from file uploads, junction cleanup
 - Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `PageTestimonialCard` / `PageTestimonialCardFace` /
   `PageTestimonialDetailDialog` (photo strip, split detail dialog with author avatar; content pages pass `showBookingCta` for occasion
@@ -87,7 +91,11 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
   `AdminTestimonialPublicPagePlacements*`
 - GraphQL: public `CustomerTestimonial` / `CookTestimonial.authorProfilePicture` (batch-loaded from the author’s current profile picture)
 - Download auth: `fileUploadReferencedByPublishedTestimonial` / `fileUploadReferencedByAnyTestimonial` on `GET /api/file-uploads/:id`
-- Capture UI: `BookingRequestOfferTestimonialPanel`, rating input/stars — Review tab on customer, cook, and admin offer pages
+- Capture UI: `BookingRequestOfferTestimonialPanel` (TanStack Form, accent stars, 4-col photo strip, inline validation, optional
+  `imageFileUploadIds`; post-submit reuses `PageTestimonialCardFace` + `PageTestimonialDetailDialog`; body self-edit with pinned
+  Save/Cancel) — Review tab on customer and cook offer pages; compose Submit via `BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID`, edit via
+  `BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID` in `ProfilePinnedFooterLayout`. Outstanding Review tab uses inline `NotificationBadge`.
+  Admin offer Review tab stays separate.
 - List nudges: customer cards read `testimonialMissing`, deep-link `?tab=testimonial`
 - Jobs: `bookingRequestOfferTestimonialReminder` (memory nudge, morning and evening reminders Europe/Berlin); schedule on payment success
   and datetime changes; cancel on request cancel

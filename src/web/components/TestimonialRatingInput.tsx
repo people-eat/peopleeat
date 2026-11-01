@@ -74,7 +74,7 @@ export function TestimonialRatingInput({
                             className={cn(
                                 iconClass,
                                 'transition-colors',
-                                filled ? 'fill-yellow-400 text-yellow-400' : 'fill-transparent text-muted-foreground/35',
+                                filled ? 'fill-accent text-accent' : 'fill-transparent text-muted-foreground/35',
                             )}
                             strokeWidth={1.5}
                         />
