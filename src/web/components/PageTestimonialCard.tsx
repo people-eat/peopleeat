@@ -372,8 +372,8 @@ export function PageTestimonialCardFace({
 
             <TestimonialImageStrip imageUrls={imageUrls} onOpen={onOpenImage} />
 
-            <div className="mt-auto flex items-end justify-between gap-3">
-                <figcaption className="min-w-0">
+            <div className="mt-auto flex flex-wrap items-end justify-between gap-x-3 gap-y-2">
+                <figcaption className="min-w-0 flex-1 basis-40">
                     <TestimonialAuthor
                         authorName={testimonial.authorName}
                         authorProfilePictureUrl={testimonial.authorProfilePictureUrl}
@@ -381,7 +381,7 @@ export function PageTestimonialCardFace({
                         createdAt={testimonial.createdAt}
                     />
                 </figcaption>
-                {footerAction}
+                {footerAction != null ? <div className="shrink-0">{footerAction}</div> : null}
             </div>
         </figure>
     );

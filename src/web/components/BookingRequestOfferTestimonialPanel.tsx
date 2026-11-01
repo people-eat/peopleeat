@@ -435,17 +435,17 @@ export function BookingRequestOfferTestimonialPanel({
                 <PageTestimonialCardFace
                     testimonial={card}
                     onOpenImage={card.imageUrls != null && card.imageUrls.length > 0 ? openDetail : undefined}
-                    footerAction={
-                        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                            <Button type="button" variant="outline" size="sm" onClick={() => onEditingChange?.(true)}>
-                                {{ de: 'Text bearbeiten', en: 'Edit text' }[locale]}
-                            </Button>
-                            <Button type="button" variant="link" size="sm" className="h-auto px-0" onClick={() => openDetail(0)}>
-                                {viewLabel}
-                            </Button>
-                        </div>
-                    }
                 />
+
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                    <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => onEditingChange?.(true)}>
+                        {{ de: 'Text bearbeiten', en: 'Edit text' }[locale]}
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => openDetail(0)}>
+                        {viewLabel}
+                    </Button>
+                </div>
+
                 <PageTestimonialDetailDialog
                     testimonial={card}
                     open={detailOpen}
@@ -485,11 +485,12 @@ export function BookingRequestOfferTestimonialPanel({
                                 }
                             </p>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex gap-2">
                             <Button
                                 type="button"
                                 size="sm"
                                 variant="outline"
+                                className="flex-1"
                                 onClick={() => {
                                     void navigator.clipboard.writeText(shown.body);
                                     toast.success({ de: 'Text kopiert.', en: 'Text copied.' }[locale]);
@@ -497,7 +498,7 @@ export function BookingRequestOfferTestimonialPanel({
                             >
                                 {{ de: 'Text kopieren', en: 'Copy text' }[locale]}
                             </Button>
-                            <Button asChild size="sm">
+                            <Button asChild size="sm" className="flex-1">
                                 <a href={GOOGLE_REVIEW_URL} target="_blank" rel="noreferrer">
                                     {{ de: 'Google öffnen', en: 'Open Google' }[locale]}
                                 </a>

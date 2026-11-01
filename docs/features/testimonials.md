@@ -103,7 +103,8 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 - Capture UI: `BookingRequestOfferTestimonialPanel` (TanStack Form, accent stars, 4-col photo strip, inline validation, optional
   `imageFileUploadIds`; multi-select file input up to 8 photos; each image is client-compressed via `imageCompress` /
   `IMAGE_COMPRESS_PRESETS.testimonial` before `POST /api/file-uploads` — no crop dialog; post-submit reuses `PageTestimonialCardFace` +
-  `PageTestimonialDetailDialog`; body self-edit with pinned Save/Cancel) — Review tab on customer and cook offer pages; compose Submit via
+  `PageTestimonialDetailDialog` with Edit text / View review in a dedicated action row under the card (stacked full-width on small screens);
+  body self-edit with pinned Save/Cancel) — Review tab on customer and cook offer pages; compose Submit via
   `BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID`, edit via `BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID` in `ProfilePinnedFooterLayout`.
   Outstanding Review tab uses inline `NotificationBadge`. Admin offer Review tab and detail `AdminTestimonialImageManager` use the same
   multi-select + compress path (cap 8).
