@@ -15,10 +15,12 @@ import type { ContentPageEditorSearch, ContentPageEditorValues } from '../../com
 import { ContentPageFeaturedCooksEditor } from '../../components/ContentPageFeaturedCooksEditor';
 import type { FeaturedCookOption } from '../../components/ContentPageFeaturedCooksEditor';
 import {
+    adminTestimonialAssignmentFromCandidate,
     contentPageTestimonialsForPreview,
     ContentPageTestimonialsEditor,
+    testimonialEntryFromAdminAssignment,
 } from '../../components/ContentPageTestimonialsEditor';
-import type { TestimonialCandidateOption, TestimonialEntry } from '../../components/ContentPageTestimonialsEditor';
+import type { TestimonialCandidateOption } from '../../components/ContentPageTestimonialsEditor';
 import { contentSectionsFromGql, contentSectionsToInput } from '../../components/contentSectionsMap';
 import type { GqlCAdminOccasionPageQuery } from '../../graphql/generated';
 import {
@@ -107,12 +109,6 @@ function patchFormatsCard(
     return { ...section, cards };
 }
 
-function testimonialEntryFromAdmin(row: OccasionRow['testimonials'][number]): TestimonialEntry {
-    return row.testimonial.__typename === 'AdminCustomerTestimonial'
-        ? { testimonialType: 'CUSTOMER', testimonialId: row.testimonial.customerTestimonialId }
-        : { testimonialType: 'COOK', testimonialId: row.testimonial.cookTestimonialId };
-}
-
 function valuesFromOccasion(occasion: OccasionRow): OccasionEditorValues {
     return {
         pathName: occasion.pathName,
@@ -155,9 +151,7 @@ export function AdminOccasionPage({
 
     const [values, setValues] = useState<OccasionEditorValues>(() => valuesFromOccasion(seedOccasion));
     const [assignedCooks, setAssignedCooks] = useState(seedOccasion.cooks);
-    const [testimonialEntries, setTestimonialEntries] = useState<TestimonialEntry[]>(() =>
-        seedOccasion.testimonials.map(testimonialEntryFromAdmin),
-    );
+    const [assignedTestimonials, setAssignedTestimonials] = useState(seedOccasion.testimonials);
     const [busy, setBusy] = useState(false);
     const [cookSearch, setCookSearch] = useState('');
     const debouncedCookSearch = useDebouncedValue(cookSearch, 300);
@@ -235,7 +229,7 @@ export function AdminOccasionPage({
                 if (!next) return;
                 if (!pageDirtyRef.current) setValues(valuesFromOccasion(next));
                 setAssignedCooks(next.cooks);
-                setTestimonialEntries(next.testimonials.map(testimonialEntryFromAdmin));
+                setAssignedTestimonials(next.testimonials);
             }),
         );
         return unsubscribe;
@@ -291,18 +285,17 @@ export function AdminOccasionPage({
         return { redeemCode: match.redeemCode, amountCents: match.amountCents };
     }, [promoCodes, values.promoCodeId]);
 
-    const previewCooks = assignedCooks
-        .filter((row) => row.isPubliclyListed)
-        .map((row) => ({
-            cookId: row.cook.cookId,
-            cuisineStyle: row.cook.cuisineStyle ?? null,
-            cookingPhilosophy: row.cook.cookingPhilosophy ?? null,
-            city: row.cook.exactTravelOriginAddress?.city ?? null,
-            user: {
-                display: userDisplayName(row.cook.user),
-                profilePicture: null,
-            },
-        }));
+    const previewCooks = assignedCooks.map((row) => ({
+        cookId: row.cook.cookId,
+        cuisineStyle: row.cook.cuisineStyle ?? null,
+        cookingPhilosophy: row.cook.cookingPhilosophy ?? null,
+        city: row.cook.exactTravelOriginAddress?.city ?? null,
+        isPubliclyListed: row.isPubliclyListed,
+        user: {
+            display: userDisplayName(row.cook.user),
+            profilePicture: null,
+        },
+    }));
 
     const testimonialCandidates: TestimonialCandidateOption[] = [
         ...(seedAdmin?.customerTestimonials ?? []).map((row) => ({
@@ -344,7 +337,7 @@ export function AdminOccasionPage({
                 tab={tab}
                 user={data.currentSession.user}
                 featuredCooks={previewCooks}
-                testimonials={contentPageTestimonialsForPreview(testimonialEntries, testimonialCandidates)}
+                testimonials={contentPageTestimonialsForPreview(assignedTestimonials)}
                 chefForAnyOccasion={{
                     displayName: values.name.trim() || { de: 'Anlass', en: 'Occasion' }[locale],
                     headlineDe: values.firstSectionHeadlineDe,
@@ -708,7 +701,7 @@ export function AdminOccasionPage({
 
                         <ContentPageTestimonialsEditor
                             locale={locale}
-                            assignedEntries={testimonialEntries}
+                            assignedEntries={assignedTestimonials.map(testimonialEntryFromAdminAssignment)}
                             candidates={testimonialCandidates}
                             busy={busy}
                             emptyHint={
@@ -722,7 +715,21 @@ export function AdminOccasionPage({
                                 if (result.error || !result.data?.admin.occasionTestimonialsUpdate.success) {
                                     throw new Error('testimonials update failed');
                                 }
-                                setTestimonialEntries(entries);
+                                const byKey = new Map(
+                                    testimonialCandidates.map((candidate) => [
+                                        `${candidate.testimonialType}:${candidate.testimonialId}`,
+                                        candidate,
+                                    ]),
+                                );
+                                setAssignedTestimonials(
+                                    entries.map((entry, index) =>
+                                        adminTestimonialAssignmentFromCandidate(
+                                            entry,
+                                            index,
+                                            byKey.get(`${entry.testimonialType}:${entry.testimonialId}`),
+                                        ),
+                                    ),
+                                );
                             }}
                         />
                     </>

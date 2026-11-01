@@ -54,7 +54,17 @@ function CookCardRating({ rating, locale }: { rating: NonNullable<PublicCookCard
     );
 }
 
-function PublicCookCardBody({ cook, locale, showCity }: { cook: PublicCookCardCook; locale: Locale; showCity: boolean }) {
+function PublicCookCardBody({
+    cook,
+    locale,
+    showCity,
+    badge,
+}: {
+    cook: PublicCookCardCook;
+    locale: Locale;
+    showCity: boolean;
+    badge?: ReactNode;
+}) {
     const name = cook.user.display;
     const city = showCity ? cook.city?.trim() || null : null;
 
@@ -80,6 +90,8 @@ function PublicCookCardBody({ cook, locale, showCity }: { cook: PublicCookCardCo
                     ) : null}
                 </div>
 
+                {badge}
+
                 <CookProfileTags cuisineStyle={cook.cuisineStyle} cookingPhilosophy={cook.cookingPhilosophy} />
 
                 {cook.rating != null && cook.rating.reviewCount > 0 && cook.rating.averageRating != null ? (
@@ -104,12 +116,15 @@ export function PublicCookCard({
     className,
     interactive = true,
     showCity = true,
+    badge,
 }: {
     cook: PublicCookCardCook;
     className?: string;
     interactive?: boolean;
     /** Show travel-origin city under the name. Partners may turn off. */
     showCity?: boolean;
+    /** Admin preview chip (e.g. not publicly listed). */
+    badge?: ReactNode;
 }) {
     const locale = useLocale();
     const cardClassName = cn(
@@ -117,7 +132,7 @@ export function PublicCookCard({
         interactive && bookingRequestCardInteractionClassName,
         className,
     );
-    const body: ReactNode = <PublicCookCardBody cook={cook} locale={locale} showCity={showCity} />;
+    const body: ReactNode = <PublicCookCardBody cook={cook} locale={locale} showCity={showCity} badge={badge} />;
 
     if (!interactive) {
         return <div className={cardClassName}>{body}</div>;

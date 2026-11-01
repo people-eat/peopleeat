@@ -10,13 +10,21 @@ import type { TestimonialOfferFallbacks } from './testimonialOfferFallbacksLoad'
 
 type JunctionRow = Pick<CityTestimonial | PartnerTestimonial | OccasionTestimonial, 'testimonialType' | 'testimonialId' | 'index'>;
 
+export type TestimonialCatalogEntry<TCustomer, TCook> = {
+    index: number;
+    testimonial: TCustomer | TCook;
+    /** Same gate as public curated pages (`publicationStatus = PUBLISHED`). */
+    isPubliclyListed: boolean;
+};
+
 /**
  * Resolves ordered `CityTestimonials` / `PartnerTestimonials` /
  * `OccasionTestimonials` junction rows into the polymorphic `Testimonial` /
  * `AdminTestimonial` union — shared by the city, partner, and occasion
  * catalogs (public + admin variants). Skips entries
  * whose target row was deleted; public variants (`publishedOnly: true`) also
- * skip `PENDING_REVIEW` rows.
+ * skip `PENDING_REVIEW` rows. Always stamps `isPubliclyListed` so
+ * `AdminPageTestimonial` can mirror `AdminFeaturedCook.isPubliclyListed`.
  */
 export async function testimonialCatalogEntriesLoad<TCustomer, TCook>(
     junctionRows: JunctionRow[],
@@ -30,7 +38,7 @@ export async function testimonialCatalogEntriesLoad<TCustomer, TCook>(
         ) => TCustomer;
         toCook: (row: CookTestimonial, fallback: TestimonialOfferFallbacks | null, authorProfilePicture: GqlSFileUpload | null) => TCook;
     },
-): Promise<Array<{ index: number; testimonial: TCustomer | TCook }>> {
+): Promise<Array<TestimonialCatalogEntry<TCustomer, TCook>>> {
     if (junctionRows.length === 0) return [];
 
     const customerIds = junctionRows.filter((row) => row.testimonialType === 'CUSTOMER').map((row) => row.testimonialId);
@@ -59,7 +67,7 @@ export async function testimonialCatalogEntriesLoad<TCustomer, TCook>(
         ]),
     ]);
 
-    const result: Array<{ index: number; testimonial: TCustomer | TCook }> = [];
+    const result: Array<TestimonialCatalogEntry<TCustomer, TCook>> = [];
     for (const junction of junctionRows) {
         if (junction.testimonialType === 'CUSTOMER') {
             const row = customerById.get(junction.testimonialId);
@@ -69,6 +77,7 @@ export async function testimonialCatalogEntriesLoad<TCustomer, TCook>(
             result.push({
                 index: junction.index,
                 testimonial: args.toCustomer(row, fallback, authorPicturesByUserId.get(row.userId) ?? null),
+                isPubliclyListed: row.publicationStatus === 'PUBLISHED',
             });
         } else {
             const row = cookById.get(junction.testimonialId);
@@ -78,6 +87,7 @@ export async function testimonialCatalogEntriesLoad<TCustomer, TCook>(
             result.push({
                 index: junction.index,
                 testimonial: args.toCook(row, fallback, authorPicturesByUserId.get(row.userId) ?? null),
+                isPubliclyListed: row.publicationStatus === 'PUBLISHED',
             });
         }
     }

@@ -1,4 +1,6 @@
 import type { Locale } from '../../shared';
+import { StatusAlert } from '../components/base/status-alert';
+import { StatusBadge } from '../components/base/status-badge';
 import { PageTestimonialCard } from '../components/PageTestimonialCard';
 import { cn } from '../utils/cn';
 
@@ -7,6 +9,12 @@ import { cn } from '../utils/cn';
 // union so the two variants don't collide on an incompatible field type.
 export type SectionPageTestimonial = {
     index: number;
+    /**
+     * Admin live preview only (`AdminPageTestimonial.isPubliclyListed`). Public
+     * GraphQL omits unlisted rows; when `false`, the card still renders with a
+     * visibility warning — same pattern as `SectionFeaturedCook.isPubliclyListed`.
+     */
+    isPubliclyListed?: boolean;
     testimonial:
         | {
               __typename: 'CustomerTestimonial';
@@ -66,19 +74,45 @@ export function SectionPageTestimonials({
     if (testimonials.length === 0) return null;
 
     const heading = title ?? { de: 'Das sagen unsere Kunden', en: 'What our customers say' }[locale];
+    const hiddenCount = testimonials.filter((entry) => entry.isPubliclyListed === false).length;
+    const hiddenTitle =
+        hiddenCount === 1
+            ? { de: '1 Bewertung erscheint nicht öffentlich', en: '1 review is not shown publicly' }[locale]
+            : {
+                  de: `${hiddenCount} Bewertungen erscheinen nicht öffentlich`,
+                  en: `${hiddenCount} reviews are not shown publicly`,
+              }[locale];
 
     return (
         <section className={cn(inset ? 'mx-auto w-full max-w-7xl px-4 py-16 @lg:px-6' : 'w-full', className)}>
             <h2 className="font-serif text-3xl font-light @md:text-4xl">{heading}</h2>
+            {hiddenCount > 0 ? (
+                <StatusAlert tone="warning" title={hiddenTitle} className="mt-6">
+                    {
+                        {
+                            de: 'Nicht freigegebene Bewertungen fehlen auf der öffentlichen Seite, bis sie veröffentlicht sind.',
+                            en: 'Unapproved reviews are missing from the public page until they are published.',
+                        }[locale]
+                    }
+                </StatusAlert>
+            ) : null}
             <ul className={cn('mt-10 grid grid-cols-1 gap-10', columns === 2 ? '@md:grid-cols-2' : '@md:grid-cols-2 @lg:grid-cols-3')}>
                 {testimonials.map((entry) => {
                     const testimonial = entry.testimonial;
                     const body = testimonialBody(entry);
                     if (!body || body.trim().length === 0) return null;
+                    const hidden = entry.isPubliclyListed === false;
                     return (
                         <li key={testimonialKey(entry)}>
                             <PageTestimonialCard
                                 showBookingCta={showBookingCta}
+                                header={
+                                    hidden ? (
+                                        <StatusBadge tone="warning">
+                                            {{ de: 'Nicht öffentlich', en: 'Not on public page' }[locale]}
+                                        </StatusBadge>
+                                    ) : undefined
+                                }
                                 testimonial={{
                                     authorName: testimonial.authorName,
                                     authorProfilePictureUrl: testimonial.authorProfilePicture?.url ?? null,

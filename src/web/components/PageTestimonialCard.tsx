@@ -412,10 +412,13 @@ export function PageTestimonialDetailDialog({
 export function PageTestimonialCard({
     testimonial,
     className,
+    header,
     showBookingCta = false,
 }: {
     testimonial: PageTestimonialCardModel;
     className?: string;
+    /** Optional admin preview chips (e.g. pending-review visibility). */
+    header?: ReactNode;
     /** Content pages only. Plan funnel keeps testimonials proof-only. */
     showBookingCta?: boolean;
 }) {
@@ -434,6 +437,7 @@ export function PageTestimonialCard({
             <PageTestimonialCardFace
                 testimonial={testimonial}
                 className={className}
+                header={header}
                 onOpenImage={openAt}
                 footerAction={
                     <Button type="button" variant="link" size="sm" className="h-auto shrink-0 px-0" onClick={() => openAt(0)}>

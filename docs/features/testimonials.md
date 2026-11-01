@@ -35,7 +35,9 @@ cook booking list).
   user editor.
 - Offer detail **Review** tab when completed or either side already has a testimonial — create, edit, publish, delete per side (separate
   from the Offer tab); publish/unpublish/delete use AlertDialogs.
-- City and partner editors: ordered picker across customer and cook testimonials; flags pending items not shown publicly yet.
+- City, partner, and occasion editors: ordered picker across customer and cook testimonials; shared `AdminPageTestimonial.isPubliclyListed`
+  (like `AdminFeaturedCook.isPubliclyListed`) flags curated rows that are not yet public. Admin live preview keeps those rows visible with a
+  card `StatusBadge` and section `StatusAlert` (public pages still omit them).
 
 ### Public
 

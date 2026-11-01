@@ -1678,20 +1678,8 @@ type PublicCookRating {
     reviewCount: Int!
 }
 
-# Curated, ordered testimonial on a public city page.
-type CityTestimonial {
-    index: Int!
-    testimonial: Testimonial!
-}
-
-# Curated, ordered testimonial on a public partner page.
-type PartnerTestimonial {
-    index: Int!
-    testimonial: Testimonial!
-}
-
-# Curated, ordered testimonial on a public occasion page.
-type OccasionTestimonial {
+# Curated, ordered testimonial on a public city / partner / occasion page.
+type PageTestimonial {
     index: Int!
     testimonial: Testimonial!
 }
@@ -3186,22 +3174,13 @@ input AdminCookTestimonialCriterion {
     cookIds: [ID!]
 }
 
-# Curated, ordered testimonial on the city editor.
-type AdminCityTestimonial {
+# Curated, ordered testimonial on a city / partner / occasion editor. Includes
+# pending-review rows so admins can see curation that would not appear publicly yet.
+type AdminPageTestimonial {
     index: Int!
     testimonial: AdminTestimonial!
-}
-
-# Curated, ordered testimonial on the partner editor.
-type AdminPartnerTestimonial {
-    index: Int!
-    testimonial: AdminTestimonial!
-}
-
-# Curated, ordered testimonial on the occasion editor.
-type AdminOccasionTestimonial {
-    index: Int!
-    testimonial: AdminTestimonial!
+    # Same gate as public city / partner / occasion pages (`publicationStatus = PUBLISHED`).
+    isPubliclyListed: Boolean!
 }
 
 input AdminCustomerTestimonialCreate {
@@ -4927,24 +4906,12 @@ input ContentSectionInput {
     entries: [ContentSectionQaEntryInput!]
 }
 
-# Assigned cook on an admin city editor. Includes cooks that would not appear
-# publicly so admins can see and clean up banned / hidden / unapproved rows.
-type AdminCityCook {
+# Assigned cook on a city / partner / occasion editor. Includes cooks that would
+# not appear publicly so admins can see and clean up banned / hidden / unapproved rows.
+type AdminFeaturedCook {
     position: Int!
     cook: AdminCook!
-    # Same gate as `/chefs` and `PublicCity.featuredCooks`.
-    isPubliclyListed: Boolean!
-}
-
-type AdminPartnerCook {
-    position: Int!
-    cook: AdminCook!
-    isPubliclyListed: Boolean!
-}
-
-type AdminOccasionCook {
-    position: Int!
-    cook: AdminCook!
+    # Same gate as `/chefs` and public `featuredCooks`.
     isPubliclyListed: Boolean!
 }
 
@@ -4974,11 +4941,11 @@ type AdminCity {
     firstSectionImageFileUploadId: ID
     firstSectionImageUrl: String
     sections: [ContentSection!]!
-    cooks: [AdminCityCook!]!
+    cooks: [AdminFeaturedCook!]!
     # Candidate pool for assignment (visible + approved + travel radius).
     cooksInTravelRadius: [AdminCook!]!
     # Curated, ordered testimonials for the editor. Empty until assigned.
-    testimonials: [AdminCityTestimonial!]!
+    testimonials: [AdminPageTestimonial!]!
     publishedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -5013,7 +4980,7 @@ type PublicCity {
     # Curated order when assigned; else travel-radius fallback at city center.
     featuredCooks: [PublicCook!]!
     # Curated, ordered testimonials. Empty when none are assigned.
-    testimonials: [CityTestimonial!]!
+    testimonials: [PageTestimonial!]!
     publishedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -5057,9 +5024,9 @@ type AdminPartner {
     # Resolved promo for editor preview. Null when none / expired / scoped.
     promo: PartnerPromo
     sections: [ContentSection!]!
-    cooks: [AdminPartnerCook!]!
+    cooks: [AdminFeaturedCook!]!
     # Curated, ordered testimonials for the editor. Empty until assigned.
-    testimonials: [AdminPartnerTestimonial!]!
+    testimonials: [AdminPageTestimonial!]!
     publishedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -5100,7 +5067,7 @@ type PublicPartner {
     sections: [ContentSection!]!
     featuredCooks: [PublicCook!]!
     # Curated, ordered testimonials. Empty when none are assigned.
-    testimonials: [PartnerTestimonial!]!
+    testimonials: [PageTestimonial!]!
     publishedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -5188,9 +5155,9 @@ type AdminOccasion {
     # Resolved promo for editor preview. Null when none / expired / scoped.
     promo: OccasionPromo
     sections: [ContentSection!]!
-    cooks: [AdminOccasionCook!]!
+    cooks: [AdminFeaturedCook!]!
     # Curated, ordered testimonials for the editor. Empty until assigned.
-    testimonials: [AdminOccasionTestimonial!]!
+    testimonials: [AdminPageTestimonial!]!
     publishedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -5226,7 +5193,7 @@ type PublicOccasion {
     # travel-radius fallback: an empty assignment hides the section.
     featuredCooks: [PublicCook!]!
     # Curated, ordered testimonials. Empty when none are assigned.
-    testimonials: [OccasionTestimonial!]!
+    testimonials: [PageTestimonial!]!
     publishedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!

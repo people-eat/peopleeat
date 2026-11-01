@@ -62,8 +62,8 @@ below the CTA. Occasion-specific: formats chrome, no geo fallback, and no How it
   [`src/shared/occasionFormatsSection.ts`](../../src/shared/occasionFormatsSection.ts); title/subtitle + exactly three cards with image,
   bilingual title/body, and three bilingual fact fields), optional `promoCodeId` (FK; rejects missing and booking-request-scoped codes via
   `resolveAssignedPromoCodeId`)
-- GraphQL: `AdminOccasion`, `PublicOccasion`, `OccasionFormatsSection` / `OccasionFormatsCard` (+ inputs), `OccasionPromo`,
-  `AdminOccasionCook`, `OccasionTestimonial`, `AdminOccasionTestimonial`, `OccasionUpsert`, `Query.publicOccasion` (`PublicOccasionQuery`),
+- GraphQL: `AdminOccasion`, `PublicOccasion`, `OccasionFormatsSection` / `OccasionFormatsCard` (+ inputs), `OccasionPromo`, shared
+  `AdminFeaturedCook` / `PageTestimonial` / `AdminPageTestimonial`, `OccasionUpsert`, `Query.publicOccasion` (`PublicOccasionQuery`),
   `Admin.occasions` / `Admin.occasion`, mutations `occasionUpsert`, `occasionDelete`, `occasionCooksUpdate`, `occasionTestimonialsUpdate`,
   and `WebPageKey.OCCASIONS`
 - Commands: `adminOccasionUpsert`, `adminOccasionDelete`, `adminOccasionCooksUpdate`, `adminOccasionTestimonialsUpdate`

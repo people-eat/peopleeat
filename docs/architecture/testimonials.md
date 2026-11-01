@@ -21,7 +21,9 @@ Publication gate: ratings `<= 3` → `PENDING_REVIEW`; otherwise auto-`PUBLISHED
 `imageUrls` JSON string arrays (absolute `/api/file-uploads/{id}` URLs for new uploads; migrated absolute URLs remain valid).
 
 Public chef pages expose only **published customer** testimonials linked via offers, plus `PublicCookRating`. City, partner, and occasion
-pages show admin-curated selections (published only).
+pages show admin-curated selections (published only) as shared `PageTestimonial`. Admin editors use shared `AdminPageTestimonial` with
+`isPubliclyListed` (same gate: `publicationStatus = PUBLISHED`) so they can warn about curated rows that would not appear publicly —
+parallel to `AdminFeaturedCook.isPubliclyListed`.
 
 Post-event prompting uses pg-boss scheduled jobs + `OutboundEmails` (no magic review tokens — signed-in profile deep links with a
 testimonial tab).

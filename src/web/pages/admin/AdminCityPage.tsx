@@ -16,10 +16,12 @@ import type { ContentPageEditorSearch, ContentPageEditorValues } from '../../com
 import { ContentPageFeaturedCooksEditor } from '../../components/ContentPageFeaturedCooksEditor';
 import type { FeaturedCookOption } from '../../components/ContentPageFeaturedCooksEditor';
 import {
+    adminTestimonialAssignmentFromCandidate,
     contentPageTestimonialsForPreview,
     ContentPageTestimonialsEditor,
+    testimonialEntryFromAdminAssignment,
 } from '../../components/ContentPageTestimonialsEditor';
-import type { TestimonialCandidateOption, TestimonialEntry } from '../../components/ContentPageTestimonialsEditor';
+import type { TestimonialCandidateOption } from '../../components/ContentPageTestimonialsEditor';
 import { contentSectionsFromGql, contentSectionsToInput } from '../../components/contentSectionsMap';
 import type { GqlCAdminCityPageQuery } from '../../graphql/generated';
 import {
@@ -55,12 +57,6 @@ type CityEditorValues = ContentPageEditorValues & {
 
 type CityRow = NonNullable<NonNullable<NonNullable<GqlCAdminCityPageQuery['currentSession']['user']>['admin']>['city']>;
 type AdminCookCard = CityRow['cooksInTravelRadius'][number];
-
-function testimonialEntryFromAdmin(row: CityRow['testimonials'][number]): TestimonialEntry {
-    return row.testimonial.__typename === 'AdminCustomerTestimonial'
-        ? { testimonialType: 'CUSTOMER', testimonialId: row.testimonial.customerTestimonialId }
-        : { testimonialType: 'COOK', testimonialId: row.testimonial.cookTestimonialId };
-}
 
 function valuesFromCity(city: CityRow): CityEditorValues {
     return {
@@ -118,9 +114,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
     const [center, setCenter] = useState<CityCenterSelection | null>(() => centerFromCity(seedCity));
     const [assignedCooks, setAssignedCooks] = useState(seedCity.cooks);
     const [cooksInTravelRadius, setCooksInTravelRadius] = useState(seedCity.cooksInTravelRadius);
-    const [testimonialEntries, setTestimonialEntries] = useState<TestimonialEntry[]>(() =>
-        seedCity.testimonials.map(testimonialEntryFromAdmin),
-    );
+    const [assignedTestimonials, setAssignedTestimonials] = useState(seedCity.testimonials);
     const [busy, setBusy] = useState(false);
     // Cook/testimonial saves emit the same city subscription as page upserts; skip
     // overwriting the form while the operator still has unsaved page edits.
@@ -160,7 +154,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                 }
                 setAssignedCooks(next.cooks);
                 setCooksInTravelRadius(next.cooksInTravelRadius);
-                setTestimonialEntries(next.testimonials.map(testimonialEntryFromAdmin));
+                setAssignedTestimonials(next.testimonials);
             }),
         );
         return unsubscribe;
@@ -181,18 +175,17 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
         return [...byId.values()];
     }, [assignedCooks, cooksInTravelRadius]);
 
-    const previewCooks = assignedCooks
-        .filter((row) => row.isPubliclyListed)
-        .map((row) => ({
-            cookId: row.cook.cookId,
-            cuisineStyle: row.cook.cuisineStyle ?? null,
-            cookingPhilosophy: row.cook.cookingPhilosophy ?? null,
-            city: row.cook.exactTravelOriginAddress?.city ?? null,
-            user: {
-                display: userDisplayName(row.cook.user),
-                profilePicture: null,
-            },
-        }));
+    const previewCooks = assignedCooks.map((row) => ({
+        cookId: row.cook.cookId,
+        cuisineStyle: row.cook.cuisineStyle ?? null,
+        cookingPhilosophy: row.cook.cookingPhilosophy ?? null,
+        city: row.cook.exactTravelOriginAddress?.city ?? null,
+        isPubliclyListed: row.isPubliclyListed,
+        user: {
+            display: userDisplayName(row.cook.user),
+            profilePicture: null,
+        },
+    }));
 
     const testimonialCandidates: TestimonialCandidateOption[] = [
         ...(seedAdmin?.customerTestimonials ?? []).map((row) => ({
@@ -234,7 +227,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                 tab={tab}
                 user={data.currentSession.user}
                 featuredCooks={previewCooks}
-                testimonials={contentPageTestimonialsForPreview(testimonialEntries, testimonialCandidates)}
+                testimonials={contentPageTestimonialsForPreview(assignedTestimonials)}
                 heroImageFallbackUrl={CITY_HERO_FALLBACK_IMAGE}
                 howItWorks
                 cities={data.publicCity.findMany}
@@ -388,7 +381,7 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                         />
                         <ContentPageTestimonialsEditor
                             locale={locale}
-                            assignedEntries={testimonialEntries}
+                            assignedEntries={assignedTestimonials.map(testimonialEntryFromAdminAssignment)}
                             candidates={testimonialCandidates}
                             busy={busy}
                             emptyHint={
@@ -402,7 +395,21 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
                                 if (result.error || !result.data?.admin.cityTestimonialsUpdate.success) {
                                     throw new Error('testimonials update failed');
                                 }
-                                setTestimonialEntries(entries);
+                                const byKey = new Map(
+                                    testimonialCandidates.map((candidate) => [
+                                        `${candidate.testimonialType}:${candidate.testimonialId}`,
+                                        candidate,
+                                    ]),
+                                );
+                                setAssignedTestimonials(
+                                    entries.map((entry, index) =>
+                                        adminTestimonialAssignmentFromCandidate(
+                                            entry,
+                                            index,
+                                            byKey.get(`${entry.testimonialType}:${entry.testimonialId}`),
+                                        ),
+                                    ),
+                                );
                             }}
                         />
                     </>

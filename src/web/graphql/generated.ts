@@ -976,7 +976,7 @@ export type GqlCAdminCallTrafficSortField = 'createdAt' | 'occurredAt';
 export interface GqlCAdminCity {
     __typename?: 'AdminCity';
     cityId: Scalars['ID']['output'];
-    cooks: Array<GqlCAdminCityCook>;
+    cooks: Array<GqlCAdminFeaturedCook>;
     cooksInTravelRadius: Array<GqlCAdminCook>;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
@@ -1001,23 +1001,10 @@ export interface GqlCAdminCity {
     sections: Array<GqlCContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlCAdminCityTestimonial>;
+    testimonials: Array<GqlCAdminPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
-}
-
-export interface GqlCAdminCityCook {
-    __typename?: 'AdminCityCook';
-    cook: GqlCAdminCook;
-    isPubliclyListed: Scalars['Boolean']['output'];
-    position: Scalars['Int']['output'];
-}
-
-export interface GqlCAdminCityTestimonial {
-    __typename?: 'AdminCityTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlCAdminTestimonial;
 }
 
 export interface GqlCAdminCook {
@@ -1270,6 +1257,13 @@ export interface GqlCAdminFeatureToggleUserOverride {
     updatedAt: Scalars['DateTime']['output'];
     user: GqlCAdminUser;
     userId: Scalars['ID']['output'];
+}
+
+export interface GqlCAdminFeaturedCook {
+    __typename?: 'AdminFeaturedCook';
+    cook: GqlCAdminCook;
+    isPubliclyListed: Scalars['Boolean']['output'];
+    position: Scalars['Int']['output'];
 }
 
 export interface GqlCAdminGiftCard {
@@ -1915,7 +1909,7 @@ export interface GqlCAdminObjectStorageObjectPage {
 
 export interface GqlCAdminOccasion {
     __typename?: 'AdminOccasion';
-    cooks: Array<GqlCAdminOccasionCook>;
+    cooks: Array<GqlCAdminFeaturedCook>;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
@@ -1940,23 +1934,10 @@ export interface GqlCAdminOccasion {
     sections: Array<GqlCContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlCAdminOccasionTestimonial>;
+    testimonials: Array<GqlCAdminPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
-}
-
-export interface GqlCAdminOccasionCook {
-    __typename?: 'AdminOccasionCook';
-    cook: GqlCAdminCook;
-    isPubliclyListed: Scalars['Boolean']['output'];
-    position: Scalars['Int']['output'];
-}
-
-export interface GqlCAdminOccasionTestimonial {
-    __typename?: 'AdminOccasionTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlCAdminTestimonial;
 }
 
 export interface GqlCAdminOutboundEmail {
@@ -2058,9 +2039,16 @@ export type GqlCAdminOutboundEmailRelatedEntityType =
 
 export type GqlCAdminOutboundEmailSortField = 'createdAt' | 'subject' | 'toEmail';
 
+export interface GqlCAdminPageTestimonial {
+    __typename?: 'AdminPageTestimonial';
+    index: Scalars['Int']['output'];
+    isPubliclyListed: Scalars['Boolean']['output'];
+    testimonial: GqlCAdminTestimonial;
+}
+
 export interface GqlCAdminPartner {
     __typename?: 'AdminPartner';
-    cooks: Array<GqlCAdminPartnerCook>;
+    cooks: Array<GqlCAdminFeaturedCook>;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
@@ -2090,23 +2078,10 @@ export interface GqlCAdminPartner {
     sections: Array<GqlCContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlCAdminPartnerTestimonial>;
+    testimonials: Array<GqlCAdminPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
-}
-
-export interface GqlCAdminPartnerCook {
-    __typename?: 'AdminPartnerCook';
-    cook: GqlCAdminCook;
-    isPubliclyListed: Scalars['Boolean']['output'];
-    position: Scalars['Int']['output'];
-}
-
-export interface GqlCAdminPartnerTestimonial {
-    __typename?: 'AdminPartnerTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlCAdminTestimonial;
 }
 
 export interface GqlCAdminPromoCode {
@@ -2957,12 +2932,6 @@ export interface GqlCChatTurnUsage {
     outputTokens?: Maybe<Scalars['Int']['output']>;
     reasoningTokens?: Maybe<Scalars['Int']['output']>;
     totalTokens?: Maybe<Scalars['Int']['output']>;
-}
-
-export interface GqlCCityTestimonial {
-    __typename?: 'CityTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlCTestimonial;
 }
 
 export type GqlCCityUpsert = {
@@ -4235,12 +4204,6 @@ export interface GqlCOccasionPromo {
     redeemCode: Scalars['String']['output'];
 }
 
-export interface GqlCOccasionTestimonial {
-    __typename?: 'OccasionTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlCTestimonial;
-}
-
 export type GqlCOccasionUpsert = {
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
@@ -4265,16 +4228,16 @@ export type GqlCOccasionUpsert = {
     titleEn: Scalars['String']['input'];
 };
 
+export interface GqlCPageTestimonial {
+    __typename?: 'PageTestimonial';
+    index: Scalars['Int']['output'];
+    testimonial: GqlCTestimonial;
+}
+
 export interface GqlCPartnerPromo {
     __typename?: 'PartnerPromo';
     amountCents: Scalars['Int']['output'];
     redeemCode: Scalars['String']['output'];
-}
-
-export interface GqlCPartnerTestimonial {
-    __typename?: 'PartnerTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlCTestimonial;
 }
 
 export type GqlCPartnerUpsert = {
@@ -4364,7 +4327,7 @@ export interface GqlCPublicCity {
     sections: Array<GqlCContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlCCityTestimonial>;
+    testimonials: Array<GqlCPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
@@ -4518,7 +4481,7 @@ export interface GqlCPublicOccasion {
     sections: Array<GqlCContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlCOccasionTestimonial>;
+    testimonials: Array<GqlCPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
@@ -4565,7 +4528,7 @@ export interface GqlCPublicPartner {
     sections: Array<GqlCContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlCPartnerTestimonial>;
+    testimonials: Array<GqlCPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
@@ -6408,6 +6371,7 @@ export type GqlCAdminCityFieldsFragment = {
     }>;
     testimonials: Array<{
         index: number;
+        isPubliclyListed: boolean;
         testimonial:
             | {
                   __typename: 'AdminCookTestimonial';
@@ -6658,6 +6622,7 @@ export type GqlCAdminPartnerFieldsFragment = {
     }>;
     testimonials: Array<{
         index: number;
+        isPubliclyListed: boolean;
         testimonial:
             | {
                   __typename: 'AdminCookTestimonial';
@@ -6947,6 +6912,7 @@ export type GqlCAdminOccasionFieldsFragment = {
     }>;
     testimonials: Array<{
         index: number;
+        isPubliclyListed: boolean;
         testimonial:
             | {
                   __typename: 'AdminCookTestimonial';
@@ -12172,6 +12138,7 @@ export type GqlCAdminCityPageQuery = {
                     }>;
                     testimonials: Array<{
                         index: number;
+                        isPubliclyListed: boolean;
                         testimonial:
                             | {
                                   __typename: 'AdminCookTestimonial';
@@ -12366,6 +12333,7 @@ export type GqlCAdminCityPageUpdatesSubscription = {
             }>;
             testimonials: Array<{
                 index: number;
+                isPubliclyListed: boolean;
                 testimonial:
                     | {
                           __typename: 'AdminCookTestimonial';
@@ -13938,6 +13906,7 @@ export type GqlCAdminOccasionPageQuery = {
                     }>;
                     testimonials: Array<{
                         index: number;
+                        isPubliclyListed: boolean;
                         testimonial:
                             | {
                                   __typename: 'AdminCookTestimonial';
@@ -14171,6 +14140,7 @@ export type GqlCAdminOccasionPageUpdatesSubscription = {
             }>;
             testimonials: Array<{
                 index: number;
+                isPubliclyListed: boolean;
                 testimonial:
                     | {
                           __typename: 'AdminCookTestimonial';
@@ -14920,6 +14890,7 @@ export type GqlCAdminPartnerPageQuery = {
                     }>;
                     testimonials: Array<{
                         index: number;
+                        isPubliclyListed: boolean;
                         testimonial:
                             | {
                                   __typename: 'AdminCookTestimonial';
@@ -15175,6 +15146,7 @@ export type GqlCAdminPartnerPageUpdatesSubscription = {
             }>;
             testimonials: Array<{
                 index: number;
+                isPubliclyListed: boolean;
                 testimonial:
                     | {
                           __typename: 'AdminCookTestimonial';
@@ -22514,6 +22486,7 @@ export const AdminCityFieldsFragmentDoc = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isPubliclyListed' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'testimonial' },
@@ -23317,6 +23290,7 @@ export const AdminPartnerFieldsFragmentDoc = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isPubliclyListed' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'testimonial' },
@@ -24025,6 +23999,7 @@ export const AdminOccasionFieldsFragmentDoc = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isPubliclyListed' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'testimonial' },
@@ -52580,6 +52555,7 @@ export const AdminCityPageDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isPubliclyListed' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'testimonial' },
@@ -53201,6 +53177,7 @@ export const AdminCityPageUpdatesDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isPubliclyListed' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'testimonial' },
@@ -58394,6 +58371,7 @@ export const AdminOccasionPageDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isPubliclyListed' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'testimonial' },
@@ -59170,6 +59148,7 @@ export const AdminOccasionPageUpdatesDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isPubliclyListed' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'testimonial' },
@@ -62041,6 +62020,7 @@ export const AdminPartnerPageDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isPubliclyListed' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'testimonial' },
@@ -62875,6 +62855,7 @@ export const AdminPartnerPageUpdatesDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'isPubliclyListed' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'testimonial' },

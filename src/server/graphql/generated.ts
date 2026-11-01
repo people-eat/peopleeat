@@ -973,7 +973,7 @@ export type GqlSAdminCallTrafficSortField = 'createdAt' | 'occurredAt';
 export interface GqlSAdminCity {
     __typename?: 'AdminCity';
     cityId: Scalars['ID']['output'];
-    cooks: Array<GqlSAdminCityCook>;
+    cooks: Array<GqlSAdminFeaturedCook>;
     cooksInTravelRadius: Array<GqlSAdminCook>;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
@@ -998,23 +998,10 @@ export interface GqlSAdminCity {
     sections: Array<GqlSContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlSAdminCityTestimonial>;
+    testimonials: Array<GqlSAdminPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
-}
-
-export interface GqlSAdminCityCook {
-    __typename?: 'AdminCityCook';
-    cook: GqlSAdminCook;
-    isPubliclyListed: Scalars['Boolean']['output'];
-    position: Scalars['Int']['output'];
-}
-
-export interface GqlSAdminCityTestimonial {
-    __typename?: 'AdminCityTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlSAdminTestimonial;
 }
 
 export interface GqlSAdminCook {
@@ -1267,6 +1254,13 @@ export interface GqlSAdminFeatureToggleUserOverride {
     updatedAt: Scalars['DateTime']['output'];
     user: GqlSAdminUser;
     userId: Scalars['ID']['output'];
+}
+
+export interface GqlSAdminFeaturedCook {
+    __typename?: 'AdminFeaturedCook';
+    cook: GqlSAdminCook;
+    isPubliclyListed: Scalars['Boolean']['output'];
+    position: Scalars['Int']['output'];
 }
 
 export interface GqlSAdminGiftCard {
@@ -1912,7 +1906,7 @@ export interface GqlSAdminObjectStorageObjectPage {
 
 export interface GqlSAdminOccasion {
     __typename?: 'AdminOccasion';
-    cooks: Array<GqlSAdminOccasionCook>;
+    cooks: Array<GqlSAdminFeaturedCook>;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
@@ -1937,23 +1931,10 @@ export interface GqlSAdminOccasion {
     sections: Array<GqlSContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlSAdminOccasionTestimonial>;
+    testimonials: Array<GqlSAdminPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
-}
-
-export interface GqlSAdminOccasionCook {
-    __typename?: 'AdminOccasionCook';
-    cook: GqlSAdminCook;
-    isPubliclyListed: Scalars['Boolean']['output'];
-    position: Scalars['Int']['output'];
-}
-
-export interface GqlSAdminOccasionTestimonial {
-    __typename?: 'AdminOccasionTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlSAdminTestimonial;
 }
 
 export interface GqlSAdminOutboundEmail {
@@ -2055,9 +2036,16 @@ export type GqlSAdminOutboundEmailRelatedEntityType =
 
 export type GqlSAdminOutboundEmailSortField = 'createdAt' | 'subject' | 'toEmail';
 
+export interface GqlSAdminPageTestimonial {
+    __typename?: 'AdminPageTestimonial';
+    index: Scalars['Int']['output'];
+    isPubliclyListed: Scalars['Boolean']['output'];
+    testimonial: GqlSAdminTestimonial;
+}
+
 export interface GqlSAdminPartner {
     __typename?: 'AdminPartner';
-    cooks: Array<GqlSAdminPartnerCook>;
+    cooks: Array<GqlSAdminFeaturedCook>;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
@@ -2087,23 +2075,10 @@ export interface GqlSAdminPartner {
     sections: Array<GqlSContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlSAdminPartnerTestimonial>;
+    testimonials: Array<GqlSAdminPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
-}
-
-export interface GqlSAdminPartnerCook {
-    __typename?: 'AdminPartnerCook';
-    cook: GqlSAdminCook;
-    isPubliclyListed: Scalars['Boolean']['output'];
-    position: Scalars['Int']['output'];
-}
-
-export interface GqlSAdminPartnerTestimonial {
-    __typename?: 'AdminPartnerTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlSAdminTestimonial;
 }
 
 export interface GqlSAdminPromoCode {
@@ -2954,12 +2929,6 @@ export interface GqlSChatTurnUsage {
     outputTokens?: Maybe<Scalars['Int']['output']>;
     reasoningTokens?: Maybe<Scalars['Int']['output']>;
     totalTokens?: Maybe<Scalars['Int']['output']>;
-}
-
-export interface GqlSCityTestimonial {
-    __typename?: 'CityTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlSTestimonial;
 }
 
 export type GqlSCityUpsert = {
@@ -4232,12 +4201,6 @@ export interface GqlSOccasionPromo {
     redeemCode: Scalars['String']['output'];
 }
 
-export interface GqlSOccasionTestimonial {
-    __typename?: 'OccasionTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlSTestimonial;
-}
-
 export type GqlSOccasionUpsert = {
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
@@ -4262,16 +4225,16 @@ export type GqlSOccasionUpsert = {
     titleEn: Scalars['String']['input'];
 };
 
+export interface GqlSPageTestimonial {
+    __typename?: 'PageTestimonial';
+    index: Scalars['Int']['output'];
+    testimonial: GqlSTestimonial;
+}
+
 export interface GqlSPartnerPromo {
     __typename?: 'PartnerPromo';
     amountCents: Scalars['Int']['output'];
     redeemCode: Scalars['String']['output'];
-}
-
-export interface GqlSPartnerTestimonial {
-    __typename?: 'PartnerTestimonial';
-    index: Scalars['Int']['output'];
-    testimonial: GqlSTestimonial;
 }
 
 export type GqlSPartnerUpsert = {
@@ -4361,7 +4324,7 @@ export interface GqlSPublicCity {
     sections: Array<GqlSContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlSCityTestimonial>;
+    testimonials: Array<GqlSPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
@@ -4515,7 +4478,7 @@ export interface GqlSPublicOccasion {
     sections: Array<GqlSContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlSOccasionTestimonial>;
+    testimonials: Array<GqlSPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
@@ -4562,7 +4525,7 @@ export interface GqlSPublicPartner {
     sections: Array<GqlSContentSection>;
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
-    testimonials: Array<GqlSPartnerTestimonial>;
+    testimonials: Array<GqlSPageTestimonial>;
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
@@ -5534,14 +5497,10 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminCallTrafficSortField: GqlSAdminCallTrafficSortField;
     AdminCity: ResolverTypeWrapper<
         Omit<GqlSAdminCity, 'cooks' | 'sections' | 'testimonials'> & {
-            cooks: Array<GqlSResolversTypes['AdminCityCook']>;
+            cooks: Array<GqlSResolversTypes['AdminFeaturedCook']>;
             sections: Array<GqlSResolversTypes['ContentSection']>;
-            testimonials: Array<GqlSResolversTypes['AdminCityTestimonial']>;
+            testimonials: Array<GqlSResolversTypes['AdminPageTestimonial']>;
         }
-    >;
-    AdminCityCook: ResolverTypeWrapper<GqlSAdminCityCook>;
-    AdminCityTestimonial: ResolverTypeWrapper<
-        Omit<GqlSAdminCityTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['AdminTestimonial'] }
     >;
     AdminCook: ResolverTypeWrapper<GqlSAdminCook>;
     AdminCookFeaturedLanding: ResolverTypeWrapper<GqlSAdminCookFeaturedLanding>;
@@ -5568,6 +5527,7 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminDatabaseSlowStatement: ResolverTypeWrapper<GqlSAdminDatabaseSlowStatement>;
     AdminFeatureToggle: ResolverTypeWrapper<GqlSAdminFeatureToggle>;
     AdminFeatureToggleUserOverride: ResolverTypeWrapper<GqlSAdminFeatureToggleUserOverride>;
+    AdminFeaturedCook: ResolverTypeWrapper<GqlSAdminFeaturedCook>;
     AdminGiftCard: ResolverTypeWrapper<GqlSAdminGiftCard>;
     AdminGiftCardCriterion: GqlSAdminGiftCardCriterion;
     AdminGiftCardOccasionStat: ResolverTypeWrapper<GqlSAdminGiftCardOccasionStat>;
@@ -5587,14 +5547,10 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminObjectStorageObjectPage: ResolverTypeWrapper<GqlSAdminObjectStorageObjectPage>;
     AdminOccasion: ResolverTypeWrapper<
         Omit<GqlSAdminOccasion, 'cooks' | 'sections' | 'testimonials'> & {
-            cooks: Array<GqlSResolversTypes['AdminOccasionCook']>;
+            cooks: Array<GqlSResolversTypes['AdminFeaturedCook']>;
             sections: Array<GqlSResolversTypes['ContentSection']>;
-            testimonials: Array<GqlSResolversTypes['AdminOccasionTestimonial']>;
+            testimonials: Array<GqlSResolversTypes['AdminPageTestimonial']>;
         }
-    >;
-    AdminOccasionCook: ResolverTypeWrapper<GqlSAdminOccasionCook>;
-    AdminOccasionTestimonial: ResolverTypeWrapper<
-        Omit<GqlSAdminOccasionTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['AdminTestimonial'] }
     >;
     AdminOutboundEmail: ResolverTypeWrapper<GqlSAdminOutboundEmail>;
     AdminOutboundEmailCriterion: GqlSAdminOutboundEmailCriterion;
@@ -5605,16 +5561,15 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminOutboundEmailRecipientStat: ResolverTypeWrapper<GqlSAdminOutboundEmailRecipientStat>;
     AdminOutboundEmailRelatedEntityType: GqlSAdminOutboundEmailRelatedEntityType;
     AdminOutboundEmailSortField: GqlSAdminOutboundEmailSortField;
+    AdminPageTestimonial: ResolverTypeWrapper<
+        Omit<GqlSAdminPageTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['AdminTestimonial'] }
+    >;
     AdminPartner: ResolverTypeWrapper<
         Omit<GqlSAdminPartner, 'cooks' | 'sections' | 'testimonials'> & {
-            cooks: Array<GqlSResolversTypes['AdminPartnerCook']>;
+            cooks: Array<GqlSResolversTypes['AdminFeaturedCook']>;
             sections: Array<GqlSResolversTypes['ContentSection']>;
-            testimonials: Array<GqlSResolversTypes['AdminPartnerTestimonial']>;
+            testimonials: Array<GqlSResolversTypes['AdminPageTestimonial']>;
         }
-    >;
-    AdminPartnerCook: ResolverTypeWrapper<GqlSAdminPartnerCook>;
-    AdminPartnerTestimonial: ResolverTypeWrapper<
-        Omit<GqlSAdminPartnerTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['AdminTestimonial'] }
     >;
     AdminPromoCode: ResolverTypeWrapper<
         Omit<GqlSAdminPromoCode, 'bookingRequests'> & { bookingRequests: Array<GqlSResolversTypes['AdminBookingRequest']> }
@@ -5742,7 +5697,6 @@ export type GqlSResolversTypes = ResolversObject<{
     ChatTurnUpdate: ResolverTypeWrapper<GqlSResolversUnionTypes<GqlSResolversTypes>['ChatTurnUpdate']>;
     ChatTurnUpserted: ResolverTypeWrapper<Omit<GqlSChatTurnUpserted, 'turn'> & { turn: GqlSResolversTypes['ChatTurn'] }>;
     ChatTurnUsage: ResolverTypeWrapper<GqlSChatTurnUsage>;
-    CityTestimonial: ResolverTypeWrapper<Omit<GqlSCityTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['Testimonial'] }>;
     CityUpsert: GqlSCityUpsert;
     ClientObservabilityKind: GqlSClientObservabilityKind;
     ClientObservabilityReportInput: GqlSClientObservabilityReportInput;
@@ -5882,14 +5836,9 @@ export type GqlSResolversTypes = ResolversObject<{
     OccasionFormatsSection: ResolverTypeWrapper<GqlSOccasionFormatsSection>;
     OccasionFormatsSectionInput: GqlSOccasionFormatsSectionInput;
     OccasionPromo: ResolverTypeWrapper<GqlSOccasionPromo>;
-    OccasionTestimonial: ResolverTypeWrapper<
-        Omit<GqlSOccasionTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['Testimonial'] }
-    >;
     OccasionUpsert: GqlSOccasionUpsert;
+    PageTestimonial: ResolverTypeWrapper<Omit<GqlSPageTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['Testimonial'] }>;
     PartnerPromo: ResolverTypeWrapper<GqlSPartnerPromo>;
-    PartnerTestimonial: ResolverTypeWrapper<
-        Omit<GqlSPartnerTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['Testimonial'] }
-    >;
     PartnerUpsert: GqlSPartnerUpsert;
     PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']['output']>;
     PublicBlogPost: ResolverTypeWrapper<Omit<GqlSPublicBlogPost, 'sections'> & { sections: Array<GqlSResolversTypes['ContentSection']> }>;
@@ -5902,7 +5851,7 @@ export type GqlSResolversTypes = ResolversObject<{
     PublicCity: ResolverTypeWrapper<
         Omit<GqlSPublicCity, 'sections' | 'testimonials'> & {
             sections: Array<GqlSResolversTypes['ContentSection']>;
-            testimonials: Array<GqlSResolversTypes['CityTestimonial']>;
+            testimonials: Array<GqlSResolversTypes['PageTestimonial']>;
         }
     >;
     PublicCityQuery: ResolverTypeWrapper<
@@ -5925,7 +5874,7 @@ export type GqlSResolversTypes = ResolversObject<{
     PublicOccasion: ResolverTypeWrapper<
         Omit<GqlSPublicOccasion, 'sections' | 'testimonials'> & {
             sections: Array<GqlSResolversTypes['ContentSection']>;
-            testimonials: Array<GqlSResolversTypes['OccasionTestimonial']>;
+            testimonials: Array<GqlSResolversTypes['PageTestimonial']>;
         }
     >;
     PublicOccasionQuery: ResolverTypeWrapper<
@@ -5937,7 +5886,7 @@ export type GqlSResolversTypes = ResolversObject<{
     PublicPartner: ResolverTypeWrapper<
         Omit<GqlSPublicPartner, 'sections' | 'testimonials'> & {
             sections: Array<GqlSResolversTypes['ContentSection']>;
-            testimonials: Array<GqlSResolversTypes['PartnerTestimonial']>;
+            testimonials: Array<GqlSResolversTypes['PageTestimonial']>;
         }
     >;
     PublicPartnerQuery: ResolverTypeWrapper<
@@ -6122,12 +6071,10 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminCallParty: GqlSAdminCallParty;
     AdminCallTrafficCriterion: GqlSAdminCallTrafficCriterion;
     AdminCity: Omit<GqlSAdminCity, 'cooks' | 'sections' | 'testimonials'> & {
-        cooks: Array<GqlSResolversParentTypes['AdminCityCook']>;
+        cooks: Array<GqlSResolversParentTypes['AdminFeaturedCook']>;
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
-        testimonials: Array<GqlSResolversParentTypes['AdminCityTestimonial']>;
+        testimonials: Array<GqlSResolversParentTypes['AdminPageTestimonial']>;
     };
-    AdminCityCook: GqlSAdminCityCook;
-    AdminCityTestimonial: Omit<GqlSAdminCityTestimonial, 'testimonial'> & { testimonial: GqlSResolversParentTypes['AdminTestimonial'] };
     AdminCook: GqlSAdminCook;
     AdminCookFeaturedLanding: GqlSAdminCookFeaturedLanding;
     AdminCookInTravelRadiusPreview: GqlSAdminCookInTravelRadiusPreview;
@@ -6147,6 +6094,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminDatabaseSlowStatement: GqlSAdminDatabaseSlowStatement;
     AdminFeatureToggle: GqlSAdminFeatureToggle;
     AdminFeatureToggleUserOverride: GqlSAdminFeatureToggleUserOverride;
+    AdminFeaturedCook: GqlSAdminFeaturedCook;
     AdminGiftCard: GqlSAdminGiftCard;
     AdminGiftCardCriterion: GqlSAdminGiftCardCriterion;
     AdminGiftCardOccasionStat: GqlSAdminGiftCardOccasionStat;
@@ -6162,26 +6110,19 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminObjectStorageObjectCriterion: GqlSAdminObjectStorageObjectCriterion;
     AdminObjectStorageObjectPage: GqlSAdminObjectStorageObjectPage;
     AdminOccasion: Omit<GqlSAdminOccasion, 'cooks' | 'sections' | 'testimonials'> & {
-        cooks: Array<GqlSResolversParentTypes['AdminOccasionCook']>;
+        cooks: Array<GqlSResolversParentTypes['AdminFeaturedCook']>;
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
-        testimonials: Array<GqlSResolversParentTypes['AdminOccasionTestimonial']>;
-    };
-    AdminOccasionCook: GqlSAdminOccasionCook;
-    AdminOccasionTestimonial: Omit<GqlSAdminOccasionTestimonial, 'testimonial'> & {
-        testimonial: GqlSResolversParentTypes['AdminTestimonial'];
+        testimonials: Array<GqlSResolversParentTypes['AdminPageTestimonial']>;
     };
     AdminOutboundEmail: GqlSAdminOutboundEmail;
     AdminOutboundEmailCriterion: GqlSAdminOutboundEmailCriterion;
     AdminOutboundEmailPurposeStat: GqlSAdminOutboundEmailPurposeStat;
     AdminOutboundEmailRecipientStat: GqlSAdminOutboundEmailRecipientStat;
+    AdminPageTestimonial: Omit<GqlSAdminPageTestimonial, 'testimonial'> & { testimonial: GqlSResolversParentTypes['AdminTestimonial'] };
     AdminPartner: Omit<GqlSAdminPartner, 'cooks' | 'sections' | 'testimonials'> & {
-        cooks: Array<GqlSResolversParentTypes['AdminPartnerCook']>;
+        cooks: Array<GqlSResolversParentTypes['AdminFeaturedCook']>;
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
-        testimonials: Array<GqlSResolversParentTypes['AdminPartnerTestimonial']>;
-    };
-    AdminPartnerCook: GqlSAdminPartnerCook;
-    AdminPartnerTestimonial: Omit<GqlSAdminPartnerTestimonial, 'testimonial'> & {
-        testimonial: GqlSResolversParentTypes['AdminTestimonial'];
+        testimonials: Array<GqlSResolversParentTypes['AdminPageTestimonial']>;
     };
     AdminPromoCode: Omit<GqlSAdminPromoCode, 'bookingRequests'> & {
         bookingRequests: Array<GqlSResolversParentTypes['AdminBookingRequest']>;
@@ -6277,7 +6218,6 @@ export type GqlSResolversParentTypes = ResolversObject<{
     ChatTurnUpdate: GqlSResolversUnionTypes<GqlSResolversParentTypes>['ChatTurnUpdate'];
     ChatTurnUpserted: Omit<GqlSChatTurnUpserted, 'turn'> & { turn: GqlSResolversParentTypes['ChatTurn'] };
     ChatTurnUsage: GqlSChatTurnUsage;
-    CityTestimonial: Omit<GqlSCityTestimonial, 'testimonial'> & { testimonial: GqlSResolversParentTypes['Testimonial'] };
     CityUpsert: GqlSCityUpsert;
     ClientObservabilityReportInput: GqlSClientObservabilityReportInput;
     ContentSection: GqlSResolversUnionTypes<GqlSResolversParentTypes>['ContentSection'];
@@ -6389,10 +6329,9 @@ export type GqlSResolversParentTypes = ResolversObject<{
     OccasionFormatsSection: GqlSOccasionFormatsSection;
     OccasionFormatsSectionInput: GqlSOccasionFormatsSectionInput;
     OccasionPromo: GqlSOccasionPromo;
-    OccasionTestimonial: Omit<GqlSOccasionTestimonial, 'testimonial'> & { testimonial: GqlSResolversParentTypes['Testimonial'] };
     OccasionUpsert: GqlSOccasionUpsert;
+    PageTestimonial: Omit<GqlSPageTestimonial, 'testimonial'> & { testimonial: GqlSResolversParentTypes['Testimonial'] };
     PartnerPromo: GqlSPartnerPromo;
-    PartnerTestimonial: Omit<GqlSPartnerTestimonial, 'testimonial'> & { testimonial: GqlSResolversParentTypes['Testimonial'] };
     PartnerUpsert: GqlSPartnerUpsert;
     PhoneNumber: Scalars['PhoneNumber']['output'];
     PublicBlogPost: Omit<GqlSPublicBlogPost, 'sections'> & { sections: Array<GqlSResolversParentTypes['ContentSection']> };
@@ -6402,7 +6341,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     };
     PublicCity: Omit<GqlSPublicCity, 'sections' | 'testimonials'> & {
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
-        testimonials: Array<GqlSResolversParentTypes['CityTestimonial']>;
+        testimonials: Array<GqlSResolversParentTypes['PageTestimonial']>;
     };
     PublicCityQuery: Omit<GqlSPublicCityQuery, 'findMany' | 'findOneByPathName'> & {
         findMany: Array<GqlSResolversParentTypes['PublicCity']>;
@@ -6421,7 +6360,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     PublicLegalTermsAndConditions: GqlSPublicLegalTermsAndConditions;
     PublicOccasion: Omit<GqlSPublicOccasion, 'sections' | 'testimonials'> & {
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
-        testimonials: Array<GqlSResolversParentTypes['OccasionTestimonial']>;
+        testimonials: Array<GqlSResolversParentTypes['PageTestimonial']>;
     };
     PublicOccasionQuery: Omit<GqlSPublicOccasionQuery, 'findMany' | 'findOneByPathName'> & {
         findMany: Array<GqlSResolversParentTypes['PublicOccasion']>;
@@ -6429,7 +6368,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     };
     PublicPartner: Omit<GqlSPublicPartner, 'sections' | 'testimonials'> & {
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
-        testimonials: Array<GqlSResolversParentTypes['PartnerTestimonial']>;
+        testimonials: Array<GqlSResolversParentTypes['PageTestimonial']>;
     };
     PublicPartnerQuery: Omit<GqlSPublicPartnerQuery, 'findMany' | 'findOne' | 'findOneByPathName'> & {
         findMany: Array<GqlSResolversParentTypes['PublicPartner']>;
@@ -7352,7 +7291,7 @@ export type GqlSAdminCityResolvers<
     ParentType extends GqlSResolversParentTypes['AdminCity'] = GqlSResolversParentTypes['AdminCity'],
 > = ResolversObject<{
     cityId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
-    cooks?: Resolver<Array<GqlSResolversTypes['AdminCityCook']>, ParentType, ContextType>;
+    cooks?: Resolver<Array<GqlSResolversTypes['AdminFeaturedCook']>, ParentType, ContextType>;
     cooksInTravelRadius?: Resolver<Array<GqlSResolversTypes['AdminCook']>, ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -7377,27 +7316,10 @@ export type GqlSAdminCityResolvers<
     sections?: Resolver<Array<GqlSResolversTypes['ContentSection']>, ParentType, ContextType>;
     subHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     subHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    testimonials?: Resolver<Array<GqlSResolversTypes['AdminCityTestimonial']>, ParentType, ContextType>;
+    testimonials?: Resolver<Array<GqlSResolversTypes['AdminPageTestimonial']>, ParentType, ContextType>;
     titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
-}>;
-
-export type GqlSAdminCityCookResolvers<
-    ContextType = any,
-    ParentType extends GqlSResolversParentTypes['AdminCityCook'] = GqlSResolversParentTypes['AdminCityCook'],
-> = ResolversObject<{
-    cook?: Resolver<GqlSResolversTypes['AdminCook'], ParentType, ContextType>;
-    isPubliclyListed?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
-    position?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-}>;
-
-export type GqlSAdminCityTestimonialResolvers<
-    ContextType = any,
-    ParentType extends GqlSResolversParentTypes['AdminCityTestimonial'] = GqlSResolversParentTypes['AdminCityTestimonial'],
-> = ResolversObject<{
-    index?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-    testimonial?: Resolver<GqlSResolversTypes['AdminTestimonial'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminCookResolvers<
@@ -7589,6 +7511,15 @@ export type GqlSAdminFeatureToggleUserOverrideResolvers<
     updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     user?: Resolver<GqlSResolversTypes['AdminUser'], ParentType, ContextType>;
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminFeaturedCookResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminFeaturedCook'] = GqlSResolversParentTypes['AdminFeaturedCook'],
+> = ResolversObject<{
+    cook?: Resolver<GqlSResolversTypes['AdminCook'], ParentType, ContextType>;
+    isPubliclyListed?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    position?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminGiftCardResolvers<
@@ -8261,7 +8192,7 @@ export type GqlSAdminOccasionResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['AdminOccasion'] = GqlSResolversParentTypes['AdminOccasion'],
 > = ResolversObject<{
-    cooks?: Resolver<Array<GqlSResolversTypes['AdminOccasionCook']>, ParentType, ContextType>;
+    cooks?: Resolver<Array<GqlSResolversTypes['AdminFeaturedCook']>, ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -8286,27 +8217,10 @@ export type GqlSAdminOccasionResolvers<
     sections?: Resolver<Array<GqlSResolversTypes['ContentSection']>, ParentType, ContextType>;
     subHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     subHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    testimonials?: Resolver<Array<GqlSResolversTypes['AdminOccasionTestimonial']>, ParentType, ContextType>;
+    testimonials?: Resolver<Array<GqlSResolversTypes['AdminPageTestimonial']>, ParentType, ContextType>;
     titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
-}>;
-
-export type GqlSAdminOccasionCookResolvers<
-    ContextType = any,
-    ParentType extends GqlSResolversParentTypes['AdminOccasionCook'] = GqlSResolversParentTypes['AdminOccasionCook'],
-> = ResolversObject<{
-    cook?: Resolver<GqlSResolversTypes['AdminCook'], ParentType, ContextType>;
-    isPubliclyListed?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
-    position?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-}>;
-
-export type GqlSAdminOccasionTestimonialResolvers<
-    ContextType = any,
-    ParentType extends GqlSResolversParentTypes['AdminOccasionTestimonial'] = GqlSResolversParentTypes['AdminOccasionTestimonial'],
-> = ResolversObject<{
-    index?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-    testimonial?: Resolver<GqlSResolversTypes['AdminTestimonial'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminOutboundEmailResolvers<
@@ -8358,11 +8272,20 @@ export type GqlSAdminOutboundEmailRecipientStatResolvers<
     userId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
 }>;
 
+export type GqlSAdminPageTestimonialResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminPageTestimonial'] = GqlSResolversParentTypes['AdminPageTestimonial'],
+> = ResolversObject<{
+    index?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    isPubliclyListed?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    testimonial?: Resolver<GqlSResolversTypes['AdminTestimonial'], ParentType, ContextType>;
+}>;
+
 export type GqlSAdminPartnerResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['AdminPartner'] = GqlSResolversParentTypes['AdminPartner'],
 > = ResolversObject<{
-    cooks?: Resolver<Array<GqlSResolversTypes['AdminPartnerCook']>, ParentType, ContextType>;
+    cooks?: Resolver<Array<GqlSResolversTypes['AdminFeaturedCook']>, ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -8392,27 +8315,10 @@ export type GqlSAdminPartnerResolvers<
     sections?: Resolver<Array<GqlSResolversTypes['ContentSection']>, ParentType, ContextType>;
     subHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     subHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    testimonials?: Resolver<Array<GqlSResolversTypes['AdminPartnerTestimonial']>, ParentType, ContextType>;
+    testimonials?: Resolver<Array<GqlSResolversTypes['AdminPageTestimonial']>, ParentType, ContextType>;
     titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
-}>;
-
-export type GqlSAdminPartnerCookResolvers<
-    ContextType = any,
-    ParentType extends GqlSResolversParentTypes['AdminPartnerCook'] = GqlSResolversParentTypes['AdminPartnerCook'],
-> = ResolversObject<{
-    cook?: Resolver<GqlSResolversTypes['AdminCook'], ParentType, ContextType>;
-    isPubliclyListed?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
-    position?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-}>;
-
-export type GqlSAdminPartnerTestimonialResolvers<
-    ContextType = any,
-    ParentType extends GqlSResolversParentTypes['AdminPartnerTestimonial'] = GqlSResolversParentTypes['AdminPartnerTestimonial'],
-> = ResolversObject<{
-    index?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-    testimonial?: Resolver<GqlSResolversTypes['AdminTestimonial'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminPromoCodeResolvers<
@@ -9157,14 +9063,6 @@ export type GqlSChatTurnUsageResolvers<
     outputTokens?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     reasoningTokens?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     totalTokens?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
-}>;
-
-export type GqlSCityTestimonialResolvers<
-    ContextType = any,
-    ParentType extends GqlSResolversParentTypes['CityTestimonial'] = GqlSResolversParentTypes['CityTestimonial'],
-> = ResolversObject<{
-    index?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-    testimonial?: Resolver<GqlSResolversTypes['Testimonial'], ParentType, ContextType>;
 }>;
 
 export type GqlSContentSectionResolvers<
@@ -10344,9 +10242,9 @@ export type GqlSOccasionPromoResolvers<
     redeemCode?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
-export type GqlSOccasionTestimonialResolvers<
+export type GqlSPageTestimonialResolvers<
     ContextType = any,
-    ParentType extends GqlSResolversParentTypes['OccasionTestimonial'] = GqlSResolversParentTypes['OccasionTestimonial'],
+    ParentType extends GqlSResolversParentTypes['PageTestimonial'] = GqlSResolversParentTypes['PageTestimonial'],
 > = ResolversObject<{
     index?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     testimonial?: Resolver<GqlSResolversTypes['Testimonial'], ParentType, ContextType>;
@@ -10358,14 +10256,6 @@ export type GqlSPartnerPromoResolvers<
 > = ResolversObject<{
     amountCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     redeemCode?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-}>;
-
-export type GqlSPartnerTestimonialResolvers<
-    ContextType = any,
-    ParentType extends GqlSResolversParentTypes['PartnerTestimonial'] = GqlSResolversParentTypes['PartnerTestimonial'],
-> = ResolversObject<{
-    index?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-    testimonial?: Resolver<GqlSResolversTypes['Testimonial'], ParentType, ContextType>;
 }>;
 
 export interface GqlSPhoneNumberScalarConfig extends GraphQLScalarTypeConfig<GqlSResolversTypes['PhoneNumber'], any> {
@@ -10437,7 +10327,7 @@ export type GqlSPublicCityResolvers<
     sections?: Resolver<Array<GqlSResolversTypes['ContentSection']>, ParentType, ContextType>;
     subHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     subHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    testimonials?: Resolver<Array<GqlSResolversTypes['CityTestimonial']>, ParentType, ContextType>;
+    testimonials?: Resolver<Array<GqlSResolversTypes['PageTestimonial']>, ParentType, ContextType>;
     titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
@@ -10609,7 +10499,7 @@ export type GqlSPublicOccasionResolvers<
     sections?: Resolver<Array<GqlSResolversTypes['ContentSection']>, ParentType, ContextType>;
     subHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     subHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    testimonials?: Resolver<Array<GqlSResolversTypes['OccasionTestimonial']>, ParentType, ContextType>;
+    testimonials?: Resolver<Array<GqlSResolversTypes['PageTestimonial']>, ParentType, ContextType>;
     titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
@@ -10661,7 +10551,7 @@ export type GqlSPublicPartnerResolvers<
     sections?: Resolver<Array<GqlSResolversTypes['ContentSection']>, ParentType, ContextType>;
     subHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     subHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    testimonials?: Resolver<Array<GqlSResolversTypes['PartnerTestimonial']>, ParentType, ContextType>;
+    testimonials?: Resolver<Array<GqlSResolversTypes['PageTestimonial']>, ParentType, ContextType>;
     titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
@@ -11378,8 +11268,6 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminCallListItem?: GqlSAdminCallListItemResolvers<ContextType>;
     AdminCallParty?: GqlSAdminCallPartyResolvers<ContextType>;
     AdminCity?: GqlSAdminCityResolvers<ContextType>;
-    AdminCityCook?: GqlSAdminCityCookResolvers<ContextType>;
-    AdminCityTestimonial?: GqlSAdminCityTestimonialResolvers<ContextType>;
     AdminCook?: GqlSAdminCookResolvers<ContextType>;
     AdminCookFeaturedLanding?: GqlSAdminCookFeaturedLandingResolvers<ContextType>;
     AdminCookInTravelRadiusPreview?: GqlSAdminCookInTravelRadiusPreviewResolvers<ContextType>;
@@ -11391,6 +11279,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminDatabaseSlowStatement?: GqlSAdminDatabaseSlowStatementResolvers<ContextType>;
     AdminFeatureToggle?: GqlSAdminFeatureToggleResolvers<ContextType>;
     AdminFeatureToggleUserOverride?: GqlSAdminFeatureToggleUserOverrideResolvers<ContextType>;
+    AdminFeaturedCook?: GqlSAdminFeaturedCookResolvers<ContextType>;
     AdminGiftCard?: GqlSAdminGiftCardResolvers<ContextType>;
     AdminGiftCardOccasionStat?: GqlSAdminGiftCardOccasionStatResolvers<ContextType>;
     AdminGiftCardSalesMonthStat?: GqlSAdminGiftCardSalesMonthStatResolvers<ContextType>;
@@ -11402,14 +11291,11 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminObjectStorageObject?: GqlSAdminObjectStorageObjectResolvers<ContextType>;
     AdminObjectStorageObjectPage?: GqlSAdminObjectStorageObjectPageResolvers<ContextType>;
     AdminOccasion?: GqlSAdminOccasionResolvers<ContextType>;
-    AdminOccasionCook?: GqlSAdminOccasionCookResolvers<ContextType>;
-    AdminOccasionTestimonial?: GqlSAdminOccasionTestimonialResolvers<ContextType>;
     AdminOutboundEmail?: GqlSAdminOutboundEmailResolvers<ContextType>;
     AdminOutboundEmailPurposeStat?: GqlSAdminOutboundEmailPurposeStatResolvers<ContextType>;
     AdminOutboundEmailRecipientStat?: GqlSAdminOutboundEmailRecipientStatResolvers<ContextType>;
+    AdminPageTestimonial?: GqlSAdminPageTestimonialResolvers<ContextType>;
     AdminPartner?: GqlSAdminPartnerResolvers<ContextType>;
-    AdminPartnerCook?: GqlSAdminPartnerCookResolvers<ContextType>;
-    AdminPartnerTestimonial?: GqlSAdminPartnerTestimonialResolvers<ContextType>;
     AdminPromoCode?: GqlSAdminPromoCodeResolvers<ContextType>;
     AdminQueuedJob?: GqlSAdminQueuedJobResolvers<ContextType>;
     AdminResendEmailQuota?: GqlSAdminResendEmailQuotaResolvers<ContextType>;
@@ -11474,7 +11360,6 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     ChatTurnUpdate?: GqlSChatTurnUpdateResolvers<ContextType>;
     ChatTurnUpserted?: GqlSChatTurnUpsertedResolvers<ContextType>;
     ChatTurnUsage?: GqlSChatTurnUsageResolvers<ContextType>;
-    CityTestimonial?: GqlSCityTestimonialResolvers<ContextType>;
     ContentSection?: GqlSContentSectionResolvers<ContextType>;
     ContentSectionContent?: GqlSContentSectionContentResolvers<ContextType>;
     ContentSectionCta?: GqlSContentSectionCtaResolvers<ContextType>;
@@ -11543,9 +11428,8 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     OccasionFormatsCard?: GqlSOccasionFormatsCardResolvers<ContextType>;
     OccasionFormatsSection?: GqlSOccasionFormatsSectionResolvers<ContextType>;
     OccasionPromo?: GqlSOccasionPromoResolvers<ContextType>;
-    OccasionTestimonial?: GqlSOccasionTestimonialResolvers<ContextType>;
+    PageTestimonial?: GqlSPageTestimonialResolvers<ContextType>;
     PartnerPromo?: GqlSPartnerPromoResolvers<ContextType>;
-    PartnerTestimonial?: GqlSPartnerTestimonialResolvers<ContextType>;
     PhoneNumber?: GraphQLScalarType;
     PublicBlogPost?: GqlSPublicBlogPostResolvers<ContextType>;
     PublicBlogPostQuery?: GqlSPublicBlogPostQueryResolvers<ContextType>;

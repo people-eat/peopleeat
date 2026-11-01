@@ -2,11 +2,11 @@ import { and, asc, eq, inArray } from 'drizzle-orm';
 
 import { cityCooks, cooks, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSAdminCity, GqlSAdminCityCook } from '../graphql/generated';
+import type { GqlSAdminCity, GqlSAdminFeaturedCook } from '../graphql/generated';
 import { toGqlAdminCook } from '../mappers/toGqlAdminCook';
 import { publicCookListedWhere } from '../utils/publicCookFindManyCriterionWhere';
 
-export async function adminCityCooksFindMany(parent: GqlSAdminCity, serverRuntime: ServerRuntime): Promise<GqlSAdminCityCook[]> {
+export async function adminCityCooksFindMany(parent: GqlSAdminCity, serverRuntime: ServerRuntime): Promise<GqlSAdminFeaturedCook[]> {
     const assigned = await serverRuntime.db
         .select({ cookId: cityCooks.cookId, position: cityCooks.position })
         .from(cityCooks)

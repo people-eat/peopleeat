@@ -3,12 +3,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import type { Locale } from '../../shared';
+import type { SectionPageTestimonial } from '../sections/SectionPageTestimonials';
 import { Badge } from './base/badge';
 import { Button } from './base/button';
 import { Card, CardContent, CardHeader, CardTitle } from './base/card';
 import { Checkbox } from './base/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './base/dialog';
 import { Input } from './base/input';
+import { StatusBadge } from './base/status-badge';
 import { TestimonialRatingStars } from './TestimonialRatingStars';
 
 export type TestimonialEntry = {
@@ -32,6 +34,117 @@ function entryKey(entry: TestimonialEntry): string {
 function entryFromKey(key: string): TestimonialEntry {
     const [testimonialType, testimonialId] = key.split(':');
     return { testimonialType: testimonialType as TestimonialEntry['testimonialType'], testimonialId: testimonialId! };
+}
+
+/** Admin junction row (`AdminPageTestimonial` on city / partner / occasion editors). */
+export type ContentPageAdminTestimonialAssignment = {
+    index: number;
+    isPubliclyListed: boolean;
+    testimonial:
+        | {
+              __typename: 'AdminCustomerTestimonial';
+              customerTestimonialId: string;
+              displayAuthorName: string;
+              displayLocation: string | null;
+              displayOccasion: string | null;
+              body: string;
+              rating: number | null;
+              publicationStatus: 'PUBLISHED' | 'PENDING_REVIEW';
+          }
+        | {
+              __typename: 'AdminCookTestimonial';
+              cookTestimonialId: string;
+              displayAuthorName: string;
+              displayLocation: string | null;
+              displayOccasion: string | null;
+              cookBody: string | null;
+              rating: number | null;
+              publicationStatus: 'PUBLISHED' | 'PENDING_REVIEW';
+          };
+};
+
+export function testimonialEntryFromAdminAssignment(row: ContentPageAdminTestimonialAssignment): TestimonialEntry {
+    return row.testimonial.__typename === 'AdminCustomerTestimonial'
+        ? { testimonialType: 'CUSTOMER', testimonialId: row.testimonial.customerTestimonialId }
+        : { testimonialType: 'COOK', testimonialId: row.testimonial.cookTestimonialId };
+}
+
+/** Optimistic assignment rebuild after a local testimonials save (mirrors cook assign rebuild). */
+export function adminTestimonialAssignmentFromCandidate(
+    entry: TestimonialEntry,
+    index: number,
+    candidate: TestimonialCandidateOption | undefined,
+): ContentPageAdminTestimonialAssignment {
+    const isPubliclyListed = candidate?.publicationStatus === 'PUBLISHED';
+    if (entry.testimonialType === 'CUSTOMER') {
+        return {
+            index,
+            isPubliclyListed,
+            testimonial: {
+                __typename: 'AdminCustomerTestimonial',
+                customerTestimonialId: entry.testimonialId,
+                displayAuthorName: candidate?.displayAuthorName ?? entry.testimonialId.slice(0, 8),
+                displayLocation: candidate?.displayLocation ?? null,
+                displayOccasion: candidate?.displayOccasion ?? null,
+                body: candidate?.body ?? '',
+                rating: candidate?.rating ?? null,
+                publicationStatus: candidate?.publicationStatus ?? 'PENDING_REVIEW',
+            },
+        };
+    }
+    return {
+        index,
+        isPubliclyListed,
+        testimonial: {
+            __typename: 'AdminCookTestimonial',
+            cookTestimonialId: entry.testimonialId,
+            displayAuthorName: candidate?.displayAuthorName ?? entry.testimonialId.slice(0, 8),
+            displayLocation: candidate?.displayLocation ?? null,
+            displayOccasion: candidate?.displayOccasion ?? null,
+            cookBody: candidate?.body ?? null,
+            rating: candidate?.rating ?? null,
+            publicationStatus: candidate?.publicationStatus ?? 'PENDING_REVIEW',
+        },
+    };
+}
+
+/**
+ * Map curated admin junction rows into `ContentPageView` preview shape.
+ * Uses `isPubliclyListed` (same gate as public pages) so pending rows stay visible with a warning.
+ */
+export function contentPageTestimonialsForPreview(
+    assigned: ReadonlyArray<ContentPageAdminTestimonialAssignment>,
+): SectionPageTestimonial[] {
+    return assigned.map((row) => {
+        if (row.testimonial.__typename === 'AdminCustomerTestimonial') {
+            return {
+                index: row.index,
+                isPubliclyListed: row.isPubliclyListed,
+                testimonial: {
+                    __typename: 'CustomerTestimonial' as const,
+                    customerTestimonialId: row.testimonial.customerTestimonialId,
+                    authorName: row.testimonial.displayAuthorName,
+                    location: row.testimonial.displayLocation,
+                    occasion: row.testimonial.displayOccasion,
+                    body: row.testimonial.body,
+                    rating: row.testimonial.rating,
+                },
+            };
+        }
+        return {
+            index: row.index,
+            isPubliclyListed: row.isPubliclyListed,
+            testimonial: {
+                __typename: 'CookTestimonial' as const,
+                cookTestimonialId: row.testimonial.cookTestimonialId,
+                authorName: row.testimonial.displayAuthorName,
+                location: row.testimonial.displayLocation,
+                occasion: row.testimonial.displayOccasion,
+                cookBody: row.testimonial.cookBody,
+                rating: row.testimonial.rating,
+            },
+        };
+    });
 }
 
 /**
@@ -144,14 +257,13 @@ export function ContentPageTestimonialsEditor({
                                             [candidate.displayLocation, candidate.displayOccasion].filter(Boolean).join(' · ')}
                                     </p>
                                     {candidate.publicationStatus === 'PENDING_REVIEW' ? (
-                                        <p className="text-xs text-destructive">
+                                        <StatusBadge tone="warning" className="mt-1 font-normal">
                                             {
-                                                {
-                                                    de: 'Nicht öffentlich sichtbar, wartet auf Freigabe.',
-                                                    en: 'Not shown publicly, pending review.',
-                                                }[locale]
+                                                { de: 'Nicht öffentlich, wartet auf Freigabe', en: 'Not on public page, pending review' }[
+                                                    locale
+                                                ]
                                             }
-                                        </p>
+                                        </StatusBadge>
                                     ) : null}
                                 </div>
                                 <Button
@@ -258,9 +370,9 @@ export function ContentPageTestimonialsEditor({
                                                         : { de: 'Kunde', en: 'Customer' }[locale]}
                                                 </Badge>
                                                 {candidate.publicationStatus === 'PENDING_REVIEW' ? (
-                                                    <Badge variant="destructive" className="shrink-0">
-                                                        {{ de: 'Ausstehend', en: 'Pending' }[locale]}
-                                                    </Badge>
+                                                    <StatusBadge tone="warning" className="shrink-0 font-normal">
+                                                        {{ de: 'Nicht öffentlich', en: 'Not on public page' }[locale]}
+                                                    </StatusBadge>
                                                 ) : null}
                                                 <TestimonialRatingStars rating={candidate.rating} className="shrink-0" />
                                             </div>

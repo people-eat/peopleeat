@@ -103,7 +103,7 @@ fragment CookTestimonialCardFields on CookTestimonial {
     createdAt
 }
 
-# Public curated testimonial (`CityTestimonial` / `PartnerTestimonial` / `OccasionTestimonial.testimonial`).
+# Public curated testimonial (`PageTestimonial.testimonial`).
 #
 # `body` is aliased on the cook branch (`String` — cook reviews may omit body) because GraphQL's field-merging rule flags
 # `String!` vs `String` for the same response name even across mutually exclusive union members. Inlined rather than
@@ -149,7 +149,7 @@ fragment AdminCookTestimonialCardFields on AdminCookTestimonial {
     publicationStatus
 }
 
-# Admin curated testimonial (`AdminCityTestimonial` / `AdminPartnerTestimonial` / `AdminOccasionTestimonial.testimonial`).
+# Admin curated testimonial (`AdminPageTestimonial.testimonial`).
 # See `TestimonialCardFields` above for why the cook branch is inlined with an aliased `body`.
 fragment AdminTestimonialCardFields on AdminTestimonial {
     __typename
@@ -223,6 +223,7 @@ fragment AdminCityFields on AdminCity {
     }
     testimonials {
         index
+        isPubliclyListed
         testimonial {
             ...AdminTestimonialCardFields
         }
@@ -327,6 +328,7 @@ fragment AdminPartnerFields on AdminPartner {
     }
     testimonials {
         index
+        isPubliclyListed
         testimonial {
             ...AdminTestimonialCardFields
         }
@@ -456,6 +458,7 @@ fragment AdminOccasionFields on AdminOccasion {
     }
     testimonials {
         index
+        isPubliclyListed
         testimonial {
             ...AdminTestimonialCardFields
         }

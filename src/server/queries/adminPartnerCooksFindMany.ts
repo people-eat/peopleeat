@@ -2,11 +2,11 @@ import { and, asc, eq, inArray } from 'drizzle-orm';
 
 import { cooks, partnerCooks, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSAdminPartner, GqlSAdminPartnerCook } from '../graphql/generated';
+import type { GqlSAdminFeaturedCook, GqlSAdminPartner } from '../graphql/generated';
 import { toGqlAdminCook } from '../mappers/toGqlAdminCook';
 import { publicCookListedWhere } from '../utils/publicCookFindManyCriterionWhere';
 
-export async function adminPartnerCooksFindMany(parent: GqlSAdminPartner, serverRuntime: ServerRuntime): Promise<GqlSAdminPartnerCook[]> {
+export async function adminPartnerCooksFindMany(parent: GqlSAdminPartner, serverRuntime: ServerRuntime): Promise<GqlSAdminFeaturedCook[]> {
     const assigned = await serverRuntime.db
         .select({ cookId: partnerCooks.cookId, position: partnerCooks.position })
         .from(partnerCooks)

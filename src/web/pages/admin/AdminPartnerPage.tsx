@@ -17,10 +17,12 @@ import type { ContentPageEditorSearch, ContentPageEditorValues } from '../../com
 import { ContentPageFeaturedCooksEditor } from '../../components/ContentPageFeaturedCooksEditor';
 import type { FeaturedCookOption } from '../../components/ContentPageFeaturedCooksEditor';
 import {
+    adminTestimonialAssignmentFromCandidate,
     contentPageTestimonialsForPreview,
     ContentPageTestimonialsEditor,
+    testimonialEntryFromAdminAssignment,
 } from '../../components/ContentPageTestimonialsEditor';
-import type { TestimonialCandidateOption, TestimonialEntry } from '../../components/ContentPageTestimonialsEditor';
+import type { TestimonialCandidateOption } from '../../components/ContentPageTestimonialsEditor';
 import { contentSectionsFromGql, contentSectionsToInput } from '../../components/contentSectionsMap';
 import type {
     GqlCAdminPartnerPageQuery,
@@ -66,12 +68,6 @@ type PartnerEditorValues = ContentPageEditorValues & {
 };
 
 type PartnerRow = NonNullable<NonNullable<NonNullable<GqlCAdminPartnerPageQuery['currentSession']['user']>['admin']>['partner']>;
-
-function testimonialEntryFromAdmin(row: PartnerRow['testimonials'][number]): TestimonialEntry {
-    return row.testimonial.__typename === 'AdminCustomerTestimonial'
-        ? { testimonialType: 'CUSTOMER', testimonialId: row.testimonial.customerTestimonialId }
-        : { testimonialType: 'COOK', testimonialId: row.testimonial.cookTestimonialId };
-}
 
 function addressFromPartner(address: NonNullable<PartnerRow['locationAddress']>): GqlCUserBookingRequestExactEventAddressInput {
     return {
@@ -152,9 +148,7 @@ export function AdminPartnerPage({
 
     const [values, setValues] = useState<PartnerEditorValues>(() => valuesFromPartner(seedPartner));
     const [assignedCooks, setAssignedCooks] = useState(seedPartner.cooks);
-    const [testimonialEntries, setTestimonialEntries] = useState<TestimonialEntry[]>(() =>
-        seedPartner.testimonials.map(testimonialEntryFromAdmin),
-    );
+    const [assignedTestimonials, setAssignedTestimonials] = useState(seedPartner.testimonials);
     const [busy, setBusy] = useState(false);
     const [cookSearch, setCookSearch] = useState('');
     const debouncedCookSearch = useDebouncedValue(cookSearch, 300);
@@ -220,7 +214,7 @@ export function AdminPartnerPage({
                 if (!next) return;
                 if (!pageDirtyRef.current) setValues(valuesFromPartner(next));
                 setAssignedCooks(next.cooks);
-                setTestimonialEntries(next.testimonials.map(testimonialEntryFromAdmin));
+                setAssignedTestimonials(next.testimonials);
             }),
         );
         return unsubscribe;
@@ -276,18 +270,17 @@ export function AdminPartnerPage({
         return { redeemCode: match.redeemCode, amountCents: match.amountCents };
     }, [promoCodes, values.promoCodeId]);
 
-    const previewCooks = assignedCooks
-        .filter((row) => row.isPubliclyListed)
-        .map((row) => ({
-            cookId: row.cook.cookId,
-            cuisineStyle: row.cook.cuisineStyle ?? null,
-            cookingPhilosophy: row.cook.cookingPhilosophy ?? null,
-            city: row.cook.exactTravelOriginAddress?.city ?? null,
-            user: {
-                display: userDisplayName(row.cook.user),
-                profilePicture: null,
-            },
-        }));
+    const previewCooks = assignedCooks.map((row) => ({
+        cookId: row.cook.cookId,
+        cuisineStyle: row.cook.cuisineStyle ?? null,
+        cookingPhilosophy: row.cook.cookingPhilosophy ?? null,
+        city: row.cook.exactTravelOriginAddress?.city ?? null,
+        isPubliclyListed: row.isPubliclyListed,
+        user: {
+            display: userDisplayName(row.cook.user),
+            profilePicture: null,
+        },
+    }));
 
     const testimonialCandidates: TestimonialCandidateOption[] = [
         ...(seedAdmin?.customerTestimonials ?? []).map((row) => ({
@@ -330,7 +323,7 @@ export function AdminPartnerPage({
                 user={data.currentSession.user}
                 featuredCooks={previewCooks}
                 featuredCooksShowCity={values.featuredCooksShowCity}
-                testimonials={contentPageTestimonialsForPreview(testimonialEntries, testimonialCandidates)}
+                testimonials={contentPageTestimonialsForPreview(assignedTestimonials)}
                 heroImageOverlay={values.heroImageOverlay}
                 howItWorks
                 howItWorksHideCta
@@ -738,7 +731,7 @@ export function AdminPartnerPage({
 
                         <ContentPageTestimonialsEditor
                             locale={locale}
-                            assignedEntries={testimonialEntries}
+                            assignedEntries={assignedTestimonials.map(testimonialEntryFromAdminAssignment)}
                             candidates={testimonialCandidates}
                             busy={busy}
                             emptyHint={
@@ -752,7 +745,21 @@ export function AdminPartnerPage({
                                 if (result.error || !result.data?.admin.partnerTestimonialsUpdate.success) {
                                     throw new Error('testimonials update failed');
                                 }
-                                setTestimonialEntries(entries);
+                                const byKey = new Map(
+                                    testimonialCandidates.map((candidate) => [
+                                        `${candidate.testimonialType}:${candidate.testimonialId}`,
+                                        candidate,
+                                    ]),
+                                );
+                                setAssignedTestimonials(
+                                    entries.map((entry, index) =>
+                                        adminTestimonialAssignmentFromCandidate(
+                                            entry,
+                                            index,
+                                            byKey.get(`${entry.testimonialType}:${entry.testimonialId}`),
+                                        ),
+                                    ),
+                                );
                             }}
                         />
                     </>

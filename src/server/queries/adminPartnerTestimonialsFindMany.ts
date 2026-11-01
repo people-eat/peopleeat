@@ -2,7 +2,7 @@ import { asc, eq } from 'drizzle-orm';
 
 import { partnerTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSAdminPartner, GqlSAdminPartnerTestimonial } from '../graphql/generated';
+import type { GqlSAdminPageTestimonial, GqlSAdminPartner } from '../graphql/generated';
 import { toGqlAdminCookTestimonial } from '../mappers/toGqlAdminCookTestimonial';
 import { toGqlAdminCustomerTestimonial } from '../mappers/toGqlAdminCustomerTestimonial';
 import { testimonialCatalogEntriesLoad } from '../utils/testimonialCatalogEntriesLoad';
@@ -11,7 +11,7 @@ import { testimonialCatalogEntriesLoad } from '../utils/testimonialCatalogEntrie
 export async function adminPartnerTestimonialsFindMany(
     parent: GqlSAdminPartner,
     serverRuntime: ServerRuntime,
-): Promise<GqlSAdminPartnerTestimonial[]> {
+): Promise<GqlSAdminPageTestimonial[]> {
     const junctionRows = await serverRuntime.db
         .select()
         .from(partnerTestimonials)
