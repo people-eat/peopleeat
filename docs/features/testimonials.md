@@ -101,10 +101,12 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 - GraphQL: public `CustomerTestimonial` / `CookTestimonial.authorProfilePicture` (batch-loaded from the author’s current profile picture)
 - Download auth: `fileUploadReferencedByPublishedTestimonial` / `fileUploadReferencedByAnyTestimonial` on `GET /api/file-uploads/:id`
 - Capture UI: `BookingRequestOfferTestimonialPanel` (TanStack Form, accent stars, 4-col photo strip, inline validation, optional
-  `imageFileUploadIds`; post-submit reuses `PageTestimonialCardFace` + `PageTestimonialDetailDialog`; body self-edit with pinned
-  Save/Cancel) — Review tab on customer and cook offer pages; compose Submit via `BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID`, edit via
-  `BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID` in `ProfilePinnedFooterLayout`. Outstanding Review tab uses inline `NotificationBadge`.
-  Admin offer Review tab stays separate.
+  `imageFileUploadIds`; multi-select file input up to 8 photos; each image is client-compressed via `imageCompress` /
+  `IMAGE_COMPRESS_PRESETS.testimonial` before `POST /api/file-uploads` — no crop dialog; post-submit reuses `PageTestimonialCardFace` +
+  `PageTestimonialDetailDialog`; body self-edit with pinned Save/Cancel) — Review tab on customer and cook offer pages; compose Submit via
+  `BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID`, edit via `BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID` in `ProfilePinnedFooterLayout`.
+  Outstanding Review tab uses inline `NotificationBadge`. Admin offer Review tab and detail `AdminTestimonialImageManager` use the same
+  multi-select + compress path (cap 8).
 - List nudges: customer cards read `testimonialMissing`, deep-link `?tab=testimonial`
 - Jobs: `bookingRequestOfferTestimonialReminder` (memory nudge, morning and evening reminders Europe/Berlin); schedule on payment success
   and datetime changes; cancel on request cancel

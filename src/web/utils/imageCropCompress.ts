@@ -65,6 +65,23 @@ export const IMAGE_CROP_PRESETS: Record<ImageCropVariant, ImageCropCompressOptio
     },
 };
 
+/**
+ * No-crop compress presets (full-frame resize + encode). Kept separate from
+ * `ImageCropVariant` so crop-dialog aspect maps stay crop-only.
+ */
+export type ImageCompressPreset = 'testimonial';
+
+export const IMAGE_COMPRESS_PRESETS: Record<ImageCompressPreset, ImageCropCompressOptions> = {
+    // Gallery detail needs more than card thumbs; same band as contentWide.
+    testimonial: {
+        maxEdgePx: 1280,
+        mimeType: 'image/webp',
+        quality: 0.85,
+        fileName: 'testimonial.webp',
+        targetMaxBytes: 450_000,
+    },
+};
+
 export function imageCropOutputDimensions(cropWidth: number, cropHeight: number, maxEdgePx: number): { width: number; height: number } {
     const edge = Math.max(cropWidth, cropHeight);
     if (edge <= maxEdgePx) {
@@ -193,6 +210,12 @@ function rotatedSourceCanvas(image: HTMLImageElement, rotationDeg: number): HTML
     return canvas;
 }
 
+function encodedFileFromBlob(blob: Blob, options: ImageCropCompressOptions): File {
+    const fileName =
+        blob.type === 'image/jpeg' && options.fileName.endsWith('.webp') ? options.fileName.replace(/\.webp$/, '.jpg') : options.fileName;
+    return new File([blob], fileName, { type: blob.type, lastModified: Date.now() });
+}
+
 /**
  * Crop `imageSrc` to `crop` (pixel area from react-easy-crop), optionally
  * accounting for `rotationDeg`, downscale to `maxEdgePx`, and encode with a
@@ -219,7 +242,36 @@ export async function imageCropCompress(imageSrc: string, crop: Area, options: I
     ctx.drawImage(source, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
 
     const blob = await canvasBlobWithQualityLadder(canvas, options);
-    const fileName =
-        blob.type === 'image/jpeg' && options.fileName.endsWith('.webp') ? options.fileName.replace(/\.webp$/, '.jpg') : options.fileName;
-    return new File([blob], fileName, { type: blob.type, lastModified: Date.now() });
+    return encodedFileFromBlob(blob, options);
+}
+
+/**
+ * Downscale the full frame to `maxEdgePx` and encode with a quality ladder
+ * toward `targetMaxBytes`. No interactive crop — used for multi-select
+ * surfaces (e.g. testimonial photos) where a dialog per file would fight UX.
+ */
+export async function imageCompress(image: string | File, options: ImageCropCompressOptions): Promise<File> {
+    const ownsObjectUrl = typeof image !== 'string';
+    const imageSrc = ownsObjectUrl ? URL.createObjectURL(image) : image;
+    try {
+        const loaded = await imageElementLoad(imageSrc);
+        const { width, height } = imageCropOutputDimensions(loaded.width, loaded.height, options.maxEdgePx);
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx == null) {
+            throw new Error('Canvas unavailable');
+        }
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(loaded, 0, 0, loaded.width, loaded.height, 0, 0, width, height);
+
+        const blob = await canvasBlobWithQualityLadder(canvas, options);
+        return encodedFileFromBlob(blob, options);
+    } finally {
+        if (ownsObjectUrl) URL.revokeObjectURL(imageSrc);
+    }
 }

@@ -7,6 +7,10 @@ import { Button } from '../../components/base/button';
 import { Spinner } from '../../components/base/spinner';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
+import { IMAGE_COMPRESS_PRESETS, IMAGE_CROP_ACCEPT, imageCompress } from '../../utils/imageCropCompress';
+
+/** Matches customer/cook review compose (`BookingRequestOfferTestimonialPanel`). */
+const MAX_IMAGES = 8;
 
 /** `imageUrls` are always `/api/file-uploads/{id}` (see `fileUploadPublicUrl`). */
 function fileUploadIdFromUrl(url: string): string | null {
@@ -30,17 +34,60 @@ export function AdminTestimonialImageManager({
     const inputRef = useRef<HTMLInputElement>(null);
     const [busy, setBusy] = useState(false);
 
-    async function addFile(file: File | undefined) {
-        if (!file) return;
-        if (!file.type.startsWith('image/')) {
+    const existingIds = imageUrls.map(fileUploadIdFromUrl).filter((id): id is string => id != null);
+    const canAdd = existingIds.length < MAX_IMAGES;
+
+    async function addFiles(fileList: FileList | null) {
+        if (fileList == null || fileList.length === 0) return;
+
+        const images = Array.from(fileList).filter((file) => file.type.startsWith('image/'));
+        if (images.length === 0) {
             toast.error({ de: 'Bitte ein Bild auswählen.', en: 'Please choose an image.' }[locale]);
+            if (inputRef.current) inputRef.current.value = '';
             return;
         }
+
+        const remaining = MAX_IMAGES - existingIds.length;
+        if (remaining <= 0) {
+            toast.error(
+                {
+                    de: `Höchstens ${MAX_IMAGES} Bilder pro Bewertung.`,
+                    en: `At most ${MAX_IMAGES} photos per review.`,
+                }[locale],
+            );
+            if (inputRef.current) inputRef.current.value = '';
+            return;
+        }
+
+        const capped = images.length > remaining;
+        const toUpload = images.slice(0, remaining);
         setBusy(true);
+        const nextIds = [...existingIds];
         try {
-            const uploaded = await uploadFile(file);
-            const nextIds = [...imageUrls.map(fileUploadIdFromUrl).filter((id): id is string => id != null), uploaded.fileUploadId];
-            if (!(await onSave(nextIds))) throw new Error('save failed');
+            for (const file of toUpload) {
+                try {
+                    const compressed = await imageCompress(file, IMAGE_COMPRESS_PRESETS.testimonial);
+                    const uploaded = await uploadFile(compressed);
+                    nextIds.push(uploaded.fileUploadId);
+                } catch (error) {
+                    if (nextIds.length > existingIds.length) {
+                        await onSave(nextIds);
+                    }
+                    toast.error(uploadErrorMessage(error, locale));
+                    return;
+                }
+            }
+            if (nextIds.length > existingIds.length) {
+                if (!(await onSave(nextIds))) throw new Error('save failed');
+            }
+            if (capped) {
+                toast.error(
+                    {
+                        de: `Höchstens ${MAX_IMAGES} Bilder pro Bewertung.`,
+                        en: `At most ${MAX_IMAGES} photos per review.`,
+                    }[locale],
+                );
+            }
         } catch (error) {
             toast.error(uploadErrorMessage(error, locale));
         } finally {
@@ -86,23 +133,26 @@ export function AdminTestimonialImageManager({
                         </Button>
                     </div>
                 ))}
-                <Button
-                    type="button"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={() => inputRef.current?.click()}
-                    className="size-20 border-dashed text-muted-foreground"
-                    aria-label={{ de: 'Bild hinzufügen', en: 'Add image' }[locale]}
-                >
-                    {busy ? <Spinner className="size-4" /> : <PlusIcon className="size-4" aria-hidden />}
-                </Button>
+                {canAdd ? (
+                    <Button
+                        type="button"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() => inputRef.current?.click()}
+                        className="size-20 border-dashed text-muted-foreground"
+                        aria-label={{ de: 'Bilder hinzufügen', en: 'Add photos' }[locale]}
+                    >
+                        {busy ? <Spinner className="size-4" /> : <PlusIcon className="size-4" aria-hidden />}
+                    </Button>
+                ) : null}
             </div>
             <input
                 ref={inputRef}
                 type="file"
-                accept="image/*"
+                accept={IMAGE_CROP_ACCEPT}
+                multiple
                 className="sr-only"
-                onChange={(event) => void addFile(event.target.files?.[0])}
+                onChange={(event) => void addFiles(event.target.files)}
             />
         </div>
     );

@@ -37,10 +37,11 @@ Central file uploads with client crop and compress before link; server asserts o
 - GET: public when referenced as the user’s current profile picture (plus owner / published content / admin rules).
 - UI: `ImageCropDialog` + `imageCropCompress` (react-easy-crop). WebP presets: avatar (square 512px ~200 KB), logo (16:9 landscape 960px
   ~250 KB), meal (square 960px ~350 KB), content (square 960px ~350 KB for content-section side-by-side images), contentWide (16:9 1280px
-  ~450 KB for standalone image sections). `objectFit="contain"` with dynamic min zoom; mobile sheet with pinch and rotate. Cook brand marks
-  use the `logo` variant via `CookLogoEditor` on `/profile/public` — see [cook-profile.md](./cook-profile.md). Content page section images
-  use `content` / `contentWide` via `ContentSectionsEditor` — see [content-sections.md](../architecture/content-sections.md). Delivery and
-  follow-ups (upload-time variants, migration script, CDN): [image-delivery.md](../architecture/image-delivery.md).
+  ~450 KB for standalone image sections). No-crop multi-select uploads use `imageCompress` with the `testimonial` preset (full-frame 1280px
+  ~450 KB) — see [testimonials.md](./testimonials.md). `objectFit="contain"` with dynamic min zoom; mobile sheet with pinch and rotate. Cook
+  brand marks use the `logo` variant via `CookLogoEditor` on `/profile/public` — see [cook-profile.md](./cook-profile.md). Content page
+  section images use `content` / `contentWide` via `ContentSectionsEditor` — see [content-sections.md](../architecture/content-sections.md).
+  Delivery and follow-ups (upload-time variants, migration script, CDN): [image-delivery.md](../architecture/image-delivery.md).
 
 Key files: `userUpdate.ts`, `adminUserUpdate.ts`, `fileUploadContentAccess.ts`, `ImageCropDialog.tsx`, `ProfilePictureEditor.tsx`,
 `AccountPage.tsx`, `AdminUserGeneralSection.tsx`, `ProfileCookChefProfile*Page.tsx`, `ProfilePage*.tsx`.

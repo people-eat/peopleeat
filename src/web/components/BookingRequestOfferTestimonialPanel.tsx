@@ -14,6 +14,7 @@ import {
 } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
+import { IMAGE_COMPRESS_PRESETS, IMAGE_CROP_ACCEPT, imageCompress } from '../utils/imageCropCompress';
 import type { Locale } from '../utils/locale';
 import { Button } from './base/button';
 import { Spinner } from './base/spinner';
@@ -278,10 +279,12 @@ export function BookingRequestOfferTestimonialPanel({
         syncEditForm(shownBody);
     }, [editing, shownBody, syncEditForm]);
 
-    async function addFile(file: File | undefined) {
-        if (!file) return;
+    async function addFiles(fileList: FileList | null) {
+        if (fileList == null || fileList.length === 0) return;
         setUploadError(null);
-        if (!file.type.startsWith('image/')) {
+
+        const images = Array.from(fileList).filter((file) => file.type.startsWith('image/'));
+        if (images.length === 0) {
             setUploadError(
                 {
                     de: 'Bitte ein Bild (JPEG, PNG, WebP oder GIF) wählen.',
@@ -291,7 +294,9 @@ export function BookingRequestOfferTestimonialPanel({
             if (inputRef.current) inputRef.current.value = '';
             return;
         }
-        if (imageFileUploadIds.length >= MAX_IMAGES) {
+
+        const remaining = MAX_IMAGES - imageFileUploadIds.length;
+        if (remaining <= 0) {
             setUploadError(
                 {
                     de: `Du kannst bis zu ${MAX_IMAGES} Bilder hinzufügen.`,
@@ -301,10 +306,26 @@ export function BookingRequestOfferTestimonialPanel({
             if (inputRef.current) inputRef.current.value = '';
             return;
         }
+
+        const capped = images.length > remaining;
+        const toUpload = images.slice(0, remaining);
         setUploadBusy(true);
+        let nextIds = [...imageFileUploadIds];
         try {
-            const uploaded = await uploadFile(file);
-            form.setFieldValue('imageFileUploadIds', [...imageFileUploadIds, uploaded.fileUploadId]);
+            for (const file of toUpload) {
+                const compressed = await imageCompress(file, IMAGE_COMPRESS_PRESETS.testimonial);
+                const uploaded = await uploadFile(compressed);
+                nextIds = [...nextIds, uploaded.fileUploadId];
+                form.setFieldValue('imageFileUploadIds', nextIds);
+            }
+            if (capped) {
+                setUploadError(
+                    {
+                        de: `Du kannst bis zu ${MAX_IMAGES} Bilder hinzufügen.`,
+                        en: `You can add up to ${MAX_IMAGES} photos.`,
+                    }[locale],
+                );
+            }
         } catch (error) {
             setUploadError(uploadErrorMessage(error, locale));
         } finally {
@@ -657,7 +678,7 @@ export function BookingRequestOfferTestimonialPanel({
                                         disabled={busy}
                                         onClick={() => inputRef.current?.click()}
                                         className="aspect-square size-full min-h-0 border-dashed text-muted-foreground"
-                                        aria-label={{ de: 'Bild hinzufügen', en: 'Add image' }[locale]}
+                                        aria-label={{ de: 'Bilder hinzufügen', en: 'Add photos' }[locale]}
                                     >
                                         {uploadBusy ? <Spinner className="size-4" /> : <PlusIcon className="size-4" aria-hidden />}
                                     </Button>
@@ -667,9 +688,10 @@ export function BookingRequestOfferTestimonialPanel({
                         <input
                             ref={inputRef}
                             type="file"
-                            accept="image/*"
+                            accept={IMAGE_CROP_ACCEPT}
+                            multiple
                             className="sr-only"
-                            onChange={(event) => void addFile(event.target.files?.[0])}
+                            onChange={(event) => void addFiles(event.target.files)}
                         />
                         {uploadError != null ? (
                             <p className="text-sm text-destructive" role="alert">

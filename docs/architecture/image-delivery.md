@@ -13,7 +13,8 @@ heroes pull full stored files through Node + Postgres, which feels slow under co
 
 1. **Client crop + compress** — `ImageCropDialog` / `imageCropCompress` encode WebP with a quality ladder before `POST /api/file-uploads`.
    Presets (edge px / soft byte ceiling): avatar 512 / ~200 KB, logo 960 / ~250 KB, meal and content 960 / ~350 KB, contentWide 1280 / ~450
-   KB. See [profile-pictures.md](../features/profile-pictures.md).
+   KB. Multi-select surfaces that skip the crop dialog (testimonial photos) use `imageCompress` with the `testimonial` preset (full-frame
+   1280 / ~450 KB). See [profile-pictures.md](../features/profile-pictures.md) and [testimonials.md](../features/testimonials.md).
 2. **`AppImage`** — shared `<img>` defaults (`loading="lazy"`, `decoding="async"`; `priority` for LCP / above-the-fold). Not a transform
    pipeline.
 3. **Static marketing** — heavy `public/` photos are checked in as sized WebP. Regenerate with `npm run images:optimize-public`
@@ -62,10 +63,10 @@ for call audio) behind a CDN or edge image resizing. Keep `fileUploadId` as the 
 
 ## Key files
 
-| Role               | Path                                            |
-| ------------------ | ----------------------------------------------- |
-| Client presets     | `src/web/utils/imageCropCompress.ts`            |
-| Crop UI            | `src/web/components/ImageCropDialog.tsx`        |
-| Shared img         | `src/web/components/AppImage.tsx`               |
-| Download route     | `src/routes/api/file-uploads_.$fileUploadId.ts` |
-| Public WebP script | `scripts/optimizePublicImages.ts`               |
+| Role               | Path                                                                                   |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| Client presets     | `src/web/utils/imageCropCompress.ts` (`IMAGE_CROP_PRESETS` + `IMAGE_COMPRESS_PRESETS`) |
+| Crop UI            | `src/web/components/ImageCropDialog.tsx`                                               |
+| Shared img         | `src/web/components/AppImage.tsx`                                                      |
+| Download route     | `src/routes/api/file-uploads_.$fileUploadId.ts`                                        |
+| Public WebP script | `scripts/optimizePublicImages.ts`                                                      |

@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+    IMAGE_COMPRESS_PRESETS,
     IMAGE_CROP_ASPECT,
     IMAGE_CROP_PRESETS,
+    imageCompress,
     imageCropCompress,
     imageCropOutputDimensions,
     imageCropZoomBounds,
@@ -101,5 +103,58 @@ describe('imageCropCompress', () => {
         expect(file).toBeInstanceOf(File);
         expect(file.name).toBe('avatar.webp');
         expect(file.type).toBe('image/webp');
+    });
+});
+
+describe('imageCompress', () => {
+    it('draws the full frame into a canvas and returns a File with the preset name', async () => {
+        const fillRect = vi.fn();
+        const drawImage = vi.fn();
+        const toBlob = vi.fn((callback: BlobCallback, mimeType?: string) => {
+            callback(new Blob([new Uint8Array([1, 2, 3])], { type: mimeType ?? 'image/jpeg' }));
+        });
+        const revokeObjectURL = vi.fn();
+        const createObjectURL = vi.fn(() => 'blob:testimonial');
+
+        vi.stubGlobal('URL', { createObjectURL, revokeObjectURL });
+        vi.stubGlobal(
+            'Image',
+            class {
+                decoding = '';
+                width = 2400;
+                height = 1600;
+                addEventListener(type: string, listener: () => void) {
+                    if (type === 'load') queueMicrotask(listener);
+                }
+                set src(_value: string) {
+                    // load fires via addEventListener microtask
+                }
+            },
+        );
+
+        vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
+            if (tagName === 'canvas') {
+                return {
+                    width: 0,
+                    height: 0,
+                    getContext: () => ({ fillRect, drawImage, fillStyle: '' }),
+                    toBlob,
+                } as unknown as HTMLCanvasElement;
+            }
+            return document.createElement(tagName);
+        });
+
+        const source = new File([new Uint8Array([9, 9, 9])], 'phone.jpg', { type: 'image/jpeg' });
+        const file = await imageCompress(source, IMAGE_COMPRESS_PRESETS.testimonial);
+
+        expect(createObjectURL).toHaveBeenCalledWith(source);
+        expect(revokeObjectURL).toHaveBeenCalledWith('blob:testimonial');
+        expect(drawImage).toHaveBeenCalled();
+        expect(fillRect).toHaveBeenCalled();
+        expect(file).toBeInstanceOf(File);
+        expect(file.name).toBe('testimonial.webp');
+        expect(file.type).toBe('image/webp');
+        expect(IMAGE_COMPRESS_PRESETS.testimonial.maxEdgePx).toBe(1280);
+        expect(IMAGE_COMPRESS_PRESETS.testimonial.targetMaxBytes).toBe(450_000);
     });
 });
