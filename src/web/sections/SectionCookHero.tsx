@@ -35,8 +35,9 @@ function CookRating({ rating }: { rating: SectionCookHeroRating }) {
     const locale = useLocale();
     const hasReviews = rating.reviewCount > 0 && rating.averageRating != null;
     const filledStars = hasReviews ? Math.round(rating.averageRating!) : 0;
+    const reviewLabel = rating.reviewCount === 1 ? { de: 'Bewertung', en: 'review' }[locale] : { de: 'Bewertungen', en: 'reviews' }[locale];
     const summary = hasReviews
-        ? `${rating.averageRating!.toFixed(1)} · ${rating.reviewCount} ${{ de: 'Bewertungen', en: 'reviews' }[locale]}`
+        ? `${rating.averageRating!.toFixed(1)} · ${rating.reviewCount} ${reviewLabel}`
         : { de: 'Noch keine Bewertungen', en: 'No reviews yet' }[locale];
 
     return (

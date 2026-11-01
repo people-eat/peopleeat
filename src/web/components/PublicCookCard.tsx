@@ -36,7 +36,8 @@ function CookCardRating({ rating, locale }: { rating: NonNullable<PublicCookCard
     if (rating.reviewCount <= 0 || rating.averageRating == null) return null;
 
     const filledStars = Math.round(rating.averageRating);
-    const summary = `${rating.averageRating.toFixed(1)} · ${rating.reviewCount} ${{ de: 'Bewertungen', en: 'reviews' }[locale]}`;
+    const reviewLabel = rating.reviewCount === 1 ? { de: 'Bewertung', en: 'review' }[locale] : { de: 'Bewertungen', en: 'reviews' }[locale];
+    const summary = `${rating.averageRating.toFixed(1)} · ${rating.reviewCount} ${reviewLabel}`;
 
     return (
         <div className="flex items-center gap-1.5">

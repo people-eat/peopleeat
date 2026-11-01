@@ -311,7 +311,9 @@ function AdminUserCookProfileBody({
                         <TestimonialRatingStars rating={Math.round(cook.rating.averageRating!)} />
                         <span>
                             {cook.rating.averageRating!.toFixed(1)} · {cook.rating.reviewCount}{' '}
-                            {{ de: 'Bewertungen', en: 'reviews' }[locale]}
+                            {cook.rating.reviewCount === 1
+                                ? { de: 'Bewertung', en: 'review' }[locale]
+                                : { de: 'Bewertungen', en: 'reviews' }[locale]}
                         </span>
                     </span>
                 ) : null}
