@@ -3390,6 +3390,9 @@ export type GqlSCookBookingRequestOfferTestimonialCreate = {
 export type GqlSCookBookingRequestOfferTestimonialUpdate = {
     body?: InputMaybe<Scalars['String']['input']>;
     bookingRequestOfferId: Scalars['ID']['input'];
+    imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    lowRatingAnswers?: InputMaybe<GqlSCookTestimonialLowRatingAnswersInput>;
+    rating?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export interface GqlSCookBookingRequestTaken {
@@ -4899,6 +4902,8 @@ export type GqlSUserBookingRequestOfferTestimonialCreate = {
 export type GqlSUserBookingRequestOfferTestimonialUpdate = {
     body: Scalars['String']['input'];
     bookingRequestOfferId: Scalars['ID']['input'];
+    imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    rating?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export interface GqlSUserBookingRequestOfferTravelImpact {
@@ -12964,6 +12969,9 @@ export function GqlSCookBookingRequestOfferTestimonialUpdateSchema(): z.ZodObjec
     return z.object({
         body: z.string().nullish(),
         bookingRequestOfferId: z.string(),
+        imageFileUploadIds: z.array(z.string()).nullish(),
+        lowRatingAnswers: z.lazy(() => GqlSCookTestimonialLowRatingAnswersInputSchema().nullish()),
+        rating: z.number().nullish(),
     });
 }
 
@@ -13299,6 +13307,8 @@ export function GqlSUserBookingRequestOfferTestimonialUpdateSchema(): z.ZodObjec
     return z.object({
         body: z.string(),
         bookingRequestOfferId: z.string(),
+        imageFileUploadIds: z.array(z.string()).nullish(),
+        rating: z.number().nullish(),
     });
 }
 

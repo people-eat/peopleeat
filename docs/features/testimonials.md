@@ -10,7 +10,8 @@ pages.
 On a dual-accepted, paid offer whose event datetime is in the past, the customer submits rating, text, and optional event photos on the
 offer **Review** tab (TanStack Form with under-field validation; primary Submit sits in the pinned profile action bar). Ratings 4–5 publish
 immediately; 1–3 wait for admin approval. After submit, the thank-you view reuses the public `PageTestimonialCardFace` / detail dialog, and
-the customer can body-edit for spelling. The UI also suggests posting the same text on Google reviews.
+the customer can edit rating, text, and photos. Dropping the rating to 1–3 re-applies admin review. The UI also suggests posting the same
+text on Google reviews.
 
 When a review is still owed:
 
@@ -24,8 +25,9 @@ When a review is still owed:
 
 Same completion gate. Cooks rate the experience (text and photos optional). Ratings below 5 unlock a short structured follow-up; submission
 requires those fields. Same publish rules for low stars. Same form patterns as the customer (TanStack Form, pinned Submit, public-face
-preview, body-only self-edit). Default tab and red `NotificationBadge` match the customer when a review is owed (no list-card pill on the
-cook booking list).
+preview, full self-edit of rating / text / photos). Editing a rating below 5 keeps existing follow-up answers unless the cook fills them
+again; dropping from 5 to below 5 requires the follow-up. Default tab and red `NotificationBadge` match the customer when a review is owed
+(no list-card pill on the cook booking list).
 
 ### Admin
 
@@ -87,10 +89,11 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 
 - Tables: `CustomerTestimonials`, `CookTestimonials`, `CityTestimonials`, `PartnerTestimonials`
 - Domain: `src/server/domain/testimonial.ts`
-- GraphQL: public and admin types, offer fields, city/partner curation, user/cook create + body-only update mutations
+- GraphQL: public and admin types, offer fields, city/partner curation, user/cook create + full self-edit update mutations (body, rating,
+  images; cook also `lowRatingAnswers`)
 - Commands / queries: `*Testimonial*` under commands and queries (incl. `userBookingRequestOfferTestimonialUpdate` /
-  `cookBookingRequestOfferTestimonialUpdate`); admin assistant list tool `adminTestimonialsFindMany` (customer + cook, in-process filters) →
-  `admin.testimonialList` cards
+  `cookBookingRequestOfferTestimonialUpdate`, which re-apply `publicationStatusFromRating`); admin assistant list tool
+  `adminTestimonialsFindMany` (customer + cook, in-process filters) → `admin.testimonialList` cards
 - Utils: publication from rating, offer fallbacks, image URLs from file uploads, junction cleanup
 - Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `PageTestimonialCard` / `PageTestimonialCardFace` /
   `PageTestimonialDetailDialog` (photo strip, split detail dialog with author avatar; content pages pass `showBookingCta` for occasion
@@ -103,9 +106,9 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 - Capture UI: `BookingRequestOfferTestimonialPanel` (TanStack Form, accent stars, 4-col photo strip, inline validation, optional
   `imageFileUploadIds`; multi-select file input up to 8 photos; each image is client-compressed via `imageCompress` /
   `IMAGE_COMPRESS_PRESETS.testimonial` before `POST /api/file-uploads` — no crop dialog; post-submit reuses `PageTestimonialCardFace` +
-  `PageTestimonialDetailDialog` with Edit text / View review in a dedicated action row under the card (stacked full-width on small screens);
-  body self-edit with pinned Save/Cancel) — Review tab on customer and cook offer pages; compose Submit via
-  `BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID`, edit via `BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID` in `ProfilePinnedFooterLayout`.
+  `PageTestimonialDetailDialog` with Edit review / View review in a dedicated action row under the card (stacked full-width on small
+  screens); full self-edit of rating / text / photos with pinned Save/Cancel) — Review tab on customer and cook offer pages; compose Submit
+  via `BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID`, edit via `BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID` in `ProfilePinnedFooterLayout`.
   Outstanding Review tab uses inline `NotificationBadge`. Admin offer Review tab and detail `AdminTestimonialImageManager` use the same
   multi-select + compress path (cap 8).
 - List nudges: customer cards read `testimonialMissing`, deep-link `?tab=testimonial`

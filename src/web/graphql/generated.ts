@@ -3393,6 +3393,9 @@ export type GqlCCookBookingRequestOfferTestimonialCreate = {
 export type GqlCCookBookingRequestOfferTestimonialUpdate = {
     body?: InputMaybe<Scalars['String']['input']>;
     bookingRequestOfferId: Scalars['ID']['input'];
+    imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    lowRatingAnswers?: InputMaybe<GqlCCookTestimonialLowRatingAnswersInput>;
+    rating?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export interface GqlCCookBookingRequestTaken {
@@ -4902,6 +4905,8 @@ export type GqlCUserBookingRequestOfferTestimonialCreate = {
 export type GqlCUserBookingRequestOfferTestimonialUpdate = {
     body: Scalars['String']['input'];
     bookingRequestOfferId: Scalars['ID']['input'];
+    imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    rating?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export interface GqlCUserBookingRequestOfferTravelImpact {

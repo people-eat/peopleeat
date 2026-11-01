@@ -10,11 +10,13 @@ import type {
     GqlSUserMutationBookingRequestOfferTestimonialUpdateArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { publicationStatusFromRating } from '../utils/publicationStatusFromRating';
+import { testimonialImageUrlsFromFileUploadIds } from '../utils/testimonialImageUrlsFromFileUploadIds';
 
 /**
- * Body-only self-edit of the customer's offer-linked testimonial. Does not
- * change rating, images, or publicationStatus. Returns `customerTestimonialId`
- * as `referenceId`.
+ * Full self-edit of the customer's offer-linked testimonial (body, rating,
+ * images). Re-applies `publicationStatusFromRating` so a drop to <= 3 goes
+ * back to admin review. Returns `customerTestimonialId` as `referenceId`.
  */
 export async function userBookingRequestOfferTestimonialUpdate(
     { userId }: GqlSUserMutation,
@@ -33,6 +35,8 @@ export async function userBookingRequestOfferTestimonialUpdate(
         const [row] = await serverRuntime.db
             .select({
                 customerTestimonialId: customerTestimonials.customerTestimonialId,
+                publicationStatus: customerTestimonials.publicationStatus,
+                publishedAt: customerTestimonials.publishedAt,
             })
             .from(customerTestimonials)
             .innerJoin(bookingRequestOffers, eq(bookingRequestOffers.bookingRequestOfferId, customerTestimonials.bookingRequestOfferId))
@@ -49,9 +53,20 @@ export async function userBookingRequestOfferTestimonialUpdate(
             throw new Error('userBookingRequestOfferTestimonialUpdate: testimonial not found');
         }
 
+        const imageUrls = await testimonialImageUrlsFromFileUploadIds(serverRuntime.db, {
+            fileUploadIds: input.imageFileUploadIds ?? [],
+            userId,
+            commandName: 'userBookingRequestOfferTestimonialUpdate',
+        });
+
+        const rating = input.rating ?? null;
+        const publicationStatus = publicationStatusFromRating(rating);
+        const now = new Date();
+        const publishedAt = publicationStatus === 'PUBLISHED' ? (row.publicationStatus === 'PUBLISHED' ? row.publishedAt : now) : null;
+
         await serverRuntime.db
             .update(customerTestimonials)
-            .set({ body })
+            .set({ body, rating, imageUrls, publicationStatus, publishedAt })
             .where(eq(customerTestimonials.customerTestimonialId, row.customerTestimonialId));
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId }), serverRuntime.publish.adminUpdates()]);

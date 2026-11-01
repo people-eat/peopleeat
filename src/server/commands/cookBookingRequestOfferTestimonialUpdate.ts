@@ -3,6 +3,7 @@ import { and, eq } from 'drizzle-orm';
 import { textNormalizeProseTitled } from '../../shared/textNormalize';
 import { bookingRequestOffers, cookTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
+import type { CookTestimonialLowRatingAnswers } from '../domain/testimonial';
 import type {
     GqlSCookMutation,
     GqlSCookMutationBookingRequestOfferTestimonialUpdateArgs,
@@ -10,11 +11,15 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { publicationStatusFromRating } from '../utils/publicationStatusFromRating';
+import { testimonialImageUrlsFromFileUploadIds } from '../utils/testimonialImageUrlsFromFileUploadIds';
 
 /**
- * Body-only self-edit of the cook's offer-linked testimonial. Empty body
- * clears the optional comment. Does not change rating, images, or
- * publicationStatus. Returns `cookTestimonialId` as `referenceId`.
+ * Full self-edit of the cook's offer-linked testimonial (body, rating, images).
+ * Empty body clears the optional comment. Re-applies
+ * `publicationStatusFromRating`. When `rating < 5`, `lowRatingAnswers` must be
+ * provided or already present on the row. Returns `cookTestimonialId` as
+ * `referenceId`.
  */
 export async function cookBookingRequestOfferTestimonialUpdate(
     { cookId }: GqlSCookMutation,
@@ -30,6 +35,9 @@ export async function cookBookingRequestOfferTestimonialUpdate(
         const [row] = await serverRuntime.db
             .select({
                 cookTestimonialId: cookTestimonials.cookTestimonialId,
+                lowRatingAnswers: cookTestimonials.lowRatingAnswers,
+                publicationStatus: cookTestimonials.publicationStatus,
+                publishedAt: cookTestimonials.publishedAt,
             })
             .from(cookTestimonials)
             .innerJoin(bookingRequestOffers, eq(bookingRequestOffers.bookingRequestOfferId, cookTestimonials.bookingRequestOfferId))
@@ -45,7 +53,38 @@ export async function cookBookingRequestOfferTestimonialUpdate(
             throw new Error('cookBookingRequestOfferTestimonialUpdate: testimonial not found');
         }
 
-        await serverRuntime.db.update(cookTestimonials).set({ body }).where(eq(cookTestimonials.cookTestimonialId, row.cookTestimonialId));
+        const rating = input.rating ?? null;
+        if (rating != null && rating < 5 && !input.lowRatingAnswers && !row.lowRatingAnswers) {
+            throw new Error('cookBookingRequestOfferTestimonialUpdate: lowRatingAnswers required when rating < 5');
+        }
+
+        const imageUrls = await testimonialImageUrlsFromFileUploadIds(serverRuntime.db, {
+            fileUploadIds: input.imageFileUploadIds ?? [],
+            userId: cookId,
+            commandName: 'cookBookingRequestOfferTestimonialUpdate',
+        });
+
+        let lowRatingAnswers: CookTestimonialLowRatingAnswers | null = null;
+        if (rating != null && rating < 5) {
+            if (input.lowRatingAnswers) {
+                lowRatingAnswers = {
+                    whatWentWrong: input.lowRatingAnswers.whatWentWrong?.trim() || undefined,
+                    wouldRecommend: input.lowRatingAnswers.wouldRecommend ?? undefined,
+                    additionalFeedback: input.lowRatingAnswers.additionalFeedback?.trim() || undefined,
+                };
+            } else {
+                lowRatingAnswers = row.lowRatingAnswers;
+            }
+        }
+
+        const publicationStatus = publicationStatusFromRating(rating);
+        const now = new Date();
+        const publishedAt = publicationStatus === 'PUBLISHED' ? (row.publicationStatus === 'PUBLISHED' ? row.publishedAt : now) : null;
+
+        await serverRuntime.db
+            .update(cookTestimonials)
+            .set({ body, rating, imageUrls, lowRatingAnswers, publicationStatus, publishedAt })
+            .where(eq(cookTestimonials.cookTestimonialId, row.cookTestimonialId));
 
         await Promise.all([serverRuntime.publish.userUpdates({ userId: cookId }), serverRuntime.publish.adminUpdates()]);
 

@@ -29,6 +29,12 @@ export const BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID = 'booking-request-o
 const GOOGLE_REVIEW_URL = 'https://g.page/r/CTt2r08ker0wEAE/review';
 const MAX_IMAGES = 8;
 
+/** `imageUrls` are `/api/file-uploads/{id}` (see `fileUploadPublicUrl`). */
+function fileUploadIdFromUrl(url: string): string | null {
+    const match = /\/api\/file-uploads\/([^/?#]+)/.exec(url);
+    return match?.[1] ?? null;
+}
+
 type ExistingTestimonial = {
     body: string;
     rating: number | null;
@@ -55,10 +61,6 @@ type FormValues = {
     whatWentWrong: string;
     wouldRecommend: boolean | null;
     additionalFeedback: string;
-};
-
-type EditFormValues = {
-    body: string;
 };
 
 function fieldErrorText(errors: unknown[]): string | undefined {
@@ -93,6 +95,10 @@ function requiredWhatWentWrong(value: string, locale: Locale): string | undefine
     return undefined;
 }
 
+function imageIdsFromUrls(imageUrls: string[] | undefined): string[] {
+    return (imageUrls ?? []).map(fileUploadIdFromUrl).filter((id): id is string => id != null);
+}
+
 function toCardModel(shown: ExistingTestimonial, authorFallback: AuthorFallback): PageTestimonialCardModel {
     return {
         authorName: shown.authorName?.trim() || authorFallback.authorName,
@@ -111,8 +117,8 @@ function toCardModel(shown: ExistingTestimonial, authorFallback: AuthorFallback)
  * the customer offer page and the cook offer detail page. When `role` is
  * `'cook'` and the chosen rating is below 5, a short structured follow-up
  * (`lowRatingAnswers`) is required — see `cookBookingRequestOfferTestimonialCreate`.
- * Primary submit / edit Save live in the parent pinned footer via the exported
- * form ids.
+ * After submit, the same fields can be edited in place. Primary submit / edit
+ * Save live in the parent pinned footer via the exported form ids.
  */
 export function BookingRequestOfferTestimonialPanel({
     bookingRequestOfferId,
@@ -140,7 +146,7 @@ export function BookingRequestOfferTestimonialPanel({
     const [uploadBusy, setUploadBusy] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [submitted, setSubmitted] = useState<ExistingTestimonial | null>(null);
-    const [localBody, setLocalBody] = useState<string | null>(null);
+    const [localOverride, setLocalOverride] = useState<ExistingTestimonial | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [detailImageIndex, setDetailImageIndex] = useState(0);
     const [, createCustomer] = useMutation(UserBookingRequestOfferTestimonialCreateDocument);
@@ -209,6 +215,7 @@ export function BookingRequestOfferTestimonialPanel({
                     occasion: authorFallback.occasion,
                     publicationStatus: rating <= 3 ? 'PENDING_REVIEW' : 'PUBLISHED',
                 });
+                setLocalOverride(null);
                 onSubmitted?.();
                 toast.success({ de: 'Danke für deine Bewertung!', en: 'Thanks for your review!' }[locale]);
             } catch {
@@ -217,34 +224,72 @@ export function BookingRequestOfferTestimonialPanel({
         },
     });
 
-    const shownBase = existing ?? submitted;
-    const shown = shownBase == null ? null : localBody != null ? { ...shownBase, body: localBody } : shownBase;
+    const shownBase = localOverride ?? existing ?? submitted;
+    const shown = shownBase;
 
-    const editDefaultValues: EditFormValues = { body: shown?.body ?? '' };
+    const hadLowRatingAnswers = shownBase != null && shownBase.rating != null && shownBase.rating < 5;
+
     const editForm = useForm({
-        defaultValues: editDefaultValues,
+        defaultValues,
         onSubmit: async ({ value }) => {
+            const rating = value.rating;
+            if (rating == null) return;
+
+            const needsLowRatingAnswers = role === 'cook' && rating < 5 && !hadLowRatingAnswers;
+            const includeLowRatingAnswers = role === 'cook' && rating < 5 && value.whatWentWrong.trim().length > 0;
             try {
                 if (role === 'customer') {
                     const result = await updateCustomer({
-                        input: { bookingRequestOfferId, body: value.body.trim() },
+                        input: {
+                            bookingRequestOfferId,
+                            body: value.body.trim(),
+                            rating,
+                            imageFileUploadIds: value.imageFileUploadIds,
+                        },
                     });
                     if (result.error || !result.data?.user.bookingRequestOfferTestimonialUpdate.success) {
                         toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
                         return;
                     }
                 } else {
+                    if (needsLowRatingAnswers && !includeLowRatingAnswers) {
+                        toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                        return;
+                    }
                     const result = await updateCook({
-                        input: { bookingRequestOfferId, body: value.body.trim() || null },
+                        input: {
+                            bookingRequestOfferId,
+                            body: value.body.trim() || null,
+                            rating,
+                            imageFileUploadIds: value.imageFileUploadIds,
+                            lowRatingAnswers: includeLowRatingAnswers
+                                ? {
+                                      whatWentWrong: value.whatWentWrong.trim(),
+                                      wouldRecommend: value.wouldRecommend,
+                                      additionalFeedback: value.additionalFeedback.trim() || null,
+                                  }
+                                : null,
+                        },
                     });
                     if (result.error || !result.data?.user.cook.bookingRequestOfferTestimonialUpdate.success) {
                         toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
                         return;
                     }
                 }
-                setLocalBody(value.body.trim());
+                setLocalOverride({
+                    ...(shownBase ?? {}),
+                    body: value.body.trim(),
+                    rating,
+                    imageUrls: value.imageFileUploadIds.map(fileUploadPublicUrl),
+                    authorName: shownBase?.authorName ?? authorFallback.authorName,
+                    authorProfilePictureUrl: shownBase?.authorProfilePictureUrl ?? authorFallback.authorProfilePictureUrl,
+                    location: shownBase?.location ?? authorFallback.location,
+                    occasion: shownBase?.occasion ?? authorFallback.occasion,
+                    createdAt: shownBase?.createdAt,
+                    publicationStatus: rating <= 3 ? 'PENDING_REVIEW' : 'PUBLISHED',
+                });
                 onEditingChange?.(false);
-                toast.success({ de: 'Text aktualisiert.', en: 'Text updated.' }[locale]);
+                toast.success({ de: 'Bewertung aktualisiert.', en: 'Review updated.' }[locale]);
             } catch {
                 toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
             }
@@ -257,7 +302,11 @@ export function BookingRequestOfferTestimonialPanel({
     const imageFileUploadIds = useSelector(form.store, (state) => state.values.imageFileUploadIds);
     const editSubmissionAttempts = useSelector(editForm.store, (state) => state.submissionAttempts);
     const isEditSubmitting = useSelector(editForm.store, (state) => state.isSubmitting);
+    const editRating = useSelector(editForm.store, (state) => state.values.rating);
+    const editImageFileUploadIds = useSelector(editForm.store, (state) => state.values.imageFileUploadIds);
     const needsLowRatingAnswers = role === 'cook' && rating != null && rating < 5;
+    const editNeedsLowRatingAnswers = role === 'cook' && editRating != null && editRating < 5;
+    const editRequiresLowRatingAnswers = editNeedsLowRatingAnswers && !hadLowRatingAnswers;
     const busy = isSubmitting || isEditSubmitting || uploadBusy;
 
     const reportBusy = useEffectEvent((next: boolean) => {
@@ -269,17 +318,25 @@ export function BookingRequestOfferTestimonialPanel({
         return () => reportBusy(false);
     }, [busy, reportBusy]);
 
-    const syncEditForm = useEffectEvent((body: string) => {
-        editForm.reset({ body });
+    const syncEditFormFromShown = useEffectEvent(() => {
+        if (shown == null) return;
+        editForm.reset({
+            rating: shown.rating,
+            body: shown.body,
+            imageFileUploadIds: imageIdsFromUrls(shown.imageUrls),
+            whatWentWrong: '',
+            wouldRecommend: null,
+            additionalFeedback: '',
+        });
+        setUploadError(null);
     });
 
-    const shownBody = shown?.body;
     useEffect(() => {
-        if (!editing || shownBody == null) return;
-        syncEditForm(shownBody);
-    }, [editing, shownBody, syncEditForm]);
+        if (!editing) return;
+        syncEditFormFromShown();
+    }, [editing, syncEditFormFromShown]);
 
-    async function addFiles(fileList: FileList | null) {
+    async function addFiles(fileList: FileList | null, currentIds: string[], setIds: (ids: string[]) => void) {
         if (fileList == null || fileList.length === 0) return;
         setUploadError(null);
 
@@ -295,7 +352,7 @@ export function BookingRequestOfferTestimonialPanel({
             return;
         }
 
-        const remaining = MAX_IMAGES - imageFileUploadIds.length;
+        const remaining = MAX_IMAGES - currentIds.length;
         if (remaining <= 0) {
             setUploadError(
                 {
@@ -310,13 +367,13 @@ export function BookingRequestOfferTestimonialPanel({
         const capped = images.length > remaining;
         const toUpload = images.slice(0, remaining);
         setUploadBusy(true);
-        let nextIds = [...imageFileUploadIds];
+        let nextIds = [...currentIds];
         try {
             for (const file of toUpload) {
                 const compressed = await imageCompress(file, IMAGE_COMPRESS_PRESETS.testimonial);
                 const uploaded = await uploadFile(compressed);
                 nextIds = [...nextIds, uploaded.fileUploadId];
-                form.setFieldValue('imageFileUploadIds', nextIds);
+                setIds(nextIds);
             }
             if (capped) {
                 setUploadError(
@@ -334,17 +391,189 @@ export function BookingRequestOfferTestimonialPanel({
         }
     }
 
-    function removeImage(fileUploadId: string) {
-        form.setFieldValue(
-            'imageFileUploadIds',
-            imageFileUploadIds.filter((id) => id !== fileUploadId),
-        );
+    function removeImage(fileUploadId: string, currentIds: string[], setIds: (ids: string[]) => void) {
+        setIds(currentIds.filter((id) => id !== fileUploadId));
         setUploadError(null);
     }
 
     function openDetail(index: number) {
         setDetailImageIndex(index);
         setDetailOpen(true);
+    }
+
+    function renderImageField(ids: string[], setIds: (ids: string[]) => void) {
+        return (
+            <div className="grid gap-2">
+                <div className="grid gap-1">
+                    <span className="text-sm font-medium text-foreground">
+                        {{ de: 'Bilder vom Abend hinzufügen', en: 'Add photos from the evening' }[locale]}
+                    </span>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Optional, aber ein Foto sagt oft mehr als Worte.',
+                                en: 'Optional, but a photo often says more than words.',
+                            }[locale]
+                        }
+                    </p>
+                </div>
+                <ul className="grid grid-cols-4 gap-1.5" aria-label={{ de: 'Fotos der Bewertung', en: 'Review photos' }[locale]}>
+                    {ids.map((fileUploadId) => {
+                        const url = fileUploadPublicUrl(fileUploadId);
+                        return (
+                            <li key={fileUploadId} className="group relative aspect-square overflow-hidden rounded-md bg-muted">
+                                <img src={url} alt="" className="size-full object-cover" />
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    size="icon-xs"
+                                    disabled={busy}
+                                    onClick={() => removeImage(fileUploadId, ids, setIds)}
+                                    aria-label={{ de: 'Bild entfernen', en: 'Remove image' }[locale]}
+                                    className={cn(
+                                        'absolute top-1 right-1 rounded-full opacity-0 shadow-sm group-hover:opacity-100',
+                                        'pointer-fine:opacity-0 focus-visible:opacity-100',
+                                    )}
+                                >
+                                    <XIcon className="size-3" aria-hidden />
+                                </Button>
+                            </li>
+                        );
+                    })}
+                    {ids.length < MAX_IMAGES ? (
+                        <li>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                disabled={busy}
+                                onClick={() => inputRef.current?.click()}
+                                className="aspect-square size-full min-h-0 border-dashed text-muted-foreground"
+                                aria-label={{ de: 'Bilder hinzufügen', en: 'Add photos' }[locale]}
+                            >
+                                {uploadBusy ? <Spinner className="size-4" /> : <PlusIcon className="size-4" aria-hidden />}
+                            </Button>
+                        </li>
+                    ) : null}
+                </ul>
+                <input
+                    ref={inputRef}
+                    type="file"
+                    accept={IMAGE_CROP_ACCEPT}
+                    multiple
+                    className="sr-only"
+                    onChange={(event) => void addFiles(event.target.files, ids, setIds)}
+                />
+                {uploadError != null ? (
+                    <p className="text-sm text-destructive" role="alert">
+                        {uploadError}
+                    </p>
+                ) : null}
+            </div>
+        );
+    }
+
+    function renderLowRatingFields(activeForm: typeof form, attempts: number, requireAnswers: boolean) {
+        return (
+            <div className="grid gap-3 rounded-lg border border-border bg-muted/30 p-4">
+                <p className="text-sm font-medium text-foreground">
+                    {{ de: 'Was können wir besser machen?', en: 'What can we do better?' }[locale]}
+                </p>
+                {!requireAnswers ? (
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Optional: aktualisiere dein Feedback, oder lass die Felder leer, um deine bisherigen Antworten zu behalten.',
+                                en: 'Optional: update your feedback, or leave the fields blank to keep your previous answers.',
+                            }[locale]
+                        }
+                    </p>
+                ) : null}
+                <activeForm.Field
+                    name="whatWentWrong"
+                    validators={{
+                        onChange: ({ value }) => (requireAnswers ? requiredWhatWentWrong(value, locale) : undefined),
+                        onBlur: ({ value }) => (requireAnswers ? requiredWhatWentWrong(value, locale) : undefined),
+                        onSubmit: ({ value }) => (requireAnswers ? requiredWhatWentWrong(value, locale) : undefined),
+                    }}
+                >
+                    {(field) => {
+                        const errorMessage = fieldErrorText(field.state.meta.errors);
+                        const showError = errorMessage != null && (field.state.meta.isBlurred || attempts > 0);
+                        const errorId = `${field.name}-error`;
+                        return (
+                            <div className="grid gap-2">
+                                <label
+                                    htmlFor={`${activeForm === form ? 'create' : 'edit'}-what-went-wrong`}
+                                    className="text-sm text-muted-foreground"
+                                >
+                                    {{ de: 'Was ist nicht gut gelaufen?', en: 'What did not go well?' }[locale]}
+                                </label>
+                                <Textarea
+                                    id={`${activeForm === form ? 'create' : 'edit'}-what-went-wrong`}
+                                    name={field.name}
+                                    value={field.state.value}
+                                    onBlur={field.handleBlur}
+                                    onChange={(event) => field.handleChange(event.target.value)}
+                                    rows={3}
+                                    aria-invalid={showError}
+                                    aria-describedby={showError ? errorId : undefined}
+                                />
+                                {showError ? (
+                                    <p id={errorId} className="text-sm text-destructive" role="alert">
+                                        {errorMessage}
+                                    </p>
+                                ) : null}
+                            </div>
+                        );
+                    }}
+                </activeForm.Field>
+                <activeForm.Field name="wouldRecommend">
+                    {(field) => (
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-sm text-muted-foreground">
+                                {{ de: 'Würdest du peopleeat weiterempfehlen?', en: 'Would you recommend peopleeat?' }[locale]}
+                            </span>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant={field.state.value === true ? 'default' : 'outline'}
+                                onClick={() => field.handleChange(true)}
+                            >
+                                {{ de: 'Ja', en: 'Yes' }[locale]}
+                            </Button>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant={field.state.value === false ? 'default' : 'outline'}
+                                onClick={() => field.handleChange(false)}
+                            >
+                                {{ de: 'Nein', en: 'No' }[locale]}
+                            </Button>
+                        </div>
+                    )}
+                </activeForm.Field>
+                <activeForm.Field name="additionalFeedback">
+                    {(field) => (
+                        <div className="grid gap-2">
+                            <label
+                                htmlFor={`${activeForm === form ? 'create' : 'edit'}-additional-feedback`}
+                                className="text-sm text-muted-foreground"
+                            >
+                                {{ de: 'Weiteres Feedback (optional)', en: 'Anything else (optional)' }[locale]}
+                            </label>
+                            <Textarea
+                                id={`${activeForm === form ? 'create' : 'edit'}-additional-feedback`}
+                                name={field.name}
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                rows={2}
+                            />
+                        </div>
+                    )}
+                </activeForm.Field>
+            </div>
+        );
     }
 
     if (shown != null && editing) {
@@ -360,16 +589,54 @@ export function BookingRequestOfferTestimonialPanel({
                 }}
             >
                 <div className="grid gap-1">
-                    <h2 className="text-base font-medium text-foreground">{{ de: 'Text bearbeiten', en: 'Edit text' }[locale]}</h2>
+                    <h2 className="text-base font-medium text-foreground">{{ de: 'Bewertung bearbeiten', en: 'Edit review' }[locale]}</h2>
                     <p className="text-sm text-muted-foreground">
                         {
                             {
-                                de: 'Korrigiere Tippfehler oder formuliere den Moment noch klarer.',
-                                en: 'Fix typos or sharpen how you describe the moment.',
+                                de: 'Passe Sterne, Text und Fotos an, wenn sich etwas geändert hat.',
+                                en: 'Update stars, text, and photos if something changed.',
                             }[locale]
                         }
                     </p>
                 </div>
+
+                <editForm.Field
+                    name="rating"
+                    validators={{
+                        onChange: ({ value }) => requiredRating(value, locale),
+                        onBlur: ({ value }) => requiredRating(value, locale),
+                        onSubmit: ({ value }) => requiredRating(value, locale),
+                    }}
+                >
+                    {(field) => {
+                        const errorMessage = fieldErrorText(field.state.meta.errors);
+                        const showError = errorMessage != null && (field.state.meta.isBlurred || editSubmissionAttempts > 0);
+                        const errorId = `${field.name}-edit-error`;
+                        return (
+                            <div className="grid gap-2">
+                                <span className="text-sm font-medium text-foreground" id={`${field.name}-edit-label`}>
+                                    {{ de: 'Deine Sterne', en: 'Your rating' }[locale]}
+                                </span>
+                                <div aria-invalid={showError} aria-describedby={showError ? errorId : undefined}>
+                                    <TestimonialRatingInput
+                                        value={field.state.value}
+                                        onChange={(next) => {
+                                            field.handleChange(next);
+                                            field.handleBlur();
+                                        }}
+                                        size="lg"
+                                    />
+                                </div>
+                                {showError ? (
+                                    <p id={errorId} className="text-sm text-destructive" role="alert">
+                                        {errorMessage}
+                                    </p>
+                                ) : null}
+                            </div>
+                        );
+                    }}
+                </editForm.Field>
+
                 <editForm.Field
                     name="body"
                     validators={{
@@ -409,6 +676,12 @@ export function BookingRequestOfferTestimonialPanel({
                         );
                     }}
                 </editForm.Field>
+
+                <editForm.Field name="imageFileUploadIds">
+                    {() => renderImageField(editImageFileUploadIds, (ids) => editForm.setFieldValue('imageFileUploadIds', ids))}
+                </editForm.Field>
+
+                {editNeedsLowRatingAnswers ? renderLowRatingFields(editForm, editSubmissionAttempts, editRequiresLowRatingAnswers) : null}
             </form>
         );
     }
@@ -437,11 +710,11 @@ export function BookingRequestOfferTestimonialPanel({
                     onOpenImage={card.imageUrls != null && card.imageUrls.length > 0 ? openDetail : undefined}
                 />
 
-                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                    <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => onEditingChange?.(true)}>
-                        {{ de: 'Text bearbeiten', en: 'Edit text' }[locale]}
+                <div className="flex gap-2 flex-wrap *:flex-1">
+                    <Button type="button" variant="outline" size="sm" onClick={() => onEditingChange?.(true)}>
+                        {{ de: 'Bewertung bearbeiten', en: 'Edit review' }[locale]}
                     </Button>
-                    <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => openDetail(0)}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => openDetail(0)}>
                         {viewLabel}
                     </Button>
                 </div>
@@ -485,12 +758,11 @@ export function BookingRequestOfferTestimonialPanel({
                                 }
                             </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap *:flex-1">
                             <Button
                                 type="button"
                                 size="sm"
                                 variant="outline"
-                                className="flex-1"
                                 onClick={() => {
                                     void navigator.clipboard.writeText(shown.body);
                                     toast.success({ de: 'Text kopiert.', en: 'Text copied.' }[locale]);
@@ -498,7 +770,7 @@ export function BookingRequestOfferTestimonialPanel({
                             >
                                 {{ de: 'Text kopieren', en: 'Copy text' }[locale]}
                             </Button>
-                            <Button asChild size="sm" className="flex-1">
+                            <Button asChild size="sm">
                                 <a href={GOOGLE_REVIEW_URL} target="_blank" rel="noreferrer">
                                     {{ de: 'Google öffnen', en: 'Open Google' }[locale]}
                                 </a>
@@ -633,161 +905,10 @@ export function BookingRequestOfferTestimonialPanel({
             </form.Field>
 
             <form.Field name="imageFileUploadIds">
-                {(field) => (
-                    <div className="grid gap-2">
-                        <div className="grid gap-1">
-                            <span className="text-sm font-medium text-foreground">
-                                {{ de: 'Bilder vom Abend hinzufügen', en: 'Add photos from the evening' }[locale]}
-                            </span>
-                            <p className="text-sm text-muted-foreground">
-                                {
-                                    {
-                                        de: 'Optional, aber ein Foto sagt oft mehr als Worte.',
-                                        en: 'Optional, but a photo often says more than words.',
-                                    }[locale]
-                                }
-                            </p>
-                        </div>
-                        <ul className="grid grid-cols-4 gap-1.5" aria-label={{ de: 'Fotos der Bewertung', en: 'Review photos' }[locale]}>
-                            {field.state.value.map((fileUploadId) => {
-                                const url = fileUploadPublicUrl(fileUploadId);
-                                return (
-                                    <li key={fileUploadId} className="group relative aspect-square overflow-hidden rounded-md bg-muted">
-                                        <img src={url} alt="" className="size-full object-cover" />
-                                        <Button
-                                            type="button"
-                                            variant="secondary"
-                                            size="icon-xs"
-                                            disabled={busy}
-                                            onClick={() => removeImage(fileUploadId)}
-                                            aria-label={{ de: 'Bild entfernen', en: 'Remove image' }[locale]}
-                                            className={cn(
-                                                'absolute top-1 right-1 rounded-full opacity-0 shadow-sm group-hover:opacity-100',
-                                                'pointer-fine:opacity-0 focus-visible:opacity-100',
-                                            )}
-                                        >
-                                            <XIcon className="size-3" aria-hidden />
-                                        </Button>
-                                    </li>
-                                );
-                            })}
-                            {field.state.value.length < MAX_IMAGES ? (
-                                <li>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        disabled={busy}
-                                        onClick={() => inputRef.current?.click()}
-                                        className="aspect-square size-full min-h-0 border-dashed text-muted-foreground"
-                                        aria-label={{ de: 'Bilder hinzufügen', en: 'Add photos' }[locale]}
-                                    >
-                                        {uploadBusy ? <Spinner className="size-4" /> : <PlusIcon className="size-4" aria-hidden />}
-                                    </Button>
-                                </li>
-                            ) : null}
-                        </ul>
-                        <input
-                            ref={inputRef}
-                            type="file"
-                            accept={IMAGE_CROP_ACCEPT}
-                            multiple
-                            className="sr-only"
-                            onChange={(event) => void addFiles(event.target.files)}
-                        />
-                        {uploadError != null ? (
-                            <p className="text-sm text-destructive" role="alert">
-                                {uploadError}
-                            </p>
-                        ) : null}
-                    </div>
-                )}
+                {() => renderImageField(imageFileUploadIds, (ids) => form.setFieldValue('imageFileUploadIds', ids))}
             </form.Field>
 
-            {needsLowRatingAnswers ? (
-                <div className="grid gap-3 rounded-lg border border-border bg-muted/30 p-4">
-                    <p className="text-sm font-medium text-foreground">
-                        {{ de: 'Was können wir besser machen?', en: 'What can we do better?' }[locale]}
-                    </p>
-                    <form.Field
-                        name="whatWentWrong"
-                        validators={{
-                            onChange: ({ value }) => requiredWhatWentWrong(value, locale),
-                            onBlur: ({ value }) => requiredWhatWentWrong(value, locale),
-                            onSubmit: ({ value }) => requiredWhatWentWrong(value, locale),
-                        }}
-                    >
-                        {(field) => {
-                            const errorMessage = fieldErrorText(field.state.meta.errors);
-                            const showError = errorMessage != null && (field.state.meta.isBlurred || submissionAttempts > 0);
-                            const errorId = `${field.name}-error`;
-                            return (
-                                <div className="grid gap-2">
-                                    <label htmlFor="what-went-wrong" className="text-sm text-muted-foreground">
-                                        {{ de: 'Was ist nicht gut gelaufen?', en: 'What did not go well?' }[locale]}
-                                    </label>
-                                    <Textarea
-                                        id="what-went-wrong"
-                                        name={field.name}
-                                        value={field.state.value}
-                                        onBlur={field.handleBlur}
-                                        onChange={(event) => field.handleChange(event.target.value)}
-                                        rows={3}
-                                        aria-invalid={showError}
-                                        aria-describedby={showError ? errorId : undefined}
-                                    />
-                                    {showError ? (
-                                        <p id={errorId} className="text-sm text-destructive" role="alert">
-                                            {errorMessage}
-                                        </p>
-                                    ) : null}
-                                </div>
-                            );
-                        }}
-                    </form.Field>
-                    <form.Field name="wouldRecommend">
-                        {(field) => (
-                            <div className="flex flex-wrap items-center gap-2">
-                                <span className="text-sm text-muted-foreground">
-                                    {{ de: 'Würdest du peopleeat weiterempfehlen?', en: 'Would you recommend peopleeat?' }[locale]}
-                                </span>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant={field.state.value === true ? 'default' : 'outline'}
-                                    onClick={() => field.handleChange(true)}
-                                >
-                                    {{ de: 'Ja', en: 'Yes' }[locale]}
-                                </Button>
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant={field.state.value === false ? 'default' : 'outline'}
-                                    onClick={() => field.handleChange(false)}
-                                >
-                                    {{ de: 'Nein', en: 'No' }[locale]}
-                                </Button>
-                            </div>
-                        )}
-                    </form.Field>
-                    <form.Field name="additionalFeedback">
-                        {(field) => (
-                            <div className="grid gap-2">
-                                <label htmlFor="additional-feedback" className="text-sm text-muted-foreground">
-                                    {{ de: 'Weiteres Feedback (optional)', en: 'Anything else (optional)' }[locale]}
-                                </label>
-                                <Textarea
-                                    id="additional-feedback"
-                                    name={field.name}
-                                    value={field.state.value}
-                                    onBlur={field.handleBlur}
-                                    onChange={(event) => field.handleChange(event.target.value)}
-                                    rows={2}
-                                />
-                            </div>
-                        )}
-                    </form.Field>
-                </div>
-            ) : null}
+            {needsLowRatingAnswers ? renderLowRatingFields(form, submissionAttempts, true) : null}
         </form>
     );
 }

@@ -1699,11 +1699,13 @@ input UserBookingRequestOfferTestimonialCreate {
     imageFileUploadIds: [ID!]
 }
 
-# Body-only self-edit after create (spelling / wording). Does not change rating,
-# images, or publicationStatus.
+# Full self-edit after create (body, rating, images). Re-applies the publication
+# gate from the new rating (`publicationStatusFromRating`).
 input UserBookingRequestOfferTestimonialUpdate {
     bookingRequestOfferId: ID!
     body: String!
+    rating: Int
+    imageFileUploadIds: [ID!]
 }
 
 # Follow-up survey required when `rating < 5` — see `publicationStatusFromRating.ts`
@@ -1726,11 +1728,16 @@ input CookBookingRequestOfferTestimonialCreate {
     lowRatingAnswers: CookTestimonialLowRatingAnswersInput
 }
 
-# Body-only self-edit after create (spelling / wording). Empty clears the
-# optional cook comment. Does not change rating, images, or publicationStatus.
+# Full self-edit after create (body, rating, images). Empty body clears the
+# optional cook comment. Re-applies the publication gate from the new rating.
+# When `rating < 5`, `lowRatingAnswers` is required unless the row already has
+# answers (omitting keeps the existing survey).
 input CookBookingRequestOfferTestimonialUpdate {
     bookingRequestOfferId: ID!
     body: String
+    rating: Int
+    imageFileUploadIds: [ID!]
+    lowRatingAnswers: CookTestimonialLowRatingAnswersInput
 }
 
 # Why an open offer's price was auto-adjusted after a customer pre-accept edit.

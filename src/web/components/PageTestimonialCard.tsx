@@ -318,7 +318,7 @@ function TestimonialDetailCopy({
             />
 
             {showBookingCta ? (
-                <div className="flex flex-col gap-3 pt-2">
+                <div className="flex flex-col gap-3 border-t border-border pt-6">
                     <p className="text-center text-base font-medium text-foreground">{occasionQuestion}</p>
                     <div className="flex flex-col items-center gap-2">
                         <Button asChild className="w-full @sm:w-auto">
