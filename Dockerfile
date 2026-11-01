@@ -6,7 +6,7 @@
 # docs/infrastructure.md § Runtime base image.
 ARG RUNTIME_BASE=ghcr.io/people-eat/peopleeat:runtime-base
 
-FROM node:24.20.0-slim AS base
+FROM node:26.13.0-slim AS base
 
 FROM base AS deps
 WORKDIR /app

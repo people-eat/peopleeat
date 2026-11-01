@@ -136,7 +136,7 @@ artifact resolved relative to the install location of the npm package. Three pla
 2. **Nitro rollup** — `nitro({ rollupConfig: { external: ['playwright', 'playwright-core'] } })` keeps the production server bundle from
    inlining them. Imports stay as runtime `require`/`import` calls that resolve against `node_modules` at runtime.
 3. **`Dockerfile.runtime-base`** — because Playwright cannot be inlined into the nitro bundle, the prebaked runtime base must:
-   - Use a Debian-based Node image (`node:24-slim`), not Alpine — Chromium's prebuilt binaries are linked against glibc.
+   - Use a Debian-based Node image (`node:26-slim`), not Alpine — Chromium's prebuilt binaries are linked against glibc.
    - Set `ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright` to pin the browser install to a fixed, user-independent location.
    - `npm install` only the allowlisted runtime packages (`playwright`, `pg`, OTel instrumentation) at lockfile versions passed as
      build-args — not `npm ci --omit=dev` of the full production closure.
@@ -174,7 +174,7 @@ the install steps) makes both the root-time install and the node-time launch agr
 - Every project built on this template inherits a working browser-capture pipeline. The first feature that needs an export adds a
   `/server/*` route, a command that calls `serverRuntime.browser.capture(...)` or `capturePdf(...)`, and ships — no Dockerfile or
   build-config archaeology.
-- The production image is larger (~250 MB Chromium + system libs vs. a baseline `node:24-slim` of ~80 MB). This is the price of correctness;
+- The production image is larger (~250 MB Chromium + system libs vs. a baseline `node:26-slim` of ~80 MB). This is the price of correctness;
   we accept it as a template-wide default.
 - `playwright` stays in `dependencies` (not `devDependencies`) because the runtime stage needs it. Knip and other unused-dependency tools
   must allowlist it for projects that haven't wired a render path yet.

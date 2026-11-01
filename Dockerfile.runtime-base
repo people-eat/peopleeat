@@ -6,7 +6,7 @@
 # does `FROM` this image and only copies `.output` + the OTel preload.
 # See docs/infrastructure.md § Runtime base image.
 
-FROM node:24.20.0-slim
+FROM node:26.13.0-slim
 
 WORKDIR /app
 ENV NODE_ENV=production

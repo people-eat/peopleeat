@@ -56,7 +56,7 @@ docker run -p 3000:3000 \
 
 `Dockerfile.runtime-base` is the expensive, rarely invalidated half of production:
 
-- Debian-based `node:24.20.0-slim` (Chromium's prebuilt binaries need glibc; Alpine will not work)
+- Debian-based `node:26.13.0-slim` (Chromium's prebuilt binaries need glibc; Alpine will not work)
 - npm pinned via `NPM_VERSION` build-arg (`package.json#packageManager`)
 - Allowlisted `node_modules` only (not a full `npm ci --omit=dev`): `playwright` (Chromium-bidi cannot be inlined), `pg` / `pg-pool`
   (Nitro-external so OTel can patch queries), and `@opentelemetry/api` + `@opentelemetry/instrumentation` + `instrumentation-http` +
@@ -263,8 +263,10 @@ trigger ──────────────┤                           
 Typical gate wall-clock on a code PR is ~3–4 minutes (limited by Check or E2e); docs-only PRs skip Vitest shards, Playwright, and codegen
 and run a lighter Check (commitlint + format + spell). Deploy adds ~4 minutes on push.
 
-All gate jobs that install dependencies share the composite action at `.github/actions/setup` which runs `actions/setup-node@v6`, pins the
-npm version from `package.json#packageManager`, and runs `npm ci`. Update there if you change the dependency-install flow.
+Node is pinned to **26.13.0** (LTS) in `.nvmrc`, `package.json#engines`, and every Dockerfile (`node:26.13.0-slim`). Bump those together when
+moving Node versions. All gate jobs that install dependencies share the composite action at `.github/actions/setup` which runs
+`actions/setup-node@v6` (reads `.nvmrc`), pins the npm version from `package.json#packageManager`, and runs `npm ci`. Update there if you
+change the dependency-install flow.
 
 Runners are pinned to `ubuntu-24.04` (not `ubuntu-latest`) so the Oct–Nov 2026 migration of `ubuntu-latest` → Ubuntu 26.04 does not surprise
 CI. Revisit with `ubuntu-26.04` when ready to validate on the new image.
