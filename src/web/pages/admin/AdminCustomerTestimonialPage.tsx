@@ -226,6 +226,7 @@ export function AdminCustomerTestimonialPage({
                                 body: testimonial.body,
                                 rating: testimonial.rating ?? null,
                                 imageUrls: testimonial.imageUrls,
+                                createdAt: testimonial.createdAt,
                             }}
                             open={previewOpen}
                             onOpenChange={setPreviewOpen}

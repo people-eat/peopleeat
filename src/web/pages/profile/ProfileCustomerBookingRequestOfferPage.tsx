@@ -707,6 +707,7 @@ export function ProfileCustomerBookingRequestOfferPage({
                                                   authorProfilePictureUrl: offer.customerTestimonial.authorProfilePicture?.url ?? null,
                                                   location: offer.customerTestimonial.location,
                                                   occasion: offer.customerTestimonial.occasion,
+                                                  createdAt: offer.customerTestimonial.createdAt,
                                               }
                                             : null
                                     }

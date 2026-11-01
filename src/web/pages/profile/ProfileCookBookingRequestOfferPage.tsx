@@ -661,6 +661,7 @@ export function ProfileCookBookingRequestOfferPage({
                                                   authorProfilePictureUrl: offer.cookTestimonial.authorProfilePicture?.url ?? null,
                                                   location: offer.cookTestimonial.location,
                                                   occasion: offer.cookTestimonial.occasion,
+                                                  createdAt: offer.cookTestimonial.createdAt,
                                               }
                                             : null
                                     }

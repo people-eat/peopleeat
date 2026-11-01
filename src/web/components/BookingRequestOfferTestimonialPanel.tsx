@@ -36,6 +36,7 @@ type ExistingTestimonial = {
     authorProfilePictureUrl?: string | null;
     location?: string | null;
     occasion?: string | null;
+    createdAt?: string | null;
     publicationStatus?: 'PUBLISHED' | 'PENDING_REVIEW';
 };
 
@@ -100,6 +101,7 @@ function toCardModel(shown: ExistingTestimonial, authorFallback: AuthorFallback)
         body: shown.body,
         rating: shown.rating,
         imageUrls: shown.imageUrls ?? [],
+        createdAt: shown.createdAt,
     };
 }
 

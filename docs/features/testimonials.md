@@ -46,16 +46,25 @@ cook booking list).
 
 - Chef profile: hero star row and testimonials section from published customer reviews (section hidden when empty); cook’s own public
   preview omits both (no live public fetch there).
-- City and partner pages: curated testimonial section after featured cooks; hidden when empty. Each tile (`PageTestimonialCard`) shows stars
-  with the numeric rating, occasion top-right, a 4-line clamped quote, a 4-column square photo strip (4th slot becomes “+N more” when there
-  are more than four), and “Bewertung ansehen” / “View review” opening a detail dialog. With photos: gallery (selected image, arrows,
-  thumbnails) on the left and rating / author / full text on the right at wider dialog widths. On content pages (`showBookingCta`), the
-  detail dialog mirrors the occasion as a question (or a generic private-chef ask when missing) and, after the quote, a primary CTA into
-  `/booking-request/form` with `occasion` prefilled on the occasion step (free, no obligation). Booking request plan keeps testimonials
-  proof-only (no CTA). Default grid is 3 columns; plan uses 2 beside the sticky sidebar. Attachment downloads need a published `imageUrls`
-  hit (public) or any testimonial hit for admins — see [file-storage.md](../architecture/file-storage.md).
+- City and partner pages: curated testimonial section after featured cooks; hidden when empty. Each tile (`PageTestimonialCard`) is fully
+  clickable (hover wash + underline on “Bewertung ansehen” / “View review”) and shows the occasion as the card title (stars + numeric rating
+  top-right), a 4-line clamped quote with the accent quote-line, a 4-column square photo strip (4th slot becomes “+N more” when there are
+  more than four), and author with written date only (city hidden on the tile). The detail dialog opens from the card, the view link, or a
+  photo thumb. With photos: gallery (selected image, arrows, thumbnails) on the left and copy on the right at wider dialog widths; on
+  desktop each column scrolls independently so the gallery stays visible while the copy scrolls. Detail copy leads with “{name}'s experience
+  at {occasion}”, then rating and quote, then author below the body (same footing as the card) with one meta line “{date} in {city}”. On
+  content pages (`showBookingCta`), the booking ask (“Also looking for a … experience?”) sits above the primary CTA into
+  `/booking-request/form` with `occasion` prefilled (free, no obligation, centered under the button), replacing a divider line. Booking
+  request plan keeps testimonials proof-only (no CTA). Default grid is 3 columns; plan uses 2 beside the sticky sidebar. Attachment
+  downloads need a published `imageUrls` hit (public) or any testimonial hit for admins — see
+  [file-storage.md](../architecture/file-storage.md).
 - Home: static marketing quotes in a marquee — [landing.md](./landing.md).
 - How to become a chef: static chef quotes (not database-driven).
+
+## Ideas
+
+- From the public detail dialog, link to the cook’s public chef profile when that cook is publicly listed (offer-linked customer review →
+  chef page). Skip the link when the cook is not public so the dialog never dead-ends on a private profile.
 
 ## Decisions
 

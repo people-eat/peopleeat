@@ -26,6 +26,7 @@ export type SectionPageTestimonial = {
               body: string;
               rating: number | null;
               imageUrls?: ReadonlyArray<string>;
+              createdAt?: string | null;
           }
         | {
               __typename: 'CookTestimonial';
@@ -37,6 +38,7 @@ export type SectionPageTestimonial = {
               cookBody: string | null;
               rating: number | null;
               imageUrls?: ReadonlyArray<string>;
+              createdAt?: string | null;
           };
 };
 
@@ -121,6 +123,7 @@ export function SectionPageTestimonials({
                                     body,
                                     rating: testimonial.rating,
                                     imageUrls: testimonial.imageUrls,
+                                    createdAt: testimonial.createdAt,
                                 }}
                             />
                         </li>

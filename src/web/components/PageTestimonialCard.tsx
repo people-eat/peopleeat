@@ -1,9 +1,11 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronLeftIcon, ChevronRightIcon, StarIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 
+import { formatDate } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
+import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
 import { AppImage } from './AppImage';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
@@ -18,6 +20,8 @@ export type PageTestimonialCardModel = {
     body: string;
     rating: number | null;
     imageUrls?: ReadonlyArray<string>;
+    /** When the review was written (`CustomerTestimonial` / `CookTestimonial.createdAt`). */
+    createdAt?: string | null;
 };
 
 const CARD_IMAGE_SLOTS = 4;
@@ -54,13 +58,34 @@ function TestimonialAuthor({
     authorName,
     authorProfilePictureUrl,
     location,
+    createdAt,
+    locationPlacement = 'hidden',
     size = 'md',
 }: {
     authorName: string;
     authorProfilePictureUrl?: string | null;
     location: string | null;
+    createdAt?: string | null;
+    /** Card tiles omit the city; detail dialog uses one line: `{date} in {city}`. */
+    locationPlacement?: 'hidden' | 'with-date';
     size?: 'md' | 'lg';
 }) {
+    const locale = useLocale();
+    const timeZone = useTimeZone();
+    const writtenAt = createdAt ? formatDate(createdAt, { locale, timeZone, dateStyle: 'long' }) : null;
+    const city = location?.trim() || null;
+
+    let meta: string | null = null;
+    if (locationPlacement === 'with-date') {
+        if (writtenAt && city) {
+            meta = { de: `${writtenAt} in ${city}`, en: `${writtenAt} in ${city}` }[locale];
+        } else {
+            meta = writtenAt ?? city;
+        }
+    } else {
+        meta = writtenAt;
+    }
+
     return (
         <div className={cn('flex min-w-0 items-center gap-3', size === 'lg' && 'gap-4')}>
             <Avatar className={cn('shrink-0', size === 'lg' ? 'size-12' : 'size-10')}>
@@ -69,10 +94,23 @@ function TestimonialAuthor({
             </Avatar>
             <div className="min-w-0 text-sm">
                 <div className={cn('truncate font-medium text-foreground', size === 'lg' && 'text-base')}>{authorName}</div>
-                {location ? <div className="truncate text-muted-foreground">{location}</div> : null}
+                {meta ? <div className="truncate text-muted-foreground">{meta}</div> : null}
             </div>
         </div>
     );
+}
+
+function experienceTitle(authorName: string, occasion: string | null, locale: 'de' | 'en'): string {
+    if (occasion) {
+        return {
+            de: `${authorName}s Experience bei „${occasion}“`,
+            en: `${authorName}'s experience at ${occasion}`,
+        }[locale];
+    }
+    return {
+        de: `${authorName}s Experience`,
+        en: `${authorName}'s experience`,
+    }[locale];
 }
 
 /** Up to four square thumbs; when there are more than four, slot 4 is “+N more”. */
@@ -100,7 +138,10 @@ function TestimonialImageStrip({
                         <button
                             type="button"
                             className="group relative aspect-square w-full cursor-pointer overflow-hidden rounded-md bg-muted outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                            onClick={() => onOpen(index)}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onOpen(index);
+                            }}
                             aria-label={{ de: `Foto ${index + 1} ansehen`, en: `View photo ${index + 1}` }[locale]}
                         >
                             <AppImage
@@ -122,7 +163,10 @@ function TestimonialImageStrip({
                         <button
                             type="button"
                             className="relative aspect-square w-full cursor-pointer overflow-hidden rounded-md bg-muted outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                            onClick={() => onOpen(visibleCount)}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onOpen(visibleCount);
+                            }}
                             aria-label={{ de: `${moreCount} weitere Fotos ansehen`, en: `View ${moreCount} more photos` }[locale]}
                         >
                             <AppImage src={imageUrls[visibleCount]!} alt="" className="size-full object-cover brightness-[0.45]" />
@@ -238,6 +282,7 @@ function TestimonialDetailCopy({
 }) {
     const locale = useLocale();
     const occasion = testimonial.occasion?.trim() || null;
+    const title = experienceTitle(testimonial.authorName, occasion, locale);
 
     const occasionQuestion = occasion
         ? {
@@ -251,43 +296,37 @@ function TestimonialDetailCopy({
 
     return (
         <div className="flex flex-col gap-6">
-            <DialogHeader className="gap-4 text-left">
+            <DialogHeader className="gap-3 text-left">
+                <DialogTitle className="text-balance text-lg/snug font-medium text-foreground">{title}</DialogTitle>
                 {testimonial.rating != null ? <TestimonialRating rating={testimonial.rating} /> : null}
-                <div className="grid gap-3">
-                    <TestimonialAuthor
-                        authorName={testimonial.authorName}
-                        authorProfilePictureUrl={testimonial.authorProfilePictureUrl}
-                        location={testimonial.location}
-                        size="lg"
-                    />
-                    <DialogTitle className="sr-only">{testimonial.authorName}</DialogTitle>
-                    <DialogDescription className="sr-only">
-                        {testimonial.location ?? { de: 'Kundenbewertung', en: 'Customer review' }[locale]}
-                    </DialogDescription>
-                </div>
+                <DialogDescription className="sr-only">
+                    {testimonial.location ?? { de: 'Kundenbewertung', en: 'Customer review' }[locale]}
+                </DialogDescription>
             </DialogHeader>
-
-            {showBookingCta && occasion ? <p className="text-base font-medium text-foreground">{occasionQuestion}</p> : null}
-            {!showBookingCta && occasion ? (
-                <p className="text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">{{ de: 'Anlass', en: 'Occasion' }[locale]}:</span> {occasion}
-                </p>
-            ) : null}
 
             <blockquote className="border-l-2 border-accent/40 pl-4 text-base/relaxed text-foreground">
                 <p className="whitespace-pre-wrap">{testimonial.body}</p>
             </blockquote>
 
+            <TestimonialAuthor
+                authorName={testimonial.authorName}
+                authorProfilePictureUrl={testimonial.authorProfilePictureUrl}
+                location={testimonial.location}
+                createdAt={testimonial.createdAt}
+                locationPlacement="with-date"
+                size="lg"
+            />
+
             {showBookingCta ? (
-                <div className="flex flex-col gap-3 border-t border-border pt-6">
-                    {!occasion ? <p className="text-base font-medium text-foreground">{occasionQuestion}</p> : null}
-                    <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3 pt-2">
+                    <p className="text-center text-base font-medium text-foreground">{occasionQuestion}</p>
+                    <div className="flex flex-col items-center gap-2">
                         <Button asChild className="w-full @sm:w-auto">
                             <Link to="/{-$locale}/booking-request/form" search={occasion ? { occasion } : {}}>
                                 {{ de: 'Anfrage starten', en: 'Start a request' }[locale]}
                             </Link>
                         </Button>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-center text-sm text-muted-foreground">
                             {{ de: 'Kostenlos und unverbindlich', en: 'Free and no obligation' }[locale]}
                         </p>
                     </div>
@@ -319,24 +358,27 @@ export function PageTestimonialCardFace({
         <figure className={cn('flex h-full flex-col gap-4', className)}>
             {header}
             <div className="flex items-start justify-between gap-3">
-                {testimonial.rating != null ? <TestimonialRating rating={testimonial.rating} /> : <span />}
                 {testimonial.occasion ? (
-                    <p className="max-w-[50%] truncate text-right text-sm text-muted-foreground">{testimonial.occasion}</p>
-                ) : null}
+                    <p className="min-w-0 flex-1 truncate text-base font-medium text-foreground">{testimonial.occasion}</p>
+                ) : (
+                    <span />
+                )}
+                {testimonial.rating != null ? <TestimonialRating rating={testimonial.rating} className="shrink-0" /> : null}
             </div>
 
-            <blockquote className="text-base/relaxed text-foreground">
+            <blockquote className="border-l-2 border-accent/40 pl-4 text-base/relaxed text-foreground">
                 <p className="line-clamp-4">{testimonial.body}</p>
             </blockquote>
 
             <TestimonialImageStrip imageUrls={imageUrls} onOpen={onOpenImage} />
 
-            <div className="mt-auto flex items-center justify-between gap-3">
+            <div className="mt-auto flex items-end justify-between gap-3">
                 <figcaption className="min-w-0">
                     <TestimonialAuthor
                         authorName={testimonial.authorName}
                         authorProfilePictureUrl={testimonial.authorProfilePictureUrl}
                         location={testimonial.location}
+                        createdAt={testimonial.createdAt}
                     />
                 </figcaption>
                 {footerAction}
@@ -387,14 +429,17 @@ export function PageTestimonialDetailDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className={cn('@container max-h-[90vh] overflow-y-auto', hasImages ? 'gap-0 p-0 sm:max-w-4xl lg:max-w-5xl' : 'sm:max-w-lg')}
+                className={cn(
+                    '@container max-h-[90vh]',
+                    hasImages ? 'gap-0 overflow-y-auto p-0 sm:max-w-4xl lg:max-w-5xl @3xl:overflow-hidden' : 'overflow-y-auto sm:max-w-lg',
+                )}
             >
                 {hasImages ? (
                     <div className="grid @3xl:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.8fr)]">
-                        <div className="bg-muted/30 p-4 @md:p-5">
+                        <div className="bg-muted/30 p-4 @md:p-5 @3xl:max-h-[90vh] @3xl:overflow-y-auto">
                             <TestimonialGallery imageUrls={imageUrls} index={imageIndex} onIndexChange={setImageIndex} />
                         </div>
-                        <div className="p-6 pt-12 @md:p-8 @md:pt-12">
+                        <div className="p-6 pt-12 @md:p-8 @md:pt-12 @3xl:max-h-[90vh] @3xl:overflow-y-auto">
                             <TestimonialDetailCopy testimonial={testimonial} showBookingCta={showBookingCta} />
                         </div>
                     </div>
@@ -432,19 +477,48 @@ export function PageTestimonialCard({
         setOpen(true);
     };
 
+    const onCardKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openAt(0);
+        }
+    };
+
     return (
         <>
-            <PageTestimonialCardFace
-                testimonial={testimonial}
-                className={className}
-                header={header}
-                onOpenImage={openAt}
-                footerAction={
-                    <Button type="button" variant="link" size="sm" className="h-auto shrink-0 px-0" onClick={() => openAt(0)}>
-                        {viewLabel}
-                    </Button>
-                }
-            />
+            <div
+                role="button"
+                tabIndex={0}
+                aria-label={viewLabel}
+                className={cn(
+                    'group/testimonial flex h-full cursor-pointer flex-col rounded-xl p-3 outline-none transition-colors duration-200 ease-out',
+                    'hover:bg-muted/40 active:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring',
+                    className,
+                )}
+                onClick={() => openAt(0)}
+                onKeyDown={onCardKeyDown}
+            >
+                <PageTestimonialCardFace
+                    testimonial={testimonial}
+                    className="min-h-0 flex-1"
+                    header={header}
+                    onOpenImage={openAt}
+                    footerAction={
+                        <Button
+                            type="button"
+                            variant="link"
+                            size="sm"
+                            className="h-auto shrink-0 px-0 transition-colors duration-200 ease-out group-hover/testimonial:underline"
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                openAt(0);
+                            }}
+                        >
+                            {viewLabel}
+                        </Button>
+                    }
+                />
+            </div>
             <PageTestimonialDetailDialog
                 testimonial={testimonial}
                 open={open}
