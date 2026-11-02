@@ -45,10 +45,12 @@ describe('profilePageCustomerOverview', () => {
     });
 
     it('inlines the item targeting the next dinner and hides create when action is needed', () => {
-        // Arrange
+        // Arrange — both dinners must be upcoming; pay is sooner so it becomes nextDinner
+        const sooner = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+        const later = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
         const requests = [
-            requestFixture({ bookingRequestId: 'req-review', status: 'OFFERS_WAITING_FOR_REVIEW', dateTime: '2026-12-01T18:00:00.000Z' }),
-            requestFixture({ bookingRequestId: 'req-pay', status: 'DEPOSIT_PAYMENT_PENDING', dateTime: '2026-11-01T18:00:00.000Z' }),
+            requestFixture({ bookingRequestId: 'req-review', status: 'OFFERS_WAITING_FOR_REVIEW', dateTime: later }),
+            requestFixture({ bookingRequestId: 'req-pay', status: 'DEPOSIT_PAYMENT_PENDING', dateTime: sooner }),
         ];
         const attention = [
             attentionFixture({ kind: 'OFFERS_TO_REVIEW', bookingRequestId: 'req-review' }),
@@ -144,9 +146,11 @@ describe('profilePageCustomerOverview', () => {
 
     it('returns next dinner, secondary create, and allClear when nothing needs attention', () => {
         // Arrange
+        const sooner = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+        const later = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
         const requests = [
-            requestFixture({ status: 'EVENT_PENDING', dateTime: '2026-12-15T19:00:00.000Z' }),
-            requestFixture({ bookingRequestId: 'req-2', dateTime: '2026-11-20T11:00:00.000Z' }),
+            requestFixture({ status: 'EVENT_PENDING', dateTime: later }),
+            requestFixture({ bookingRequestId: 'req-2', dateTime: sooner }),
         ];
 
         // Act

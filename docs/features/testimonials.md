@@ -17,8 +17,9 @@ When a review is still owed:
 
 - Opening the offer without an explicit tab defaults to Review (Offer keeps a clean URL; Chat uses `?tab=chat`).
 - Review tab shows a red inline `NotificationBadge` (count `1`) while missing.
-- Booking list and offer cards show a warning `StatusBadge` (“Review” / “Bewertung”) in the status row and morph the primary CTA to “Leave a
-  review” / “Bewertung abgeben” when Review is the winning deep-link (call schedule links can still win navigation; the badge still shows).
+- Booking list and offer cards reuse the same red corner `NotificationBadge` when a review is owed and there is no unread count (unread wins
+  the corner when both apply). The primary CTA morphs to “Leave a review” / “Bewertung abgeben” when Review is the winning deep-link (call
+  schedule links can still win navigation).
 - Reminder emails deep-link to Review (session sign-in, no magic tokens).
 
 ### Cook
@@ -27,7 +28,7 @@ Same completion gate. Cooks rate the experience (text and photos optional). Rati
 below 5 unlock a short structured follow-up; submission requires those fields. Same publish rules for low stars. Same form patterns as the
 customer (TanStack Form, pinned Submit, public-face preview, full self-edit of rating / text / photos). Editing a rating below 5 keeps
 existing follow-up answers unless the cook fills them again; dropping from 5 to below 5 requires the follow-up. Default tab and red
-`NotificationBadge` match the customer when a review is owed (no list-card pill on the cook booking list).
+`NotificationBadge` match the customer when a review is owed (no list-card corner badge on the cook booking list).
 
 ### Admin
 
@@ -119,10 +120,11 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
   screens); full self-edit of rating / text / photos with pinned Save/Cancel) — Review tab on customer and cook offer pages; compose Submit
   via `BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID`, edit via `BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID` in `ProfilePinnedFooterLayout`.
   Compose form is a bordered card with counterpart avatar/name (“Bewertung für…”), prompt-style field titles (stars, body, photos) with
-  required/optional hints, `md` stars, and a photo prompt (“Teile deine Eindrücke” / “Share your impressions”, optional up to 8). Outstanding
-  Review tab uses inline `NotificationBadge`. Admin offer Review tab and detail `AdminTestimonialImageManager` use the same multi-select +
-  compress path (cap 8).
-- List nudges: customer cards read `testimonialMissing`, deep-link `?tab=testimonial`
+  required/optional hints, `md` stars, and a photo prompt (“Teile deine Eindrücke” / “Share your impressions”, optional up to 8).
+  Outstanding Review tab uses inline `NotificationBadge`. Admin offer Review tab and detail `AdminTestimonialImageManager` use the same
+  multi-select + compress path (cap 8).
+- List nudges: customer request/offer cards read `testimonialMissing`, show corner `NotificationBadge` when unread is 0, deep-link
+  `?tab=testimonial`
 - Jobs: `bookingRequestOfferTestimonialReminder` (memory nudge, morning and evening reminders Europe/Berlin); schedule on payment success
   and datetime changes; cancel on request cancel
 - Email templates and outbound purposes for each nudge kind — [jobs.md](../architecture/jobs.md#testimonial-reminders),

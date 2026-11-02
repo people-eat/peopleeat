@@ -9,7 +9,6 @@ import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { NotificationBadge } from './base/notification-badge';
-import { StatusBadge } from './base/status-badge';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
 import { BookingStatusPill } from './BookingStatusPill';
 import { callBookingOverviewHint } from './callBookingOverviewHint';
@@ -62,6 +61,15 @@ export function CustomerBookingRequestOfferCard({
     const locale = useLocale();
     const timeZone = useTimeZone();
     const unreadCount = offer.userUnreadNotificationCount;
+    const missingReviewCount = offer.testimonialMissing === true ? 1 : 0;
+    const badgeCount = unreadCount > 0 ? unreadCount : missingReviewCount;
+    const badgeLabel =
+        unreadCount > 0
+            ? {
+                  de: `${unreadCount} ungelesene Benachrichtigungen`,
+                  en: `${unreadCount} unread notifications`,
+              }[locale]
+            : { de: '1 Bewertung ausstehend', en: '1 review outstanding' }[locale];
     const priceCents = offer.totalCentsCustomer ?? offer.totalWithoutDiscountsCentsCustomer;
     const hasMenu = offer.configuredMenu != null || offer.suggestedMenus.length > 0;
     const menuHint = offer.configuredMenu?.title
@@ -88,19 +96,10 @@ export function CustomerBookingRequestOfferCard({
 
     const body = (
         <>
-            <NotificationBadge
-                count={unreadCount}
-                label={
-                    {
-                        de: `${unreadCount} ungelesene Benachrichtigungen`,
-                        en: `${unreadCount} unread notifications`,
-                    }[locale]
-                }
-            />
+            <NotificationBadge count={badgeCount} label={badgeLabel} />
 
             <div className="flex min-w-0 flex-col gap-3">
-                <div className={cn('flex items-start gap-2', reviewMissing ? 'justify-between' : 'justify-end')}>
-                    {reviewMissing ? <StatusBadge tone="warning">{{ de: 'Bewertung', en: 'Review' }[locale]}</StatusBadge> : null}
+                <div className="flex items-start justify-end gap-2">
                     <BookingStatusPill hue={bookingRequestOfferStatusHue(offer.status)} className="w-fit shrink-0">
                         {bookingRequestOfferStatusLabel(offer.status, locale, 'customer')}
                     </BookingStatusPill>

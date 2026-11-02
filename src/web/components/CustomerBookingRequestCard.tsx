@@ -245,11 +245,22 @@ export function CustomerBookingRequestCard({
     const location =
         request.exactEventAddress.city.trim().length > 0 ? request.exactEventAddress.city : request.exactEventAddress.displayText;
     const unreadCount = request.offers.reduce((sum, offer) => sum + offer.userUnreadNotificationCount, 0);
+    const missingReviewCount = request.offers.filter((offer) => offer.testimonialMissing).length;
+    const badgeCount = unreadCount > 0 ? unreadCount : missingReviewCount;
+    const badgeLabel =
+        unreadCount > 0
+            ? {
+                  de: `${unreadCount} ungelesene Benachrichtigungen`,
+                  en: `${unreadCount} unread notifications`,
+              }[locale]
+            : {
+                  de: missingReviewCount === 1 ? '1 Bewertung ausstehend' : `${missingReviewCount} Bewertungen ausstehend`,
+                  en: missingReviewCount === 1 ? '1 review outstanding' : `${missingReviewCount} reviews outstanding`,
+              }[locale];
     const callHint = callBookingOverviewHintAcrossOffers(request.offers, locale, timeZone);
     const reviewHint = testimonialMissingHint(request.offers);
     const primary = attention?.destination ?? cardPrimaryDestination(request, callHint, reviewHint);
     const reviewIsPrimaryAction = attention == null && primary.search?.tab === 'testimonial';
-    const showReviewBadge = attention == null && reviewHint != null;
     const offerChips = uniqueOfferChips(request.offers);
     const offerLabel = request.offers.length === 1 ? { de: 'Angebot', en: 'Offer' }[locale] : { de: 'Angebote', en: 'Offers' }[locale];
     const ctaLabel =
@@ -260,20 +271,11 @@ export function CustomerBookingRequestCard({
 
     return (
         <article className={cardClassName}>
-            <NotificationBadge
-                count={unreadCount}
-                label={
-                    {
-                        de: `${unreadCount} ungelesene Benachrichtigungen`,
-                        en: `${unreadCount} unread notifications`,
-                    }[locale]
-                }
-            />
+            <NotificationBadge count={badgeCount} label={badgeLabel} />
             <div className="flex min-w-0 flex-col gap-3">
                 <Link to={primary.to} params={primary.params} search={primary.search} className="flex min-w-0 flex-col gap-3 outline-none">
-                    <div className={cn('flex items-start gap-2', showReviewBadge || attention != null ? 'justify-between' : 'justify-end')}>
+                    <div className={cn('flex items-start gap-2', attention != null ? 'justify-between' : 'justify-end')}>
                         {attention != null ? <StatusBadge tone={attention.tone}>{attention.badgeLabel}</StatusBadge> : null}
-                        {showReviewBadge ? <StatusBadge tone="warning">{{ de: 'Bewertung', en: 'Review' }[locale]}</StatusBadge> : null}
                         <BookingStatusPill hue={bookingRequestStatusHue(request.status)} className="w-fit shrink-0">
                             {bookingRequestStatusLabel(request.status, locale, 'customer')}
                         </BookingStatusPill>
