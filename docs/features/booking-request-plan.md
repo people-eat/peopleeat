@@ -18,19 +18,22 @@ partner.
    options use a 2-column grid on mobile and 4 columns from `@xl`; selected state is border + shadow (`border-primary shadow-md`), not a
    filled primary background, matching the booking-request form price-class cards. Cuisine options and date chips use the same pointer /
    hover / pressed / focus-visible interaction pattern as `SelectableChip`. Soft “ab / from” price guidance from the selected price class
-   (default MEDIUM / Signature; editable in the details editor; no fake cart total); five-star row (cook-card style) and, when partner
-   testimonials exist, “X Bewertungen ansehen” scrolls to that section; per-cuisine sample-menu dialog (title + courses keyed to the
-   selected preference; each cuisine option also has “Beispielmenü”); edit guests / start time / cuisine / price class via bottom Sheet on
-   mobile and Dialog on desktop (scrim locks + blurs the page). Sticky summary sidebar only from `@5xl` (`@5xl:sticky @5xl:top-20` on the
-   column wrapper so it tracks while scrolling; single-column + bottom bar below that, so the sidebar does not crowd mid widths). Mobile
-   bottom bar shows guest count (“Teilnehmer” / “guests”) plus selected price class and soft “ab” price (no date; that lives in the date
-   chips), with a borderless edit affordance and primary Next CTA. Foretaste section is a horizontal carousel (5 reel cards, captions at
-   top, prev/next at top right on all widths). Without a resolved venue, address Combobox is shown between hero and preferences. Care
-   section (“Ihr genießt…”) stays stacked below `@xl`, three equal cards from `@xl`. Partner testimonials reuse curated partner assignments
-   via `SectionPageTestimonials` with `columns={2}` (sidebar width) and per-card detail dialogs.
-3. **Step 2 (contact)** — `AuthIdentityGate` (OTP / passkey / profile; `firstName` seeded from query when registering) plus optional wishes
-   / allergies message. Submit calls `UserMutation.bookingRequestCreate` with the chosen `priceClassType` and lands on the existing
-   submitted page.
+   (default MEDIUM / Signature; editable in the details editor; no fake cart total), with “Kinder bis 10 Jahre zahlen den halben Preis” /
+   “Children up to 10 years pay half price” under the hero soft price and “Mindestbuchung 400 €” / “Minimum booking €400” under the sidebar
+   soft price; five-star row (cook-card style) and, when partner testimonials exist, “X Bewertungen ansehen” scrolls to that section;
+   per-cuisine sample-menu dialog (title + courses keyed to the selected preference; each cuisine option also has “Beispielmenü”); edit
+   guests / start time / cuisine / price class via bottom Sheet on mobile and Dialog on desktop (scrim locks + blurs the page). Sticky
+   summary sidebar only from `@5xl` (`@5xl:sticky @5xl:top-20` on the column wrapper so it tracks while scrolling; single-column + bottom
+   bar below that, so the sidebar does not crowd mid widths). Mobile bottom bar shows guest count (“Teilnehmer” / “guests”) plus selected
+   price class and soft “ab” price (no date; that lives in the date chips), with a borderless edit affordance and primary Next CTA.
+   Foretaste section is a horizontal carousel (5 reel cards, captions at top, prev/next at top right on all widths). Without a resolved
+   venue, address Combobox is shown between hero and preferences. Care section (“Ihr genießt…”) stays stacked below `@xl`, three equal cards
+   from `@xl`. Partner testimonials reuse curated partner assignments via `SectionPageTestimonials` with `columns={2}` (sidebar width) and
+   per-card detail dialogs.
+3. **Step 2 (contact)** — centered `max-w-md` column (no sticky summary), matching the classic form auth width. Required wishes / allergies
+   message first, then `AuthIdentityGate` (OTP / passkey / profile; `firstName` seeded from query when registering; register heading
+   omitted, submit labeled “Buchungsanfrage senden” / “Send booking request”; `onReady` creates once message is filled). Already signed-in
+   visitors get the same explicit send CTA. Back uses the standard `Button variant="link"` + `ArrowLeftIcon` pattern.
 4. Cooks are redirected to `/profile` (same as the multi-step form). Page is `noindex`.
 
 Non-partner visitors use the same route. Venue resolution order: URL venue params → partner `locationAddress` → empty (Combobox).

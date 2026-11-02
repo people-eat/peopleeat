@@ -48,6 +48,8 @@ export function AuthIdentityGate({
     requireProfileDetails = true,
     externalSubmit = false,
     profileInitialValues,
+    registerHeading,
+    submitLabel,
 }: {
     initialSession: AuthSession;
     /** Called once when the session is signed in (profile collected at create). */
@@ -77,6 +79,13 @@ export function AuthIdentityGate({
     externalSubmit?: boolean;
     /** Optional seed for registration profile fields (e.g. `firstName` from a partner deep-link). */
     profileInitialValues?: Partial<UserProfileFormValues>;
+    /**
+     * Heading above the registration profile form. Pass `null` to hide (e.g. when the
+     * parent already labels the contact block). Default: "Create your profile".
+     */
+    registerHeading?: string | null;
+    /** Override the registration profile submit label (defaults to create account / chef account). */
+    submitLabel?: string;
 }) {
     const locale = useLocale();
     const client = useClient();
@@ -254,7 +263,9 @@ export function AuthIdentityGate({
                 </div>
 
                 <div className="grid gap-4">
-                    <p className="font-medium">{{ de: 'Profil anlegen', en: 'Create your profile' }[locale]}</p>
+                    {registerHeading === null ? null : (
+                        <p className="font-medium">{registerHeading ?? { de: 'Profil anlegen', en: 'Create your profile' }[locale]}</p>
+                    )}
                     <UserProfileForm
                         formId={AUTH_USER_PROFILE_FORM_ID}
                         hideSubmitButton={externalSubmit}
@@ -263,9 +274,10 @@ export function AuthIdentityGate({
                         requireProfileDetails={requireProfileDetails}
                         initialValues={profileInitialValues}
                         submitLabel={
-                            includeCook
+                            submitLabel ??
+                            (includeCook
                                 ? { de: 'Koch-Konto erstellen', en: 'Create chef account' }[locale]
-                                : { de: 'Konto erstellen', en: 'Create account' }[locale]
+                                : { de: 'Konto erstellen', en: 'Create account' }[locale])
                         }
                         onSubmit={onRegister}
                     />

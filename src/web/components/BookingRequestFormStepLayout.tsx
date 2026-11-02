@@ -87,7 +87,7 @@ export function BookingRequestFormBackNext({
 }) {
     return (
         <div className="flex gap-4 p-4">
-            <div className="mx-auto flex w-full max-w-7xl flex-row-reverse gap-4 lg:max-w-lg">
+            <div className={cn('mx-auto flex w-full max-w-7xl gap-4 lg:max-w-lg', next ? 'flex-row-reverse' : undefined)}>
                 {next ? (
                     <Button
                         type={next.type === 'submit' ? 'submit' : 'button'}
@@ -103,7 +103,7 @@ export function BookingRequestFormBackNext({
                 <Button
                     type="button"
                     variant="outline"
-                    className={cn(next ? 'flex-1' : 'flex-3', !back && 'invisible')}
+                    className={cn(next ? 'flex-1' : undefined, !back && 'invisible')}
                     disabled={!back || back.disabled}
                     onClick={back?.onClick}
                 >

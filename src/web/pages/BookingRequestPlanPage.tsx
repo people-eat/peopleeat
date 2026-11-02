@@ -3,6 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { de as dateFnsDe, enUS as dateFnsEn } from 'date-fns/locale';
 import type { LucideIcon } from 'lucide-react';
 import {
+    ArrowLeftIcon,
     ArrowRightIcon,
     CheckIcon,
     ChevronLeftIcon,
@@ -214,8 +215,8 @@ function planFaqs(locale: 'de' | 'en'): ReadonlyArray<QuestionsAndAnswersEntry> 
                 en: 'Allergies, children, and special wishes',
             }[locale],
             answer: {
-                de: 'Ergänzt Wünsche im nächsten Schritt. Allergien klären wir vor der Bestätigung mit dem Chef. Kinderportionen sind in der Regel günstiger.',
-                en: 'Add wishes in the next step. We clarify allergies with the chef before confirmation. Children portions are usually priced lower.',
+                de: 'Im nächsten Schritt gebt ihr eure Wünsche und Allergien an. Vor der Bestätigung klären wir Allergien noch einmal mit dem Chef. Kinderportionen sind in der Regel günstiger.',
+                en: 'In the next step you share your wishes and allergies. We clarify allergies with the chef again before confirmation. Children portions are usually priced lower.',
             }[locale],
         },
         {
@@ -400,24 +401,21 @@ function sampleMenuCopy(cuisine: BookingRequestPlanCuisineKey, locale: 'de' | 'e
     };
 }
 
-function buildCreateMessage(values: BookingRequestPlanValues, locale: 'de' | 'en'): string {
-    const cuisine = bookingRequestPlanCuisineLabel(values.cuisine, locale);
+function buildCreateMessage(values: BookingRequestPlanValues, locale: 'de' | 'en'): string | null {
     const notes = values.originalMessage.trim();
-    if (notes.length > 0) {
-        return {
-            de: `Menürichtung: ${cuisine}.\n\n${notes}`,
-            en: `Cuisine direction: ${cuisine}.\n\n${notes}`,
-        }[locale];
-    }
+    if (notes.length === 0) return null;
+    const cuisine = bookingRequestPlanCuisineLabel(values.cuisine, locale);
     return {
-        de: `Anfrage über die Dinner-Planung. Menürichtung: ${cuisine}.`,
-        en: `Request via dinner planning. Cuisine direction: ${cuisine}.`,
+        de: `Menürichtung: ${cuisine}.\n\n${notes}`,
+        en: `Cuisine direction: ${cuisine}.\n\n${notes}`,
     }[locale];
 }
 
 function createInputFromValues(values: BookingRequestPlanValues, locale: 'de' | 'en'): GqlCUserBookingRequestCreate | null {
     if (!values.exactEventAddress) return null;
     if (values.adultCount < 1) return null;
+    const originalMessage = buildCreateMessage(values, locale);
+    if (!originalMessage) return null;
     const occasion =
         values.occasion.trim() ||
         {
@@ -440,7 +438,7 @@ function createInputFromValues(values: BookingRequestPlanValues, locale: 'de' | 
         occasion,
         dateTime: values.dateTime.toISOString(),
         exactEventAddress: values.exactEventAddress,
-        originalMessage: buildCreateMessage(values, locale),
+        originalMessage,
         preferences: [bookingRequestPlanCuisinePreference(values.cuisine, locale)],
         participants,
         priceClassType: values.priceClassType,
@@ -743,6 +741,10 @@ export function BookingRequestPlanPage({
 
     async function submitBooking() {
         if (createStarted.current) return;
+        if (values.originalMessage.trim().length === 0) {
+            toast.error({ de: 'Nachricht ist erforderlich.', en: 'Message is required.' }[locale]);
+            return;
+        }
         const input = createInputFromValues(values, locale);
         if (!input) {
             toast.error(
@@ -839,6 +841,7 @@ export function BookingRequestPlanPage({
                     <span className="text-sm text-gray-400">{{ de: 'ab', en: 'from' }[locale]}</span> {softPrice}{' '}
                     <span className="text-sm text-gray-400">{{ de: 'p.P.', en: 'p.p.' }[locale]}</span>
                 </p>
+                <p className="mt-1 text-sm text-muted-foreground">{{ de: 'Mindestbuchung 400 €', en: 'Minimum booking €400' }[locale]}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                     {
                         {
@@ -867,23 +870,10 @@ export function BookingRequestPlanPage({
             ) : null}
 
             <div className="mt-8 grid gap-2">
-                {step === 'details' ? (
-                    <Button type="button" size="lg" className="w-full" onClick={goToContact} disabled={!canContinueToContact()}>
-                        {{ de: 'Weiter zur Anfrage', en: 'Continue to request' }[locale]}
-                        <ArrowRightIcon className="size-4" />
-                    </Button>
-                ) : (
-                    <Button
-                        type="button"
-                        size="lg"
-                        className="w-full"
-                        disabled={busy || authBusy || !signedIn}
-                        onClick={() => void submitBooking()}
-                    >
-                        {{ de: 'Buchungsanfrage senden', en: 'Send booking request' }[locale]}
-                        <ArrowRightIcon className="size-4" />
-                    </Button>
-                )}
+                <Button type="button" size="lg" className="w-full" onClick={goToContact} disabled={!canContinueToContact()}>
+                    {{ de: 'Weiter zur Anfrage', en: 'Continue to request' }[locale]}
+                    <ArrowRightIcon className="size-4" />
+                </Button>
                 <p className="text-center text-xs text-muted-foreground">
                     {{ de: 'Unverbindlich. Noch keine Zahlung.', en: 'Non-binding. No payment yet.' }[locale]}
                 </p>
@@ -1047,17 +1037,12 @@ export function BookingRequestPlanPage({
         <main id="main-content" className="flex min-h-screen flex-col">
             <Header user={session.user} bookingRequestCtaUrl="/booking-request/plan" />
 
-            <div className="mx-auto grid w-full max-w-7xl flex-1 content-start gap-10 px-4 py-10 @lg:px-6 @lg:py-14">
-                {step === 'contact' ? (
-                    <button
-                        type="button"
-                        className="w-fit text-sm text-muted-foreground underline-offset-4 hover:underline"
-                        onClick={() => setStep('details')}
-                    >
-                        {{ de: '← Auswahl bearbeiten', en: '← Edit selection' }[locale]}
-                    </button>
-                ) : null}
-
+            <div
+                className={cn(
+                    'mx-auto grid w-full max-w-7xl flex-1 content-start gap-10 px-4 pb-10 @lg:px-6 @lg:pb-14',
+                    step === 'contact' ? 'pt-4 @lg:pt-6' : 'pt-10 @lg:pt-14',
+                )}
+            >
                 {step === 'details' ? (
                     <div className={cn('grid gap-6', partner ? '@xl:grid-cols-[minmax(0,1fr)_auto] @xl:items-start' : null)}>
                         <div className="grid gap-3">
@@ -1113,12 +1098,17 @@ export function BookingRequestPlanPage({
                     </div>
                 ) : null}
 
-                <div className="grid items-start gap-10 @5xl:grid-cols-[minmax(0,1fr)_20rem] @6xl:grid-cols-[minmax(0,1fr)_22rem]">
+                <div
+                    className={cn(
+                        'grid items-start gap-10',
+                        step === 'details' ? '@5xl:grid-cols-[minmax(0,1fr)_20rem] @6xl:grid-cols-[minmax(0,1fr)_22rem]' : null,
+                    )}
+                >
                     <div className="grid gap-10">
                         {step === 'details' ? (
                             <>
                                 <div className="grid gap-3">
-                                    <div className="flex items-baseline justify-between gap-3">
+                                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                                         <p className="min-w-0 font-serif text-3xl font-light @md:text-4xl">
                                             {{ de: 'Wählt euren Dinner Abend', en: 'Choose your dinner evening' }[locale]}
                                         </p>
@@ -1273,10 +1263,23 @@ export function BookingRequestPlanPage({
                                                 }
                                             </p>
                                         </div>
-                                        <p className="font-medium text-2xl">
-                                            <span className="text-sm text-gray-400">{{ de: 'ab', en: 'from' }[locale]}</span> {softPrice}{' '}
-                                            <span className="text-sm text-gray-400">{{ de: '/ Erwachsener', en: '/ adult' }[locale]}</span>
-                                        </p>
+                                        <div className="grid gap-1">
+                                            <p className="font-medium text-2xl">
+                                                <span className="text-sm text-gray-400">{{ de: 'ab', en: 'from' }[locale]}</span>{' '}
+                                                {softPrice}{' '}
+                                                <span className="text-sm text-gray-400">
+                                                    {{ de: '/ Erwachsener', en: '/ adult' }[locale]}
+                                                </span>
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {
+                                                    {
+                                                        de: 'Kinder bis 10 Jahre zahlen den halben Preis',
+                                                        en: 'Children up to 10 years pay half price',
+                                                    }[locale]
+                                                }
+                                            </p>
+                                        </div>
                                         <Button
                                             type="button"
                                             variant="link"
@@ -1482,9 +1485,19 @@ export function BookingRequestPlanPage({
                                 </Reveal>
                             </>
                         ) : (
-                            <div className="grid gap-8">
+                            <div className="mx-auto grid w-full max-w-md gap-8">
+                                <Button
+                                    type="button"
+                                    variant="link"
+                                    className="h-auto w-fit gap-1.5 -mx-2 px-2 text-muted-foreground"
+                                    onClick={() => setStep('details')}
+                                >
+                                    <ArrowLeftIcon aria-hidden />
+                                    {{ de: 'Auswahl bearbeiten', en: 'Edit selection' }[locale]}
+                                </Button>
+
                                 <div className="grid gap-3">
-                                    <h1 className="font-serif text-3xl tracking-tight @md:text-4xl">
+                                    <h1 className="font-serif text-3xl tracking-tight">
                                         {
                                             {
                                                 de: 'Ein Schritt näher an eurem Dinner.',
@@ -1492,7 +1505,7 @@ export function BookingRequestPlanPage({
                                             }[locale]
                                         }
                                     </h1>
-                                    <p className="max-w-2xl text-muted-foreground">
+                                    <p className="text-muted-foreground">
                                         {partner
                                             ? {
                                                   de: `Euer Abend${partner.name ? ` bei ${partner.name}` : ''}. Wir prüfen euren Wunschtermin und stimmen das Menü mit euch ab.`,
@@ -1505,33 +1518,19 @@ export function BookingRequestPlanPage({
                                     </p>
                                 </div>
 
-                                <div className="grid gap-4">
-                                    <h2 className="text-lg font-medium">
-                                        {{ de: 'Deine Kontaktdaten', en: 'Your contact details' }[locale]}
-                                    </h2>
-                                    <AuthIdentityGate
-                                        initialSession={session}
-                                        onSessionChange={setSession}
-                                        onBusyChange={setAuthBusy}
-                                        profileInitialValues={search.firstName ? { firstName: search.firstName } : undefined}
-                                        onReady={() => {
-                                            void submitBooking();
-                                        }}
-                                        footer={(_session, sessionRefresh) => <AuthPasskeyLogOn onSuccess={sessionRefresh} />}
-                                    />
-                                    {signedIn ? (
-                                        <div className="grid gap-3">
+                                <div className="grid gap-8">
+                                    <form.Field name="originalMessage">
+                                        {(field) => (
                                             <label className="grid gap-1.5 text-sm">
                                                 <span className="font-medium">
                                                     {{ de: 'Wünsche & Allergien', en: 'Wishes & allergies' }[locale]}
-                                                    <span className="ml-1 font-normal text-muted-foreground">
-                                                        {{ de: 'Optional', en: 'Optional' }[locale]}
-                                                    </span>
                                                 </span>
                                                 <Textarea
+                                                    required
                                                     rows={4}
-                                                    value={values.originalMessage}
-                                                    onChange={(event) => form.setFieldValue('originalMessage', event.target.value)}
+                                                    value={field.state.value}
+                                                    onChange={(event) => field.handleChange(event.target.value)}
+                                                    onBlur={field.handleBlur}
                                                     placeholder={
                                                         {
                                                             de: 'Ernährung, Allergien oder ein besonderer Anlass',
@@ -1541,11 +1540,36 @@ export function BookingRequestPlanPage({
                                                     disabled={busy}
                                                 />
                                             </label>
+                                        )}
+                                    </form.Field>
+
+                                    {!signedIn ? (
+                                        <div className="grid gap-4">
+                                            <h2 className="text-lg font-medium">
+                                                {{ de: 'Deine Kontaktdaten', en: 'Your contact details' }[locale]}
+                                            </h2>
+                                            <AuthIdentityGate
+                                                initialSession={session}
+                                                onSessionChange={setSession}
+                                                onBusyChange={setAuthBusy}
+                                                profileInitialValues={search.firstName ? { firstName: search.firstName } : undefined}
+                                                registerHeading={null}
+                                                submitLabel={{ de: 'Buchungsanfrage senden', en: 'Send booking request' }[locale]}
+                                                onReady={() => {
+                                                    void submitBooking();
+                                                }}
+                                                footer={(_session, sessionRefresh) => <AuthPasskeyLogOn onSuccess={sessionRefresh} />}
+                                            />
+                                        </div>
+                                    ) : null}
+
+                                    {signedIn ? (
+                                        <div className="grid gap-3">
                                             <Button
                                                 type="button"
                                                 size="lg"
-                                                className="w-full @md:w-fit"
-                                                disabled={busy || authBusy}
+                                                className="w-full"
+                                                disabled={busy || authBusy || values.originalMessage.trim().length === 0}
                                                 onClick={() => void submitBooking()}
                                             >
                                                 {{ de: 'Buchungsanfrage senden', en: 'Send booking request' }[locale]}
@@ -1566,7 +1590,7 @@ export function BookingRequestPlanPage({
                         )}
                     </div>
 
-                    <div className="hidden @5xl:sticky @5xl:top-20 @5xl:block">{summaryCard}</div>
+                    {step === 'details' ? <div className="hidden @5xl:sticky @5xl:top-20 @5xl:block">{summaryCard}</div> : null}
                 </div>
             </div>
 
