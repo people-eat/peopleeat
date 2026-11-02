@@ -1,13 +1,12 @@
 import { Link } from '@tanstack/react-router';
 
-import { formatDate } from '../../shared';
 import type { GqlCTestimonialPublicationStatus } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
-import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
 import { AdminTestimonialPublicPagePlacementBadges } from './AdminTestimonialPublicPagePlacements';
 import type { AdminTestimonialPublicPagePlacement } from './AdminTestimonialPublicPagePlacements';
 import { Badge } from './base/badge';
+import { StatusBadge } from './base/status-badge';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
 import { PageTestimonialCardFace } from './PageTestimonialCard';
 
@@ -33,11 +32,10 @@ function publicationLabel(status: string, locale: 'de' | 'en'): string {
 
 export function AdminTestimonialListCard({ testimonial }: { testimonial: AdminTestimonialListCardTestimonial }) {
     const locale = useLocale();
-    const timeZone = useTimeZone();
     const kindLabel = testimonial.kind === 'customer' ? { de: 'Kunde', en: 'Customer' }[locale] : { de: 'Koch', en: 'Cook' }[locale];
-    const createdLabel = formatDate(testimonial.createdAt, { locale, timeZone, dateStyle: 'medium' });
     const editLabel = { de: 'Bearbeiten', en: 'Edit' }[locale];
     const body = testimonial.body?.trim() || { de: '(ohne Text)', en: '(no body)' }[locale];
+    const publicationTone = testimonial.publicationStatus === 'PUBLISHED' ? 'success' : 'warning';
     const to =
         testimonial.kind === 'customer'
             ? ('/{-$locale}/admin/testimonials/customer/$customerTestimonialId' as const)
@@ -64,16 +62,16 @@ export function AdminTestimonialListCard({ testimonial }: { testimonial: AdminTe
                     body,
                     rating: testimonial.rating,
                     imageUrls: testimonial.imageUrls,
+                    createdAt: testimonial.createdAt,
                 }}
                 header={
-                    <div className="grid gap-2">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <Badge variant="secondary">{kindLabel}</Badge>
-                            <Badge variant={testimonial.publicationStatus === 'PUBLISHED' ? 'default' : 'outline'}>
-                                {publicationLabel(testimonial.publicationStatus, locale)}
-                            </Badge>
-                            <span className="text-xs text-muted-foreground">{createdLabel}</span>
-                        </div>
+                    <div className="flex min-w-0 items-center gap-1.5 overflow-hidden">
+                        <Badge variant="outline" className="shrink-0">
+                            {kindLabel}
+                        </Badge>
+                        <StatusBadge tone={publicationTone} className="shrink-0">
+                            {publicationLabel(testimonial.publicationStatus, locale)}
+                        </StatusBadge>
                         <AdminTestimonialPublicPagePlacementBadges placements={testimonial.publicPagePlacements ?? []} />
                     </div>
                 }

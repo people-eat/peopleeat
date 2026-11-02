@@ -32,10 +32,13 @@ existing follow-up answers unless the cook fills them again; dropping from 5 to 
 
 ### Admin
 
-- Combined customer and cook list with filters as a card grid matching the public testimonial face (stars, clamped quote, photo strip,
-  author). Cards navigate to detail; no publish/delete on the list. Shared `AdminTestimonialListCard` also powers the user page and admin
-  chat `admin.testimonialList`. Cards and detail show **public page placements** (curated city / partner / occasion, plus chef profile for
-  published offer-linked customer reviews).
+- Combined customer and cook list as a card grid matching the public testimonial face (stars, clamped quote, photo strip, author + long-form
+  written date). Filters are labeled selects (author type, publication status, offer link) plus search, matching other admin list pages;
+  breadcrumb covers the page title (no duplicate H1). Cards navigate to detail; no publish/delete on the list. Shared
+  `AdminTestimonialListCard` also powers the user page and admin chat `admin.testimonialList`. Card header is one single-line badge row:
+  author type (`Kunde` / `Koch`), publication as `StatusBadge` (green published / yellow pending), then truncated public-page placements
+  (curated city / partner / occasion, plus chef profile for published offer-linked customer reviews) so neighboring cards keep occasion /
+  stars aligned.
 - Detail pages open **read-only** (content + image strip) with a pinned footer: **Edit**, **Public view**, **Publish** when pending, and
   overflow for **Unpublish** / **Delete**. Edit mode swaps the footer to Cancel / Save and unlocks override fields plus
   `AdminTestimonialImageManager`. AlertDialog confirms publish / unpublish / delete (not browser `confirm`). Star input, not numeric

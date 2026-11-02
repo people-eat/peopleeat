@@ -37,16 +37,19 @@ export function AdminTestimonialPublicPagePlacementBadges({
     const locale = useLocale();
     if (placements.length === 0) return null;
 
+    // `contents` lets chips sit on the same single-line row as sibling badges.
     return (
-        <ul className={cn('flex flex-wrap gap-1.5', className)} aria-label={{ de: 'Öffentliche Seiten', en: 'Public pages' }[locale]}>
-            {placements.map((placement) => (
-                <li key={`${placement.kind}-${placement.entityId}`}>
-                    <Badge variant="outline" className="font-normal">
-                        <span className="text-muted-foreground">{kindLabel(placement.kind, locale)}:</span>{' '}
-                        {placementLabel(placement, locale)}
-                    </Badge>
-                </li>
-            ))}
+        <ul className={cn('contents', className)} aria-label={{ de: 'Öffentliche Seiten', en: 'Public pages' }[locale]}>
+            {placements.map((placement) => {
+                const fullLabel = `${kindLabel(placement.kind, locale)}: ${placementLabel(placement, locale)}`;
+                return (
+                    <li key={`${placement.kind}-${placement.entityId}`} className="contents">
+                        <Badge variant="outline" title={fullLabel} className="min-w-0 max-w-[11rem] font-normal">
+                            <span className="truncate">{fullLabel}</span>
+                        </Badge>
+                    </li>
+                );
+            })}
         </ul>
     );
 }

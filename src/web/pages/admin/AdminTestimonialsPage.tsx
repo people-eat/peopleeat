@@ -7,10 +7,10 @@ import { AdminTestimonialListCard } from '../../components/AdminTestimonialListC
 import type { AdminTestimonialListCardTestimonial } from '../../components/AdminTestimonialListCard';
 import { Button } from '../../components/base/button';
 import { Input } from '../../components/base/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import type { GqlCAdminTestimonialsPageQuery } from '../../graphql/generated';
 import { AdminTestimonialsPageUpdatesDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
-import type { Locale } from '../../utils/locale';
 import { testimonialPublicationStatusLabel, testimonialTypeLabel } from './adminTestimonialsShared';
 import type { AdminTestimonialType } from './adminTestimonialsShared';
 
@@ -27,24 +27,6 @@ type LinkFilter = 'ALL' | 'LINKED' | 'UNLINKED';
 type ListRow = AdminTestimonialListCardTestimonial & {
     bookingRequestOfferId: string | null;
 };
-
-function typeFilterLabel(value: TypeFilter, locale: Locale): string {
-    if (value === 'ALL') return { de: 'Alle', en: 'All' }[locale];
-    return testimonialTypeLabel(value, locale);
-}
-
-function publicationFilterLabel(value: PublicationFilter, locale: Locale): string {
-    if (value === 'ALL') return { de: 'Alle', en: 'All' }[locale];
-    return testimonialPublicationStatusLabel(value, locale);
-}
-
-function linkFilterLabel(value: LinkFilter, locale: Locale): string {
-    return {
-        ALL: { de: 'Alle', en: 'All' },
-        LINKED: { de: 'Verknüpft', en: 'Linked' },
-        UNLINKED: { de: 'Unverknüpft', en: 'Unlinked' },
-    }[value][locale];
-}
 
 export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPageQuery }) {
     const locale = useLocale();
@@ -127,71 +109,77 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
         });
     }, [rows, searchText, typeFilter, publicationFilter, linkFilter]);
 
+    const hasActiveFilters = searchText.trim() !== '' || typeFilter !== 'ALL' || publicationFilter !== 'ALL' || linkFilter !== 'ALL';
+
     return (
         <AdminPathPageChrome>
             <main id="main-content" className="grid w-full content-start gap-6">
-                <div>
-                    <h1 className="font-serif text-4xl/tight text-foreground">{adminTestimonialsPageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{adminTestimonialsPageDescription[locale]}</p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-3">
                     <Input
+                        type="search"
                         value={searchText}
                         onChange={(event) => setSearchText(event.target.value)}
                         placeholder={{ de: 'Autor oder Text suchen…', en: 'Search author or body…' }[locale]}
                         aria-label={{ de: 'Bewertungen suchen', en: 'Search testimonials' }[locale]}
                         className="max-w-xs"
                     />
-                    <div className="flex gap-1">
-                        {(['ALL', 'CUSTOMER', 'COOK'] as const).map((option) => (
-                            <Button
-                                key={option}
-                                type="button"
-                                size="sm"
-                                variant={typeFilter === option ? 'default' : 'outline'}
-                                onClick={() => setTypeFilter(option)}
-                            >
-                                {typeFilterLabel(option, locale)}
-                            </Button>
-                        ))}
-                    </div>
-                    <div className="flex gap-1">
-                        {(['ALL', 'PUBLISHED', 'PENDING_REVIEW'] as const).map((option) => (
-                            <Button
-                                key={option}
-                                type="button"
-                                size="sm"
-                                variant={publicationFilter === option ? 'default' : 'outline'}
-                                onClick={() => setPublicationFilter(option)}
-                            >
-                                {publicationFilterLabel(option, locale)}
-                            </Button>
-                        ))}
-                    </div>
-                    <div className="flex gap-1">
-                        {(['ALL', 'LINKED', 'UNLINKED'] as const).map((option) => (
-                            <Button
-                                key={option}
-                                type="button"
-                                size="sm"
-                                variant={linkFilter === option ? 'default' : 'outline'}
-                                onClick={() => setLinkFilter(option)}
-                            >
-                                {linkFilterLabel(option, locale)}
-                            </Button>
-                        ))}
-                    </div>
-                </div>
-
-                <p className="text-sm text-muted-foreground tabular-nums">
-                    {
+                    <Select value={typeFilter} onValueChange={(value) => setTypeFilter((value as TypeFilter | null) ?? 'ALL')}>
+                        <SelectTrigger size="sm" aria-label={{ de: 'Autor-Typ filtern', en: 'Filter by author type' }[locale]}>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="ALL">{{ de: 'Alle Autoren', en: 'All authors' }[locale]}</SelectItem>
+                            <SelectItem value="CUSTOMER">{testimonialTypeLabel('CUSTOMER', locale)}</SelectItem>
+                            <SelectItem value="COOK">{testimonialTypeLabel('COOK', locale)}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select
+                        value={publicationFilter}
+                        onValueChange={(value) => setPublicationFilter((value as PublicationFilter | null) ?? 'ALL')}
+                    >
+                        <SelectTrigger size="sm" aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="ALL">{{ de: 'Alle Statuswerte', en: 'All statuses' }[locale]}</SelectItem>
+                            <SelectItem value="PUBLISHED">{testimonialPublicationStatusLabel('PUBLISHED', locale)}</SelectItem>
+                            <SelectItem value="PENDING_REVIEW">{testimonialPublicationStatusLabel('PENDING_REVIEW', locale)}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select value={linkFilter} onValueChange={(value) => setLinkFilter((value as LinkFilter | null) ?? 'ALL')}>
+                        <SelectTrigger size="sm" aria-label={{ de: 'Verknüpfung filtern', en: 'Filter by link' }[locale]}>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="ALL">{{ de: 'Alle Verknüpfungen', en: 'All links' }[locale]}</SelectItem>
+                            <SelectItem value="LINKED">{{ de: 'Verknüpft', en: 'Linked' }[locale]}</SelectItem>
+                            <SelectItem value="UNLINKED">{{ de: 'Unverknüpft', en: 'Unlinked' }[locale]}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    {hasActiveFilters ? (
+                        <Button
+                            type="button"
+                            variant="link"
+                            className="h-auto p-0 text-sm text-muted-foreground"
+                            onClick={() => {
+                                setSearchText('');
+                                setTypeFilter('ALL');
+                                setPublicationFilter('ALL');
+                                setLinkFilter('ALL');
+                            }}
+                        >
+                            {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
+                        </Button>
+                    ) : null}
+                    <p className="text-sm text-muted-foreground tabular-nums sm:ml-auto">
                         {
-                            de: `${filtered.length} von ${rows.length} Bewertungen`,
-                            en: `${filtered.length} of ${rows.length} testimonials`,
-                        }[locale]
-                    }
-                </p>
+                            {
+                                de: `${filtered.length} von ${rows.length} Bewertungen`,
+                                en: `${filtered.length} of ${rows.length} testimonials`,
+                            }[locale]
+                        }
+                    </p>
+                </div>
 
                 {filtered.length === 0 ? (
                     <p className="rounded-xl border border-border bg-secondary p-8 text-center text-sm text-muted-foreground">
