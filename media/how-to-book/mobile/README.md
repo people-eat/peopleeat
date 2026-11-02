@@ -52,8 +52,8 @@ python3 media/how-to-book/mobile/edit/verify.py --ffmpeg /absolute/path/to/ffmpe
 
 Edit `edit/timeline.json` to change cuts or holds. The renderer uses the shared DM Sans font, logo, narration, and caption script. It
 rebuilds only these portrait assets and leaves desktop exports in place. Native iMovie assembly can import these raw MOVs and the shared
-narration; save any library under `../desktop/imovie/`. Portrait exports stay here for review and are not copied into `public/` by this
-task.
+narration; save any library under `../desktop/imovie/`. After regenerating exports, copy the five mp4s and five webp posters into
+`public/home/booking-how-it-works/mobile/` so the home section can serve them below the `md` breakpoint.
 
 Verification reports and SHA-256 hashes are in `edit/verification.json`; contact sheets and representative frames are in `edit/qa/`.
 

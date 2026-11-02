@@ -35,4 +35,5 @@ python3 media/how-to-book/desktop/edit/verify.py --ffmpeg /absolute/path/to/ffmp
 python3 media/how-to-book/mobile/edit/verify.py --ffmpeg /absolute/path/to/ffmpeg
 ```
 
-The existing home-page copies remain under `public/home/booking-how-it-works/`. Production masters and future edits belong here.
+Shipped home-page copies: desktop under `public/home/booking-how-it-works/`, mobile under `public/home/booking-how-it-works/mobile/`.
+Production masters and future edits belong here.

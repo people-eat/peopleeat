@@ -10,7 +10,8 @@ Visitors see sections in order (generous vertical spacing between blocks):
 2. **Experience selection** — three experience cards (casual, signature, gift) with CTAs to booking form or gift card
 3. **Comparison** — at-home private chef vs restaurant, CTA to booking form
 4. **How booking works** — four muted UI loops (request → offers → chat/call → accept/pay), optional 60-second narrated German film in a
-   dialog, CTA to the booking form. Hidden unless `LANDING_BOOKING_HOW_IT_WORKS` is on (missing DB row = off; see
+   dialog, CTA to the booking form. Below the `md` breakpoint the section plays portrait iPhone-layout recordings; from `md` up it plays
+   desktop landscape recordings. Hidden unless `LANDING_BOOKING_HOW_IT_WORKS` is on (missing DB row = off; see
    [admin-feature-toggles.md](./admin-feature-toggles.md))
 5. **How it works** — four lifestyle steps for the evening itself and WhatsApp CTA (reusable section; can hide CTA and use alternative media
    on partner pages)
@@ -57,17 +58,17 @@ typography, colors, and buttons follow project conventions. Marquee pauses under
 
 ## Implementation
 
-| Piece         | Location                                                                                                                                                                                                                                                          |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Page          | `src/web/pages/HomePage.tsx` (+ `.graphql`)                                                                                                                                                                                                                       |
-| Route / SEO   | `src/routes/{-$locale}/index.tsx` — `seoMeta` via `publicWebPage` + FAQ JSON-LD                                                                                                                                                                                   |
-| Sections      | `SectionHero`, `SectionExperienceSelection`, `SectionComparison`, `SectionBookingHowItWorks`, `SectionHowItWorks`, `SectionSharedExperiences`, `SectionCustomerTestimonials`, `SectionKnownFrom`, `SectionQuestionsAndAnswers`, `SectionSupport`, `SectionCities` |
-| Shared media  | `AutoplayVideo.tsx`, `usePrefersReducedMotion.ts`                                                                                                                                                                                                                 |
-| Assets        | `public/home/*` (incl. HowItWorks `*.alternative.*` for partner pages, booking loops/film under `public/home/booking-how-it-works/`), `public/shared/known-from-section/`, hero `public/assets/dinner.mp4`                                                        |
-| Booking media | Masters, edit timeline, voiceover, and capture notes in `media/how-to-book/` (`desktop/` and `mobile/`, see their READMEs). Shipped copies for the home section live under `public/home/booking-how-it-works/`.                                                   |
-| Feature gate  | `LANDING_BOOKING_HOW_IT_WORKS` via `Session.activeFeatureToggleKeys` on `HomePage`                                                                                                                                                                                |
-| Motion CSS    | `src/styles.css` — `animate-testimonial-scroll` / `-delayed`                                                                                                                                                                                                      |
+| Piece         | Location                                                                                                                                                                                                                                                               |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Page          | `src/web/pages/HomePage.tsx` (+ `.graphql`)                                                                                                                                                                                                                            |
+| Route / SEO   | `src/routes/{-$locale}/index.tsx` — `seoMeta` via `publicWebPage` + FAQ JSON-LD                                                                                                                                                                                        |
+| Sections      | `SectionHero`, `SectionExperienceSelection`, `SectionComparison`, `SectionBookingHowItWorks`, `SectionHowItWorks`, `SectionSharedExperiences`, `SectionCustomerTestimonials`, `SectionKnownFrom`, `SectionQuestionsAndAnswers`, `SectionSupport`, `SectionCities`      |
+| Shared media  | `AutoplayVideo.tsx`, `usePrefersReducedMotion.ts`                                                                                                                                                                                                                      |
+| Assets        | `public/home/*` (incl. HowItWorks `*.alternative.*` for partner pages, booking loops/film under `public/home/booking-how-it-works/` + `…/mobile/`), `public/shared/known-from-section/`, hero `public/assets/dinner.mp4`                                               |
+| Booking media | Masters, edit timeline, voiceover, and capture notes in `media/how-to-book/` (`desktop/` and `mobile/`, see their READMEs). Shipped copies: desktop at `public/home/booking-how-it-works/`, mobile at `…/mobile/`. `SectionBookingHowItWorks` swaps via `useIsMobile`. |
+| Feature gate  | `LANDING_BOOKING_HOW_IT_WORKS` via `Session.activeFeatureToggleKeys` on `HomePage`                                                                                                                                                                                     |
+| Motion CSS    | `src/styles.css` — `animate-testimonial-scroll` / `-delayed`                                                                                                                                                                                                           |
 
-Portrait companion masters use the actual iPhone 16 mobile layout and live under `media/how-to-book/mobile/`, with their own raw takes, four
-loops, narrated 60-second film, posters, editable cuts, and verification. They are review assets, separate from the current shipped media
-copies.
+Portrait masters use the actual iPhone 16 mobile layout under `media/how-to-book/mobile/` (raw takes, four loops, narrated 60-second film,
+posters, editable cuts, verification). The home section loads only the matching variant after the viewport breakpoint is known, so both full
+sets are not downloaded on one visit.

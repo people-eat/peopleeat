@@ -7,12 +7,11 @@ import { AutoplayVideo } from '../components/AutoplayVideo';
 import { Button } from '../components/base/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../components/base/dialog';
 import { Reveal } from '../components/Reveal';
+import { useIsMobile } from '../hooks/use-mobile';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 
 const ASSET_BASE = '/home/booking-how-it-works';
-const FILM_SRC = `${ASSET_BASE}/film-60s.mp4`;
-const FILM_POSTER = `${ASSET_BASE}/film-60s.webp`;
 
 type BookingStep = {
     id: 'a' | 'b' | 'c' | 'd';
@@ -26,10 +25,22 @@ type BookingStep = {
 
 export function SectionBookingHowItWorks() {
     const locale = useLocale();
+    const isMobile = useIsMobile();
+    const [viewportReady, setViewportReady] = useState(false);
     const [filmOpen, setFilmOpen] = useState(false);
     const [filmPlaying, setFilmPlaying] = useState(false);
     const [filmEnded, setFilmEnded] = useState(false);
     const filmRef = useRef<HTMLVideoElement>(null);
+
+    useEffect(() => {
+        setViewportReady(true);
+    }, []);
+
+    const assetFolder = isMobile ? `${ASSET_BASE}/mobile` : ASSET_BASE;
+    const filmSrc = `${assetFolder}/film-60s.mp4`;
+    const filmPoster = `${assetFolder}/film-60s.webp`;
+    const filmPosterWidth = isMobile ? 393 : 960;
+    const filmPosterHeight = isMobile ? 852 : 540;
 
     useEffect(() => {
         if (filmOpen) return;
@@ -41,6 +52,16 @@ export function SectionBookingHowItWorks() {
         setFilmPlaying(false);
         setFilmEnded(false);
     }, [filmOpen]);
+
+    useEffect(() => {
+        const film = filmRef.current;
+        if (film) {
+            film.pause();
+            film.currentTime = 0;
+        }
+        setFilmPlaying(false);
+        setFilmEnded(false);
+    }, [filmSrc]);
 
     function playFilm() {
         const film = filmRef.current;
@@ -64,11 +85,15 @@ export function SectionBookingHowItWorks() {
                 de: 'Beschreibe Anlass, Gäste, Ort und Wünsche. In wenigen Schritten sind die Köche informiert.',
                 en: 'Describe the occasion, guests, place, and wishes. In a few steps, chefs nearby are notified.',
             }[locale],
-            videoSrc: `${ASSET_BASE}/clip-a-anfrage.mp4`,
-            posterSrc: `${ASSET_BASE}/poster-a.webp`,
+            videoSrc: `${assetFolder}/clip-a-anfrage.mp4`,
+            posterSrc: `${assetFolder}/poster-a.webp`,
             alternativeText: {
-                de: 'Bildschirmaufnahme: Buchungsanfrage für einen Geburtstag in München wird ausgefüllt.',
-                en: 'Screen recording: a booking request for a birthday in Munich is filled in.',
+                de: isMobile
+                    ? 'Mobile Bildschirmaufnahme: Buchungsanfrage für einen Geburtstag in München wird ausgefüllt.'
+                    : 'Bildschirmaufnahme: Buchungsanfrage für einen Geburtstag in München wird ausgefüllt.',
+                en: isMobile
+                    ? 'Mobile screen recording: a booking request for a birthday in Munich is filled in.'
+                    : 'Screen recording: a booking request for a birthday in Munich is filled in.',
             }[locale],
         },
         {
@@ -79,11 +104,15 @@ export function SectionBookingHowItWorks() {
                 de: 'Köche schicken individuelle Menüs mit einem klaren Gesamtpreis. Du vergleichst in Ruhe.',
                 en: 'Chefs send individual menus with one clear total price. Compare them at your pace.',
             }[locale],
-            videoSrc: `${ASSET_BASE}/clip-b-angebote.mp4`,
-            posterSrc: `${ASSET_BASE}/poster-b.webp`,
+            videoSrc: `${assetFolder}/clip-b-angebote.mp4`,
+            posterSrc: `${assetFolder}/poster-b.webp`,
             alternativeText: {
-                de: 'Bildschirmaufnahme: drei Koch-Angebote mit Menüs und Preisen werden verglichen.',
-                en: 'Screen recording: three chef offers with menus and prices are compared.',
+                de: isMobile
+                    ? 'Mobile Bildschirmaufnahme: drei Koch-Angebote mit Menüs und Preisen werden verglichen.'
+                    : 'Bildschirmaufnahme: drei Koch-Angebote mit Menüs und Preisen werden verglichen.',
+                en: isMobile
+                    ? 'Mobile screen recording: three chef offers with menus and prices are compared.'
+                    : 'Screen recording: three chef offers with menus and prices are compared.',
             }[locale],
         },
         {
@@ -94,11 +123,15 @@ export function SectionBookingHowItWorks() {
                 de: 'Schreib im Chat, ruf per Video an und kläre Details. Unsere Concierge ist mit dabei.',
                 en: 'Chat, join a video call, and settle the details. Our concierge is there with you.',
             }[locale],
-            videoSrc: `${ASSET_BASE}/clip-c-kennenlernen.mp4`,
-            posterSrc: `${ASSET_BASE}/poster-c.webp`,
+            videoSrc: `${assetFolder}/clip-c-kennenlernen.mp4`,
+            posterSrc: `${assetFolder}/poster-c.webp`,
             alternativeText: {
-                de: 'Bildschirmaufnahme: Chat mit Koch und Concierge sowie bestätigter Videoanruf-Termin.',
-                en: 'Screen recording: chat with chef and concierge, plus a confirmed video-call slot.',
+                de: isMobile
+                    ? 'Mobile Bildschirmaufnahme: Chat mit Koch und Concierge sowie bestätigter Videoanruf-Termin.'
+                    : 'Bildschirmaufnahme: Chat mit Koch und Concierge sowie bestätigter Videoanruf-Termin.',
+                en: isMobile
+                    ? 'Mobile screen recording: chat with chef and concierge, plus a confirmed video-call slot.'
+                    : 'Screen recording: chat with chef and concierge, plus a confirmed video-call slot.',
             }[locale],
         },
         {
@@ -109,11 +142,15 @@ export function SectionBookingHowItWorks() {
                 de: 'Nimm dein Wunschmenü an und bezahle sicher. Danach hält der Koch den Termin für dich frei.',
                 en: 'Accept your preferred menu and pay securely. The chef then holds the date for you.',
             }[locale],
-            videoSrc: `${ASSET_BASE}/clip-d-bestaetigen.mp4`,
-            posterSrc: `${ASSET_BASE}/poster-d.webp`,
+            videoSrc: `${assetFolder}/clip-d-bestaetigen.mp4`,
+            posterSrc: `${assetFolder}/poster-d.webp`,
             alternativeText: {
-                de: 'Bildschirmaufnahme: Angebot annehmen und zur sicheren Zahlung weiterleiten.',
-                en: 'Screen recording: accepting an offer and continuing to secure checkout.',
+                de: isMobile
+                    ? 'Mobile Bildschirmaufnahme: Angebot annehmen und zur sicheren Zahlung weiterleiten.'
+                    : 'Bildschirmaufnahme: Angebot annehmen und zur sicheren Zahlung weiterleiten.',
+                en: isMobile
+                    ? 'Mobile screen recording: accepting an offer and continuing to secure checkout.'
+                    : 'Screen recording: accepting an offer and continuing to secure checkout.',
             }[locale],
         },
     ];
@@ -138,6 +175,11 @@ export function SectionBookingHowItWorks() {
     const filmCtaLabel = { de: 'Unverbindlich anfragen', en: 'Request without obligation' }[locale];
     const ctaLabel = { de: 'Anfrage senden', en: 'Send request' }[locale];
     const showFilmPreview = !filmPlaying || filmEnded;
+    const loopFrameClassName = cn(
+        'w-full shrink-0 overflow-hidden rounded-lg bg-muted',
+        'aspect-1180/2556 max-h-[min(70vh,640px)] max-w-[280px] mx-auto',
+        '@md:aspect-16/10 @md:max-h-none @md:max-w-none @md:mx-0',
+    );
 
     return (
         <section className="px-4 py-16 @lg:px-6">
@@ -163,13 +205,17 @@ export function SectionBookingHowItWorks() {
                                     <p className="mt-1 text-pretty text-muted-foreground">{step.description}</p>
                                 </div>
                             </div>
-                            <AutoplayVideo
-                                src={step.videoSrc}
-                                poster={step.posterSrc}
-                                className="aspect-16/10 w-full shrink-0 rounded-lg object-cover object-top"
-                            >
-                                {step.alternativeText}
-                            </AutoplayVideo>
+                            {viewportReady ? (
+                                <AutoplayVideo
+                                    src={step.videoSrc}
+                                    poster={step.posterSrc}
+                                    className={cn(loopFrameClassName, 'object-cover object-top')}
+                                >
+                                    {step.alternativeText}
+                                </AutoplayVideo>
+                            ) : (
+                                <div className={loopFrameClassName} aria-hidden />
+                            )}
                         </Reveal>
                     ))}
                 </div>
@@ -182,39 +228,51 @@ export function SectionBookingHowItWorks() {
             </div>
 
             <Dialog open={filmOpen} onOpenChange={setFilmOpen}>
-                <DialogContent className="max-w-[calc(100%-1.5rem)] gap-0 overflow-hidden p-0 sm:max-w-4xl lg:max-w-5xl">
+                <DialogContent
+                    className={cn(
+                        'max-w-[calc(100%-1.5rem)] gap-0 overflow-hidden p-0',
+                        isMobile ? 'sm:max-w-sm' : 'sm:max-w-4xl lg:max-w-5xl',
+                    )}
+                >
                     <DialogHeader className="gap-1 px-6 pt-6 pb-4 pr-14 text-left">
                         <DialogTitle>{filmTitle}</DialogTitle>
                         <DialogDescription className="sr-only">{filmDescription}</DialogDescription>
                     </DialogHeader>
 
-                    <div className="relative aspect-video bg-foreground">
-                        <video
-                            ref={filmRef}
-                            className={cn('size-full object-cover', showFilmPreview ? 'invisible' : 'visible')}
-                            controls={!showFilmPreview}
-                            playsInline
-                            preload="metadata"
-                            poster={FILM_POSTER}
-                            src={FILM_SRC}
-                            onPlay={() => {
-                                setFilmPlaying(true);
-                                setFilmEnded(false);
-                            }}
-                            onPause={(event) => {
-                                if (!event.currentTarget.ended) {
+                    <div
+                        className={cn(
+                            'relative mx-auto w-full bg-foreground',
+                            isMobile ? 'aspect-1180/2556 max-h-[min(75dvh,720px)] max-w-[320px]' : 'aspect-video max-w-none',
+                        )}
+                    >
+                        {viewportReady ? (
+                            <video
+                                ref={filmRef}
+                                className={cn('size-full object-cover', showFilmPreview ? 'invisible' : 'visible')}
+                                controls={!showFilmPreview}
+                                playsInline
+                                preload="metadata"
+                                poster={filmPoster}
+                                src={filmSrc}
+                                onPlay={() => {
+                                    setFilmPlaying(true);
+                                    setFilmEnded(false);
+                                }}
+                                onPause={(event) => {
+                                    if (!event.currentTarget.ended) {
+                                        setFilmPlaying(false);
+                                    }
+                                }}
+                                onEnded={() => {
                                     setFilmPlaying(false);
-                                }
-                            }}
-                            onEnded={() => {
-                                setFilmPlaying(false);
-                                setFilmEnded(true);
-                            }}
-                        >
-                            {filmDescription}
-                        </video>
+                                    setFilmEnded(true);
+                                }}
+                            >
+                                {filmDescription}
+                            </video>
+                        ) : null}
 
-                        {showFilmPreview ? (
+                        {viewportReady && showFilmPreview ? (
                             <button
                                 type="button"
                                 className="absolute inset-0 flex cursor-pointer items-center justify-center focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
@@ -222,11 +280,11 @@ export function SectionBookingHowItWorks() {
                                 aria-label={filmEnded ? replayFilmLabel : playFilmLabel}
                             >
                                 <AppImage
-                                    src={FILM_POSTER}
+                                    src={filmPoster}
                                     alt=""
                                     className="absolute inset-0 size-full object-cover"
-                                    width={960}
-                                    height={540}
+                                    width={filmPosterWidth}
+                                    height={filmPosterHeight}
                                 />
                                 <span className="relative z-10 flex size-14 items-center justify-center rounded-full bg-background/90 text-foreground shadow-md backdrop-blur-sm active:bg-foreground/10">
                                     <PlayIcon className="size-6 translate-x-px" aria-hidden />
