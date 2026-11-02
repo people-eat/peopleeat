@@ -26,6 +26,7 @@ import {
     formatCountryName,
     formatCurrency,
     formatDate,
+    formatMonthYear,
     formatTime,
 } from '../../shared';
 import { AppImage } from '../components/AppImage';
@@ -447,6 +448,20 @@ function createInputFromValues(values: BookingRequestPlanValues, locale: 'de' | 
     };
 }
 
+function bookingRequestPlanDateChipRangeLabel(days: ReadonlyArray<Date>, fallback: Date, locale: 'de' | 'en'): string {
+    const first = days[0] ?? fallback;
+    const last = days[days.length - 1] ?? first;
+    if (first.getFullYear() === last.getFullYear() && first.getMonth() === last.getMonth()) {
+        return formatMonthYear(first, { locale, month: 'long' });
+    }
+    const languageTag = locale === 'de' ? 'de-DE' : 'en-US';
+    const monthName = (day: Date) => new Intl.DateTimeFormat(languageTag, { month: 'long' }).format(day);
+    if (first.getFullYear() === last.getFullYear()) {
+        return `${monthName(first)} - ${monthName(last)} ${first.getFullYear()}`;
+    }
+    return `${monthName(first)} ${first.getFullYear()} - ${monthName(last)} ${last.getFullYear()}`;
+}
+
 function ParticipantCountField({
     label,
     subtitle,
@@ -762,6 +777,11 @@ export function BookingRequestPlanPage({
     const hourOptions = bookingRequestFormHourOptions(values.dateTime, bounds);
     const minuteOptions = bookingRequestFormMinuteOptions(values.dateTime, values.dateTime.getHours(), bounds);
     const sampleMenu = sampleMenuCopy(values.cuisine, locale);
+    const dateChipRangeLabel = bookingRequestPlanDateChipRangeLabel(
+        useDateChips ? selectableDays : [values.dateTime],
+        values.dateTime,
+        locale,
+    );
 
     const summaryCard = (
         <aside
@@ -808,7 +828,10 @@ export function BookingRequestPlanPage({
             </div>
 
             <div className="mt-8 border-t border-border pt-6">
-                <p className="text-3xl font-medium">{{ de: `ab ${softPrice} p.P.`, en: `from ${softPrice} p.p.` }[locale]}</p>
+                <p className="text-3xl font-medium">
+                    {{ de: `ab ${softPrice}`, en: `from ${softPrice}` }[locale]}{' '}
+                    <span className="text-sm text-gray-400">{{ de: 'p.P.', en: 'p.p.' }[locale]}</span>
+                </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                     {
                         {
@@ -1088,10 +1111,15 @@ export function BookingRequestPlanPage({
                         {step === 'details' ? (
                             <>
                                 <div className="grid gap-3">
-                                    <p className="text-sm font-medium">{{ de: 'Dinner-Datum', en: 'Dinner date' }[locale]}</p>
+                                    <div className="flex items-baseline justify-between gap-3">
+                                        <p className="min-w-0 font-serif text-2xl tracking-tight">
+                                            {{ de: 'Wählt euren Dinner Abend', en: 'Choose your dinner evening' }[locale]}
+                                        </p>
+                                        <p className="shrink-0 font-serif text-2xl tracking-tight">{dateChipRangeLabel}</p>
+                                    </div>
                                     {useDateChips ? (
-                                        <div className="grid grid-cols-4 gap-2.5 @md:grid-cols-6 @2xl:grid-cols-8">
-                                            {selectableDays.map((day) => {
+                                        <div className="grid grid-cols-3 gap-3 @md:grid-cols-4 @2xl:grid-cols-5">
+                                            {selectableDays.map((day, index) => {
                                                 const key = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
                                                 const selected = key === selectedDayKey;
                                                 const languageTag = locale === 'de' ? 'de-DE' : 'en-US';
@@ -1102,6 +1130,14 @@ export function BookingRequestPlanPage({
                                                 const month = new Intl.DateTimeFormat(languageTag, {
                                                     month: 'short',
                                                 }).format(day);
+                                                const partnerStayLabel = search.partnerId
+                                                    ? index === 0
+                                                        ? { de: 'Anreise', en: 'Arrival' }[locale]
+                                                        : index === selectableDays.length - 1
+                                                          ? { de: 'Abreise', en: 'Departure' }[locale]
+                                                          : null
+                                                    : null;
+                                                const footLabel = partnerStayLabel ?? month;
                                                 return (
                                                     <button
                                                         key={key}
@@ -1109,16 +1145,16 @@ export function BookingRequestPlanPage({
                                                         onClick={() => selectDay(day)}
                                                         aria-pressed={selected}
                                                         className={cn(
-                                                            'flex aspect-square w-full flex-col items-center justify-center gap-0.5 rounded-xl border',
+                                                            'flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-xl border',
                                                             selectionControlClassName,
                                                             selectionSurfaceClassName(selected),
                                                         )}
                                                     >
-                                                        <span className="text-[0.7rem] leading-none opacity-80">{weekdayWithDot}</span>
-                                                        <span className="text-xl font-medium tabular-nums leading-none">
+                                                        <span className="text-xs leading-none opacity-80">{weekdayWithDot}</span>
+                                                        <span className="text-2xl font-medium tabular-nums leading-none">
                                                             {day.getDate()}
                                                         </span>
-                                                        <span className="text-[0.7rem] leading-none opacity-80">{month}</span>
+                                                        <span className="text-xs leading-none opacity-80">{footLabel}</span>
                                                     </button>
                                                 );
                                             })}
@@ -1155,17 +1191,19 @@ export function BookingRequestPlanPage({
                                     )}
                                 </div>
 
-                                <div className="overflow-hidden rounded-2xl border border-border bg-card @3xl:grid @3xl:grid-cols-2 @3xl:items-stretch">
-                                    <AppImage
-                                        src={heroSrc}
-                                        alt={
-                                            {
-                                                de: 'Gedeckter Tisch für euer Dinner',
-                                                en: 'Set table for your dinner',
-                                            }[locale]
-                                        }
-                                        className="aspect-video w-full object-cover @3xl:aspect-auto @3xl:h-full @3xl:min-h-72"
-                                    />
+                                <div className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-xs @3xl:grid @3xl:grid-cols-2 @3xl:items-stretch">
+                                    <div className="group relative aspect-video overflow-hidden @3xl:aspect-auto @3xl:h-full @3xl:min-h-72">
+                                        <AppImage
+                                            src={heroSrc}
+                                            alt={
+                                                {
+                                                    de: 'Gedeckter Tisch für euer Dinner',
+                                                    en: 'Set table for your dinner',
+                                                }[locale]
+                                            }
+                                            className="size-full object-cover transition-transform duration-300 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                                        />
+                                    </div>
                                     <div className="grid gap-3 p-5 @md:p-6 @3xl:content-center">
                                         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                                             <div className="flex items-center gap-1.5">
@@ -1193,7 +1231,12 @@ export function BookingRequestPlanPage({
                                                         });
                                                     }}
                                                 >
-                                                    {{ de: 'Bewertungen ansehen', en: 'View reviews' }[locale]}
+                                                    {
+                                                        {
+                                                            de: `${partner.testimonials.length} Bewertungen ansehen`,
+                                                            en: `View ${partner.testimonials.length} reviews`,
+                                                        }[locale]
+                                                    }
                                                 </Button>
                                             ) : null}
                                         </div>
@@ -1223,8 +1266,9 @@ export function BookingRequestPlanPage({
                                                 }
                                             </p>
                                         </div>
-                                        <p className="font-medium">
-                                            {{ de: `ab ${softPrice} / Erwachsener`, en: `from ${softPrice} / adult` }[locale]}
+                                        <p className="font-medium text-2xl">
+                                            {{ de: `ab ${softPrice}`, en: `from ${softPrice}` }[locale]}{' '}
+                                            <span className="text-sm text-gray-400">{{ de: '/ Erwachsener', en: '/ adult' }[locale]}</span>
                                         </p>
                                         <Button
                                             type="button"
@@ -1309,62 +1353,57 @@ export function BookingRequestPlanPage({
                                             }[locale]
                                         }
                                     </h2>
-                                    <div className="grid gap-3 @xl:grid-cols-2">
+                                    <div className="grid grid-cols-2 gap-3 @xl:grid-cols-4">
                                         {bookingRequestPlanCuisineKeys.map((key) => {
                                             const selected = values.cuisine === key;
                                             return (
                                                 <div
                                                     key={key}
                                                     className={cn(
-                                                        'grid gap-3 rounded-xl border p-4 transition-colors',
-                                                        selected
-                                                            ? 'border-transparent bg-primary text-primary-foreground'
-                                                            : 'border-border bg-secondary text-secondary-foreground',
+                                                        'grid gap-3 rounded-xl border bg-card p-4 text-card-foreground transition-shadow',
+                                                        selected ? 'border-primary shadow-md' : 'border-border',
                                                     )}
                                                 >
                                                     <button
                                                         type="button"
                                                         onClick={() => form.setFieldValue('cuisine', key)}
                                                         aria-pressed={selected}
-                                                        className={cn('flex w-full items-start gap-3 text-left', selectionControlClassName)}
+                                                        className={cn(
+                                                            'flex w-full items-start justify-between gap-3 text-left',
+                                                            selectionControlClassName,
+                                                        )}
                                                     >
+                                                        <span className="grid gap-0.5">
+                                                            <span className="font-medium">
+                                                                {bookingRequestPlanCuisineLabel(key, locale)}
+                                                            </span>
+                                                            <span className="text-sm text-muted-foreground">
+                                                                {bookingRequestPlanCuisineSubtitle(key, locale)}
+                                                            </span>
+                                                        </span>
                                                         <span
                                                             className={cn(
                                                                 'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border',
                                                                 selected
-                                                                    ? 'border-primary-foreground/40 bg-primary-foreground text-primary'
+                                                                    ? 'border-primary bg-primary text-primary-foreground'
                                                                     : 'border-border bg-background',
                                                             )}
                                                         >
                                                             {selected ? <CheckIcon className="size-3" /> : null}
                                                         </span>
-                                                        <span className="grid gap-0.5">
-                                                            <span className="font-medium">
-                                                                {bookingRequestPlanCuisineLabel(key, locale)}
-                                                            </span>
-                                                            <span
-                                                                className={cn(
-                                                                    'text-sm',
-                                                                    selected ? 'text-primary-foreground/80' : 'text-muted-foreground',
-                                                                )}
-                                                            >
-                                                                {bookingRequestPlanCuisineSubtitle(key, locale)}
-                                                            </span>
-                                                        </span>
                                                     </button>
                                                     <button
                                                         type="button"
                                                         className={cn(
-                                                            'ml-8 w-fit text-sm underline-offset-4 hover:underline',
+                                                            'w-fit text-sm text-muted-foreground underline-offset-4 hover:underline',
                                                             selectionControlClassName,
-                                                            selected ? 'text-primary-foreground/85' : 'text-muted-foreground',
                                                         )}
                                                         onClick={() => {
                                                             form.setFieldValue('cuisine', key);
                                                             setMenuDialogOpen(true);
                                                         }}
                                                     >
-                                                        {{ de: 'Beispielmenü ansehen', en: 'View sample menu' }[locale]}
+                                                        {{ de: 'Beispielmenü', en: 'Sample menu' }[locale]}
                                                     </button>
                                                 </div>
                                             );

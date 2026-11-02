@@ -8,22 +8,26 @@ partner.
 1. Visitor opens `/booking-request/plan` (optional query: `partnerId`, `firstName`, `minDateTime` / `maxDateTime`, guests, venue, cuisine).
 2. **Step 1 (details)** — title / subtitle and partner card sit above the details + sticky-summary grid. Greeting when `firstName` (or
    signed-in first name) is present. Title splits onto two lines below `@xl` (“Euer Abend.” / “Eure Experience.”); partner card sits beside
-   the title from `@xl` (stacked + centered `w-fit` card below that). Date chips (square cards: short weekday with trailing dot, day number,
-   short month) use `grid-cols-4` → `@md:grid-cols-6` → `@2xl:grid-cols-8`, only when both `minDateTime` and `maxDateTime` are set and the
-   window has at most 14 days; otherwise the calendar DatePicker (with optional min/max). Cuisine cards stay single-column below `@xl`, two
-   columns from `@xl`; cuisine cards and date chips use the same pointer / hover / pressed / focus-visible interaction pattern as
-   `SelectableChip`. Soft “ab / from” price guidance from the selected price class (default MEDIUM / Signature; editable in the details
-   editor; no fake cart total); hero card below the date selection stacks image over content, then from `@3xl` sits side by side (image
-   left, copy right); shows a five-star row (cook-card style) and, when partner testimonials exist, “Bewertungen ansehen” scrolls to that
-   section; per-cuisine sample-menu dialog (title + courses keyed to the selected preference; each cuisine card also has “Beispielmenü
-   ansehen”); edit guests / start time / cuisine / price class via bottom Sheet on mobile and Dialog on desktop (scrim locks + blurs the
-   page). Sticky summary sidebar only from `@5xl` (`@5xl:sticky @5xl:top-20` on the column wrapper so it tracks while scrolling;
-   single-column + bottom bar below that, so the sidebar does not crowd mid widths). Mobile bottom bar shows guest count (“Teilnehmer” /
-   “guests”) plus selected price class and soft “ab” price (no date; that lives in the date chips), with a borderless edit affordance and
-   primary Next CTA. Foretaste section is a horizontal carousel (5 reel cards, captions at top, prev/next at top right on all widths).
-   Without a resolved venue, address Combobox is shown. Care section (“Ihr genießt…”) stays stacked below `@xl`, three equal cards from
-   `@xl`. Partner testimonials reuse curated partner assignments via `SectionPageTestimonials` with `columns={2}` (sidebar width) and
-   per-card detail dialogs.
+   the title from `@xl` (stacked + centered `w-fit` card below that). Date section header is a larger title row (“Wählt euren Dinner Abend”
+   / “Choose your dinner evening”) with month + year on the right (or `month A - month B year` when the chip window spans two months). Date
+   chips (larger square cards: short weekday with trailing dot, day number, short month; with `partnerId`, first/last foot labels become
+   Anreise/Abreise instead of the month) use `grid-cols-3` → `@md:grid-cols-4` → `@2xl:grid-cols-5`, only when both `minDateTime` and
+   `maxDateTime` are set and the window has at most 14 days; otherwise the calendar DatePicker (with optional min/max). Soft price lines
+   keep “p.P.” / “/ Erwachsener” in `text-gray-400`. Hero card stacks image over content, then from `@3xl` sits side by side (image left,
+   copy right; image zooms slightly on hover). Cuisine preference section sits below (after address when shown) without a wrapping card;
+   options use a 2-column grid on mobile and 4 columns from `@xl`; selected state is border + shadow (`border-primary shadow-md`), not a
+   filled primary background, matching the booking-request form price-class cards. Cuisine options and date chips use the same pointer /
+   hover / pressed / focus-visible interaction pattern as `SelectableChip`. Soft “ab / from” price guidance from the selected price class
+   (default MEDIUM / Signature; editable in the details editor; no fake cart total); five-star row (cook-card style) and, when partner
+   testimonials exist, “X Bewertungen ansehen” scrolls to that section; per-cuisine sample-menu dialog (title + courses keyed to the
+   selected preference; each cuisine option also has “Beispielmenü”); edit guests / start time / cuisine / price class via bottom Sheet on
+   mobile and Dialog on desktop (scrim locks + blurs the page). Sticky summary sidebar only from `@5xl` (`@5xl:sticky @5xl:top-20` on the
+   column wrapper so it tracks while scrolling; single-column + bottom bar below that, so the sidebar does not crowd mid widths). Mobile
+   bottom bar shows guest count (“Teilnehmer” / “guests”) plus selected price class and soft “ab” price (no date; that lives in the date
+   chips), with a borderless edit affordance and primary Next CTA. Foretaste section is a horizontal carousel (5 reel cards, captions at
+   top, prev/next at top right on all widths). Without a resolved venue, address Combobox is shown between hero and preferences. Care
+   section (“Ihr genießt…”) stays stacked below `@xl`, three equal cards from `@xl`. Partner testimonials reuse curated partner assignments
+   via `SectionPageTestimonials` with `columns={2}` (sidebar width) and per-card detail dialogs.
 3. **Step 2 (contact)** — `AuthIdentityGate` (OTP / passkey / profile; `firstName` seeded from query when registering) plus optional wishes
    / allergies message. Submit calls `UserMutation.bookingRequestCreate` with the chosen `priceClassType` and lands on the existing
    submitted page.
