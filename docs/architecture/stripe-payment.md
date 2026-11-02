@@ -23,10 +23,10 @@ Expose a domain-facing `StripePayment` interface on `ServerRuntime.stripe`, impl
   `stripeAccountActive`, and `stripeAccountActiveWasReset` on `Cooks` (flat columns — not a JSON payout-methods array). See
   [docs/features/cook-profile.md](../features/cook-profile.md).
 - **Customer reuse:** `customerEnsure` searches `metadata.userId` first, then email. Email matches get `metadata.userId` stamped so a later
-  ensure does not create a second Customer for the same user. Off-session charges
-  (`paymentIntentCreateFromPaymentMethodWithSplit`) always use the Customer that already owns the PaymentMethod (not a fresh
-  `customerEnsure` result) — otherwise Stripe rejects with “PaymentMethod does not belong to the Customer you supplied” when a legacy email
-  Customer and a newer `userId` Customer both exist. Unattached PaymentMethods are attached to the ensured Customer.
+  ensure does not create a second Customer for the same user. Off-session charges (`paymentIntentCreateFromPaymentMethodWithSplit`) always
+  use the Customer that already owns the PaymentMethod (not a fresh `customerEnsure` result) — otherwise Stripe rejects with “PaymentMethod
+  does not belong to the Customer you supplied” when a legacy email Customer and a newer `userId` Customer both exist. Unattached
+  PaymentMethods are attached to the ensured Customer.
 - **Do not** list all Connect accounts to find by email on the happy path (unbounded and fragile). Customers get `customers.search`; Connect
   has no equivalent search API. Reuse is `existingAccountId` from the cook row. Bounded metadata scan (`metadata.cookId`) is recovery-only
   when an idempotency key collides with a different prior body.

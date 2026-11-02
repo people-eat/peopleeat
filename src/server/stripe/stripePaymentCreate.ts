@@ -94,7 +94,7 @@ export function stripePaymentCreate({
             if (existingByEmail) {
                 // Stamp userId so later lookups prefer this Customer instead of
                 // creating a second one that would not own the saved card.
-                if (existingByEmail.metadata?.userId !== userId) {
+                if (existingByEmail.metadata.userId !== userId) {
                     const name = customerDisplayName(firstName, lastName);
                     await stripe.customers.update(existingByEmail.id, {
                         metadata: { ...existingByEmail.metadata, userId },
@@ -127,7 +127,7 @@ export function stripePaymentCreate({
         if (ownedCustomerId) {
             const owned = await stripe.customers.retrieve(ownedCustomerId);
             if (!('deleted' in owned && owned.deleted)) {
-                if (owned.metadata?.userId !== user.userId) {
+                if (owned.metadata.userId !== user.userId) {
                     await stripe.customers.update(ownedCustomerId, {
                         metadata: { ...owned.metadata, userId: user.userId },
                     });
