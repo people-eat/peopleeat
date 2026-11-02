@@ -4,10 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { idCreate } from '../../shared/idCreate';
 import { cooks, meals } from '../db/schema';
 import { commandSetup, cookMutationParent, findLogsForSession, testDb } from '../test/commandTestUtils';
-import { cookMealCreate } from './cookMealCreate';
 import { cookMealDelete } from './cookMealDelete';
-import { cookMenuCreate } from './cookMenuCreate';
-import { cookMenuUpdate } from './cookMenuUpdate';
+import { cookMealUpsert } from './cookMealUpsert';
+import { cookMenuUpsert } from './cookMenuUpsert';
 
 async function setupCook() {
     const setup = await commandSetup.withUser({ firstName: 'chef', lastName: 'User' });
@@ -19,7 +18,7 @@ describe('cookMealDelete', () => {
     it('soft-deletes the meal and publishes userUpdates', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const created = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         const mealId = created.referenceId!;
         vi.mocked(serverRuntime.publish.userUpdates).mockClear();
 
@@ -53,7 +52,7 @@ describe('cookMealDelete', () => {
         // Arrange
         const owner = await setupCook();
         const other = await setupCook();
-        const created = await cookMealCreate(cookMutationParent(owner.user.userId), {}, owner.requestingSession, owner.serverRuntime);
+        const created = await cookMealUpsert(cookMutationParent(owner.user.userId), {}, owner.requestingSession, owner.serverRuntime);
 
         // Act + Assert
         await expect(
@@ -73,7 +72,7 @@ describe('cookMealDelete', () => {
     it('rejects a second delete on an already soft-deleted meal', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const created = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         const mealId = created.referenceId!;
         await cookMealDelete(cookMutationParent(user.userId), { mealId }, requestingSession, serverRuntime);
         vi.mocked(serverRuntime.publish.userUpdates).mockClear();
@@ -91,13 +90,14 @@ describe('cookMealDelete', () => {
     it('rejects delete when the meal is the sole option on a course', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const meal = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
-        const menu = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
-        await cookMenuUpdate(
+        const meal = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const menu = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        await cookMenuUpsert(
             cookMutationParent(user.userId),
             {
-                menuId: menu.referenceId!,
                 menu: {
+                    menuId: menu.referenceId!,
+
                     courses: [{ title: 'Amuse', mealIds: [meal.referenceId!], mealSelectionLimit: null }],
                 },
             },

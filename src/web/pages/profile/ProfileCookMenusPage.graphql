@@ -54,10 +54,10 @@ subscription ProfileCookMenusPageUpdates {
     }
 }
 
-mutation ProfileMenuCreate {
+mutation ProfileMenuUpsert($menu: CookMenuUpsert) {
     user {
         cook {
-            menuCreate {
+            menuUpsert(menu: $menu) {
                 success
                 referenceId
             }

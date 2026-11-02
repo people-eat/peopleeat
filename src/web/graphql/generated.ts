@@ -1091,6 +1091,15 @@ export type GqlCAdminCookMealImageFilter = 'NOT_ON_PUBLIC_PAGE' | 'ON_PUBLIC_PAG
 
 export type GqlCAdminCookMealSortField = 'createdAt' | 'deletedAt' | 'publishedAt' | 'title';
 
+export type GqlCAdminCookMealUpsert = {
+    cookId?: InputMaybe<Scalars['ID']['input']>;
+    description?: InputMaybe<Scalars['String']['input']>;
+    imageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    mealId?: InputMaybe<Scalars['ID']['input']>;
+    publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
+    title?: InputMaybe<Scalars['String']['input']>;
+};
+
 export interface GqlCAdminCookMenu {
     __typename?: 'AdminCookMenu';
     bookingRequestOfferId?: Maybe<Scalars['ID']['output']>;
@@ -1130,6 +1139,15 @@ export type GqlCAdminCookMenuCriterion = {
 };
 
 export type GqlCAdminCookMenuSortField = 'createdAt' | 'deletedAt' | 'publishedAt' | 'title';
+
+export type GqlCAdminCookMenuUpsert = {
+    cookId?: InputMaybe<Scalars['ID']['input']>;
+    courses?: InputMaybe<Array<GqlCCookMenuCourseInput>>;
+    description?: InputMaybe<Scalars['String']['input']>;
+    menuId?: InputMaybe<Scalars['ID']['input']>;
+    publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
+    title?: InputMaybe<Scalars['String']['input']>;
+};
 
 export type GqlCAdminCookPayoutBlockedReason = 'MISSING_STRIPE_ACCOUNT' | 'STRIPE_ACCOUNT_INACTIVE' | 'STRIPE_PAYOUTS_DISABLED';
 
@@ -1380,13 +1398,11 @@ export interface GqlCAdminMutation {
     cookApprovalUpdate: GqlCMutationResult;
     cookBiographySuggest: Scalars['String']['output'];
     cookBiographySummarySuggest: Scalars['String']['output'];
-    cookMealCreate: GqlCMutationResult;
     cookMealDelete: GqlCMutationResult;
-    cookMealUpdate: GqlCMutationResult;
+    cookMealUpsert: GqlCMutationResult;
     cookMenuCopy: GqlCMutationResult;
-    cookMenuCreate: GqlCMutationResult;
     cookMenuDelete: GqlCMutationResult;
-    cookMenuUpdate: GqlCMutationResult;
+    cookMenuUpsert: GqlCMutationResult;
     cookTestimonialDelete: GqlCMutationResult;
     cookTestimonialImageUpdate: GqlCMutationResult;
     cookTestimonialPublish: GqlCMutationResult;
@@ -1396,19 +1412,12 @@ export interface GqlCAdminMutation {
     customerTestimonialImageUpdate: GqlCMutationResult;
     customerTestimonialPublish: GqlCMutationResult;
     customerTestimonialUpsert: GqlCMutationResult;
-    featureToggleUpdate: GqlCMutationResult;
+    featureToggleUpsert: GqlCMutationResult;
     featureToggleUserOverrideDelete: GqlCMutationResult;
     featureToggleUserOverrideUpsert: GqlCMutationResult;
     giftCardPdfsRegenerate: GqlCMutationResult;
-    legalImprintDraftCreate: GqlCMutationResult;
-    legalImprintDraftUpdate: GqlCMutationResult;
-    legalImprintPublish: GqlCMutationResult;
-    legalPrivacyPolicyDraftCreate: GqlCMutationResult;
-    legalPrivacyPolicyDraftUpdate: GqlCMutationResult;
-    legalPrivacyPolicyPublish: GqlCMutationResult;
-    legalTermsAndConditionsDraftCreate: GqlCMutationResult;
-    legalTermsAndConditionsDraftUpdate: GqlCMutationResult;
-    legalTermsAndConditionsPublish: GqlCMutationResult;
+    legalDocumentDraftUpsert: GqlCMutationResult;
+    legalDocumentPublish: GqlCMutationResult;
     occasionCooksUpdate: GqlCMutationResult;
     occasionDelete: GqlCMutationResult;
     occasionTestimonialsUpdate: GqlCMutationResult;
@@ -1431,7 +1440,7 @@ export interface GqlCAdminMutation {
     userEmailAddressUpdate: GqlCMutationResult;
     userStatusUpdate: GqlCMutationResult;
     userUpdate: GqlCMutationResult;
-    webPageUpdate: GqlCMutationResult;
+    webPageUpsert: GqlCMutationResult;
     whatsAppConversationUnreadCountReset: GqlCMutationResult;
     whatsAppMessageCreate: GqlCMutationResult;
     whatsAppMessageReactionUpsert: GqlCMutationResult;
@@ -1606,35 +1615,24 @@ export type GqlCAdminMutationCookBiographySummarySuggestArgs = {
     cookId: Scalars['ID']['input'];
 };
 
-export type GqlCAdminMutationCookMealCreateArgs = {
-    cookId: Scalars['ID']['input'];
-    meal?: InputMaybe<GqlCCookMealCreate>;
-};
-
 export type GqlCAdminMutationCookMealDeleteArgs = {
     mealId: Scalars['ID']['input'];
 };
 
-export type GqlCAdminMutationCookMealUpdateArgs = {
-    meal: GqlCCookMealUpdate;
-    mealId: Scalars['ID']['input'];
+export type GqlCAdminMutationCookMealUpsertArgs = {
+    meal: GqlCAdminCookMealUpsert;
 };
 
 export type GqlCAdminMutationCookMenuCopyArgs = {
     menuId: Scalars['ID']['input'];
 };
 
-export type GqlCAdminMutationCookMenuCreateArgs = {
-    cookId: Scalars['ID']['input'];
-};
-
 export type GqlCAdminMutationCookMenuDeleteArgs = {
     menuId: Scalars['ID']['input'];
 };
 
-export type GqlCAdminMutationCookMenuUpdateArgs = {
-    menu: GqlCCookMenuUpdate;
-    menuId: Scalars['ID']['input'];
+export type GqlCAdminMutationCookMenuUpsertArgs = {
+    menu: GqlCAdminCookMenuUpsert;
 };
 
 export type GqlCAdminMutationCookTestimonialDeleteArgs = {
@@ -1678,7 +1676,7 @@ export type GqlCAdminMutationCustomerTestimonialUpsertArgs = {
     input: GqlCAdminCustomerTestimonialUpsert;
 };
 
-export type GqlCAdminMutationFeatureToggleUpdateArgs = {
+export type GqlCAdminMutationFeatureToggleUpsertArgs = {
     enabled: Scalars['Boolean']['input'];
     featureToggleKey: GqlCFeatureToggleKey;
 };
@@ -1698,28 +1696,14 @@ export type GqlCAdminMutationGiftCardPdfsRegenerateArgs = {
     giftCardId: Scalars['ID']['input'];
 };
 
-export type GqlCAdminMutationLegalImprintDraftUpdateArgs = {
+export type GqlCAdminMutationLegalDocumentDraftUpsertArgs = {
     input: GqlCAdminLegalDocumentDraftInput;
+    kind: GqlCLegalDocumentKind;
 };
 
-export type GqlCAdminMutationLegalImprintPublishArgs = {
-    imprintId: Scalars['ID']['input'];
-};
-
-export type GqlCAdminMutationLegalPrivacyPolicyDraftUpdateArgs = {
-    input: GqlCAdminLegalDocumentDraftInput;
-};
-
-export type GqlCAdminMutationLegalPrivacyPolicyPublishArgs = {
-    privacyPolicyId: Scalars['ID']['input'];
-};
-
-export type GqlCAdminMutationLegalTermsAndConditionsDraftUpdateArgs = {
-    input: GqlCAdminLegalDocumentDraftInput;
-};
-
-export type GqlCAdminMutationLegalTermsAndConditionsPublishArgs = {
-    termsAndConditionsId: Scalars['ID']['input'];
+export type GqlCAdminMutationLegalDocumentPublishArgs = {
+    documentId: Scalars['ID']['input'];
+    kind: GqlCLegalDocumentKind;
 };
 
 export type GqlCAdminMutationOccasionCooksUpdateArgs = {
@@ -1822,8 +1806,8 @@ export type GqlCAdminMutationUserUpdateArgs = {
     userId: Scalars['ID']['input'];
 };
 
-export type GqlCAdminMutationWebPageUpdateArgs = {
-    input: GqlCAdminWebPageUpdate;
+export type GqlCAdminMutationWebPageUpsertArgs = {
+    input: GqlCAdminWebPageUpsert;
     webPageKey: GqlCWebPageKey;
 };
 
@@ -2314,7 +2298,7 @@ export interface GqlCAdminWebPage {
     webPageKey: GqlCWebPageKey;
 }
 
-export type GqlCAdminWebPageUpdate = {
+export type GqlCAdminWebPageUpsert = {
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
     titleDe: Scalars['String']['input'];
@@ -3343,18 +3327,7 @@ export type GqlCCookBookingRequestOfferFindManyCriterion = {
 
 export type GqlCCookBookingRequestOfferListBucket = 'ACTIVE' | 'ARCHIVED' | 'COMPLETED';
 
-export type GqlCCookBookingRequestOfferTestimonialCreate = {
-    authorName?: InputMaybe<Scalars['String']['input']>;
-    body?: InputMaybe<Scalars['String']['input']>;
-    bookingRequestOfferId: Scalars['ID']['input'];
-    imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-    location?: InputMaybe<Scalars['String']['input']>;
-    lowRatingAnswers?: InputMaybe<GqlCCookTestimonialLowRatingAnswersInput>;
-    occasion?: InputMaybe<Scalars['String']['input']>;
-    rating?: InputMaybe<Scalars['Int']['input']>;
-};
-
-export type GqlCCookBookingRequestOfferTestimonialUpdate = {
+export type GqlCCookBookingRequestOfferTestimonialUpsert = {
     body?: InputMaybe<Scalars['String']['input']>;
     bookingRequestOfferId: Scalars['ID']['input'];
     imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
@@ -3463,11 +3436,6 @@ export interface GqlCCookMeal {
     updatedAt: Scalars['DateTime']['output'];
 }
 
-export type GqlCCookMealCreate = {
-    description?: InputMaybe<Scalars['String']['input']>;
-    title: Scalars['String']['input'];
-};
-
 export type GqlCCookMealCriterion = {
     searchText?: InputMaybe<Scalars['String']['input']>;
 };
@@ -3497,9 +3465,10 @@ export interface GqlCCookMealRelationships {
     offers: Array<GqlCCookMealRelationshipBookingRequestOffer>;
 }
 
-export type GqlCCookMealUpdate = {
+export type GqlCCookMealUpsert = {
     description?: InputMaybe<Scalars['String']['input']>;
     imageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    mealId?: InputMaybe<Scalars['ID']['input']>;
     publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
     title?: InputMaybe<Scalars['String']['input']>;
 };
@@ -3561,9 +3530,10 @@ export interface GqlCCookMenuSuggestion {
 
 export type GqlCCookMenuSuggestionMealOptionType = 'EXISTING_MEAL' | 'NEW_MEAL';
 
-export type GqlCCookMenuUpdate = {
+export type GqlCCookMenuUpsert = {
     courses?: InputMaybe<Array<GqlCCookMenuCourseInput>>;
     description?: InputMaybe<Scalars['String']['input']>;
+    menuId?: InputMaybe<Scalars['ID']['input']>;
     publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
     title?: InputMaybe<Scalars['String']['input']>;
 };
@@ -3591,25 +3561,22 @@ export interface GqlCCookMutation {
     bookingRequestOfferPreparationsComplete: GqlCMutationResult;
     bookingRequestOfferPriceUpdate: GqlCMutationResult;
     bookingRequestOfferSuggestedMenusUpdate: GqlCMutationResult;
-    bookingRequestOfferTestimonialCreate: GqlCMutationResult;
-    bookingRequestOfferTestimonialUpdate: GqlCMutationResult;
+    bookingRequestOfferTestimonialUpsert: GqlCMutationResult;
     bookingRequestOfferUnreadNotificationCountReset: GqlCMutationResult;
     bookingRequestOpen: GqlCMutationResult;
     callAvailabilityExceptionCreate: GqlCMutationResult;
     callAvailabilityExceptionDelete: GqlCMutationResult;
     callAvailabilityRuleCreate: GqlCMutationResult;
     callAvailabilityRuleDelete: GqlCMutationResult;
-    mealCreate: GqlCMutationResult;
     mealDelete: GqlCMutationResult;
-    mealUpdate: GqlCMutationResult;
+    mealUpsert: GqlCMutationResult;
     menuCopy: GqlCMutationResult;
-    menuCreate: GqlCMutationResult;
     menuDelete: GqlCMutationResult;
     menuSuggestionFromInventory: GqlCCookMenuSuggestion;
     menuSuggestionFromText: GqlCCookMenuSuggestion;
     menuSyncToTemplate: GqlCMutationResult;
     menuTitleDescriptionSuggest: GqlCCookMenuSuggestion;
-    menuUpdate: GqlCMutationResult;
+    menuUpsert: GqlCMutationResult;
     stripeDashboardUrlCreate: GqlCCookStripeDashboardResult;
     stripeOnboardingStart: GqlCCookStripeOnboardingResult;
     stripeStatusSync: GqlCMutationResult;
@@ -3709,12 +3676,8 @@ export type GqlCCookMutationBookingRequestOfferSuggestedMenusUpdateArgs = {
     input: GqlCBookingRequestOfferSuggestedMenusUpdate;
 };
 
-export type GqlCCookMutationBookingRequestOfferTestimonialCreateArgs = {
-    input: GqlCCookBookingRequestOfferTestimonialCreate;
-};
-
-export type GqlCCookMutationBookingRequestOfferTestimonialUpdateArgs = {
-    input: GqlCCookBookingRequestOfferTestimonialUpdate;
+export type GqlCCookMutationBookingRequestOfferTestimonialUpsertArgs = {
+    input: GqlCCookBookingRequestOfferTestimonialUpsert;
 };
 
 export type GqlCCookMutationBookingRequestOfferUnreadNotificationCountResetArgs = {
@@ -3741,17 +3704,12 @@ export type GqlCCookMutationCallAvailabilityRuleDeleteArgs = {
     cookCallAvailabilityRuleId: Scalars['ID']['input'];
 };
 
-export type GqlCCookMutationMealCreateArgs = {
-    meal?: InputMaybe<GqlCCookMealCreate>;
-};
-
 export type GqlCCookMutationMealDeleteArgs = {
     mealId: Scalars['ID']['input'];
 };
 
-export type GqlCCookMutationMealUpdateArgs = {
-    meal: GqlCCookMealUpdate;
-    mealId: Scalars['ID']['input'];
+export type GqlCCookMutationMealUpsertArgs = {
+    meal?: InputMaybe<GqlCCookMealUpsert>;
 };
 
 export type GqlCCookMutationMenuCopyArgs = {
@@ -3780,9 +3738,8 @@ export type GqlCCookMutationMenuTitleDescriptionSuggestArgs = {
     currentTitle?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type GqlCCookMutationMenuUpdateArgs = {
-    menu: GqlCCookMenuUpdate;
-    menuId: Scalars['ID']['input'];
+export type GqlCCookMutationMenuUpsertArgs = {
+    menu?: InputMaybe<GqlCCookMenuUpsert>;
 };
 
 export type GqlCCookMutationStripeOnboardingStartArgs = {
@@ -4048,6 +4005,8 @@ export type GqlCInvoiceAddressInput = {
     line2: Scalars['String']['input'];
     postalCode: Scalars['String']['input'];
 };
+
+export type GqlCLegalDocumentKind = 'IMPRINT' | 'PRIVACY_POLICY' | 'TERMS_AND_CONDITIONS';
 
 export type GqlCLocale = 'de' | 'en';
 
@@ -4856,17 +4815,7 @@ export interface GqlCUserBookingRequestOfferPriceImpact {
     totalWithoutDiscountsCentsCustomerBefore: Scalars['Int']['output'];
 }
 
-export type GqlCUserBookingRequestOfferTestimonialCreate = {
-    authorName?: InputMaybe<Scalars['String']['input']>;
-    body: Scalars['String']['input'];
-    bookingRequestOfferId: Scalars['ID']['input'];
-    imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-    location?: InputMaybe<Scalars['String']['input']>;
-    occasion?: InputMaybe<Scalars['String']['input']>;
-    rating?: InputMaybe<Scalars['Int']['input']>;
-};
-
-export type GqlCUserBookingRequestOfferTestimonialUpdate = {
+export type GqlCUserBookingRequestOfferTestimonialUpsert = {
     body: Scalars['String']['input'];
     bookingRequestOfferId: Scalars['ID']['input'];
     imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
@@ -4964,8 +4913,7 @@ export interface GqlCUserMutation {
     bookingRequestOfferParticipantAmendmentCancel: GqlCMutationResult;
     bookingRequestOfferParticipantAmendmentCreate: GqlCMutationResult;
     bookingRequestOfferPaymentStatusUpdate: GqlCMutationResult;
-    bookingRequestOfferTestimonialCreate: GqlCMutationResult;
-    bookingRequestOfferTestimonialUpdate: GqlCMutationResult;
+    bookingRequestOfferTestimonialUpsert: GqlCMutationResult;
     bookingRequestOfferUnreadNotificationCountReset: GqlCMutationResult;
     bookingRequestRequestRecall: GqlCMutationResult;
     bookingRequestUpdate: GqlCMutationResult;
@@ -5097,12 +5045,8 @@ export type GqlCUserMutationBookingRequestOfferPaymentStatusUpdateArgs = {
     invoiceAddress: GqlCInvoiceAddressInput;
 };
 
-export type GqlCUserMutationBookingRequestOfferTestimonialCreateArgs = {
-    input: GqlCUserBookingRequestOfferTestimonialCreate;
-};
-
-export type GqlCUserMutationBookingRequestOfferTestimonialUpdateArgs = {
-    input: GqlCUserBookingRequestOfferTestimonialUpdate;
+export type GqlCUserMutationBookingRequestOfferTestimonialUpsertArgs = {
+    input: GqlCUserBookingRequestOfferTestimonialUpsert;
 };
 
 export type GqlCUserMutationBookingRequestOfferUnreadNotificationCountResetArgs = {
@@ -6053,36 +5997,20 @@ export type GqlCAdminTestimonialOfferLinkQuery = {
     };
 };
 
-export type GqlCUserBookingRequestOfferTestimonialCreateMutationVariables = Exact<{
-    input: Schema.GqlCUserBookingRequestOfferTestimonialCreate;
+export type GqlCUserBookingRequestOfferTestimonialUpsertMutationVariables = Exact<{
+    input: Schema.GqlCUserBookingRequestOfferTestimonialUpsert;
 }>;
 
-export type GqlCUserBookingRequestOfferTestimonialCreateMutation = {
-    user: { bookingRequestOfferTestimonialCreate: { success: boolean; referenceId: string | null } };
+export type GqlCUserBookingRequestOfferTestimonialUpsertMutation = {
+    user: { bookingRequestOfferTestimonialUpsert: { success: boolean; referenceId: string | null } };
 };
 
-export type GqlCCookBookingRequestOfferTestimonialCreateMutationVariables = Exact<{
-    input: Schema.GqlCCookBookingRequestOfferTestimonialCreate;
+export type GqlCCookBookingRequestOfferTestimonialUpsertMutationVariables = Exact<{
+    input: Schema.GqlCCookBookingRequestOfferTestimonialUpsert;
 }>;
 
-export type GqlCCookBookingRequestOfferTestimonialCreateMutation = {
-    user: { cook: { bookingRequestOfferTestimonialCreate: { success: boolean; referenceId: string | null } } };
-};
-
-export type GqlCUserBookingRequestOfferTestimonialUpdateMutationVariables = Exact<{
-    input: Schema.GqlCUserBookingRequestOfferTestimonialUpdate;
-}>;
-
-export type GqlCUserBookingRequestOfferTestimonialUpdateMutation = {
-    user: { bookingRequestOfferTestimonialUpdate: { success: boolean; referenceId: string | null } };
-};
-
-export type GqlCCookBookingRequestOfferTestimonialUpdateMutationVariables = Exact<{
-    input: Schema.GqlCCookBookingRequestOfferTestimonialUpdate;
-}>;
-
-export type GqlCCookBookingRequestOfferTestimonialUpdateMutation = {
-    user: { cook: { bookingRequestOfferTestimonialUpdate: { success: boolean; referenceId: string | null } } };
+export type GqlCCookBookingRequestOfferTestimonialUpsertMutation = {
+    user: { cook: { bookingRequestOfferTestimonialUpsert: { success: boolean; referenceId: string | null } } };
 };
 
 type GqlCContentSectionFields_ContentSectionContent_Fragment = {
@@ -7244,16 +7172,11 @@ export type GqlCCookCreateLocationSuggestionsQuery = {
     };
 };
 
-export type GqlCCookMealEditorMealCreateMutationVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCCookMealEditorMealCreateMutation = { user: { cook: { mealCreate: { success: boolean; referenceId: string | null } } } };
-
-export type GqlCCookMealEditorMealUpdateMutationVariables = Exact<{
-    mealId: string;
-    meal: Schema.GqlCCookMealUpdate;
+export type GqlCCookMealEditorMealUpsertMutationVariables = Exact<{
+    meal?: Schema.GqlCCookMealUpsert | null | undefined;
 }>;
 
-export type GqlCCookMealEditorMealUpdateMutation = { user: { cook: { mealUpdate: { success: boolean; referenceId: string | null } } } };
+export type GqlCCookMealEditorMealUpsertMutation = { user: { cook: { mealUpsert: { success: boolean; referenceId: string | null } } } };
 
 export type GqlCCookSidebarNavBadgesFragment = {
     cookId: string;
@@ -12760,12 +12683,12 @@ export type GqlCAdminFeatureTogglesPageUpdatesSubscription = {
     };
 };
 
-export type GqlCAdminFeatureToggleUpdateMutationVariables = Exact<{
+export type GqlCAdminFeatureToggleUpsertMutationVariables = Exact<{
     featureToggleKey: Schema.GqlCFeatureToggleKey;
     enabled: boolean;
 }>;
 
-export type GqlCAdminFeatureToggleUpdateMutation = { admin: { featureToggleUpdate: { success: boolean; referenceId: string | null } } };
+export type GqlCAdminFeatureToggleUpsertMutation = { admin: { featureToggleUpsert: { success: boolean; referenceId: string | null } } };
 
 export type GqlCAdminFeatureToggleUserOverrideUpsertMutationVariables = Exact<{
     userId: string;
@@ -13068,69 +12991,21 @@ export type GqlCAdminLegalDocumentPageUpdatesSubscription = {
     };
 };
 
-export type GqlCAdminLegalPrivacyPolicyDraftCreateMutationVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCAdminLegalPrivacyPolicyDraftCreateMutation = {
-    admin: { legalPrivacyPolicyDraftCreate: { success: boolean; referenceId: string | null } };
-};
-
-export type GqlCAdminLegalPrivacyPolicyDraftUpdateMutationVariables = Exact<{
+export type GqlCAdminLegalDocumentDraftUpsertMutationVariables = Exact<{
+    kind: Schema.GqlCLegalDocumentKind;
     input: Schema.GqlCAdminLegalDocumentDraftInput;
 }>;
 
-export type GqlCAdminLegalPrivacyPolicyDraftUpdateMutation = {
-    admin: { legalPrivacyPolicyDraftUpdate: { success: boolean; referenceId: string | null } };
+export type GqlCAdminLegalDocumentDraftUpsertMutation = {
+    admin: { legalDocumentDraftUpsert: { success: boolean; referenceId: string | null } };
 };
 
-export type GqlCAdminLegalPrivacyPolicyPublishMutationVariables = Exact<{
-    privacyPolicyId: string;
+export type GqlCAdminLegalDocumentPublishMutationVariables = Exact<{
+    kind: Schema.GqlCLegalDocumentKind;
+    documentId: string;
 }>;
 
-export type GqlCAdminLegalPrivacyPolicyPublishMutation = {
-    admin: { legalPrivacyPolicyPublish: { success: boolean; referenceId: string | null } };
-};
-
-export type GqlCAdminLegalTermsAndConditionsDraftCreateMutationVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCAdminLegalTermsAndConditionsDraftCreateMutation = {
-    admin: { legalTermsAndConditionsDraftCreate: { success: boolean; referenceId: string | null } };
-};
-
-export type GqlCAdminLegalTermsAndConditionsDraftUpdateMutationVariables = Exact<{
-    input: Schema.GqlCAdminLegalDocumentDraftInput;
-}>;
-
-export type GqlCAdminLegalTermsAndConditionsDraftUpdateMutation = {
-    admin: { legalTermsAndConditionsDraftUpdate: { success: boolean; referenceId: string | null } };
-};
-
-export type GqlCAdminLegalTermsAndConditionsPublishMutationVariables = Exact<{
-    termsAndConditionsId: string;
-}>;
-
-export type GqlCAdminLegalTermsAndConditionsPublishMutation = {
-    admin: { legalTermsAndConditionsPublish: { success: boolean; referenceId: string | null } };
-};
-
-export type GqlCAdminLegalImprintDraftCreateMutationVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCAdminLegalImprintDraftCreateMutation = {
-    admin: { legalImprintDraftCreate: { success: boolean; referenceId: string | null } };
-};
-
-export type GqlCAdminLegalImprintDraftUpdateMutationVariables = Exact<{
-    input: Schema.GqlCAdminLegalDocumentDraftInput;
-}>;
-
-export type GqlCAdminLegalImprintDraftUpdateMutation = {
-    admin: { legalImprintDraftUpdate: { success: boolean; referenceId: string | null } };
-};
-
-export type GqlCAdminLegalImprintPublishMutationVariables = Exact<{
-    imprintId: string;
-}>;
-
-export type GqlCAdminLegalImprintPublishMutation = { admin: { legalImprintPublish: { success: boolean; referenceId: string | null } } };
+export type GqlCAdminLegalDocumentPublishMutation = { admin: { legalDocumentPublish: { success: boolean; referenceId: string | null } } };
 
 export type GqlCAdminLogPageQueryVariables = Exact<{
     logId: string;
@@ -13334,12 +13209,11 @@ export type GqlCAdminMealPageUpdatesSubscription = {
     };
 };
 
-export type GqlCAdminMealUpdateMutationVariables = Exact<{
-    mealId: string;
-    meal: Schema.GqlCCookMealUpdate;
+export type GqlCAdminMealUpsertMutationVariables = Exact<{
+    meal: Schema.GqlCAdminCookMealUpsert;
 }>;
 
-export type GqlCAdminMealUpdateMutation = { admin: { cookMealUpdate: { success: boolean; referenceId: string | null } } };
+export type GqlCAdminMealUpsertMutation = { admin: { cookMealUpsert: { success: boolean; referenceId: string | null } } };
 
 export type GqlCAdminMealDeleteMutationVariables = Exact<{
     mealId: string;
@@ -13568,19 +13442,11 @@ export type GqlCAdminMenuEditPageUpdatesSubscription = {
     };
 };
 
-export type GqlCAdminMenuEditMealCreateMutationVariables = Exact<{
-    cookId: string;
-    meal?: Schema.GqlCCookMealCreate | null | undefined;
+export type GqlCAdminMenuEditMealUpsertMutationVariables = Exact<{
+    meal: Schema.GqlCAdminCookMealUpsert;
 }>;
 
-export type GqlCAdminMenuEditMealCreateMutation = { admin: { cookMealCreate: { success: boolean; referenceId: string | null } } };
-
-export type GqlCAdminMenuEditMealUpdateMutationVariables = Exact<{
-    mealId: string;
-    meal: Schema.GqlCCookMealUpdate;
-}>;
-
-export type GqlCAdminMenuEditMealUpdateMutation = { admin: { cookMealUpdate: { success: boolean; referenceId: string | null } } };
+export type GqlCAdminMenuEditMealUpsertMutation = { admin: { cookMealUpsert: { success: boolean; referenceId: string | null } } };
 
 export type GqlCAdminMenuPageMealOptionFragment = {
     mealId: string;
@@ -13737,12 +13603,11 @@ export type GqlCAdminMenuPageUpdatesSubscription = {
     };
 };
 
-export type GqlCAdminMenuUpdateMutationVariables = Exact<{
-    menuId: string;
-    menu: Schema.GqlCCookMenuUpdate;
+export type GqlCAdminMenuUpsertMutationVariables = Exact<{
+    menu: Schema.GqlCAdminCookMenuUpsert;
 }>;
 
-export type GqlCAdminMenuUpdateMutation = { admin: { cookMenuUpdate: { success: boolean; referenceId: string | null } } };
+export type GqlCAdminMenuUpsertMutation = { admin: { cookMenuUpsert: { success: boolean; referenceId: string | null } } };
 
 export type GqlCAdminMenuDeleteMutationVariables = Exact<{
     menuId: string;
@@ -16417,18 +16282,17 @@ export type GqlCAdminUserCookUpdateMutationVariables = Exact<{
 
 export type GqlCAdminUserCookUpdateMutation = { admin: { cookUpdate: { success: boolean; referenceId: string | null } } };
 
-export type GqlCAdminUserCookMealCreateMutationVariables = Exact<{
-    cookId: string;
-    meal?: Schema.GqlCCookMealCreate | null | undefined;
+export type GqlCAdminUserCookMealUpsertMutationVariables = Exact<{
+    meal: Schema.GqlCAdminCookMealUpsert;
 }>;
 
-export type GqlCAdminUserCookMealCreateMutation = { admin: { cookMealCreate: { success: boolean; referenceId: string | null } } };
+export type GqlCAdminUserCookMealUpsertMutation = { admin: { cookMealUpsert: { success: boolean; referenceId: string | null } } };
 
-export type GqlCAdminUserCookMenuCreateMutationVariables = Exact<{
-    cookId: string;
+export type GqlCAdminUserCookMenuUpsertMutationVariables = Exact<{
+    menu: Schema.GqlCAdminCookMenuUpsert;
 }>;
 
-export type GqlCAdminUserCookMenuCreateMutation = { admin: { cookMenuCreate: { success: boolean; referenceId: string | null } } };
+export type GqlCAdminUserCookMenuUpsertMutation = { admin: { cookMenuUpsert: { success: boolean; referenceId: string | null } } };
 
 export type GqlCAdminUserFeatureToggleUserOverrideUpsertMutationVariables = Exact<{
     userId: string;
@@ -16536,12 +16400,12 @@ export type GqlCAdminWebPagePageQuery = {
     };
 };
 
-export type GqlCAdminWebPageUpdateMutationVariables = Exact<{
+export type GqlCAdminWebPageUpsertMutationVariables = Exact<{
     webPageKey: Schema.GqlCWebPageKey;
-    input: Schema.GqlCAdminWebPageUpdate;
+    input: Schema.GqlCAdminWebPageUpsert;
 }>;
 
-export type GqlCAdminWebPageUpdateMutation = { admin: { webPageUpdate: { success: boolean; referenceId: string | null } } };
+export type GqlCAdminWebPageUpsertMutation = { admin: { webPageUpsert: { success: boolean; referenceId: string | null } } };
 
 export type GqlCAdminWebPagePageUpdatesSubscriptionVariables = Exact<{
     webPageKey: Schema.GqlCWebPageKey;
@@ -19138,12 +19002,11 @@ export type GqlCProfileCookMealPageUpdatesSubscription = {
     };
 };
 
-export type GqlCProfileMealUpdateMutationVariables = Exact<{
-    mealId: string;
-    meal: Schema.GqlCCookMealUpdate;
+export type GqlCProfileMealUpsertMutationVariables = Exact<{
+    meal?: Schema.GqlCCookMealUpsert | null | undefined;
 }>;
 
-export type GqlCProfileMealUpdateMutation = { user: { cook: { mealUpdate: { success: boolean; referenceId: string | null } } } };
+export type GqlCProfileMealUpsertMutation = { user: { cook: { mealUpsert: { success: boolean; referenceId: string | null } } } };
 
 export type GqlCProfileMealDeleteMutationVariables = Exact<{
     mealId: string;
@@ -19208,10 +19071,6 @@ export type GqlCProfileCookMealsPageUpdatesSubscription = {
         } | null;
     };
 };
-
-export type GqlCProfileMealCreateMutationVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCProfileMealCreateMutation = { user: { cook: { mealCreate: { success: boolean; referenceId: string | null } } } };
 
 export type GqlCProfileCookMenuPageMenuFieldsFragment = {
     menuId: string;
@@ -19412,12 +19271,11 @@ export type GqlCProfileCookMenuPageUpdatesSubscription = {
     };
 };
 
-export type GqlCProfileMenuUpdateMutationVariables = Exact<{
-    menuId: string;
-    menu: Schema.GqlCCookMenuUpdate;
+export type GqlCProfileMenuUpsertMutationVariables = Exact<{
+    menu?: Schema.GqlCCookMenuUpsert | null | undefined;
 }>;
 
-export type GqlCProfileMenuUpdateMutation = { user: { cook: { menuUpdate: { success: boolean; referenceId: string | null } } } };
+export type GqlCProfileMenuUpsertMutation = { user: { cook: { menuUpsert: { success: boolean; referenceId: string | null } } } };
 
 export type GqlCProfileMenuDeleteMutationVariables = Exact<{
     menuId: string;
@@ -19553,10 +19411,6 @@ export type GqlCProfileCookMenusPageUpdatesSubscription = {
         } | null;
     };
 };
-
-export type GqlCProfileMenuCreateMutationVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCProfileMenuCreateMutation = { user: { cook: { menuCreate: { success: boolean; referenceId: string | null } } } };
 
 export type GqlCProfileCookPublicPageCookFragment = {
     cookId: string;
@@ -35309,20 +35163,20 @@ export const AdminTestimonialOfferLinkDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminTestimonialOfferLinkQuery, GqlCAdminTestimonialOfferLinkQueryVariables>;
-export const UserBookingRequestOfferTestimonialCreateDocument = {
+export const UserBookingRequestOfferTestimonialUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'UserBookingRequestOfferTestimonialCreate' },
+            name: { kind: 'Name', value: 'UserBookingRequestOfferTestimonialUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
                     type: {
                         kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestOfferTestimonialCreate' } },
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestOfferTestimonialUpsert' } },
                     },
                 },
             ],
@@ -35337,7 +35191,7 @@ export const UserBookingRequestOfferTestimonialCreateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'bookingRequestOfferTestimonialCreate' },
+                                    name: { kind: 'Name', value: 'bookingRequestOfferTestimonialUpsert' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
@@ -35361,23 +35215,23 @@ export const UserBookingRequestOfferTestimonialCreateDocument = {
         },
     ],
 } as unknown as DocumentNode<
-    GqlCUserBookingRequestOfferTestimonialCreateMutation,
-    GqlCUserBookingRequestOfferTestimonialCreateMutationVariables
+    GqlCUserBookingRequestOfferTestimonialUpsertMutation,
+    GqlCUserBookingRequestOfferTestimonialUpsertMutationVariables
 >;
-export const CookBookingRequestOfferTestimonialCreateDocument = {
+export const CookBookingRequestOfferTestimonialUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'CookBookingRequestOfferTestimonialCreate' },
+            name: { kind: 'Name', value: 'CookBookingRequestOfferTestimonialUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
                     type: {
                         kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookBookingRequestOfferTestimonialCreate' } },
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookBookingRequestOfferTestimonialUpsert' } },
                     },
                 },
             ],
@@ -35398,7 +35252,7 @@ export const CookBookingRequestOfferTestimonialCreateDocument = {
                                         selections: [
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'bookingRequestOfferTestimonialCreate' },
+                                                name: { kind: 'Name', value: 'bookingRequestOfferTestimonialUpsert' },
                                                 arguments: [
                                                     {
                                                         kind: 'Argument',
@@ -35425,127 +35279,8 @@ export const CookBookingRequestOfferTestimonialCreateDocument = {
         },
     ],
 } as unknown as DocumentNode<
-    GqlCCookBookingRequestOfferTestimonialCreateMutation,
-    GqlCCookBookingRequestOfferTestimonialCreateMutationVariables
->;
-export const UserBookingRequestOfferTestimonialUpdateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'UserBookingRequestOfferTestimonialUpdate' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                    type: {
-                        kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestOfferTestimonialUpdate' } },
-                    },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'user' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'bookingRequestOfferTestimonialUpdate' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'input' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                                        },
-                                    ],
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<
-    GqlCUserBookingRequestOfferTestimonialUpdateMutation,
-    GqlCUserBookingRequestOfferTestimonialUpdateMutationVariables
->;
-export const CookBookingRequestOfferTestimonialUpdateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'CookBookingRequestOfferTestimonialUpdate' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                    type: {
-                        kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookBookingRequestOfferTestimonialUpdate' } },
-                    },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'user' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cook' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'bookingRequestOfferTestimonialUpdate' },
-                                                arguments: [
-                                                    {
-                                                        kind: 'Argument',
-                                                        name: { kind: 'Name', value: 'input' },
-                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                                                    },
-                                                ],
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<
-    GqlCCookBookingRequestOfferTestimonialUpdateMutation,
-    GqlCCookBookingRequestOfferTestimonialUpdateMutationVariables
+    GqlCCookBookingRequestOfferTestimonialUpsertMutation,
+    GqlCCookBookingRequestOfferTestimonialUpsertMutationVariables
 >;
 export const CookCreateLocationSuggestionsDocument = {
     kind: 'Document',
@@ -35626,67 +35361,18 @@ export const CookCreateLocationSuggestionsDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCCookCreateLocationSuggestionsQuery, GqlCCookCreateLocationSuggestionsQueryVariables>;
-export const CookMealEditorMealCreateDocument = {
+export const CookMealEditorMealUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'CookMealEditorMealCreate' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'user' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cook' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'mealCreate' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCCookMealEditorMealCreateMutation, GqlCCookMealEditorMealCreateMutationVariables>;
-export const CookMealEditorMealUpdateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'CookMealEditorMealUpdate' },
+            name: { kind: 'Name', value: 'CookMealEditorMealUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'mealId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'meal' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMealUpdate' } } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMealUpsert' } },
                 },
             ],
             selectionSet: {
@@ -35706,13 +35392,8 @@ export const CookMealEditorMealUpdateDocument = {
                                         selections: [
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'mealUpdate' },
+                                                name: { kind: 'Name', value: 'mealUpsert' },
                                                 arguments: [
-                                                    {
-                                                        kind: 'Argument',
-                                                        name: { kind: 'Name', value: 'mealId' },
-                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'mealId' } },
-                                                    },
                                                     {
                                                         kind: 'Argument',
                                                         name: { kind: 'Name', value: 'meal' },
@@ -35737,7 +35418,7 @@ export const CookMealEditorMealUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCCookMealEditorMealUpdateMutation, GqlCCookMealEditorMealUpdateMutationVariables>;
+} as unknown as DocumentNode<GqlCCookMealEditorMealUpsertMutation, GqlCCookMealEditorMealUpsertMutationVariables>;
 export const CookSidebarNavBadgesUpdatesDocument = {
     kind: 'Document',
     definitions: [
@@ -54700,13 +54381,13 @@ export const AdminFeatureTogglesPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminFeatureTogglesPageUpdatesSubscription, GqlCAdminFeatureTogglesPageUpdatesSubscriptionVariables>;
-export const AdminFeatureToggleUpdateDocument = {
+export const AdminFeatureToggleUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminFeatureToggleUpdate' },
+            name: { kind: 'Name', value: 'AdminFeatureToggleUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
@@ -54730,7 +54411,7 @@ export const AdminFeatureToggleUpdateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'featureToggleUpdate' },
+                                    name: { kind: 'Name', value: 'featureToggleUpsert' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
@@ -54758,7 +54439,7 @@ export const AdminFeatureToggleUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminFeatureToggleUpdateMutation, GqlCAdminFeatureToggleUpdateMutationVariables>;
+} as unknown as DocumentNode<GqlCAdminFeatureToggleUpsertMutation, GqlCAdminFeatureToggleUpsertMutationVariables>;
 export const AdminFeatureToggleUserOverrideUpsertDocument = {
     kind: 'Document',
     definitions: [
@@ -55880,49 +55561,19 @@ export const AdminLegalDocumentPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminLegalDocumentPageUpdatesSubscription, GqlCAdminLegalDocumentPageUpdatesSubscriptionVariables>;
-export const AdminLegalPrivacyPolicyDraftCreateDocument = {
+export const AdminLegalDocumentDraftUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminLegalPrivacyPolicyDraftCreate' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'legalPrivacyPolicyDraftCreate' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCAdminLegalPrivacyPolicyDraftCreateMutation, GqlCAdminLegalPrivacyPolicyDraftCreateMutationVariables>;
-export const AdminLegalPrivacyPolicyDraftUpdateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminLegalPrivacyPolicyDraftUpdate' },
+            name: { kind: 'Name', value: 'AdminLegalDocumentDraftUpsert' },
             variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'kind' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'LegalDocumentKind' } } },
+                },
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
@@ -55943,8 +55594,13 @@ export const AdminLegalPrivacyPolicyDraftUpdateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'legalPrivacyPolicyDraftUpdate' },
+                                    name: { kind: 'Name', value: 'legalDocumentDraftUpsert' },
                                     arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'kind' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'kind' } },
+                                        },
                                         {
                                             kind: 'Argument',
                                             name: { kind: 'Name', value: 'input' },
@@ -55966,18 +55622,23 @@ export const AdminLegalPrivacyPolicyDraftUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminLegalPrivacyPolicyDraftUpdateMutation, GqlCAdminLegalPrivacyPolicyDraftUpdateMutationVariables>;
-export const AdminLegalPrivacyPolicyPublishDocument = {
+} as unknown as DocumentNode<GqlCAdminLegalDocumentDraftUpsertMutation, GqlCAdminLegalDocumentDraftUpsertMutationVariables>;
+export const AdminLegalDocumentPublishDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminLegalPrivacyPolicyPublish' },
+            name: { kind: 'Name', value: 'AdminLegalDocumentPublish' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'privacyPolicyId' } },
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'kind' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'LegalDocumentKind' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'documentId' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
                 },
             ],
@@ -55992,12 +55653,17 @@ export const AdminLegalPrivacyPolicyPublishDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'legalPrivacyPolicyPublish' },
+                                    name: { kind: 'Name', value: 'legalDocumentPublish' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
-                                            name: { kind: 'Name', value: 'privacyPolicyId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'privacyPolicyId' } },
+                                            name: { kind: 'Name', value: 'kind' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'kind' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'documentId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'documentId' } },
                                         },
                                     ],
                                     selectionSet: {
@@ -56015,285 +55681,7 @@ export const AdminLegalPrivacyPolicyPublishDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminLegalPrivacyPolicyPublishMutation, GqlCAdminLegalPrivacyPolicyPublishMutationVariables>;
-export const AdminLegalTermsAndConditionsDraftCreateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminLegalTermsAndConditionsDraftCreate' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'legalTermsAndConditionsDraftCreate' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<
-    GqlCAdminLegalTermsAndConditionsDraftCreateMutation,
-    GqlCAdminLegalTermsAndConditionsDraftCreateMutationVariables
->;
-export const AdminLegalTermsAndConditionsDraftUpdateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminLegalTermsAndConditionsDraftUpdate' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                    type: {
-                        kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminLegalDocumentDraftInput' } },
-                    },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'legalTermsAndConditionsDraftUpdate' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'input' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                                        },
-                                    ],
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<
-    GqlCAdminLegalTermsAndConditionsDraftUpdateMutation,
-    GqlCAdminLegalTermsAndConditionsDraftUpdateMutationVariables
->;
-export const AdminLegalTermsAndConditionsPublishDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminLegalTermsAndConditionsPublish' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'termsAndConditionsId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'legalTermsAndConditionsPublish' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'termsAndConditionsId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'termsAndConditionsId' } },
-                                        },
-                                    ],
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCAdminLegalTermsAndConditionsPublishMutation, GqlCAdminLegalTermsAndConditionsPublishMutationVariables>;
-export const AdminLegalImprintDraftCreateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminLegalImprintDraftCreate' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'legalImprintDraftCreate' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCAdminLegalImprintDraftCreateMutation, GqlCAdminLegalImprintDraftCreateMutationVariables>;
-export const AdminLegalImprintDraftUpdateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminLegalImprintDraftUpdate' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                    type: {
-                        kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminLegalDocumentDraftInput' } },
-                    },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'legalImprintDraftUpdate' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'input' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                                        },
-                                    ],
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCAdminLegalImprintDraftUpdateMutation, GqlCAdminLegalImprintDraftUpdateMutationVariables>;
-export const AdminLegalImprintPublishDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminLegalImprintPublish' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'imprintId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'legalImprintPublish' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'imprintId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'imprintId' } },
-                                        },
-                                    ],
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCAdminLegalImprintPublishMutation, GqlCAdminLegalImprintPublishMutationVariables>;
+} as unknown as DocumentNode<GqlCAdminLegalDocumentPublishMutation, GqlCAdminLegalDocumentPublishMutationVariables>;
 export const AdminLogPageDocument = {
     kind: 'Document',
     definitions: [
@@ -56899,23 +56287,18 @@ export const AdminMealPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminMealPageUpdatesSubscription, GqlCAdminMealPageUpdatesSubscriptionVariables>;
-export const AdminMealUpdateDocument = {
+export const AdminMealUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminMealUpdate' },
+            name: { kind: 'Name', value: 'AdminMealUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'mealId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'meal' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMealUpdate' } } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookMealUpsert' } } },
                 },
             ],
             selectionSet: {
@@ -56929,13 +56312,8 @@ export const AdminMealUpdateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'cookMealUpdate' },
+                                    name: { kind: 'Name', value: 'cookMealUpsert' },
                                     arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'mealId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'mealId' } },
-                                        },
                                         {
                                             kind: 'Argument',
                                             name: { kind: 'Name', value: 'meal' },
@@ -56957,7 +56335,7 @@ export const AdminMealUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminMealUpdateMutation, GqlCAdminMealUpdateMutationVariables>;
+} as unknown as DocumentNode<GqlCAdminMealUpsertMutation, GqlCAdminMealUpsertMutationVariables>;
 export const AdminMealDeleteDocument = {
     kind: 'Document',
     definitions: [
@@ -57454,23 +56832,18 @@ export const AdminMenuEditPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminMenuEditPageUpdatesSubscription, GqlCAdminMenuEditPageUpdatesSubscriptionVariables>;
-export const AdminMenuEditMealCreateDocument = {
+export const AdminMenuEditMealUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminMenuEditMealCreate' },
+            name: { kind: 'Name', value: 'AdminMenuEditMealUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'meal' } },
-                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMealCreate' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookMealUpsert' } } },
                 },
             ],
             selectionSet: {
@@ -57484,13 +56857,8 @@ export const AdminMenuEditMealCreateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'cookMealCreate' },
+                                    name: { kind: 'Name', value: 'cookMealUpsert' },
                                     arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'cookId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
-                                        },
                                         {
                                             kind: 'Argument',
                                             name: { kind: 'Name', value: 'meal' },
@@ -57512,66 +56880,7 @@ export const AdminMenuEditMealCreateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminMenuEditMealCreateMutation, GqlCAdminMenuEditMealCreateMutationVariables>;
-export const AdminMenuEditMealUpdateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminMenuEditMealUpdate' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'mealId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'meal' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMealUpdate' } } },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cookMealUpdate' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'mealId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'mealId' } },
-                                        },
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'meal' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'meal' } },
-                                        },
-                                    ],
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCAdminMenuEditMealUpdateMutation, GqlCAdminMenuEditMealUpdateMutationVariables>;
+} as unknown as DocumentNode<GqlCAdminMenuEditMealUpsertMutation, GqlCAdminMenuEditMealUpsertMutationVariables>;
 export const AdminMenuPageDocument = {
     kind: 'Document',
     definitions: [
@@ -57824,23 +57133,18 @@ export const AdminMenuPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminMenuPageUpdatesSubscription, GqlCAdminMenuPageUpdatesSubscriptionVariables>;
-export const AdminMenuUpdateDocument = {
+export const AdminMenuUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminMenuUpdate' },
+            name: { kind: 'Name', value: 'AdminMenuUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'menuId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'menu' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMenuUpdate' } } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookMenuUpsert' } } },
                 },
             ],
             selectionSet: {
@@ -57854,13 +57158,8 @@ export const AdminMenuUpdateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'cookMenuUpdate' },
+                                    name: { kind: 'Name', value: 'cookMenuUpsert' },
                                     arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'menuId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'menuId' } },
-                                        },
                                         {
                                             kind: 'Argument',
                                             name: { kind: 'Name', value: 'menu' },
@@ -57882,7 +57181,7 @@ export const AdminMenuUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminMenuUpdateMutation, GqlCAdminMenuUpdateMutationVariables>;
+} as unknown as DocumentNode<GqlCAdminMenuUpsertMutation, GqlCAdminMenuUpsertMutationVariables>;
 export const AdminMenuDeleteDocument = {
     kind: 'Document',
     definitions: [
@@ -68199,23 +67498,18 @@ export const AdminUserCookUpdateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminUserCookUpdateMutation, GqlCAdminUserCookUpdateMutationVariables>;
-export const AdminUserCookMealCreateDocument = {
+export const AdminUserCookMealUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminUserCookMealCreate' },
+            name: { kind: 'Name', value: 'AdminUserCookMealUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'meal' } },
-                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMealCreate' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookMealUpsert' } } },
                 },
             ],
             selectionSet: {
@@ -68229,13 +67523,8 @@ export const AdminUserCookMealCreateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'cookMealCreate' },
+                                    name: { kind: 'Name', value: 'cookMealUpsert' },
                                     arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'cookId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
-                                        },
                                         {
                                             kind: 'Argument',
                                             name: { kind: 'Name', value: 'meal' },
@@ -68257,19 +67546,19 @@ export const AdminUserCookMealCreateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminUserCookMealCreateMutation, GqlCAdminUserCookMealCreateMutationVariables>;
-export const AdminUserCookMenuCreateDocument = {
+} as unknown as DocumentNode<GqlCAdminUserCookMealUpsertMutation, GqlCAdminUserCookMealUpsertMutationVariables>;
+export const AdminUserCookMenuUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminUserCookMenuCreate' },
+            name: { kind: 'Name', value: 'AdminUserCookMenuUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'menu' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookMenuUpsert' } } },
                 },
             ],
             selectionSet: {
@@ -68283,12 +67572,12 @@ export const AdminUserCookMenuCreateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'cookMenuCreate' },
+                                    name: { kind: 'Name', value: 'cookMenuUpsert' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
-                                            name: { kind: 'Name', value: 'cookId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                                            name: { kind: 'Name', value: 'menu' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'menu' } },
                                         },
                                     ],
                                     selectionSet: {
@@ -68306,7 +67595,7 @@ export const AdminUserCookMenuCreateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminUserCookMenuCreateMutation, GqlCAdminUserCookMenuCreateMutationVariables>;
+} as unknown as DocumentNode<GqlCAdminUserCookMenuUpsertMutation, GqlCAdminUserCookMenuUpsertMutationVariables>;
 export const AdminUserFeatureToggleUserOverrideUpsertDocument = {
     kind: 'Document',
     definitions: [
@@ -68800,13 +68089,13 @@ export const AdminWebPagePageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminWebPagePageQuery, GqlCAdminWebPagePageQueryVariables>;
-export const AdminWebPageUpdateDocument = {
+export const AdminWebPageUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminWebPageUpdate' },
+            name: { kind: 'Name', value: 'AdminWebPageUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
@@ -68816,7 +68105,7 @@ export const AdminWebPageUpdateDocument = {
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminWebPageUpdate' } } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminWebPageUpsert' } } },
                 },
             ],
             selectionSet: {
@@ -68830,7 +68119,7 @@ export const AdminWebPageUpdateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'webPageUpdate' },
+                                    name: { kind: 'Name', value: 'webPageUpsert' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
@@ -68858,7 +68147,7 @@ export const AdminWebPageUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminWebPageUpdateMutation, GqlCAdminWebPageUpdateMutationVariables>;
+} as unknown as DocumentNode<GqlCAdminWebPageUpsertMutation, GqlCAdminWebPageUpsertMutationVariables>;
 export const AdminWebPagePageUpdatesDocument = {
     kind: 'Document',
     definitions: [
@@ -76695,23 +75984,18 @@ export const ProfileCookMealPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookMealPageUpdatesSubscription, GqlCProfileCookMealPageUpdatesSubscriptionVariables>;
-export const ProfileMealUpdateDocument = {
+export const ProfileMealUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'ProfileMealUpdate' },
+            name: { kind: 'Name', value: 'ProfileMealUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'mealId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'meal' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMealUpdate' } } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMealUpsert' } },
                 },
             ],
             selectionSet: {
@@ -76731,13 +76015,8 @@ export const ProfileMealUpdateDocument = {
                                         selections: [
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'mealUpdate' },
+                                                name: { kind: 'Name', value: 'mealUpsert' },
                                                 arguments: [
-                                                    {
-                                                        kind: 'Argument',
-                                                        name: { kind: 'Name', value: 'mealId' },
-                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'mealId' } },
-                                                    },
                                                     {
                                                         kind: 'Argument',
                                                         name: { kind: 'Name', value: 'meal' },
@@ -76762,7 +76041,7 @@ export const ProfileMealUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCProfileMealUpdateMutation, GqlCProfileMealUpdateMutationVariables>;
+} as unknown as DocumentNode<GqlCProfileMealUpsertMutation, GqlCProfileMealUpsertMutationVariables>;
 export const ProfileMealDeleteDocument = {
     kind: 'Document',
     definitions: [
@@ -76950,50 +76229,6 @@ export const ProfileCookMealsPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookMealsPageUpdatesSubscription, GqlCProfileCookMealsPageUpdatesSubscriptionVariables>;
-export const ProfileMealCreateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'ProfileMealCreate' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'user' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cook' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'mealCreate' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileMealCreateMutation, GqlCProfileMealCreateMutationVariables>;
 export const ProfileCookMenuPageDocument = {
     kind: 'Document',
     definitions: [
@@ -77353,23 +76588,18 @@ export const ProfileCookMenuPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookMenuPageUpdatesSubscription, GqlCProfileCookMenuPageUpdatesSubscriptionVariables>;
-export const ProfileMenuUpdateDocument = {
+export const ProfileMenuUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'ProfileMenuUpdate' },
+            name: { kind: 'Name', value: 'ProfileMenuUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'menuId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'menu' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMenuUpdate' } } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMenuUpsert' } },
                 },
             ],
             selectionSet: {
@@ -77389,13 +76619,8 @@ export const ProfileMenuUpdateDocument = {
                                         selections: [
                                             {
                                                 kind: 'Field',
-                                                name: { kind: 'Name', value: 'menuUpdate' },
+                                                name: { kind: 'Name', value: 'menuUpsert' },
                                                 arguments: [
-                                                    {
-                                                        kind: 'Argument',
-                                                        name: { kind: 'Name', value: 'menuId' },
-                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'menuId' } },
-                                                    },
                                                     {
                                                         kind: 'Argument',
                                                         name: { kind: 'Name', value: 'menu' },
@@ -77420,7 +76645,7 @@ export const ProfileMenuUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCProfileMenuUpdateMutation, GqlCProfileMenuUpdateMutationVariables>;
+} as unknown as DocumentNode<GqlCProfileMenuUpsertMutation, GqlCProfileMenuUpsertMutationVariables>;
 export const ProfileMenuDeleteDocument = {
     kind: 'Document',
     definitions: [
@@ -77818,50 +77043,6 @@ export const ProfileCookMenusPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookMenusPageUpdatesSubscription, GqlCProfileCookMenusPageUpdatesSubscriptionVariables>;
-export const ProfileMenuCreateDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'mutation',
-            name: { kind: 'Name', value: 'ProfileMenuCreate' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'user' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cook' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            {
-                                                kind: 'Field',
-                                                name: { kind: 'Name', value: 'menuCreate' },
-                                                selectionSet: {
-                                                    kind: 'SelectionSet',
-                                                    selections: [
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
-                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
-                                                    ],
-                                                },
-                                            },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCProfileMenuCreateMutation, GqlCProfileMenuCreateMutationVariables>;
 export const ProfileCookPublicPageDocument = {
     kind: 'Document',
     definitions: [

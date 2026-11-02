@@ -1,9 +1,19 @@
-import type { GqlCAdminLegalDocumentPageAdminFragment } from '../../graphql/generated';
+import type { GqlCAdminLegalDocumentPageAdminFragment, GqlCLegalDocumentKind } from '../../graphql/generated';
 import type { Locale } from '../../utils/locale';
 
 export type AdminLegalKind = 'privacy' | 'terms' | 'imprint';
 
 export const ADMIN_LEGAL_KINDS: AdminLegalKind[] = ['privacy', 'terms', 'imprint'];
+
+export function adminLegalDocumentKind(kind: AdminLegalKind): GqlCLegalDocumentKind {
+    return (
+        {
+            privacy: 'PRIVACY_POLICY',
+            terms: 'TERMS_AND_CONDITIONS',
+            imprint: 'IMPRINT',
+        } as const
+    )[kind];
+}
 
 export type AdminLegalDocumentTo = '/{-$locale}/admin/legal/$kind';
 export type AdminLegalDraftTo = '/{-$locale}/admin/legal/$kind/draft';

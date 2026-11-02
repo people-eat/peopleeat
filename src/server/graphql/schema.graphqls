@@ -1073,17 +1073,28 @@ input CookUpdate {
     callDurationMinutes: Int
 }
 
-# Create payload for cook meals (assistant tools + future forms). When omitted
-# on `mealCreate`, the command still inserts a draft with a placeholder title.
-input CookMealCreate {
-    title: String!
+# Cook meal upsert — omit `mealId` to insert, pass `mealId` to patch.
+# Insert: missing/blank title → placeholder; optional description / image /
+# publishedAt applied when set. Update: at least one field required;
+# `imageFileUploadId: null` clears; `publishedAt: null` unpublishes.
+# Soft-delete stays on `mealDelete`.
+input CookMealUpsert {
+    # Existing meal id when editing. Omit to create a new draft.
+    mealId: ID
+    title: String
     description: String
+    imageFileUploadId: ID
+    publishedAt: DateTime
 }
 
-# Patch for cook meal edits. At least one field required. `imageFileUploadId: null`
-# clears the image; `publishedAt: null` unpublishes. Soft-delete is a separate
-# `mealDelete` mutation — `deletedAt` is never on this input or on `CookMeal`.
-input CookMealUpdate {
+# Admin meal upsert — omit `mealId` to insert (requires `cookId`), pass `mealId`
+# to patch. Image uploads on write must be owned by the admin and are reassigned
+# to the meal's cook. Soft-delete stays on `cookMealDelete`.
+input AdminCookMealUpsert {
+    # Existing meal id when editing. Omit to create a new draft.
+    mealId: ID
+    # Target cook. Required on create; on update, optional consistency check.
+    cookId: ID
     title: String
     description: String
     imageFileUploadId: ID
@@ -1098,9 +1109,29 @@ input CookMenuCourseInput {
     mealSelectionLimit: Int
 }
 
-# Patch for cook menu edits. At least one field required. When `courses` is set,
-# the full course tree is replaced. Soft-delete is a separate `menuDelete`.
-input CookMenuUpdate {
+# Cook menu upsert — omit `menuId` to insert an inventory draft, pass `menuId`
+# to patch. Empty insert seeds locale draft title + three default empty courses;
+# provided title / description / courses / publishedAt override on insert.
+# Update: at least one field; courses replace-when-set; offer-scoped copies
+# reject `publishedAt` and require a negotiable offer. Soft-delete stays on
+# `menuDelete` (inventory only).
+input CookMenuUpsert {
+    # Existing menu id when editing. Omit to create a new inventory draft.
+    menuId: ID
+    title: String
+    description: String
+    publishedAt: DateTime
+    courses: [CookMenuCourseInput!]
+}
+
+# Admin menu upsert — omit `menuId` to insert an inventory draft (requires
+# `cookId`), pass `menuId` to patch. Offer-scoped copies reject `publishedAt`.
+# Soft-delete stays on `cookMenuDelete` (inventory only).
+input AdminCookMenuUpsert {
+    # Existing menu id when editing. Omit to create a new inventory draft.
+    menuId: ID
+    # Target cook. Required on create; on update, optional consistency check.
+    cookId: ID
     title: String
     description: String
     publishedAt: DateTime
@@ -1128,19 +1159,16 @@ type CookMutation {
     stripeOnboardingStart(returnUrl: String!, refreshUrl: String!): CookStripeOnboardingResult!
     stripeStatusSync: MutationResult!
     stripeDashboardUrlCreate: CookStripeDashboardResult!
-    # Creates a meal. Omit `meal` for a draft placeholder title; pass
-    # `CookMealCreate` to set title/description. Returns `mealId` as `referenceId`.
-    mealCreate(meal: CookMealCreate): MutationResult!
-    mealUpdate(mealId: ID!, meal: CookMealUpdate!): MutationResult!
+    # Insert or patch a meal. Omit `meal` / `mealId` for a draft placeholder;
+    # pass `mealId` to patch. Returns `mealId` as `referenceId`.
+    mealUpsert(meal: CookMealUpsert): MutationResult!
     # Soft-delete — stamps `deletedAt`. Row stays for admin inspection.
     mealDelete(mealId: ID!): MutationResult!
-    # Creates a draft menu (placeholder title, three empty default courses).
-    # Returns `menuId` as `referenceId`.
-    menuCreate: MutationResult!
-    # Library menus: title / description / courses / publishedAt.
-    # Offer-scoped copies: title / description / courses while the offer is still
-    # negotiable; `publishedAt` is rejected. Soft-delete stays inventory-only.
-    menuUpdate(menuId: ID!, menu: CookMenuUpdate!): MutationResult!
+    # Insert or patch a menu. Omit `menu` / `menuId` for a locale draft shell
+    # (placeholder title + three empty default courses). Pass `menuId` to patch
+    # inventory or negotiable offer-scoped copies. Returns `menuId` as
+    # `referenceId`.
+    menuUpsert(menu: CookMenuUpsert): MutationResult!
     # Soft-delete — stamps `deletedAt`. Row stays for admin inspection.
     # Inventory menus only.
     menuDelete(menuId: ID!): MutationResult!
@@ -1211,11 +1239,10 @@ type CookMutation {
     bookingRequestOfferCallJoin(bookingRequestOfferId: ID!): BookingRequestOfferCallTokenResult!
     bookingRequestOfferCallLeave(bookingRequestOfferCallRoomParticipantId: ID!): MutationResult!
     # Cook's own testimonial about the platform experience for a completed
-    # offer. Low `rating` (<= 3) defaults to `PENDING_REVIEW` instead of
-    # auto-publishing. Returns `cookTestimonialId` as `referenceId`.
-    bookingRequestOfferTestimonialCreate(input: CookBookingRequestOfferTestimonialCreate!): MutationResult!
-    # Body-only edit of the cook's own offer-linked review.
-    bookingRequestOfferTestimonialUpdate(input: CookBookingRequestOfferTestimonialUpdate!): MutationResult!
+    # offer (insert) or full self-edit of an existing one (update). Low
+    # `rating` (<= 3) defaults to `PENDING_REVIEW` instead of auto-publishing.
+    # Returns `cookTestimonialId` as `referenceId`.
+    bookingRequestOfferTestimonialUpsert(input: CookBookingRequestOfferTestimonialUpsert!): MutationResult!
 }
 
 # --- Booking requests / offers -------------------------------------------------
@@ -1686,23 +1713,11 @@ type PageTestimonial {
     testimonial: Testimonial!
 }
 
-# Empty/whitespace-only `authorName` / `location` / `occasion` fall back to the
-# offer (customer/cook display name, event city, occasion) at read time — see
-# `testimonialOfferFallbacksLoad.ts`.
-input UserBookingRequestOfferTestimonialCreate {
-    bookingRequestOfferId: ID!
-    authorName: String
-    location: String
-    occasion: String
-    body: String!
-    # Required integer 1–5 (`testimonialRatingAssertRequired`). `0` is rejected.
-    rating: Int
-    imageFileUploadIds: [ID!]
-}
-
-# Full self-edit after create (body, rating, images). Re-applies the publication
-# gate from the new rating (`publicationStatusFromRating`).
-input UserBookingRequestOfferTestimonialUpdate {
+# Customer self-service upsert keyed by `bookingRequestOfferId`. Insert requires
+# a completed offer; update re-applies `publicationStatusFromRating`. Display
+# fields (`authorName` / `location` / `occasion`) fall back to the offer at read
+# time — see `testimonialOfferFallbacksLoad.ts`.
+input UserBookingRequestOfferTestimonialUpsert {
     bookingRequestOfferId: ID!
     body: String!
     # Required integer 1–5 (`testimonialRatingAssertRequired`). `0` is rejected.
@@ -1711,31 +1726,20 @@ input UserBookingRequestOfferTestimonialUpdate {
 }
 
 # Follow-up survey required when `rating < 5` — see `publicationStatusFromRating.ts`
-# and `cookBookingRequestOfferTestimonialCreate.ts`.
+# and `cookBookingRequestOfferTestimonialUpsert.ts`.
 input CookTestimonialLowRatingAnswersInput {
     whatWentWrong: String
     wouldRecommend: Boolean
     additionalFeedback: String
 }
 
-input CookBookingRequestOfferTestimonialCreate {
-    bookingRequestOfferId: ID!
-    authorName: String
-    location: String
-    occasion: String
-    body: String
-    # Required integer 1–5 (`testimonialRatingAssertRequired`). `0` is rejected.
-    rating: Int
-    imageFileUploadIds: [ID!]
-    # Required when `rating` is present and `< 5`.
-    lowRatingAnswers: CookTestimonialLowRatingAnswersInput
-}
-
-# Full self-edit after create (body, rating, images). Empty body clears the
-# optional cook comment. Re-applies the publication gate from the new rating.
-# When `rating < 5`, `lowRatingAnswers` is required unless the row already has
-# answers (omitting keeps the existing survey).
-input CookBookingRequestOfferTestimonialUpdate {
+# Cook self-service upsert keyed by `bookingRequestOfferId`. Insert requires a
+# completed offer; update re-applies `publicationStatusFromRating`. Empty body
+# clears the optional cook comment. When `rating < 5`, `lowRatingAnswers` is
+# required on insert; on update it is required unless the row already has
+# answers (omitting keeps the existing survey). Display fields fall back to the
+# offer at read time — see `testimonialOfferFallbacksLoad.ts`.
+input CookBookingRequestOfferTestimonialUpsert {
     bookingRequestOfferId: ID!
     body: String
     # Required integer 1–5 (`testimonialRatingAssertRequired`). `0` is rejected.
@@ -2782,12 +2786,11 @@ type UserMutation {
     supportRequestMessageCreate(supportRequestId: ID!, message: String!, fileUploadIds: [ID!]): MutationResult!
     # Clears `userUnreadNotificationCount` when opening the support chat.
     supportRequestUnreadNotificationCountReset(supportRequestId: ID!): MutationResult!
-    # Customer's own review of the cook for a completed offer. Low `rating`
-    # (<= 3) defaults to `PENDING_REVIEW` instead of auto-publishing. Returns
+    # Customer's own review of the cook for a completed offer (insert) or full
+    # self-edit of an existing one (update). Low `rating` (<= 3) defaults to
+    # `PENDING_REVIEW` instead of auto-publishing. Returns
     # `customerTestimonialId` as `referenceId`.
-    bookingRequestOfferTestimonialCreate(input: UserBookingRequestOfferTestimonialCreate!): MutationResult!
-    # Body-only edit of the customer's own offer-linked review.
-    bookingRequestOfferTestimonialUpdate(input: UserBookingRequestOfferTestimonialUpdate!): MutationResult!
+    bookingRequestOfferTestimonialUpsert(input: UserBookingRequestOfferTestimonialUpsert!): MutationResult!
     # Inserts Cooks membership for the signed-in user (existing customers → chefs).
     cookCreate(input: CookCreate!): MutationResult!
     chatMessageCreate(
@@ -4372,33 +4375,27 @@ type AdminMutation {
     # AI: generate a third-person biography summary from the given biography text.
     # Returns suggestion only; admin applies into the form then saves via `cookUpdate`.
     cookBiographySummarySuggest(cookId: ID!, biography: String!): String!
-    # Create a draft meal on a cook's inventory. Returns `mealId` as `referenceId`.
-    cookMealCreate(cookId: ID!, meal: CookMealCreate): MutationResult!
-    # Patch a cook meal (any cook). Image uploads must be owned by the admin and
-    # are reassigned to the meal's cook. Returns `mealId` as `referenceId`.
-    cookMealUpdate(mealId: ID!, meal: CookMealUpdate!): MutationResult!
+    # Insert or patch a cook meal. Omit `mealId` (requires `cookId`) for a draft;
+    # pass `mealId` to patch. Image uploads must be owned by the admin and are
+    # reassigned to the meal's cook. Returns `mealId` as `referenceId`.
+    cookMealUpsert(meal: AdminCookMealUpsert!): MutationResult!
     # Soft-delete a cook meal. Same sole-option gate as cook `mealDelete`.
     cookMealDelete(mealId: ID!): MutationResult!
-    # Create a draft menu (3 empty courses) on a cook's inventory. Returns
-    # `menuId` as `referenceId`.
-    cookMenuCreate(cookId: ID!): MutationResult!
-    # Patch a cook menu. Inventory: title / description / courses / publishedAt.
-    # Offer-scoped copies: title / description / courses (`publishedAt` rejected).
+    # Insert or patch a cook menu. Omit `menuId` (requires `cookId`) for a locale
+    # draft shell; pass `menuId` to patch inventory or offer-scoped copies.
     # Returns `menuId` as `referenceId`.
-    cookMenuUpdate(menuId: ID!, menu: CookMenuUpdate!): MutationResult!
+    cookMenuUpsert(menu: AdminCookMenuUpsert!): MutationResult!
     # Soft-delete an inventory menu. Returns `menuId` as `referenceId`.
     cookMenuDelete(menuId: ID!): MutationResult!
     # Deep-copy an inventory menu to a new draft. Returns new `menuId`.
     cookMenuCopy(menuId: ID!): MutationResult!
-    legalPrivacyPolicyDraftCreate: MutationResult!
-    legalPrivacyPolicyDraftUpdate(input: AdminLegalDocumentDraftInput!): MutationResult!
-    legalPrivacyPolicyPublish(privacyPolicyId: ID!): MutationResult!
-    legalTermsAndConditionsDraftCreate: MutationResult!
-    legalTermsAndConditionsDraftUpdate(input: AdminLegalDocumentDraftInput!): MutationResult!
-    legalTermsAndConditionsPublish(termsAndConditionsId: ID!): MutationResult!
-    legalImprintDraftCreate: MutationResult!
-    legalImprintDraftUpdate(input: AdminLegalDocumentDraftInput!): MutationResult!
-    legalImprintPublish(imprintId: ID!): MutationResult!
+    # Ensure an open legal draft for `kind`, then write body/summary. No draft →
+    # insert (seed body from latest published when `bodyDe` is blank). Draft
+    # exists → update that draft only. Never mutates published rows. See
+    # docs/features/admin-legal.md.
+    legalDocumentDraftUpsert(kind: LegalDocumentKind!, input: AdminLegalDocumentDraftInput!): MutationResult!
+    # Publish the open draft identified by `documentId` for `kind`.
+    legalDocumentPublish(kind: LegalDocumentKind!, documentId: ID!): MutationResult!
     cityUpsert(input: CityUpsert!): MutationResult!
     cityDelete(cityId: ID!): MutationResult!
     # Full-list replace of curated city cooks (ordered). Empty clears assignment
@@ -4431,12 +4428,12 @@ type AdminMutation {
     occasionTestimonialsUpdate(occasionId: ID!, entries: [TestimonialJunctionEntryInput!]!): MutationResult!
     blogPostUpsert(input: BlogPostUpsert!): MutationResult!
     blogPostDelete(blogPostId: ID!): MutationResult!
-    # Creates or updates fixed-route SEO title/description. Missing rows are
-    # created on first write. Returns `webPageKey` as `referenceId`.
-    webPageUpdate(webPageKey: WebPageKey!, input: AdminWebPageUpdate!): MutationResult!
-    # Creates or updates a feature toggle. Missing rows are created on first
-    # write. Returns `featureToggleKey` as `referenceId`.
-    featureToggleUpdate(featureToggleKey: FeatureToggleKey!, enabled: Boolean!): MutationResult!
+    # Upserts fixed-route SEO title/description. Missing rows are created on
+    # first write. Returns `webPageKey` as `referenceId`.
+    webPageUpsert(webPageKey: WebPageKey!, input: AdminWebPageUpsert!): MutationResult!
+    # Upserts a feature toggle. Missing rows are created on first write. Returns
+    # `featureToggleKey` as `referenceId`.
+    featureToggleUpsert(featureToggleKey: FeatureToggleKey!, enabled: Boolean!): MutationResult!
     # Force a feature toggle on or off for one user. Returns `userId` as
     # `referenceId`. See docs/features/admin-feature-toggles.md.
     featureToggleUserOverrideUpsert(userId: ID!, featureToggleKey: FeatureToggleKey!, enabled: Boolean!): MutationResult!
@@ -4774,6 +4771,12 @@ type UserLegalAcceptance {
     required: Boolean!
     pendingPrivacyPolicy: PublicLegalPrivacyPolicy
     pendingTermsAndConditions: PublicLegalTermsAndConditions
+}
+
+enum LegalDocumentKind {
+    PRIVACY_POLICY
+    TERMS_AND_CONDITIONS
+    IMPRINT
 }
 
 input AdminLegalDocumentDraftInput {
@@ -5462,7 +5465,7 @@ type PublicWebPage {
     descriptionEn: String!
 }
 
-input AdminWebPageUpdate {
+input AdminWebPageUpsert {
     titleDe: String!
     titleEn: String!
     descriptionDe: String!

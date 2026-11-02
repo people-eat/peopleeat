@@ -29,7 +29,7 @@ import type { GqlCAdminFeatureTogglesPageQuery, GqlCFeatureToggleKey } from '../
 import {
     AdminFeatureTogglesPageUpdatesDocument,
     AdminFeatureTogglesUserSearchDocument,
-    AdminFeatureToggleUpdateDocument,
+    AdminFeatureToggleUpsertDocument,
     AdminFeatureToggleUserOverrideDeleteDocument,
     AdminFeatureToggleUserOverrideUpsertDocument,
 } from '../../graphql/generated';
@@ -509,7 +509,7 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
     const [configFilter, setConfigFilter] = useState<ConfigFilter>('all');
     const [overrideFilter, setOverrideFilter] = useState<OverrideFilter>('all');
     const [sort, setSort] = useState<SortOption>('label-asc');
-    const [, featureToggleUpdate] = useMutation(AdminFeatureToggleUpdateDocument);
+    const [, featureToggleUpsert] = useMutation(AdminFeatureToggleUpsertDocument);
     const [, upsertOverride] = useMutation(AdminFeatureToggleUserOverrideUpsertDocument);
     const [, deleteOverride] = useMutation(AdminFeatureToggleUserOverrideDeleteDocument);
 
@@ -554,8 +554,8 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
     async function onToggle(featureToggleKey: GqlCFeatureToggleKey, enabled: boolean) {
         setBusyKey(featureToggleKey);
         try {
-            const result = await featureToggleUpdate({ featureToggleKey, enabled });
-            if (result.error || !result.data?.admin.featureToggleUpdate.success) {
+            const result = await featureToggleUpsert({ featureToggleKey, enabled });
+            if (result.error || !result.data?.admin.featureToggleUpsert.success) {
                 toast.error({ de: 'Feature Toggle konnte nicht geändert werden.', en: 'Could not update feature toggle.' }[locale]);
                 return;
             }

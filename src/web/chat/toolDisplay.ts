@@ -29,9 +29,13 @@ const TOOL_DISPLAY: Record<string, ToolDisplayEntry> = {
         Icon: MessageSquareIcon,
         label: { de: 'Fragt nach den Zutaten…', en: 'Asking for a few details…' },
     },
-    cookMealCreate: {
-        Icon: HammerIcon,
-        label: { de: 'Neues Gericht anlegen…', en: 'Creating a new dish…' },
+    cookMealUpsert: {
+        Icon: SoupIcon,
+        label: { de: 'Gericht speichern…', en: 'Saving a dish…' },
+    },
+    cookMenuUpsert: {
+        Icon: BookOpenIcon,
+        label: { de: 'Menü speichern…', en: 'Saving a menu…' },
     },
     cookUpdate: {
         Icon: HammerIcon,

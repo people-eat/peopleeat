@@ -100,7 +100,7 @@ detail with URL tabs; manual create with optional admin and cook payloads.
   `adminUserUpcomingBirthdaysFindMany`, `adminUserFindOne`; criterion helpers
 - Commands: `adminUserCreate` (transaction when membership rows); `adminUserAdminNoteUpdate`; `adminUserUpdate`;
   `adminUserEmailAddressUpdate`; `adminUserStatusUpdate`; `adminSessionUserBind`; `adminUserAnonymize`; `adminSessionTerminateMany`;
-  `adminCookUpdate`; `adminCookBiographySuggest`; `adminCookBiographySummarySuggest`; `adminCookMealCreate`; `adminCookMenuCreate`
+  `adminCookUpdate`; `adminCookBiographySuggest`; `adminCookBiographySummarySuggest`; `adminCookMealUpsert`; `adminCookMenuUpsert`
 - Mapper: `toGqlAdminUser` (`profilePicture` resolved like public `User`)
 - Resolvers under `Admin` / `AdminMutation`
 - UI: overview with stat cards, insights breakdowns, upcoming birthdays, + chart; list with tabs, data table, and pinned
@@ -119,7 +119,7 @@ GraphQL: `users(criterion)` / `userCounts(criteria)` — search (email / first /
 `status`, optional `userIds` (`IN`; omit or empty = no id filter — admin assistant drill-in), sort, paginate; `userRegistrations(range)`;
 `userInsights`; `upcomingBirthdays(take)`; `user(id)`; `userCreate`, `userUpdate`, `userEmailAddressUpdate`, `userAdminNoteUpdate`,
 `userStatusUpdate`, `sessionUserBind`, `userAnonymize`, `terminateSessions`, `cookUpdate`, `cookBiographySuggest`,
-`cookBiographySummarySuggest`, `cookMealCreate`, `cookMenuCreate`. Type labels: admin (admins row), cook (cooks row), customer (no cook
+`cookBiographySummarySuggest`, `cookMealUpsert`, `cookMenuUpsert`. Type labels: admin (admins row), cook (cooks row), customer (no cook
 row); combinations allowed. `AdminUser.status` exposes `UserStatus`.
 
 Gate: [authorization-admin.md](../architecture/authorization-admin.md).

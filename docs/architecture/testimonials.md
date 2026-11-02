@@ -18,9 +18,9 @@ Four PascalCase tables:
 | `OccasionTestimonials` | Same junction for occasions                                          |
 
 Star ratings are integers **1–5** on every write path (`testimonialRatingAssertRequired`). `0`, null, and other out-of-range values are
-rejected (admin create and offer self-service create/update always require a rating; admin update rejects clearing to null). Publication
-gate: ratings `<= 3` → `PENDING_REVIEW`; otherwise auto-`PUBLISHED`. Admin-authored rows are always published. Images stay as `imageUrls`
-JSON string arrays (absolute `/api/file-uploads/{id}` URLs for new uploads; migrated absolute URLs remain valid).
+rejected (admin create and offer self-service upsert always require a rating; admin update rejects clearing to null). Publication gate:
+ratings `<= 3` → `PENDING_REVIEW`; otherwise auto-`PUBLISHED`. Admin-authored rows are always published. Images stay as `imageUrls` JSON
+string arrays (absolute `/api/file-uploads/{id}` URLs for new uploads; migrated absolute URLs remain valid).
 
 Public chef pages expose only **published customer** testimonials linked via offers, plus `PublicCookRating`. City, partner, and occasion
 pages show admin-curated selections (published only) as shared `PageTestimonial`. Admin editors use shared `AdminPageTestimonial` with
@@ -46,7 +46,8 @@ testimonial tab).
 - Admin GraphQL exposes a single combined catalog `Admin.testimonials` (`AdminTestimonial` union + `AdminTestimonialCriterion` with optional
   `kinds` / `cookIds`). Typed find-one (`customerTestimonial` / `cookTestimonial`) stays because ids are not unique across tables. Admin
   create-or-update uses `customerTestimonialUpsert` / `cookTestimonialUpsert` (city-style optional id; inserts always `PUBLISHED`). Delete,
-  image update, and publish stay separate. Offer self-service create/update is unchanged.
+  image update, and publish stay separate. Offer self-service uses `bookingRequestOfferTestimonialUpsert` keyed by `bookingRequestOfferId`
+  (insert requires completed offer; update re-applies the publication gate).
 - Display fallbacks load offer/booking context (author, **city only**, occasion, participants) — never street address.
 - Home / how-to-become-a-chef marketing quotes stay static (not DB-driven).
 - Testimonial `imageUrls` are `/api/file-uploads/{id}` paths. Download auth treats published testimonials as public references and any

@@ -12,7 +12,7 @@ import { Input } from '../../components/base/input';
 import { Textarea } from '../../components/base/textarea';
 import { CookMealImageField } from '../../components/CookMealImageField';
 import type { GqlCAdminMealPageQuery } from '../../graphql/generated';
-import { AdminMealPageUpdatesDocument, AdminMealUpdateDocument } from '../../graphql/generated';
+import { AdminMealPageUpdatesDocument, AdminMealUpsertDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 
 export const adminMealEditPageTitle = {
@@ -54,21 +54,21 @@ export function AdminMealEditPage({ data, mealId }: { data: GqlCAdminMealPageQue
     }
 
     const [meal, setMeal] = useState(seedMeal);
-    const [, updateMeal] = useMutation(AdminMealUpdateDocument);
+    const [, upsertMeal] = useMutation(AdminMealUpsertDocument);
     const [imageBusy, setImageBusy] = useState(false);
 
     const form = useForm({
         defaultValues: formFromMeal(seedMeal),
         onSubmit: async ({ value }) => {
-            const result = await updateMeal({
-                mealId,
+            const result = await upsertMeal({
                 meal: {
+                    mealId,
                     title: value.title,
                     description: value.description,
                     imageFileUploadId: value.imageFileUploadId,
                 },
             });
-            if (result.error || !result.data?.admin.cookMealUpdate.success) {
+            if (result.error || !result.data?.admin.cookMealUpsert.success) {
                 toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
                 return;
             }

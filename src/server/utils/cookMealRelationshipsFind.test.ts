@@ -2,9 +2,8 @@ import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { cookMealCreate } from '../commands/cookMealCreate';
-import { cookMenuCreate } from '../commands/cookMenuCreate';
-import { cookMenuUpdate } from '../commands/cookMenuUpdate';
+import { cookMealUpsert } from '../commands/cookMealUpsert';
+import { cookMenuUpsert } from '../commands/cookMenuUpsert';
 import { bookingRequestOffers, bookingRequests, cooks, meals, menus } from '../db/schema';
 import { commandSetup, cookMutationParent, testDb } from '../test/commandTestUtils';
 import { menuDeepCopyInsert } from '../utils/menuDeepCopyInsert';
@@ -32,13 +31,14 @@ describe('cookMealRelationshipsFind', () => {
     it('blocks deletion when the meal is the sole option on an inventory menu course', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const meal = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
-        const menu = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
-        await cookMenuUpdate(
+        const meal = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const menu = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        await cookMenuUpsert(
             cookMutationParent(user.userId),
             {
-                menuId: menu.referenceId!,
                 menu: {
+                    menuId: menu.referenceId!,
+
                     title: 'Tasting',
                     courses: [{ title: 'Amuse', mealIds: [meal.referenceId!], mealSelectionLimit: null }],
                 },
@@ -66,14 +66,15 @@ describe('cookMealRelationshipsFind', () => {
     it('does not block deletion when the course has another active meal option', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const mealA = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
-        const mealB = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
-        const menu = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
-        await cookMenuUpdate(
+        const mealA = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const mealB = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const menu = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        await cookMenuUpsert(
             cookMutationParent(user.userId),
             {
-                menuId: menu.referenceId!,
                 menu: {
+                    menuId: menu.referenceId!,
+
                     title: 'Tasting',
                     courses: [
                         {
@@ -106,13 +107,14 @@ describe('cookMealRelationshipsFind', () => {
     it('puts offer-copied menus under offers with customer name and dateTime', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const meal = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
-        const inventory = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
-        await cookMenuUpdate(
+        const meal = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const inventory = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        await cookMenuUpsert(
             cookMutationParent(user.userId),
             {
-                menuId: inventory.referenceId!,
                 menu: {
+                    menuId: inventory.referenceId!,
+
                     title: 'Offer tasting',
                     courses: [{ title: 'Vorspeise', mealIds: [meal.referenceId!], mealSelectionLimit: null }],
                 },
@@ -182,13 +184,14 @@ describe('cookMealRelationshipsFind', () => {
     it('omits soft-deleted inventory menus from relationships', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const meal = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
-        const menu = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
-        await cookMenuUpdate(
+        const meal = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const menu = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        await cookMenuUpsert(
             cookMutationParent(user.userId),
             {
-                menuId: menu.referenceId!,
                 menu: {
+                    menuId: menu.referenceId!,
+
                     title: 'Gone',
                     courses: [{ title: 'Amuse', mealIds: [meal.referenceId!], mealSelectionLimit: null }],
                 },
@@ -212,14 +215,15 @@ describe('cookMealRelationshipsFind', () => {
     it('treats a sibling soft-deleted meal as absent when counting options', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const mealA = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
-        const mealB = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
-        const menu = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
-        await cookMenuUpdate(
+        const mealA = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const mealB = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const menu = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        await cookMenuUpsert(
             cookMutationParent(user.userId),
             {
-                menuId: menu.referenceId!,
                 menu: {
+                    menuId: menu.referenceId!,
+
                     title: 'Tasting',
                     courses: [
                         {

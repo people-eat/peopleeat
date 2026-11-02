@@ -1,36 +1,16 @@
-mutation UserBookingRequestOfferTestimonialCreate($input: UserBookingRequestOfferTestimonialCreate!) {
+mutation UserBookingRequestOfferTestimonialUpsert($input: UserBookingRequestOfferTestimonialUpsert!) {
     user {
-        bookingRequestOfferTestimonialCreate(input: $input) {
+        bookingRequestOfferTestimonialUpsert(input: $input) {
             success
             referenceId
         }
     }
 }
 
-mutation CookBookingRequestOfferTestimonialCreate($input: CookBookingRequestOfferTestimonialCreate!) {
+mutation CookBookingRequestOfferTestimonialUpsert($input: CookBookingRequestOfferTestimonialUpsert!) {
     user {
         cook {
-            bookingRequestOfferTestimonialCreate(input: $input) {
-                success
-                referenceId
-            }
-        }
-    }
-}
-
-mutation UserBookingRequestOfferTestimonialUpdate($input: UserBookingRequestOfferTestimonialUpdate!) {
-    user {
-        bookingRequestOfferTestimonialUpdate(input: $input) {
-            success
-            referenceId
-        }
-    }
-}
-
-mutation CookBookingRequestOfferTestimonialUpdate($input: CookBookingRequestOfferTestimonialUpdate!) {
-    user {
-        cook {
-            bookingRequestOfferTestimonialUpdate(input: $input) {
+            bookingRequestOfferTestimonialUpsert(input: $input) {
                 success
                 referenceId
             }

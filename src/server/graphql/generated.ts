@@ -1088,6 +1088,15 @@ export type GqlSAdminCookMealImageFilter = 'NOT_ON_PUBLIC_PAGE' | 'ON_PUBLIC_PAG
 
 export type GqlSAdminCookMealSortField = 'createdAt' | 'deletedAt' | 'publishedAt' | 'title';
 
+export type GqlSAdminCookMealUpsert = {
+    cookId?: InputMaybe<Scalars['ID']['input']>;
+    description?: InputMaybe<Scalars['String']['input']>;
+    imageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    mealId?: InputMaybe<Scalars['ID']['input']>;
+    publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
+    title?: InputMaybe<Scalars['String']['input']>;
+};
+
 export interface GqlSAdminCookMenu {
     __typename?: 'AdminCookMenu';
     bookingRequestOfferId?: Maybe<Scalars['ID']['output']>;
@@ -1127,6 +1136,15 @@ export type GqlSAdminCookMenuCriterion = {
 };
 
 export type GqlSAdminCookMenuSortField = 'createdAt' | 'deletedAt' | 'publishedAt' | 'title';
+
+export type GqlSAdminCookMenuUpsert = {
+    cookId?: InputMaybe<Scalars['ID']['input']>;
+    courses?: InputMaybe<Array<GqlSCookMenuCourseInput>>;
+    description?: InputMaybe<Scalars['String']['input']>;
+    menuId?: InputMaybe<Scalars['ID']['input']>;
+    publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
+    title?: InputMaybe<Scalars['String']['input']>;
+};
 
 export type GqlSAdminCookPayoutBlockedReason = 'MISSING_STRIPE_ACCOUNT' | 'STRIPE_ACCOUNT_INACTIVE' | 'STRIPE_PAYOUTS_DISABLED';
 
@@ -1377,13 +1395,11 @@ export interface GqlSAdminMutation {
     cookApprovalUpdate: GqlSMutationResult;
     cookBiographySuggest: Scalars['String']['output'];
     cookBiographySummarySuggest: Scalars['String']['output'];
-    cookMealCreate: GqlSMutationResult;
     cookMealDelete: GqlSMutationResult;
-    cookMealUpdate: GqlSMutationResult;
+    cookMealUpsert: GqlSMutationResult;
     cookMenuCopy: GqlSMutationResult;
-    cookMenuCreate: GqlSMutationResult;
     cookMenuDelete: GqlSMutationResult;
-    cookMenuUpdate: GqlSMutationResult;
+    cookMenuUpsert: GqlSMutationResult;
     cookTestimonialDelete: GqlSMutationResult;
     cookTestimonialImageUpdate: GqlSMutationResult;
     cookTestimonialPublish: GqlSMutationResult;
@@ -1393,19 +1409,12 @@ export interface GqlSAdminMutation {
     customerTestimonialImageUpdate: GqlSMutationResult;
     customerTestimonialPublish: GqlSMutationResult;
     customerTestimonialUpsert: GqlSMutationResult;
-    featureToggleUpdate: GqlSMutationResult;
+    featureToggleUpsert: GqlSMutationResult;
     featureToggleUserOverrideDelete: GqlSMutationResult;
     featureToggleUserOverrideUpsert: GqlSMutationResult;
     giftCardPdfsRegenerate: GqlSMutationResult;
-    legalImprintDraftCreate: GqlSMutationResult;
-    legalImprintDraftUpdate: GqlSMutationResult;
-    legalImprintPublish: GqlSMutationResult;
-    legalPrivacyPolicyDraftCreate: GqlSMutationResult;
-    legalPrivacyPolicyDraftUpdate: GqlSMutationResult;
-    legalPrivacyPolicyPublish: GqlSMutationResult;
-    legalTermsAndConditionsDraftCreate: GqlSMutationResult;
-    legalTermsAndConditionsDraftUpdate: GqlSMutationResult;
-    legalTermsAndConditionsPublish: GqlSMutationResult;
+    legalDocumentDraftUpsert: GqlSMutationResult;
+    legalDocumentPublish: GqlSMutationResult;
     occasionCooksUpdate: GqlSMutationResult;
     occasionDelete: GqlSMutationResult;
     occasionTestimonialsUpdate: GqlSMutationResult;
@@ -1428,7 +1437,7 @@ export interface GqlSAdminMutation {
     userEmailAddressUpdate: GqlSMutationResult;
     userStatusUpdate: GqlSMutationResult;
     userUpdate: GqlSMutationResult;
-    webPageUpdate: GqlSMutationResult;
+    webPageUpsert: GqlSMutationResult;
     whatsAppConversationUnreadCountReset: GqlSMutationResult;
     whatsAppMessageCreate: GqlSMutationResult;
     whatsAppMessageReactionUpsert: GqlSMutationResult;
@@ -1603,35 +1612,24 @@ export type GqlSAdminMutationCookBiographySummarySuggestArgs = {
     cookId: Scalars['ID']['input'];
 };
 
-export type GqlSAdminMutationCookMealCreateArgs = {
-    cookId: Scalars['ID']['input'];
-    meal?: InputMaybe<GqlSCookMealCreate>;
-};
-
 export type GqlSAdminMutationCookMealDeleteArgs = {
     mealId: Scalars['ID']['input'];
 };
 
-export type GqlSAdminMutationCookMealUpdateArgs = {
-    meal: GqlSCookMealUpdate;
-    mealId: Scalars['ID']['input'];
+export type GqlSAdminMutationCookMealUpsertArgs = {
+    meal: GqlSAdminCookMealUpsert;
 };
 
 export type GqlSAdminMutationCookMenuCopyArgs = {
     menuId: Scalars['ID']['input'];
 };
 
-export type GqlSAdminMutationCookMenuCreateArgs = {
-    cookId: Scalars['ID']['input'];
-};
-
 export type GqlSAdminMutationCookMenuDeleteArgs = {
     menuId: Scalars['ID']['input'];
 };
 
-export type GqlSAdminMutationCookMenuUpdateArgs = {
-    menu: GqlSCookMenuUpdate;
-    menuId: Scalars['ID']['input'];
+export type GqlSAdminMutationCookMenuUpsertArgs = {
+    menu: GqlSAdminCookMenuUpsert;
 };
 
 export type GqlSAdminMutationCookTestimonialDeleteArgs = {
@@ -1675,7 +1673,7 @@ export type GqlSAdminMutationCustomerTestimonialUpsertArgs = {
     input: GqlSAdminCustomerTestimonialUpsert;
 };
 
-export type GqlSAdminMutationFeatureToggleUpdateArgs = {
+export type GqlSAdminMutationFeatureToggleUpsertArgs = {
     enabled: Scalars['Boolean']['input'];
     featureToggleKey: GqlSFeatureToggleKey;
 };
@@ -1695,28 +1693,14 @@ export type GqlSAdminMutationGiftCardPdfsRegenerateArgs = {
     giftCardId: Scalars['ID']['input'];
 };
 
-export type GqlSAdminMutationLegalImprintDraftUpdateArgs = {
+export type GqlSAdminMutationLegalDocumentDraftUpsertArgs = {
     input: GqlSAdminLegalDocumentDraftInput;
+    kind: GqlSLegalDocumentKind;
 };
 
-export type GqlSAdminMutationLegalImprintPublishArgs = {
-    imprintId: Scalars['ID']['input'];
-};
-
-export type GqlSAdminMutationLegalPrivacyPolicyDraftUpdateArgs = {
-    input: GqlSAdminLegalDocumentDraftInput;
-};
-
-export type GqlSAdminMutationLegalPrivacyPolicyPublishArgs = {
-    privacyPolicyId: Scalars['ID']['input'];
-};
-
-export type GqlSAdminMutationLegalTermsAndConditionsDraftUpdateArgs = {
-    input: GqlSAdminLegalDocumentDraftInput;
-};
-
-export type GqlSAdminMutationLegalTermsAndConditionsPublishArgs = {
-    termsAndConditionsId: Scalars['ID']['input'];
+export type GqlSAdminMutationLegalDocumentPublishArgs = {
+    documentId: Scalars['ID']['input'];
+    kind: GqlSLegalDocumentKind;
 };
 
 export type GqlSAdminMutationOccasionCooksUpdateArgs = {
@@ -1819,8 +1803,8 @@ export type GqlSAdminMutationUserUpdateArgs = {
     userId: Scalars['ID']['input'];
 };
 
-export type GqlSAdminMutationWebPageUpdateArgs = {
-    input: GqlSAdminWebPageUpdate;
+export type GqlSAdminMutationWebPageUpsertArgs = {
+    input: GqlSAdminWebPageUpsert;
     webPageKey: GqlSWebPageKey;
 };
 
@@ -2311,7 +2295,7 @@ export interface GqlSAdminWebPage {
     webPageKey: GqlSWebPageKey;
 }
 
-export type GqlSAdminWebPageUpdate = {
+export type GqlSAdminWebPageUpsert = {
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
     titleDe: Scalars['String']['input'];
@@ -3340,18 +3324,7 @@ export type GqlSCookBookingRequestOfferFindManyCriterion = {
 
 export type GqlSCookBookingRequestOfferListBucket = 'ACTIVE' | 'ARCHIVED' | 'COMPLETED';
 
-export type GqlSCookBookingRequestOfferTestimonialCreate = {
-    authorName?: InputMaybe<Scalars['String']['input']>;
-    body?: InputMaybe<Scalars['String']['input']>;
-    bookingRequestOfferId: Scalars['ID']['input'];
-    imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-    location?: InputMaybe<Scalars['String']['input']>;
-    lowRatingAnswers?: InputMaybe<GqlSCookTestimonialLowRatingAnswersInput>;
-    occasion?: InputMaybe<Scalars['String']['input']>;
-    rating?: InputMaybe<Scalars['Int']['input']>;
-};
-
-export type GqlSCookBookingRequestOfferTestimonialUpdate = {
+export type GqlSCookBookingRequestOfferTestimonialUpsert = {
     body?: InputMaybe<Scalars['String']['input']>;
     bookingRequestOfferId: Scalars['ID']['input'];
     imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
@@ -3460,11 +3433,6 @@ export interface GqlSCookMeal {
     updatedAt: Scalars['DateTime']['output'];
 }
 
-export type GqlSCookMealCreate = {
-    description?: InputMaybe<Scalars['String']['input']>;
-    title: Scalars['String']['input'];
-};
-
 export type GqlSCookMealCriterion = {
     searchText?: InputMaybe<Scalars['String']['input']>;
 };
@@ -3494,9 +3462,10 @@ export interface GqlSCookMealRelationships {
     offers: Array<GqlSCookMealRelationshipBookingRequestOffer>;
 }
 
-export type GqlSCookMealUpdate = {
+export type GqlSCookMealUpsert = {
     description?: InputMaybe<Scalars['String']['input']>;
     imageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    mealId?: InputMaybe<Scalars['ID']['input']>;
     publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
     title?: InputMaybe<Scalars['String']['input']>;
 };
@@ -3558,9 +3527,10 @@ export interface GqlSCookMenuSuggestion {
 
 export type GqlSCookMenuSuggestionMealOptionType = 'EXISTING_MEAL' | 'NEW_MEAL';
 
-export type GqlSCookMenuUpdate = {
+export type GqlSCookMenuUpsert = {
     courses?: InputMaybe<Array<GqlSCookMenuCourseInput>>;
     description?: InputMaybe<Scalars['String']['input']>;
+    menuId?: InputMaybe<Scalars['ID']['input']>;
     publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
     title?: InputMaybe<Scalars['String']['input']>;
 };
@@ -3588,25 +3558,22 @@ export interface GqlSCookMutation {
     bookingRequestOfferPreparationsComplete: GqlSMutationResult;
     bookingRequestOfferPriceUpdate: GqlSMutationResult;
     bookingRequestOfferSuggestedMenusUpdate: GqlSMutationResult;
-    bookingRequestOfferTestimonialCreate: GqlSMutationResult;
-    bookingRequestOfferTestimonialUpdate: GqlSMutationResult;
+    bookingRequestOfferTestimonialUpsert: GqlSMutationResult;
     bookingRequestOfferUnreadNotificationCountReset: GqlSMutationResult;
     bookingRequestOpen: GqlSMutationResult;
     callAvailabilityExceptionCreate: GqlSMutationResult;
     callAvailabilityExceptionDelete: GqlSMutationResult;
     callAvailabilityRuleCreate: GqlSMutationResult;
     callAvailabilityRuleDelete: GqlSMutationResult;
-    mealCreate: GqlSMutationResult;
     mealDelete: GqlSMutationResult;
-    mealUpdate: GqlSMutationResult;
+    mealUpsert: GqlSMutationResult;
     menuCopy: GqlSMutationResult;
-    menuCreate: GqlSMutationResult;
     menuDelete: GqlSMutationResult;
     menuSuggestionFromInventory: GqlSCookMenuSuggestion;
     menuSuggestionFromText: GqlSCookMenuSuggestion;
     menuSyncToTemplate: GqlSMutationResult;
     menuTitleDescriptionSuggest: GqlSCookMenuSuggestion;
-    menuUpdate: GqlSMutationResult;
+    menuUpsert: GqlSMutationResult;
     stripeDashboardUrlCreate: GqlSCookStripeDashboardResult;
     stripeOnboardingStart: GqlSCookStripeOnboardingResult;
     stripeStatusSync: GqlSMutationResult;
@@ -3706,12 +3673,8 @@ export type GqlSCookMutationBookingRequestOfferSuggestedMenusUpdateArgs = {
     input: GqlSBookingRequestOfferSuggestedMenusUpdate;
 };
 
-export type GqlSCookMutationBookingRequestOfferTestimonialCreateArgs = {
-    input: GqlSCookBookingRequestOfferTestimonialCreate;
-};
-
-export type GqlSCookMutationBookingRequestOfferTestimonialUpdateArgs = {
-    input: GqlSCookBookingRequestOfferTestimonialUpdate;
+export type GqlSCookMutationBookingRequestOfferTestimonialUpsertArgs = {
+    input: GqlSCookBookingRequestOfferTestimonialUpsert;
 };
 
 export type GqlSCookMutationBookingRequestOfferUnreadNotificationCountResetArgs = {
@@ -3738,17 +3701,12 @@ export type GqlSCookMutationCallAvailabilityRuleDeleteArgs = {
     cookCallAvailabilityRuleId: Scalars['ID']['input'];
 };
 
-export type GqlSCookMutationMealCreateArgs = {
-    meal?: InputMaybe<GqlSCookMealCreate>;
-};
-
 export type GqlSCookMutationMealDeleteArgs = {
     mealId: Scalars['ID']['input'];
 };
 
-export type GqlSCookMutationMealUpdateArgs = {
-    meal: GqlSCookMealUpdate;
-    mealId: Scalars['ID']['input'];
+export type GqlSCookMutationMealUpsertArgs = {
+    meal?: InputMaybe<GqlSCookMealUpsert>;
 };
 
 export type GqlSCookMutationMenuCopyArgs = {
@@ -3777,9 +3735,8 @@ export type GqlSCookMutationMenuTitleDescriptionSuggestArgs = {
     currentTitle?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type GqlSCookMutationMenuUpdateArgs = {
-    menu: GqlSCookMenuUpdate;
-    menuId: Scalars['ID']['input'];
+export type GqlSCookMutationMenuUpsertArgs = {
+    menu?: InputMaybe<GqlSCookMenuUpsert>;
 };
 
 export type GqlSCookMutationStripeOnboardingStartArgs = {
@@ -4045,6 +4002,8 @@ export type GqlSInvoiceAddressInput = {
     line2: Scalars['String']['input'];
     postalCode: Scalars['String']['input'];
 };
+
+export type GqlSLegalDocumentKind = 'IMPRINT' | 'PRIVACY_POLICY' | 'TERMS_AND_CONDITIONS';
 
 export type GqlSLocale = 'de' | 'en';
 
@@ -4853,17 +4812,7 @@ export interface GqlSUserBookingRequestOfferPriceImpact {
     totalWithoutDiscountsCentsCustomerBefore: Scalars['Int']['output'];
 }
 
-export type GqlSUserBookingRequestOfferTestimonialCreate = {
-    authorName?: InputMaybe<Scalars['String']['input']>;
-    body: Scalars['String']['input'];
-    bookingRequestOfferId: Scalars['ID']['input'];
-    imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-    location?: InputMaybe<Scalars['String']['input']>;
-    occasion?: InputMaybe<Scalars['String']['input']>;
-    rating?: InputMaybe<Scalars['Int']['input']>;
-};
-
-export type GqlSUserBookingRequestOfferTestimonialUpdate = {
+export type GqlSUserBookingRequestOfferTestimonialUpsert = {
     body: Scalars['String']['input'];
     bookingRequestOfferId: Scalars['ID']['input'];
     imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
@@ -4961,8 +4910,7 @@ export interface GqlSUserMutation {
     bookingRequestOfferParticipantAmendmentCancel: GqlSMutationResult;
     bookingRequestOfferParticipantAmendmentCreate: GqlSMutationResult;
     bookingRequestOfferPaymentStatusUpdate: GqlSMutationResult;
-    bookingRequestOfferTestimonialCreate: GqlSMutationResult;
-    bookingRequestOfferTestimonialUpdate: GqlSMutationResult;
+    bookingRequestOfferTestimonialUpsert: GqlSMutationResult;
     bookingRequestOfferUnreadNotificationCountReset: GqlSMutationResult;
     bookingRequestRequestRecall: GqlSMutationResult;
     bookingRequestUpdate: GqlSMutationResult;
@@ -5094,12 +5042,8 @@ export type GqlSUserMutationBookingRequestOfferPaymentStatusUpdateArgs = {
     invoiceAddress: GqlSInvoiceAddressInput;
 };
 
-export type GqlSUserMutationBookingRequestOfferTestimonialCreateArgs = {
-    input: GqlSUserBookingRequestOfferTestimonialCreate;
-};
-
-export type GqlSUserMutationBookingRequestOfferTestimonialUpdateArgs = {
-    input: GqlSUserBookingRequestOfferTestimonialUpdate;
+export type GqlSUserMutationBookingRequestOfferTestimonialUpsertArgs = {
+    input: GqlSUserBookingRequestOfferTestimonialUpsert;
 };
 
 export type GqlSUserMutationBookingRequestOfferUnreadNotificationCountResetArgs = {
@@ -5502,10 +5446,12 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminCookMealCriterion: GqlSAdminCookMealCriterion;
     AdminCookMealImageFilter: GqlSAdminCookMealImageFilter;
     AdminCookMealSortField: GqlSAdminCookMealSortField;
+    AdminCookMealUpsert: GqlSAdminCookMealUpsert;
     AdminCookMenu: ResolverTypeWrapper<GqlSAdminCookMenu>;
     AdminCookMenuCourse: ResolverTypeWrapper<GqlSAdminCookMenuCourse>;
     AdminCookMenuCriterion: GqlSAdminCookMenuCriterion;
     AdminCookMenuSortField: GqlSAdminCookMenuSortField;
+    AdminCookMenuUpsert: GqlSAdminCookMenuUpsert;
     AdminCookPayoutBlockedReason: GqlSAdminCookPayoutBlockedReason;
     AdminCookTestimonial: ResolverTypeWrapper<GqlSAdminCookTestimonial>;
     AdminCookTestimonialUpsert: GqlSAdminCookTestimonialUpsert;
@@ -5600,7 +5546,7 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminUserType: GqlSAdminUserType;
     AdminUserUpcomingBirthday: ResolverTypeWrapper<GqlSAdminUserUpcomingBirthday>;
     AdminWebPage: ResolverTypeWrapper<GqlSAdminWebPage>;
-    AdminWebPageUpdate: GqlSAdminWebPageUpdate;
+    AdminWebPageUpsert: GqlSAdminWebPageUpsert;
     AdminWhatsAppConversation: ResolverTypeWrapper<
         Omit<GqlSAdminWhatsAppConversation, 'messages'> & { messages: Array<GqlSResolversTypes['HumanChatMessage']> }
     >;
@@ -5740,8 +5686,7 @@ export type GqlSResolversTypes = ResolversObject<{
     CookBookingRequestOfferContext: ResolverTypeWrapper<GqlSCookBookingRequestOfferContext>;
     CookBookingRequestOfferFindManyCriterion: GqlSCookBookingRequestOfferFindManyCriterion;
     CookBookingRequestOfferListBucket: GqlSCookBookingRequestOfferListBucket;
-    CookBookingRequestOfferTestimonialCreate: GqlSCookBookingRequestOfferTestimonialCreate;
-    CookBookingRequestOfferTestimonialUpdate: GqlSCookBookingRequestOfferTestimonialUpdate;
+    CookBookingRequestOfferTestimonialUpsert: GqlSCookBookingRequestOfferTestimonialUpsert;
     CookBookingRequestTaken: ResolverTypeWrapper<GqlSCookBookingRequestTaken>;
     CookCallAvailabilityException: ResolverTypeWrapper<GqlSCookCallAvailabilityException>;
     CookCallAvailabilityExceptionCreate: GqlSCookCallAvailabilityExceptionCreate;
@@ -5756,12 +5701,11 @@ export type GqlSResolversTypes = ResolversObject<{
     CookCallSlotBookingStatus: GqlSCookCallSlotBookingStatus;
     CookCreate: GqlSCookCreate;
     CookMeal: ResolverTypeWrapper<GqlSCookMeal>;
-    CookMealCreate: GqlSCookMealCreate;
     CookMealCriterion: GqlSCookMealCriterion;
     CookMealRelationshipBookingRequestOffer: ResolverTypeWrapper<GqlSCookMealRelationshipBookingRequestOffer>;
     CookMealRelationshipMenu: ResolverTypeWrapper<GqlSCookMealRelationshipMenu>;
     CookMealRelationships: ResolverTypeWrapper<GqlSCookMealRelationships>;
-    CookMealUpdate: GqlSCookMealUpdate;
+    CookMealUpsert: GqlSCookMealUpsert;
     CookMenu: ResolverTypeWrapper<GqlSCookMenu>;
     CookMenuCourse: ResolverTypeWrapper<GqlSCookMenuCourse>;
     CookMenuCourseInput: GqlSCookMenuCourseInput;
@@ -5770,7 +5714,7 @@ export type GqlSResolversTypes = ResolversObject<{
     CookMenuOfferContext: ResolverTypeWrapper<GqlSCookMenuOfferContext>;
     CookMenuSuggestion: ResolverTypeWrapper<GqlSCookMenuSuggestion>;
     CookMenuSuggestionMealOptionType: GqlSCookMenuSuggestionMealOptionType;
-    CookMenuUpdate: GqlSCookMenuUpdate;
+    CookMenuUpsert: GqlSCookMenuUpsert;
     CookMutation: ResolverTypeWrapper<GqlSCookMutation>;
     CookOnboardingStep: GqlSCookOnboardingStep;
     CookStripeAccountDetails: ResolverTypeWrapper<GqlSCookStripeAccountDetails>;
@@ -5815,6 +5759,7 @@ export type GqlSResolversTypes = ResolversObject<{
     InvoiceAddressInput: GqlSInvoiceAddressInput;
     JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
     Latitude: ResolverTypeWrapper<Scalars['Latitude']['output']>;
+    LegalDocumentKind: GqlSLegalDocumentKind;
     Locale: GqlSLocale;
     LocationSuggestion: ResolverTypeWrapper<GqlSLocationSuggestion>;
     Longitude: ResolverTypeWrapper<Scalars['Longitude']['output']>;
@@ -5946,8 +5891,7 @@ export type GqlSResolversTypes = ResolversObject<{
         }
     >;
     UserBookingRequestOfferPriceImpact: ResolverTypeWrapper<GqlSUserBookingRequestOfferPriceImpact>;
-    UserBookingRequestOfferTestimonialCreate: GqlSUserBookingRequestOfferTestimonialCreate;
-    UserBookingRequestOfferTestimonialUpdate: GqlSUserBookingRequestOfferTestimonialUpdate;
+    UserBookingRequestOfferTestimonialUpsert: GqlSUserBookingRequestOfferTestimonialUpsert;
     UserBookingRequestOfferTravelImpact: ResolverTypeWrapper<GqlSUserBookingRequestOfferTravelImpact>;
     UserBookingRequestParticipantCreate: GqlSUserBookingRequestParticipantCreate;
     UserBookingRequestPromoCode: ResolverTypeWrapper<GqlSUserBookingRequestPromoCode>;
@@ -6072,9 +6016,11 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminCookInTravelRadiusPreview: GqlSAdminCookInTravelRadiusPreview;
     AdminCookMeal: GqlSAdminCookMeal;
     AdminCookMealCriterion: GqlSAdminCookMealCriterion;
+    AdminCookMealUpsert: GqlSAdminCookMealUpsert;
     AdminCookMenu: GqlSAdminCookMenu;
     AdminCookMenuCourse: GqlSAdminCookMenuCourse;
     AdminCookMenuCriterion: GqlSAdminCookMenuCriterion;
+    AdminCookMenuUpsert: GqlSAdminCookMenuUpsert;
     AdminCookTestimonial: GqlSAdminCookTestimonial;
     AdminCookTestimonialUpsert: GqlSAdminCookTestimonialUpsert;
     AdminCustomerTestimonial: GqlSAdminCustomerTestimonial;
@@ -6143,7 +6089,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminUserTimeZoneStat: GqlSAdminUserTimeZoneStat;
     AdminUserUpcomingBirthday: GqlSAdminUserUpcomingBirthday;
     AdminWebPage: GqlSAdminWebPage;
-    AdminWebPageUpdate: GqlSAdminWebPageUpdate;
+    AdminWebPageUpsert: GqlSAdminWebPageUpsert;
     AdminWhatsAppConversation: Omit<GqlSAdminWhatsAppConversation, 'messages'> & {
         messages: Array<GqlSResolversParentTypes['HumanChatMessage']>;
     };
@@ -6249,8 +6195,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     CookBookingRequestOfferAlreadyExists: GqlSCookBookingRequestOfferAlreadyExists;
     CookBookingRequestOfferContext: GqlSCookBookingRequestOfferContext;
     CookBookingRequestOfferFindManyCriterion: GqlSCookBookingRequestOfferFindManyCriterion;
-    CookBookingRequestOfferTestimonialCreate: GqlSCookBookingRequestOfferTestimonialCreate;
-    CookBookingRequestOfferTestimonialUpdate: GqlSCookBookingRequestOfferTestimonialUpdate;
+    CookBookingRequestOfferTestimonialUpsert: GqlSCookBookingRequestOfferTestimonialUpsert;
     CookBookingRequestTaken: GqlSCookBookingRequestTaken;
     CookCallAvailabilityException: GqlSCookCallAvailabilityException;
     CookCallAvailabilityExceptionCreate: GqlSCookCallAvailabilityExceptionCreate;
@@ -6262,12 +6207,11 @@ export type GqlSResolversParentTypes = ResolversObject<{
     CookCallSlotBookingCustomer: GqlSCookCallSlotBookingCustomer;
     CookCreate: GqlSCookCreate;
     CookMeal: GqlSCookMeal;
-    CookMealCreate: GqlSCookMealCreate;
     CookMealCriterion: GqlSCookMealCriterion;
     CookMealRelationshipBookingRequestOffer: GqlSCookMealRelationshipBookingRequestOffer;
     CookMealRelationshipMenu: GqlSCookMealRelationshipMenu;
     CookMealRelationships: GqlSCookMealRelationships;
-    CookMealUpdate: GqlSCookMealUpdate;
+    CookMealUpsert: GqlSCookMealUpsert;
     CookMenu: GqlSCookMenu;
     CookMenuCourse: GqlSCookMenuCourse;
     CookMenuCourseInput: GqlSCookMenuCourseInput;
@@ -6275,7 +6219,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     CookMenuCriterion: GqlSCookMenuCriterion;
     CookMenuOfferContext: GqlSCookMenuOfferContext;
     CookMenuSuggestion: GqlSCookMenuSuggestion;
-    CookMenuUpdate: GqlSCookMenuUpdate;
+    CookMenuUpsert: GqlSCookMenuUpsert;
     CookMutation: GqlSCookMutation;
     CookStripeAccountDetails: GqlSCookStripeAccountDetails;
     CookStripeBalanceTransaction: GqlSCookStripeBalanceTransaction;
@@ -6408,8 +6352,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
         messages: Array<GqlSResolversParentTypes['HumanChatMessage']>;
     };
     UserBookingRequestOfferPriceImpact: GqlSUserBookingRequestOfferPriceImpact;
-    UserBookingRequestOfferTestimonialCreate: GqlSUserBookingRequestOfferTestimonialCreate;
-    UserBookingRequestOfferTestimonialUpdate: GqlSUserBookingRequestOfferTestimonialUpdate;
+    UserBookingRequestOfferTestimonialUpsert: GqlSUserBookingRequestOfferTestimonialUpsert;
     UserBookingRequestOfferTravelImpact: GqlSUserBookingRequestOfferTravelImpact;
     UserBookingRequestParticipantCreate: GqlSUserBookingRequestParticipantCreate;
     UserBookingRequestPromoCode: GqlSUserBookingRequestPromoCode;
@@ -7818,23 +7761,17 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationCookBiographySummarySuggestArgs, 'biography' | 'cookId'>
     >;
-    cookMealCreate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSAdminMutationCookMealCreateArgs, 'cookId'>
-    >;
     cookMealDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationCookMealDeleteArgs, 'mealId'>
     >;
-    cookMealUpdate?: Resolver<
+    cookMealUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSAdminMutationCookMealUpdateArgs, 'meal' | 'mealId'>
+        RequireFields<GqlSAdminMutationCookMealUpsertArgs, 'meal'>
     >;
     cookMenuCopy?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -7842,23 +7779,17 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationCookMenuCopyArgs, 'menuId'>
     >;
-    cookMenuCreate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSAdminMutationCookMenuCreateArgs, 'cookId'>
-    >;
     cookMenuDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationCookMenuDeleteArgs, 'menuId'>
     >;
-    cookMenuUpdate?: Resolver<
+    cookMenuUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSAdminMutationCookMenuUpdateArgs, 'menu' | 'menuId'>
+        RequireFields<GqlSAdminMutationCookMenuUpsertArgs, 'menu'>
     >;
     cookTestimonialDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -7914,11 +7845,11 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationCustomerTestimonialUpsertArgs, 'input'>
     >;
-    featureToggleUpdate?: Resolver<
+    featureToggleUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSAdminMutationFeatureToggleUpdateArgs, 'enabled' | 'featureToggleKey'>
+        RequireFields<GqlSAdminMutationFeatureToggleUpsertArgs, 'enabled' | 'featureToggleKey'>
     >;
     featureToggleUserOverrideDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -7938,44 +7869,17 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationGiftCardPdfsRegenerateArgs, 'giftCardId'>
     >;
-    legalImprintDraftCreate?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
-    legalImprintDraftUpdate?: Resolver<
+    legalDocumentDraftUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSAdminMutationLegalImprintDraftUpdateArgs, 'input'>
+        RequireFields<GqlSAdminMutationLegalDocumentDraftUpsertArgs, 'input' | 'kind'>
     >;
-    legalImprintPublish?: Resolver<
+    legalDocumentPublish?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSAdminMutationLegalImprintPublishArgs, 'imprintId'>
-    >;
-    legalPrivacyPolicyDraftCreate?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
-    legalPrivacyPolicyDraftUpdate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSAdminMutationLegalPrivacyPolicyDraftUpdateArgs, 'input'>
-    >;
-    legalPrivacyPolicyPublish?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSAdminMutationLegalPrivacyPolicyPublishArgs, 'privacyPolicyId'>
-    >;
-    legalTermsAndConditionsDraftCreate?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
-    legalTermsAndConditionsDraftUpdate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSAdminMutationLegalTermsAndConditionsDraftUpdateArgs, 'input'>
-    >;
-    legalTermsAndConditionsPublish?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSAdminMutationLegalTermsAndConditionsPublishArgs, 'termsAndConditionsId'>
+        RequireFields<GqlSAdminMutationLegalDocumentPublishArgs, 'documentId' | 'kind'>
     >;
     occasionCooksUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -8109,11 +8013,11 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationUserUpdateArgs, 'user' | 'userId'>
     >;
-    webPageUpdate?: Resolver<
+    webPageUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSAdminMutationWebPageUpdateArgs, 'input' | 'webPageKey'>
+        RequireFields<GqlSAdminMutationWebPageUpsertArgs, 'input' | 'webPageKey'>
     >;
     whatsAppConversationUnreadCountReset?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -9748,17 +9652,11 @@ export type GqlSCookMutationResolvers<
         ContextType,
         RequireFields<GqlSCookMutationBookingRequestOfferSuggestedMenusUpdateArgs, 'input'>
     >;
-    bookingRequestOfferTestimonialCreate?: Resolver<
+    bookingRequestOfferTestimonialUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSCookMutationBookingRequestOfferTestimonialCreateArgs, 'input'>
-    >;
-    bookingRequestOfferTestimonialUpdate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSCookMutationBookingRequestOfferTestimonialUpdateArgs, 'input'>
+        RequireFields<GqlSCookMutationBookingRequestOfferTestimonialUpsertArgs, 'input'>
     >;
     bookingRequestOfferUnreadNotificationCountReset?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -9796,26 +9694,19 @@ export type GqlSCookMutationResolvers<
         ContextType,
         RequireFields<GqlSCookMutationCallAvailabilityRuleDeleteArgs, 'cookCallAvailabilityRuleId'>
     >;
-    mealCreate?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType, Partial<GqlSCookMutationMealCreateArgs>>;
     mealDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
         RequireFields<GqlSCookMutationMealDeleteArgs, 'mealId'>
     >;
-    mealUpdate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSCookMutationMealUpdateArgs, 'meal' | 'mealId'>
-    >;
+    mealUpsert?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType, Partial<GqlSCookMutationMealUpsertArgs>>;
     menuCopy?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
         RequireFields<GqlSCookMutationMenuCopyArgs, 'menuId'>
     >;
-    menuCreate?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
     menuDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -9846,12 +9737,7 @@ export type GqlSCookMutationResolvers<
         ContextType,
         RequireFields<GqlSCookMutationMenuTitleDescriptionSuggestArgs, 'courses'>
     >;
-    menuUpdate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSCookMutationMenuUpdateArgs, 'menu' | 'menuId'>
-    >;
+    menuUpsert?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType, Partial<GqlSCookMutationMenuUpsertArgs>>;
     stripeDashboardUrlCreate?: Resolver<GqlSResolversTypes['CookStripeDashboardResult'], ParentType, ContextType>;
     stripeOnboardingStart?: Resolver<
         GqlSResolversTypes['CookStripeOnboardingResult'],
@@ -11062,17 +10948,11 @@ export type GqlSUserMutationResolvers<
         ContextType,
         RequireFields<GqlSUserMutationBookingRequestOfferPaymentStatusUpdateArgs, 'bookingRequestOfferId' | 'invoiceAddress'>
     >;
-    bookingRequestOfferTestimonialCreate?: Resolver<
+    bookingRequestOfferTestimonialUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSUserMutationBookingRequestOfferTestimonialCreateArgs, 'input'>
-    >;
-    bookingRequestOfferTestimonialUpdate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSUserMutationBookingRequestOfferTestimonialUpdateArgs, 'input'>
+        RequireFields<GqlSUserMutationBookingRequestOfferTestimonialUpsertArgs, 'input'>
     >;
     bookingRequestOfferUnreadNotificationCountReset?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -12174,6 +12054,11 @@ export const GqlSGiftCardPaymentStatusSchema: z.ZodType<'PAYED' | 'PREPARED', 'P
 
 export const GqlSGiftCardPurchaseErrorCodeSchema: z.ZodType<'RECAPTCHA_FAILED', 'RECAPTCHA_FAILED'> = z.enum(['RECAPTCHA_FAILED']);
 
+export const GqlSLegalDocumentKindSchema: z.ZodType<
+    'IMPRINT' | 'PRIVACY_POLICY' | 'TERMS_AND_CONDITIONS',
+    'IMPRINT' | 'PRIVACY_POLICY' | 'TERMS_AND_CONDITIONS'
+> = z.enum(['IMPRINT', 'PRIVACY_POLICY', 'TERMS_AND_CONDITIONS']);
+
 export const GqlSLocaleSchema: z.ZodType<'de' | 'en', 'de' | 'en'> = z.enum(['de', 'en']);
 
 export const GqlSSortDirectionSchema: z.ZodType<'ASC' | 'DESC', 'ASC' | 'DESC'> = z.enum(['ASC', 'DESC']);
@@ -12475,6 +12360,17 @@ export function GqlSAdminCookMealCriterionSchema(): z.ZodType<GqlSAdminCookMealC
     });
 }
 
+export function GqlSAdminCookMealUpsertSchema(): z.ZodObject<Properties<GqlSAdminCookMealUpsert>> {
+    return z.object({
+        cookId: z.string().nullish(),
+        description: z.string().nullish(),
+        imageFileUploadId: z.string().nullish(),
+        mealId: z.string().nullish(),
+        publishedAt: z.date().nullish(),
+        title: z.string().nullish(),
+    });
+}
+
 export function GqlSAdminCookMenuCriterionSchema(): z.ZodType<GqlSAdminCookMenuCriterion> {
     return z.object({
         cookIds: z.array(z.string()).nullish(),
@@ -12487,6 +12383,17 @@ export function GqlSAdminCookMenuCriterionSchema(): z.ZodType<GqlSAdminCookMenuC
         status: GqlSAdminCookInventoryStatusSchema.nullish(),
         take: z.number().default(25),
     });
+}
+
+export function GqlSAdminCookMenuUpsertSchema(): z.ZodObject<Properties<GqlSAdminCookMenuUpsert>> {
+    return z.object({
+        cookId: z.string().nullish(),
+        courses: z.array(GqlSCookMenuCourseInputSchema()).nullish(),
+        description: z.string().nullish(),
+        menuId: z.string().nullish(),
+        publishedAt: z.date().nullish(),
+        title: z.string().nullish(),
+    }) as z.ZodObject<Properties<GqlSAdminCookMenuUpsert>>;
 }
 
 export function GqlSAdminCookTestimonialUpsertSchema(): z.ZodObject<Properties<GqlSAdminCookTestimonialUpsert>> {
@@ -12669,7 +12576,7 @@ export function GqlSAdminUserCriterionSchema(): z.ZodType<GqlSAdminUserCriterion
     });
 }
 
-export function GqlSAdminWebPageUpdateSchema(): z.ZodObject<Properties<GqlSAdminWebPageUpdate>> {
+export function GqlSAdminWebPageUpsertSchema(): z.ZodObject<Properties<GqlSAdminWebPageUpsert>> {
     return z.object({
         descriptionDe: z.string(),
         descriptionEn: z.string(),
@@ -12862,23 +12769,8 @@ export function GqlSCookBookingRequestOfferFindManyCriterionSchema(): z.ZodObjec
     });
 }
 
-export function GqlSCookBookingRequestOfferTestimonialCreateSchema(): z.ZodObject<
-    Properties<GqlSCookBookingRequestOfferTestimonialCreate>
-> {
-    return z.object({
-        authorName: z.string().nullish(),
-        body: z.string().nullish(),
-        bookingRequestOfferId: z.string(),
-        imageFileUploadIds: z.array(z.string()).nullish(),
-        location: z.string().nullish(),
-        lowRatingAnswers: GqlSCookTestimonialLowRatingAnswersInputSchema().nullish(),
-        occasion: z.string().nullish(),
-        rating: z.number().nullish(),
-    }) as z.ZodObject<Properties<GqlSCookBookingRequestOfferTestimonialCreate>>;
-}
-
-export function GqlSCookBookingRequestOfferTestimonialUpdateSchema(): z.ZodObject<
-    Properties<GqlSCookBookingRequestOfferTestimonialUpdate>
+export function GqlSCookBookingRequestOfferTestimonialUpsertSchema(): z.ZodObject<
+    Properties<GqlSCookBookingRequestOfferTestimonialUpsert>
 > {
     return z.object({
         body: z.string().nullish(),
@@ -12886,7 +12778,7 @@ export function GqlSCookBookingRequestOfferTestimonialUpdateSchema(): z.ZodObjec
         imageFileUploadIds: z.array(z.string()).nullish(),
         lowRatingAnswers: GqlSCookTestimonialLowRatingAnswersInputSchema().nullish(),
         rating: z.number().nullish(),
-    }) as z.ZodObject<Properties<GqlSCookBookingRequestOfferTestimonialUpdate>>;
+    }) as z.ZodObject<Properties<GqlSCookBookingRequestOfferTestimonialUpsert>>;
 }
 
 export function GqlSCookCallAvailabilityExceptionCreateSchema(): z.ZodObject<Properties<GqlSCookCallAvailabilityExceptionCreate>> {
@@ -12925,23 +12817,17 @@ export function GqlSCookCreateSchema(): z.ZodObject<Properties<GqlSCookCreate>> 
     });
 }
 
-export function GqlSCookMealCreateSchema(): z.ZodObject<Properties<GqlSCookMealCreate>> {
-    return z.object({
-        description: z.string().nullish(),
-        title: z.string(),
-    });
-}
-
 export function GqlSCookMealCriterionSchema(): z.ZodObject<Properties<GqlSCookMealCriterion>> {
     return z.object({
         searchText: z.string().nullish(),
     });
 }
 
-export function GqlSCookMealUpdateSchema(): z.ZodObject<Properties<GqlSCookMealUpdate>> {
+export function GqlSCookMealUpsertSchema(): z.ZodObject<Properties<GqlSCookMealUpsert>> {
     return z.object({
         description: z.string().nullish(),
         imageFileUploadId: z.string().nullish(),
+        mealId: z.string().nullish(),
         publishedAt: z.date().nullish(),
         title: z.string().nullish(),
     });
@@ -12961,13 +12847,14 @@ export function GqlSCookMenuCriterionSchema(): z.ZodObject<Properties<GqlSCookMe
     });
 }
 
-export function GqlSCookMenuUpdateSchema(): z.ZodObject<Properties<GqlSCookMenuUpdate>> {
+export function GqlSCookMenuUpsertSchema(): z.ZodObject<Properties<GqlSCookMenuUpsert>> {
     return z.object({
         courses: z.array(GqlSCookMenuCourseInputSchema()).nullish(),
         description: z.string().nullish(),
+        menuId: z.string().nullish(),
         publishedAt: z.date().nullish(),
         title: z.string().nullish(),
-    }) as z.ZodObject<Properties<GqlSCookMenuUpdate>>;
+    }) as z.ZodObject<Properties<GqlSCookMenuUpsert>>;
 }
 
 export function GqlSCookTestimonialLowRatingAnswersInputSchema(): z.ZodObject<Properties<GqlSCookTestimonialLowRatingAnswersInput>> {
@@ -13201,29 +13088,15 @@ export function GqlSUserBookingRequestExactEventAddressInputSchema(): z.ZodObjec
     });
 }
 
-export function GqlSUserBookingRequestOfferTestimonialCreateSchema(): z.ZodObject<
-    Properties<GqlSUserBookingRequestOfferTestimonialCreate>
-> {
-    return z.object({
-        authorName: z.string().nullish(),
-        body: z.string(),
-        bookingRequestOfferId: z.string(),
-        imageFileUploadIds: z.array(z.string()).nullish(),
-        location: z.string().nullish(),
-        occasion: z.string().nullish(),
-        rating: z.number().nullish(),
-    });
-}
-
-export function GqlSUserBookingRequestOfferTestimonialUpdateSchema(): z.ZodObject<
-    Properties<GqlSUserBookingRequestOfferTestimonialUpdate>
+export function GqlSUserBookingRequestOfferTestimonialUpsertSchema(): z.ZodObject<
+    Properties<GqlSUserBookingRequestOfferTestimonialUpsert>
 > {
     return z.object({
         body: z.string(),
         bookingRequestOfferId: z.string(),
         imageFileUploadIds: z.array(z.string()).nullish(),
         rating: z.number().nullish(),
-    }) as z.ZodObject<Properties<GqlSUserBookingRequestOfferTestimonialUpdate>>;
+    }) as z.ZodObject<Properties<GqlSUserBookingRequestOfferTestimonialUpsert>>;
 }
 
 export function GqlSUserBookingRequestParticipantCreateSchema(): z.ZodObject<Properties<GqlSUserBookingRequestParticipantCreate>> {

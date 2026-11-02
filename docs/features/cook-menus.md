@@ -47,8 +47,8 @@ matching card height, same ResizeObserver approach as `CookMealCard`). Card clic
   **Delete**. Admin always shows publish controls (independent of `PUBLICATION_MENUS`). Offer-scoped copies (deep-linked from admin offer
   pages): info badge, **Edit**, optional **Open template**; no publish / copy / delete / sync-to-template.
 - **Edit** (`/admin/menus/$menuId/edit`) — TanStack Form for title, description, courses via `CookMenuCoursesEditor` (inline meal
-  create/edit uses admin `cookMealCreate` / `cookMealUpdate` via injectable `saveHandlers`). Works for inventory and offer-scoped copies.
-  Soft-deleted menus 404 on edit.
+  create/edit uses admin `cookMealUpsert` via injectable `saveHandlers`). Works for inventory and offer-scoped copies. Soft-deleted menus
+  404 on edit.
 
 ### Admin user detail — menus tab
 
@@ -84,15 +84,19 @@ complete cards (full-width below `@md`, end-aligned from `@md`): selectable menu
 | Soft-delete + hide from cook API (chosen) | Matches meals; recoverable in admin | Inventory convention               |
 | Visibility boolean only                   | Simpler schema                      | No draft/publish UX                |
 | `publishedAt` draft/publish (chosen)      | Same lens as meals                  | Slightly more UI                   |
+| Separate create + update mutations        | Explicit draft-seed vs patch        | Two cook-assistant tools           |
+| Optional-id patch upsert (chosen)         | One tool; create can carry courses  | Dual-mode; offer rules on update   |
 | Sync AI menu suggestions (chosen)         | Fast drafting                       | LLM cost; may insert draft meals   |
 | Streaming generation UI                   | Progressive chunks                  | No streaming pattern for menus yet |
 | Nested publish tabs under scope           | Familiar status tabs                | Two tab bars; replaced by Select   |
 
 ### Chosen
 
-Menus with courses and meal options; draft/publish and soft delete aligned with meals. Creates insert a draft with three named empty courses
-whose titles (and the draft menu title) follow the cook’s `Users.locale` (`Vorspeise` / `Starter`, …). Course tree updates are full replace
-on save. AI suggestions return a full suggestion object synchronously (no streaming generation id).
+Menus with courses and meal options; draft/publish and soft delete aligned with meals. Cook writes go through `menuUpsert`: omit `menuId`
+inserts an inventory draft (locale draft title + three named empty courses, or provided title/description/courses/publishedAt); pass
+`menuId` for a partial patch (course tree full replace when set; offer-scoped copies reject `publishedAt` and require a negotiable offer).
+Aligned with meals for cook-assistant tool budget. AI suggestions return a full suggestion object synchronously (no streaming generation
+id).
 
 Library vs offer scope is first-class on the cook menus list (scope tabs + publication Select). Offer copies stay separate rows; cooks can
 edit them while negotiable and optionally sync content back to the inventory template.
@@ -113,11 +117,12 @@ item’s full height while a `DragOverlay` follows the pointer on the vertical a
 - SDL: `CookMenu` (+ `bookingRequestOfferId`, `offerContext`), `PublicCookMenu`, `AdminCookMenu` (+ `courses` as `AdminCookMenuCourse` with
   nested `AdminCookMeal`; each exposes `courseMealOptionImages: [String!]!` — meal-option photo URLs in course/option order, deduped),
   `AdminCookMenuCriterion` (optional `menuIds` for primary-key drill-in) / shared `AdminCookInventoryStatus`, courses, suggestion types
-- Commands: create (locale-aware draft title + default course titles via `cookMenuDraftDefaults` from cook `Users.locale`), update (offer
-  rows: no `publishedAt`; editable only while negotiable), delete (soft, inventory-only), copy (inventory source), `menuSyncToTemplate`
-  (offer → living inventory `copyOfMenuId`), `menuSuggestionFromText`, `menuTitleDescriptionSuggest` (menu-level AI suggestion mutations
-  remain; cook UI surface removed with inline create form — meal AI in the course editor still ships); admin `cookMenuCreate` /
-  `cookMenuUpdate` (inventory + offer copies; `publishedAt` inventory-only) / `cookMenuDelete` / `cookMenuCopy` (inventory only)
+- Commands: `cookMenuUpsert` (+ colocated `toolCookMenuUpsert`; locale-aware draft defaults via `cookMenuDraftDefaults` from cook
+  `Users.locale`; offer rows: no `publishedAt`; editable only while negotiable), delete (soft, inventory-only), copy (inventory source),
+  `menuSyncToTemplate` (offer → living inventory `copyOfMenuId`), `menuSuggestionFromText`, `menuTitleDescriptionSuggest` (menu-level AI
+  suggestion mutations remain; cook UI surface removed with inline create form, meal AI in the course editor still ships); admin
+  `adminCookMenuUpsert` (+ `toolAdminCookMenuUpsert`; `cookId` required on create; inventory + offer copies; `publishedAt` inventory-only) /
+  `adminCookMenuDelete` / `adminCookMenuCopy` (inventory only)
 - Queries: `cookMenuFindMany`, `cookOfferMenuFindMany`, find-one with course hydrate (derives `courseMealOptionImages` from hydrated meals);
   `Cook.menusCounts(criteria: [CookMenuCriterion!]!)` (soft-deleted never counted; optional `searchText`); admin find/counts (inventory
   only) and findOne (inventory + offer-scoped for deep-links; hydrates courses; exposes `bookingRequestOfferId` / `copyOfMenuId`)

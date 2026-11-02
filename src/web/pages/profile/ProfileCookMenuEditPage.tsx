@@ -12,7 +12,7 @@ import { CookMenuCoursesEditor } from '../../components/CookMenuCoursesEditor';
 import type { CookMenuCourseDraft } from '../../components/CookMenuCoursesEditor';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
 import type { GqlCProfileCookMenuPageQuery } from '../../graphql/generated';
-import { ProfileCookMenuPageUpdatesDocument, ProfileMenuUpdateDocument } from '../../graphql/generated';
+import { ProfileCookMenuPageUpdatesDocument, ProfileMenuUpsertDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { returnToSafe } from '../../utils/returnTo';
@@ -74,11 +74,11 @@ export function ProfileCookMenuEditPage({
     const offerNegotiable =
         seedMenu.offerContext?.status === 'USER_NEEDS_TO_ACCEPT' || seedMenu.offerContext?.status === 'COOK_NEEDS_TO_ACCEPT';
 
-    const [, updateMenu] = useMutation(ProfileMenuUpdateDocument);
+    const [, upsertMenu] = useMutation(ProfileMenuUpsertDocument);
 
-    // Offer create / edit-menus unmount while here, so they miss menuCreate /
-    // menuUpdate userUpdates. Drop their cached loader snapshots before
-    // returnTo — `invalidate()` alone leaves stale-while-revalidate showing the
+    // Offer create / edit-menus unmount while here, so they miss menuUpsert
+    // userUpdates. Drop their cached loader snapshots before returnTo —
+    // `invalidate()` alone leaves stale-while-revalidate showing the
     // pre-mutation seed (new menu missing until a full refresh).
     async function navigateAfterEdit() {
         if (safeReturnTo) {
@@ -97,9 +97,9 @@ export function ProfileCookMenuEditPage({
         defaultValues: formFromMenu(seedMenu),
         onSubmit: async ({ value }) => {
             try {
-                const result = await updateMenu({
-                    menuId,
+                const result = await upsertMenu({
                     menu: {
+                        menuId,
                         title: value.title,
                         description: value.description,
                         courses: value.courses.map((course) => ({
@@ -109,7 +109,7 @@ export function ProfileCookMenuEditPage({
                         })),
                     },
                 });
-                if (result.error || !result.data?.user.cook.menuUpdate.success) {
+                if (result.error || !result.data?.user.cook.menuUpsert.success) {
                     throw new Error('save failed');
                 }
                 toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);

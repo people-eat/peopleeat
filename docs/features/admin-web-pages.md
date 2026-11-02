@@ -49,13 +49,13 @@ upserts. Public loaders resolve SEO per route key, falling back to shared defaul
 - Shared keys + defaults: `src/shared/webPage.ts`
 - Schema: `WebPages` (`webPageKey`, title/description DE/EN, `updatedAt`)
 - GraphQL: `WebPageKey` enum; `AdminWebPage` (`persisted`, nullable `updatedAt`); admin list/detail always return every key; public
-  `findOne` by key; `AdminMutation.webPageUpdate` upserts
-- Server: `adminWebPageFindMany` (merge), `adminWebPageFindOne` (ghost), `adminWebPageUpdate` (upsert), `publicWebPageFindOne` (defaults
-  fallback), `toGqlAdminWebPage` / `toGqlAdminWebPageGhost`
+  `findOne` by key; `AdminMutation.webPageUpsert`
+- Server: `adminWebPageFindMany` (merge), `adminWebPageFindOne` (ghost), `adminWebPageUpsert`, `publicWebPageFindOne` (defaults fallback),
+  `toGqlAdminWebPage` / `toGqlAdminWebPageGhost`
 - Admin UI: `AdminWebPagesPage`, `AdminWebPagePage`, labels in `adminWebPages.ts`
 - Public: fixed route loaders + `head()` via locale text helper
 
-Key files: `src/shared/webPage.ts`, `src/server/commands/adminWebPageUpdate.ts`, admin page components.
+Key files: `src/shared/webPage.ts`, `src/server/commands/adminWebPageUpsert.ts`, admin page components.
 
 See [discovery-seo.md](../architecture/discovery-seo.md), [content-model.md](../architecture/content-model.md),
 [admin-shell.md](./admin-shell.md), [admin-feature-toggles.md](./admin-feature-toggles.md) (same ghost / create-on-write pattern).

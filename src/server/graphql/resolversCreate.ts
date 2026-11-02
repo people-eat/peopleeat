@@ -45,13 +45,11 @@ import { adminCityUpsert } from '../commands/adminCityUpsert';
 import { adminCookApprovalUpdate } from '../commands/adminCookApprovalUpdate';
 import { adminCookBiographySuggest } from '../commands/adminCookBiographySuggest';
 import { adminCookBiographySummarySuggest } from '../commands/adminCookBiographySummarySuggest';
-import { adminCookMealCreate } from '../commands/adminCookMealCreate';
 import { adminCookMealDelete } from '../commands/adminCookMealDelete';
-import { adminCookMealUpdate } from '../commands/adminCookMealUpdate';
+import { adminCookMealUpsert } from '../commands/adminCookMealUpsert';
 import { adminCookMenuCopy } from '../commands/adminCookMenuCopy';
-import { adminCookMenuCreate } from '../commands/adminCookMenuCreate';
 import { adminCookMenuDelete } from '../commands/adminCookMenuDelete';
-import { adminCookMenuUpdate } from '../commands/adminCookMenuUpdate';
+import { adminCookMenuUpsert } from '../commands/adminCookMenuUpsert';
 import { adminCookTestimonialDelete } from '../commands/adminCookTestimonialDelete';
 import { adminCookTestimonialImageUpdate } from '../commands/adminCookTestimonialImageUpdate';
 import { adminCookTestimonialPublish } from '../commands/adminCookTestimonialPublish';
@@ -61,19 +59,12 @@ import { adminCustomerTestimonialDelete } from '../commands/adminCustomerTestimo
 import { adminCustomerTestimonialImageUpdate } from '../commands/adminCustomerTestimonialImageUpdate';
 import { adminCustomerTestimonialPublish } from '../commands/adminCustomerTestimonialPublish';
 import { adminCustomerTestimonialUpsert } from '../commands/adminCustomerTestimonialUpsert';
-import { adminFeatureToggleUpdate } from '../commands/adminFeatureToggleUpdate';
+import { adminFeatureToggleUpsert } from '../commands/adminFeatureToggleUpsert';
 import { adminFeatureToggleUserOverrideDelete } from '../commands/adminFeatureToggleUserOverrideDelete';
 import { adminFeatureToggleUserOverrideUpsert } from '../commands/adminFeatureToggleUserOverrideUpsert';
 import { adminGiftCardPdfsRegenerate } from '../commands/adminGiftCardPdfsRegenerate';
-import { adminLegalImprintDraftCreate } from '../commands/adminLegalImprintDraftCreate';
-import { adminLegalImprintDraftUpdate } from '../commands/adminLegalImprintDraftUpdate';
-import { adminLegalImprintPublish } from '../commands/adminLegalImprintPublish';
-import { adminLegalPrivacyPolicyDraftCreate } from '../commands/adminLegalPrivacyPolicyDraftCreate';
-import { adminLegalPrivacyPolicyDraftUpdate } from '../commands/adminLegalPrivacyPolicyDraftUpdate';
-import { adminLegalPrivacyPolicyPublish } from '../commands/adminLegalPrivacyPolicyPublish';
-import { adminLegalTermsAndConditionsDraftCreate } from '../commands/adminLegalTermsAndConditionsDraftCreate';
-import { adminLegalTermsAndConditionsDraftUpdate } from '../commands/adminLegalTermsAndConditionsDraftUpdate';
-import { adminLegalTermsAndConditionsPublish } from '../commands/adminLegalTermsAndConditionsPublish';
+import { adminLegalDocumentDraftUpsert } from '../commands/adminLegalDocumentDraftUpsert';
+import { adminLegalDocumentPublish } from '../commands/adminLegalDocumentPublish';
 import { adminOccasionCooksUpdate } from '../commands/adminOccasionCooksUpdate';
 import { adminOccasionDelete } from '../commands/adminOccasionDelete';
 import { adminOccasionTestimonialsUpdate } from '../commands/adminOccasionTestimonialsUpdate';
@@ -96,7 +87,7 @@ import { adminUserCreate } from '../commands/adminUserCreate';
 import { adminUserEmailAddressUpdate } from '../commands/adminUserEmailAddressUpdate';
 import { adminUserStatusUpdate } from '../commands/adminUserStatusUpdate';
 import { adminUserUpdate } from '../commands/adminUserUpdate';
-import { adminWebPageUpdate } from '../commands/adminWebPageUpdate';
+import { adminWebPageUpsert } from '../commands/adminWebPageUpsert';
 import { adminWhatsAppConversationUnreadCountReset } from '../commands/adminWhatsAppConversationUnreadCountReset';
 import { adminWhatsAppMessageCreate } from '../commands/adminWhatsAppMessageCreate';
 import { adminWhatsAppMessageReactionUpsert } from '../commands/adminWhatsAppMessageReactionUpsert';
@@ -141,25 +132,22 @@ import { cookBookingRequestOfferParticipantAmendmentDecline } from '../commands/
 import { cookBookingRequestOfferPreparationsComplete } from '../commands/cookBookingRequestOfferPreparationsComplete';
 import { cookBookingRequestOfferPriceUpdate } from '../commands/cookBookingRequestOfferPriceUpdate';
 import { cookBookingRequestOfferSuggestedMenusUpdate } from '../commands/cookBookingRequestOfferSuggestedMenusUpdate';
-import { cookBookingRequestOfferTestimonialCreate } from '../commands/cookBookingRequestOfferTestimonialCreate';
-import { cookBookingRequestOfferTestimonialUpdate } from '../commands/cookBookingRequestOfferTestimonialUpdate';
+import { cookBookingRequestOfferTestimonialUpsert } from '../commands/cookBookingRequestOfferTestimonialUpsert';
 import { cookBookingRequestOfferUnreadNotificationCountReset } from '../commands/cookBookingRequestOfferUnreadNotificationCountReset';
 import { cookBookingRequestOpen } from '../commands/cookBookingRequestOpen';
 import { cookCallAvailabilityExceptionCreate } from '../commands/cookCallAvailabilityExceptionCreate';
 import { cookCallAvailabilityExceptionDelete } from '../commands/cookCallAvailabilityExceptionDelete';
 import { cookCallAvailabilityRuleCreate } from '../commands/cookCallAvailabilityRuleCreate';
 import { cookCallAvailabilityRuleDelete } from '../commands/cookCallAvailabilityRuleDelete';
-import { cookMealCreate } from '../commands/cookMealCreate';
 import { cookMealDelete } from '../commands/cookMealDelete';
-import { cookMealUpdate } from '../commands/cookMealUpdate';
+import { cookMealUpsert } from '../commands/cookMealUpsert';
 import { cookMenuCopy } from '../commands/cookMenuCopy';
-import { cookMenuCreate } from '../commands/cookMenuCreate';
 import { cookMenuDelete } from '../commands/cookMenuDelete';
 import { cookMenuSuggestionFromInventory } from '../commands/cookMenuSuggestionFromInventory';
 import { cookMenuSuggestionFromText } from '../commands/cookMenuSuggestionFromText';
 import { cookMenuSyncToTemplate } from '../commands/cookMenuSyncToTemplate';
 import { cookMenuTitleDescriptionSuggest } from '../commands/cookMenuTitleDescriptionSuggest';
-import { cookMenuUpdate } from '../commands/cookMenuUpdate';
+import { cookMenuUpsert } from '../commands/cookMenuUpsert';
 import { cookStripeDashboardUrlCreate } from '../commands/cookStripeDashboardUrlCreate';
 import { cookStripeOnboardingStart } from '../commands/cookStripeOnboardingStart';
 import { cookStripeStatusSync } from '../commands/cookStripeStatusSync';
@@ -193,8 +181,7 @@ import { userBookingRequestOfferDecline } from '../commands/userBookingRequestOf
 import { userBookingRequestOfferParticipantAmendmentCancel } from '../commands/userBookingRequestOfferParticipantAmendmentCancel';
 import { userBookingRequestOfferParticipantAmendmentCreate } from '../commands/userBookingRequestOfferParticipantAmendmentCreate';
 import { userBookingRequestOfferPaymentStatusUpdate } from '../commands/userBookingRequestOfferPaymentStatusUpdate';
-import { userBookingRequestOfferTestimonialCreate } from '../commands/userBookingRequestOfferTestimonialCreate';
-import { userBookingRequestOfferTestimonialUpdate } from '../commands/userBookingRequestOfferTestimonialUpdate';
+import { userBookingRequestOfferTestimonialUpsert } from '../commands/userBookingRequestOfferTestimonialUpsert';
 import { userBookingRequestOfferUnreadNotificationCountReset } from '../commands/userBookingRequestOfferUnreadNotificationCountReset';
 import { userBookingRequestRequestRecall } from '../commands/userBookingRequestRequestRecall';
 import { userBookingRequestUpdate } from '../commands/userBookingRequestUpdate';
@@ -535,13 +522,11 @@ import type {
     GqlSAdminMutationCookApprovalUpdateArgs,
     GqlSAdminMutationCookBiographySuggestArgs,
     GqlSAdminMutationCookBiographySummarySuggestArgs,
-    GqlSAdminMutationCookMealCreateArgs,
     GqlSAdminMutationCookMealDeleteArgs,
-    GqlSAdminMutationCookMealUpdateArgs,
+    GqlSAdminMutationCookMealUpsertArgs,
     GqlSAdminMutationCookMenuCopyArgs,
-    GqlSAdminMutationCookMenuCreateArgs,
     GqlSAdminMutationCookMenuDeleteArgs,
-    GqlSAdminMutationCookMenuUpdateArgs,
+    GqlSAdminMutationCookMenuUpsertArgs,
     GqlSAdminMutationCookTestimonialDeleteArgs,
     GqlSAdminMutationCookTestimonialImageUpdateArgs,
     GqlSAdminMutationCookTestimonialPublishArgs,
@@ -551,16 +536,12 @@ import type {
     GqlSAdminMutationCustomerTestimonialImageUpdateArgs,
     GqlSAdminMutationCustomerTestimonialPublishArgs,
     GqlSAdminMutationCustomerTestimonialUpsertArgs,
-    GqlSAdminMutationFeatureToggleUpdateArgs,
+    GqlSAdminMutationFeatureToggleUpsertArgs,
     GqlSAdminMutationFeatureToggleUserOverrideDeleteArgs,
     GqlSAdminMutationFeatureToggleUserOverrideUpsertArgs,
     GqlSAdminMutationGiftCardPdfsRegenerateArgs,
-    GqlSAdminMutationLegalImprintDraftUpdateArgs,
-    GqlSAdminMutationLegalImprintPublishArgs,
-    GqlSAdminMutationLegalPrivacyPolicyDraftUpdateArgs,
-    GqlSAdminMutationLegalPrivacyPolicyPublishArgs,
-    GqlSAdminMutationLegalTermsAndConditionsDraftUpdateArgs,
-    GqlSAdminMutationLegalTermsAndConditionsPublishArgs,
+    GqlSAdminMutationLegalDocumentDraftUpsertArgs,
+    GqlSAdminMutationLegalDocumentPublishArgs,
     GqlSAdminMutationOccasionCooksUpdateArgs,
     GqlSAdminMutationOccasionDeleteArgs,
     GqlSAdminMutationOccasionTestimonialsUpdateArgs,
@@ -583,7 +564,7 @@ import type {
     GqlSAdminMutationUserEmailAddressUpdateArgs,
     GqlSAdminMutationUserStatusUpdateArgs,
     GqlSAdminMutationUserUpdateArgs,
-    GqlSAdminMutationWebPageUpdateArgs,
+    GqlSAdminMutationWebPageUpsertArgs,
     GqlSAdminMutationWhatsAppConversationUnreadCountResetArgs,
     GqlSAdminMutationWhatsAppMessageCreateArgs,
     GqlSAdminMutationWhatsAppMessageReactionUpsertArgs,
@@ -672,24 +653,22 @@ import type {
     GqlSCookMutationBookingRequestOfferPreparationsCompleteArgs,
     GqlSCookMutationBookingRequestOfferPriceUpdateArgs,
     GqlSCookMutationBookingRequestOfferSuggestedMenusUpdateArgs,
-    GqlSCookMutationBookingRequestOfferTestimonialCreateArgs,
-    GqlSCookMutationBookingRequestOfferTestimonialUpdateArgs,
+    GqlSCookMutationBookingRequestOfferTestimonialUpsertArgs,
     GqlSCookMutationBookingRequestOfferUnreadNotificationCountResetArgs,
     GqlSCookMutationBookingRequestOpenArgs,
     GqlSCookMutationCallAvailabilityExceptionCreateArgs,
     GqlSCookMutationCallAvailabilityExceptionDeleteArgs,
     GqlSCookMutationCallAvailabilityRuleCreateArgs,
     GqlSCookMutationCallAvailabilityRuleDeleteArgs,
-    GqlSCookMutationMealCreateArgs,
     GqlSCookMutationMealDeleteArgs,
-    GqlSCookMutationMealUpdateArgs,
+    GqlSCookMutationMealUpsertArgs,
     GqlSCookMutationMenuCopyArgs,
     GqlSCookMutationMenuDeleteArgs,
     GqlSCookMutationMenuSuggestionFromInventoryArgs,
     GqlSCookMutationMenuSuggestionFromTextArgs,
     GqlSCookMutationMenuSyncToTemplateArgs,
     GqlSCookMutationMenuTitleDescriptionSuggestArgs,
-    GqlSCookMutationMenuUpdateArgs,
+    GqlSCookMutationMenuUpsertArgs,
     GqlSCookMutationStripeOnboardingStartArgs,
     GqlSCookMutationUpdateArgs,
     GqlSCookTestimonial,
@@ -762,8 +741,7 @@ import type {
     GqlSUserMutationBookingRequestOfferParticipantAmendmentCancelArgs,
     GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs,
     GqlSUserMutationBookingRequestOfferPaymentStatusUpdateArgs,
-    GqlSUserMutationBookingRequestOfferTestimonialCreateArgs,
-    GqlSUserMutationBookingRequestOfferTestimonialUpdateArgs,
+    GqlSUserMutationBookingRequestOfferTestimonialUpsertArgs,
     GqlSUserMutationBookingRequestOfferUnreadNotificationCountResetArgs,
     GqlSUserMutationBookingRequestRequestRecallArgs,
     GqlSUserMutationBookingRequestUpdateArgs,
@@ -1658,20 +1636,14 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             stripeDashboardUrlCreate(parent: GqlSCookMutation, _: unknown, requestingSession: GqlSSession) {
                 return cookStripeDashboardUrlCreate(parent, requestingSession, serverRuntime);
             },
-            mealCreate(parent: GqlSCookMutation, args: GqlSCookMutationMealCreateArgs, requestingSession: GqlSSession) {
-                return cookMealCreate(parent, args, requestingSession, serverRuntime);
-            },
-            mealUpdate(parent: GqlSCookMutation, args: GqlSCookMutationMealUpdateArgs, requestingSession: GqlSSession) {
-                return cookMealUpdate(parent, args, requestingSession, serverRuntime);
+            mealUpsert(parent: GqlSCookMutation, args: GqlSCookMutationMealUpsertArgs, requestingSession: GqlSSession) {
+                return cookMealUpsert(parent, args, requestingSession, serverRuntime);
             },
             mealDelete(parent: GqlSCookMutation, args: GqlSCookMutationMealDeleteArgs, requestingSession: GqlSSession) {
                 return cookMealDelete(parent, args, requestingSession, serverRuntime);
             },
-            menuCreate(parent: GqlSCookMutation, _: unknown, requestingSession: GqlSSession) {
-                return cookMenuCreate(parent, requestingSession, serverRuntime);
-            },
-            menuUpdate(parent: GqlSCookMutation, args: GqlSCookMutationMenuUpdateArgs, requestingSession: GqlSSession) {
-                return cookMenuUpdate(parent, args, requestingSession, serverRuntime);
+            menuUpsert(parent: GqlSCookMutation, args: GqlSCookMutationMenuUpsertArgs, requestingSession: GqlSSession) {
+                return cookMenuUpsert(parent, args, requestingSession, serverRuntime);
             },
             menuDelete(parent: GqlSCookMutation, args: GqlSCookMutationMenuDeleteArgs, requestingSession: GqlSSession) {
                 return cookMenuDelete(parent, args, requestingSession, serverRuntime);
@@ -1814,19 +1786,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return cookBookingRequestOfferSuggestedMenusUpdate(parent, args, requestingSession, serverRuntime);
             },
-            bookingRequestOfferTestimonialCreate(
+            bookingRequestOfferTestimonialUpsert(
                 parent: GqlSCookMutation,
-                args: GqlSCookMutationBookingRequestOfferTestimonialCreateArgs,
+                args: GqlSCookMutationBookingRequestOfferTestimonialUpsertArgs,
                 requestingSession: GqlSSession,
             ) {
-                return cookBookingRequestOfferTestimonialCreate(parent, args, requestingSession, serverRuntime);
-            },
-            bookingRequestOfferTestimonialUpdate(
-                parent: GqlSCookMutation,
-                args: GqlSCookMutationBookingRequestOfferTestimonialUpdateArgs,
-                requestingSession: GqlSSession,
-            ) {
-                return cookBookingRequestOfferTestimonialUpdate(parent, args, requestingSession, serverRuntime);
+                return cookBookingRequestOfferTestimonialUpsert(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestOfferChatMessageCreate(
                 parent: GqlSCookMutation,
@@ -1994,20 +1959,14 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return adminCookBiographySummarySuggest(parent, args, requestingSession, serverRuntime);
             },
-            cookMealCreate(parent: GqlSAdminMutation, args: GqlSAdminMutationCookMealCreateArgs, requestingSession: GqlSSession) {
-                return adminCookMealCreate(parent, args, requestingSession, serverRuntime);
-            },
-            cookMealUpdate(parent: GqlSAdminMutation, args: GqlSAdminMutationCookMealUpdateArgs, requestingSession: GqlSSession) {
-                return adminCookMealUpdate(parent, args, requestingSession, serverRuntime);
+            cookMealUpsert(parent: GqlSAdminMutation, args: GqlSAdminMutationCookMealUpsertArgs, requestingSession: GqlSSession) {
+                return adminCookMealUpsert(parent, args, requestingSession, serverRuntime);
             },
             cookMealDelete(parent: GqlSAdminMutation, args: GqlSAdminMutationCookMealDeleteArgs, requestingSession: GqlSSession) {
                 return adminCookMealDelete(parent, args, requestingSession, serverRuntime);
             },
-            cookMenuCreate(parent: GqlSAdminMutation, args: GqlSAdminMutationCookMenuCreateArgs, requestingSession: GqlSSession) {
-                return adminCookMenuCreate(parent, args, requestingSession, serverRuntime);
-            },
-            cookMenuUpdate(parent: GqlSAdminMutation, args: GqlSAdminMutationCookMenuUpdateArgs, requestingSession: GqlSSession) {
-                return adminCookMenuUpdate(parent, args, requestingSession, serverRuntime);
+            cookMenuUpsert(parent: GqlSAdminMutation, args: GqlSAdminMutationCookMenuUpsertArgs, requestingSession: GqlSSession) {
+                return adminCookMenuUpsert(parent, args, requestingSession, serverRuntime);
             },
             cookMenuDelete(parent: GqlSAdminMutation, args: GqlSAdminMutationCookMenuDeleteArgs, requestingSession: GqlSSession) {
                 return adminCookMenuDelete(parent, args, requestingSession, serverRuntime);
@@ -2015,52 +1974,19 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             cookMenuCopy(parent: GqlSAdminMutation, args: GqlSAdminMutationCookMenuCopyArgs, requestingSession: GqlSSession) {
                 return adminCookMenuCopy(parent, args, requestingSession, serverRuntime);
             },
-            legalPrivacyPolicyDraftCreate(parent: GqlSAdminMutation, _: unknown, requestingSession: GqlSSession) {
-                return adminLegalPrivacyPolicyDraftCreate(parent, requestingSession, serverRuntime);
-            },
-            legalPrivacyPolicyDraftUpdate(
+            legalDocumentDraftUpsert(
                 parent: GqlSAdminMutation,
-                args: GqlSAdminMutationLegalPrivacyPolicyDraftUpdateArgs,
+                args: GqlSAdminMutationLegalDocumentDraftUpsertArgs,
                 requestingSession: GqlSSession,
             ) {
-                return adminLegalPrivacyPolicyDraftUpdate(parent, args, requestingSession, serverRuntime);
+                return adminLegalDocumentDraftUpsert(parent, args, requestingSession, serverRuntime);
             },
-            legalPrivacyPolicyPublish(
+            legalDocumentPublish(
                 parent: GqlSAdminMutation,
-                args: GqlSAdminMutationLegalPrivacyPolicyPublishArgs,
+                args: GqlSAdminMutationLegalDocumentPublishArgs,
                 requestingSession: GqlSSession,
             ) {
-                return adminLegalPrivacyPolicyPublish(parent, args, requestingSession, serverRuntime);
-            },
-            legalTermsAndConditionsDraftCreate(parent: GqlSAdminMutation, _: unknown, requestingSession: GqlSSession) {
-                return adminLegalTermsAndConditionsDraftCreate(parent, requestingSession, serverRuntime);
-            },
-            legalTermsAndConditionsDraftUpdate(
-                parent: GqlSAdminMutation,
-                args: GqlSAdminMutationLegalTermsAndConditionsDraftUpdateArgs,
-                requestingSession: GqlSSession,
-            ) {
-                return adminLegalTermsAndConditionsDraftUpdate(parent, args, requestingSession, serverRuntime);
-            },
-            legalTermsAndConditionsPublish(
-                parent: GqlSAdminMutation,
-                args: GqlSAdminMutationLegalTermsAndConditionsPublishArgs,
-                requestingSession: GqlSSession,
-            ) {
-                return adminLegalTermsAndConditionsPublish(parent, args, requestingSession, serverRuntime);
-            },
-            legalImprintDraftCreate(parent: GqlSAdminMutation, _: unknown, requestingSession: GqlSSession) {
-                return adminLegalImprintDraftCreate(parent, requestingSession, serverRuntime);
-            },
-            legalImprintDraftUpdate(
-                parent: GqlSAdminMutation,
-                args: GqlSAdminMutationLegalImprintDraftUpdateArgs,
-                requestingSession: GqlSSession,
-            ) {
-                return adminLegalImprintDraftUpdate(parent, args, requestingSession, serverRuntime);
-            },
-            legalImprintPublish(parent: GqlSAdminMutation, args: GqlSAdminMutationLegalImprintPublishArgs, requestingSession: GqlSSession) {
-                return adminLegalImprintPublish(parent, args, requestingSession, serverRuntime);
+                return adminLegalDocumentPublish(parent, args, requestingSession, serverRuntime);
             },
             cityUpsert(parent: GqlSAdminMutation, args: GqlSAdminMutationCityUpsertArgs, requestingSession: GqlSSession) {
                 return adminCityUpsert(parent, args, requestingSession, serverRuntime);
@@ -2172,11 +2098,11 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             blogPostDelete(parent: GqlSAdminMutation, args: GqlSAdminMutationBlogPostDeleteArgs, requestingSession: GqlSSession) {
                 return adminBlogPostDelete(parent, args, requestingSession, serverRuntime);
             },
-            webPageUpdate(parent: GqlSAdminMutation, args: GqlSAdminMutationWebPageUpdateArgs, requestingSession: GqlSSession) {
-                return adminWebPageUpdate(parent, args, requestingSession, serverRuntime);
+            webPageUpsert(parent: GqlSAdminMutation, args: GqlSAdminMutationWebPageUpsertArgs, requestingSession: GqlSSession) {
+                return adminWebPageUpsert(parent, args, requestingSession, serverRuntime);
             },
-            featureToggleUpdate(parent: GqlSAdminMutation, args: GqlSAdminMutationFeatureToggleUpdateArgs, requestingSession: GqlSSession) {
-                return adminFeatureToggleUpdate(parent, args, requestingSession, serverRuntime);
+            featureToggleUpsert(parent: GqlSAdminMutation, args: GqlSAdminMutationFeatureToggleUpsertArgs, requestingSession: GqlSSession) {
+                return adminFeatureToggleUpsert(parent, args, requestingSession, serverRuntime);
             },
             featureToggleUserOverrideUpsert(
                 parent: GqlSAdminMutation,
@@ -2570,19 +2496,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return userBookingRequestOfferPaymentStatusUpdate(parent, args, requestingSession, serverRuntime);
             },
-            bookingRequestOfferTestimonialCreate(
+            bookingRequestOfferTestimonialUpsert(
                 parent: GqlSUserMutation,
-                args: GqlSUserMutationBookingRequestOfferTestimonialCreateArgs,
+                args: GqlSUserMutationBookingRequestOfferTestimonialUpsertArgs,
                 requestingSession: GqlSSession,
             ) {
-                return userBookingRequestOfferTestimonialCreate(parent, args, requestingSession, serverRuntime);
-            },
-            bookingRequestOfferTestimonialUpdate(
-                parent: GqlSUserMutation,
-                args: GqlSUserMutationBookingRequestOfferTestimonialUpdateArgs,
-                requestingSession: GqlSSession,
-            ) {
-                return userBookingRequestOfferTestimonialUpdate(parent, args, requestingSession, serverRuntime);
+                return userBookingRequestOfferTestimonialUpsert(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestOfferDecline(
                 parent: GqlSUserMutation,

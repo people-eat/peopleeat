@@ -42,9 +42,9 @@ subscription AdminFeatureTogglesPageUpdates {
     }
 }
 
-mutation AdminFeatureToggleUpdate($featureToggleKey: FeatureToggleKey!, $enabled: Boolean!) {
+mutation AdminFeatureToggleUpsert($featureToggleKey: FeatureToggleKey!, $enabled: Boolean!) {
     admin {
-        featureToggleUpdate(featureToggleKey: $featureToggleKey, enabled: $enabled) {
+        featureToggleUpsert(featureToggleKey: $featureToggleKey, enabled: $enabled) {
             success
             referenceId
         }

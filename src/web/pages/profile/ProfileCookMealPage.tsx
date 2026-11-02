@@ -22,7 +22,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { StatusAlert } from '../../components/base/status-alert';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
 import type { GqlCProfileCookMealPageQuery } from '../../graphql/generated';
-import { ProfileCookMealPageUpdatesDocument, ProfileMealDeleteDocument, ProfileMealUpdateDocument } from '../../graphql/generated';
+import { ProfileCookMealPageUpdatesDocument, ProfileMealDeleteDocument, ProfileMealUpsertDocument } from '../../graphql/generated';
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
@@ -141,7 +141,7 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
     const user = useUserUpdatesSeed(seedUser, ProfileCookMealPageUpdatesDocument, { mealId });
     const meal = user?.cook?.meal ?? null;
 
-    const [, updateMeal] = useMutation(ProfileMealUpdateDocument);
+    const [, upsertMeal] = useMutation(ProfileMealUpsertDocument);
     const [, deleteMeal] = useMutation(ProfileMealDeleteDocument);
     const [busy, setBusy] = useState(false);
     const [confirm, setConfirm] = useState<'delete' | 'delete-blocked' | 'publish' | null>(null);
@@ -166,8 +166,8 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
     async function setPublished(next: string | null) {
         setBusy(true);
         try {
-            const result = await updateMeal({ mealId, meal: { publishedAt: next } });
-            if (result.error || !result.data?.user.cook.mealUpdate.success) {
+            const result = await upsertMeal({ meal: { mealId, publishedAt: next } });
+            if (result.error || !result.data?.user.cook.mealUpsert.success) {
                 throw new Error('publish failed');
             }
             toast.success(

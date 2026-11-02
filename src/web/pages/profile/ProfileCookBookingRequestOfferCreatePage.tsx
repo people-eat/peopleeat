@@ -31,7 +31,7 @@ import {
     ProfileCookBookingRequestOfferCreatePageGeneratedMenuApplyDocument,
     ProfileCookBookingRequestOfferCreatePageMenuEvaluationRefreshDocument,
     ProfileCookBookingRequestOfferCreatePageUpdatesDocument,
-    ProfileMenuCreateDocument,
+    ProfileMenuUpsertDocument,
 } from '../../graphql/generated';
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
@@ -222,7 +222,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
     const request = lookup?.__typename === 'CookBookingRequestAvailable' ? lookup.bookingRequest : null;
 
     const [, createOffer] = useMutation(ProfileCookBookingRequestOfferCreatePageCreateDocument);
-    const [, createMenu] = useMutation(ProfileMenuCreateDocument);
+    const [, upsertMenu] = useMutation(ProfileMenuUpsertDocument);
     const [, refreshMenuEvaluation] = useMutation(ProfileCookBookingRequestOfferCreatePageMenuEvaluationRefreshDocument);
     const [, applyGeneratedMenu] = useMutation(ProfileCookBookingRequestOfferCreatePageGeneratedMenuApplyDocument);
     const [, trackFunnelInteraction] = useMutation(CookBookingRequestOfferFunnelTrackDocument);
@@ -622,8 +622,8 @@ export function ProfileCookBookingRequestOfferCreatePage({
         if (busy) return;
         setCreatingMenu(true);
         try {
-            const result = await createMenu({});
-            const menuId = result.data?.user.cook.menuCreate.referenceId;
+            const result = await upsertMenu({});
+            const menuId = result.data?.user.cook.menuUpsert.referenceId;
             if (!menuId || result.error) throw new Error('create failed');
             const menusForReturn = selectedMenuIds.includes(menuId) ? selectedMenuIds : [...selectedMenuIds, menuId];
             toast.success({ de: 'Menü angelegt.', en: 'Menu created.' }[locale]);

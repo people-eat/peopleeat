@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { idCreate } from '../../shared/idCreate';
 import { bookingRequestOffers, bookingRequests, cooks, menus } from '../db/schema';
 import { commandSetup, cookMutationParent, findLogsForSession, testDb } from '../test/commandTestUtils';
-import { cookMenuCreate } from './cookMenuCreate';
 import { cookMenuDelete } from './cookMenuDelete';
+import { cookMenuUpsert } from './cookMenuUpsert';
 
 const berlin = {
     displayText: 'Berlin',
@@ -29,7 +29,7 @@ describe('cookMenuDelete', () => {
     it('soft-deletes an inventory menu and publishes userUpdates', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         const menuId = created.referenceId!;
         vi.mocked(serverRuntime.publish.userUpdates).mockClear();
 
@@ -62,7 +62,7 @@ describe('cookMenuDelete', () => {
         // Arrange
         const owner = await setupCook();
         const other = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(owner.user.userId), owner.requestingSession, owner.serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(owner.user.userId), {}, owner.requestingSession, owner.serverRuntime);
 
         // Act + Assert
         await expect(
@@ -82,7 +82,7 @@ describe('cookMenuDelete', () => {
     it('rejects a second delete on an already soft-deleted menu', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         const menuId = created.referenceId!;
         await cookMenuDelete(cookMutationParent(user.userId), { menuId }, requestingSession, serverRuntime);
         vi.mocked(serverRuntime.publish.userUpdates).mockClear();

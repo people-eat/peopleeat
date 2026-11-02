@@ -64,18 +64,9 @@ subscription AdminMenuEditPageUpdates($menuId: ID!, $cookId: ID!) {
     }
 }
 
-mutation AdminMenuEditMealCreate($cookId: ID!, $meal: CookMealCreate) {
+mutation AdminMenuEditMealUpsert($meal: AdminCookMealUpsert!) {
     admin {
-        cookMealCreate(cookId: $cookId, meal: $meal) {
-            success
-            referenceId
-        }
-    }
-}
-
-mutation AdminMenuEditMealUpdate($mealId: ID!, $meal: CookMealUpdate!) {
-    admin {
-        cookMealUpdate(mealId: $mealId, meal: $meal) {
+        cookMealUpsert(meal: $meal) {
             success
             referenceId
         }

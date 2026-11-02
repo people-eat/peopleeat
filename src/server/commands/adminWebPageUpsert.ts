@@ -1,11 +1,11 @@
 import { webPages } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSAdminMutation, GqlSAdminMutationWebPageUpdateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
+import type { GqlSAdminMutation, GqlSAdminMutationWebPageUpsertArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 
-export async function adminWebPageUpdate(
+export async function adminWebPageUpsert(
     { adminId }: GqlSAdminMutation,
-    { webPageKey, input }: GqlSAdminMutationWebPageUpdateArgs,
+    { webPageKey, input }: GqlSAdminMutationWebPageUpsertArgs,
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
@@ -15,7 +15,7 @@ export async function adminWebPageUpdate(
         const titleDe = input.titleDe.trim();
         const descriptionDe = input.descriptionDe.trim();
         if (!titleDe || !descriptionDe) {
-            throw new Error('adminWebPageUpdate: titleDe and descriptionDe must not be empty');
+            throw new Error('adminWebPageUpsert: titleDe and descriptionDe must not be empty');
         }
 
         const now = new Date();

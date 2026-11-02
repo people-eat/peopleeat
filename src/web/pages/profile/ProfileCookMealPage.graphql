@@ -49,10 +49,10 @@ subscription ProfileCookMealPageUpdates($mealId: ID!) {
     }
 }
 
-mutation ProfileMealUpdate($mealId: ID!, $meal: CookMealUpdate!) {
+mutation ProfileMealUpsert($meal: CookMealUpsert) {
     user {
         cook {
-            mealUpdate(mealId: $mealId, meal: $meal) {
+            mealUpsert(meal: $meal) {
                 success
                 referenceId
             }

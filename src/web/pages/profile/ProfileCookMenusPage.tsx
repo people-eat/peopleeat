@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { CookMenuCard } from '../../components/CookMenuCard';
 import type { GqlCProfileCookMenusPageQuery } from '../../graphql/generated';
-import { ProfileCookMenusPageUpdatesDocument, ProfileMenuCreateDocument } from '../../graphql/generated';
+import { ProfileCookMenusPageUpdatesDocument, ProfileMenuUpsertDocument } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
@@ -64,7 +64,7 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
     const publicationEnabled = useFeatureToggleActive('PUBLICATION_MENUS');
     const seedUser = data.currentSession.user ?? null;
     const user = useUserUpdatesSeed(seedUser, ProfileCookMenusPageUpdatesDocument);
-    const [, createMenu] = useMutation(ProfileMenuCreateDocument);
+    const [, upsertMenu] = useMutation(ProfileMenuUpsertDocument);
     const [creating, setCreating] = useState(false);
     const [draftQ, setDraftQ] = useState(search.q ?? '');
     const debouncedQ = useDebouncedValue(draftQ, 300);
@@ -140,8 +140,8 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
     async function onCreate() {
         setCreating(true);
         try {
-            const result = await createMenu({});
-            const menuId = result.data?.user.cook.menuCreate.referenceId;
+            const result = await upsertMenu({});
+            const menuId = result.data?.user.cook.menuUpsert.referenceId;
             if (!menuId || result.error) throw new Error('create failed');
             toast.success({ de: 'Menü angelegt.', en: 'Menu created.' }[locale]);
             await navigate({ to: '/{-$locale}/profile/menus/$menuId/edit', params: { menuId } });

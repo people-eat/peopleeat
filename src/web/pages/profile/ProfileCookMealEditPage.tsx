@@ -10,7 +10,7 @@ import { Textarea } from '../../components/base/textarea';
 import { CookMealImageField } from '../../components/CookMealImageField';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
 import type { GqlCProfileCookMealPageQuery } from '../../graphql/generated';
-import { ProfileCookMealPageUpdatesDocument, ProfileMealUpdateDocument } from '../../graphql/generated';
+import { ProfileCookMealPageUpdatesDocument, ProfileMealUpsertDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { cookStubRouteBySlug } from './cookCatalog';
@@ -54,21 +54,21 @@ export function ProfileCookMealEditPage({ data, mealId }: { data: GqlCProfileCoo
     const user = useUserUpdatesSeed(seedUser, ProfileCookMealPageUpdatesDocument, { mealId });
     const meal = user?.cook?.meal ?? null;
 
-    const [, updateMeal] = useMutation(ProfileMealUpdateDocument);
+    const [, upsertMeal] = useMutation(ProfileMealUpsertDocument);
     const [imageBusy, setImageBusy] = useState(false);
 
     const form = useForm({
         defaultValues: formFromMeal(seedMeal),
         onSubmit: async ({ value }) => {
-            const result = await updateMeal({
-                mealId,
+            const result = await upsertMeal({
                 meal: {
+                    mealId,
                     title: value.title,
                     description: value.description,
                     imageFileUploadId: value.imageFileUploadId,
                 },
             });
-            if (result.error || !result.data?.user.cook.mealUpdate.success) {
+            if (result.error || !result.data?.user.cook.mealUpsert.success) {
                 toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
                 return;
             }

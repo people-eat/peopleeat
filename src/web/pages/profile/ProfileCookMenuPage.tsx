@@ -27,7 +27,7 @@ import {
     ProfileMenuCopyDocument,
     ProfileMenuDeleteDocument,
     ProfileMenuSyncToTemplateDocument,
-    ProfileMenuUpdateDocument,
+    ProfileMenuUpsertDocument,
 } from '../../graphql/generated';
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
@@ -151,7 +151,7 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
     const user = useUserUpdatesSeed(seedUser, ProfileCookMenuPageUpdatesDocument, { menuId });
     const menu = user?.cook?.menu ?? null;
 
-    const [, updateMenu] = useMutation(ProfileMenuUpdateDocument);
+    const [, upsertMenu] = useMutation(ProfileMenuUpsertDocument);
     const [, deleteMenu] = useMutation(ProfileMenuDeleteDocument);
     const [, copyMenu] = useMutation(ProfileMenuCopyDocument);
     const [, syncToTemplate] = useMutation(ProfileMenuSyncToTemplateDocument);
@@ -179,11 +179,10 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
     async function setPublished(next: string | null) {
         setBusy(true);
         try {
-            const result = await updateMenu({
-                menuId,
-                menu: { publishedAt: next },
+            const result = await upsertMenu({
+                menu: { menuId, publishedAt: next },
             });
-            if (result.error || !result.data?.user.cook.menuUpdate.success) {
+            if (result.error || !result.data?.user.cook.menuUpsert.success) {
                 throw new Error('publish failed');
             }
             toast.success(

@@ -5,7 +5,7 @@ import { graphqlErrorClass, graphqlOperationNameResolve, graphqlOperationType } 
 describe('graphqlOperationType', () => {
     it('detects query, mutation, and subscription', () => {
         expect(graphqlOperationType('query HomePage { currentSession { sessionId } }')).toBe('query');
-        expect(graphqlOperationType('mutation ProfileMealUpdate { mealUpdate { mealId } }')).toBe('mutation');
+        expect(graphqlOperationType('mutation ProfileMealUpsert { mealUpsert { mealId } }')).toBe('mutation');
         expect(graphqlOperationType('subscription ChatUpdates { chatUpdates { chatId } }')).toBe('subscription');
     });
 
@@ -33,7 +33,7 @@ describe('graphqlOperationNameResolve', () => {
     });
 
     it('falls back to the document name', () => {
-        expect(graphqlOperationNameResolve({ document: 'mutation ProfileMealUpdate { x }' })).toBe('ProfileMealUpdate');
+        expect(graphqlOperationNameResolve({ document: 'mutation ProfileMealUpsert { x }' })).toBe('ProfileMealUpsert');
     });
 
     it('returns anonymous when unnamed', () => {

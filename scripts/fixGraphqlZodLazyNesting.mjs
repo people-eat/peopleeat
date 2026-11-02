@@ -41,7 +41,7 @@ source = source.replace(
     'formatsSection: GqlSOccasionFormatsSectionInputSchema(),',
 );
 
-source = source.replace(
+source = source.replaceAll(
     'courses: z.array(z.lazy(() => GqlSCookMenuCourseInputSchema())).nullish(),',
     'courses: z.array(GqlSCookMenuCourseInputSchema()).nullish(),',
 );
@@ -77,6 +77,8 @@ for (const name of [
     'GqlSBlogPostUpsert',
     'GqlSContentSectionInput',
     'GqlSCookMenuUpdate',
+    'GqlSCookMenuUpsert',
+    'GqlSAdminCookMenuUpsert',
     'GqlSBookingRequestOfferConfiguredMenuCourseInput',
     'GqlSBookingRequestOfferConfiguredMenuInput',
     'GqlSUserBookingRequestCreate',
@@ -86,9 +88,8 @@ for (const name of [
     'GqlSPublicCookFindManyCriterion',
     'GqlSUserCreate',
     'GqlSAdminUserCreate',
-    'GqlSCookBookingRequestOfferTestimonialCreate',
-    'GqlSCookBookingRequestOfferTestimonialUpdate',
-    'GqlSUserBookingRequestOfferTestimonialUpdate',
+    'GqlSCookBookingRequestOfferTestimonialUpsert',
+    'GqlSUserBookingRequestOfferTestimonialUpsert',
 ]) {
     // `\s*` tolerates prettier wrapping the return type onto its own line when the
     // single-line signature would exceed the print width.

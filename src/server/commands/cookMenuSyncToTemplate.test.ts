@@ -4,10 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { idCreate } from '../../shared/idCreate';
 import { bookingRequestOffers, bookingRequests, cooks, menuCourseMealOptions, menuCourses, menus } from '../db/schema';
 import { commandSetup, cookMutationParent, testDb } from '../test/commandTestUtils';
-import { cookMealCreate } from './cookMealCreate';
-import { cookMenuCreate } from './cookMenuCreate';
+import { cookMealUpsert } from './cookMealUpsert';
 import { cookMenuSyncToTemplate } from './cookMenuSyncToTemplate';
-import { cookMenuUpdate } from './cookMenuUpdate';
+import { cookMenuUpsert } from './cookMenuUpsert';
 
 const berlin = {
     displayText: 'Berlin',
@@ -31,13 +30,14 @@ describe('cookMenuSyncToTemplate', () => {
     it('overwrites the inventory template with the offer copy content', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const template = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
-        const meal = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
-        await cookMenuUpdate(
+        const template = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const meal = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        await cookMenuUpsert(
             cookMutationParent(user.userId),
             {
-                menuId: template.referenceId!,
                 menu: {
+                    menuId: template.referenceId!,
+
                     title: 'Template title',
                     description: 'Template description',
                     courses: [{ title: 'Starter', mealIds: [meal.referenceId!], mealSelectionLimit: null }],
@@ -131,7 +131,7 @@ describe('cookMenuSyncToTemplate', () => {
     it('rejects when the template is soft-deleted', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const template = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const template = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         const customer = await commandSetup.withUser({ firstName: 'customer', lastName: 'User' });
         const bookingRequestId = idCreate();
         await testDb.insert(bookingRequests).values({

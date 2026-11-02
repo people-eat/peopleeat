@@ -31,10 +31,10 @@ subscription ProfileCookMealsPageUpdates {
     }
 }
 
-mutation ProfileMealCreate {
+mutation ProfileMealUpsert($meal: CookMealUpsert) {
     user {
         cook {
-            mealCreate {
+            mealUpsert(meal: $meal) {
                 success
                 referenceId
             }

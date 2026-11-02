@@ -55,9 +55,9 @@ subscription AdminMealPageUpdates($mealId: ID!) {
     }
 }
 
-mutation AdminMealUpdate($mealId: ID!, $meal: CookMealUpdate!) {
+mutation AdminMealUpsert($meal: AdminCookMealUpsert!) {
     admin {
-        cookMealUpdate(mealId: $mealId, meal: $meal) {
+        cookMealUpsert(meal: $meal) {
             success
             referenceId
         }

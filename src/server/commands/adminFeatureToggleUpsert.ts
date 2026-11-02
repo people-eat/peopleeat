@@ -1,11 +1,11 @@
 import { featureToggles } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSAdminMutation, GqlSAdminMutationFeatureToggleUpdateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
+import type { GqlSAdminMutation, GqlSAdminMutationFeatureToggleUpsertArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 
-export async function adminFeatureToggleUpdate(
+export async function adminFeatureToggleUpsert(
     { adminId }: GqlSAdminMutation,
-    { featureToggleKey, enabled }: GqlSAdminMutationFeatureToggleUpdateArgs,
+    { featureToggleKey, enabled }: GqlSAdminMutationFeatureToggleUpsertArgs,
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {

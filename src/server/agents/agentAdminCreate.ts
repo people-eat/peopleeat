@@ -1,6 +1,8 @@
 import type { GenerateTextOnStepEndCallback } from 'ai';
 import { hasToolCall, isStepCount, ToolLoopAgent } from 'ai';
 import type { GqlCChatAssistantOptions } from '../../web/graphql/generated';
+import { toolAdminCookMealUpsert } from '../commands/adminCookMealUpsert';
+import { toolAdminCookMenuUpsert } from '../commands/adminCookMenuUpsert';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSSession } from '../graphql/generated';
 import { aiTelemetry } from '../observability/aiTelemetry';
@@ -26,16 +28,24 @@ interface AgentAdminCreateOptions {
 
 /**
  * Admin personal assistant. List tools for booking requests, users, meals,
- * menus, support requests, gift cards, and testimonials, plus a read-only
- * product-docs wiki (`productDocsRead`) and promptUserForInput.
+ * menus, support requests, gift cards, and testimonials; inventory write tools
+ * (`cookMealUpsert`, `cookMenuUpsert`); plus a read-only product-docs wiki
+ * (`productDocsRead`) and promptUserForInput.
  *
  * Gemini cannot combine `Output.object` (JSON mime type) with function calling,
  * so final answers are plain markdown while tools remain available. Rich list
  * cards are persisted as admin `*.List` data parts from tool output (see
  * `chatMessageAiAdapter`).
  */
-export async function agentAdminCreate({ serverRuntime, session, modelId, onStepEnd }: AgentAdminCreateOptions) {
+export async function agentAdminCreate({ serverRuntime, session, assistantOptions, modelId, onStepEnd }: AgentAdminCreateOptions) {
     const resolvedModelId = modelId ?? 'gemini-2.5-flash';
+    const toolApproval = assistantOptions.requireToolCallApprovals
+        ? {
+              cookMealUpsert: 'user-approval' as const,
+              cookMenuUpsert: 'user-approval' as const,
+          }
+        : undefined;
+
     return new ToolLoopAgent({
         id: 'admin-assistant',
         model: serverRuntime.ai.adminAssistantModel(resolvedModelId),
@@ -51,6 +61,8 @@ export async function agentAdminCreate({ serverRuntime, session, modelId, onStep
             'When the operator asks to show, list, or find users / customers / cooks / admins, call adminUsersFindMany.',
             'When the operator asks to show, list, or find meals or dishes, call adminCookMealsFindMany.',
             'When the operator asks to show, list, or find menus, call adminCookMenusFindMany.',
+            'When the operator asks to create or edit a meal, call cookMealUpsert (cookId required on create; mealId from a prior list when editing).',
+            'When the operator asks to create or edit a menu, call cookMenuUpsert (cookId required on create; menuId from a prior list when editing).',
             'When the operator asks to show, list, or find support requests / tickets, call adminSupportRequestsFindMany.',
             'When the operator asks to show, list, or find gift cards / vouchers, call adminGiftCardsFindMany.',
             'When the operator asks to show, list, or find testimonials / reviews, call adminTestimonialsFindMany.',
@@ -62,6 +74,7 @@ export async function agentAdminCreate({ serverRuntime, session, modelId, onStep
             agentUserFacingWritingRules(),
             productDocsCatalogFormat(),
         ].join('\n\n'),
+        toolApproval,
         tools: {
             promptUserForInput: toolPromptUserForInput(),
             productDocsRead: toolProductDocsRead(),
@@ -78,6 +91,14 @@ export async function agentAdminCreate({ serverRuntime, session, modelId, onStep
                 serverRuntime,
             }),
             adminCookMenusFindMany: toolAdminCookMenusFindMany({
+                requestingSession: session,
+                serverRuntime,
+            }),
+            cookMealUpsert: toolAdminCookMealUpsert({
+                requestingSession: session,
+                serverRuntime,
+            }),
+            cookMenuUpsert: toolAdminCookMenuUpsert({
                 requestingSession: session,
                 serverRuntime,
             }),

@@ -24,7 +24,7 @@ import { Button } from '../../components/base/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/base/dropdown-menu';
 import { StatusAlert } from '../../components/base/status-alert';
 import type { GqlCAdminMealPageQuery } from '../../graphql/generated';
-import { AdminMealDeleteDocument, AdminMealPageUpdatesDocument, AdminMealUpdateDocument } from '../../graphql/generated';
+import { AdminMealDeleteDocument, AdminMealPageUpdatesDocument, AdminMealUpsertDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 
@@ -136,7 +136,7 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
     if (!seedMeal) throw notFound();
 
     const [meal, setMeal] = useState(seedMeal);
-    const [, updateMeal] = useMutation(AdminMealUpdateDocument);
+    const [, upsertMeal] = useMutation(AdminMealUpsertDocument);
     const [, deleteMeal] = useMutation(AdminMealDeleteDocument);
     const [busy, setBusy] = useState(false);
     const [confirm, setConfirm] = useState<'delete' | 'delete-blocked' | 'publish' | null>(null);
@@ -168,8 +168,8 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
     async function setPublished(next: string | null) {
         setBusy(true);
         try {
-            const result = await updateMeal({ mealId, meal: { publishedAt: next } });
-            if (result.error || !result.data?.admin.cookMealUpdate.success) {
+            const result = await upsertMeal({ meal: { mealId, publishedAt: next } });
+            if (result.error || !result.data?.admin.cookMealUpsert.success) {
                 throw new Error('publish failed');
             }
             toast.success(

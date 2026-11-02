@@ -21,9 +21,9 @@ query AdminWebPagePage($webPageKey: WebPageKey!) {
     }
 }
 
-mutation AdminWebPageUpdate($webPageKey: WebPageKey!, $input: AdminWebPageUpdate!) {
+mutation AdminWebPageUpsert($webPageKey: WebPageKey!, $input: AdminWebPageUpsert!) {
     admin {
-        webPageUpdate(webPageKey: $webPageKey, input: $input) {
+        webPageUpsert(webPageKey: $webPageKey, input: $input) {
             success
             referenceId
         }

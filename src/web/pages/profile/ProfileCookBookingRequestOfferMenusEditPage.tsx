@@ -10,7 +10,7 @@ import type { GqlCProfileCookBookingRequestOfferMenusEditPageQuery } from '../..
 import {
     ProfileCookBookingRequestOfferMenusEditPageUpdatesDocument,
     ProfileCookBookingRequestOfferSuggestedMenusUpdateDocument,
-    ProfileMenuCreateDocument,
+    ProfileMenuUpsertDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
@@ -94,7 +94,7 @@ export function ProfileCookBookingRequestOfferMenusEditPage({
     const offer = cook?.bookingRequestOffer ?? null;
 
     const [, updateMenus] = useMutation(ProfileCookBookingRequestOfferSuggestedMenusUpdateDocument);
-    const [, createMenu] = useMutation(ProfileMenuCreateDocument);
+    const [, upsertMenu] = useMutation(ProfileMenuUpsertDocument);
     const [selectedMenuIds, setSelectedMenuIds] = useState(() => {
         const fromSearch = menuIdsFromOfferMenusEditSearch(search);
         if (fromSearch.length > 0 || search.menus != null) return fromSearch;
@@ -220,8 +220,8 @@ export function ProfileCookBookingRequestOfferMenusEditPage({
         if (busy) return;
         setCreatingMenu(true);
         try {
-            const result = await createMenu({});
-            const menuId = result.data?.user.cook.menuCreate.referenceId;
+            const result = await upsertMenu({});
+            const menuId = result.data?.user.cook.menuUpsert.referenceId;
             if (!menuId || result.error) throw new Error('create failed');
             const menusForReturn = selectedMenuIds.includes(menuId) ? selectedMenuIds : [...selectedMenuIds, menuId];
             toast.success({ de: 'Menü angelegt.', en: 'Menu created.' }[locale]);

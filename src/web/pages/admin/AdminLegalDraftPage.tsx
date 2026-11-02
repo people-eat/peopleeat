@@ -23,18 +23,15 @@ import { Textarea } from '../../components/base/textarea';
 import { MarkdownBody } from '../../components/MarkdownBody';
 import type { GqlCAdminLegalDocumentPageAdminFragment, GqlCAdminLegalDocumentPageQuery } from '../../graphql/generated';
 import {
+    AdminLegalDocumentDraftUpsertDocument,
     AdminLegalDocumentPageUpdatesDocument,
-    AdminLegalImprintDraftUpdateDocument,
-    AdminLegalImprintPublishDocument,
-    AdminLegalPrivacyPolicyDraftUpdateDocument,
-    AdminLegalPrivacyPolicyPublishDocument,
-    AdminLegalTermsAndConditionsDraftUpdateDocument,
-    AdminLegalTermsAndConditionsPublishDocument,
+    AdminLegalDocumentPublishDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { cn } from '../../utils/cn';
 import type { AdminLegalKind } from './adminLegal';
 import {
+    adminLegalDocumentKind,
     adminLegalDraftRow,
     adminLegalKindLabel,
     adminLegalKindTo,
@@ -84,12 +81,8 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
     const [mobileSurface, setMobileSurface] = useState<'edit' | 'preview'>('edit');
     const [previewMode, setPreviewMode] = useState<'preview' | 'changes'>('preview');
 
-    const [, privacyDraftUpdate] = useMutation(AdminLegalPrivacyPolicyDraftUpdateDocument);
-    const [, privacyPublish] = useMutation(AdminLegalPrivacyPolicyPublishDocument);
-    const [, termsDraftUpdate] = useMutation(AdminLegalTermsAndConditionsDraftUpdateDocument);
-    const [, termsPublish] = useMutation(AdminLegalTermsAndConditionsPublishDocument);
-    const [, imprintDraftUpdate] = useMutation(AdminLegalImprintDraftUpdateDocument);
-    const [, imprintPublish] = useMutation(AdminLegalImprintPublishDocument);
+    const [, draftUpsert] = useMutation(AdminLegalDocumentDraftUpsertDocument);
+    const [, documentPublish] = useMutation(AdminLegalDocumentPublishDocument);
 
     useEffect(() => {
         if (!seedAdmin) return;
@@ -135,24 +128,11 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
         if (!canSave) return;
         setBusy(true);
         try {
-            const input = { bodyDe, changeSummaryDe };
-            let ok = false;
-            let error = false;
-            if (kind === 'privacy') {
-                const result = await privacyDraftUpdate({ input });
-                error = Boolean(result.error);
-                ok = Boolean(result.data?.admin.legalPrivacyPolicyDraftUpdate.success);
-            } else if (kind === 'terms') {
-                const result = await termsDraftUpdate({ input });
-                error = Boolean(result.error);
-                ok = Boolean(result.data?.admin.legalTermsAndConditionsDraftUpdate.success);
-            } else {
-                const result = await imprintDraftUpdate({ input });
-                error = Boolean(result.error);
-                ok = Boolean(result.data?.admin.legalImprintDraftUpdate.success);
-            }
-
-            if (error || !ok) {
+            const result = await draftUpsert({
+                kind: adminLegalDocumentKind(kind),
+                input: { bodyDe, changeSummaryDe },
+            });
+            if (result.error || !result.data?.admin.legalDocumentDraftUpsert.success) {
                 toast.error({ de: 'Entwurf konnte nicht gespeichert werden.', en: 'Could not save draft.' }[locale]);
                 return;
             }
@@ -180,23 +160,11 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
         if (!draft || !canPublish) return;
         setBusy(true);
         try {
-            let ok = false;
-            let error = false;
-            if (kind === 'privacy') {
-                const result = await privacyPublish({ privacyPolicyId: draft.id });
-                error = Boolean(result.error);
-                ok = Boolean(result.data?.admin.legalPrivacyPolicyPublish.success);
-            } else if (kind === 'terms') {
-                const result = await termsPublish({ termsAndConditionsId: draft.id });
-                error = Boolean(result.error);
-                ok = Boolean(result.data?.admin.legalTermsAndConditionsPublish.success);
-            } else {
-                const result = await imprintPublish({ imprintId: draft.id });
-                error = Boolean(result.error);
-                ok = Boolean(result.data?.admin.legalImprintPublish.success);
-            }
-
-            if (error || !ok) {
+            const result = await documentPublish({
+                kind: adminLegalDocumentKind(kind),
+                documentId: draft.id,
+            });
+            if (result.error || !result.data?.admin.legalDocumentPublish.success) {
                 toast.error({ de: 'Veröffentlichung fehlgeschlagen.', en: 'Publish failed.' }[locale]);
                 return;
             }

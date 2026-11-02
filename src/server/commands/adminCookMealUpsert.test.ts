@@ -3,28 +3,63 @@ import { describe, expect, it } from 'vitest';
 
 import { admins, cooks, meals } from '../db/schema';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
-import { adminCookMealCreate } from './adminCookMealCreate';
 import { adminCookMealDelete } from './adminCookMealDelete';
-import { adminCookMealUpdate } from './adminCookMealUpdate';
+import { adminCookMealUpsert } from './adminCookMealUpsert';
 
-describe('adminCookMealUpdate', () => {
+describe('adminCookMealUpsert', () => {
+    it('creates a draft meal for the cook', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'Meal', lastName: 'Admin' });
+        await testDb.insert(admins).values({ adminId: admin.user.userId });
+        const cookUser = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Cook' });
+        await testDb.insert(cooks).values({ cookId: cookUser.user.userId });
+
+        const result = await adminCookMealUpsert(
+            adminMutationParent(admin.user.userId),
+            { meal: { cookId: cookUser.user.userId, title: 'risotto' } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.referenceId).toBeTruthy();
+        const [row] = await testDb.select().from(meals).where(eq(meals.mealId, result.referenceId!));
+        expect(row?.title).toBe('Risotto');
+        expect(row?.cookId).toBe(cookUser.user.userId);
+        expect(row?.publishedAt).toBeNull();
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects create without cookId', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'Meal', lastName: 'Admin' });
+        await testDb.insert(admins).values({ adminId: admin.user.userId });
+
+        await expect(
+            adminCookMealUpsert(
+                adminMutationParent(admin.user.userId),
+                { meal: { title: 'Soup' } },
+                admin.requestingSession,
+                admin.serverRuntime,
+            ),
+        ).rejects.toThrow(/cookId is required/);
+    });
+
     it('patches title and publishes for another cook', async () => {
         const admin = await commandSetup.withUser({ firstName: 'Meal', lastName: 'Admin' });
         await testDb.insert(admins).values({ adminId: admin.user.userId });
         const cookUser = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Cook' });
         await testDb.insert(cooks).values({ cookId: cookUser.user.userId });
 
-        const created = await adminCookMealCreate(
+        const created = await adminCookMealUpsert(
             adminMutationParent(admin.user.userId),
-            { cookId: cookUser.user.userId },
+            { meal: { cookId: cookUser.user.userId } },
             admin.requestingSession,
             admin.serverRuntime,
         );
         const mealId = created.referenceId!;
 
-        const result = await adminCookMealUpdate(
+        const result = await adminCookMealUpsert(
             adminMutationParent(admin.user.userId),
-            { mealId, meal: { title: '  tomato soup  ', publishedAt: new Date() } },
+            { meal: { mealId, title: '  tomato soup  ', publishedAt: new Date() } },
             admin.requestingSession,
             admin.serverRuntime,
         );
@@ -43,9 +78,9 @@ describe('adminCookMealUpdate', () => {
         const cookUser = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Cook' });
         await testDb.insert(cooks).values({ cookId: cookUser.user.userId });
 
-        const created = await adminCookMealCreate(
+        const created = await adminCookMealUpsert(
             adminMutationParent(admin.user.userId),
-            { cookId: cookUser.user.userId },
+            { meal: { cookId: cookUser.user.userId } },
             admin.requestingSession,
             admin.serverRuntime,
         );
@@ -53,9 +88,9 @@ describe('adminCookMealUpdate', () => {
         await adminCookMealDelete(adminMutationParent(admin.user.userId), { mealId }, admin.requestingSession, admin.serverRuntime);
 
         await expect(
-            adminCookMealUpdate(
+            adminCookMealUpsert(
                 adminMutationParent(admin.user.userId),
-                { mealId, meal: { title: 'Gone' } },
+                { meal: { mealId, title: 'Gone' } },
                 admin.requestingSession,
                 admin.serverRuntime,
             ),
@@ -70,9 +105,9 @@ describe('adminCookMealDelete', () => {
         const cookUser = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Cook' });
         await testDb.insert(cooks).values({ cookId: cookUser.user.userId });
 
-        const created = await adminCookMealCreate(
+        const created = await adminCookMealUpsert(
             adminMutationParent(admin.user.userId),
-            { cookId: cookUser.user.userId },
+            { meal: { cookId: cookUser.user.userId } },
             admin.requestingSession,
             admin.serverRuntime,
         );

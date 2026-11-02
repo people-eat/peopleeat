@@ -2,7 +2,8 @@ import type { GenerateTextOnStepEndCallback } from 'ai';
 import { hasToolCall, isStepCount, ToolLoopAgent } from 'ai';
 
 import type { GqlCChatAssistantOptions } from '../../web/graphql/generated';
-import { toolCookMealCreate } from '../commands/cookMealCreate';
+import { toolCookMealUpsert } from '../commands/cookMealUpsert';
+import { toolCookMenuUpsert } from '../commands/cookMenuUpsert';
 import { toolCookUpdate } from '../commands/cookUpdate';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSSession } from '../graphql/generated';
@@ -21,8 +22,9 @@ interface AgentCookCreateOptions {
 
 /**
  * Cook-profile assistant. Tools mutate the signed-in cook via the same
- * commands as GraphQL (`toolCookMealCreate`, `toolCookUpdate`). A cook state
- * snapshot is inlined in the system prompt each turn.
+ * commands as GraphQL (`toolCookMealUpsert`, `toolCookMenuUpsert`,
+ * `toolCookUpdate`). A cook state snapshot is inlined in the system prompt
+ * each turn.
  *
  * Gemini cannot combine `Output.object` (JSON mime type) with function calling,
  * so final answers are plain markdown while tools remain available.
@@ -41,7 +43,8 @@ export async function agentCookCreate({ serverRuntime, session, assistantOptions
     const resolvedModelId = modelId ?? 'gemini-2.5-flash';
     const toolApproval = assistantOptions.requireToolCallApprovals
         ? {
-              cookMealCreate: 'user-approval' as const,
+              cookMealUpsert: 'user-approval' as const,
+              cookMenuUpsert: 'user-approval' as const,
               cookUpdate: 'user-approval' as const,
           }
         : undefined;
@@ -66,7 +69,12 @@ export async function agentCookCreate({ serverRuntime, session, assistantOptions
         toolApproval,
         tools: {
             promptUserForInput: toolPromptUserForInput(),
-            cookMealCreate: toolCookMealCreate({
+            cookMealUpsert: toolCookMealUpsert({
+                cookId,
+                requestingSession: session,
+                serverRuntime,
+            }),
+            cookMenuUpsert: toolCookMenuUpsert({
                 cookId,
                 requestingSession: session,
                 serverRuntime,

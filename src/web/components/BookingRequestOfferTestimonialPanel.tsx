@@ -6,12 +6,7 @@ import { useMutation } from 'urql';
 
 import { fileUploadPublicUrl, isTestimonialRating } from '../../shared';
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
-import {
-    CookBookingRequestOfferTestimonialCreateDocument,
-    CookBookingRequestOfferTestimonialUpdateDocument,
-    UserBookingRequestOfferTestimonialCreateDocument,
-    UserBookingRequestOfferTestimonialUpdateDocument,
-} from '../graphql/generated';
+import { CookBookingRequestOfferTestimonialUpsertDocument, UserBookingRequestOfferTestimonialUpsertDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 import { IMAGE_COMPRESS_PRESETS, IMAGE_CROP_ACCEPT, imageCompress } from '../utils/imageCropCompress';
@@ -174,10 +169,8 @@ export function BookingRequestOfferTestimonialPanel({
     const [localOverride, setLocalOverride] = useState<ExistingTestimonial | null>(null);
     const [detailOpen, setDetailOpen] = useState(false);
     const [detailImageIndex, setDetailImageIndex] = useState(0);
-    const [, createCustomer] = useMutation(UserBookingRequestOfferTestimonialCreateDocument);
-    const [, createCook] = useMutation(CookBookingRequestOfferTestimonialCreateDocument);
-    const [, updateCustomer] = useMutation(UserBookingRequestOfferTestimonialUpdateDocument);
-    const [, updateCook] = useMutation(CookBookingRequestOfferTestimonialUpdateDocument);
+    const [, upsertCustomer] = useMutation(UserBookingRequestOfferTestimonialUpsertDocument);
+    const [, upsertCook] = useMutation(CookBookingRequestOfferTestimonialUpsertDocument);
 
     const form = useForm({
         defaultValues: EMPTY_FORM_VALUES,
@@ -188,7 +181,7 @@ export function BookingRequestOfferTestimonialPanel({
             const needsLowRatingAnswers = role === 'cook' && rating < 5;
             try {
                 if (role === 'customer') {
-                    const result = await createCustomer({
+                    const result = await upsertCustomer({
                         input: {
                             bookingRequestOfferId,
                             body: value.body.trim(),
@@ -196,12 +189,12 @@ export function BookingRequestOfferTestimonialPanel({
                             imageFileUploadIds: value.imageFileUploadIds,
                         },
                     });
-                    if (result.error || !result.data?.user.bookingRequestOfferTestimonialCreate.success) {
+                    if (result.error || !result.data?.user.bookingRequestOfferTestimonialUpsert.success) {
                         toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
                         return;
                     }
                 } else {
-                    const result = await createCook({
+                    const result = await upsertCook({
                         input: {
                             bookingRequestOfferId,
                             body: value.body.trim() || null,
@@ -216,7 +209,7 @@ export function BookingRequestOfferTestimonialPanel({
                                 : null,
                         },
                     });
-                    if (result.error || !result.data?.user.cook.bookingRequestOfferTestimonialCreate.success) {
+                    if (result.error || !result.data?.user.cook.bookingRequestOfferTestimonialUpsert.success) {
                         toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
                         return;
                     }
@@ -255,7 +248,7 @@ export function BookingRequestOfferTestimonialPanel({
             const includeLowRatingAnswers = role === 'cook' && rating < 5 && value.whatWentWrong.trim().length > 0;
             try {
                 if (role === 'customer') {
-                    const result = await updateCustomer({
+                    const result = await upsertCustomer({
                         input: {
                             bookingRequestOfferId,
                             body: value.body.trim(),
@@ -263,7 +256,7 @@ export function BookingRequestOfferTestimonialPanel({
                             imageFileUploadIds: value.imageFileUploadIds,
                         },
                     });
-                    if (result.error || !result.data?.user.bookingRequestOfferTestimonialUpdate.success) {
+                    if (result.error || !result.data?.user.bookingRequestOfferTestimonialUpsert.success) {
                         toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
                         return;
                     }
@@ -272,7 +265,7 @@ export function BookingRequestOfferTestimonialPanel({
                         toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
                         return;
                     }
-                    const result = await updateCook({
+                    const result = await upsertCook({
                         input: {
                             bookingRequestOfferId,
                             body: value.body.trim() || null,
@@ -287,7 +280,7 @@ export function BookingRequestOfferTestimonialPanel({
                                 : null,
                         },
                     });
-                    if (result.error || !result.data?.user.cook.bookingRequestOfferTestimonialUpdate.success) {
+                    if (result.error || !result.data?.user.cook.bookingRequestOfferTestimonialUpsert.success) {
                         toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
                         return;
                     }

@@ -67,28 +67,31 @@ mints a draft and navigates to admin meal edit.
 
 ### Alternatives considered
 
-| Option                                    | Pros                                | Cons                                         |
-| ----------------------------------------- | ----------------------------------- | -------------------------------------------- |
-| Hard delete like partners                 | Matches content pages               | Loses inventory cooks regret deleting        |
-| Soft-delete + hide from cook API (chosen) | Recoverable for ops; simple cook UX | Requires deleted-at convention               |
-| Full upsert like partners                 | One mutation                        | Awkward for field-by-field cook forms        |
-| Partial meal update (chosen)              | Matches user update pattern         | Must require at least one field              |
-| UI-only delete gate                       | Simpler command                     | Soft-delete could empty a course via hydrate |
-| UI + server delete gate (chosen)          | Keeps courses non-empty             | Extra relationship check on delete           |
+| Option                                    | Pros                                 | Cons                                         |
+| ----------------------------------------- | ------------------------------------ | -------------------------------------------- |
+| Hard delete like partners                 | Matches content pages                | Loses inventory cooks regret deleting        |
+| Soft-delete + hide from cook API (chosen) | Recoverable for ops; simple cook UX  | Requires deleted-at convention               |
+| City-style full-document upsert           | Same form create/edit                | Fights draft-seed + one-field patches        |
+| Separate create + update mutations        | Explicit intents                     | Two cook-assistant tools for one write job   |
+| Optional-id patch upsert (chosen)         | One tool/command; draft seed + patch | Dual-mode semantics need clear docs          |
+| UI-only delete gate                       | Simpler command                      | Soft-delete could empty a course via hydrate |
+| UI + server delete gate (chosen)          | Keeps courses non-empty              | Extra relationship check on delete           |
 
 ### Chosen
 
-Meals with draft/publish timestamps and soft delete. Cook-facing APIs hide deleted rows; admin exposes deletion. Creates start as drafts
-with a placeholder title; updates are partial patches with title capitalization. Usage and delete blocking: a course blocks delete when this
-meal is its only active option.
+Meals with draft/publish timestamps and soft delete. Cook-facing APIs hide deleted rows; admin exposes deletion. Cook writes go through
+`mealUpsert` (omit `mealId` → draft insert with placeholder title; pass `mealId` → partial patch with title capitalization). Chosen for
+cook-assistant tool budget (one write tool per entity) while keeping list “New meal” and editors on the same path. Usage and delete
+blocking: a course blocks delete when this meal is its only active option.
 
 ## Implementation
 
 - Schema: `Meals` in `src/server/db/schema.ts`
 - SDL: `CookMeal`, relationships, `CookMutation`, `AdminCookMeal` (`imageFileUploadId`, `relationships`), `AdminCookMealCriterion`
   (`status`, `imageFilter`, broader `searchText`, optional `mealIds` for primary-key drill-in) in `schema.graphqls`
-- Commands: `cookMealCreate`, `cookMealUpdate`, `cookMealDelete` (soft; refuses when relationships block); admin `cookMealCreate` /
-  `cookMealUpdate` / `cookMealDelete` (image uploads owned by admin then reassigned to cook)
+- Commands: `cookMealUpsert` (+ colocated `toolCookMealUpsert`), `cookMealDelete` (soft; refuses when relationships block); admin
+  `adminCookMealUpsert` (+ `toolAdminCookMealUpsert`; `cookId` required on create; image uploads owned by admin then reassigned to cook) /
+  `adminCookMealDelete`
 - Queries: cook find many/one (active only); `Cook.mealsCounts(criteria: [CookMealCriterion!]!)` (soft-deleted never counted; optional
   `searchText`); admin find many/counts/findOne (includes soft-deleted); public catalog via `publicCookMealFindMany` (published + image)
 - Utils: `cookMealRelationshipsFind` — shared by field resolver and delete; `cookMealCriterionWhere` for cook counts;

@@ -27,7 +27,7 @@ import {
     AdminMenuCopyDocument,
     AdminMenuDeleteDocument,
     AdminMenuPageUpdatesDocument,
-    AdminMenuUpdateDocument,
+    AdminMenuUpsertDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 
@@ -55,7 +55,7 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
     if (!seedMenu) throw notFound();
 
     const [menu, setMenu] = useState(seedMenu);
-    const [, updateMenu] = useMutation(AdminMenuUpdateDocument);
+    const [, upsertMenu] = useMutation(AdminMenuUpsertDocument);
     const [, deleteMenu] = useMutation(AdminMenuDeleteDocument);
     const [, copyMenu] = useMutation(AdminMenuCopyDocument);
     const [busy, setBusy] = useState(false);
@@ -90,8 +90,8 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
     async function setPublished(next: string | null) {
         setBusy(true);
         try {
-            const result = await updateMenu({ menuId, menu: { publishedAt: next } });
-            if (result.error || !result.data?.admin.cookMenuUpdate.success) {
+            const result = await upsertMenu({ menu: { menuId, publishedAt: next } });
+            if (result.error || !result.data?.admin.cookMenuUpsert.success) {
                 throw new Error('publish failed');
             }
             toast.success(

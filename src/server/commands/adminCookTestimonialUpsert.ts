@@ -11,7 +11,7 @@ import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCur
 import { testimonialImageUrlsFromFileUploadIds } from '../utils/testimonialImageUrlsFromFileUploadIds';
 
 // Admin-created testimonials are always PUBLISHED — there is no self-reported
-// rating to gate on (unlike `bookingRequestOfferTestimonialCreate`). `cookId`
+// rating to gate on (unlike `bookingRequestOfferTestimonialUpsert`). `cookId`
 // equals `Users.userId` for cooks.
 export async function adminCookTestimonialUpsert(
     { adminId }: GqlSAdminMutation,

@@ -147,9 +147,9 @@ present.
 - Schema: `FeatureToggleUserOverrides` (`userId`, `featureToggleKey`, `enabled`, `createdAt`, `updatedAt`); migration
   `drizzle/0009_fixed_morbius.sql`
 - GraphQL: `FeatureToggleKey` enum; `AdminFeatureToggle` (+ `userOverrides`); `AdminFeatureToggleUserOverride` (`userId`, `user`);
-  `Admin.featureToggles`; `AdminUser.featureToggleOverrides`; `AdminMutation.featureToggleUpdate` / `featureToggleUserOverrideUpsert` /
+  `Admin.featureToggles`; `AdminUser.featureToggleOverrides`; `AdminMutation.featureToggleUpsert` / `featureToggleUserOverrideUpsert` /
   `featureToggleUserOverrideDelete`; `Session.activeFeatureToggleKeys`
-- Server: `adminFeatureToggleFindMany` (merge), `adminFeatureToggleUpdate` (upsert), `adminFeatureToggleUserOverrideFindMany`,
+- Server: `adminFeatureToggleFindMany` (merge), `adminFeatureToggleUpsert`, `adminFeatureToggleUserOverrideFindMany`,
   `adminFeatureToggleUserOverrideFindManyByKey`, `adminFeatureToggleUserOverrideUpsert`, `adminFeatureToggleUserOverrideDelete`,
   `sessionFeatureToggleFindActive` (user-aware), `featureToggleIsEnabled` (user-aware), `toGqlAdminFeatureToggle`,
   `toGqlAdminFeatureToggleUserOverride`

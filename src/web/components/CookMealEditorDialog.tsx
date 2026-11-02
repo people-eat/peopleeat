@@ -3,7 +3,7 @@ import { useEffect, useId, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { CookMealEditorMealCreateDocument, CookMealEditorMealUpdateDocument } from '../graphql/generated';
+import { CookMealEditorMealUpsertDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { Button } from './base/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from './base/dialog';
@@ -20,7 +20,7 @@ export type CookMealEditorMeal = {
     publishedAt?: string | null;
 };
 
-/** Injected create/update for admin (or tests). Omit to use cook `user.cook.meal*` mutations. */
+/** Injected create/update for admin (or tests). Omit to use cook `user.cook.mealUpsert`. */
 export type CookMealEditorSaveHandlers = {
     createMeal: () => Promise<string>;
     updateMeal: (mealId: string, meal: { title: string; description: string; imageFileUploadId: string | null }) => Promise<void>;
@@ -66,8 +66,7 @@ export function CookMealEditorDialog({
     const locale = useLocale();
     const formId = useId();
     const isCreate = meal == null;
-    const [, createMeal] = useMutation(CookMealEditorMealCreateDocument);
-    const [, updateMeal] = useMutation(CookMealEditorMealUpdateDocument);
+    const [, upsertMeal] = useMutation(CookMealEditorMealUpsertDocument);
     const [imageBusy, setImageBusy] = useState(false);
 
     const form = useForm({
@@ -81,33 +80,33 @@ export function CookMealEditorDialog({
             const description = value.description.trim();
             try {
                 let mealId: string;
-                if (meal?.mealId != null) {
-                    mealId = meal.mealId;
-                } else if (saveHandlers != null) {
-                    mealId = await saveHandlers.createMeal();
-                } else {
-                    const created = await createMeal({});
-                    const createdMealId = created.data?.user.cook.mealCreate.referenceId;
-                    if (created.error || !created.data?.user.cook.mealCreate.success || createdMealId == null) {
-                        throw new Error('meal create failed');
-                    }
-                    mealId = createdMealId;
-                }
                 const patch = {
                     title,
                     description,
                     imageFileUploadId: value.imageFileUploadId,
                 };
-                if (saveHandlers != null) {
+                if (meal?.mealId != null) {
+                    mealId = meal.mealId;
+                    if (saveHandlers != null) {
+                        await saveHandlers.updateMeal(mealId, patch);
+                    } else {
+                        const updated = await upsertMeal({
+                            meal: { mealId, ...patch },
+                        });
+                        if (updated.error || !updated.data?.user.cook.mealUpsert.success) {
+                            throw new Error('meal update failed');
+                        }
+                    }
+                } else if (saveHandlers != null) {
+                    mealId = await saveHandlers.createMeal();
                     await saveHandlers.updateMeal(mealId, patch);
                 } else {
-                    const updated = await updateMeal({
-                        mealId,
-                        meal: patch,
-                    });
-                    if (updated.error || !updated.data?.user.cook.mealUpdate.success) {
-                        throw new Error('meal update failed');
+                    const created = await upsertMeal({ meal: patch });
+                    const createdMealId = created.data?.user.cook.mealUpsert.referenceId;
+                    if (created.error || !created.data?.user.cook.mealUpsert.success || createdMealId == null) {
+                        throw new Error('meal create failed');
                     }
+                    mealId = createdMealId;
                 }
                 const saved: CookMealEditorMeal = {
                     mealId,

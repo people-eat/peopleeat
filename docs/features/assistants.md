@@ -34,12 +34,12 @@ count/ids/meta unless the call requested `evidence`.
 
 ### Factory status
 
-| Factory                     | File                                             | Intended surface      | Status                                                                                |
-| --------------------------- | ------------------------------------------------ | --------------------- | ------------------------------------------------------------------------------------- |
-| `agentCustomerCreate`       | `src/server/agents/agentCustomerCreate.ts`       | Customer profile rail | **Scaffold** — empty tools                                                            |
-| `agentCookCreate`           | `src/server/agents/agentCookCreate.ts`           | Cook profile rail     | **Wired** — `cookMealCreate`, `cookUpdate`, snapshot                                  |
-| `agentAdminCreate`          | `src/server/agents/agentAdminCreate.ts`          | Admin rail            | **Wired** — list tools + product-docs wiki (`productDocsRead`) + `promptUserForInput` |
-| `agentBookingRequestCreate` | `src/server/agents/agentBookingRequestCreate.ts` | Booking request form  | **Scaffold** — empty tools                                                            |
+| Factory                     | File                                             | Intended surface      | Status                                                                                                  |
+| --------------------------- | ------------------------------------------------ | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `agentCustomerCreate`       | `src/server/agents/agentCustomerCreate.ts`       | Customer profile rail | **Scaffold** — empty tools                                                                              |
+| `agentCookCreate`           | `src/server/agents/agentCookCreate.ts`           | Cook profile rail     | **Wired** — `cookMealUpsert`, `cookMenuUpsert`, `cookUpdate`, snapshot                                  |
+| `agentAdminCreate`          | `src/server/agents/agentAdminCreate.ts`          | Admin rail            | **Wired** — list tools + `cookMealUpsert` / `cookMenuUpsert` + product-docs wiki + `promptUserForInput` |
+| `agentBookingRequestCreate` | `src/server/agents/agentBookingRequestCreate.ts` | Booking request form  | **Scaffold** — empty tools                                                                              |
 
 Dispatch: `src/server/lib/chatTurnAgentCreate.ts`.
 

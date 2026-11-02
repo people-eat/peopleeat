@@ -4,9 +4,9 @@ import { describe, expect, it } from 'vitest';
 import { webPageDefaults } from '../../shared/webPage';
 import { admins, webPages } from '../db/schema';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
-import { adminWebPageUpdate } from './adminWebPageUpdate';
+import { adminWebPageUpsert } from './adminWebPageUpsert';
 
-describe('adminWebPageUpdate', () => {
+describe('adminWebPageUpsert', () => {
     it('updates bilingual SEO fields for an existing row', async () => {
         const admin = await commandSetup.withUser({ firstName: 'web-page-admin', lastName: 'User' });
         await testDb.insert(admins).values({ adminId: admin.user.userId });
@@ -15,7 +15,7 @@ describe('adminWebPageUpdate', () => {
             .values({ webPageKey: 'ABOUT_US', ...webPageDefaults.ABOUT_US })
             .onConflictDoNothing();
 
-        const result = await adminWebPageUpdate(
+        const result = await adminWebPageUpsert(
             adminMutationParent(admin.user.userId),
             {
                 webPageKey: 'ABOUT_US',
@@ -44,7 +44,7 @@ describe('adminWebPageUpdate', () => {
         await testDb.insert(admins).values({ adminId: admin.user.userId });
         await testDb.delete(webPages).where(eq(webPages.webPageKey, 'GIFT_CARD'));
 
-        const result = await adminWebPageUpdate(
+        const result = await adminWebPageUpsert(
             adminMutationParent(admin.user.userId),
             {
                 webPageKey: 'GIFT_CARD',
@@ -75,7 +75,7 @@ describe('adminWebPageUpdate', () => {
         await testDb.insert(admins).values({ adminId: admin.user.userId });
 
         await expect(
-            adminWebPageUpdate(
+            adminWebPageUpsert(
                 adminMutationParent(admin.user.userId),
                 {
                     webPageKey: 'LANDING',

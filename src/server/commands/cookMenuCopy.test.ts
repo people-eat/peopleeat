@@ -4,10 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { idCreate } from '../../shared/idCreate';
 import { cooks, menuCourseMealOptions, menuCourses, menus } from '../db/schema';
 import { commandSetup, cookMutationParent, findLogsForSession, testDb } from '../test/commandTestUtils';
-import { cookMealCreate } from './cookMealCreate';
+import { cookMealUpsert } from './cookMealUpsert';
 import { cookMenuCopy } from './cookMenuCopy';
-import { cookMenuCreate } from './cookMenuCreate';
-import { cookMenuUpdate } from './cookMenuUpdate';
+import { cookMenuUpsert } from './cookMenuUpsert';
 
 async function setupCook() {
     const setup = await commandSetup.withUser({ firstName: 'chef', lastName: 'User' });
@@ -19,13 +18,14 @@ describe('cookMenuCopy', () => {
     it('deep-copies an inventory menu with courses and meal options', async () => {
         // Arrange — create menu, meal, then attach meal to a course via update.
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const menu = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
-        const meal = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
-        await cookMenuUpdate(
+        const menu = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const meal = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        await cookMenuUpsert(
             cookMutationParent(user.userId),
             {
-                menuId: menu.referenceId!,
                 menu: {
+                    menuId: menu.referenceId!,
+
                     title: 'Copied source',
                     description: 'Source description',
                     courses: [
@@ -87,7 +87,7 @@ describe('cookMenuCopy', () => {
     it('rejects a soft-deleted source menu', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const menu = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const menu = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         await testDb.update(menus).set({ deletedAt: new Date() }).where(eq(menus.menuId, menu.referenceId!));
         vi.mocked(serverRuntime.publish.userUpdates).mockClear();
 
@@ -103,7 +103,7 @@ describe('cookMenuCopy', () => {
         // Arrange
         const owner = await setupCook();
         const other = await setupCook();
-        const menu = await cookMenuCreate(cookMutationParent(owner.user.userId), owner.requestingSession, owner.serverRuntime);
+        const menu = await cookMenuUpsert(cookMutationParent(owner.user.userId), {}, owner.requestingSession, owner.serverRuntime);
 
         // Act + Assert
         await expect(

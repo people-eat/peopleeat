@@ -2,12 +2,11 @@ import { eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { admins, bookingRequestOffers, bookingRequests, cooks, menus } from '../db/schema';
+import { admins, bookingRequestOffers, bookingRequests, cooks, menuCourses, menus } from '../db/schema';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
 import { adminCookMenuCopy } from './adminCookMenuCopy';
-import { adminCookMenuCreate } from './adminCookMenuCreate';
 import { adminCookMenuDelete } from './adminCookMenuDelete';
-import { adminCookMenuUpdate } from './adminCookMenuUpdate';
+import { adminCookMenuUpsert } from './adminCookMenuUpsert';
 
 const berlin = {
     displayText: 'Berlin',
@@ -21,24 +20,61 @@ const berlin = {
     country: 'DE',
 };
 
-describe('adminCookMenuUpdate', () => {
+describe('adminCookMenuUpsert', () => {
+    it('creates a draft menu with three courses in the cook locale', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'Menu', lastName: 'Admin' });
+        await testDb.insert(admins).values({ adminId: admin.user.userId });
+        const cookUser = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Cook', locale: 'en' });
+        await testDb.insert(cooks).values({ cookId: cookUser.user.userId });
+
+        const result = await adminCookMenuUpsert(
+            adminMutationParent(admin.user.userId),
+            { menu: { cookId: cookUser.user.userId } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        const [menu] = await testDb.select().from(menus).where(eq(menus.menuId, result.referenceId!));
+        expect(menu?.title).toBe('New menu');
+        expect(menu?.publishedAt).toBeNull();
+        const courses = await testDb.select().from(menuCourses).where(eq(menuCourses.menuId, result.referenceId!));
+        expect(courses).toHaveLength(3);
+        expect(courses.sort((a, b) => a.index - b.index).map((c) => c.title)).toEqual(['Starter', 'Main course', 'Dessert']);
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects create without cookId', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'Menu', lastName: 'Admin' });
+        await testDb.insert(admins).values({ adminId: admin.user.userId });
+
+        await expect(
+            adminCookMenuUpsert(
+                adminMutationParent(admin.user.userId),
+                { menu: { title: 'Tasting' } },
+                admin.requestingSession,
+                admin.serverRuntime,
+            ),
+        ).rejects.toThrow(/cookId is required/);
+    });
+
     it('patches title for an inventory menu', async () => {
         const admin = await commandSetup.withUser({ firstName: 'Menu', lastName: 'Admin' });
         await testDb.insert(admins).values({ adminId: admin.user.userId });
         const cookUser = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Cook' });
         await testDb.insert(cooks).values({ cookId: cookUser.user.userId });
 
-        const created = await adminCookMenuCreate(
+        const created = await adminCookMenuUpsert(
             adminMutationParent(admin.user.userId),
-            { cookId: cookUser.user.userId },
+            { menu: { cookId: cookUser.user.userId } },
             admin.requestingSession,
             admin.serverRuntime,
         );
         const menuId = created.referenceId!;
 
-        const result = await adminCookMenuUpdate(
+        const result = await adminCookMenuUpsert(
             adminMutationParent(admin.user.userId),
-            { menuId, menu: { title: '  tasting menu  ' } },
+            { menu: { menuId, title: '  tasting menu  ' } },
             admin.requestingSession,
             admin.serverRuntime,
         );
@@ -85,7 +121,7 @@ describe('adminCookMenuUpdate', () => {
             totalWithoutDiscountsCentsCustomer: 23_000,
             paymentStatus: 'EMPTY',
         });
-        const menuId = idCreate();
+        const menuId: string = idCreate();
         await testDb.insert(menus).values({
             menuId,
             cookId: cookUser.user.userId,
@@ -94,9 +130,9 @@ describe('adminCookMenuUpdate', () => {
             bookingRequestOfferId: offerId,
         });
 
-        const result = await adminCookMenuUpdate(
+        const result = await adminCookMenuUpsert(
             adminMutationParent(admin.user.userId),
-            { menuId, menu: { title: '  guest menu  ' } },
+            { menu: { menuId, title: '  guest menu  ' } },
             admin.requestingSession,
             admin.serverRuntime,
         );
@@ -105,9 +141,9 @@ describe('adminCookMenuUpdate', () => {
         expect(row?.title).toBe('Guest menu');
 
         await expect(
-            adminCookMenuUpdate(
+            adminCookMenuUpsert(
                 adminMutationParent(admin.user.userId),
-                { menuId, menu: { publishedAt: new Date() } },
+                { menu: { menuId, publishedAt: new Date() } },
                 admin.requestingSession,
                 admin.serverRuntime,
             ),
@@ -122,9 +158,9 @@ describe('adminCookMenuDelete', () => {
         const cookUser = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Cook' });
         await testDb.insert(cooks).values({ cookId: cookUser.user.userId });
 
-        const created = await adminCookMenuCreate(
+        const created = await adminCookMenuUpsert(
             adminMutationParent(admin.user.userId),
-            { cookId: cookUser.user.userId },
+            { menu: { cookId: cookUser.user.userId } },
             admin.requestingSession,
             admin.serverRuntime,
         );
@@ -150,9 +186,9 @@ describe('adminCookMenuCopy', () => {
         const cookUser = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Cook' });
         await testDb.insert(cooks).values({ cookId: cookUser.user.userId });
 
-        const created = await adminCookMenuCreate(
+        const created = await adminCookMenuUpsert(
             adminMutationParent(admin.user.userId),
-            { cookId: cookUser.user.userId },
+            { menu: { cookId: cookUser.user.userId } },
             admin.requestingSession,
             admin.serverRuntime,
         );

@@ -7,7 +7,7 @@ import { commandSetup, cookMutationParent, testDb } from '../test/commandTestUti
 import { cookBookingRequestDecline } from './cookBookingRequestDecline';
 import { cookBookingRequestOfferCreate } from './cookBookingRequestOfferCreate';
 import { cookBookingRequestOpen } from './cookBookingRequestOpen';
-import { cookMenuCreate } from './cookMenuCreate';
+import { cookMenuUpsert } from './cookMenuUpsert';
 
 const berlin = {
     displayText: 'Berlin',
@@ -135,7 +135,7 @@ describe('cook booking pool + offer create', () => {
 
         // Second request + menu offer
         const second = await insertCustomerBookingRequest();
-        const menu = await cookMenuCreate(cookMutationParent(cook.user.userId), cook.requestingSession, cook.serverRuntime);
+        const menu = await cookMenuUpsert(cookMutationParent(cook.user.userId), {}, cook.requestingSession, cook.serverRuntime);
         const withMenu = await cookBookingRequestOfferCreate(
             cookMutationParent(cook.user.userId),
             {

@@ -3,15 +3,15 @@ import { describe, expect, it } from 'vitest';
 
 import { admins, featureToggles } from '../db/schema';
 import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUtils';
-import { adminFeatureToggleUpdate } from './adminFeatureToggleUpdate';
+import { adminFeatureToggleUpsert } from './adminFeatureToggleUpsert';
 
-describe('adminFeatureToggleUpdate', () => {
+describe('adminFeatureToggleUpsert', () => {
     it('creates a row on first enable', async () => {
         const admin = await commandSetup.withUser({ firstName: 'feature-toggle-create', lastName: 'User' });
         await testDb.insert(admins).values({ adminId: admin.user.userId });
         await testDb.delete(featureToggles).where(eq(featureToggles.featureToggleKey, 'ASSISTANT_CUSTOMER'));
 
-        const result = await adminFeatureToggleUpdate(
+        const result = await adminFeatureToggleUpsert(
             adminMutationParent(admin.user.userId),
             { featureToggleKey: 'ASSISTANT_CUSTOMER', enabled: true },
             admin.requestingSession,
@@ -33,7 +33,7 @@ describe('adminFeatureToggleUpdate', () => {
             enabled: true,
         });
 
-        const result = await adminFeatureToggleUpdate(
+        const result = await adminFeatureToggleUpsert(
             adminMutationParent(admin.user.userId),
             { featureToggleKey: 'PUBLICATION_MEALS', enabled: false },
             admin.requestingSession,

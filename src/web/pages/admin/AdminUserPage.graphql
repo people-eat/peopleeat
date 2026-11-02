@@ -490,18 +490,18 @@ mutation AdminUserCookUpdate($cookId: ID!, $input: CookUpdate!) {
     }
 }
 
-mutation AdminUserCookMealCreate($cookId: ID!, $meal: CookMealCreate) {
+mutation AdminUserCookMealUpsert($meal: AdminCookMealUpsert!) {
     admin {
-        cookMealCreate(cookId: $cookId, meal: $meal) {
+        cookMealUpsert(meal: $meal) {
             success
             referenceId
         }
     }
 }
 
-mutation AdminUserCookMenuCreate($cookId: ID!) {
+mutation AdminUserCookMenuUpsert($menu: AdminCookMenuUpsert!) {
     admin {
-        cookMenuCreate(cookId: $cookId) {
+        cookMenuUpsert(menu: $menu) {
             success
             referenceId
         }

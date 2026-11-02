@@ -11,7 +11,7 @@ import { Input } from '../../components/base/input';
 import { StatusBadge } from '../../components/base/status-badge';
 import { Textarea } from '../../components/base/textarea';
 import type { GqlCAdminWebPagePageQuery, GqlCWebPageKey } from '../../graphql/generated';
-import { AdminWebPagePageUpdatesDocument, AdminWebPageUpdateDocument } from '../../graphql/generated';
+import { AdminWebPagePageUpdatesDocument, AdminWebPageUpsertDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { adminWebPageLabel } from './adminWebPages';
 
@@ -49,7 +49,7 @@ export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPageP
     const [values, setValues] = useState<EditorValues>(() => valuesFromWebPage(seedWebPage));
     const [persisted, setPersisted] = useState(seedWebPage.persisted);
     const [busy, setBusy] = useState(false);
-    const [, update] = useMutation(AdminWebPageUpdateDocument);
+    const [, update] = useMutation(AdminWebPageUpsertDocument);
 
     useEffect(() => {
         const request = createRequest(AdminWebPagePageUpdatesDocument, { webPageKey });
@@ -78,7 +78,7 @@ export function AdminWebPagePage({ data, webPageKey }: { data: GqlCAdminWebPageP
                     descriptionEn: values.descriptionEn,
                 },
             });
-            if (!result.data?.admin.webPageUpdate.success || result.error) {
+            if (!result.data?.admin.webPageUpsert.success || result.error) {
                 throw new Error('update failed');
             }
             toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);

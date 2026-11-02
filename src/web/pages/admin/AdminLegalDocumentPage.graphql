@@ -47,81 +47,18 @@ subscription AdminLegalDocumentPageUpdates {
     }
 }
 
-mutation AdminLegalPrivacyPolicyDraftCreate {
+mutation AdminLegalDocumentDraftUpsert($kind: LegalDocumentKind!, $input: AdminLegalDocumentDraftInput!) {
     admin {
-        legalPrivacyPolicyDraftCreate {
+        legalDocumentDraftUpsert(kind: $kind, input: $input) {
             success
             referenceId
         }
     }
 }
 
-mutation AdminLegalPrivacyPolicyDraftUpdate($input: AdminLegalDocumentDraftInput!) {
+mutation AdminLegalDocumentPublish($kind: LegalDocumentKind!, $documentId: ID!) {
     admin {
-        legalPrivacyPolicyDraftUpdate(input: $input) {
-            success
-            referenceId
-        }
-    }
-}
-
-mutation AdminLegalPrivacyPolicyPublish($privacyPolicyId: ID!) {
-    admin {
-        legalPrivacyPolicyPublish(privacyPolicyId: $privacyPolicyId) {
-            success
-            referenceId
-        }
-    }
-}
-
-mutation AdminLegalTermsAndConditionsDraftCreate {
-    admin {
-        legalTermsAndConditionsDraftCreate {
-            success
-            referenceId
-        }
-    }
-}
-
-mutation AdminLegalTermsAndConditionsDraftUpdate($input: AdminLegalDocumentDraftInput!) {
-    admin {
-        legalTermsAndConditionsDraftUpdate(input: $input) {
-            success
-            referenceId
-        }
-    }
-}
-
-mutation AdminLegalTermsAndConditionsPublish($termsAndConditionsId: ID!) {
-    admin {
-        legalTermsAndConditionsPublish(termsAndConditionsId: $termsAndConditionsId) {
-            success
-            referenceId
-        }
-    }
-}
-
-mutation AdminLegalImprintDraftCreate {
-    admin {
-        legalImprintDraftCreate {
-            success
-            referenceId
-        }
-    }
-}
-
-mutation AdminLegalImprintDraftUpdate($input: AdminLegalDocumentDraftInput!) {
-    admin {
-        legalImprintDraftUpdate(input: $input) {
-            success
-            referenceId
-        }
-    }
-}
-
-mutation AdminLegalImprintPublish($imprintId: ID!) {
-    admin {
-        legalImprintPublish(imprintId: $imprintId) {
+        legalDocumentPublish(kind: $kind, documentId: $documentId) {
             success
             referenceId
         }

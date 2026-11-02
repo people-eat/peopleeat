@@ -52,8 +52,8 @@ import { CookMenuCard } from '../../components/CookMenuCard';
 import type { GqlCAdminOutboundEmailPurpose, GqlCAdminSessionKind, GqlCAdminUserPageQuery } from '../../graphql/generated';
 import {
     AdminUserAdminNoteUpdateDocument,
-    AdminUserCookMealCreateDocument,
-    AdminUserCookMenuCreateDocument,
+    AdminUserCookMealUpsertDocument,
+    AdminUserCookMenuUpsertDocument,
     AdminUserTerminateSessionsDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
@@ -465,15 +465,15 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
 
 function AdminUserCreateMealFooter({ cookId, locale }: { cookId: string; locale: Locale }) {
     const navigate = useNavigate();
-    const [, createMeal] = useMutation(AdminUserCookMealCreateDocument);
+    const [, upsertMeal] = useMutation(AdminUserCookMealUpsertDocument);
     const [busy, setBusy] = useState(false);
 
     async function onCreate() {
         setBusy(true);
         try {
-            const result = await createMeal({ cookId });
-            const mealId = result.data?.admin.cookMealCreate.referenceId;
-            if (result.error || !result.data?.admin.cookMealCreate.success || mealId == null) {
+            const result = await upsertMeal({ meal: { cookId } });
+            const mealId = result.data?.admin.cookMealUpsert.referenceId;
+            if (result.error || !result.data?.admin.cookMealUpsert.success || mealId == null) {
                 toast.error({ de: 'Gericht konnte nicht angelegt werden.', en: 'Could not create meal.' }[locale]);
                 return;
             }
@@ -493,15 +493,15 @@ function AdminUserCreateMealFooter({ cookId, locale }: { cookId: string; locale:
 
 function AdminUserCreateMenuFooter({ cookId, locale }: { cookId: string; locale: Locale }) {
     const navigate = useNavigate();
-    const [, createMenu] = useMutation(AdminUserCookMenuCreateDocument);
+    const [, upsertMenu] = useMutation(AdminUserCookMenuUpsertDocument);
     const [busy, setBusy] = useState(false);
 
     async function onCreate() {
         setBusy(true);
         try {
-            const result = await createMenu({ cookId });
-            const menuId = result.data?.admin.cookMenuCreate.referenceId;
-            if (result.error || !result.data?.admin.cookMenuCreate.success || menuId == null) {
+            const result = await upsertMenu({ menu: { cookId } });
+            const menuId = result.data?.admin.cookMenuUpsert.referenceId;
+            if (result.error || !result.data?.admin.cookMenuUpsert.success || menuId == null) {
                 toast.error({ de: 'Menü konnte nicht angelegt werden.', en: 'Could not create menu.' }[locale]);
                 return;
             }

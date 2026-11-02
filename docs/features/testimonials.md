@@ -97,13 +97,13 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 
 - Tables: `CustomerTestimonials`, `CookTestimonials`, `CityTestimonials`, `PartnerTestimonials`
 - Domain: `src/server/domain/testimonial.ts`
-- Shared rating gate: `src/shared/testimonialRating.ts` (`isTestimonialRating`, `testimonialRatingAssertRequired`) — every create/update
-  command requires an integer 1–5 and rejects `0` / null
-- GraphQL: public and admin types, offer fields, city/partner curation, admin `testimonials` + upserts, user/cook create + full self-edit
-  update mutations (body, rating, images; cook also `lowRatingAnswers`)
+- Shared rating gate: `src/shared/testimonialRating.ts` (`isTestimonialRating`, `testimonialRatingAssertRequired`) — every write command
+  requires an integer 1–5 and rejects `0` / null
+- GraphQL: public and admin types, offer fields, city/partner curation, admin `testimonials` + upserts, user/cook
+  `bookingRequestOfferTestimonialUpsert` (body, rating, images; cook also `lowRatingAnswers`)
 - Commands / queries: `*Testimonial*` under commands and queries (incl. `adminCustomerTestimonialUpsert` / `adminCookTestimonialUpsert`,
-  `adminTestimonialsFindMany` for the combined catalog, `userBookingRequestOfferTestimonialUpdate` /
-  `cookBookingRequestOfferTestimonialUpdate`, which re-apply `publicationStatusFromRating`); admin assistant list tool
+  `adminTestimonialsFindMany` for the combined catalog, `userBookingRequestOfferTestimonialUpsert` /
+  `cookBookingRequestOfferTestimonialUpsert`, which re-apply `publicationStatusFromRating`); admin assistant list tool
   `toolAdminTestimonialsFindMany` (customer + cook, in-process filters) → `admin.testimonialList` cards
 - Utils: publication from rating, offer fallbacks, image URLs from file uploads, junction cleanup
 - Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `PageTestimonialCard` / `PageTestimonialCardFace` /

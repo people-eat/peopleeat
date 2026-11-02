@@ -40,34 +40,36 @@ Published version pages are read-only; draft ids redirect to draft route. Newest
 
 ### Alternatives considered
 
-| Option                                   | Pros                    | Cons                          |
-| ---------------------------------------- | ----------------------- | ----------------------------- |
-| Redirect to dedicated accept route       | Strong isolation        | Loses page context            |
-| Blocking dialog (chosen)                 | Keeps URL and context   | Must allow sign-out           |
-| EN+DE columns now                        | Ready for EN            | Legal translation risk        |
-| German-only columns, extensible (chosen) | Honest about EN body    | EN locale shows DE legal text |
-| Shared public/admin GraphQL shape        | One type                | Draft fields leak concerns    |
-| Split public vs admin types (chosen)     | Public always published | More schema surface           |
-| Query-param kind switch                  | One route file          | Weak deep links               |
-| Dedicated sub-pages (chosen)             | Clear hubs and editors  | More thin routes              |
-| Always-open editor on hub                | Fewer clicks            | Crowded hub                   |
-| Hub + draft + version routes (chosen)    | Editor when writing     | Extra routes per kind         |
-| Create-on-save upsert                    | Fewer mutations         | Accidental drafts             |
-| Explicit create + update (chosen)        | Intentional draft seed  | Extra mutation per kind       |
-| Rendered HTML diff                       | Page-like               | Formatting noise              |
-| Source markdown diff on draft (chosen)   | Matches editor          | Draft-only diff UI            |
+| Option                                   | Pros                          | Cons                                      |
+| ---------------------------------------- | ----------------------------- | ----------------------------------------- |
+| Redirect to dedicated accept route       | Strong isolation              | Loses page context                        |
+| Blocking dialog (chosen)                 | Keeps URL and context         | Must allow sign-out                       |
+| EN+DE columns now                        | Ready for EN                  | Legal translation risk                    |
+| German-only columns, extensible (chosen) | Honest about EN body          | EN locale shows DE legal text             |
+| Shared public/admin GraphQL shape        | One type                      | Draft fields leak concerns                |
+| Split public vs admin types (chosen)     | Public always published       | More schema surface                       |
+| Query-param kind switch                  | One route file                | Weak deep links                           |
+| Dedicated sub-pages (chosen)             | Clear hubs and editors        | More thin routes                          |
+| Always-open editor on hub                | Fewer clicks                  | Crowded hub                               |
+| Hub + draft + version routes (chosen)    | Editor when writing           | Extra routes per kind                     |
+| Explicit create + update per kind        | Intentional draft seed        | Nine near-duplicate mutations             |
+| Kind-discriminated draft upsert (chosen) | Tool-friendly; one write path | Hub create becomes upsert with empty body |
+| Rendered HTML diff                       | Page-like                     | Formatting noise                          |
+| Source markdown diff on draft (chosen)   | Matches editor                | Draft-only diff UI                        |
 
 ### Chosen
 
 Blocking dialog + German `*De` columns + draft/publish versioning + server hard-gate on mutations (except accept and terminate sessions) +
-separate public and admin GraphQL types + explicit draft create (seed from published), draft update, publish (non-empty body and summary).
+separate public and admin GraphQL types + kind-discriminated `legalDocumentDraftUpsert` (ensure open draft, seed from published when body
+blank on insert) and `legalDocumentPublish` (non-empty body and summary). Three tables stay; only GraphQL/commands collapse.
 
 ## Implementation
 
 - Schema: privacy, terms, imprint version tables; user last-accepted timestamps
-- GraphQL: public legal queries; user legal acceptance; admin legal lists/detail; draft create/update/publish mutations
-- Commands / mappers / queries per kind under server directories; create uses latest-published helper in utils (commands do not import
-  queries)
+- GraphQL: public legal queries; user legal acceptance; admin legal lists/detail; `LegalDocumentKind` + `legalDocumentDraftUpsert` /
+  `legalDocumentPublish`
+- Commands: `adminLegalDocumentDraftUpsert` / `adminLegalDocumentPublish` (switch on kind); latest-published helpers in utils (commands do
+  not import queries)
 - Gate: `LegalAcceptanceGate` via `SessionStartupGates` on root layout
 - Admin UI: overview, kind hub, draft editor with diff tab, published version view; routes under `admin/legal`
 - Hard gate: `assertLegalAcceptanceCurrent` on user and admin mutations (except accept paths)

@@ -11,16 +11,12 @@ import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { Card, CardAction, CardDescription, CardHeader, CardTitle } from '../../components/base/card';
 import type { GqlCAdminLegalDocumentPageAdminFragment, GqlCAdminLegalDocumentPageQuery } from '../../graphql/generated';
-import {
-    AdminLegalDocumentPageUpdatesDocument,
-    AdminLegalImprintDraftCreateDocument,
-    AdminLegalPrivacyPolicyDraftCreateDocument,
-    AdminLegalTermsAndConditionsDraftCreateDocument,
-} from '../../graphql/generated';
+import { AdminLegalDocumentDraftUpsertDocument, AdminLegalDocumentPageUpdatesDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import type { AdminLegalKind } from './adminLegal';
 import {
+    adminLegalDocumentKind,
     adminLegalDraftRow,
     adminLegalDraftTo,
     adminLegalKindLabel,
@@ -64,9 +60,7 @@ export function AdminLegalDocumentPage({ data, kind }: { data: GqlCAdminLegalDoc
     const [admin, setAdmin] = useState<GqlCAdminLegalDocumentPageAdminFragment | null>(seedAdmin);
     const [busy, setBusy] = useState(false);
 
-    const [, privacyDraftCreate] = useMutation(AdminLegalPrivacyPolicyDraftCreateDocument);
-    const [, termsDraftCreate] = useMutation(AdminLegalTermsAndConditionsDraftCreateDocument);
-    const [, imprintDraftCreate] = useMutation(AdminLegalImprintDraftCreateDocument);
+    const [, draftUpsert] = useMutation(AdminLegalDocumentDraftUpsertDocument);
 
     useEffect(() => {
         if (!seedAdmin) return;
@@ -96,23 +90,11 @@ export function AdminLegalDocumentPage({ data, kind }: { data: GqlCAdminLegalDoc
     async function onCreateDraft() {
         setBusy(true);
         try {
-            let ok = false;
-            let error = false;
-            if (kind === 'privacy') {
-                const result = await privacyDraftCreate({});
-                error = Boolean(result.error);
-                ok = Boolean(result.data?.admin.legalPrivacyPolicyDraftCreate.success);
-            } else if (kind === 'terms') {
-                const result = await termsDraftCreate({});
-                error = Boolean(result.error);
-                ok = Boolean(result.data?.admin.legalTermsAndConditionsDraftCreate.success);
-            } else {
-                const result = await imprintDraftCreate({});
-                error = Boolean(result.error);
-                ok = Boolean(result.data?.admin.legalImprintDraftCreate.success);
-            }
-
-            if (error || !ok) {
+            const result = await draftUpsert({
+                kind: adminLegalDocumentKind(kind),
+                input: { bodyDe: '', changeSummaryDe: '' },
+            });
+            if (result.error || !result.data?.admin.legalDocumentDraftUpsert.success) {
                 toast.error({ de: 'Entwurf konnte nicht angelegt werden.', en: 'Could not create draft.' }[locale]);
                 return;
             }

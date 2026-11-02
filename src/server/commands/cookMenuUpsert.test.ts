@@ -4,10 +4,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { idCreate } from '../../shared/idCreate';
 import { bookingRequestOffers, bookingRequests, cooks, menuCourseMealOptions, menuCourses, menus } from '../db/schema';
 import { commandSetup, cookMutationParent, findLogsForSession, testDb } from '../test/commandTestUtils';
-import { cookMealCreate } from './cookMealCreate';
-import { cookMenuCreate } from './cookMenuCreate';
+import { cookMealUpsert } from './cookMealUpsert';
 import { cookMenuDelete } from './cookMenuDelete';
-import { cookMenuUpdate } from './cookMenuUpdate';
+import { cookMenuUpsert } from './cookMenuUpsert';
 
 const berlin = {
     displayText: 'Berlin',
@@ -21,26 +20,86 @@ const berlin = {
     country: 'DE',
 };
 
-async function setupCook() {
-    const setup = await commandSetup.withUser({ firstName: 'chef', lastName: 'User' });
+async function setupCook(overrides?: Parameters<typeof commandSetup.withUser>[0]) {
+    const setup = await commandSetup.withUser({ firstName: 'chef', lastName: 'User', ...overrides });
     await testDb.insert(cooks).values({ cookId: setup.user.userId });
     return setup;
 }
 
-describe('cookMenuUpdate', () => {
+describe('cookMenuUpsert', () => {
+    it('inserts a draft menu with three default German courses when the cook locale is de', async () => {
+        // Arrange
+        const { serverRuntime, requestingSession, user } = await setupCook({ locale: 'de' });
+
+        // Act
+        const result = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+
+        // Assert
+        expect(result.success).toBe(true);
+        expect(result.referenceId).toBeTruthy();
+
+        const [menu] = await testDb.select().from(menus).where(eq(menus.menuId, result.referenceId!));
+        expect(menu!.cookId).toBe(user.userId);
+        expect(menu!.title).toBe('Neues Menü');
+        expect(menu!.description).toBe('');
+        expect(menu!.publishedAt).toBeNull();
+        expect(menu!.deletedAt).toBeNull();
+        expect(menu!.bookingRequestOfferId).toBeNull();
+        expect(menu!.copyOfMenuId).toBeNull();
+
+        const courses = await testDb.select().from(menuCourses).where(eq(menuCourses.menuId, result.referenceId!));
+        expect(courses).toHaveLength(3);
+        expect(courses.sort((a, b) => a.index - b.index).map((c) => c.title)).toEqual(['Vorspeise', 'Hauptspeise', 'Dessert']);
+        expect(courses.every((c) => c.cookId === user.userId)).toBe(true);
+        expect(courses.every((c) => c.mealSelectionLimit === null)).toBe(true);
+
+        expect(serverRuntime.publish.userUpdates).toHaveBeenCalledTimes(1);
+        expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: user.userId });
+        expect(serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
+    });
+
+    it('inserts English draft title and course titles when the cook locale is en', async () => {
+        // Arrange
+        const { serverRuntime, requestingSession, user } = await setupCook({ locale: 'en' });
+
+        // Act
+        const result = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+
+        // Assert
+        expect(result.success).toBe(true);
+        const [menu] = await testDb.select().from(menus).where(eq(menus.menuId, result.referenceId!));
+        expect(menu!.title).toBe('New menu');
+
+        const courses = await testDb.select().from(menuCourses).where(eq(menuCourses.menuId, result.referenceId!));
+        expect(courses.sort((a, b) => a.index - b.index).map((c) => c.title)).toEqual(['Starter', 'Main course', 'Dessert']);
+    });
+
+    it('rejects when the cook row is missing and logs the error', async () => {
+        // Arrange
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'not-a-cook', lastName: 'User' });
+
+        // Act + Assert
+        await expect(cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime)).rejects.toThrow();
+
+        const [menuRows, logRows] = await Promise.all([
+            testDb.select().from(menus).where(eq(menus.cookId, user.userId)),
+            findLogsForSession(requestingSession.sessionId),
+        ]);
+        expect(menuRows).toHaveLength(0);
+        expect(serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(logRows.some((row) => row.level === 'error')).toBe(true);
+    });
+
     it('applies title and description with capitalization and publishes', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         vi.mocked(serverRuntime.publish.userUpdates).mockClear();
 
         // Act
-        const result = await cookMenuUpdate(
+        const result = await cookMenuUpsert(
             cookMutationParent(user.userId),
-            {
-                menuId: created.referenceId!,
-                menu: { title: '  summer tasting  ', description: '  light courses  ' },
-            },
+            { menu: { menuId: created.referenceId!, title: '  summer tasting  ', description: '  light courses  ' } },
             requestingSession,
             serverRuntime,
         );
@@ -56,17 +115,17 @@ describe('cookMenuUpdate', () => {
     it('publishes and unpublishes via publishedAt', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         const menuId = created.referenceId!;
         const publishedAt = new Date('2026-01-15T12:00:00.000Z');
 
         // Act — publish
-        await cookMenuUpdate(cookMutationParent(user.userId), { menuId, menu: { publishedAt } }, requestingSession, serverRuntime);
+        await cookMenuUpsert(cookMutationParent(user.userId), { menu: { menuId, publishedAt } }, requestingSession, serverRuntime);
         const [published] = await testDb.select().from(menus).where(eq(menus.menuId, menuId));
         expect(published!.publishedAt?.toISOString()).toBe(publishedAt.toISOString());
 
         // Act — unpublish
-        await cookMenuUpdate(cookMutationParent(user.userId), { menuId, menu: { publishedAt: null } }, requestingSession, serverRuntime);
+        await cookMenuUpsert(cookMutationParent(user.userId), { menu: { menuId, publishedAt: null } }, requestingSession, serverRuntime);
         const [unpublished] = await testDb.select().from(menus).where(eq(menus.menuId, menuId));
         expect(unpublished!.publishedAt).toBeNull();
     });
@@ -74,19 +133,19 @@ describe('cookMenuUpdate', () => {
     it('replaces courses and meal options atomically', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
-        const mealA = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
-        const mealB = await cookMealCreate(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const mealA = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        const mealB = await cookMealUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         const menuId = created.referenceId!;
         const defaultCourses = await testDb.select().from(menuCourses).where(eq(menuCourses.menuId, menuId));
         expect(defaultCourses).toHaveLength(3);
 
         // Act
-        await cookMenuUpdate(
+        await cookMenuUpsert(
             cookMutationParent(user.userId),
             {
-                menuId,
                 menu: {
+                    menuId,
                     courses: [
                         { title: '  amuse  ', mealIds: [mealA.referenceId!], mealSelectionLimit: null },
                         {
@@ -117,12 +176,12 @@ describe('cookMenuUpdate', () => {
     it('rejects an empty patch', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         vi.mocked(serverRuntime.publish.userUpdates).mockClear();
 
         // Act + Assert
         await expect(
-            cookMenuUpdate(cookMutationParent(user.userId), { menuId: created.referenceId!, menu: {} }, requestingSession, serverRuntime),
+            cookMenuUpsert(cookMutationParent(user.userId), { menu: { menuId: created.referenceId! } }, requestingSession, serverRuntime),
         ).rejects.toThrow(/at least one field is required/);
 
         expect(serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
@@ -133,14 +192,14 @@ describe('cookMenuUpdate', () => {
     it('rejects an empty title', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         vi.mocked(serverRuntime.publish.userUpdates).mockClear();
 
         // Act + Assert
         await expect(
-            cookMenuUpdate(
+            cookMenuUpsert(
                 cookMutationParent(user.userId),
-                { menuId: created.referenceId!, menu: { title: '   ' } },
+                { menu: { menuId: created.referenceId!, title: '   ' } },
                 requestingSession,
                 serverRuntime,
             ),
@@ -152,13 +211,13 @@ describe('cookMenuUpdate', () => {
     it('rejects invalid publishedAt', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
 
         // Act + Assert
         await expect(
-            cookMenuUpdate(
+            cookMenuUpsert(
                 cookMutationParent(user.userId),
-                { menuId: created.referenceId!, menu: { publishedAt: 'not-a-date' as unknown as Date } },
+                { menu: { menuId: created.referenceId!, publishedAt: 'not-a-date' as unknown as Date } },
                 requestingSession,
                 serverRuntime,
             ),
@@ -168,13 +227,13 @@ describe('cookMenuUpdate', () => {
     it('rejects courses with no courses array items', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
 
         // Act + Assert
         await expect(
-            cookMenuUpdate(
+            cookMenuUpsert(
                 cookMutationParent(user.userId),
-                { menuId: created.referenceId!, menu: { courses: [] } },
+                { menu: { menuId: created.referenceId!, courses: [] } },
                 requestingSession,
                 serverRuntime,
             ),
@@ -184,16 +243,13 @@ describe('cookMenuUpdate', () => {
     it('rejects a course with an empty title', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
 
         // Act + Assert
         await expect(
-            cookMenuUpdate(
+            cookMenuUpsert(
                 cookMutationParent(user.userId),
-                {
-                    menuId: created.referenceId!,
-                    menu: { courses: [{ title: '  ', mealIds: [], mealSelectionLimit: null }] },
-                },
+                { menu: { menuId: created.referenceId!, courses: [{ title: '  ', mealIds: [], mealSelectionLimit: null }] } },
                 requestingSession,
                 serverRuntime,
             ),
@@ -204,17 +260,17 @@ describe('cookMenuUpdate', () => {
         // Arrange
         const owner = await setupCook();
         const other = await setupCook();
-        const menu = await cookMenuCreate(cookMutationParent(owner.user.userId), owner.requestingSession, owner.serverRuntime);
-        const foreignMeal = await cookMealCreate(cookMutationParent(other.user.userId), {}, other.requestingSession, other.serverRuntime);
+        const menu = await cookMenuUpsert(cookMutationParent(owner.user.userId), {}, owner.requestingSession, owner.serverRuntime);
+        const foreignMeal = await cookMealUpsert(cookMutationParent(other.user.userId), {}, other.requestingSession, other.serverRuntime);
         vi.mocked(owner.serverRuntime.publish.userUpdates).mockClear();
 
         // Act + Assert
         await expect(
-            cookMenuUpdate(
+            cookMenuUpsert(
                 cookMutationParent(owner.user.userId),
                 {
-                    menuId: menu.referenceId!,
                     menu: {
+                        menuId: menu.referenceId!,
                         courses: [{ title: 'Main', mealIds: [foreignMeal.referenceId!], mealSelectionLimit: null }],
                     },
                 },
@@ -229,15 +285,15 @@ describe('cookMenuUpdate', () => {
     it('rejects updates on soft-deleted menus', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
         await cookMenuDelete(cookMutationParent(user.userId), { menuId: created.referenceId! }, requestingSession, serverRuntime);
         vi.mocked(serverRuntime.publish.userUpdates).mockClear();
 
         // Act + Assert
         await expect(
-            cookMenuUpdate(
+            cookMenuUpsert(
                 cookMutationParent(user.userId),
-                { menuId: created.referenceId!, menu: { title: 'Gone' } },
+                { menu: { menuId: created.referenceId!, title: 'Gone' } },
                 requestingSession,
                 serverRuntime,
             ),
@@ -291,9 +347,9 @@ describe('cookMenuUpdate', () => {
         vi.mocked(serverRuntime.publish.userUpdates).mockClear();
 
         // Act
-        const result = await cookMenuUpdate(
+        const result = await cookMenuUpsert(
             cookMutationParent(user.userId),
-            { menuId, menu: { title: '  customized tasting  ' } },
+            { menu: { menuId, title: '  customized tasting  ' } },
             requestingSession,
             serverRuntime,
         );
@@ -351,9 +407,9 @@ describe('cookMenuUpdate', () => {
 
         // Act + Assert
         await expect(
-            cookMenuUpdate(
+            cookMenuUpsert(
                 cookMutationParent(user.userId),
-                { menuId, menu: { publishedAt: new Date() } },
+                { menu: { menuId, publishedAt: new Date() } },
                 requestingSession,
                 serverRuntime,
             ),
@@ -365,18 +421,18 @@ describe('cookMenuUpdate', () => {
     it('clears description to empty string when whitespace-only', async () => {
         // Arrange
         const { serverRuntime, requestingSession, user } = await setupCook();
-        const created = await cookMenuCreate(cookMutationParent(user.userId), requestingSession, serverRuntime);
-        await cookMenuUpdate(
+        const created = await cookMenuUpsert(cookMutationParent(user.userId), {}, requestingSession, serverRuntime);
+        await cookMenuUpsert(
             cookMutationParent(user.userId),
-            { menuId: created.referenceId!, menu: { description: 'Something' } },
+            { menu: { menuId: created.referenceId!, description: 'Something' } },
             requestingSession,
             serverRuntime,
         );
 
         // Act
-        await cookMenuUpdate(
+        await cookMenuUpsert(
             cookMutationParent(user.userId),
-            { menuId: created.referenceId!, menu: { description: '   ' } },
+            { menu: { menuId: created.referenceId!, description: '   ' } },
             requestingSession,
             serverRuntime,
         );

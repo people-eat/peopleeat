@@ -58,9 +58,9 @@ subscription AdminMenuPageUpdates($menuId: ID!) {
     }
 }
 
-mutation AdminMenuUpdate($menuId: ID!, $menu: CookMenuUpdate!) {
+mutation AdminMenuUpsert($menu: AdminCookMenuUpsert!) {
     admin {
-        cookMenuUpdate(menuId: $menuId, menu: $menu) {
+        cookMenuUpsert(menu: $menu) {
             success
             referenceId
         }

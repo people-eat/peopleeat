@@ -12,7 +12,7 @@ import { StatusAlert } from '../../components/base/status-alert';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { CookMealCard } from '../../components/CookMealCard';
 import type { GqlCProfileCookMealsPageQuery } from '../../graphql/generated';
-import { ProfileCookMealsPageUpdatesDocument, ProfileMealCreateDocument } from '../../graphql/generated';
+import { ProfileCookMealsPageUpdatesDocument, ProfileMealUpsertDocument } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
@@ -57,7 +57,7 @@ export function ProfileCookMealsPage({ data, search }: { data: GqlCProfileCookMe
     const publicationEnabled = useFeatureToggleActive('PUBLICATION_MEALS');
     const seedUser = data.currentSession.user ?? null;
     const user = useUserUpdatesSeed(seedUser, ProfileCookMealsPageUpdatesDocument);
-    const [, createMeal] = useMutation(ProfileMealCreateDocument);
+    const [, upsertMeal] = useMutation(ProfileMealUpsertDocument);
     const [creating, setCreating] = useState(false);
     const [draftQ, setDraftQ] = useState(search.q ?? '');
     const debouncedQ = useDebouncedValue(draftQ, 300);
@@ -119,8 +119,8 @@ export function ProfileCookMealsPage({ data, search }: { data: GqlCProfileCookMe
     async function onCreate() {
         setCreating(true);
         try {
-            const result = await createMeal({});
-            const mealId = result.data?.user.cook.mealCreate.referenceId;
+            const result = await upsertMeal({});
+            const mealId = result.data?.user.cook.mealUpsert.referenceId;
             if (!mealId || result.error) throw new Error('create failed');
             toast.success({ de: 'Gericht angelegt.', en: 'Meal created.' }[locale]);
             await navigate({ to: '/{-$locale}/profile/meals/$mealId/edit', params: { mealId } });

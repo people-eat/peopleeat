@@ -15,12 +15,7 @@ import type { CookMealEditorSaveHandlers } from '../../components/CookMealEditor
 import { CookMenuCoursesEditor } from '../../components/CookMenuCoursesEditor';
 import type { CookMenuCourseDraft } from '../../components/CookMenuCoursesEditor';
 import type { GqlCAdminMenuEditPageQuery } from '../../graphql/generated';
-import {
-    AdminMenuEditMealCreateDocument,
-    AdminMenuEditMealUpdateDocument,
-    AdminMenuEditPageUpdatesDocument,
-    AdminMenuUpdateDocument,
-} from '../../graphql/generated';
+import { AdminMenuEditMealUpsertDocument, AdminMenuEditPageUpdatesDocument, AdminMenuUpsertDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 
 export const adminMenuEditPageTitle = {
@@ -68,37 +63,36 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
 
     const [menu, setMenu] = useState(seedMenu);
     const [meals, setMeals] = useState(seedAdmin?.cookMeals ?? []);
-    const [, updateMenu] = useMutation(AdminMenuUpdateDocument);
-    const [, createMeal] = useMutation(AdminMenuEditMealCreateDocument);
-    const [, updateMeal] = useMutation(AdminMenuEditMealUpdateDocument);
+    const [, upsertMenu] = useMutation(AdminMenuUpsertDocument);
+    const [, upsertMeal] = useMutation(AdminMenuEditMealUpsertDocument);
 
     const mealSaveHandlers = useMemo<CookMealEditorSaveHandlers>(
         () => ({
             async createMeal() {
-                const created = await createMeal({ cookId });
-                const mealId = created.data?.admin.cookMealCreate.referenceId;
-                if (created.error || !created.data?.admin.cookMealCreate.success || mealId == null) {
+                const created = await upsertMeal({ meal: { cookId } });
+                const mealId = created.data?.admin.cookMealUpsert.referenceId;
+                if (created.error || !created.data?.admin.cookMealUpsert.success || mealId == null) {
                     throw new Error('meal create failed');
                 }
                 return mealId;
             },
             async updateMeal(mealId, meal) {
-                const updated = await updateMeal({ mealId, meal });
-                if (updated.error || !updated.data?.admin.cookMealUpdate.success) {
+                const updated = await upsertMeal({ meal: { mealId, ...meal } });
+                if (updated.error || !updated.data?.admin.cookMealUpsert.success) {
                     throw new Error('meal update failed');
                 }
             },
         }),
-        [cookId, createMeal, updateMeal],
+        [cookId, upsertMeal],
     );
 
     const form = useForm({
         defaultValues: formFromMenu(seedMenu),
         onSubmit: async ({ value }) => {
             try {
-                const result = await updateMenu({
-                    menuId,
+                const result = await upsertMenu({
                     menu: {
+                        menuId,
                         title: value.title,
                         description: value.description,
                         courses: value.courses.map((course) => ({
@@ -108,7 +102,7 @@ export function AdminMenuEditPage({ data, menuId, cookId }: { data: GqlCAdminMen
                         })),
                     },
                 });
-                if (result.error || !result.data?.admin.cookMenuUpdate.success) {
+                if (result.error || !result.data?.admin.cookMenuUpsert.success) {
                     throw new Error('save failed');
                 }
                 toast.success({ de: 'Gespeichert.', en: 'Saved.' }[locale]);
