@@ -33,7 +33,6 @@ function runNpmScript(check: Check): Promise<CheckResult> {
     return new Promise((resolve) => {
         const child = spawn('npm', ['run', '--silent', check.script], {
             cwd: process.cwd(),
-            env: process.env,
             stdio: ['ignore', 'pipe', 'pipe'],
         });
 
