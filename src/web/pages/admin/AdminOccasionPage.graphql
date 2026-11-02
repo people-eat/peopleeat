@@ -6,11 +6,8 @@ query AdminOccasionPage($occasionId: ID!) {
                 occasion(occasionId: $occasionId) {
                     ...AdminOccasionFields
                 }
-                customerTestimonials {
-                    ...AdminCustomerTestimonialCardFields
-                }
-                cookTestimonials {
-                    ...AdminCookTestimonialCardFields
+                testimonials {
+                    ...AdminTestimonialCardFields
                 }
             }
         }

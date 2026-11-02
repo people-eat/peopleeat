@@ -69,10 +69,8 @@ export interface GqlCAdmin {
     cookMenus: Array<GqlCAdminCookMenu>;
     cookMenusCounts: Array<Scalars['Int']['output']>;
     cookTestimonial?: Maybe<GqlCAdminCookTestimonial>;
-    cookTestimonials: Array<GqlCAdminCookTestimonial>;
     cooksInTravelRadius: Array<GqlCAdminCookInTravelRadiusPreview>;
     customerTestimonial?: Maybe<GqlCAdminCustomerTestimonial>;
-    customerTestimonials: Array<GqlCAdminCustomerTestimonial>;
     databaseSlowStatements: Array<GqlCAdminDatabaseSlowStatement>;
     featureToggles: Array<GqlCAdminFeatureToggle>;
     giftCard?: Maybe<GqlCAdminGiftCard>;
@@ -116,6 +114,7 @@ export interface GqlCAdmin {
     supportRequest?: Maybe<GqlCAdminSupportRequest>;
     supportRequests: Array<GqlCAdminSupportRequest>;
     supportRequestsCounts: Array<Scalars['Int']['output']>;
+    testimonials: Array<GqlCAdminTestimonial>;
     upcomingBirthdays: Array<GqlCAdminUserUpcomingBirthday>;
     user?: Maybe<GqlCAdminUser>;
     userCounts: Array<Scalars['Int']['output']>;
@@ -292,10 +291,6 @@ export type GqlCAdminCookTestimonialArgs = {
     cookTestimonialId: Scalars['ID']['input'];
 };
 
-export type GqlCAdminCookTestimonialsArgs = {
-    criterion?: InputMaybe<GqlCAdminCookTestimonialCriterion>;
-};
-
 export type GqlCAdminCooksInTravelRadiusArgs = {
     excludeUserId?: InputMaybe<Scalars['ID']['input']>;
     latitude: Scalars['Latitude']['input'];
@@ -304,10 +299,6 @@ export type GqlCAdminCooksInTravelRadiusArgs = {
 
 export type GqlCAdminCustomerTestimonialArgs = {
     customerTestimonialId: Scalars['ID']['input'];
-};
-
-export type GqlCAdminCustomerTestimonialsArgs = {
-    criterion?: InputMaybe<GqlCAdminCustomerTestimonialCriterion>;
 };
 
 export type GqlCAdminDatabaseSlowStatementsArgs = {
@@ -454,6 +445,10 @@ export type GqlCAdminSupportRequestsArgs = {
 
 export type GqlCAdminSupportRequestsCountsArgs = {
     criteria: Array<GqlCAdminSupportRequestCriterion>;
+};
+
+export type GqlCAdminTestimonialsArgs = {
+    criterion?: InputMaybe<GqlCAdminTestimonialCriterion>;
 };
 
 export type GqlCAdminUpcomingBirthdaysArgs = {
@@ -1161,26 +1156,13 @@ export interface GqlCAdminCookTestimonial {
     userId: Scalars['ID']['output'];
 }
 
-export type GqlCAdminCookTestimonialCreate = {
+export type GqlCAdminCookTestimonialUpsert = {
     authorName?: InputMaybe<Scalars['String']['input']>;
     body?: InputMaybe<Scalars['String']['input']>;
     bookingRequestOfferId?: InputMaybe<Scalars['ID']['input']>;
     cookId: Scalars['ID']['input'];
+    cookTestimonialId?: InputMaybe<Scalars['ID']['input']>;
     imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-    location?: InputMaybe<Scalars['String']['input']>;
-    occasion?: InputMaybe<Scalars['String']['input']>;
-    rating?: InputMaybe<Scalars['Int']['input']>;
-};
-
-export type GqlCAdminCookTestimonialCriterion = {
-    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-    skip?: Scalars['Int']['input'];
-    take?: Scalars['Int']['input'];
-};
-
-export type GqlCAdminCookTestimonialUpdate = {
-    authorName?: InputMaybe<Scalars['String']['input']>;
-    body?: InputMaybe<Scalars['String']['input']>;
     location?: InputMaybe<Scalars['String']['input']>;
     occasion?: InputMaybe<Scalars['String']['input']>;
     rating?: InputMaybe<Scalars['Int']['input']>;
@@ -1207,29 +1189,16 @@ export interface GqlCAdminCustomerTestimonial {
     userId: Scalars['ID']['output'];
 }
 
-export type GqlCAdminCustomerTestimonialCreate = {
+export type GqlCAdminCustomerTestimonialUpsert = {
     authorName?: InputMaybe<Scalars['String']['input']>;
     body: Scalars['String']['input'];
     bookingRequestOfferId?: InputMaybe<Scalars['ID']['input']>;
+    customerTestimonialId?: InputMaybe<Scalars['ID']['input']>;
     imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     location?: InputMaybe<Scalars['String']['input']>;
     occasion?: InputMaybe<Scalars['String']['input']>;
     rating?: InputMaybe<Scalars['Int']['input']>;
     userId: Scalars['ID']['input'];
-};
-
-export type GqlCAdminCustomerTestimonialCriterion = {
-    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-    skip?: Scalars['Int']['input'];
-    take?: Scalars['Int']['input'];
-};
-
-export type GqlCAdminCustomerTestimonialUpdate = {
-    authorName?: InputMaybe<Scalars['String']['input']>;
-    body?: InputMaybe<Scalars['String']['input']>;
-    location?: InputMaybe<Scalars['String']['input']>;
-    occasion?: InputMaybe<Scalars['String']['input']>;
-    rating?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export interface GqlCAdminDatabaseSlowStatement {
@@ -1418,17 +1387,15 @@ export interface GqlCAdminMutation {
     cookMenuCreate: GqlCMutationResult;
     cookMenuDelete: GqlCMutationResult;
     cookMenuUpdate: GqlCMutationResult;
-    cookTestimonialCreate: GqlCMutationResult;
     cookTestimonialDelete: GqlCMutationResult;
     cookTestimonialImageUpdate: GqlCMutationResult;
     cookTestimonialPublish: GqlCMutationResult;
-    cookTestimonialUpdate: GqlCMutationResult;
+    cookTestimonialUpsert: GqlCMutationResult;
     cookUpdate: GqlCMutationResult;
-    customerTestimonialCreate: GqlCMutationResult;
     customerTestimonialDelete: GqlCMutationResult;
     customerTestimonialImageUpdate: GqlCMutationResult;
     customerTestimonialPublish: GqlCMutationResult;
-    customerTestimonialUpdate: GqlCMutationResult;
+    customerTestimonialUpsert: GqlCMutationResult;
     featureToggleUpdate: GqlCMutationResult;
     featureToggleUserOverrideDelete: GqlCMutationResult;
     featureToggleUserOverrideUpsert: GqlCMutationResult;
@@ -1670,10 +1637,6 @@ export type GqlCAdminMutationCookMenuUpdateArgs = {
     menuId: Scalars['ID']['input'];
 };
 
-export type GqlCAdminMutationCookTestimonialCreateArgs = {
-    input: GqlCAdminCookTestimonialCreate;
-};
-
 export type GqlCAdminMutationCookTestimonialDeleteArgs = {
     cookTestimonialId: Scalars['ID']['input'];
 };
@@ -1688,18 +1651,13 @@ export type GqlCAdminMutationCookTestimonialPublishArgs = {
     publicationStatus: GqlCTestimonialPublicationStatus;
 };
 
-export type GqlCAdminMutationCookTestimonialUpdateArgs = {
-    cookTestimonialId: Scalars['ID']['input'];
-    input: GqlCAdminCookTestimonialUpdate;
+export type GqlCAdminMutationCookTestimonialUpsertArgs = {
+    input: GqlCAdminCookTestimonialUpsert;
 };
 
 export type GqlCAdminMutationCookUpdateArgs = {
     cookId: Scalars['ID']['input'];
     input: GqlCCookUpdate;
-};
-
-export type GqlCAdminMutationCustomerTestimonialCreateArgs = {
-    input: GqlCAdminCustomerTestimonialCreate;
 };
 
 export type GqlCAdminMutationCustomerTestimonialDeleteArgs = {
@@ -1716,9 +1674,8 @@ export type GqlCAdminMutationCustomerTestimonialPublishArgs = {
     publicationStatus: GqlCTestimonialPublicationStatus;
 };
 
-export type GqlCAdminMutationCustomerTestimonialUpdateArgs = {
-    customerTestimonialId: Scalars['ID']['input'];
-    input: GqlCAdminCustomerTestimonialUpdate;
+export type GqlCAdminMutationCustomerTestimonialUpsertArgs = {
+    input: GqlCAdminCustomerTestimonialUpsert;
 };
 
 export type GqlCAdminMutationFeatureToggleUpdateArgs = {
@@ -2229,6 +2186,13 @@ export type GqlCAdminSupportRequestCriterion = {
 export type GqlCAdminSupportRequestSortField = 'bookingDateTime' | 'createdAt' | 'lastMessageAt';
 
 export type GqlCAdminTestimonial = GqlCAdminCookTestimonial | GqlCAdminCustomerTestimonial;
+
+export type GqlCAdminTestimonialCriterion = {
+    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    kinds?: InputMaybe<Array<GqlCTestimonialType>>;
+    skip?: Scalars['Int']['input'];
+    take?: Scalars['Int']['input'];
+};
 
 export type GqlCAdminTestimonialPublicPageKind = 'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER';
 
@@ -12203,24 +12167,28 @@ export type GqlCAdminCityPageQuery = {
                               };
                     }>;
                 } | null;
-                customerTestimonials: Array<{
-                    customerTestimonialId: string;
-                    displayAuthorName: string;
-                    displayLocation: string | null;
-                    displayOccasion: string | null;
-                    body: string;
-                    rating: number | null;
-                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-                }>;
-                cookTestimonials: Array<{
-                    cookTestimonialId: string;
-                    displayAuthorName: string;
-                    displayLocation: string | null;
-                    displayOccasion: string | null;
-                    body: string | null;
-                    rating: number | null;
-                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-                }>;
+                testimonials: Array<
+                    | {
+                          __typename: 'AdminCookTestimonial';
+                          cookTestimonialId: string;
+                          displayAuthorName: string;
+                          displayLocation: string | null;
+                          displayOccasion: string | null;
+                          rating: number | null;
+                          publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                          cookBody: string | null;
+                      }
+                    | {
+                          __typename: 'AdminCustomerTestimonial';
+                          customerTestimonialId: string;
+                          displayAuthorName: string;
+                          displayLocation: string | null;
+                          displayOccasion: string | null;
+                          body: string;
+                          rating: number | null;
+                          publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                      }
+                >;
             } | null;
         } | null;
     };
@@ -12538,13 +12506,12 @@ export type GqlCAdminCookTestimonialPageUpdatesSubscription = {
     };
 };
 
-export type GqlCAdminCookTestimonialDetailUpdateMutationVariables = Exact<{
-    cookTestimonialId: string;
-    input: Schema.GqlCAdminCookTestimonialUpdate;
+export type GqlCAdminCookTestimonialDetailUpsertMutationVariables = Exact<{
+    input: Schema.GqlCAdminCookTestimonialUpsert;
 }>;
 
-export type GqlCAdminCookTestimonialDetailUpdateMutation = {
-    admin: { cookTestimonialUpdate: { success: boolean; referenceId: string | null } };
+export type GqlCAdminCookTestimonialDetailUpsertMutation = {
+    admin: { cookTestimonialUpsert: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCAdminCookTestimonialDetailDeleteMutationVariables = Exact<{
@@ -12676,13 +12643,12 @@ export type GqlCAdminCustomerTestimonialPageUpdatesSubscription = {
     };
 };
 
-export type GqlCAdminCustomerTestimonialDetailUpdateMutationVariables = Exact<{
-    customerTestimonialId: string;
-    input: Schema.GqlCAdminCustomerTestimonialUpdate;
+export type GqlCAdminCustomerTestimonialDetailUpsertMutationVariables = Exact<{
+    input: Schema.GqlCAdminCustomerTestimonialUpsert;
 }>;
 
-export type GqlCAdminCustomerTestimonialDetailUpdateMutation = {
-    admin: { customerTestimonialUpdate: { success: boolean; referenceId: string | null } };
+export type GqlCAdminCustomerTestimonialDetailUpsertMutation = {
+    admin: { customerTestimonialUpsert: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCAdminCustomerTestimonialDetailDeleteMutationVariables = Exact<{
@@ -13971,24 +13937,28 @@ export type GqlCAdminOccasionPageQuery = {
                               };
                     }>;
                 } | null;
-                customerTestimonials: Array<{
-                    customerTestimonialId: string;
-                    displayAuthorName: string;
-                    displayLocation: string | null;
-                    displayOccasion: string | null;
-                    body: string;
-                    rating: number | null;
-                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-                }>;
-                cookTestimonials: Array<{
-                    cookTestimonialId: string;
-                    displayAuthorName: string;
-                    displayLocation: string | null;
-                    displayOccasion: string | null;
-                    body: string | null;
-                    rating: number | null;
-                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-                }>;
+                testimonials: Array<
+                    | {
+                          __typename: 'AdminCookTestimonial';
+                          cookTestimonialId: string;
+                          displayAuthorName: string;
+                          displayLocation: string | null;
+                          displayOccasion: string | null;
+                          rating: number | null;
+                          publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                          cookBody: string | null;
+                      }
+                    | {
+                          __typename: 'AdminCustomerTestimonial';
+                          customerTestimonialId: string;
+                          displayAuthorName: string;
+                          displayLocation: string | null;
+                          displayOccasion: string | null;
+                          body: string;
+                          rating: number | null;
+                          publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                      }
+                >;
             } | null;
         } | null;
     };
@@ -14955,24 +14925,28 @@ export type GqlCAdminPartnerPageQuery = {
                               };
                     }>;
                 } | null;
-                customerTestimonials: Array<{
-                    customerTestimonialId: string;
-                    displayAuthorName: string;
-                    displayLocation: string | null;
-                    displayOccasion: string | null;
-                    body: string;
-                    rating: number | null;
-                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-                }>;
-                cookTestimonials: Array<{
-                    cookTestimonialId: string;
-                    displayAuthorName: string;
-                    displayLocation: string | null;
-                    displayOccasion: string | null;
-                    body: string | null;
-                    rating: number | null;
-                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-                }>;
+                testimonials: Array<
+                    | {
+                          __typename: 'AdminCookTestimonial';
+                          cookTestimonialId: string;
+                          displayAuthorName: string;
+                          displayLocation: string | null;
+                          displayOccasion: string | null;
+                          rating: number | null;
+                          publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                          cookBody: string | null;
+                      }
+                    | {
+                          __typename: 'AdminCustomerTestimonial';
+                          customerTestimonialId: string;
+                          displayAuthorName: string;
+                          displayLocation: string | null;
+                          displayOccasion: string | null;
+                          body: string;
+                          rating: number | null;
+                          publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                      }
+                >;
             } | null;
         } | null;
     };
@@ -15695,34 +15669,6 @@ export type GqlCAdminTestimonialsListCustomerFragment = {
     user: { userId: string; firstName: string; lastName: string };
 };
 
-export type GqlCAdminTestimonialsListCookFragment = {
-    cookTestimonialId: string;
-    cookId: string;
-    userId: string;
-    bookingRequestOfferId: string | null;
-    authorName: string | null;
-    displayAuthorName: string;
-    location: string | null;
-    displayLocation: string | null;
-    occasion: string | null;
-    displayOccasion: string | null;
-    body: string | null;
-    imageUrls: Array<string>;
-    rating: number | null;
-    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-    publishedAt: string | null;
-    createdAt: string;
-    publicPagePlacements: Array<{
-        kind: Schema.GqlCAdminTestimonialPublicPageKind;
-        entityId: string;
-        labelDe: string;
-        labelEn: string;
-        pathName: string | null;
-        index: number | null;
-    }>;
-    cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
-};
-
 export type GqlCAdminTestimonialsPageQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCAdminTestimonialsPageQuery = {
@@ -15730,59 +15676,63 @@ export type GqlCAdminTestimonialsPageQuery = {
         user: {
             admin: {
                 adminId: string;
-                customerTestimonials: Array<{
-                    customerTestimonialId: string;
-                    userId: string;
-                    bookingRequestOfferId: string | null;
-                    authorName: string | null;
-                    displayAuthorName: string;
-                    location: string | null;
-                    displayLocation: string | null;
-                    occasion: string | null;
-                    displayOccasion: string | null;
-                    body: string;
-                    imageUrls: Array<string>;
-                    rating: number | null;
-                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-                    publishedAt: string | null;
-                    createdAt: string;
-                    publicPagePlacements: Array<{
-                        kind: Schema.GqlCAdminTestimonialPublicPageKind;
-                        entityId: string;
-                        labelDe: string;
-                        labelEn: string;
-                        pathName: string | null;
-                        index: number | null;
-                    }>;
-                    user: { userId: string; firstName: string; lastName: string };
-                }>;
-                cookTestimonials: Array<{
-                    cookTestimonialId: string;
-                    cookId: string;
-                    userId: string;
-                    bookingRequestOfferId: string | null;
-                    authorName: string | null;
-                    displayAuthorName: string;
-                    location: string | null;
-                    displayLocation: string | null;
-                    occasion: string | null;
-                    displayOccasion: string | null;
-                    body: string | null;
-                    imageUrls: Array<string>;
-                    rating: number | null;
-                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-                    publishedAt: string | null;
-                    createdAt: string;
-                    publicPagePlacements: Array<{
-                        kind: Schema.GqlCAdminTestimonialPublicPageKind;
-                        entityId: string;
-                        labelDe: string;
-                        labelEn: string;
-                        pathName: string | null;
-                        index: number | null;
-                    }>;
-                    cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
-                }>;
+                testimonials: Array<
+                    | {
+                          __typename: 'AdminCookTestimonial';
+                          cookTestimonialId: string;
+                          cookId: string;
+                          userId: string;
+                          bookingRequestOfferId: string | null;
+                          authorName: string | null;
+                          displayAuthorName: string;
+                          location: string | null;
+                          displayLocation: string | null;
+                          occasion: string | null;
+                          displayOccasion: string | null;
+                          imageUrls: Array<string>;
+                          rating: number | null;
+                          publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                          publishedAt: string | null;
+                          createdAt: string;
+                          cookBody: string | null;
+                          publicPagePlacements: Array<{
+                              kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                              entityId: string;
+                              labelDe: string;
+                              labelEn: string;
+                              pathName: string | null;
+                              index: number | null;
+                          }>;
+                          cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
+                      }
+                    | {
+                          __typename: 'AdminCustomerTestimonial';
+                          customerTestimonialId: string;
+                          userId: string;
+                          bookingRequestOfferId: string | null;
+                          authorName: string | null;
+                          displayAuthorName: string;
+                          location: string | null;
+                          displayLocation: string | null;
+                          occasion: string | null;
+                          displayOccasion: string | null;
+                          body: string;
+                          imageUrls: Array<string>;
+                          rating: number | null;
+                          publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                          publishedAt: string | null;
+                          createdAt: string;
+                          publicPagePlacements: Array<{
+                              kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                              entityId: string;
+                              labelDe: string;
+                              labelEn: string;
+                              pathName: string | null;
+                              index: number | null;
+                          }>;
+                          user: { userId: string; firstName: string; lastName: string };
+                      }
+                >;
             } | null;
         } | null;
     };
@@ -15792,59 +15742,63 @@ export type GqlCAdminTestimonialsPageUpdatesSubscriptionVariables = Exact<{ [key
 
 export type GqlCAdminTestimonialsPageUpdatesSubscription = {
     adminUpdates: {
-        customerTestimonials: Array<{
-            customerTestimonialId: string;
-            userId: string;
-            bookingRequestOfferId: string | null;
-            authorName: string | null;
-            displayAuthorName: string;
-            location: string | null;
-            displayLocation: string | null;
-            occasion: string | null;
-            displayOccasion: string | null;
-            body: string;
-            imageUrls: Array<string>;
-            rating: number | null;
-            publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-            publishedAt: string | null;
-            createdAt: string;
-            publicPagePlacements: Array<{
-                kind: Schema.GqlCAdminTestimonialPublicPageKind;
-                entityId: string;
-                labelDe: string;
-                labelEn: string;
-                pathName: string | null;
-                index: number | null;
-            }>;
-            user: { userId: string; firstName: string; lastName: string };
-        }>;
-        cookTestimonials: Array<{
-            cookTestimonialId: string;
-            cookId: string;
-            userId: string;
-            bookingRequestOfferId: string | null;
-            authorName: string | null;
-            displayAuthorName: string;
-            location: string | null;
-            displayLocation: string | null;
-            occasion: string | null;
-            displayOccasion: string | null;
-            body: string | null;
-            imageUrls: Array<string>;
-            rating: number | null;
-            publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-            publishedAt: string | null;
-            createdAt: string;
-            publicPagePlacements: Array<{
-                kind: Schema.GqlCAdminTestimonialPublicPageKind;
-                entityId: string;
-                labelDe: string;
-                labelEn: string;
-                pathName: string | null;
-                index: number | null;
-            }>;
-            cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
-        }>;
+        testimonials: Array<
+            | {
+                  __typename: 'AdminCookTestimonial';
+                  cookTestimonialId: string;
+                  cookId: string;
+                  userId: string;
+                  bookingRequestOfferId: string | null;
+                  authorName: string | null;
+                  displayAuthorName: string;
+                  location: string | null;
+                  displayLocation: string | null;
+                  occasion: string | null;
+                  displayOccasion: string | null;
+                  imageUrls: Array<string>;
+                  rating: number | null;
+                  publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                  publishedAt: string | null;
+                  createdAt: string;
+                  cookBody: string | null;
+                  publicPagePlacements: Array<{
+                      kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                      entityId: string;
+                      labelDe: string;
+                      labelEn: string;
+                      pathName: string | null;
+                      index: number | null;
+                  }>;
+                  cook: { cookId: string; user: { userId: string; firstName: string; lastName: string } };
+              }
+            | {
+                  __typename: 'AdminCustomerTestimonial';
+                  customerTestimonialId: string;
+                  userId: string;
+                  bookingRequestOfferId: string | null;
+                  authorName: string | null;
+                  displayAuthorName: string;
+                  location: string | null;
+                  displayLocation: string | null;
+                  occasion: string | null;
+                  displayOccasion: string | null;
+                  body: string;
+                  imageUrls: Array<string>;
+                  rating: number | null;
+                  publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                  publishedAt: string | null;
+                  createdAt: string;
+                  publicPagePlacements: Array<{
+                      kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                      entityId: string;
+                      labelDe: string;
+                      labelEn: string;
+                      pathName: string | null;
+                      index: number | null;
+                  }>;
+                  user: { userId: string; firstName: string; lastName: string };
+              }
+        >;
     };
 };
 
@@ -15880,19 +15834,19 @@ export type GqlCAdminCookTestimonialDeleteMutationVariables = Exact<{
 
 export type GqlCAdminCookTestimonialDeleteMutation = { admin: { cookTestimonialDelete: { success: boolean; referenceId: string | null } } };
 
-export type GqlCAdminCustomerTestimonialCreateMutationVariables = Exact<{
-    input: Schema.GqlCAdminCustomerTestimonialCreate;
+export type GqlCAdminCustomerTestimonialUpsertMutationVariables = Exact<{
+    input: Schema.GqlCAdminCustomerTestimonialUpsert;
 }>;
 
-export type GqlCAdminCustomerTestimonialCreateMutation = {
-    admin: { customerTestimonialCreate: { success: boolean; referenceId: string | null } };
+export type GqlCAdminCustomerTestimonialUpsertMutation = {
+    admin: { customerTestimonialUpsert: { success: boolean; referenceId: string | null } };
 };
 
-export type GqlCAdminCookTestimonialCreateMutationVariables = Exact<{
-    input: Schema.GqlCAdminCookTestimonialCreate;
+export type GqlCAdminCookTestimonialUpsertMutationVariables = Exact<{
+    input: Schema.GqlCAdminCookTestimonialUpsert;
 }>;
 
-export type GqlCAdminCookTestimonialCreateMutation = { admin: { cookTestimonialCreate: { success: boolean; referenceId: string | null } } };
+export type GqlCAdminCookTestimonialUpsertMutation = { admin: { cookTestimonialUpsert: { success: boolean; referenceId: string | null } } };
 
 export type GqlCAdminUserCookProfileEditCookFragment = {
     cookId: string;
@@ -16081,8 +16035,7 @@ export type GqlCAdminUserPageQueryVariables = Exact<{
     bookingRequestOffersCriterion: Schema.GqlCAdminBookingRequestOfferCriterion;
     assistantChatsCriterion: Schema.GqlCAdminAssistantChatCriterion;
     callTrafficCriterion: Schema.GqlCAdminCallTrafficCriterion;
-    customerTestimonialsCriterion: Schema.GqlCAdminCustomerTestimonialCriterion;
-    cookTestimonialsCriterion: Schema.GqlCAdminCookTestimonialCriterion;
+    testimonialsCriterion: Schema.GqlCAdminTestimonialCriterion;
     poolBookingRequestsCriterion: Schema.GqlCAdminBookingRequestCriterion;
 }>;
 
@@ -16320,46 +16273,50 @@ export type GqlCAdminUserPageQuery = {
                         videoCallRoomId: string | null;
                     } | null;
                 }>;
-                customerTestimonials?: Array<{
-                    customerTestimonialId: string;
-                    displayAuthorName: string;
-                    displayLocation: string | null;
-                    displayOccasion: string | null;
-                    body: string;
-                    rating: number | null;
-                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-                    publishedAt: string | null;
-                    createdAt: string;
-                    imageUrls: Array<string>;
-                    publicPagePlacements: Array<{
-                        kind: Schema.GqlCAdminTestimonialPublicPageKind;
-                        entityId: string;
-                        labelDe: string;
-                        labelEn: string;
-                        pathName: string | null;
-                        index: number | null;
-                    }>;
-                }>;
-                cookTestimonials?: Array<{
-                    cookTestimonialId: string;
-                    displayAuthorName: string;
-                    displayLocation: string | null;
-                    displayOccasion: string | null;
-                    body: string | null;
-                    rating: number | null;
-                    publicationStatus: Schema.GqlCTestimonialPublicationStatus;
-                    publishedAt: string | null;
-                    createdAt: string;
-                    imageUrls: Array<string>;
-                    publicPagePlacements: Array<{
-                        kind: Schema.GqlCAdminTestimonialPublicPageKind;
-                        entityId: string;
-                        labelDe: string;
-                        labelEn: string;
-                        pathName: string | null;
-                        index: number | null;
-                    }>;
-                }>;
+                testimonials?: Array<
+                    | {
+                          __typename: 'AdminCookTestimonial';
+                          cookTestimonialId: string;
+                          displayAuthorName: string;
+                          displayLocation: string | null;
+                          displayOccasion: string | null;
+                          rating: number | null;
+                          publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                          publishedAt: string | null;
+                          createdAt: string;
+                          imageUrls: Array<string>;
+                          cookBody: string | null;
+                          publicPagePlacements: Array<{
+                              kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                              entityId: string;
+                              labelDe: string;
+                              labelEn: string;
+                              pathName: string | null;
+                              index: number | null;
+                          }>;
+                      }
+                    | {
+                          __typename: 'AdminCustomerTestimonial';
+                          customerTestimonialId: string;
+                          displayAuthorName: string;
+                          displayLocation: string | null;
+                          displayOccasion: string | null;
+                          body: string;
+                          rating: number | null;
+                          publicationStatus: Schema.GqlCTestimonialPublicationStatus;
+                          publishedAt: string | null;
+                          createdAt: string;
+                          imageUrls: Array<string>;
+                          publicPagePlacements: Array<{
+                              kind: Schema.GqlCAdminTestimonialPublicPageKind;
+                              entityId: string;
+                              labelDe: string;
+                              labelEn: string;
+                              pathName: string | null;
+                              index: number | null;
+                          }>;
+                      }
+                >;
                 bookingRequestOffers?: Array<{
                     bookingRequestOfferId: string;
                     bookingRequestId: string;
@@ -29024,74 +28981,6 @@ export const AdminTestimonialsListCustomerFragmentDoc = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminTestimonialsListCustomerFragment, unknown>;
-export const AdminTestimonialsListCookFragmentDoc = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'AdminTestimonialsListCook' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonial' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayAuthorName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'location' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayLocation' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'publicPagePlacements' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'cook' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'user' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCAdminTestimonialsListCookFragment, unknown>;
 export const AdminUserCookProfileEditCookFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -52511,26 +52400,13 @@ export const AdminCityPageDocument = {
                                                         },
                                                         {
                                                             kind: 'Field',
-                                                            name: { kind: 'Name', value: 'customerTestimonials' },
+                                                            name: { kind: 'Name', value: 'testimonials' },
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
                                                                     {
                                                                         kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'AdminCustomerTestimonialCardFields' },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'cookTestimonials' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    {
-                                                                        kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'AdminCookTestimonialCardFields' },
+                                                                        name: { kind: 'Name', value: 'AdminTestimonialCardFields' },
                                                                     },
                                                                 ],
                                                             },
@@ -52872,23 +52748,6 @@ export const AdminCityPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'AdminCookTestimonialCardFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonial' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayAuthorName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayLocation' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                 ],
             },
         },
@@ -53911,23 +53770,18 @@ export const AdminCookTestimonialPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminCookTestimonialPageUpdatesSubscription, GqlCAdminCookTestimonialPageUpdatesSubscriptionVariables>;
-export const AdminCookTestimonialDetailUpdateDocument = {
+export const AdminCookTestimonialDetailUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminCookTestimonialDetailUpdate' },
+            name: { kind: 'Name', value: 'AdminCookTestimonialDetailUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookTestimonialId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
-                {
-                    kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonialUpdate' } } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonialUpsert' } } },
                 },
             ],
             selectionSet: {
@@ -53941,13 +53795,8 @@ export const AdminCookTestimonialDetailUpdateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'cookTestimonialUpdate' },
+                                    name: { kind: 'Name', value: 'cookTestimonialUpsert' },
                                     arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'cookTestimonialId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookTestimonialId' } },
-                                        },
                                         {
                                             kind: 'Argument',
                                             name: { kind: 'Name', value: 'input' },
@@ -53969,7 +53818,7 @@ export const AdminCookTestimonialDetailUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminCookTestimonialDetailUpdateMutation, GqlCAdminCookTestimonialDetailUpdateMutationVariables>;
+} as unknown as DocumentNode<GqlCAdminCookTestimonialDetailUpsertMutation, GqlCAdminCookTestimonialDetailUpsertMutationVariables>;
 export const AdminCookTestimonialDetailDeleteDocument = {
     kind: 'Document',
     definitions: [
@@ -54377,25 +54226,20 @@ export const AdminCustomerTestimonialPageUpdatesDocument = {
     GqlCAdminCustomerTestimonialPageUpdatesSubscription,
     GqlCAdminCustomerTestimonialPageUpdatesSubscriptionVariables
 >;
-export const AdminCustomerTestimonialDetailUpdateDocument = {
+export const AdminCustomerTestimonialDetailUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminCustomerTestimonialDetailUpdate' },
+            name: { kind: 'Name', value: 'AdminCustomerTestimonialDetailUpsert' },
             variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'customerTestimonialId' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
-                },
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
                     type: {
                         kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCustomerTestimonialUpdate' } },
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCustomerTestimonialUpsert' } },
                     },
                 },
             ],
@@ -54410,13 +54254,8 @@ export const AdminCustomerTestimonialDetailUpdateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'customerTestimonialUpdate' },
+                                    name: { kind: 'Name', value: 'customerTestimonialUpsert' },
                                     arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'customerTestimonialId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'customerTestimonialId' } },
-                                        },
                                         {
                                             kind: 'Argument',
                                             name: { kind: 'Name', value: 'input' },
@@ -54438,7 +54277,7 @@ export const AdminCustomerTestimonialDetailUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminCustomerTestimonialDetailUpdateMutation, GqlCAdminCustomerTestimonialDetailUpdateMutationVariables>;
+} as unknown as DocumentNode<GqlCAdminCustomerTestimonialDetailUpsertMutation, GqlCAdminCustomerTestimonialDetailUpsertMutationVariables>;
 export const AdminCustomerTestimonialDetailDeleteDocument = {
     kind: 'Document',
     definitions: [
@@ -58304,26 +58143,13 @@ export const AdminOccasionPageDocument = {
                                                         },
                                                         {
                                                             kind: 'Field',
-                                                            name: { kind: 'Name', value: 'customerTestimonials' },
+                                                            name: { kind: 'Name', value: 'testimonials' },
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
                                                                     {
                                                                         kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'AdminCustomerTestimonialCardFields' },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'cookTestimonials' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    {
-                                                                        kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'AdminCookTestimonialCardFields' },
+                                                                        name: { kind: 'Name', value: 'AdminTestimonialCardFields' },
                                                                     },
                                                                 ],
                                                             },
@@ -58688,23 +58514,6 @@ export const AdminOccasionPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'AdminCookTestimonialCardFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonial' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayAuthorName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayLocation' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                 ],
             },
         },
@@ -61973,26 +61782,13 @@ export const AdminPartnerPageDocument = {
                                                         },
                                                         {
                                                             kind: 'Field',
-                                                            name: { kind: 'Name', value: 'customerTestimonials' },
+                                                            name: { kind: 'Name', value: 'testimonials' },
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
                                                                     {
                                                                         kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'AdminCustomerTestimonialCardFields' },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'cookTestimonials' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    {
-                                                                        kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'AdminCookTestimonialCardFields' },
+                                                                        name: { kind: 'Name', value: 'AdminTestimonialCardFields' },
                                                                     },
                                                                 ],
                                                             },
@@ -62337,23 +62133,6 @@ export const AdminPartnerPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'AdminCookTestimonialCardFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonial' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayAuthorName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayLocation' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
                 ],
             },
         },
@@ -65002,26 +64781,173 @@ export const AdminTestimonialsPageDocument = {
                                                         { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
                                                         {
                                                             kind: 'Field',
-                                                            name: { kind: 'Name', value: 'customerTestimonials' },
+                                                            name: { kind: 'Name', value: 'testimonials' },
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
                                                                     {
-                                                                        kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'AdminTestimonialsListCustomer' },
+                                                                        kind: 'InlineFragment',
+                                                                        typeCondition: {
+                                                                            kind: 'NamedType',
+                                                                            name: { kind: 'Name', value: 'AdminCustomerTestimonial' },
+                                                                        },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'FragmentSpread',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'AdminTestimonialsListCustomer',
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
                                                                     },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'cookTestimonials' },
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
                                                                     {
-                                                                        kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'AdminTestimonialsListCook' },
+                                                                        kind: 'InlineFragment',
+                                                                        typeCondition: {
+                                                                            kind: 'NamedType',
+                                                                            name: { kind: 'Name', value: 'AdminCookTestimonial' },
+                                                                        },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'cookTestimonialId' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'authorName' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'displayAuthorName' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'location' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'displayLocation' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'occasion' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'displayOccasion' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    alias: { kind: 'Name', value: 'cookBody' },
+                                                                                    name: { kind: 'Name', value: 'body' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'imageUrls' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'publicationStatus' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'publishedAt' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'createdAt' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'publicPagePlacements' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'kind' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'entityId' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'labelDe' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'labelEn' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'pathName' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'index' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'cook' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'cookId' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'user' },
+                                                                                                selectionSet: {
+                                                                                                    kind: 'SelectionSet',
+                                                                                                    selections: [
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'userId',
+                                                                                                            },
+                                                                                                        },
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'firstName',
+                                                                                                            },
+                                                                                                        },
+                                                                                                        {
+                                                                                                            kind: 'Field',
+                                                                                                            name: {
+                                                                                                                kind: 'Name',
+                                                                                                                value: 'lastName',
+                                                                                                            },
+                                                                                                        },
+                                                                                                    ],
+                                                                                                },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
                                                                     },
                                                                 ],
                                                             },
@@ -65090,69 +65016,6 @@ export const AdminTestimonialsPageDocument = {
                 ],
             },
         },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'AdminTestimonialsListCook' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonial' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayAuthorName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'location' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayLocation' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'publicPagePlacements' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'cook' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'user' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
     ],
 } as unknown as DocumentNode<GqlCAdminTestimonialsPageQuery, GqlCAdminTestimonialsPageQueryVariables>;
 export const AdminTestimonialsPageUpdatesDocument = {
@@ -65173,21 +65036,99 @@ export const AdminTestimonialsPageUpdatesDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'customerTestimonials' },
+                                    name: { kind: 'Name', value: 'testimonials' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
-                                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'AdminTestimonialsListCustomer' } },
-                                        ],
-                                    },
-                                },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'cookTestimonials' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'AdminTestimonialsListCook' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
+                                            {
+                                                kind: 'InlineFragment',
+                                                typeCondition: {
+                                                    kind: 'NamedType',
+                                                    name: { kind: 'Name', value: 'AdminCustomerTestimonial' },
+                                                },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'FragmentSpread',
+                                                            name: { kind: 'Name', value: 'AdminTestimonialsListCustomer' },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'InlineFragment',
+                                                typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonial' } },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'displayAuthorName' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'location' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'displayLocation' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            alias: { kind: 'Name', value: 'cookBody' },
+                                                            name: { kind: 'Name', value: 'body' },
+                                                        },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'publicPagePlacements' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'cook' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'user' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'firstName' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'lastName' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -65243,69 +65184,6 @@ export const AdminTestimonialsPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'AdminTestimonialsListCook' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonial' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayAuthorName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'location' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayLocation' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'publicPagePlacements' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'entityId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'cook' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'user' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
-                                        ],
-                                    },
-                                },
                             ],
                         },
                     },
@@ -65536,20 +65414,20 @@ export const AdminCookTestimonialDeleteDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminCookTestimonialDeleteMutation, GqlCAdminCookTestimonialDeleteMutationVariables>;
-export const AdminCustomerTestimonialCreateDocument = {
+export const AdminCustomerTestimonialUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminCustomerTestimonialCreate' },
+            name: { kind: 'Name', value: 'AdminCustomerTestimonialUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
                     type: {
                         kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCustomerTestimonialCreate' } },
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCustomerTestimonialUpsert' } },
                     },
                 },
             ],
@@ -65564,7 +65442,7 @@ export const AdminCustomerTestimonialCreateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'customerTestimonialCreate' },
+                                    name: { kind: 'Name', value: 'customerTestimonialUpsert' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
@@ -65587,19 +65465,19 @@ export const AdminCustomerTestimonialCreateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminCustomerTestimonialCreateMutation, GqlCAdminCustomerTestimonialCreateMutationVariables>;
-export const AdminCookTestimonialCreateDocument = {
+} as unknown as DocumentNode<GqlCAdminCustomerTestimonialUpsertMutation, GqlCAdminCustomerTestimonialUpsertMutationVariables>;
+export const AdminCookTestimonialUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminCookTestimonialCreate' },
+            name: { kind: 'Name', value: 'AdminCookTestimonialUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonialCreate' } } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonialUpsert' } } },
                 },
             ],
             selectionSet: {
@@ -65613,7 +65491,7 @@ export const AdminCookTestimonialCreateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'cookTestimonialCreate' },
+                                    name: { kind: 'Name', value: 'cookTestimonialUpsert' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
@@ -65636,7 +65514,7 @@ export const AdminCookTestimonialCreateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminCookTestimonialCreateMutation, GqlCAdminCookTestimonialCreateMutationVariables>;
+} as unknown as DocumentNode<GqlCAdminCookTestimonialUpsertMutation, GqlCAdminCookTestimonialUpsertMutationVariables>;
 export const AdminUserCookProfileEditPageDocument = {
     kind: 'Document',
     definitions: [
@@ -66219,19 +66097,8 @@ export const AdminUserPageDocument = {
                 },
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'customerTestimonialsCriterion' } },
-                    type: {
-                        kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCustomerTestimonialCriterion' } },
-                    },
-                },
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookTestimonialsCriterion' } },
-                    type: {
-                        kind: 'NonNullType',
-                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminCookTestimonialCriterion' } },
-                    },
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'testimonialsCriterion' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminTestimonialCriterion' } } },
                 },
                 {
                     kind: 'VariableDefinition',
@@ -67310,14 +67177,14 @@ export const AdminUserPageDocument = {
                                                         },
                                                         {
                                                             kind: 'Field',
-                                                            name: { kind: 'Name', value: 'customerTestimonials' },
+                                                            name: { kind: 'Name', value: 'testimonials' },
                                                             arguments: [
                                                                 {
                                                                     kind: 'Argument',
                                                                     name: { kind: 'Name', value: 'criterion' },
                                                                     value: {
                                                                         kind: 'Variable',
-                                                                        name: { kind: 'Name', value: 'customerTestimonialsCriterion' },
+                                                                        name: { kind: 'Name', value: 'testimonialsCriterion' },
                                                                     },
                                                                 },
                                                             ],
@@ -67340,103 +67207,166 @@ export const AdminUserPageDocument = {
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
                                                                     {
-                                                                        kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'customerTestimonialId' },
-                                                                    },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayAuthorName' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayLocation' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
-                                                                    {
-                                                                        kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                                                                        kind: 'InlineFragment',
+                                                                        typeCondition: {
+                                                                            kind: 'NamedType',
+                                                                            name: { kind: 'Name', value: 'AdminCustomerTestimonial' },
+                                                                        },
                                                                         selectionSet: {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
                                                                                 {
                                                                                     kind: 'Field',
-                                                                                    name: { kind: 'Name', value: 'entityId' },
+                                                                                    name: { kind: 'Name', value: 'customerTestimonialId' },
                                                                                 },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
                                                                                 {
                                                                                     kind: 'Field',
-                                                                                    name: { kind: 'Name', value: 'pathName' },
+                                                                                    name: { kind: 'Name', value: 'displayAuthorName' },
                                                                                 },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'displayLocation' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'displayOccasion' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'publicationStatus' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'publishedAt' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'createdAt' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'imageUrls' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'publicPagePlacements' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'kind' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'entityId' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'labelDe' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'labelEn' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'pathName' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'index' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
                                                                             ],
                                                                         },
                                                                     },
-                                                                ],
-                                                            },
-                                                        },
-                                                        {
-                                                            kind: 'Field',
-                                                            name: { kind: 'Name', value: 'cookTestimonials' },
-                                                            arguments: [
-                                                                {
-                                                                    kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'criterion' },
-                                                                    value: {
-                                                                        kind: 'Variable',
-                                                                        name: { kind: 'Name', value: 'cookTestimonialsCriterion' },
-                                                                    },
-                                                                },
-                                                            ],
-                                                            directives: [
-                                                                {
-                                                                    kind: 'Directive',
-                                                                    name: { kind: 'Name', value: 'include' },
-                                                                    arguments: [
-                                                                        {
-                                                                            kind: 'Argument',
-                                                                            name: { kind: 'Name', value: 'if' },
-                                                                            value: {
-                                                                                kind: 'Variable',
-                                                                                name: { kind: 'Name', value: 'includeTestimonials' },
-                                                                            },
-                                                                        },
-                                                                    ],
-                                                                },
-                                                            ],
-                                                            selectionSet: {
-                                                                kind: 'SelectionSet',
-                                                                selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayAuthorName' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayLocation' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'displayOccasion' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'publicationStatus' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
                                                                     {
-                                                                        kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'publicPagePlacements' },
+                                                                        kind: 'InlineFragment',
+                                                                        typeCondition: {
+                                                                            kind: 'NamedType',
+                                                                            name: { kind: 'Name', value: 'AdminCookTestimonial' },
+                                                                        },
                                                                         selectionSet: {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'kind' } },
                                                                                 {
                                                                                     kind: 'Field',
-                                                                                    name: { kind: 'Name', value: 'entityId' },
+                                                                                    name: { kind: 'Name', value: 'cookTestimonialId' },
                                                                                 },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelDe' } },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'labelEn' } },
                                                                                 {
                                                                                     kind: 'Field',
-                                                                                    name: { kind: 'Name', value: 'pathName' },
+                                                                                    name: { kind: 'Name', value: 'displayAuthorName' },
                                                                                 },
-                                                                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'displayLocation' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'displayOccasion' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    alias: { kind: 'Name', value: 'cookBody' },
+                                                                                    name: { kind: 'Name', value: 'body' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'publicationStatus' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'publishedAt' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'createdAt' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'imageUrls' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'publicPagePlacements' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'kind' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'entityId' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'labelDe' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'labelEn' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'pathName' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'index' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
                                                                             ],
                                                                         },
                                                                     },

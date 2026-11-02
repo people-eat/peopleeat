@@ -6,11 +6,8 @@ query AdminPartnerPage($partnerId: ID!) {
                 partner(partnerId: $partnerId) {
                     ...AdminPartnerFields
                 }
-                customerTestimonials {
-                    ...AdminCustomerTestimonialCardFields
-                }
-                cookTestimonials {
-                    ...AdminCookTestimonialCardFields
+                testimonials {
+                    ...AdminTestimonialCardFields
                 }
             }
         }

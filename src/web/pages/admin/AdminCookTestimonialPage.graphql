@@ -64,9 +64,9 @@ subscription AdminCookTestimonialPageUpdates($cookTestimonialId: ID!) {
     }
 }
 
-mutation AdminCookTestimonialDetailUpdate($cookTestimonialId: ID!, $input: AdminCookTestimonialUpdate!) {
+mutation AdminCookTestimonialDetailUpsert($input: AdminCookTestimonialUpsert!) {
     admin {
-        cookTestimonialUpdate(cookTestimonialId: $cookTestimonialId, input: $input) {
+        cookTestimonialUpsert(input: $input) {
             success
             referenceId
         }

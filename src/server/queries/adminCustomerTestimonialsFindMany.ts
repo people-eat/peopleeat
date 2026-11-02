@@ -2,16 +2,22 @@ import { desc, eq, inArray } from 'drizzle-orm';
 
 import { bookingRequestOffers, customerTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSAdminCustomerTestimonial, GqlSAdminCustomerTestimonialCriterion, GqlSSession } from '../graphql/generated';
+import type { GqlSAdminCustomerTestimonial, GqlSSession } from '../graphql/generated';
 import { toGqlAdminCustomerTestimonial } from '../mappers/toGqlAdminCustomerTestimonial';
 import { adminTestimonialPublicPagePlacementsAttach } from '../utils/adminTestimonialPublicPagePlacementsLoad';
 import { findManySkip, findManyTake } from '../utils/findManyTake';
 import { testimonialOfferFallbacksLoad } from '../utils/testimonialOfferFallbacksLoad';
 
+export type AdminCustomerTestimonialsFindManyCriterion = {
+    skip: number;
+    take: number;
+    cookIds?: string[] | null;
+};
+
 export async function adminCustomerTestimonialsFindMany(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
-    criterion?: GqlSAdminCustomerTestimonialCriterion | null,
+    criterion?: AdminCustomerTestimonialsFindManyCriterion | null,
 ): Promise<GqlSAdminCustomerTestimonial[]> {
     try {
         const cookIds = criterion?.cookIds?.filter(Boolean) ?? [];

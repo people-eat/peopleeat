@@ -48,52 +48,55 @@ export function AdminTestimonialsPage({ data }: { data: GqlCAdminTestimonialsPag
             subscribe(({ data: subscriptionData }) => {
                 const next = subscriptionData?.adminUpdates;
                 if (!next) return;
-                setAdmin((prev) =>
-                    prev
-                        ? {
-                              ...prev,
-                              customerTestimonials: next.customerTestimonials,
-                              cookTestimonials: next.cookTestimonials,
-                          }
-                        : prev,
-                );
+                setAdmin((prev) => (prev ? { ...prev, testimonials: next.testimonials } : prev));
             }),
         );
         return unsubscribe;
     }, [client]);
 
     const rows = useMemo<ListRow[]>(() => {
-        const customerRows: ListRow[] = (admin?.customerTestimonials ?? []).map((testimonial) => ({
-            kind: 'customer',
-            testimonialId: testimonial.customerTestimonialId,
-            displayAuthorName: testimonial.displayAuthorName || `${testimonial.user.firstName} ${testimonial.user.lastName}`,
-            displayLocation: testimonial.displayLocation ?? null,
-            displayOccasion: testimonial.displayOccasion ?? null,
-            body: testimonial.body,
-            rating: testimonial.rating ?? null,
-            publicationStatus: testimonial.publicationStatus,
-            publishedAt: testimonial.publishedAt ?? null,
-            createdAt: testimonial.createdAt,
-            imageUrls: testimonial.imageUrls,
-            publicPagePlacements: testimonial.publicPagePlacements,
-            bookingRequestOfferId: testimonial.bookingRequestOfferId ?? null,
-        }));
-        const cookRows: ListRow[] = (admin?.cookTestimonials ?? []).map((testimonial) => ({
-            kind: 'cook',
-            testimonialId: testimonial.cookTestimonialId,
-            displayAuthorName: testimonial.displayAuthorName || `${testimonial.cook.user.firstName} ${testimonial.cook.user.lastName}`,
-            displayLocation: testimonial.displayLocation ?? null,
-            displayOccasion: testimonial.displayOccasion ?? null,
-            body: testimonial.body ?? null,
-            rating: testimonial.rating ?? null,
-            publicationStatus: testimonial.publicationStatus,
-            publishedAt: testimonial.publishedAt ?? null,
-            createdAt: testimonial.createdAt,
-            imageUrls: testimonial.imageUrls,
-            publicPagePlacements: testimonial.publicPagePlacements,
-            bookingRequestOfferId: testimonial.bookingRequestOfferId ?? null,
-        }));
-        return [...customerRows, ...cookRows].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+        return (admin?.testimonials ?? []).flatMap((testimonial): ListRow[] => {
+            if (testimonial.__typename === 'AdminCustomerTestimonial') {
+                return [
+                    {
+                        kind: 'customer',
+                        testimonialId: testimonial.customerTestimonialId,
+                        displayAuthorName: testimonial.displayAuthorName || `${testimonial.user.firstName} ${testimonial.user.lastName}`,
+                        displayLocation: testimonial.displayLocation ?? null,
+                        displayOccasion: testimonial.displayOccasion ?? null,
+                        body: testimonial.body,
+                        rating: testimonial.rating ?? null,
+                        publicationStatus: testimonial.publicationStatus,
+                        publishedAt: testimonial.publishedAt ?? null,
+                        createdAt: testimonial.createdAt,
+                        imageUrls: testimonial.imageUrls,
+                        publicPagePlacements: testimonial.publicPagePlacements,
+                        bookingRequestOfferId: testimonial.bookingRequestOfferId ?? null,
+                    },
+                ];
+            }
+            if (testimonial.__typename === 'AdminCookTestimonial') {
+                return [
+                    {
+                        kind: 'cook',
+                        testimonialId: testimonial.cookTestimonialId,
+                        displayAuthorName:
+                            testimonial.displayAuthorName || `${testimonial.cook.user.firstName} ${testimonial.cook.user.lastName}`,
+                        displayLocation: testimonial.displayLocation ?? null,
+                        displayOccasion: testimonial.displayOccasion ?? null,
+                        body: testimonial.cookBody ?? null,
+                        rating: testimonial.rating ?? null,
+                        publicationStatus: testimonial.publicationStatus,
+                        publishedAt: testimonial.publishedAt ?? null,
+                        createdAt: testimonial.createdAt,
+                        imageUrls: testimonial.imageUrls,
+                        publicPagePlacements: testimonial.publicPagePlacements,
+                        bookingRequestOfferId: testimonial.bookingRequestOfferId ?? null,
+                    },
+                ];
+            }
+            return [];
+        });
     }, [admin]);
 
     const filtered = useMemo(() => {

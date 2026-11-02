@@ -88,8 +88,7 @@ query AdminUserPage(
     $bookingRequestOffersCriterion: AdminBookingRequestOfferCriterion!
     $assistantChatsCriterion: AdminAssistantChatCriterion!
     $callTrafficCriterion: AdminCallTrafficCriterion!
-    $customerTestimonialsCriterion: AdminCustomerTestimonialCriterion!
-    $cookTestimonialsCriterion: AdminCookTestimonialCriterion!
+    $testimonialsCriterion: AdminTestimonialCriterion!
     $poolBookingRequestsCriterion: AdminBookingRequestCriterion!
 ) {
     currentSession {
@@ -316,44 +315,47 @@ query AdminUserPage(
                         videoCallRoomId
                     }
                 }
-                customerTestimonials(criterion: $customerTestimonialsCriterion) @include(if: $includeTestimonials) {
-                    customerTestimonialId
-                    displayAuthorName
-                    displayLocation
-                    displayOccasion
-                    body
-                    rating
-                    publicationStatus
-                    publishedAt
-                    createdAt
-                    imageUrls
-                    publicPagePlacements {
-                        kind
-                        entityId
-                        labelDe
-                        labelEn
-                        pathName
-                        index
+                testimonials(criterion: $testimonialsCriterion) @include(if: $includeTestimonials) {
+                    __typename
+                    ... on AdminCustomerTestimonial {
+                        customerTestimonialId
+                        displayAuthorName
+                        displayLocation
+                        displayOccasion
+                        body
+                        rating
+                        publicationStatus
+                        publishedAt
+                        createdAt
+                        imageUrls
+                        publicPagePlacements {
+                            kind
+                            entityId
+                            labelDe
+                            labelEn
+                            pathName
+                            index
+                        }
                     }
-                }
-                cookTestimonials(criterion: $cookTestimonialsCriterion) @include(if: $includeTestimonials) {
-                    cookTestimonialId
-                    displayAuthorName
-                    displayLocation
-                    displayOccasion
-                    body
-                    rating
-                    publicationStatus
-                    publishedAt
-                    createdAt
-                    imageUrls
-                    publicPagePlacements {
-                        kind
-                        entityId
-                        labelDe
-                        labelEn
-                        pathName
-                        index
+                    ... on AdminCookTestimonial {
+                        cookTestimonialId
+                        displayAuthorName
+                        displayLocation
+                        displayOccasion
+                        cookBody: body
+                        rating
+                        publicationStatus
+                        publishedAt
+                        createdAt
+                        imageUrls
+                        publicPagePlacements {
+                            kind
+                            entityId
+                            labelDe
+                            labelEn
+                            pathName
+                            index
+                        }
                     }
                 }
                 bookingRequestOffers(criterion: $bookingRequestOffersCriterion) @include(if: $includeOffers) {

@@ -1,4 +1,6 @@
 # Admin testimonials list — customer + cook catalogs combined.
+# Cook `body` is aliased (`cookBody`) on the union selection — GraphQL field merging
+# rejects `String!` vs `String` under the same response name.
 
 fragment AdminTestimonialsListCustomer on AdminCustomerTestimonial {
     customerTestimonialId
@@ -31,51 +33,50 @@ fragment AdminTestimonialsListCustomer on AdminCustomerTestimonial {
     }
 }
 
-fragment AdminTestimonialsListCook on AdminCookTestimonial {
-    cookTestimonialId
-    cookId
-    userId
-    bookingRequestOfferId
-    authorName
-    displayAuthorName
-    location
-    displayLocation
-    occasion
-    displayOccasion
-    body
-    imageUrls
-    rating
-    publicationStatus
-    publishedAt
-    createdAt
-    publicPagePlacements {
-        kind
-        entityId
-        labelDe
-        labelEn
-        pathName
-        index
-    }
-    cook {
-        cookId
-        user {
-            userId
-            firstName
-            lastName
-        }
-    }
-}
-
 query AdminTestimonialsPage {
     currentSession {
         user {
             admin {
                 adminId
-                customerTestimonials {
-                    ...AdminTestimonialsListCustomer
-                }
-                cookTestimonials {
-                    ...AdminTestimonialsListCook
+                testimonials {
+                    __typename
+                    ... on AdminCustomerTestimonial {
+                        ...AdminTestimonialsListCustomer
+                    }
+                    ... on AdminCookTestimonial {
+                        cookTestimonialId
+                        cookId
+                        userId
+                        bookingRequestOfferId
+                        authorName
+                        displayAuthorName
+                        location
+                        displayLocation
+                        occasion
+                        displayOccasion
+                        cookBody: body
+                        imageUrls
+                        rating
+                        publicationStatus
+                        publishedAt
+                        createdAt
+                        publicPagePlacements {
+                            kind
+                            entityId
+                            labelDe
+                            labelEn
+                            pathName
+                            index
+                        }
+                        cook {
+                            cookId
+                            user {
+                                userId
+                                firstName
+                                lastName
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -84,11 +85,45 @@ query AdminTestimonialsPage {
 
 subscription AdminTestimonialsPageUpdates {
     adminUpdates {
-        customerTestimonials {
-            ...AdminTestimonialsListCustomer
-        }
-        cookTestimonials {
-            ...AdminTestimonialsListCook
+        testimonials {
+            __typename
+            ... on AdminCustomerTestimonial {
+                ...AdminTestimonialsListCustomer
+            }
+            ... on AdminCookTestimonial {
+                cookTestimonialId
+                cookId
+                userId
+                bookingRequestOfferId
+                authorName
+                displayAuthorName
+                location
+                displayLocation
+                occasion
+                displayOccasion
+                cookBody: body
+                imageUrls
+                rating
+                publicationStatus
+                publishedAt
+                createdAt
+                publicPagePlacements {
+                    kind
+                    entityId
+                    labelDe
+                    labelEn
+                    pathName
+                    index
+                }
+                cook {
+                    cookId
+                    user {
+                        userId
+                        firstName
+                        lastName
+                    }
+                }
+            }
         }
     }
 }
@@ -129,18 +164,18 @@ mutation AdminCookTestimonialDelete($cookTestimonialId: ID!) {
     }
 }
 
-mutation AdminCustomerTestimonialCreate($input: AdminCustomerTestimonialCreate!) {
+mutation AdminCustomerTestimonialUpsert($input: AdminCustomerTestimonialUpsert!) {
     admin {
-        customerTestimonialCreate(input: $input) {
+        customerTestimonialUpsert(input: $input) {
             success
             referenceId
         }
     }
 }
 
-mutation AdminCookTestimonialCreate($input: AdminCookTestimonialCreate!) {
+mutation AdminCookTestimonialUpsert($input: AdminCookTestimonialUpsert!) {
     admin {
-        cookTestimonialCreate(input: $input) {
+        cookTestimonialUpsert(input: $input) {
             success
             referenceId
         }

@@ -52,17 +52,15 @@ import { adminCookMenuCopy } from '../commands/adminCookMenuCopy';
 import { adminCookMenuCreate } from '../commands/adminCookMenuCreate';
 import { adminCookMenuDelete } from '../commands/adminCookMenuDelete';
 import { adminCookMenuUpdate } from '../commands/adminCookMenuUpdate';
-import { adminCookTestimonialCreate } from '../commands/adminCookTestimonialCreate';
 import { adminCookTestimonialDelete } from '../commands/adminCookTestimonialDelete';
 import { adminCookTestimonialImageUpdate } from '../commands/adminCookTestimonialImageUpdate';
 import { adminCookTestimonialPublish } from '../commands/adminCookTestimonialPublish';
-import { adminCookTestimonialUpdate } from '../commands/adminCookTestimonialUpdate';
+import { adminCookTestimonialUpsert } from '../commands/adminCookTestimonialUpsert';
 import { adminCookUpdate } from '../commands/adminCookUpdate';
-import { adminCustomerTestimonialCreate } from '../commands/adminCustomerTestimonialCreate';
 import { adminCustomerTestimonialDelete } from '../commands/adminCustomerTestimonialDelete';
 import { adminCustomerTestimonialImageUpdate } from '../commands/adminCustomerTestimonialImageUpdate';
 import { adminCustomerTestimonialPublish } from '../commands/adminCustomerTestimonialPublish';
-import { adminCustomerTestimonialUpdate } from '../commands/adminCustomerTestimonialUpdate';
+import { adminCustomerTestimonialUpsert } from '../commands/adminCustomerTestimonialUpsert';
 import { adminFeatureToggleUpdate } from '../commands/adminFeatureToggleUpdate';
 import { adminFeatureToggleUserOverrideDelete } from '../commands/adminFeatureToggleUserOverrideDelete';
 import { adminFeatureToggleUserOverrideUpsert } from '../commands/adminFeatureToggleUserOverrideUpsert';
@@ -272,11 +270,9 @@ import { adminCookStripeWalletFindOne } from '../queries/adminCookStripeWalletFi
 import { adminCookTestimonialCookFindOne } from '../queries/adminCookTestimonialCookFindOne';
 import { adminCookTestimonialFindOne } from '../queries/adminCookTestimonialFindOne';
 import { adminCookTestimonialFindOneByOfferId } from '../queries/adminCookTestimonialFindOneByOfferId';
-import { adminCookTestimonialsFindMany } from '../queries/adminCookTestimonialsFindMany';
 import { adminCookUserFindOne } from '../queries/adminCookUserFindOne';
 import { adminCustomerTestimonialFindOne } from '../queries/adminCustomerTestimonialFindOne';
 import { adminCustomerTestimonialFindOneByOfferId } from '../queries/adminCustomerTestimonialFindOneByOfferId';
-import { adminCustomerTestimonialsFindMany } from '../queries/adminCustomerTestimonialsFindMany';
 import { adminDatabaseSlowStatementsFindMany } from '../queries/adminDatabaseSlowStatementsFindMany';
 import { adminFeatureToggleFindMany } from '../queries/adminFeatureToggleFindMany';
 import { adminFeatureToggleUserOverrideFindMany } from '../queries/adminFeatureToggleUserOverrideFindMany';
@@ -326,6 +322,7 @@ import { adminSessionFindOne } from '../queries/adminSessionFindOne';
 import { adminSupportRequestCounts } from '../queries/adminSupportRequestCounts';
 import { adminSupportRequestFindMany } from '../queries/adminSupportRequestFindMany';
 import { adminSupportRequestFindOne } from '../queries/adminSupportRequestFindOne';
+import { adminTestimonialsFindMany } from '../queries/adminTestimonialsFindMany';
 import { adminUserCookFindOne } from '../queries/adminUserCookFindOne';
 import { adminUserCounts } from '../queries/adminUserCounts';
 import { adminUserFindMany } from '../queries/adminUserFindMany';
@@ -482,10 +479,8 @@ import type {
     GqlSAdminCooksInTravelRadiusArgs,
     GqlSAdminCookTestimonial,
     GqlSAdminCookTestimonialArgs,
-    GqlSAdminCookTestimonialsArgs,
     GqlSAdminCustomerTestimonial,
     GqlSAdminCustomerTestimonialArgs,
-    GqlSAdminCustomerTestimonialsArgs,
     GqlSAdminDatabaseSlowStatementsArgs,
     GqlSAdminFeatureToggle,
     GqlSAdminFeatureToggleUserOverride,
@@ -547,17 +542,15 @@ import type {
     GqlSAdminMutationCookMenuCreateArgs,
     GqlSAdminMutationCookMenuDeleteArgs,
     GqlSAdminMutationCookMenuUpdateArgs,
-    GqlSAdminMutationCookTestimonialCreateArgs,
     GqlSAdminMutationCookTestimonialDeleteArgs,
     GqlSAdminMutationCookTestimonialImageUpdateArgs,
     GqlSAdminMutationCookTestimonialPublishArgs,
-    GqlSAdminMutationCookTestimonialUpdateArgs,
+    GqlSAdminMutationCookTestimonialUpsertArgs,
     GqlSAdminMutationCookUpdateArgs,
-    GqlSAdminMutationCustomerTestimonialCreateArgs,
     GqlSAdminMutationCustomerTestimonialDeleteArgs,
     GqlSAdminMutationCustomerTestimonialImageUpdateArgs,
     GqlSAdminMutationCustomerTestimonialPublishArgs,
-    GqlSAdminMutationCustomerTestimonialUpdateArgs,
+    GqlSAdminMutationCustomerTestimonialUpsertArgs,
     GqlSAdminMutationFeatureToggleUpdateArgs,
     GqlSAdminMutationFeatureToggleUserOverrideDeleteArgs,
     GqlSAdminMutationFeatureToggleUserOverrideUpsertArgs,
@@ -622,6 +615,7 @@ import type {
     GqlSAdminSupportRequestArgs,
     GqlSAdminSupportRequestsArgs,
     GqlSAdminSupportRequestsCountsArgs,
+    GqlSAdminTestimonialsArgs,
     GqlSAdminUpcomingBirthdaysArgs,
     GqlSAdminUser,
     GqlSAdminUserArgs,
@@ -1423,14 +1417,11 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             featureToggles() {
                 return adminFeatureToggleFindMany(serverRuntime);
             },
-            customerTestimonials(_parent: GqlSAdmin, args: GqlSAdminCustomerTestimonialsArgs, requestingSession: GqlSSession) {
-                return adminCustomerTestimonialsFindMany(requestingSession, serverRuntime, args.criterion);
+            testimonials(_parent: GqlSAdmin, args: GqlSAdminTestimonialsArgs, requestingSession: GqlSSession) {
+                return adminTestimonialsFindMany(requestingSession, serverRuntime, args.criterion);
             },
             customerTestimonial(_parent: GqlSAdmin, args: GqlSAdminCustomerTestimonialArgs, requestingSession: GqlSSession) {
                 return adminCustomerTestimonialFindOne(args, requestingSession, serverRuntime);
-            },
-            cookTestimonials(_parent: GqlSAdmin, args: GqlSAdminCookTestimonialsArgs, requestingSession: GqlSSession) {
-                return adminCookTestimonialsFindMany(requestingSession, serverRuntime, args.criterion);
             },
             cookTestimonial(_parent: GqlSAdmin, args: GqlSAdminCookTestimonialArgs, requestingSession: GqlSSession) {
                 return adminCookTestimonialFindOne(args, requestingSession, serverRuntime);
@@ -2119,19 +2110,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return adminOccasionTestimonialsUpdate(parent, args, requestingSession, serverRuntime);
             },
-            customerTestimonialCreate(
+            customerTestimonialUpsert(
                 parent: GqlSAdminMutation,
-                args: GqlSAdminMutationCustomerTestimonialCreateArgs,
+                args: GqlSAdminMutationCustomerTestimonialUpsertArgs,
                 requestingSession: GqlSSession,
             ) {
-                return adminCustomerTestimonialCreate(parent, args, requestingSession, serverRuntime);
-            },
-            customerTestimonialUpdate(
-                parent: GqlSAdminMutation,
-                args: GqlSAdminMutationCustomerTestimonialUpdateArgs,
-                requestingSession: GqlSSession,
-            ) {
-                return adminCustomerTestimonialUpdate(parent, args, requestingSession, serverRuntime);
+                return adminCustomerTestimonialUpsert(parent, args, requestingSession, serverRuntime);
             },
             customerTestimonialDelete(
                 parent: GqlSAdminMutation,
@@ -2154,19 +2138,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return adminCustomerTestimonialPublish(parent, args, requestingSession, serverRuntime);
             },
-            cookTestimonialCreate(
+            cookTestimonialUpsert(
                 parent: GqlSAdminMutation,
-                args: GqlSAdminMutationCookTestimonialCreateArgs,
+                args: GqlSAdminMutationCookTestimonialUpsertArgs,
                 requestingSession: GqlSSession,
             ) {
-                return adminCookTestimonialCreate(parent, args, requestingSession, serverRuntime);
-            },
-            cookTestimonialUpdate(
-                parent: GqlSAdminMutation,
-                args: GqlSAdminMutationCookTestimonialUpdateArgs,
-                requestingSession: GqlSSession,
-            ) {
-                return adminCookTestimonialUpdate(parent, args, requestingSession, serverRuntime);
+                return adminCookTestimonialUpsert(parent, args, requestingSession, serverRuntime);
             },
             cookTestimonialDelete(
                 parent: GqlSAdminMutation,

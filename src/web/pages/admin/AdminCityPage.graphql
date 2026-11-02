@@ -6,11 +6,8 @@ query AdminCityPage($cityId: ID!) {
                 city(cityId: $cityId) {
                     ...AdminCityFields
                 }
-                customerTestimonials {
-                    ...AdminCustomerTestimonialCardFields
-                }
-                cookTestimonials {
-                    ...AdminCookTestimonialCardFields
+                testimonials {
+                    ...AdminTestimonialCardFields
                 }
             }
         }

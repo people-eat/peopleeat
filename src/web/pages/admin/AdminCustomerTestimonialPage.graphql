@@ -55,9 +55,9 @@ subscription AdminCustomerTestimonialPageUpdates($customerTestimonialId: ID!) {
     }
 }
 
-mutation AdminCustomerTestimonialDetailUpdate($customerTestimonialId: ID!, $input: AdminCustomerTestimonialUpdate!) {
+mutation AdminCustomerTestimonialDetailUpsert($input: AdminCustomerTestimonialUpsert!) {
     admin {
-        customerTestimonialUpdate(customerTestimonialId: $customerTestimonialId, input: $input) {
+        customerTestimonialUpsert(input: $input) {
             success
             referenceId
         }

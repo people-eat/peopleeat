@@ -43,6 +43,10 @@ testimonial tab).
 - Delete commands must remove the city, partner, and occasion junction rows for the deleted testimonial (`testimonialJunctionRowsDelete`).
 - Admin list/detail expose reverse `publicPagePlacements` (batch-loaded from junctions + published offer-linked customer → chef page) via
   `adminTestimonialPublicPagePlacementsLoad`.
+- Admin GraphQL exposes a single combined catalog `Admin.testimonials` (`AdminTestimonial` union + `AdminTestimonialCriterion` with optional
+  `kinds` / `cookIds`). Typed find-one (`customerTestimonial` / `cookTestimonial`) stays because ids are not unique across tables. Admin
+  create-or-update uses `customerTestimonialUpsert` / `cookTestimonialUpsert` (city-style optional id; inserts always `PUBLISHED`). Delete,
+  image update, and publish stay separate. Offer self-service create/update is unchanged.
 - Display fallbacks load offer/booking context (author, **city only**, occasion, participants) — never street address.
 - Home / how-to-become-a-chef marketing quotes stay static (not DB-driven).
 - Testimonial `imageUrls` are `/api/file-uploads/{id}` paths. Download auth treats published testimonials as public references and any

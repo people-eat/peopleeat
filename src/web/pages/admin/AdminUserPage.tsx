@@ -231,12 +231,7 @@ export function adminUserPageVariables(userId: string, search: AdminUserSearch) 
             take: 50,
             cookIds: [userId],
         },
-        customerTestimonialsCriterion: {
-            skip: 0,
-            take: 100,
-            cookIds: [userId],
-        },
-        cookTestimonialsCriterion: {
+        testimonialsCriterion: {
             skip: 0,
             take: 100,
             cookIds: [userId],
@@ -346,8 +341,7 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
     const assistantChats = admin?.assistantChats ?? [];
     const callTraffic = admin?.callTraffic ?? [];
     const poolBookingRequests = admin?.poolBookingRequests ?? [];
-    const customerTestimonials = admin?.customerTestimonials ?? [];
-    const cookTestimonials = admin?.cookTestimonials ?? [];
+    const testimonials = admin?.testimonials ?? [];
     const isCook = user?.types.includes('cook') ?? false;
     const tab = resolveAdminUserTab(search.tab, isCook);
     const visibleTabs = visibleAdminUserTabs(isCook);
@@ -456,8 +450,7 @@ export function AdminUserPage({ data, search, userId }: { data: GqlCAdminUserPag
                         assistantChats={assistantChats}
                         callTraffic={callTraffic}
                         poolBookingRequests={poolBookingRequests}
-                        customerTestimonials={customerTestimonials}
-                        cookTestimonials={cookTestimonials}
+                        testimonials={testimonials}
                         onPanelFooterChange={onPanelFooterChange}
                     />
                 </AdminPinnedFooterLayout>
@@ -621,12 +614,8 @@ type AdminUserCallTrafficItem = NonNullable<
     NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['callTraffic']
 >[number];
 
-type AdminUserCustomerTestimonial = NonNullable<
-    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['customerTestimonials']
->[number];
-
-type AdminUserCookTestimonial = NonNullable<
-    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['cookTestimonials']
+type AdminUserTestimonial = NonNullable<
+    NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['testimonials']
 >[number];
 
 function AdminUserTabPanel({
@@ -644,8 +633,7 @@ function AdminUserTabPanel({
     assistantChats,
     callTraffic,
     poolBookingRequests,
-    customerTestimonials,
-    cookTestimonials,
+    testimonials,
     onPanelFooterChange,
 }: {
     tab: AdminUserTab;
@@ -662,8 +650,7 @@ function AdminUserTabPanel({
     assistantChats: AdminUserAssistantChatListItem[];
     callTraffic: AdminUserCallTrafficItem[];
     poolBookingRequests: AdminUserBookingRequest[];
-    customerTestimonials: AdminUserCustomerTestimonial[];
-    cookTestimonials: AdminUserCookTestimonial[];
+    testimonials: AdminUserTestimonial[];
     onPanelFooterChange: (footer: ReactNode | undefined) => void;
 }) {
     switch (tab) {
@@ -698,7 +685,7 @@ function AdminUserTabPanel({
         case 'pool':
             return <AdminUserPoolSection bookingRequests={poolBookingRequests} />;
         case 'testimonials':
-            return <AdminUserTestimonialsSection customerTestimonials={customerTestimonials} cookTestimonials={cookTestimonials} />;
+            return <AdminUserTestimonialsSection testimonials={testimonials} />;
     }
 }
 
@@ -894,44 +881,49 @@ function AdminUserCallsSection({ items }: { items: AdminUserCallTrafficItem[] })
     );
 }
 
-function AdminUserTestimonialsSection({
-    customerTestimonials,
-    cookTestimonials,
-}: {
-    customerTestimonials: AdminUserCustomerTestimonial[];
-    cookTestimonials: AdminUserCookTestimonial[];
-}) {
+function AdminUserTestimonialsSection({ testimonials }: { testimonials: AdminUserTestimonial[] }) {
     const locale = useLocale();
-    const rows: AdminTestimonialListCardTestimonial[] = [
-        ...customerTestimonials.map((testimonial) => ({
-            kind: 'customer' as const,
-            testimonialId: testimonial.customerTestimonialId,
-            displayAuthorName: testimonial.displayAuthorName,
-            displayLocation: testimonial.displayLocation ?? null,
-            displayOccasion: testimonial.displayOccasion ?? null,
-            body: testimonial.body,
-            rating: testimonial.rating ?? null,
-            publicationStatus: testimonial.publicationStatus,
-            publishedAt: testimonial.publishedAt ?? null,
-            createdAt: testimonial.createdAt,
-            imageUrls: testimonial.imageUrls,
-            publicPagePlacements: testimonial.publicPagePlacements,
-        })),
-        ...cookTestimonials.map((testimonial) => ({
-            kind: 'cook' as const,
-            testimonialId: testimonial.cookTestimonialId,
-            displayAuthorName: testimonial.displayAuthorName,
-            displayLocation: testimonial.displayLocation ?? null,
-            displayOccasion: testimonial.displayOccasion ?? null,
-            body: testimonial.body ?? null,
-            rating: testimonial.rating ?? null,
-            publicationStatus: testimonial.publicationStatus,
-            publishedAt: testimonial.publishedAt ?? null,
-            createdAt: testimonial.createdAt,
-            imageUrls: testimonial.imageUrls,
-            publicPagePlacements: testimonial.publicPagePlacements,
-        })),
-    ].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+    const rows: AdminTestimonialListCardTestimonial[] = testimonials
+        .flatMap((testimonial): AdminTestimonialListCardTestimonial[] => {
+            if (testimonial.__typename === 'AdminCustomerTestimonial') {
+                return [
+                    {
+                        kind: 'customer',
+                        testimonialId: testimonial.customerTestimonialId,
+                        displayAuthorName: testimonial.displayAuthorName,
+                        displayLocation: testimonial.displayLocation ?? null,
+                        displayOccasion: testimonial.displayOccasion ?? null,
+                        body: testimonial.body,
+                        rating: testimonial.rating ?? null,
+                        publicationStatus: testimonial.publicationStatus,
+                        publishedAt: testimonial.publishedAt ?? null,
+                        createdAt: testimonial.createdAt,
+                        imageUrls: testimonial.imageUrls,
+                        publicPagePlacements: testimonial.publicPagePlacements,
+                    },
+                ];
+            }
+            if (testimonial.__typename === 'AdminCookTestimonial') {
+                return [
+                    {
+                        kind: 'cook',
+                        testimonialId: testimonial.cookTestimonialId,
+                        displayAuthorName: testimonial.displayAuthorName,
+                        displayLocation: testimonial.displayLocation ?? null,
+                        displayOccasion: testimonial.displayOccasion ?? null,
+                        body: testimonial.cookBody ?? null,
+                        rating: testimonial.rating ?? null,
+                        publicationStatus: testimonial.publicationStatus,
+                        publishedAt: testimonial.publishedAt ?? null,
+                        createdAt: testimonial.createdAt,
+                        imageUrls: testimonial.imageUrls,
+                        publicPagePlacements: testimonial.publicPagePlacements,
+                    },
+                ];
+            }
+            return [];
+        })
+        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
 
     if (rows.length === 0) {
         return (

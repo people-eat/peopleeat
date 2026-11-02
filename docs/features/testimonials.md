@@ -99,22 +99,25 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 - Domain: `src/server/domain/testimonial.ts`
 - Shared rating gate: `src/shared/testimonialRating.ts` (`isTestimonialRating`, `testimonialRatingAssertRequired`) — every create/update
   command requires an integer 1–5 and rejects `0` / null
-- GraphQL: public and admin types, offer fields, city/partner curation, user/cook create + full self-edit update mutations (body, rating,
-  images; cook also `lowRatingAnswers`)
-- Commands / queries: `*Testimonial*` under commands and queries (incl. `userBookingRequestOfferTestimonialUpdate` /
+- GraphQL: public and admin types, offer fields, city/partner curation, admin `testimonials` + upserts, user/cook create + full self-edit
+  update mutations (body, rating, images; cook also `lowRatingAnswers`)
+- Commands / queries: `*Testimonial*` under commands and queries (incl. `adminCustomerTestimonialUpsert` / `adminCookTestimonialUpsert`,
+  `adminTestimonialsFindMany` for the combined catalog, `userBookingRequestOfferTestimonialUpdate` /
   `cookBookingRequestOfferTestimonialUpdate`, which re-apply `publicationStatusFromRating`); admin assistant list tool
-  `adminTestimonialsFindMany` (customer + cook, in-process filters) → `admin.testimonialList` cards
+  `toolAdminTestimonialsFindMany` (customer + cook, in-process filters) → `admin.testimonialList` cards
 - Utils: publication from rating, offer fallbacks, image URLs from file uploads, junction cleanup
 - Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `PageTestimonialCard` / `PageTestimonialCardFace` /
   `PageTestimonialDetailDialog` (photo strip, split detail dialog with author avatar; content pages pass `showBookingCta` for occasion
   question + form CTA; mobile always 1 column, `columns={2|3}` from `@md`), `ContentPageTestimonialsEditor`
-- Admin UI: `AdminTestimonialsPage` card grid via `AdminTestimonialListCard`; detail pages (`AdminCustomerTestimonialPage` /
-  `AdminCookTestimonialPage`) use `AdminPinnedFooterLayout` with read-only → edit; offer Review tab is a two-column comparison
-  (`AdminBookingRequestOfferTestimonialsSection`: create when missing with photos, `PageTestimonialCardFace` +
+- Admin UI: `AdminTestimonialsPage` card grid via `AdminTestimonialListCard` on unified `Admin.testimonials`; detail entry
+  `AdminTestimonialPage` (kind `customer` | `cook`) with typed routes and kind modules (`AdminCustomerTestimonialPage` /
+  `AdminCookTestimonialPage`) using `AdminPinnedFooterLayout` with read-only → edit; offer Review tab is a two-column comparison
+  (`AdminBookingRequestOfferTestimonialsSection`: upsert when missing/editing with photos, `PageTestimonialCardFace` +
   `AdminTestimonialImageManager` + Edit when present, `StatusBadge` publication, AlertDialog confirms); detail **Public view** reuses
   `PageTestimonialDetailDialog`; `publicPagePlacements` via `adminTestimonialPublicPagePlacementsLoad` /
   `AdminTestimonialPublicPagePlacements*`
-- GraphQL: public `CustomerTestimonial` / `CookTestimonial.authorProfilePicture` (batch-loaded from the author’s current profile picture)
+- GraphQL: admin `testimonials` union list + `customerTestimonialUpsert` / `cookTestimonialUpsert`; public `CustomerTestimonial` /
+  `CookTestimonial.authorProfilePicture` (batch-loaded from the author’s current profile picture)
 - Download auth: `fileUploadReferencedByPublishedTestimonial` / `fileUploadReferencedByAnyTestimonial` on `GET /api/file-uploads/:id`
 - Capture UI: `BookingRequestOfferTestimonialPanel` (TanStack Form, accent stars, 4-col photo strip, inline validation, optional
   `imageFileUploadIds`; multi-select file input up to 8 photos; each image is client-compressed via `imageCompress` /

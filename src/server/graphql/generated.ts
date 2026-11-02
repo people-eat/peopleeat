@@ -66,10 +66,8 @@ export interface GqlSAdmin {
     cookMenus: Array<GqlSAdminCookMenu>;
     cookMenusCounts: Array<Scalars['Int']['output']>;
     cookTestimonial?: Maybe<GqlSAdminCookTestimonial>;
-    cookTestimonials: Array<GqlSAdminCookTestimonial>;
     cooksInTravelRadius: Array<GqlSAdminCookInTravelRadiusPreview>;
     customerTestimonial?: Maybe<GqlSAdminCustomerTestimonial>;
-    customerTestimonials: Array<GqlSAdminCustomerTestimonial>;
     databaseSlowStatements: Array<GqlSAdminDatabaseSlowStatement>;
     featureToggles: Array<GqlSAdminFeatureToggle>;
     giftCard?: Maybe<GqlSAdminGiftCard>;
@@ -113,6 +111,7 @@ export interface GqlSAdmin {
     supportRequest?: Maybe<GqlSAdminSupportRequest>;
     supportRequests: Array<GqlSAdminSupportRequest>;
     supportRequestsCounts: Array<Scalars['Int']['output']>;
+    testimonials: Array<GqlSAdminTestimonial>;
     upcomingBirthdays: Array<GqlSAdminUserUpcomingBirthday>;
     user?: Maybe<GqlSAdminUser>;
     userCounts: Array<Scalars['Int']['output']>;
@@ -289,10 +288,6 @@ export type GqlSAdminCookTestimonialArgs = {
     cookTestimonialId: Scalars['ID']['input'];
 };
 
-export type GqlSAdminCookTestimonialsArgs = {
-    criterion?: InputMaybe<GqlSAdminCookTestimonialCriterion>;
-};
-
 export type GqlSAdminCooksInTravelRadiusArgs = {
     excludeUserId?: InputMaybe<Scalars['ID']['input']>;
     latitude: Scalars['Latitude']['input'];
@@ -301,10 +296,6 @@ export type GqlSAdminCooksInTravelRadiusArgs = {
 
 export type GqlSAdminCustomerTestimonialArgs = {
     customerTestimonialId: Scalars['ID']['input'];
-};
-
-export type GqlSAdminCustomerTestimonialsArgs = {
-    criterion?: InputMaybe<GqlSAdminCustomerTestimonialCriterion>;
 };
 
 export type GqlSAdminDatabaseSlowStatementsArgs = {
@@ -451,6 +442,10 @@ export type GqlSAdminSupportRequestsArgs = {
 
 export type GqlSAdminSupportRequestsCountsArgs = {
     criteria: Array<GqlSAdminSupportRequestCriterion>;
+};
+
+export type GqlSAdminTestimonialsArgs = {
+    criterion?: InputMaybe<GqlSAdminTestimonialCriterion>;
 };
 
 export type GqlSAdminUpcomingBirthdaysArgs = {
@@ -1158,26 +1153,13 @@ export interface GqlSAdminCookTestimonial {
     userId: Scalars['ID']['output'];
 }
 
-export type GqlSAdminCookTestimonialCreate = {
+export type GqlSAdminCookTestimonialUpsert = {
     authorName?: InputMaybe<Scalars['String']['input']>;
     body?: InputMaybe<Scalars['String']['input']>;
     bookingRequestOfferId?: InputMaybe<Scalars['ID']['input']>;
     cookId: Scalars['ID']['input'];
+    cookTestimonialId?: InputMaybe<Scalars['ID']['input']>;
     imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-    location?: InputMaybe<Scalars['String']['input']>;
-    occasion?: InputMaybe<Scalars['String']['input']>;
-    rating?: InputMaybe<Scalars['Int']['input']>;
-};
-
-export type GqlSAdminCookTestimonialCriterion = {
-    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-    skip?: Scalars['Int']['input'];
-    take?: Scalars['Int']['input'];
-};
-
-export type GqlSAdminCookTestimonialUpdate = {
-    authorName?: InputMaybe<Scalars['String']['input']>;
-    body?: InputMaybe<Scalars['String']['input']>;
     location?: InputMaybe<Scalars['String']['input']>;
     occasion?: InputMaybe<Scalars['String']['input']>;
     rating?: InputMaybe<Scalars['Int']['input']>;
@@ -1204,29 +1186,16 @@ export interface GqlSAdminCustomerTestimonial {
     userId: Scalars['ID']['output'];
 }
 
-export type GqlSAdminCustomerTestimonialCreate = {
+export type GqlSAdminCustomerTestimonialUpsert = {
     authorName?: InputMaybe<Scalars['String']['input']>;
     body: Scalars['String']['input'];
     bookingRequestOfferId?: InputMaybe<Scalars['ID']['input']>;
+    customerTestimonialId?: InputMaybe<Scalars['ID']['input']>;
     imageFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     location?: InputMaybe<Scalars['String']['input']>;
     occasion?: InputMaybe<Scalars['String']['input']>;
     rating?: InputMaybe<Scalars['Int']['input']>;
     userId: Scalars['ID']['input'];
-};
-
-export type GqlSAdminCustomerTestimonialCriterion = {
-    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
-    skip?: Scalars['Int']['input'];
-    take?: Scalars['Int']['input'];
-};
-
-export type GqlSAdminCustomerTestimonialUpdate = {
-    authorName?: InputMaybe<Scalars['String']['input']>;
-    body?: InputMaybe<Scalars['String']['input']>;
-    location?: InputMaybe<Scalars['String']['input']>;
-    occasion?: InputMaybe<Scalars['String']['input']>;
-    rating?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export interface GqlSAdminDatabaseSlowStatement {
@@ -1415,17 +1384,15 @@ export interface GqlSAdminMutation {
     cookMenuCreate: GqlSMutationResult;
     cookMenuDelete: GqlSMutationResult;
     cookMenuUpdate: GqlSMutationResult;
-    cookTestimonialCreate: GqlSMutationResult;
     cookTestimonialDelete: GqlSMutationResult;
     cookTestimonialImageUpdate: GqlSMutationResult;
     cookTestimonialPublish: GqlSMutationResult;
-    cookTestimonialUpdate: GqlSMutationResult;
+    cookTestimonialUpsert: GqlSMutationResult;
     cookUpdate: GqlSMutationResult;
-    customerTestimonialCreate: GqlSMutationResult;
     customerTestimonialDelete: GqlSMutationResult;
     customerTestimonialImageUpdate: GqlSMutationResult;
     customerTestimonialPublish: GqlSMutationResult;
-    customerTestimonialUpdate: GqlSMutationResult;
+    customerTestimonialUpsert: GqlSMutationResult;
     featureToggleUpdate: GqlSMutationResult;
     featureToggleUserOverrideDelete: GqlSMutationResult;
     featureToggleUserOverrideUpsert: GqlSMutationResult;
@@ -1667,10 +1634,6 @@ export type GqlSAdminMutationCookMenuUpdateArgs = {
     menuId: Scalars['ID']['input'];
 };
 
-export type GqlSAdminMutationCookTestimonialCreateArgs = {
-    input: GqlSAdminCookTestimonialCreate;
-};
-
 export type GqlSAdminMutationCookTestimonialDeleteArgs = {
     cookTestimonialId: Scalars['ID']['input'];
 };
@@ -1685,18 +1648,13 @@ export type GqlSAdminMutationCookTestimonialPublishArgs = {
     publicationStatus: GqlSTestimonialPublicationStatus;
 };
 
-export type GqlSAdminMutationCookTestimonialUpdateArgs = {
-    cookTestimonialId: Scalars['ID']['input'];
-    input: GqlSAdminCookTestimonialUpdate;
+export type GqlSAdminMutationCookTestimonialUpsertArgs = {
+    input: GqlSAdminCookTestimonialUpsert;
 };
 
 export type GqlSAdminMutationCookUpdateArgs = {
     cookId: Scalars['ID']['input'];
     input: GqlSCookUpdate;
-};
-
-export type GqlSAdminMutationCustomerTestimonialCreateArgs = {
-    input: GqlSAdminCustomerTestimonialCreate;
 };
 
 export type GqlSAdminMutationCustomerTestimonialDeleteArgs = {
@@ -1713,9 +1671,8 @@ export type GqlSAdminMutationCustomerTestimonialPublishArgs = {
     publicationStatus: GqlSTestimonialPublicationStatus;
 };
 
-export type GqlSAdminMutationCustomerTestimonialUpdateArgs = {
-    customerTestimonialId: Scalars['ID']['input'];
-    input: GqlSAdminCustomerTestimonialUpdate;
+export type GqlSAdminMutationCustomerTestimonialUpsertArgs = {
+    input: GqlSAdminCustomerTestimonialUpsert;
 };
 
 export type GqlSAdminMutationFeatureToggleUpdateArgs = {
@@ -2226,6 +2183,13 @@ export type GqlSAdminSupportRequestCriterion = {
 export type GqlSAdminSupportRequestSortField = 'bookingDateTime' | 'createdAt' | 'lastMessageAt';
 
 export type GqlSAdminTestimonial = GqlSAdminCookTestimonial | GqlSAdminCustomerTestimonial;
+
+export type GqlSAdminTestimonialCriterion = {
+    cookIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    kinds?: InputMaybe<Array<GqlSTestimonialType>>;
+    skip?: Scalars['Int']['input'];
+    take?: Scalars['Int']['input'];
+};
 
 export type GqlSAdminTestimonialPublicPageKind = 'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER';
 
@@ -5440,6 +5404,7 @@ export type GqlSResolversTypes = ResolversObject<{
             | 'promoCodes'
             | 'supportRequest'
             | 'supportRequests'
+            | 'testimonials'
             | 'whatsAppConversation'
             | 'whatsAppConversations'
         > & {
@@ -5463,6 +5428,7 @@ export type GqlSResolversTypes = ResolversObject<{
             promoCodes: Array<GqlSResolversTypes['AdminPromoCode']>;
             supportRequest?: Maybe<GqlSResolversTypes['AdminSupportRequest']>;
             supportRequests: Array<GqlSResolversTypes['AdminSupportRequest']>;
+            testimonials: Array<GqlSResolversTypes['AdminTestimonial']>;
             whatsAppConversation?: Maybe<GqlSResolversTypes['AdminWhatsAppConversation']>;
             whatsAppConversations: Array<GqlSResolversTypes['AdminWhatsAppConversation']>;
         }
@@ -5542,13 +5508,9 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminCookMenuSortField: GqlSAdminCookMenuSortField;
     AdminCookPayoutBlockedReason: GqlSAdminCookPayoutBlockedReason;
     AdminCookTestimonial: ResolverTypeWrapper<GqlSAdminCookTestimonial>;
-    AdminCookTestimonialCreate: GqlSAdminCookTestimonialCreate;
-    AdminCookTestimonialCriterion: GqlSAdminCookTestimonialCriterion;
-    AdminCookTestimonialUpdate: GqlSAdminCookTestimonialUpdate;
+    AdminCookTestimonialUpsert: GqlSAdminCookTestimonialUpsert;
     AdminCustomerTestimonial: ResolverTypeWrapper<GqlSAdminCustomerTestimonial>;
-    AdminCustomerTestimonialCreate: GqlSAdminCustomerTestimonialCreate;
-    AdminCustomerTestimonialCriterion: GqlSAdminCustomerTestimonialCriterion;
-    AdminCustomerTestimonialUpdate: GqlSAdminCustomerTestimonialUpdate;
+    AdminCustomerTestimonialUpsert: GqlSAdminCustomerTestimonialUpsert;
     AdminDatabaseSlowStatement: ResolverTypeWrapper<GqlSAdminDatabaseSlowStatement>;
     AdminFeatureToggle: ResolverTypeWrapper<GqlSAdminFeatureToggle>;
     AdminFeatureToggleUserOverride: ResolverTypeWrapper<GqlSAdminFeatureToggleUserOverride>;
@@ -5622,6 +5584,7 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminSupportRequestCriterion: GqlSAdminSupportRequestCriterion;
     AdminSupportRequestSortField: GqlSAdminSupportRequestSortField;
     AdminTestimonial: ResolverTypeWrapper<GqlSResolversUnionTypes<GqlSResolversTypes>['AdminTestimonial']>;
+    AdminTestimonialCriterion: GqlSAdminTestimonialCriterion;
     AdminTestimonialPublicPageKind: GqlSAdminTestimonialPublicPageKind;
     AdminTestimonialPublicPagePlacement: ResolverTypeWrapper<GqlSAdminTestimonialPublicPagePlacement>;
     AdminTimeBucket: ResolverTypeWrapper<GqlSAdminTimeBucket>;
@@ -6029,6 +5992,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
         | 'promoCodes'
         | 'supportRequest'
         | 'supportRequests'
+        | 'testimonials'
         | 'whatsAppConversation'
         | 'whatsAppConversations'
     > & {
@@ -6052,6 +6016,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
         promoCodes: Array<GqlSResolversParentTypes['AdminPromoCode']>;
         supportRequest?: Maybe<GqlSResolversParentTypes['AdminSupportRequest']>;
         supportRequests: Array<GqlSResolversParentTypes['AdminSupportRequest']>;
+        testimonials: Array<GqlSResolversParentTypes['AdminTestimonial']>;
         whatsAppConversation?: Maybe<GqlSResolversParentTypes['AdminWhatsAppConversation']>;
         whatsAppConversations: Array<GqlSResolversParentTypes['AdminWhatsAppConversation']>;
     };
@@ -6111,13 +6076,9 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminCookMenuCourse: GqlSAdminCookMenuCourse;
     AdminCookMenuCriterion: GqlSAdminCookMenuCriterion;
     AdminCookTestimonial: GqlSAdminCookTestimonial;
-    AdminCookTestimonialCreate: GqlSAdminCookTestimonialCreate;
-    AdminCookTestimonialCriterion: GqlSAdminCookTestimonialCriterion;
-    AdminCookTestimonialUpdate: GqlSAdminCookTestimonialUpdate;
+    AdminCookTestimonialUpsert: GqlSAdminCookTestimonialUpsert;
     AdminCustomerTestimonial: GqlSAdminCustomerTestimonial;
-    AdminCustomerTestimonialCreate: GqlSAdminCustomerTestimonialCreate;
-    AdminCustomerTestimonialCriterion: GqlSAdminCustomerTestimonialCriterion;
-    AdminCustomerTestimonialUpdate: GqlSAdminCustomerTestimonialUpdate;
+    AdminCustomerTestimonialUpsert: GqlSAdminCustomerTestimonialUpsert;
     AdminDatabaseSlowStatement: GqlSAdminDatabaseSlowStatement;
     AdminFeatureToggle: GqlSAdminFeatureToggle;
     AdminFeatureToggleUserOverride: GqlSAdminFeatureToggleUserOverride;
@@ -6170,6 +6131,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     };
     AdminSupportRequestCriterion: GqlSAdminSupportRequestCriterion;
     AdminTestimonial: GqlSResolversUnionTypes<GqlSResolversParentTypes>['AdminTestimonial'];
+    AdminTestimonialCriterion: GqlSAdminTestimonialCriterion;
     AdminTestimonialPublicPagePlacement: GqlSAdminTestimonialPublicPagePlacement;
     AdminTimeBucket: GqlSAdminTimeBucket;
     AdminUser: GqlSAdminUser;
@@ -6695,12 +6657,6 @@ export type GqlSAdminResolvers<
         ContextType,
         RequireFields<GqlSAdminCookTestimonialArgs, 'cookTestimonialId'>
     >;
-    cookTestimonials?: Resolver<
-        Array<GqlSResolversTypes['AdminCookTestimonial']>,
-        ParentType,
-        ContextType,
-        Partial<GqlSAdminCookTestimonialsArgs>
-    >;
     cooksInTravelRadius?: Resolver<
         Array<GqlSResolversTypes['AdminCookInTravelRadiusPreview']>,
         ParentType,
@@ -6712,12 +6668,6 @@ export type GqlSAdminResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminCustomerTestimonialArgs, 'customerTestimonialId'>
-    >;
-    customerTestimonials?: Resolver<
-        Array<GqlSResolversTypes['AdminCustomerTestimonial']>,
-        ParentType,
-        ContextType,
-        Partial<GqlSAdminCustomerTestimonialsArgs>
     >;
     databaseSlowStatements?: Resolver<
         Array<GqlSResolversTypes['AdminDatabaseSlowStatement']>,
@@ -6917,6 +6867,7 @@ export type GqlSAdminResolvers<
         ContextType,
         RequireFields<GqlSAdminSupportRequestsCountsArgs, 'criteria'>
     >;
+    testimonials?: Resolver<Array<GqlSResolversTypes['AdminTestimonial']>, ParentType, ContextType, Partial<GqlSAdminTestimonialsArgs>>;
     upcomingBirthdays?: Resolver<
         Array<GqlSResolversTypes['AdminUserUpcomingBirthday']>,
         ParentType,
@@ -7909,12 +7860,6 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationCookMenuUpdateArgs, 'menu' | 'menuId'>
     >;
-    cookTestimonialCreate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSAdminMutationCookTestimonialCreateArgs, 'input'>
-    >;
     cookTestimonialDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -7933,23 +7878,17 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationCookTestimonialPublishArgs, 'cookTestimonialId' | 'publicationStatus'>
     >;
-    cookTestimonialUpdate?: Resolver<
+    cookTestimonialUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSAdminMutationCookTestimonialUpdateArgs, 'cookTestimonialId' | 'input'>
+        RequireFields<GqlSAdminMutationCookTestimonialUpsertArgs, 'input'>
     >;
     cookUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationCookUpdateArgs, 'cookId' | 'input'>
-    >;
-    customerTestimonialCreate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSAdminMutationCustomerTestimonialCreateArgs, 'input'>
     >;
     customerTestimonialDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -7969,11 +7908,11 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationCustomerTestimonialPublishArgs, 'customerTestimonialId' | 'publicationStatus'>
     >;
-    customerTestimonialUpdate?: Resolver<
+    customerTestimonialUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
-        RequireFields<GqlSAdminMutationCustomerTestimonialUpdateArgs, 'customerTestimonialId' | 'input'>
+        RequireFields<GqlSAdminMutationCustomerTestimonialUpsertArgs, 'input'>
     >;
     featureToggleUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -12550,12 +12489,13 @@ export function GqlSAdminCookMenuCriterionSchema(): z.ZodType<GqlSAdminCookMenuC
     });
 }
 
-export function GqlSAdminCookTestimonialCreateSchema(): z.ZodObject<Properties<GqlSAdminCookTestimonialCreate>> {
+export function GqlSAdminCookTestimonialUpsertSchema(): z.ZodObject<Properties<GqlSAdminCookTestimonialUpsert>> {
     return z.object({
         authorName: z.string().nullish(),
         body: z.string().nullish(),
         bookingRequestOfferId: z.string().nullish(),
         cookId: z.string(),
+        cookTestimonialId: z.string().nullish(),
         imageFileUploadIds: z.array(z.string()).nullish(),
         location: z.string().nullish(),
         occasion: z.string().nullish(),
@@ -12563,52 +12503,17 @@ export function GqlSAdminCookTestimonialCreateSchema(): z.ZodObject<Properties<G
     });
 }
 
-export function GqlSAdminCookTestimonialCriterionSchema(): z.ZodType<GqlSAdminCookTestimonialCriterion> {
-    return z.object({
-        cookIds: z.array(z.string()).nullish(),
-        skip: z.number().default(0),
-        take: z.number().default(100),
-    });
-}
-
-export function GqlSAdminCookTestimonialUpdateSchema(): z.ZodObject<Properties<GqlSAdminCookTestimonialUpdate>> {
-    return z.object({
-        authorName: z.string().nullish(),
-        body: z.string().nullish(),
-        location: z.string().nullish(),
-        occasion: z.string().nullish(),
-        rating: z.number().nullish(),
-    });
-}
-
-export function GqlSAdminCustomerTestimonialCreateSchema(): z.ZodObject<Properties<GqlSAdminCustomerTestimonialCreate>> {
+export function GqlSAdminCustomerTestimonialUpsertSchema(): z.ZodObject<Properties<GqlSAdminCustomerTestimonialUpsert>> {
     return z.object({
         authorName: z.string().nullish(),
         body: z.string(),
         bookingRequestOfferId: z.string().nullish(),
+        customerTestimonialId: z.string().nullish(),
         imageFileUploadIds: z.array(z.string()).nullish(),
         location: z.string().nullish(),
         occasion: z.string().nullish(),
         rating: z.number().nullish(),
         userId: z.string(),
-    });
-}
-
-export function GqlSAdminCustomerTestimonialCriterionSchema(): z.ZodType<GqlSAdminCustomerTestimonialCriterion> {
-    return z.object({
-        cookIds: z.array(z.string()).nullish(),
-        skip: z.number().default(0),
-        take: z.number().default(100),
-    });
-}
-
-export function GqlSAdminCustomerTestimonialUpdateSchema(): z.ZodObject<Properties<GqlSAdminCustomerTestimonialUpdate>> {
-    return z.object({
-        authorName: z.string().nullish(),
-        body: z.string().nullish(),
-        location: z.string().nullish(),
-        occasion: z.string().nullish(),
-        rating: z.number().nullish(),
     });
 }
 
@@ -12723,6 +12628,15 @@ export function GqlSAdminSupportRequestCriterionSchema(): z.ZodType<GqlSAdminSup
         supportRequestIds: z.array(z.string()).nullish(),
         take: z.number().default(25),
         unreadFirst: z.boolean().default(true).nullish(),
+    });
+}
+
+export function GqlSAdminTestimonialCriterionSchema(): z.ZodType<GqlSAdminTestimonialCriterion> {
+    return z.object({
+        cookIds: z.array(z.string()).nullish(),
+        kinds: z.array(GqlSTestimonialTypeSchema).nullish(),
+        skip: z.number().default(0),
+        take: z.number().default(100),
     });
 }
 

@@ -3184,22 +3184,16 @@ type AdminCookTestimonial {
 
 union AdminTestimonial = AdminCustomerTestimonial | AdminCookTestimonial
 
-# Filter + pagination for `Admin.customerTestimonials`. Optional `cookIds` scopes
-# to testimonials on offers by those cooks (`IN` via BookingRequestOffers).
-# Omit criterion (or empty cookIds) = no cook filter. `skip` / `take` apply only
-# when a criterion object is passed; omit criterion for the full unsorted-limit
-# catalog used by the testimonials list and curation pickers.
-input AdminCustomerTestimonialCriterion {
+# Filter + pagination for `Admin.testimonials`. Optional `kinds` narrows to
+# customer and/or cook catalogs (omit = both). Optional `cookIds` scopes customer
+# rows to offers by those cooks and cook rows to those cooks. Omit criterion (or
+# empty cookIds / kinds) = no filter. `skip` / `take` apply only when a criterion
+# object is passed; omit criterion for the full catalog used by the testimonials
+# list and curation pickers.
+input AdminTestimonialCriterion {
     skip: Int! = 0
     take: Int! = 100
-    cookIds: [ID!]
-}
-
-# Filter + pagination for `Admin.cookTestimonials`. Optional `cookIds` scopes to
-# those cooks (`IN`). Omit criterion (or empty cookIds) = no cook filter.
-input AdminCookTestimonialCriterion {
-    skip: Int! = 0
-    take: Int! = 100
+    kinds: [TestimonialType!]
     cookIds: [ID!]
 }
 
@@ -3212,7 +3206,12 @@ type AdminPageTestimonial {
     isPubliclyListed: Boolean!
 }
 
-input AdminCustomerTestimonialCreate {
+# Admin create-or-update for a customer testimonial. Omit `customerTestimonialId`
+# to insert (always PUBLISHED). Present id updates copy fields; `userId` /
+# `bookingRequestOfferId` are create-only (ignored on update). Omit
+# `imageFileUploadIds` on update to leave images unchanged.
+input AdminCustomerTestimonialUpsert {
+    customerTestimonialId: ID
     userId: ID!
     bookingRequestOfferId: ID
     authorName: String
@@ -3224,16 +3223,12 @@ input AdminCustomerTestimonialCreate {
     imageFileUploadIds: [ID!]
 }
 
-input AdminCustomerTestimonialUpdate {
-    authorName: String
-    location: String
-    occasion: String
-    body: String
-    # When set, required integer 1–5 (`testimonialRatingAssertRequired`). `0` / null rejected.
-    rating: Int
-}
-
-input AdminCookTestimonialCreate {
+# Admin create-or-update for a cook testimonial. Omit `cookTestimonialId` to
+# insert (always PUBLISHED). Present id updates copy fields; `cookId` /
+# `bookingRequestOfferId` are create-only (ignored on update). Omit
+# `imageFileUploadIds` on update to leave images unchanged.
+input AdminCookTestimonialUpsert {
+    cookTestimonialId: ID
     cookId: ID!
     bookingRequestOfferId: ID
     authorName: String
@@ -3243,15 +3238,6 @@ input AdminCookTestimonialCreate {
     # Required integer 1–5 (`testimonialRatingAssertRequired`). `0` / null rejected.
     rating: Int
     imageFileUploadIds: [ID!]
-}
-
-input AdminCookTestimonialUpdate {
-    authorName: String
-    location: String
-    occasion: String
-    body: String
-    # When set, required integer 1–5 (`testimonialRatingAssertRequired`). `0` / null rejected.
-    rating: Int
 }
 
 # Ordered curation entry for `cityTestimonialsUpdate` / `partnerTestimonialsUpdate`
@@ -3919,12 +3905,13 @@ type Admin {
     # rows when no DB entry). See docs/features/admin-feature-toggles.md.
     featureToggles: [AdminFeatureToggle!]!
 
-    # Testimonial catalogs (draft + published). See docs/architecture/testimonials.md.
-    # Omit `criterion` for the full catalog (admin list / curation pickers). Pass
-    # `cookIds` to scope to a cook (user-detail testimonials tab).
-    customerTestimonials(criterion: AdminCustomerTestimonialCriterion): [AdminCustomerTestimonial!]!
+    # Combined customer + cook testimonial catalogs (draft + published). See
+    # docs/architecture/testimonials.md. Omit `criterion` for the full catalog
+    # (admin list / curation pickers). Pass `cookIds` / `kinds` to scope (e.g.
+    # user-detail testimonials tab). Typed find-one stays separate — ids are not
+    # unique across the two tables.
+    testimonials(criterion: AdminTestimonialCriterion): [AdminTestimonial!]!
     customerTestimonial(customerTestimonialId: ID!): AdminCustomerTestimonial
-    cookTestimonials(criterion: AdminCookTestimonialCriterion): [AdminCookTestimonial!]!
     cookTestimonial(cookTestimonialId: ID!): AdminCookTestimonial
 
     # Shared Garage/S3 object store browse. Capability-optional: when
@@ -4427,15 +4414,13 @@ type AdminMutation {
     # Full-list replace of curated occasion cooks (ordered). Empty clears
     # assignment so the public occasion page shows no cooks section.
     occasionCooksUpdate(occasionId: ID!, cookIds: [ID!]!): MutationResult!
-    # Testimonials — admin-created rows are always PUBLISHED. See
-    # docs/architecture/testimonials.md.
-    customerTestimonialCreate(input: AdminCustomerTestimonialCreate!): MutationResult!
-    customerTestimonialUpdate(customerTestimonialId: ID!, input: AdminCustomerTestimonialUpdate!): MutationResult!
+    # Testimonials — admin upserts are always PUBLISHED on insert. See
+    # docs/architecture/testimonials.md. Delete / image / publish stay separate.
+    customerTestimonialUpsert(input: AdminCustomerTestimonialUpsert!): MutationResult!
     customerTestimonialDelete(customerTestimonialId: ID!): MutationResult!
     customerTestimonialImageUpdate(customerTestimonialId: ID!, imageFileUploadIds: [ID!]!): MutationResult!
     customerTestimonialPublish(customerTestimonialId: ID!, publicationStatus: TestimonialPublicationStatus!): MutationResult!
-    cookTestimonialCreate(input: AdminCookTestimonialCreate!): MutationResult!
-    cookTestimonialUpdate(cookTestimonialId: ID!, input: AdminCookTestimonialUpdate!): MutationResult!
+    cookTestimonialUpsert(input: AdminCookTestimonialUpsert!): MutationResult!
     cookTestimonialDelete(cookTestimonialId: ID!): MutationResult!
     cookTestimonialImageUpdate(cookTestimonialId: ID!, imageFileUploadIds: [ID!]!): MutationResult!
     cookTestimonialPublish(cookTestimonialId: ID!, publicationStatus: TestimonialPublicationStatus!): MutationResult!

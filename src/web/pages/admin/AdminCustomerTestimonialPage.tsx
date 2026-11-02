@@ -35,7 +35,7 @@ import {
     AdminCustomerTestimonialDetailDeleteDocument,
     AdminCustomerTestimonialDetailImageUpdateDocument,
     AdminCustomerTestimonialDetailPublishDocument,
-    AdminCustomerTestimonialDetailUpdateDocument,
+    AdminCustomerTestimonialDetailUpsertDocument,
     AdminCustomerTestimonialPageUpdatesDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
@@ -110,7 +110,7 @@ export function AdminCustomerTestimonialPage({
     const client = useClient();
     const seed = data.currentSession.user?.admin?.customerTestimonial ?? null;
     const [testimonial, setTestimonial] = useState(seed);
-    const [, updateTestimonial] = useMutation(AdminCustomerTestimonialDetailUpdateDocument);
+    const [, upsertTestimonial] = useMutation(AdminCustomerTestimonialDetailUpsertDocument);
     const [, deleteTestimonial] = useMutation(AdminCustomerTestimonialDetailDeleteDocument);
     const [, publishTestimonial] = useMutation(AdminCustomerTestimonialDetailPublishDocument);
     const [, updateImages] = useMutation(AdminCustomerTestimonialDetailImageUpdateDocument);
@@ -126,9 +126,12 @@ export function AdminCustomerTestimonialPage({
             ? formFromTestimonial(testimonial)
             : { authorName: '', location: '', occasion: '', body: '', rating: null },
         onSubmit: async ({ value }) => {
-            const result = await updateTestimonial({
-                customerTestimonialId,
+            if (!testimonial) return;
+            const result = await upsertTestimonial({
                 input: {
+                    customerTestimonialId,
+                    userId: testimonial.userId,
+                    bookingRequestOfferId: testimonial.bookingRequestOfferId,
                     authorName: value.authorName.trim() || null,
                     location: value.location.trim() || null,
                     occasion: value.occasion.trim() || null,
@@ -136,7 +139,7 @@ export function AdminCustomerTestimonialPage({
                     rating: value.rating,
                 },
             });
-            if (result.error || !result.data?.admin.customerTestimonialUpdate.success) {
+            if (result.error || !result.data?.admin.customerTestimonialUpsert.success) {
                 toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
                 return;
             }

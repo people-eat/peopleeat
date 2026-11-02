@@ -44,7 +44,7 @@ export function AdminTestimonialPublicPagePlacementBadges({
                 const fullLabel = `${kindLabel(placement.kind, locale)}: ${placementLabel(placement, locale)}`;
                 return (
                     <li key={`${placement.kind}-${placement.entityId}`} className="contents">
-                        <Badge variant="outline" title={fullLabel} className="min-w-0 max-w-[11rem] font-normal">
+                        <Badge variant="outline" title={fullLabel} className="min-w-0 max-w-44 font-normal">
                             <span className="truncate">{fullLabel}</span>
                         </Badge>
                     </li>

@@ -36,7 +36,7 @@ import {
     AdminCookTestimonialDetailDeleteDocument,
     AdminCookTestimonialDetailImageUpdateDocument,
     AdminCookTestimonialDetailPublishDocument,
-    AdminCookTestimonialDetailUpdateDocument,
+    AdminCookTestimonialDetailUpsertDocument,
     AdminCookTestimonialPageUpdatesDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
@@ -111,7 +111,7 @@ export function AdminCookTestimonialPage({
     const client = useClient();
     const seed = data.currentSession.user?.admin?.cookTestimonial ?? null;
     const [testimonial, setTestimonial] = useState(seed);
-    const [, updateTestimonial] = useMutation(AdminCookTestimonialDetailUpdateDocument);
+    const [, upsertTestimonial] = useMutation(AdminCookTestimonialDetailUpsertDocument);
     const [, deleteTestimonial] = useMutation(AdminCookTestimonialDetailDeleteDocument);
     const [, publishTestimonial] = useMutation(AdminCookTestimonialDetailPublishDocument);
     const [, updateImages] = useMutation(AdminCookTestimonialDetailImageUpdateDocument);
@@ -127,9 +127,12 @@ export function AdminCookTestimonialPage({
             ? formFromTestimonial(testimonial)
             : { authorName: '', location: '', occasion: '', body: '', rating: null },
         onSubmit: async ({ value }) => {
-            const result = await updateTestimonial({
-                cookTestimonialId,
+            if (!testimonial) return;
+            const result = await upsertTestimonial({
                 input: {
+                    cookTestimonialId,
+                    cookId: testimonial.cookId,
+                    bookingRequestOfferId: testimonial.bookingRequestOfferId,
                     authorName: value.authorName.trim() || null,
                     location: value.location.trim() || null,
                     occasion: value.occasion.trim() || null,
@@ -137,7 +140,7 @@ export function AdminCookTestimonialPage({
                     rating: value.rating,
                 },
             });
-            if (result.error || !result.data?.admin.cookTestimonialUpdate.success) {
+            if (result.error || !result.data?.admin.cookTestimonialUpsert.success) {
                 toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
                 return;
             }

@@ -187,28 +187,39 @@ export function AdminCityPage({ data, cityId, search }: { data: GqlCAdminCityPag
         },
     }));
 
-    const testimonialCandidates: TestimonialCandidateOption[] = [
-        ...(seedAdmin?.customerTestimonials ?? []).map((row) => ({
-            testimonialType: 'CUSTOMER' as const,
-            testimonialId: row.customerTestimonialId,
-            displayAuthorName: row.displayAuthorName,
-            displayLocation: row.displayLocation,
-            displayOccasion: row.displayOccasion,
-            body: row.body,
-            rating: row.rating,
-            publicationStatus: row.publicationStatus,
-        })),
-        ...(seedAdmin?.cookTestimonials ?? []).map((row) => ({
-            testimonialType: 'COOK' as const,
-            testimonialId: row.cookTestimonialId,
-            displayAuthorName: row.displayAuthorName,
-            displayLocation: row.displayLocation,
-            displayOccasion: row.displayOccasion,
-            body: row.body,
-            rating: row.rating,
-            publicationStatus: row.publicationStatus,
-        })),
-    ];
+    const testimonialCandidates: TestimonialCandidateOption[] = (seedAdmin?.testimonials ?? []).flatMap(
+        (row): TestimonialCandidateOption[] => {
+            if (row.__typename === 'AdminCustomerTestimonial') {
+                return [
+                    {
+                        testimonialType: 'CUSTOMER',
+                        testimonialId: row.customerTestimonialId,
+                        displayAuthorName: row.displayAuthorName,
+                        displayLocation: row.displayLocation,
+                        displayOccasion: row.displayOccasion,
+                        body: row.body,
+                        rating: row.rating,
+                        publicationStatus: row.publicationStatus,
+                    },
+                ];
+            }
+            if (row.__typename === 'AdminCookTestimonial') {
+                return [
+                    {
+                        testimonialType: 'COOK',
+                        testimonialId: row.cookTestimonialId,
+                        displayAuthorName: row.displayAuthorName,
+                        displayLocation: row.displayLocation,
+                        displayOccasion: row.displayOccasion,
+                        body: row.cookBody,
+                        rating: row.rating,
+                        publicationStatus: row.publicationStatus,
+                    },
+                ];
+            }
+            return [];
+        },
+    );
 
     return (
         <AdminPageChrome

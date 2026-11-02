@@ -8,7 +8,7 @@ import type { CustomerTestimonialCreate } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
     GqlSAdminMutation,
-    GqlSAdminMutationCustomerTestimonialCreateArgs,
+    GqlSAdminMutationCustomerTestimonialUpsertArgs,
     GqlSMutationResult,
     GqlSSession,
 } from '../graphql/generated';
@@ -17,9 +17,9 @@ import { testimonialImageUrlsFromFileUploadIds } from '../utils/testimonialImage
 
 // Admin-created testimonials are always PUBLISHED — there is no self-reported
 // rating to gate on (unlike `bookingRequestOfferTestimonialCreate`).
-export async function adminCustomerTestimonialCreate(
+export async function adminCustomerTestimonialUpsert(
     { adminId }: GqlSAdminMutation,
-    { input }: GqlSAdminMutationCustomerTestimonialCreateArgs,
+    { input }: GqlSAdminMutationCustomerTestimonialUpsertArgs,
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
@@ -27,11 +27,43 @@ export async function adminCustomerTestimonialCreate(
 
     const body = textNormalizeProseTitled(input.body);
     if (body.length === 0) {
-        throw new Error('adminCustomerTestimonialCreate: body must not be empty');
+        throw new Error('adminCustomerTestimonialUpsert: body must not be empty');
     }
-    const rating = testimonialRatingAssertRequired(input.rating, 'adminCustomerTestimonialCreate');
+    const rating = testimonialRatingAssertRequired(input.rating, 'adminCustomerTestimonialUpsert');
+    const authorName = textNormalizeTitledOrNull(input.authorName);
+    const location = textNormalizeTitledOrNull(input.location);
+    const occasion = textNormalizeTitledOrNull(input.occasion);
 
     try {
+        if (input.customerTestimonialId) {
+            const set: Partial<CustomerTestimonialCreate> = {
+                authorName,
+                location,
+                occasion,
+                body,
+                rating,
+            };
+            if (input.imageFileUploadIds !== undefined && input.imageFileUploadIds !== null) {
+                set.imageUrls = await testimonialImageUrlsFromFileUploadIds(serverRuntime.db, {
+                    fileUploadIds: input.imageFileUploadIds,
+                    userId: adminId,
+                    commandName: 'adminCustomerTestimonialUpsert',
+                });
+            }
+
+            const updated = await serverRuntime.db
+                .update(customerTestimonials)
+                .set(set)
+                .where(eq(customerTestimonials.customerTestimonialId, input.customerTestimonialId))
+                .returning({ customerTestimonialId: customerTestimonials.customerTestimonialId });
+            if (updated.length === 0) {
+                throw new Error('adminCustomerTestimonialUpsert: testimonial not found');
+            }
+
+            await serverRuntime.publish.adminUpdates();
+            return { success: true, referenceId: input.customerTestimonialId };
+        }
+
         const [[user], [offer]] = await Promise.all([
             serverRuntime.db.select({ userId: users.userId }).from(users).where(eq(users.userId, input.userId)).limit(1),
             input.bookingRequestOfferId
@@ -43,16 +75,16 @@ export async function adminCustomerTestimonialCreate(
                 : Promise.resolve([]),
         ]);
         if (!user) {
-            throw new Error('adminCustomerTestimonialCreate: user not found');
+            throw new Error('adminCustomerTestimonialUpsert: user not found');
         }
         if (input.bookingRequestOfferId && !offer) {
-            throw new Error('adminCustomerTestimonialCreate: booking request offer not found');
+            throw new Error('adminCustomerTestimonialUpsert: booking request offer not found');
         }
 
         const imageUrls = await testimonialImageUrlsFromFileUploadIds(serverRuntime.db, {
             fileUploadIds: input.imageFileUploadIds ?? [],
             userId: adminId,
-            commandName: 'adminCustomerTestimonialCreate',
+            commandName: 'adminCustomerTestimonialUpsert',
         });
 
         const now = new Date();
@@ -61,9 +93,9 @@ export async function adminCustomerTestimonialCreate(
             customerTestimonialId,
             userId: input.userId,
             bookingRequestOfferId: input.bookingRequestOfferId ?? null,
-            authorName: textNormalizeTitledOrNull(input.authorName),
-            location: textNormalizeTitledOrNull(input.location),
-            occasion: textNormalizeTitledOrNull(input.occasion),
+            authorName,
+            location,
+            occasion,
             body,
             imageUrls,
             rating,

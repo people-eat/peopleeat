@@ -7,16 +7,14 @@ import { useMutation } from 'urql';
 
 import { fileUploadPublicUrl, isTestimonialRating } from '../../shared';
 import {
-    AdminCookTestimonialCreateDocument,
     AdminCookTestimonialDeleteDocument,
     AdminCookTestimonialDetailImageUpdateDocument,
-    AdminCookTestimonialDetailUpdateDocument,
     AdminCookTestimonialPublishDocument,
-    AdminCustomerTestimonialCreateDocument,
+    AdminCookTestimonialUpsertDocument,
     AdminCustomerTestimonialDeleteDocument,
     AdminCustomerTestimonialDetailImageUpdateDocument,
-    AdminCustomerTestimonialDetailUpdateDocument,
     AdminCustomerTestimonialPublishDocument,
+    AdminCustomerTestimonialUpsertDocument,
 } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { AdminTestimonialImageManager } from '../pages/admin/AdminTestimonialImageManager';
@@ -115,10 +113,8 @@ export function AdminBookingRequestOfferTestimonialsSection({
     cookParty?: AdminOfferTestimonialParty | null;
 }) {
     const locale = useLocale();
-    const [, createCustomer] = useMutation(AdminCustomerTestimonialCreateDocument);
-    const [, createCook] = useMutation(AdminCookTestimonialCreateDocument);
-    const [, updateCustomer] = useMutation(AdminCustomerTestimonialDetailUpdateDocument);
-    const [, updateCook] = useMutation(AdminCookTestimonialDetailUpdateDocument);
+    const [, upsertCustomer] = useMutation(AdminCustomerTestimonialUpsertDocument);
+    const [, upsertCook] = useMutation(AdminCookTestimonialUpsertDocument);
     const [, publishCustomer] = useMutation(AdminCustomerTestimonialPublishDocument);
     const [, publishCook] = useMutation(AdminCookTestimonialPublishDocument);
     const [, deleteCustomer] = useMutation(AdminCustomerTestimonialDeleteDocument);
@@ -135,7 +131,7 @@ export function AdminBookingRequestOfferTestimonialsSection({
                 existing={customerTestimonial}
                 bodyRequired
                 onCreate={async (value) => {
-                    const result = await createCustomer({
+                    const result = await upsertCustomer({
                         input: {
                             userId: bookingRequestUserId,
                             bookingRequestOfferId,
@@ -147,16 +143,18 @@ export function AdminBookingRequestOfferTestimonialsSection({
                             imageFileUploadIds: value.imageFileUploadIds,
                         },
                     });
-                    if (result.error || !result.data?.admin.customerTestimonialCreate.success) {
+                    if (result.error || !result.data?.admin.customerTestimonialUpsert.success) {
                         toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create the review.' }[locale]);
                         return false;
                     }
                     return true;
                 }}
                 onUpdate={async (id, value) => {
-                    const result = await updateCustomer({
-                        customerTestimonialId: id,
+                    const result = await upsertCustomer({
                         input: {
+                            customerTestimonialId: id,
+                            userId: bookingRequestUserId,
+                            bookingRequestOfferId,
                             authorName: value.authorName || null,
                             location: value.location || null,
                             occasion: value.occasion || null,
@@ -164,7 +162,7 @@ export function AdminBookingRequestOfferTestimonialsSection({
                             rating: value.rating,
                         },
                     });
-                    return Boolean(result.data?.admin.customerTestimonialUpdate.success) && !result.error;
+                    return Boolean(result.data?.admin.customerTestimonialUpsert.success) && !result.error;
                 }}
                 onPublish={async (id, status) => {
                     const result = await publishCustomer({ customerTestimonialId: id, publicationStatus: status });
@@ -187,7 +185,7 @@ export function AdminBookingRequestOfferTestimonialsSection({
                 existing={cookTestimonial}
                 bodyRequired={false}
                 onCreate={async (value) => {
-                    const result = await createCook({
+                    const result = await upsertCook({
                         input: {
                             cookId,
                             bookingRequestOfferId,
@@ -199,16 +197,18 @@ export function AdminBookingRequestOfferTestimonialsSection({
                             imageFileUploadIds: value.imageFileUploadIds,
                         },
                     });
-                    if (result.error || !result.data?.admin.cookTestimonialCreate.success) {
+                    if (result.error || !result.data?.admin.cookTestimonialUpsert.success) {
                         toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create the review.' }[locale]);
                         return false;
                     }
                     return true;
                 }}
                 onUpdate={async (id, value) => {
-                    const result = await updateCook({
-                        cookTestimonialId: id,
+                    const result = await upsertCook({
                         input: {
+                            cookTestimonialId: id,
+                            cookId,
+                            bookingRequestOfferId,
                             authorName: value.authorName || null,
                             location: value.location || null,
                             occasion: value.occasion || null,
@@ -216,7 +216,7 @@ export function AdminBookingRequestOfferTestimonialsSection({
                             rating: value.rating,
                         },
                     });
-                    return Boolean(result.data?.admin.cookTestimonialUpdate.success) && !result.error;
+                    return Boolean(result.data?.admin.cookTestimonialUpsert.success) && !result.error;
                 }}
                 onPublish={async (id, status) => {
                     const result = await publishCook({ cookTestimonialId: id, publicationStatus: status });

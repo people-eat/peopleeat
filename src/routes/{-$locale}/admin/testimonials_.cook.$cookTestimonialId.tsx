@@ -3,10 +3,10 @@ import { createFileRoute } from '@tanstack/react-router';
 import { AdminCookTestimonialPageDocument } from '../../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../../web/graphql/routeLoaderGraphqlClient';
 import {
-    AdminCookTestimonialPage,
     adminCookTestimonialPageDescription,
     adminCookTestimonialPageTitle,
-} from '../../../web/pages/admin/AdminCookTestimonialPage';
+    AdminTestimonialPage,
+} from '../../../web/pages/admin/AdminTestimonialPage';
 import { seoMeta } from '../../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../../web/utils/locale';
@@ -27,6 +27,6 @@ export const Route = createFileRoute('/{-$locale}/admin/testimonials_/cook/$cook
     },
     component() {
         const { cookTestimonialId } = Route.useParams();
-        return <AdminCookTestimonialPage data={Route.useLoaderData()} cookTestimonialId={cookTestimonialId} />;
+        return <AdminTestimonialPage kind="cook" data={Route.useLoaderData()} cookTestimonialId={cookTestimonialId} />;
     },
 });

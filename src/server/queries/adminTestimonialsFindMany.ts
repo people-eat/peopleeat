@@ -4,13 +4,65 @@ import { z } from 'zod';
 import { adminListDetailField, adminListToolOutputToModelResult, resolveAdminListDetail } from '../agents/adminListToolDetail';
 import type { ChatAdminTestimonialListItem } from '../db/chatPayloadTypes';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSAdminCookTestimonial, GqlSAdminCustomerTestimonial, GqlSSession } from '../graphql/generated';
+import type {
+    GqlSAdminCookTestimonial,
+    GqlSAdminCustomerTestimonial,
+    GqlSAdminTestimonial,
+    GqlSAdminTestimonialCriterion,
+    GqlSSession,
+} from '../graphql/generated';
 import { GqlSTestimonialPublicationStatusSchema } from '../graphql/generated';
+import { findManySkip, findManyTake } from '../utils/findManyTake';
 import { adminCookTestimonialsFindMany } from './adminCookTestimonialsFindMany';
 import { adminCustomerTestimonialsFindMany } from './adminCustomerTestimonialsFindMany';
 
 const TOOL_TAKE_DEFAULT = 25;
 const TOOL_TAKE_MAX = 25;
+
+function createdAtMs(value: Date | string): number {
+    return value instanceof Date ? value.getTime() : new Date(value).getTime();
+}
+
+/** Combined admin customer + cook catalogs for `Admin.testimonials`. */
+export async function adminTestimonialsFindMany(
+    requestingSession: GqlSSession,
+    serverRuntime: ServerRuntime,
+    criterion?: GqlSAdminTestimonialCriterion | null,
+): Promise<GqlSAdminTestimonial[]> {
+    const kinds = criterion?.kinds?.filter(Boolean) ?? [];
+    const includeCustomer = kinds.length === 0 || kinds.includes('CUSTOMER');
+    const includeCook = kinds.length === 0 || kinds.includes('COOK');
+    const cookIds = criterion?.cookIds?.filter(Boolean) ?? [];
+
+    // Full catalog (list + curation pickers): no criterion → unbounded per table.
+    // Scoped / paged: load each included kind (cap at findManyTake max), merge by
+    // createdAt desc, then apply combined skip/take.
+    const perKindCriterion =
+        criterion == null
+            ? null
+            : {
+                  skip: 0,
+                  take: findManyTake(100),
+                  cookIds: cookIds.length > 0 ? cookIds : undefined,
+              };
+
+    const [customerRows, cookRows] = await Promise.all([
+        includeCustomer ? adminCustomerTestimonialsFindMany(requestingSession, serverRuntime, perKindCriterion) : Promise.resolve([]),
+        includeCook ? adminCookTestimonialsFindMany(requestingSession, serverRuntime, perKindCriterion) : Promise.resolve([]),
+    ]);
+
+    const merged: GqlSAdminTestimonial[] = [...customerRows, ...cookRows].sort(
+        (a, b) => createdAtMs(b.createdAt) - createdAtMs(a.createdAt),
+    );
+
+    if (criterion == null) {
+        return merged;
+    }
+
+    const skip = findManySkip(criterion.skip);
+    const take = findManyTake(criterion.take);
+    return merged.slice(skip, skip + take);
+}
 
 const kindSchema = z.enum(['customer', 'cook']);
 
