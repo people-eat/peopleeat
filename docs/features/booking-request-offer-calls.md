@@ -37,9 +37,10 @@ tab shows the video grid (and recording notice) while connected.
 (stable event id per slot booking).
 
 **Profile overviews** — Cook offer inbox cards surface pending/confirmed calls via a top-left info icon + popover (keeps grid card heights
-even) and still deep-link to the Call tab. Customer booking-request list, customer request-detail offer cards, and admin request-detail
-offer cards still show the call hint as inline text with date/time and the same Call deep-link (admin copy names who must act). Cooks also
-see a cross-offer pending/confirmed list on `/profile/calls` (confirm, decline, cancel, calendar, offer link).
+even) and still deep-link to the Call tab. Customer booking-request list and request-detail offer cards stay clean (no inline call copy) but
+still deep-link to the Call tab when a call needs attention. Admin request-detail offer cards show the call hint as inline text with
+date/time and the same Call deep-link (admin copy names who must act). Cooks also see a cross-offer pending/confirmed list on
+`/profile/calls` (confirm, decline, cancel, calendar, offer link).
 
 Calls are always available when LiveKit credentials are configured; cooks still control whether scheduling is enabled on their profile. No
 feature toggles beyond that.
@@ -150,10 +151,10 @@ CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’
 - Admin `/admin/calls` attention board rows use the same compact `Card` density (badges in `CardAction`, CTAs in `CardFooter`)
 - Offer pages: tabs offer / chat / call (plus role-specific tabs); legacy `?tab=schedule` aliases to `call`
 - Confirmed slots: calendar ICS download utility
-- Profile overviews: `callBookingOverviewHint` — cook inbox uses info `Popover` on `CookBookingRequestOfferCard`; customer/admin cards keep
-  inline hint text; `openCall` deep-links to `?tab=call`. Which call to surface (response needed → pending → confirmed) and the time window
-  wording come from `src/shared/cookCallSlotBookingStatus.ts`, shared with the server's `User.attention` call items
-  ([attention.md](../architecture/attention.md))
+- Profile overviews: `callBookingOverviewHint` — cook inbox uses info `Popover` on `CookBookingRequestOfferCard`; customer cards omit the
+  label (deep-link only); admin cards keep inline hint text; `openCall` deep-links to `?tab=call`. Which call to surface (response needed →
+  pending → confirmed) and the time window wording come from `src/shared/cookCallSlotBookingStatus.ts`, shared with the server's
+  `User.attention` call items ([attention.md](../architecture/attention.md))
 - Cook `/profile/calls`: cross-offer pending/confirmed via cook call-slot bookings query
 - Admin `/admin/calls` overview + list; room rows / attention “Open call” → `AdminCallPage`; slot-only rows → offer Call tab
 - Admin offer cards use `callBookingOverviewHint(..., 'admin')` (neutral who-must-act copy)

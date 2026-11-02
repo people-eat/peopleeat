@@ -300,7 +300,6 @@ export function CustomerBookingRequestCard({
                         <OfferChipStack bookingRequestId={request.bookingRequestId} chips={offerChips} />
                     </div>
                 ) : null}
-                {attention == null && callHint ? <p className="text-sm font-medium text-foreground">{callHint.label}</p> : null}
             </div>
             <Link
                 to={primary.to}

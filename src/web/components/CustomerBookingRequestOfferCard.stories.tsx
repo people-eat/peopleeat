@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import { cardCanvasDecorator } from '../../../.storybook/decorators';
 import { fixtureBookingRequestId, fixtureCustomerOffer } from '../storybook/fixtures/booking';
-import { callBookingsByStatus, callOverviewItems } from '../storybook/fixtures/calls';
 import { CustomerBookingRequestOfferCard } from './CustomerBookingRequestOfferCard';
 
 const meta = {
@@ -58,15 +57,3 @@ export const ReviewMissing: Story = {
     },
 };
 
-export const CallHint: Story = {
-    args: {
-        ...baseArgs,
-        offer: {
-            ...fixtureCustomerOffer,
-            status: 'USER_NEEDS_TO_ACCEPT',
-            userUnreadNotificationCount: 0,
-            testimonialMissing: false,
-            callBookings: callOverviewItems(callBookingsByStatus.pendingFromCook),
-        },
-    },
-};

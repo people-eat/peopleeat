@@ -130,8 +130,6 @@ export function CustomerBookingRequestOfferCard({
                     <span>{{ de: 'Gesamtpreis', en: 'Total' }[locale]}</span>
                     <span className="shrink-0">{formatCurrency(priceCents, { locale })}</span>
                 </p>
-
-                {callHint ? <p className="text-sm font-medium text-foreground">{callHint.label}</p> : null}
             </div>
 
             <span className="mt-4 inline-flex h-9 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground">
