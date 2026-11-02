@@ -892,8 +892,9 @@ Run all checks before pushing:
 npm run check
 ```
 
-This runs: format check, type check, lint, spell check, unused export detection (knip), and commitlint on the last commit. Type check runs
-before lint so type errors fail fast instead of after a long ESLint pass.
+`scripts/checkRun.ts` runs format, spell, types, usage (knip), and commitlint **in parallel** (same wave as CI), then lint after they all
+succeed. Each parallel tool buffers stdout/stderr so lines do not interleave; successes print one status line, failures dump their full log
+under a labeled section. Lint still waits on types (and the rest of the wave) so a long ESLint pass is not wasted on an already-broken tree.
 
 ## Browser Capture (Playwright)
 

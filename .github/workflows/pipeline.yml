@@ -138,8 +138,8 @@ jobs:
           [ "$failed" -eq 0 ] || exit 1
 
       # Format / spell / types / usage in parallel, then lint (types before lint, matching
-      # local `npm run check`). Fail after printing every parallel log so one broken tool
-      # does not hide the others.
+      # local `npm run check` / scripts/checkRun.ts). Fail after printing every parallel log
+      # so one broken tool does not hide the others.
       - name: Format, spell, types, usage (parallel), then lint
         if: needs.changes.outputs.code == 'true'
         run: |

@@ -280,9 +280,9 @@ CI. Revisit with `ubuntu-26.04` when ready to validate on the new image.
 **check** — commit lint, codegen freshness (code change sets only), and static analysis in one job (one `npm ci`). Commitlint runs for PR
 and push events (same ranges as before). On **code** change sets: `graphql:generate` + `db:generate`, then `git diff --exit-code` on
 `*.gen.ts` / `*.generated.ts` / `drizzle/` (fails if codegen output differs from what was committed, or if new untracked files appear). Then
-format, spell, types, and usage run **in parallel**; lint runs after they all succeed (types before lint, matching local `npm run check`).
-On **docs-only** change sets: commitlint, then format + spell in parallel only (skip codegen / types / lint / knip). Parallel logs are
-printed in collapsible groups so one failure does not hide another.
+format, spell, types, and usage run **in parallel**; lint runs after they all succeed (types before lint, matching local `npm run check` /
+`scripts/checkRun.ts`, which also parallelizes commitlint in that first wave). On **docs-only** change sets: commitlint, then format + spell
+in parallel only (skip codegen / types / lint / knip). Parallel logs are printed in collapsible groups so one failure does not hide another.
 
 | Step (code PRs)   | Command                                                                                                                                                                                                                                                                                                                                           |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
