@@ -1,0 +1,76 @@
+{
+    "markers": [
+        {
+            "name": "offerScroll",
+            "unixMilliseconds": 1793631257948,
+            "time": 7.357
+        },
+        {
+            "name": "returnMarco",
+            "unixMilliseconds": 1793631264392,
+            "time": 13.801
+        },
+        {
+            "name": "marcoOpen",
+            "unixMilliseconds": 1793631270959,
+            "time": 20.368
+        },
+        {
+            "name": "menuTab",
+            "unixMilliseconds": 1793631289350,
+            "time": 38.759
+        },
+        {
+            "name": "menuScroll",
+            "unixMilliseconds": 1793631297597,
+            "time": 47.006
+        },
+        {
+            "name": "chatOpen",
+            "unixMilliseconds": 1793631305365,
+            "time": 54.774
+        },
+        {
+            "name": "conciergeScroll",
+            "unixMilliseconds": 1793631312349,
+            "time": 61.758
+        },
+        {
+            "name": "callOpen",
+            "unixMilliseconds": 1793631320039,
+            "time": 69.448
+        },
+        {
+            "name": "returnOffer",
+            "unixMilliseconds": 1793631326111,
+            "time": 75.52
+        },
+        {
+            "name": "accept",
+            "unixMilliseconds": 1793631332281,
+            "time": 81.69
+        },
+        {
+            "name": "confirm",
+            "unixMilliseconds": 1793631343317,
+            "time": 92.726
+        },
+        {
+            "name": "cardExpand",
+            "unixMilliseconds": 1793631362448,
+            "time": 111.857
+        },
+        {
+            "name": "billingCopy",
+            "unixMilliseconds": 1793631370018,
+            "time": 119.427
+        }
+    ],
+    "cursorVisible": false,
+    "durationSeconds": 136.618798167,
+    "firstFrameUnixSeconds": 1793631250.591114,
+    "frames": 7751,
+    "height": 2556,
+    "requestedFramesPerSecond": 60,
+    "width": 1180
+}

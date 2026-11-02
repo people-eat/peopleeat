@@ -181,7 +181,7 @@
                 "kind": "lifestyle",
                 "shots": [
                     {
-                        "source": "../../public/assets/dinner.mp4",
+                        "source": "../../../public/assets/dinner.mp4",
                         "in": 0,
                         "out": 6,
                         "duration": 6,

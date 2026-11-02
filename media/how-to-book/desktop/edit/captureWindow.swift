@@ -10,6 +10,7 @@ final class WindowRecorder: NSObject, SCStreamOutput, @unchecked Sendable {
     var frames = 0
     var firstTime: CMTime?
     var lastTime: CMTime?
+    var firstFrameUnixSeconds: Double?
 
     init(path: String, width: Int, height: Int) throws {
         writer = try AVAssetWriter(outputURL: URL(fileURLWithPath: path), fileType: .mov)
@@ -38,6 +39,7 @@ final class WindowRecorder: NSObject, SCStreamOutput, @unchecked Sendable {
             writer.startWriting()
             writer.startSession(atSourceTime: time)
             firstTime = time
+            firstFrameUnixSeconds = Date().timeIntervalSince1970
             started = true
         }
         if input.isReadyForMoreMediaData {
@@ -68,11 +70,20 @@ struct CaptureWindow {
         }
         let path = arguments[1]
         let stopPath = arguments.count > 2 ? arguments[2] : path + ".stop"
-        let width = Int(window.frame.width) / 2 * 2
-        let height = Int(window.frame.height) / 2 * 2
+        let portrait = arguments.count >= 7
+        let width = portrait ? 1180 : Int(window.frame.width) / 2 * 2
+        let height = portrait ? 2556 : Int(window.frame.height) / 2 * 2
         let configuration = SCStreamConfiguration()
         configuration.width = width
         configuration.height = height
+        if portrait {
+            configuration.scalesToFit = true
+            configuration.destinationRect = CGRect(x: 0, y: 0, width: width, height: height)
+            configuration.sourceRect = CGRect(
+                x: Double(arguments[3])!, y: Double(arguments[4])!,
+                width: Double(arguments[5])!, height: Double(arguments[6])!
+            )
+        }
         configuration.minimumFrameInterval = CMTime(value: 1, timescale: 60)
         configuration.queueDepth = 8
         configuration.showsCursor = false
@@ -97,6 +108,14 @@ struct CaptureWindow {
         }
         let duration = CMTimeGetSeconds(CMTimeSubtract(recorder.lastTime ?? .zero, recorder.firstTime ?? .zero))
         print("FINISHED frames=\(recorder.frames) seconds=\(duration) status=\(recorder.writer.status.rawValue)")
+        let metadata: [String: Any] = [
+            "firstFrameUnixSeconds": recorder.firstFrameUnixSeconds ?? 0,
+            "durationSeconds": duration, "frames": recorder.frames,
+            "width": width, "height": height, "requestedFramesPerSecond": 60,
+            "cursorVisible": false,
+        ]
+        try JSONSerialization.data(withJSONObject: metadata, options: [.prettyPrinted, .sortedKeys])
+            .write(to: URL(fileURLWithPath: path + ".json"))
         if let error = recorder.writer.error { throw error }
     }
 }

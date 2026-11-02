@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
-REPOSITORY = ROOT.parent.parent
+REPOSITORY = ROOT.parent.parent.parent
 RAW_NAMES = {
     "a": "raw-a-anfrage.mov",
     "b": "raw-b-angebote.mov",

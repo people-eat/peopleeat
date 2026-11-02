@@ -4,10 +4,14 @@ Hand this file to the ChatGPT app that can control **Chrome** and **iMovie**, an
 
 Goal: produce landing-page marketing assets that show **how booking works** (not the dinner lifestyle footage already on the site).
 
+Current production layout: `media/how-to-book/desktop/` and `media/how-to-book/mobile/`. Start with
+[`media/how-to-book/README.md`](../media/how-to-book/README.md). Paths below describe the desktop set; the mobile set has the same export
+names and its own recordings, posters, and edits. Both reuse narration from `desktop/voiceover/`.
+
 ## Deliverables (store inside this git repo)
 
 **Root folder (required):**  
-`/Users/I517754/GitHub/peopleeat/media/landing-booking-videos/`
+`/Users/I517754/GitHub/peopleeat/media/how-to-book/desktop/`
 
 Do **not** save finals to Desktop, Downloads, or iCloud-only folders. Everything reusable must land in this project tree so humans can edit,
 diff, and commit it.
@@ -30,7 +34,7 @@ Create subfolders if missing (`raw/`, `exports/`, `voiceover/`, `posters/`, `imo
 | `posters/poster-a.webp` … `poster-d.webp` | First-frame stills for each loop                         | —       | —                              |
 | `imovie/`                                 | Copy of the iMovie project / library export if available | —       | —                              |
 
-Also write a short `media/landing-booking-videos/MANIFEST.md` when finished: date, Chrome window size, which takes were used, OpenAI voice
+Also write a short `media/how-to-book/desktop/MANIFEST.md` when finished: date, Chrome window size, which takes were used, OpenAI voice
 model/name, and any notes (e.g. Clip C ended on call slot, Clip D stopped at checkout).
 
 **Do not** copy unfinished work into `public/` yet. Shipping on the landing page is a later human step
@@ -218,7 +222,7 @@ Crossfades 8–12 frames. No bounce zooms. Keep UI readable (avoid heavy Ken Bur
 
 Generate with OpenAI TTS. Prefer a natural German female voice (e.g. `alloy` / `nova` / `shimmer` if available for DE; if a dedicated German
 voice exists in the account, use that). Speed ~0.95–1.0. Save as
-`/Users/I517754/GitHub/peopleeat/media/landing-booking-videos/voiceover/vo-60s.mp3` and save the exact script text beside it as
+`/Users/I517754/GitHub/peopleeat/media/how-to-book/desktop/voiceover/vo-60s.mp3` and save the exact script text beside it as
 `vo-60s-script.txt`.
 
 **Script (read exactly):**
@@ -239,15 +243,15 @@ the export.
 ## iMovie assembly checklist
 
 1. New project, 1920×1080 (or 1440×900 matching capture; export 1080p)
-2. Import from `media/landing-booking-videos/raw/` plus `/Users/I517754/GitHub/peopleeat/public/assets/dinner.mp4` and
-   `media/landing-booking-videos/voiceover/vo-60s.mp3`
-3. Build four silent loops first; export each into `media/landing-booking-videos/exports/`
+2. Import from `media/how-to-book/desktop/raw/` plus `/Users/I517754/GitHub/peopleeat/public/assets/dinner.mp4` and
+   `media/how-to-book/desktop/voiceover/vo-60s.mp3`
+3. Build four silent loops first; export each into `media/how-to-book/desktop/exports/`
 4. Build `exports/film-60s.mp4` second
-5. Export posters into `media/landing-booking-videos/posters/`
-6. If iMovie can export/copy the project, put it under `media/landing-booking-videos/imovie/`
-7. Write `media/landing-booking-videos/MANIFEST.md`
+5. Export posters into `media/how-to-book/desktop/posters/`
+6. If iMovie can export/copy the project, put it under `media/how-to-book/desktop/imovie/`
+7. Write `media/how-to-book/desktop/MANIFEST.md`
 8. Do **not** upload to YouTube/Vimeo; do **not** leave masters only on Desktop
-9. Tell the human the absolute paths under `media/landing-booking-videos/` when done so they can commit
+9. Tell the human the absolute paths under `media/how-to-book/desktop/` when done so they can commit
 
 ---
 
@@ -274,7 +278,7 @@ the export.
 
 ## Done when
 
-- All listed files exist under `/Users/I517754/GitHub/peopleeat/media/landing-booking-videos/` (not Desktop)
+- All listed files exist under `/Users/I517754/GitHub/peopleeat/media/how-to-book/desktop/` (not Desktop)
 - Four silent loops restart cleanly
 - Posters exist
 - Optional: 60s film with female DE voice + captions

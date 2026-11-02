@@ -64,6 +64,10 @@ typography, colors, and buttons follow project conventions. Marquee pauses under
 | Sections      | `SectionHero`, `SectionExperienceSelection`, `SectionComparison`, `SectionBookingHowItWorks`, `SectionHowItWorks`, `SectionSharedExperiences`, `SectionCustomerTestimonials`, `SectionKnownFrom`, `SectionQuestionsAndAnswers`, `SectionSupport`, `SectionCities` |
 | Shared media  | `AutoplayVideo.tsx`, `usePrefersReducedMotion.ts`                                                                                                                                                                                                                 |
 | Assets        | `public/home/*` (incl. HowItWorks `*.alternative.*` for partner pages, booking loops/film under `public/home/booking-how-it-works/`), `public/shared/known-from-section/`, hero `public/assets/dinner.mp4`                                                        |
-| Booking media | Masters, edit timeline, voiceover, and capture notes in `media/landing-booking-videos/` (see `MANIFEST.md`). Shipped copies for the home section live under `public/home/booking-how-it-works/`.                                                                  |
+| Booking media | Masters, edit timeline, voiceover, and capture notes in `media/how-to-book/` (`desktop/` and `mobile/`, see their READMEs). Shipped copies for the home section live under `public/home/booking-how-it-works/`.                                                   |
 | Feature gate  | `LANDING_BOOKING_HOW_IT_WORKS` via `Session.activeFeatureToggleKeys` on `HomePage`                                                                                                                                                                                |
 | Motion CSS    | `src/styles.css` — `animate-testimonial-scroll` / `-delayed`                                                                                                                                                                                                      |
+
+Portrait companion masters use the actual iPhone 16 mobile layout and live under `media/how-to-book/mobile/`, with their own raw takes, four
+loops, narrated 60-second film, posters, editable cuts, and verification. They are review assets, separate from the current shipped media
+copies.

@@ -91,6 +91,11 @@ confirmed appointment; no live participant call was placed. No native iMovie lib
 fades, hover-strip cleanup, narration/caption agreement, and the maximum three-second narration pause. Reports and hashes are in
 `edit/verification.json` and `edit/film-verification.json`. Current contact sheets and selected full frames are in `edit/qa/`.
 
-All **390 test files and 1,705 tests pass**. Media verification, media spelling/formatting, and `git diff --check` pass. Repository types,
-usage, and commit-message checks pass. The full repository check still reports existing formatting issues in `docs/styles/theme.md`,
-`scripts/demoLandingVideoSeed.ts`, and `src/web/components/CustomerBookingRequestOfferCard.stories.tsx`, plus seed-related spelling issues.
+Latest validation after the portrait companion work: all **390 test files and 1,705 tests pass**, and the full `npm run check` passes. Media
+verification and `git diff --check` pass.
+
+## iPhone 16 companion assets
+
+The same journey is available as new continuous mobile recordings, four loops, and the narrated 60-second film under
+[../mobile/](../mobile/README.md). Chrome emulates 393 × 852 CSS pixels; delivery uses 1180 × 2556, 30 fps, H.264 with portrait captions.
+The shared narration and desktop exports remain in place. See the companion README for capture limitations, cut lists, and verification.

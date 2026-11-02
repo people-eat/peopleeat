@@ -1,6 +1,6 @@
 <!-- cspell:ignore imovie xcrun swiftc -->
 
-# Landing booking videos (German)
+# How to book: desktop videos (German)
 
 Four silent booking-flow loops and a narrated 60-second film, with sources, posters, and reproducible edits. See
 [MANIFEST.md](./MANIFEST.md) for durations, takes, narration settings, and capture limitations.
@@ -19,9 +19,9 @@ Four silent booking-flow loops and a narrated 60-second film, with sources, post
 From the repository root, with Python 3, Node, npm dependencies installed, and FFmpeg supporting H.264, AAC, MP3, PNG, FreeType, and WebP:
 
 ```bash
-python3 media/landing-booking-videos/edit/render.py --ffmpeg /absolute/path/to/ffmpeg
-python3 media/landing-booking-videos/edit/renderFilm.py --ffmpeg /absolute/path/to/ffmpeg
-python3 media/landing-booking-videos/edit/verify.py --ffmpeg /absolute/path/to/ffmpeg
+python3 media/how-to-book/desktop/edit/render.py --ffmpeg /absolute/path/to/ffmpeg
+python3 media/how-to-book/desktop/edit/renderFilm.py --ffmpeg /absolute/path/to/ffmpeg
+python3 media/how-to-book/desktop/edit/verify.py --ffmpeg /absolute/path/to/ffmpeg
 ```
 
 Edit [edit/timeline.json](./edit/timeline.json) to change shots, holds, close crops, chapter timing, narration positions, or captions.
@@ -29,8 +29,8 @@ Edit [edit/timeline.json](./edit/timeline.json) to change shots, holds, close cr
 Pass `--clips a` to the loop renderer to rebuild only A. Raw captures remain unchanged.
 
 The film renderer rebuilds the timed audio from `voiceover/vo-source.wav`. To synthesize a new source, adjust the exact script or
-`synthesis-config.json`, then run `python3 media/landing-booking-videos/voiceover/generate.py`. Its API-key prompt is hidden. Do not put a
-key in a command argument or project file. `voiceover/review.py` provides the same hidden prompt for a transcript and voice-quality check.
+`synthesis-config.json`, then run `python3 media/how-to-book/desktop/voiceover/generate.py`. Its API-key prompt is hidden. Do not put a key
+in a command argument or project file. `voiceover/review.py` provides the same hidden prompt for a transcript and voice-quality check.
 
 After re-synthesis, review the source duration and update narration positions and caption times before rebuilding the film.
 
@@ -41,7 +41,7 @@ captures retain real animations and hide the automated cursor. Both original syn
 Shipped home-page copies live under `public/home/booking-how-it-works/` (`SectionBookingHowItWorks`). After rebuilding exports, copy the
 updated loops, film, and posters there. Do not put unfinished takes under `public/`.
 
-Original recording brief: [`scripts/demo-landing-video-chatgpt-brief.md`](../../scripts/demo-landing-video-chatgpt-brief.md). Seed:
+Original recording brief: [`scripts/demo-landing-video-chatgpt-brief.md`](../../../scripts/demo-landing-video-chatgpt-brief.md). Seed:
 `npm run demo:landing-video-seed`.
 
 ## Continuous recording
@@ -50,9 +50,14 @@ The user approved ScreenCaptureKit recording, and macOS screen-recording access 
 and record only the Chrome window:
 
 ```bash
-xcrun swiftc -parse-as-library media/landing-booking-videos/edit/captureWindow.swift -o /private/tmp/peopleeat-capture-window
+xcrun swiftc -parse-as-library media/how-to-book/desktop/edit/captureWindow.swift -o /private/tmp/peopleeat-capture-window
 /private/tmp/peopleeat-capture-window /absolute/path/to/new-take.mov /private/tmp/peopleeat-new-take.stop
 ```
 
 Create the named stop-file to finish the take. Use a new output filename and an absent stop-file for each take. Record clicks through the
 normal computer-use controls. Save reusable raw takes here, then add their cut points and markers to `edit/`.
+
+## iPhone 16 versions
+
+New continuous mobile-layout recordings, four portrait loops, the narrated portrait film, posters, and editable cuts are in
+[../mobile/](../mobile/README.md). Desktop exports remain in this folder’s `exports/`. Shared narration is kept in `voiceover/`.

@@ -884,6 +884,12 @@ Titles match `Base/Button` style: `Foundations/Mood Board`, `Chat/Composer`, `Bo
 
 Local: `npm run storybook` (port 6006), `npm run storybook:build`.
 
+## Marketing Video Assets
+
+Keep reusable video production assets under `media/{series}/desktop/` and `media/{series}/mobile/`, with exports, raw recordings, posters,
+editable cuts, and production notes grouped by variant. Shared narration can live in the desktop variant and be referenced by mobile. See
+[`media/README.md`](../media/README.md) and the existing [`how-to-book` series](../media/how-to-book/README.md).
+
 ## Quality Checks
 
 Run all checks before pushing:

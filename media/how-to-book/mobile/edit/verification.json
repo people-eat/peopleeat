@@ -1,0 +1,79 @@
+{
+    "device": {
+        "name": "iPhone 16",
+        "cssWidth": 393,
+        "cssHeight": 852,
+        "previewZoom": 1.25,
+        "captureRect": {
+            "x": 1082,
+            "y": 154,
+            "width": 491.25,
+            "height": 1065
+        },
+        "emulation": "Chrome device mode"
+    },
+    "maximumNarrationPauseSeconds": 2.528,
+    "captionsMatchScript": true,
+    "files": [
+        {
+            "file": "exports/clip-a-anfrage.mp4",
+            "durationSeconds": 34.3,
+            "frames": 1029,
+            "width": 1180,
+            "height": 2556,
+            "framesPerSecond": 30,
+            "audioStreams": 0,
+            "fastStart": true,
+            "bytes": 8870934,
+            "sha256": "aa1a19183d5375d19b62edcc6f7b21c4546bd95cf902d53417ca926ed7a974ca"
+        },
+        {
+            "file": "exports/clip-b-angebote.mp4",
+            "durationSeconds": 16,
+            "frames": 480,
+            "width": 1180,
+            "height": 2556,
+            "framesPerSecond": 30,
+            "audioStreams": 0,
+            "fastStart": true,
+            "bytes": 8434417,
+            "sha256": "660f88d441d95e660eec6efc624efd5676faba5395aa5871733d335dda88755e"
+        },
+        {
+            "file": "exports/clip-c-kennenlernen.mp4",
+            "durationSeconds": 16.0,
+            "frames": 480,
+            "width": 1180,
+            "height": 2556,
+            "framesPerSecond": 30,
+            "audioStreams": 0,
+            "fastStart": true,
+            "bytes": 8435896,
+            "sha256": "d5e642087e91fe6de1f454adb85380afcfc08c3690947de90521941fdb7ebb33"
+        },
+        {
+            "file": "exports/clip-d-bestaetigen.mp4",
+            "durationSeconds": 16.0,
+            "frames": 480,
+            "width": 1180,
+            "height": 2556,
+            "framesPerSecond": 30,
+            "audioStreams": 0,
+            "fastStart": true,
+            "bytes": 8518820,
+            "sha256": "350ace55db83e38180149bb564bc712fbd8f9391d784bbb34f96a921d1bfc00a"
+        },
+        {
+            "file": "exports/film-60s.mp4",
+            "durationSeconds": 60,
+            "frames": 1800,
+            "width": 1180,
+            "height": 2556,
+            "framesPerSecond": 30,
+            "audioStreams": 1,
+            "fastStart": true,
+            "bytes": 5375476,
+            "sha256": "988fafabffde0bc6d85c8fb81e979d951f0c41c41e9149269012ee7f4ae2773d"
+        }
+    ]
+}

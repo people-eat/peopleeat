@@ -1,0 +1,71 @@
+{
+    "markers": [
+        {
+            "name": "occasionTap",
+            "unixMilliseconds": 1793631031439,
+            "time": 21.158
+        },
+        {
+            "name": "occasionNext",
+            "unixMilliseconds": 1793631036846,
+            "time": 26.565
+        },
+        {
+            "name": "guests",
+            "unixMilliseconds": 1793631053530,
+            "time": 43.249
+        },
+        {
+            "name": "location",
+            "unixMilliseconds": 1793631061095,
+            "time": 50.814
+        },
+        {
+            "name": "calendarOpen",
+            "unixMilliseconds": 1793631088475,
+            "time": 78.194
+        },
+        {
+            "name": "dateSelect",
+            "unixMilliseconds": 1793631095093,
+            "time": 84.812
+        },
+        {
+            "name": "priceScroll",
+            "unixMilliseconds": 1793631105306,
+            "time": 95.025
+        },
+        {
+            "name": "signatureView",
+            "unixMilliseconds": 1793631114902,
+            "time": 104.621
+        },
+        {
+            "name": "signatureSelect",
+            "unixMilliseconds": 1793631121076,
+            "time": 110.795
+        },
+        {
+            "name": "preferences",
+            "unixMilliseconds": 1793631129263,
+            "time": 118.982
+        },
+        {
+            "name": "message",
+            "unixMilliseconds": 1793631161387,
+            "time": 151.106
+        },
+        {
+            "name": "submit",
+            "unixMilliseconds": 1793631168503,
+            "time": 158.222
+        }
+    ],
+    "cursorVisible": false,
+    "durationSeconds": 178.248804917,
+    "firstFrameUnixSeconds": 1793631010.281132,
+    "frames": 10089,
+    "height": 2556,
+    "requestedFramesPerSecond": 60,
+    "width": 1180
+}
