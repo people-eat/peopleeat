@@ -95,9 +95,7 @@ async function main(): Promise<void> {
     }
 
     if (failed.length > 0) {
-        console.log(
-            `\ncheck: failed (${failed.map((result) => result.name).join(', ')}) ${formatDuration(Date.now() - wallStart)}`,
-        );
+        console.log(`\ncheck: failed (${failed.map((result) => result.name).join(', ')}) ${formatDuration(Date.now() - wallStart)}`);
         process.exit(1);
     }
 
