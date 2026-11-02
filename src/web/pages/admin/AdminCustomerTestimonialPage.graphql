@@ -30,6 +30,9 @@ fragment AdminCustomerTestimonialDetail on AdminCustomerTestimonial {
         firstName
         lastName
         emailAddress
+        profilePicture {
+            url
+        }
     }
 }
 

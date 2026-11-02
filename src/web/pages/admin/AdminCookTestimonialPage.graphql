@@ -38,6 +38,9 @@ fragment AdminCookTestimonialDetail on AdminCookTestimonial {
             firstName
             lastName
             emailAddress
+            profilePicture {
+                url
+            }
         }
     }
 }

@@ -12342,7 +12342,10 @@ export type GqlCAdminCookTestimonialDetailFragment = {
         pathName: string | null;
         index: number | null;
     }>;
-    cook: { cookId: string; user: { userId: string; firstName: string; lastName: string; emailAddress: string | null } };
+    cook: {
+        cookId: string;
+        user: { userId: string; firstName: string; lastName: string; emailAddress: string | null; profilePicture: { url: string } | null };
+    };
 };
 
 export type GqlCAdminCookTestimonialPageQueryVariables = Exact<{
@@ -12384,7 +12387,16 @@ export type GqlCAdminCookTestimonialPageQuery = {
                         pathName: string | null;
                         index: number | null;
                     }>;
-                    cook: { cookId: string; user: { userId: string; firstName: string; lastName: string; emailAddress: string | null } };
+                    cook: {
+                        cookId: string;
+                        user: {
+                            userId: string;
+                            firstName: string;
+                            lastName: string;
+                            emailAddress: string | null;
+                            profilePicture: { url: string } | null;
+                        };
+                    };
                 } | null;
             } | null;
         } | null;
@@ -12424,7 +12436,16 @@ export type GqlCAdminCookTestimonialPageUpdatesSubscription = {
                 pathName: string | null;
                 index: number | null;
             }>;
-            cook: { cookId: string; user: { userId: string; firstName: string; lastName: string; emailAddress: string | null } };
+            cook: {
+                cookId: string;
+                user: {
+                    userId: string;
+                    firstName: string;
+                    lastName: string;
+                    emailAddress: string | null;
+                    profilePicture: { url: string } | null;
+                };
+            };
         } | null;
     };
 };
@@ -12487,7 +12508,7 @@ export type GqlCAdminCustomerTestimonialDetailFragment = {
         pathName: string | null;
         index: number | null;
     }>;
-    user: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
+    user: { userId: string; firstName: string; lastName: string; emailAddress: string | null; profilePicture: { url: string } | null };
 };
 
 export type GqlCAdminCustomerTestimonialPageQueryVariables = Exact<{
@@ -12523,7 +12544,13 @@ export type GqlCAdminCustomerTestimonialPageQuery = {
                         pathName: string | null;
                         index: number | null;
                     }>;
-                    user: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
+                    user: {
+                        userId: string;
+                        firstName: string;
+                        lastName: string;
+                        emailAddress: string | null;
+                        profilePicture: { url: string } | null;
+                    };
                 } | null;
             } | null;
         } | null;
@@ -12561,7 +12588,13 @@ export type GqlCAdminCustomerTestimonialPageUpdatesSubscription = {
                 pathName: string | null;
                 index: number | null;
             }>;
-            user: { userId: string; firstName: string; lastName: string; emailAddress: string | null };
+            user: {
+                userId: string;
+                firstName: string;
+                lastName: string;
+                emailAddress: string | null;
+                profilePicture: { url: string } | null;
+            };
         } | null;
     };
 };
@@ -27262,6 +27295,14 @@ export const AdminCookTestimonialDetailFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'profilePicture' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -27323,6 +27364,14 @@ export const AdminCustomerTestimonialDetailFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -53315,6 +53364,14 @@ export const AdminCookTestimonialPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'profilePicture' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -53440,6 +53497,14 @@ export const AdminCookTestimonialPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'profilePicture' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -53794,6 +53859,14 @@ export const AdminCustomerTestimonialPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -53896,6 +53969,14 @@ export const AdminCustomerTestimonialPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
                             ],
                         },
                     },

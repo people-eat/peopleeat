@@ -39,11 +39,14 @@ existing follow-up answers unless the cook fills them again; dropping from 5 to 
   author type (`Kunde` / `Koch`), publication as `StatusBadge` (green published / yellow pending), then truncated public-page placements
   (curated city / partner / occasion, plus chef profile for published offer-linked customer reviews) so neighboring cards keep occasion /
   stars aligned.
-- Detail pages open **read-only** (content + image strip) with a pinned footer: **Edit**, **Public view**, **Publish** when pending, and
-  overflow for **Unpublish** / **Delete**. Edit mode swaps the footer to Cancel / Save and unlocks override fields plus
-  `AdminTestimonialImageManager`. AlertDialog confirms publish / unpublish / delete (not browser `confirm`). Star input, not numeric
-  dropdowns. **Public view** opens the same detail dialog customers see. Submitter meta is labeled **Submitted by** / **Eingereicht von**
-  (not “source”). Placement links open the matching admin city / partner / occasion / user editor.
+- Detail pages open **read-only** content styled like the public face (occasion title, accent stars + numeric rating, accent quote line,
+  full unclamped body, rounded photo strip) via `AdminTestimonialDetailContent`, then an **Author** / **Autor** card
+  (`AdminTestimonialAuthorCard`: avatar, email, open-user, offer link) and related **Public pages** as overview-style link cards (city /
+  partner / occasion / chef). Cook detail also shows the low-rating alert when present. Pinned footer: **Edit**, **Public view**,
+  **Publish** when pending, and overflow for **Unpublish** / **Delete**. Edit mode swaps the footer to Cancel / Save and unlocks override
+  fields plus `AdminTestimonialImageManager`. AlertDialog confirms publish / unpublish / delete (not browser `confirm`). Star input, not
+  numeric dropdowns. **Public view** alone opens `PageTestimonialDetailDialog`. Publication uses `StatusBadge` (green published / yellow
+  pending).
 - Offer detail **Review** tab when completed or either side already has a testimonial — side-by-side Customer → cook and Cook → guest
   columns (`AdminBookingRequestOfferTestimonialsSection`). Missing side shows the create form (including draft photo upload via
   `imageFileUploadIds`); existing side is a read-only `PageTestimonialCardFace` with photo manager, Edit / publish / delete, plus a link to
@@ -111,7 +114,8 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
   question + form CTA; mobile always 1 column, `columns={2|3}` from `@md`), `ContentPageTestimonialsEditor`
 - Admin UI: `AdminTestimonialsPage` card grid via `AdminTestimonialListCard` on unified `Admin.testimonials`; detail entry
   `AdminTestimonialPage` (kind `customer` | `cook`) with typed routes and kind modules (`AdminCustomerTestimonialPage` /
-  `AdminCookTestimonialPage`) using `AdminPinnedFooterLayout` with read-only → edit; offer Review tab is a two-column comparison
+  `AdminCookTestimonialPage`) using `AdminPinnedFooterLayout` with read-only `AdminTestimonialDetailContent` +
+  `AdminTestimonialAuthorCard` + placement link cards → edit form + image manager; offer Review tab is a two-column comparison
   (`AdminBookingRequestOfferTestimonialsSection`: upsert when missing/editing with photos, `PageTestimonialCardFace` +
   `AdminTestimonialImageManager` + Edit when present, `StatusBadge` publication, AlertDialog confirms); detail **Public view** reuses
   `PageTestimonialDetailDialog`; `publicPagePlacements` via `adminTestimonialPublicPagePlacementsLoad` /

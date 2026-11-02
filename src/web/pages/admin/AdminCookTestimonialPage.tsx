@@ -1,16 +1,16 @@
 import { useForm, useSelector } from '@tanstack/react-form';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { MoreHorizontalIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { formatDate, isTestimonialRating, userDisplayName } from '../../../shared';
+import { isTestimonialRating } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
-import { AdminTestimonialOfferLink } from '../../components/AdminTestimonialOfferLink';
+import { AdminTestimonialAuthorCard } from '../../components/AdminTestimonialAuthorCard';
+import { AdminTestimonialDetailContent } from '../../components/AdminTestimonialDetailContent';
 import { AdminTestimonialPublicPagePlacementsSection } from '../../components/AdminTestimonialPublicPagePlacements';
 import {
     AlertDialog,
@@ -22,15 +22,14 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '../../components/base/alert-dialog';
-import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/base/dropdown-menu';
 import { Input } from '../../components/base/input';
 import { StatusAlert } from '../../components/base/status-alert';
+import { StatusBadge } from '../../components/base/status-badge';
 import { Textarea } from '../../components/base/textarea';
 import { PageTestimonialDetailDialog } from '../../components/PageTestimonialCard';
 import { TestimonialRatingInput } from '../../components/TestimonialRatingInput';
-import { TestimonialRatingStars } from '../../components/TestimonialRatingStars';
 import type { GqlCAdminCookTestimonialPageQuery } from '../../graphql/generated';
 import {
     AdminCookTestimonialDetailDeleteDocument,
@@ -40,7 +39,6 @@ import {
     AdminCookTestimonialPageUpdatesDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
-import { useTimeZone } from '../../hooks/useTimeZone';
 import type { Locale } from '../../utils/locale';
 import { adminStubRouteBySlug } from './adminCatalog';
 import { AdminTestimonialImageManager } from './AdminTestimonialImageManager';
@@ -89,15 +87,6 @@ function requiredRating(value: number | null, locale: Locale): string | undefine
     return undefined;
 }
 
-function DetailField({ label, value }: { label: string; value: ReactNode }) {
-    return (
-        <div className="grid gap-1">
-            <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</dt>
-            <dd className="text-sm whitespace-pre-wrap text-foreground">{value}</dd>
-        </div>
-    );
-}
-
 export function AdminCookTestimonialPage({
     data,
     cookTestimonialId,
@@ -106,7 +95,6 @@ export function AdminCookTestimonialPage({
     cookTestimonialId: string;
 }) {
     const locale = useLocale();
-    const timeZone = useTimeZone();
     const navigate = useNavigate();
     const client = useClient();
     const seed = data.currentSession.user?.admin?.cookTestimonial ?? null;
@@ -120,7 +108,6 @@ export function AdminCookTestimonialPage({
     const [deleteBusy, setDeleteBusy] = useState(false);
     const [confirm, setConfirm] = useState<'publish' | 'unpublish' | 'delete' | null>(null);
     const [previewOpen, setPreviewOpen] = useState(false);
-    const empty = { de: 'Nicht angegeben', en: 'Not set' }[locale];
 
     const form = useForm({
         defaultValues: testimonial
@@ -227,6 +214,7 @@ export function AdminCookTestimonialPage({
 
     const crumbLabel = testimonial?.displayAuthorName || adminCookTestimonialPageTitle[locale];
     const formBusy = isSubmitting || publishBusy || deleteBusy;
+    const publicationTone = testimonial?.publicationStatus === 'PUBLISHED' ? 'success' : 'warning';
 
     return (
         <AdminPageChrome
@@ -298,38 +286,12 @@ export function AdminCookTestimonialPage({
                             )
                         }
                     >
-                        <div className="grid gap-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <h1 className="font-serif text-3xl/tight text-foreground">{testimonial.displayAuthorName}</h1>
-                                <Badge variant={testimonial.publicationStatus === 'PUBLISHED' ? 'default' : 'secondary'}>
-                                    {testimonialPublicationStatusLabel(testimonial.publicationStatus, locale)}
-                                </Badge>
-                            </div>
-                            <TestimonialRatingStars rating={testimonial.rating} />
-                            <p className="text-sm text-muted-foreground">
-                                {formatDate(testimonial.createdAt, { locale, timeZone, dateStyle: 'medium' })}
-                            </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <h1 className="font-serif text-3xl/tight text-foreground">{adminCookTestimonialPageTitle[locale]}</h1>
+                            <StatusBadge tone={publicationTone}>
+                                {testimonialPublicationStatusLabel(testimonial.publicationStatus, locale)}
+                            </StatusBadge>
                         </div>
-
-                        <div className="grid gap-2">
-                            <h2 className="text-sm font-medium text-foreground">{{ de: 'Eingereicht von', en: 'Submitted by' }[locale]}</h2>
-                            <div className="flex flex-wrap items-center gap-3 text-sm">
-                                <Link
-                                    to="/{-$locale}/admin/users/$userId"
-                                    params={{ userId: testimonial.cook.user.userId }}
-                                    className="text-foreground hover:underline"
-                                >
-                                    {userDisplayName(testimonial.cook.user)} ({testimonial.cook.user.emailAddress})
-                                </Link>
-                                {testimonial.bookingRequestOfferId ? (
-                                    <AdminTestimonialOfferLink bookingRequestOfferId={testimonial.bookingRequestOfferId} />
-                                ) : (
-                                    <span className="text-muted-foreground">{{ de: 'Nicht verknüpft', en: 'Not linked' }[locale]}</span>
-                                )}
-                            </div>
-                        </div>
-
-                        <AdminTestimonialPublicPagePlacementsSection placements={testimonial.publicPagePlacements} />
 
                         {testimonial.lowRatingAnswers ? (
                             <StatusAlert tone="warning" title={{ de: 'Niedrige Bewertung', en: 'Low rating' }[locale]}>
@@ -365,149 +327,137 @@ export function AdminCookTestimonialPage({
                         ) : null}
 
                         {editing ? (
-                            <form
-                                id={FORM_ID}
-                                className="grid gap-4"
-                                onSubmit={(event) => {
-                                    event.preventDefault();
-                                    void form.handleSubmit();
-                                }}
-                            >
-                                <h2 className="text-sm font-medium text-foreground">{{ de: 'Inhalt', en: 'Content' }[locale]}</h2>
-                                <form.Field name="authorName">
-                                    {(field) => (
-                                        <div className="grid gap-1.5">
-                                            <label htmlFor={field.name} className="text-sm font-medium">
-                                                {{ de: 'Name (Override)', en: 'Name (override)' }[locale]}
-                                            </label>
-                                            <Input
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(event) => field.handleChange(event.target.value)}
-                                                placeholder={testimonial.displayAuthorName}
-                                            />
-                                        </div>
-                                    )}
-                                </form.Field>
-                                <form.Field name="location">
-                                    {(field) => (
-                                        <div className="grid gap-1.5">
-                                            <label htmlFor={field.name} className="text-sm font-medium">
-                                                {{ de: 'Ort (Override)', en: 'Location (override)' }[locale]}
-                                            </label>
-                                            <Input
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(event) => field.handleChange(event.target.value)}
-                                                placeholder={testimonial.displayLocation ?? undefined}
-                                            />
-                                        </div>
-                                    )}
-                                </form.Field>
-                                <form.Field name="occasion">
-                                    {(field) => (
-                                        <div className="grid gap-1.5">
-                                            <label htmlFor={field.name} className="text-sm font-medium">
-                                                {{ de: 'Anlass (Override)', en: 'Occasion (override)' }[locale]}
-                                            </label>
-                                            <Input
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(event) => field.handleChange(event.target.value)}
-                                                placeholder={testimonial.displayOccasion ?? undefined}
-                                            />
-                                        </div>
-                                    )}
-                                </form.Field>
-                                <form.Field name="body">
-                                    {(field) => (
-                                        <div className="grid gap-1.5">
-                                            <label htmlFor={field.name} className="text-sm font-medium">
-                                                {{ de: 'Text', en: 'Body' }[locale]}
-                                            </label>
-                                            <Textarea
-                                                id={field.name}
-                                                value={field.state.value}
-                                                onBlur={field.handleBlur}
-                                                onChange={(event) => field.handleChange(event.target.value)}
-                                                rows={5}
-                                            />
-                                        </div>
-                                    )}
-                                </form.Field>
-                                <form.Field
-                                    name="rating"
-                                    validators={{
-                                        onSubmit: ({ value }) => requiredRating(value, locale),
+                            <>
+                                <form
+                                    id={FORM_ID}
+                                    className="grid gap-4"
+                                    onSubmit={(event) => {
+                                        event.preventDefault();
+                                        void form.handleSubmit();
                                     }}
                                 >
-                                    {(field) => {
-                                        const errorMessage = fieldErrorText(field.state.meta.errors);
-                                        const showError = errorMessage != null && submissionAttempts > 0;
-                                        const errorId = `${field.name}-error`;
-                                        return (
+                                    <h2 className="text-sm font-medium text-foreground">{{ de: 'Inhalt', en: 'Content' }[locale]}</h2>
+                                    <form.Field name="authorName">
+                                        {(field) => (
                                             <div className="grid gap-1.5">
-                                                <span className="text-sm font-medium">{{ de: 'Bewertung', en: 'Rating' }[locale]}</span>
-                                                <div aria-invalid={showError} aria-describedby={showError ? errorId : undefined}>
-                                                    <TestimonialRatingInput
-                                                        value={field.state.value}
-                                                        onChange={(next) => field.handleChange(next)}
-                                                    />
-                                                </div>
-                                                {showError ? (
-                                                    <p id={errorId} className="text-sm text-destructive" role="alert">
-                                                        {errorMessage}
-                                                    </p>
-                                                ) : null}
+                                                <label htmlFor={field.name} className="text-sm font-medium">
+                                                    {{ de: 'Name (Override)', en: 'Name (override)' }[locale]}
+                                                </label>
+                                                <Input
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(event) => field.handleChange(event.target.value)}
+                                                    placeholder={testimonial.displayAuthorName}
+                                                />
                                             </div>
-                                        );
-                                    }}
-                                </form.Field>
-                            </form>
+                                        )}
+                                    </form.Field>
+                                    <form.Field name="location">
+                                        {(field) => (
+                                            <div className="grid gap-1.5">
+                                                <label htmlFor={field.name} className="text-sm font-medium">
+                                                    {{ de: 'Ort (Override)', en: 'Location (override)' }[locale]}
+                                                </label>
+                                                <Input
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(event) => field.handleChange(event.target.value)}
+                                                    placeholder={testimonial.displayLocation ?? undefined}
+                                                />
+                                            </div>
+                                        )}
+                                    </form.Field>
+                                    <form.Field name="occasion">
+                                        {(field) => (
+                                            <div className="grid gap-1.5">
+                                                <label htmlFor={field.name} className="text-sm font-medium">
+                                                    {{ de: 'Anlass (Override)', en: 'Occasion (override)' }[locale]}
+                                                </label>
+                                                <Input
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(event) => field.handleChange(event.target.value)}
+                                                    placeholder={testimonial.displayOccasion ?? undefined}
+                                                />
+                                            </div>
+                                        )}
+                                    </form.Field>
+                                    <form.Field name="body">
+                                        {(field) => (
+                                            <div className="grid gap-1.5">
+                                                <label htmlFor={field.name} className="text-sm font-medium">
+                                                    {{ de: 'Text', en: 'Body' }[locale]}
+                                                </label>
+                                                <Textarea
+                                                    id={field.name}
+                                                    value={field.state.value}
+                                                    onBlur={field.handleBlur}
+                                                    onChange={(event) => field.handleChange(event.target.value)}
+                                                    rows={5}
+                                                />
+                                            </div>
+                                        )}
+                                    </form.Field>
+                                    <form.Field
+                                        name="rating"
+                                        validators={{
+                                            onSubmit: ({ value }) => requiredRating(value, locale),
+                                        }}
+                                    >
+                                        {(field) => {
+                                            const errorMessage = fieldErrorText(field.state.meta.errors);
+                                            const showError = errorMessage != null && submissionAttempts > 0;
+                                            const errorId = `${field.name}-error`;
+                                            return (
+                                                <div className="grid gap-1.5">
+                                                    <span className="text-sm font-medium">{{ de: 'Bewertung', en: 'Rating' }[locale]}</span>
+                                                    <div aria-invalid={showError} aria-describedby={showError ? errorId : undefined}>
+                                                        <TestimonialRatingInput
+                                                            value={field.state.value}
+                                                            onChange={(next) => field.handleChange(next)}
+                                                        />
+                                                    </div>
+                                                    {showError ? (
+                                                        <p id={errorId} className="text-sm text-destructive" role="alert">
+                                                            {errorMessage}
+                                                        </p>
+                                                    ) : null}
+                                                </div>
+                                            );
+                                        }}
+                                    </form.Field>
+                                </form>
+
+                                <div className="grid gap-3">
+                                    <h2 className="text-sm font-medium text-foreground">{{ de: 'Bilder', en: 'Images' }[locale]}</h2>
+                                    <AdminTestimonialImageManager imageUrls={testimonial.imageUrls} onSave={onSaveImages} />
+                                </div>
+                            </>
                         ) : (
-                            <section className="grid gap-4">
-                                <h2 className="text-sm font-medium text-foreground">{{ de: 'Inhalt', en: 'Content' }[locale]}</h2>
-                                <dl className="grid gap-4">
-                                    <DetailField label={{ de: 'Name', en: 'Name' }[locale]} value={testimonial.displayAuthorName} />
-                                    <DetailField
-                                        label={{ de: 'Ort', en: 'Location' }[locale]}
-                                        value={testimonial.displayLocation?.trim() ? testimonial.displayLocation : empty}
-                                    />
-                                    <DetailField
-                                        label={{ de: 'Anlass', en: 'Occasion' }[locale]}
-                                        value={testimonial.displayOccasion?.trim() ? testimonial.displayOccasion : empty}
-                                    />
-                                    <DetailField
-                                        label={{ de: 'Text', en: 'Body' }[locale]}
-                                        value={testimonial.body?.trim() ? testimonial.body : empty}
-                                    />
-                                    <DetailField
-                                        label={{ de: 'Bewertung', en: 'Rating' }[locale]}
-                                        value={<TestimonialRatingStars rating={testimonial.rating} />}
-                                    />
-                                </dl>
-                            </section>
+                            <AdminTestimonialDetailContent
+                                occasion={testimonial.displayOccasion}
+                                body={testimonial.body ?? ''}
+                                rating={testimonial.rating ?? null}
+                                imageUrls={testimonial.imageUrls}
+                            />
                         )}
 
-                        <div className="grid gap-3">
-                            <h2 className="text-sm font-medium text-foreground">{{ de: 'Bilder', en: 'Images' }[locale]}</h2>
-                            {editing ? (
-                                <AdminTestimonialImageManager imageUrls={testimonial.imageUrls} onSave={onSaveImages} />
-                            ) : testimonial.imageUrls.length > 0 ? (
-                                <div className="grid grid-cols-4 gap-2">
-                                    {testimonial.imageUrls.map((url) => (
-                                        <img key={url} src={url} alt="" className="aspect-square w-full object-cover" />
-                                    ))}
-                                </div>
-                            ) : (
-                                <p className="text-sm text-muted-foreground">
-                                    {{ de: 'Noch keine Bilder.', en: 'No images yet.' }[locale]}
-                                </p>
-                            )}
-                        </div>
+                        <AdminTestimonialAuthorCard
+                            user={{
+                                userId: testimonial.cook.user.userId,
+                                firstName: testimonial.cook.user.firstName,
+                                lastName: testimonial.cook.user.lastName,
+                                emailAddress: testimonial.cook.user.emailAddress,
+                                profilePictureUrl: testimonial.cook.user.profilePicture?.url,
+                            }}
+                            role="cook"
+                            bookingRequestOfferId={testimonial.bookingRequestOfferId}
+                        />
+
+                        <AdminTestimonialPublicPagePlacementsSection placements={testimonial.publicPagePlacements} />
                     </AdminPinnedFooterLayout>
 
                     <PageTestimonialDetailDialog

@@ -1,6 +1,8 @@
 import { Link } from '@tanstack/react-router';
+import { ChevronRightIcon } from 'lucide-react';
 
 import { useLocale } from '../hooks/useLocale';
+import { adminOverviewLinkCardChevronClassName, adminOverviewLinkCardClassName } from '../pages/admin/adminOverviewLinkCard';
 import { cn } from '../utils/cn';
 import { Badge } from './base/badge';
 
@@ -24,6 +26,21 @@ function kindLabel(kind: string, locale: 'de' | 'en'): string {
 
 function placementLabel(placement: AdminTestimonialPublicPagePlacement, locale: 'de' | 'en'): string {
     return locale === 'de' ? placement.labelDe : placement.labelEn || placement.labelDe;
+}
+
+function placementAdminRoute(placement: AdminTestimonialPublicPagePlacement): { to: string; params: Record<string, string> } | null {
+    switch (placement.kind) {
+        case 'CITY':
+            return { to: '/{-$locale}/admin/cities/$cityId', params: { cityId: placement.entityId } };
+        case 'PARTNER':
+            return { to: '/{-$locale}/admin/partners/$partnerId', params: { partnerId: placement.entityId } };
+        case 'OCCASION':
+            return { to: '/{-$locale}/admin/occasions/$occasionId', params: { occasionId: placement.entityId } };
+        case 'CHEF':
+            return { to: '/{-$locale}/admin/users/$userId', params: { userId: placement.entityId } };
+        default:
+            return null;
+    }
 }
 
 /** Compact chips for list cards (non-interactive inside a surrounding Link). */
@@ -54,54 +71,44 @@ export function AdminTestimonialPublicPagePlacementBadges({
     );
 }
 
-function PlacementAdminLink({ placement, label }: { placement: AdminTestimonialPublicPagePlacement; label: string }) {
-    switch (placement.kind) {
-        case 'CITY':
-            return (
-                <Link
-                    to="/{-$locale}/admin/cities/$cityId"
-                    params={{ cityId: placement.entityId }}
-                    className="text-foreground hover:underline"
-                >
-                    {label}
-                </Link>
-            );
-        case 'PARTNER':
-            return (
-                <Link
-                    to="/{-$locale}/admin/partners/$partnerId"
-                    params={{ partnerId: placement.entityId }}
-                    className="text-foreground hover:underline"
-                >
-                    {label}
-                </Link>
-            );
-        case 'OCCASION':
-            return (
-                <Link
-                    to="/{-$locale}/admin/occasions/$occasionId"
-                    params={{ occasionId: placement.entityId }}
-                    className="text-foreground hover:underline"
-                >
-                    {label}
-                </Link>
-            );
-        case 'CHEF':
-            return (
-                <Link
-                    to="/{-$locale}/admin/users/$userId"
-                    params={{ userId: placement.entityId }}
-                    className="text-foreground hover:underline"
-                >
-                    {label}
-                </Link>
-            );
-        default:
-            return <span>{label}</span>;
+function PlacementAdminCard({ placement }: { placement: AdminTestimonialPublicPagePlacement }) {
+    const locale = useLocale();
+    const route = placementAdminRoute(placement);
+    const title = placementLabel(placement, locale);
+    const description = kindLabel(placement.kind, locale);
+    const meta = placement.pathName
+        ? `/${placement.pathName}`
+        : placement.index != null
+          ? { de: `Position ${placement.index + 1}`, en: `Position ${placement.index + 1}` }[locale]
+          : null;
+
+    const body = (
+        <>
+            <span className="grid min-w-0 flex-1 gap-0.5">
+                <span className="flex flex-wrap items-center gap-2 font-medium">{title}</span>
+                <span className="truncate text-sm text-muted-foreground">{description}</span>
+                {meta != null ? <span className="text-xs text-muted-foreground">{meta}</span> : null}
+            </span>
+            {route ? <ChevronRightIcon className={adminOverviewLinkCardChevronClassName} aria-hidden /> : null}
+        </>
+    );
+
+    if (!route) {
+        return <div className={adminOverviewLinkCardClassName('flex items-center gap-3 px-4 py-3 text-foreground')}>{body}</div>;
     }
+
+    return (
+        <Link
+            to={route.to}
+            params={route.params}
+            className={adminOverviewLinkCardClassName('flex items-center gap-3 px-4 py-3 text-foreground')}
+        >
+            {body}
+        </Link>
+    );
 }
 
-/** Detail-page list with links to the admin editors (and cook user for CHEF). */
+/** Detail-page cards linking to the admin editors (and cook user for CHEF). */
 export function AdminTestimonialPublicPagePlacementsSection({
     placements,
 }: {
@@ -117,15 +124,12 @@ export function AdminTestimonialPublicPagePlacementsSection({
                     {{ de: 'Noch auf keiner öffentlichen Seite verwendet.', en: 'Not used on any public page yet.' }[locale]}
                 </p>
             ) : (
-                <ul className="grid gap-1.5 text-sm">
-                    {placements.map((placement) => {
-                        const label = `${kindLabel(placement.kind, locale)}: ${placementLabel(placement, locale)}`;
-                        return (
-                            <li key={`${placement.kind}-${placement.entityId}`}>
-                                <PlacementAdminLink placement={placement} label={label} />
-                            </li>
-                        );
-                    })}
+                <ul className="grid gap-2">
+                    {placements.map((placement) => (
+                        <li key={`${placement.kind}-${placement.entityId}`}>
+                            <PlacementAdminCard placement={placement} />
+                        </li>
+                    ))}
                 </ul>
             )}
         </div>
