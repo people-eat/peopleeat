@@ -16,6 +16,7 @@ import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 import { IMAGE_COMPRESS_PRESETS, IMAGE_CROP_ACCEPT, imageCompress } from '../utils/imageCropCompress';
 import type { Locale } from '../utils/locale';
+import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { Button } from './base/button';
 import { Spinner } from './base/spinner';
 import { Textarea } from './base/textarea';
@@ -54,6 +55,19 @@ type AuthorFallback = {
     occasion?: string | null;
 };
 
+/** Person being rated (cook for customers, guest for cooks). */
+type Counterpart = {
+    displayName: string;
+    profilePictureUrl?: string | null;
+};
+
+function initialsFromName(name: string): string {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+    return `${parts[0]![0] ?? ''}${parts[parts.length - 1]![0] ?? ''}`.toUpperCase();
+}
+
 type FormValues = {
     rating: number | null;
     body: string;
@@ -78,8 +92,8 @@ function requiredRating(value: number | null, locale: Locale): string | undefine
 function requiredCustomerBody(value: string, locale: Locale): string | undefined {
     if (value.trim().length === 0) {
         return {
-            de: 'Erzähl kurz, wie der Abend für dich war.',
-            en: 'Share a few words about how the evening felt.',
+            de: 'Bitte schreibe ein paar Worte zu deinem Event.',
+            en: 'Please write a few words about your event.',
         }[locale];
     }
     return undefined;
@@ -126,6 +140,7 @@ export function BookingRequestOfferTestimonialPanel({
     existing,
     missing,
     authorFallback,
+    counterpart,
     editing = false,
     onBusyChange,
     onSubmitted,
@@ -136,6 +151,7 @@ export function BookingRequestOfferTestimonialPanel({
     existing: ExistingTestimonial | null;
     missing: boolean;
     authorFallback: AuthorFallback;
+    counterpart: Counterpart;
     editing?: boolean;
     onBusyChange?: (busy: boolean) => void;
     onSubmitted?: () => void;
@@ -404,15 +420,15 @@ export function BookingRequestOfferTestimonialPanel({
     function renderImageField(ids: string[], setIds: (ids: string[]) => void) {
         return (
             <div className="grid gap-2">
-                <div className="grid gap-1">
+                <div className="grid gap-0.5">
                     <span className="text-sm font-medium text-foreground">
-                        {{ de: 'Bilder vom Abend hinzufügen', en: 'Add photos from the evening' }[locale]}
+                        {{ de: 'Teile deine Eindrücke', en: 'Share your impressions' }[locale]}
                     </span>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                         {
                             {
-                                de: 'Optional, aber ein Foto sagt oft mehr als Worte.',
-                                en: 'Optional, but a photo often says more than words.',
+                                de: `Optional. Bis zu ${MAX_IMAGES} Fotos vom Abend.`,
+                                en: `Optional. Up to ${MAX_IMAGES} photos from the evening.`,
                             }[locale]
                         }
                     </p>
@@ -447,10 +463,10 @@ export function BookingRequestOfferTestimonialPanel({
                                 variant="outline"
                                 disabled={busy}
                                 onClick={() => inputRef.current?.click()}
-                                className="aspect-square size-full min-h-0 border-dashed text-muted-foreground"
+                                className="aspect-square size-full min-h-0 min-w-16 border-dashed text-muted-foreground"
                                 aria-label={{ de: 'Bilder hinzufügen', en: 'Add photos' }[locale]}
                             >
-                                {uploadBusy ? <Spinner className="size-4" /> : <PlusIcon className="size-4" aria-hidden />}
+                                {uploadBusy ? <Spinner className="size-4" /> : <PlusIcon className="size-5" aria-hidden />}
                             </Button>
                         </li>
                     ) : null}
@@ -786,10 +802,14 @@ export function BookingRequestOfferTestimonialPanel({
         return null;
     }
 
+    const counterpartName = counterpart.displayName.trim();
+    const requiredHint = { de: 'erforderlich', en: 'required' }[locale];
+    const optionalHint = { de: 'optional', en: 'optional' }[locale];
+
     return (
         <form
             id={BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID}
-            className="grid max-w-xl gap-5"
+            className="grid max-w-xl gap-4 rounded-xl border border-border bg-card p-5"
             noValidate
             onSubmit={(event) => {
                 event.preventDefault();
@@ -797,23 +817,24 @@ export function BookingRequestOfferTestimonialPanel({
                 void form.handleSubmit();
             }}
         >
-            <div className="grid gap-1">
+            <div className="grid gap-3">
+                {counterpartName.length > 0 ? (
+                    <div className="flex items-center gap-2.5">
+                        <Avatar className="size-8 shrink-0">
+                            {counterpart.profilePictureUrl ? <AvatarImage src={counterpart.profilePictureUrl} alt="" /> : null}
+                            <AvatarFallback className="text-[10px]">{initialsFromName(counterpartName)}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0">
+                            <p className="truncate text-sm text-muted-foreground">{{ de: 'Bewertung für', en: 'Review for' }[locale]}</p>
+                            <p className="truncate text-sm font-medium text-foreground">{counterpartName}</p>
+                        </div>
+                    </div>
+                ) : null}
                 <h2 className="text-base font-medium text-foreground">
                     {role === 'customer'
-                        ? { de: 'Wie hat dir dein Event geschmeckt?', en: 'How did your evening taste?' }[locale]
-                        : { de: 'Wie war der Abend mit deinen Gästen?', en: 'How was the evening with your guests?' }[locale]}
+                        ? { de: 'Wie war dein Event?', en: 'How was your event?' }[locale]
+                        : { de: 'Wie war der Abend?', en: 'How was the evening?' }[locale]}
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                    {role === 'customer'
-                        ? {
-                              de: 'Teile den Moment, der hängen geblieben ist. Deine Worte helfen dem nächsten Gast, sich zu freuen.',
-                              en: 'Share the moment that stayed with you. Your words help the next guest look forward to theirs.',
-                          }[locale]
-                        : {
-                              de: 'Ein paar ehrliche Worte zur Zusammenarbeit helfen uns, peopleeat für dich und deine Gäste besser zu machen.',
-                              en: 'A few honest words about the collaboration help us make peopleeat better for you and your guests.',
-                          }[locale]}
-                </p>
             </div>
 
             <form.Field
@@ -831,7 +852,8 @@ export function BookingRequestOfferTestimonialPanel({
                     return (
                         <div className="grid gap-2">
                             <span className="text-sm font-medium text-foreground" id={`${field.name}-label`}>
-                                {{ de: 'Deine Sterne', en: 'Your rating' }[locale]}
+                                {{ de: 'Vergib deine Sterne', en: 'Give your stars' }[locale]}
+                                <span className="font-normal text-muted-foreground"> ({requiredHint})</span>
                             </span>
                             <div aria-invalid={showError} aria-describedby={showError ? errorId : undefined}>
                                 <TestimonialRatingInput
@@ -840,7 +862,7 @@ export function BookingRequestOfferTestimonialPanel({
                                         field.handleChange(next);
                                         field.handleBlur();
                                     }}
-                                    size="lg"
+                                    size="md"
                                 />
                             </div>
                             {showError ? (
@@ -869,8 +891,12 @@ export function BookingRequestOfferTestimonialPanel({
                         <div className="grid gap-2">
                             <label htmlFor="testimonial-body" className="text-sm font-medium text-foreground">
                                 {role === 'customer'
-                                    ? { de: 'Erzähl von dem Moment', en: 'Tell us about the moment' }[locale]
-                                    : { de: 'Dein Kommentar (optional)', en: 'Your comment (optional)' }[locale]}
+                                    ? { de: 'Erzähl von dem Abend', en: 'Tell us about the evening' }[locale]
+                                    : { de: 'Teile dein Feedback', en: 'Share your feedback' }[locale]}
+                                <span className="font-normal text-muted-foreground">
+                                    {' '}
+                                    ({role === 'customer' ? requiredHint : optionalHint})
+                                </span>
                             </label>
                             <Textarea
                                 id="testimonial-body"
@@ -885,12 +911,12 @@ export function BookingRequestOfferTestimonialPanel({
                                 placeholder={
                                     role === 'customer'
                                         ? {
-                                              de: 'Was hat dich am meisten berührt? Das Essen, die Atmosphäre, ein Lächeln…',
-                                              en: 'What moved you most? The food, the atmosphere, a smile…',
+                                              de: 'Essen, Atmosphäre, Service…',
+                                              en: 'Food, atmosphere, service…',
                                           }[locale]
                                         : {
-                                              de: 'Was solltest du dem nächsten Koch mitgeben?',
-                                              en: 'What would you want the next cook to know?',
+                                              de: 'Was soll der nächste Koch wissen?',
+                                              en: 'What should the next cook know?',
                                           }[locale]
                                 }
                             />

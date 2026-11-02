@@ -721,6 +721,10 @@ export function ProfileCustomerBookingRequestOfferPage({
                                         location: request?.exactEventAddress?.city ?? null,
                                         occasion: request?.occasion ?? null,
                                     }}
+                                    counterpart={{
+                                        displayName: offer.cook.user.display,
+                                        profilePictureUrl: offer.cook.user.profilePicture?.url ?? null,
+                                    }}
                                     editing={testimonialEditing}
                                     onBusyChange={setTestimonialBusy}
                                     onSubmitted={() => setTestimonialSubmitted(true)}

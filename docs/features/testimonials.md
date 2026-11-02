@@ -118,8 +118,10 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
   `PageTestimonialDetailDialog` with Edit review / View review in a dedicated action row under the card (stacked full-width on small
   screens); full self-edit of rating / text / photos with pinned Save/Cancel) — Review tab on customer and cook offer pages; compose Submit
   via `BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID`, edit via `BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID` in `ProfilePinnedFooterLayout`.
-  Outstanding Review tab uses inline `NotificationBadge`. Admin offer Review tab and detail `AdminTestimonialImageManager` use the same
-  multi-select + compress path (cap 8).
+  Compose form is a bordered card with counterpart avatar/name (“Bewertung für…”), prompt-style field titles (stars, body, photos) with
+  required/optional hints, `md` stars, and a photo prompt (“Teile deine Eindrücke” / “Share your impressions”, optional up to 8). Outstanding
+  Review tab uses inline `NotificationBadge`. Admin offer Review tab and detail `AdminTestimonialImageManager` use the same multi-select +
+  compress path (cap 8).
 - List nudges: customer cards read `testimonialMissing`, deep-link `?tab=testimonial`
 - Jobs: `bookingRequestOfferTestimonialReminder` (memory nudge, morning and evening reminders Europe/Berlin); schedule on payment success
   and datetime changes; cancel on request cancel
