@@ -29,6 +29,7 @@ import type {
     StripeWebhookEvent,
     StripeWebhookEventConstruct,
 } from './StripePayment';
+import { stripePaymentMethodOwnedCustomerId } from './stripePaymentMethodOwnedCustomerId';
 import { stripePayoutStatusFromStripe } from './stripePayoutStatus';
 import { stripeDisabledReasonFromStripe, stripeRequirementCategoriesFromKeys } from './stripeRequirementCategories';
 import { stripeSearchQuote } from './stripeSearchQuote';
@@ -90,7 +91,18 @@ export function stripePaymentCreate({
                 limit: 1,
             });
             const existingByEmail = byEmail.data[0];
-            if (existingByEmail) return existingByEmail.id;
+            if (existingByEmail) {
+                // Stamp userId so later lookups prefer this Customer instead of
+                // creating a second one that would not own the saved card.
+                if (existingByEmail.metadata?.userId !== userId) {
+                    const name = customerDisplayName(firstName, lastName);
+                    await stripe.customers.update(existingByEmail.id, {
+                        metadata: { ...existingByEmail.metadata, userId },
+                        ...(name ? { name } : {}),
+                    });
+                }
+                return existingByEmail.id;
+            }
         }
 
         const created = await stripe.customers.create({
@@ -99,6 +111,34 @@ export function stripePaymentCreate({
             metadata: { userId },
         });
         return created.id;
+    }
+
+    /**
+     * Off-session charges must use the Customer that already owns the
+     * PaymentMethod. `customerEnsure` can resolve a different Customer when a
+     * legacy email match lacked `metadata.userId` and a later ensure created a
+     * second Customer for the same user.
+     */
+    async function customerIdForPaymentMethod(paymentMethodId: string, user: StripeCustomerInput): Promise<string> {
+        const stripe = clientRequire();
+        const paymentMethod = await stripe.paymentMethods.retrieve(paymentMethodId);
+        const ownedCustomerId = stripePaymentMethodOwnedCustomerId(paymentMethod.customer);
+
+        if (ownedCustomerId) {
+            const owned = await stripe.customers.retrieve(ownedCustomerId);
+            if (!('deleted' in owned && owned.deleted)) {
+                if (owned.metadata?.userId !== user.userId) {
+                    await stripe.customers.update(ownedCustomerId, {
+                        metadata: { ...owned.metadata, userId: user.userId },
+                    });
+                }
+                return ownedCustomerId;
+            }
+        }
+
+        const customerId = await customerEnsure(user);
+        await stripe.paymentMethods.attach(paymentMethodId, { customer: customerId });
+        return customerId;
     }
 
     async function paymentIntentCreateWithSplitInternal({
@@ -259,7 +299,7 @@ export function stripePaymentCreate({
         },
 
         async paymentIntentCreateFromPaymentMethodWithSplit(options: StripePaymentIntentCreateFromPaymentMethodWithSplit) {
-            const customerId = await customerEnsure(options.user);
+            const customerId = await customerIdForPaymentMethod(options.paymentMethodId, options.user);
             const confirm = options.confirm !== false;
             return paymentIntentCreateWithSplitInternal({
                 customerId,
