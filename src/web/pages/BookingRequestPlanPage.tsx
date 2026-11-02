@@ -515,7 +515,7 @@ function BookingRequestPlanForetasteCarousel({ locale }: { locale: 'de' | 'en' }
             scroller.removeEventListener('scroll', updateScrollState);
             resizeObserver.disconnect();
         };
-    }, [updateScrollState]);
+    }, []);
 
     function scrollByCard(direction: -1 | 1) {
         const scroller = scrollerRef.current;
@@ -675,7 +675,7 @@ export function BookingRequestPlanPage({
 
     useEffect(() => {
         syncSearch(values, step);
-    }, [debouncedDraftKey, syncSearch, values, step]);
+    }, [debouncedDraftKey, values, step]);
 
     useEffect(() => {
         if (partner?.promo?.redeemCode && !values.redeemCode) {

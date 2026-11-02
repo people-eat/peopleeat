@@ -388,6 +388,11 @@ Multi-field edit / create forms use [`@tanstack/react-form`](https://tanstack.co
 - Read cross-field / submit UI state with `useSelector(form.store, selector)` (e.g. `isSubmitting`, values needed outside a `Field`).
 - Resync from server/subscription updates with `form.reset(nextValues)`; patch a single value (uploads, combobox picks) with
   `form.setFieldValue`.
+- Keep `defaultValues` referentially stable (module-level const or `useState(() => …)`). `useForm` calls `update(opts)` every render; a
+  fresh object can reapply defaults and fight a later `reset`. When seeding an already-mounted form from existing data, prefer
+  `form.reset(nextValues, { keepDefaultValues: true })` so reset does not replace the stable empty defaults.
+- Do not put `useEffectEvent(…)` results in Effect dependency arrays. React returns a new function identity every render; listing it
+  re-fires the Effect forever (e.g. reset loops). Depend on the real inputs (`editing`, ids) and call the Effect Event inside.
 - Keep search filters, single toggles, and dialog one-liners on local state — TanStack Form is for structured field sets with Save / Submit.
 
 Reference surfaces: `ProfileCookMealEditPage`, `ProfileCookMenuEditPage`, `ProfileCookChefProfileEditPage`,

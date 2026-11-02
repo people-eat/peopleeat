@@ -150,7 +150,7 @@ export function ProfileCookWalletPage({ data, search }: { data: GqlCProfileCookW
                 setBusy(false);
             }
         })();
-    }, [cook, locale, navigate, pathname, refreshStripeDetails, search.stripeRefresh, search.stripeReturn, startOnboarding, syncStatus]);
+    }, [cook, locale, navigate, pathname, search.stripeRefresh, search.stripeReturn, startOnboarding, syncStatus]);
 
     async function onStartOnboarding() {
         if (!cook?.isApprovedByAdmin) return;

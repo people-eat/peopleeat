@@ -513,7 +513,7 @@ export function BookingRequestFormPage({
         const seededCode = seededValues.redeemCode.trim();
         if (seededCode.length === 0) return;
         redeemDiscountOnSeed(seededCode);
-    }, [redeemDiscountOnSeed, seededValues.redeemCode]);
+    }, [seededValues.redeemCode]);
 
     function goNext() {
         if (step === 'message') {

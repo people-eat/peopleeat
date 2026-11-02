@@ -77,6 +77,15 @@ type FormValues = {
     additionalFeedback: string;
 };
 
+const EMPTY_FORM_VALUES: FormValues = {
+    rating: null,
+    body: '',
+    imageFileUploadIds: [],
+    whatWentWrong: '',
+    wouldRecommend: null,
+    additionalFeedback: '',
+};
+
 function fieldErrorText(errors: unknown[]): string | undefined {
     const first = errors[0];
     return typeof first === 'string' && first.length > 0 ? first : undefined;
@@ -170,17 +179,8 @@ export function BookingRequestOfferTestimonialPanel({
     const [, updateCustomer] = useMutation(UserBookingRequestOfferTestimonialUpdateDocument);
     const [, updateCook] = useMutation(CookBookingRequestOfferTestimonialUpdateDocument);
 
-    const defaultValues: FormValues = {
-        rating: null,
-        body: '',
-        imageFileUploadIds: [],
-        whatWentWrong: '',
-        wouldRecommend: null,
-        additionalFeedback: '',
-    };
-
     const form = useForm({
-        defaultValues,
+        defaultValues: EMPTY_FORM_VALUES,
         onSubmit: async ({ value }) => {
             const rating = value.rating;
             if (rating == null) return;
@@ -246,7 +246,7 @@ export function BookingRequestOfferTestimonialPanel({
     const hadLowRatingAnswers = shownBase != null && shownBase.rating != null && shownBase.rating < 5;
 
     const editForm = useForm({
-        defaultValues,
+        defaultValues: EMPTY_FORM_VALUES,
         onSubmit: async ({ value }) => {
             const rating = value.rating;
             if (rating == null) return;
@@ -332,25 +332,28 @@ export function BookingRequestOfferTestimonialPanel({
     useEffect(() => {
         reportBusy(busy);
         return () => reportBusy(false);
-    }, [busy, reportBusy]);
+    }, [busy]);
 
     const syncEditFormFromShown = useEffectEvent(() => {
         if (shown == null) return;
-        editForm.reset({
-            rating: shown.rating,
-            body: shown.body,
-            imageFileUploadIds: imageIdsFromUrls(shown.imageUrls),
-            whatWentWrong: '',
-            wouldRecommend: null,
-            additionalFeedback: '',
-        });
+        editForm.reset(
+            {
+                rating: shown.rating,
+                body: shown.body,
+                imageFileUploadIds: imageIdsFromUrls(shown.imageUrls),
+                whatWentWrong: '',
+                wouldRecommend: null,
+                additionalFeedback: '',
+            },
+            { keepDefaultValues: true },
+        );
         setUploadError(null);
     });
 
     useEffect(() => {
         if (!editing) return;
         syncEditFormFromShown();
-    }, [editing, syncEditFormFromShown]);
+    }, [editing]);
 
     async function addFiles(fileList: FileList | null, currentIds: string[], setIds: (ids: string[]) => void) {
         if (fileList == null || fileList.length === 0) return;

@@ -170,7 +170,7 @@ export function AdminLegalDraftPage({ data, kind }: { data: GqlCAdminLegalDocume
         }
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
-    }, [busy, canSave, onSaveDraft]);
+    }, [busy, canSave]);
 
     if (!admin || !draft) {
         return null;
