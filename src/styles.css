@@ -166,13 +166,13 @@
      * Chrome shifts the whole page left/right when overflow content appears
      * (tab switches) or disappears (dialog scroll-lock).
      *
-     * `both-edges` mirrors the reserve on the opposite inline edge so centered
-     * layouts stay optically balanced (stable alone looks like extra right
-     * padding). Overlay-scrollbar OSes skip the gutter entirely.
+     * One-sided only — `both-edges` left a matching empty strip on the left that
+     * reads as a white gap against full-bleed dark heroes (landing). Overlay-
+     * scrollbar OSes skip the gutter entirely.
      *
      * Full-height layouts where an inner element owns the page scrollport opt
      * out via `.workspace-no-document-scroll` — the document never scrolls
-     * there, so the idle gutters would sit as empty strips.
+     * there, so the idle gutter would sit as an empty strip.
      */
     /*
      * Thin classic scrollbars everywhere. Chat already used `scrollbar-thin`;
@@ -188,7 +188,7 @@
      * overscroll paints the document root, not `body`, so an unset `html`
      * flashes white past the content edges. */
     html {
-        scrollbar-gutter: stable both-edges;
+        scrollbar-gutter: stable;
         color-scheme: light;
         @apply bg-background;
     }

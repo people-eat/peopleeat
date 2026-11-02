@@ -58,11 +58,12 @@ Two scroll models share one stylesheet:
 
 | Model                                                                                                  | Who scrolls                                             | Document gutter                                          | Inset gutter                                              |
 | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------- |
-| Public pages                                                                                           | `html` / document                                       | `scrollbar-gutter: stable both-edges` on `html`          | n/a                                                       |
+| Public pages                                                                                           | `html` / document                                       | `scrollbar-gutter: stable` on `html` (one-sided)         | n/a                                                       |
 | Workspace shells (`/admin/*`, `/profile/*`, `/booking-request/form`, `/booking-request/$id/submitted`) | Inset pane between chrome (and optional assistant rail) | Opt out via `html.workspace-no-document-scroll` (`auto`) | One-sided `scrollbar-gutter-stable` on the scrolling pane |
 
-Public pages keep symmetric document gutters so overflow and scroll-lock do not jump the layout left/right. Workspace routes never
-document-scroll, so reserving gutters on `html` would be empty wasted strips next to the sidebars — `RootDocument` toggles
+Public pages reserve a one-sided document gutter so overflow and scroll-lock do not jump the layout left/right. Do **not** use
+`both-edges` on `html` — the mirrored left strip reads as a white gap against full-bleed dark heroes. Workspace routes never
+document-scroll, so reserving a gutter on `html` would be an empty wasted strip next to the sidebars — `RootDocument` toggles
 `.workspace-no-document-scroll` from the locale-stripped path (`isWorkspaceNoDocumentScrollPath`). Overlay-scrollbar environments (typical
 macOS) do not paint gutters either way.
 
@@ -85,8 +86,7 @@ Classic scrollbar thickness is `scrollbar-width: thin` on `*` in `src/styles.css
 dialogs) matches — do not leave some surfaces on the platform default.
 
 Inset owners: `AdminPageChrome`, profile shell content panes, pinned-footer layouts, booking-form scroller, and chat transcripts. Keep those
-one-sided (lane next to the classic scrollbar only) — do **not** use `both-edges` inside shells or chat; the left edge is already framed by
-nav/header.
+one-sided (lane next to the classic scrollbar only) — do **not** use `both-edges` on the document, shells, or chat.
 
 Pinned-footer layouts (`[data-pinned-footer-layout]`) and other nested-scroll owners (`[data-workspace-fill]`) introduce an inner
 scrollport. Shell panes marked `workspace-inset-scroll` use `:has([data-pinned-footer-layout])` / `:has([data-workspace-fill])` (descendant,

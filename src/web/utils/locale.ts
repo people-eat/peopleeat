@@ -56,7 +56,7 @@ export function localePath(locale: Locale, path: `/${string}`): string {
 
 /**
  * Workspace shells lock the document and scroll an inset pane instead.
- * Those routes opt out of `html { scrollbar-gutter: stable both-edges }` via
+ * Those routes opt out of `html { scrollbar-gutter: stable }` via
  * `.workspace-no-document-scroll` — see docs/styles/theme.md.
  */
 export function isWorkspaceNoDocumentScrollPath(path: string): boolean {
