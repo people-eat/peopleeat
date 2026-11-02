@@ -157,6 +157,7 @@ export function ProfileCustomerBookingRequestEditPage({
     const user = useUserUpdatesSeed(seedUser, ProfileCustomerBookingRequestPageUpdatesDocument, { bookingRequestId });
     const request = user?.bookingRequest ?? null;
     const offerAmendmentEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_AMENDMENT');
+    const priceImpactPreviewEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW');
     const canUpdate = request != null && bookingRequestCanUpdate(request);
     const amendableOffer =
         request?.offers.find((offer) => offer.canRequestParticipantAmendment) ??
@@ -344,7 +345,7 @@ export function ProfileCustomerBookingRequestEditPage({
     const [{ data: priceImpactData, fetching: priceImpactFetching }] = useQuery({
         query: ProfileCustomerBookingRequestEditPriceImpactDocument,
         variables: { bookingRequestId, participantsAdult: adultCount, participantsDiscounted: childCount },
-        pause: !headcountChanged || !hasOffers,
+        pause: !priceImpactPreviewEnabled || !headcountChanged || !hasOffers,
     });
     const priceImpactsRaw = priceImpactData?.currentSession.user?.bookingRequest?.priceImpact ?? [];
     const amendmentOfferId = isParticipantAmendmentMode
@@ -635,7 +636,7 @@ export function ProfileCustomerBookingRequestEditPage({
                         )}
                     </form.Field>
                 </div>
-                {headcountChanged && hasOffers ? (
+                {priceImpactPreviewEnabled && headcountChanged && hasOffers ? (
                     <BookingRequestOfferPriceImpactPreview impacts={priceImpacts} fetching={priceImpactFetching} locale={locale} />
                 ) : null}
                 {!isParticipantAmendmentMode ? (

@@ -21,6 +21,7 @@ Keys today:
 - Booking request restrictions
 - Offer chat emoji reactions
 - Offer participant and venue amendment after accept (cook-gated propose / accept)
+- Booking-request edit auto price-adjustment preview (customer headcount `priceImpact`)
 - Offer shopping / preparations done (cook mark that locks further customer amendments)
 - Customer assistant
 - Cook assistant
@@ -101,6 +102,9 @@ Wired today:
   booking-request edit → cook accept/decline → Stripe delta); see
   [booking-offer-participant-amendment.md](./booking-offer-participant-amendment.md). Customer create / cancel reject when off for the
   acting `userId`; cook accept/decline of an already-pending proposal stay available. Admin shells keep amendment visibility for ops
+- **Offer price-impact preview** (`BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW`) — shows the live auto price-adjustment banner on the
+  customer booking-request edit page when guest count changes and offers exist; pauses the `priceImpact` query when off. Admin edit keeps
+  the preview (ops shell). Server auto-scale on save is unrelated and stays always on
 - **Offer preparations complete** (`BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE`) — cook **shopping / preparations done** control that locks
   further customer amendments as a side effect; cook prep-complete rejects when off for the cook `userId`. Already-locked offers still show
   the lock state (and admin clear) when the toggle is off

@@ -19,6 +19,10 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
         de: 'Angebot: Teilnehmer und Ort nach Annahme ändern',
         en: 'Offer: participant and venue amendment after accept',
     },
+    BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW: {
+        de: 'Anfrage: Vorschau Preisanpassung bei Teilnehmerzahl',
+        en: 'Request: auto price-adjustment preview on guest count',
+    },
     BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE: {
         de: 'Angebot: Einkauf / Vorbereitung erledigt',
         en: 'Offer: shopping / preparations done',
@@ -66,6 +70,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     BOOKING_REQUEST_OFFER_AMENDMENT: {
         de: 'Erlaubt nach beiderseitiger Annahme Änderungen an Teilnehmerzahl und Ort (Kunde schlägt vor, Koch nimmt an oder lehnt ab).',
         en: 'Allows post-accept changes to participants and venue (customer proposes, cook accepts or declines).',
+    },
+    BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW: {
+        de: 'Zeigt auf der Kunden-Bearbeiten-Seite die Live-Vorschau, wie sich offene Angebote bei geänderter Teilnehmerzahl preislich anpassen.',
+        en: 'Shows the live preview on the customer edit page of how open offers auto-adjust price when guest count changes.',
     },
     BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE: {
         de: 'Erlaubt dem Koch, Einkauf bzw. Vorbereitung als erledigt zu markieren. Danach sind Kundenänderungen an Teilnehmerzahl und Ort gesperrt.',
