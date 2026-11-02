@@ -404,7 +404,7 @@ export function ProfileCustomerBookingRequestEditPage({
                             {isSubmitting
                                 ? { de: 'Senden…', en: 'Sending…' }[locale]
                                 : isParticipantAmendmentMode
-                                  ? { de: 'Vorschlag senden', en: 'Send proposal' }[locale]
+                                  ? { de: 'Änderungen anfragen', en: 'Request changes' }[locale]
                                   : { de: 'Speichern', en: 'Save' }[locale]}
                         </Button>
                     ) : null}
@@ -433,14 +433,11 @@ export function ProfileCustomerBookingRequestEditPage({
                               }[locale]}
                     </StatusAlert>
                 ) : (
-                    <StatusAlert
-                        tone="warning"
-                        title={{ de: 'Koch muss die Buchungsänderung bestätigen', en: 'Chef must confirm the booking change' }[locale]}
-                    >
+                    <StatusAlert tone="warning" title={{ de: 'Änderung deiner Buchung', en: 'Change to your booking' }[locale]}>
                         {
                             {
-                                de: 'Nach der gemeinsamen Annahme ändern sich Preis und Zahlung erst, wenn der Koch zustimmt. Du kannst Teilnehmerzahl und Veranstaltungsort vorschlagen. Datum, Anlass und Präferenzen bleiben unverändert.',
-                                en: 'After both sides accepted, price and payment change only when the chef agrees. You can propose a new guest count and venue. Date, occasion, and preferences stay unchanged.',
+                                de: 'Du kannst hier die Teilnehmerzahl oder den Veranstaltungsort ändern. Dadurch kann sich auch der Preis ändern. Dein Koch muss die Änderungen bestätigen, bevor sie wirksam werden.',
+                                en: 'You can change the guest count or venue here. This may also change the price. Your chef must confirm the changes before they take effect.',
                             }[locale]
                         }
                     </StatusAlert>

@@ -50,8 +50,14 @@ export function BookingRequestOfferTravelImpactPreview({
             <StatusAlert tone="info" title={{ de: 'Keine Änderung der Fahrtkosten', en: 'No change to travel costs' }[locale]}>
                 {
                     {
-                        de: 'Für die bestehenden Angebote bleibt die Fahrtstrecke gleich.',
-                        en: 'Travel distance stays the same for existing offers.',
+                        de:
+                            impacts.length === 1
+                                ? 'Für das bestehende Angebot bleibt die Fahrtstrecke gleich.'
+                                : 'Für die bestehenden Angebote bleibt die Fahrtstrecke gleich.',
+                        en:
+                            impacts.length === 1
+                                ? 'Travel distance stays the same for the existing offer.'
+                                : 'Travel distance stays the same for existing offers.',
                     }[locale]
                 }
             </StatusAlert>
@@ -63,8 +69,12 @@ export function BookingRequestOfferTravelImpactPreview({
             tone="warning"
             title={
                 {
-                    de: emphasizeOnSave ? 'Fahrtkosten-Wirkung beim Speichern' : 'Auswirkung auf Angebote',
-                    en: emphasizeOnSave ? 'Travel impact on save' : 'Impact on offers',
+                    de: emphasizeOnSave
+                        ? 'Fahrtkosten-Wirkung beim Speichern'
+                        : changed.length === 1
+                          ? 'Auswirkung auf Angebot'
+                          : 'Auswirkung auf Angebote',
+                    en: emphasizeOnSave ? 'Travel impact on save' : changed.length === 1 ? 'Impact on offer' : 'Impact on offers',
                 }[locale]
             }
         >
@@ -134,8 +144,14 @@ export function BookingRequestOfferPriceImpactPreview({
             <StatusAlert tone="info" title={{ de: 'Keine Preisänderung', en: 'No price change' }[locale]}>
                 {
                     {
-                        de: 'Für die bestehenden Angebote bleibt der Menüpreis gleich.',
-                        en: 'Menu price stays the same for existing offers.',
+                        de:
+                            impacts.length === 1
+                                ? 'Für das bestehende Angebot bleibt der Menüpreis gleich.'
+                                : 'Für die bestehenden Angebote bleibt der Menüpreis gleich.',
+                        en:
+                            impacts.length === 1
+                                ? 'Menu price stays the same for the existing offer.'
+                                : 'Menu price stays the same for existing offers.',
                     }[locale]
                 }
             </StatusAlert>
@@ -147,8 +163,12 @@ export function BookingRequestOfferPriceImpactPreview({
             tone="warning"
             title={
                 {
-                    de: showCookPayout ? 'Preiswirkung beim Speichern' : 'Auswirkung auf Angebote',
-                    en: showCookPayout ? 'Price impact on save' : 'Impact on offers',
+                    de: showCookPayout
+                        ? 'Preiswirkung beim Speichern'
+                        : changed.length === 1
+                          ? 'Auswirkung auf Angebot'
+                          : 'Auswirkung auf Angebote',
+                    en: showCookPayout ? 'Price impact on save' : changed.length === 1 ? 'Impact on offer' : 'Impact on offers',
                 }[locale]
             }
         >
