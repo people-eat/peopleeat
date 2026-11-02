@@ -3911,6 +3911,7 @@ export type GqlCFeatureToggleKey =
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_WALLET_STRIPE_BALANCE'
+    | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
     | 'WHATSAPP_ENGLISH_TEMPLATES';
@@ -8532,6 +8533,7 @@ export type GqlCHomePageQueryVariables = Exact<{ [key: string]: never }>;
 export type GqlCHomePageQuery = {
     currentSession: {
         sessionId: string;
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
         user: {
             emailAddress: string | null;
             firstName: string;
@@ -41020,6 +41022,7 @@ export const HomePageDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'user' },

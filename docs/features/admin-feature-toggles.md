@@ -27,6 +27,7 @@ Keys today:
 - Meal publication
 - Menu publication
 - WhatsApp English templates (when off, EN recipients get DE Meta template language codes)
+- Landing booking how-it-works section (muted loops + 60s film on `/` and `/en/`)
 
 Calls, scheduling, and WhatsApp webhook signature validation stay always on and are not toggles.
 
@@ -114,6 +115,8 @@ Wired today:
 - **AI menu evaluation** (`AI_MENU_EVALUATION`) — cook open / refresh / apply gates use the cook `userId`
 - **WhatsApp English templates** (`WHATSAPP_ENGLISH_TEMPLATES`) — when off (default until approved EN templates exist), lifecycle template
   sends use Meta language `de` even when the recipient locale is `en`; when on, EN locale maps to Meta language `en`
+- **Landing booking how-it-works** (`LANDING_BOOKING_HOW_IT_WORKS`) — shows `SectionBookingHowItWorks` on the home page when on; missing row
+  stays off. Public home reads `Session.activeFeatureToggleKeys` (global + signed-in override). See [landing.md](./landing.md)
 
 ## Decisions
 

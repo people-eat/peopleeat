@@ -119,6 +119,7 @@ export default [
             'scripts/migrationsCheck.ts',
             'scripts/migrationsReconcile.ts',
             'scripts/databaseWipe.ts',
+            'scripts/demoLandingVideoSeed.ts',
             'e2e/**/*.{ts,tsx}',
             'playwright.config.ts',
         ],

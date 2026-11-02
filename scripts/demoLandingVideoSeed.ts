@@ -9,14 +9,13 @@
  * Writes scripts/demo-landing-video-manifest.json with URLs, session cookie,
  * and clip deep-links for the ChatGPT recording brief.
  */
-import { config } from 'dotenv';
-import { eq, inArray, like, or } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { bookingRequestOfferPriceCalculate } from '../src/shared/bookingRequestOfferPrice';
-import { idCreate } from '../src/shared/idCreate';
+import { config } from 'dotenv';
+import { eq, inArray, like, or } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/node-postgres';
+
 import * as schema from '../src/server/db/schema';
 import {
     bookingRequestCooks,
@@ -26,8 +25,8 @@ import {
     bookingRequests,
     cookCallAvailabilityRules,
     cookCallSlotBookings,
-    cooks,
     cookieSettings,
+    cooks,
     featureToggles,
     meals,
     menuCourseMealOptions,
@@ -36,6 +35,8 @@ import {
     sessions,
     users,
 } from '../src/server/db/schema';
+import { bookingRequestOfferPriceCalculate } from '../src/shared/bookingRequestOfferPrice';
+import { idCreate } from '../src/shared/idCreate';
 
 config({ path: ['.env.local'] });
 
@@ -139,12 +140,9 @@ async function wipePreviousDemo(): Promise<void> {
     await db.delete(sessions).where(eq(sessions.sessionId, IDS.annaSessionId));
     await db.delete(sessions).where(inArray(sessions.userId, demoUserIds));
     await db.delete(users).where(inArray(users.userId, demoUserIds));
-    await db.delete(users).where(
-        or(
-            like(users.emailAddress, 'demo.landing.video%@peopleeat.demo'),
-            like(users.emailAddress, '%@demo.people-eat.local'),
-        ),
-    );
+    await db
+        .delete(users)
+        .where(or(like(users.emailAddress, 'demo.landing.video%@peopleeat.demo'), like(users.emailAddress, '%@demo.people-eat.local')));
 }
 
 async function ensureRestrictionsOff(): Promise<void> {
@@ -157,12 +155,7 @@ async function ensureRestrictionsOff(): Promise<void> {
         });
 }
 
-async function insertUser(input: {
-    userId: string;
-    emailAddress: string;
-    firstName: string;
-    lastName: string;
-}): Promise<void> {
+async function insertUser(input: { userId: string; emailAddress: string; firstName: string; lastName: string }): Promise<void> {
     await db.insert(users).values({
         userId: input.userId,
         emailAddress: input.emailAddress,
@@ -632,10 +625,7 @@ async function main(): Promise<void> {
     ]);
 
     // Sibling offers: minimal create milestones so cards look live.
-    for (const [offerId, price] of [
-        [IDS.offerLenaId, lenaPrice] as const,
-        [IDS.offerSophieId, sophiePrice] as const,
-    ]) {
+    for (const [offerId, price] of [[IDS.offerLenaId, lenaPrice] as const, [IDS.offerSophieId, sophiePrice] as const]) {
         await db.insert(bookingRequestOfferEvents).values([
             {
                 bookingRequestOfferEventId: idCreate(),

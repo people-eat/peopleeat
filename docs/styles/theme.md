@@ -61,11 +61,11 @@ Two scroll models share one stylesheet:
 | Public pages                                                                                           | `html` / document                                       | `scrollbar-gutter: stable` on `html` (one-sided)         | n/a                                                       |
 | Workspace shells (`/admin/*`, `/profile/*`, `/booking-request/form`, `/booking-request/$id/submitted`) | Inset pane between chrome (and optional assistant rail) | Opt out via `html.workspace-no-document-scroll` (`auto`) | One-sided `scrollbar-gutter-stable` on the scrolling pane |
 
-Public pages reserve a one-sided document gutter so overflow and scroll-lock do not jump the layout left/right. Do **not** use
-`both-edges` on `html` — the mirrored left strip reads as a white gap against full-bleed dark heroes. Workspace routes never
-document-scroll, so reserving a gutter on `html` would be an empty wasted strip next to the sidebars — `RootDocument` toggles
-`.workspace-no-document-scroll` from the locale-stripped path (`isWorkspaceNoDocumentScrollPath`). Overlay-scrollbar environments (typical
-macOS) do not paint gutters either way.
+Public pages reserve a one-sided document gutter so overflow and scroll-lock do not jump the layout left/right. Do **not** use `both-edges`
+on `html` — the mirrored left strip reads as a white gap against full-bleed dark heroes. Workspace routes never document-scroll, so
+reserving a gutter on `html` would be an empty wasted strip next to the sidebars — `RootDocument` toggles `.workspace-no-document-scroll`
+from the locale-stripped path (`isWorkspaceNoDocumentScrollPath`). Overlay-scrollbar environments (typical macOS) do not paint gutters
+either way.
 
 ### Route scroll reset
 

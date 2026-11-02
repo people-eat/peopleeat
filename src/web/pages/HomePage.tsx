@@ -1,7 +1,9 @@
+import { featureToggleIsActive } from '../../shared/featureToggle';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import type { GqlCHomePageQuery } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { SectionBookingHowItWorks } from '../sections/SectionBookingHowItWorks';
 import { SectionCities } from '../sections/SectionCities';
 import { SectionComparison } from '../sections/SectionComparison';
 import { SectionCustomerTestimonials } from '../sections/SectionCustomerTestimonials';
@@ -15,6 +17,10 @@ import { SectionSupport } from '../sections/SectionSupport';
 
 export function HomePage({ loaderData }: { loaderData: GqlCHomePageQuery }) {
     const locale = useLocale();
+    const bookingHowItWorksEnabled = featureToggleIsActive(
+        loaderData.currentSession.activeFeatureToggleKeys,
+        'LANDING_BOOKING_HOW_IT_WORKS',
+    );
 
     return (
         <main id="main-content">
@@ -47,6 +53,7 @@ export function HomePage({ loaderData }: { loaderData: GqlCHomePageQuery }) {
 
                 <SectionExperienceSelection />
                 <SectionComparison />
+                {bookingHowItWorksEnabled ? <SectionBookingHowItWorks /> : null}
                 <SectionHowItWorks />
                 <SectionSharedExperiences />
                 <SectionCustomerTestimonials />

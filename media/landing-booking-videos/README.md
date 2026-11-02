@@ -38,7 +38,8 @@ Source speech is 46.52 seconds. Phrase placement leaves no pause longer than thr
 Speech speed is unchanged. The film has clean logo bookends, brief chapter labels, captions over UI, and selective zooms. Continuous
 captures retain real animations and hide the automated cursor. Both original synthesis and mastered WAV/MP3 tracks are retained for editing.
 
-Do not put unfinished takes under `public/`. Shipping into `public/home/booking-how-it-works/` remains a separate human step.
+Shipped home-page copies live under `public/home/booking-how-it-works/` (`SectionBookingHowItWorks`). After rebuilding exports, copy the
+updated loops, film, and posters there. Do not put unfinished takes under `public/`.
 
 Original recording brief: [`scripts/demo-landing-video-chatgpt-brief.md`](../../scripts/demo-landing-video-chatgpt-brief.md). Seed:
 `npm run demo:landing-video-seed`.

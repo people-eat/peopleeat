@@ -3,7 +3,8 @@
 # Landing booking video manifest
 
 **Revision 3, 2 November 2026, Europe/Berlin.** German marketing assets following Anna’s birthday dinner in Munich: eight guests, Signature,
-Italian and seasonal preferences. Reusable files stay in this folder. Nothing has been published or copied into `public/`.
+Italian and seasonal preferences. Reusable masters stay in this folder. Shipped copies for the home section are under
+`public/home/booking-how-it-works/` (see `SectionBookingHowItWorks` on the landing page).
 
 ## Current exports
 
@@ -16,7 +17,8 @@ Italian and seasonal preferences. Reusable files stay in this folder. Nothing ha
 | `exports/film-60s.mp4`            | 60.0 s   | 1920×1080, H.264 + AAC  | Narrated booking journey with clean logo bookends, brief chapter titles, UI captions, and selective zooms |
 
 Exports use 30 fps, YUV 4:2:0, and fast-start metadata. Silent loops are about 8.3–8.7 MB each and have ten-frame start/end fades. WebP
-posters A–D show the first fully visible frame at 0.4 s; the film poster shows the request at 12 s.
+posters A–D show the first fully visible frame at 0.4 s; the film poster is the opening peopleeat logo bookend (~0.2 s). Shipped copy:
+`public/home/booking-how-it-works/film-60s.webp`.
 
 ## Revision 3 changes
 

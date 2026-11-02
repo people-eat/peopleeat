@@ -17,6 +17,7 @@ export const featureToggleKeys = [
     'PUBLICATION_MEALS',
     'PUBLICATION_MENUS',
     'WHATSAPP_ENGLISH_TEMPLATES',
+    'LANDING_BOOKING_HOW_IT_WORKS',
 ] as const;
 
 export type FeatureToggleKey = (typeof featureToggleKeys)[number];

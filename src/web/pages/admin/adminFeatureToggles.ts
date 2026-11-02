@@ -28,6 +28,10 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
     PUBLICATION_MEALS: { de: 'Veröffentlichung: Gerichte', en: 'Publication: meals' },
     PUBLICATION_MENUS: { de: 'Veröffentlichung: Menüs', en: 'Publication: menus' },
     WHATSAPP_ENGLISH_TEMPLATES: { de: 'WhatsApp: Englische Vorlagen', en: 'WhatsApp: English templates' },
+    LANDING_BOOKING_HOW_IT_WORKS: {
+        de: 'Startseite: So buchst du deinen Privatkoch',
+        en: 'Landing: how booking works',
+    },
 };
 
 const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, string>> = {
@@ -86,6 +90,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     WHATSAPP_ENGLISH_TEMPLATES: {
         de: 'Wenn an, erhalten englische Empfänger englische Meta-Vorlagen. Wenn aus, werden deutsche Sprachcodes verwendet.',
         en: 'When on, English recipients get English Meta templates. When off, German language codes are used.',
+    },
+    LANDING_BOOKING_HOW_IT_WORKS: {
+        de: 'Zeigt den Buchungsablauf mit Stumm-Loops und dem 60-Sekunden-Film auf der Startseite.',
+        en: 'Shows the booking-flow section with muted loops and the 60-second film on the landing page.',
     },
 };
 
