@@ -1137,7 +1137,7 @@ export function BookingRequestPlanPage({
                                     )}
                                 </div>
 
-                                <div className="overflow-hidden rounded-2xl border border-border bg-card">
+                                <div className="overflow-hidden rounded-2xl border border-border bg-card @3xl:grid @3xl:grid-cols-2 @3xl:items-stretch">
                                     <AppImage
                                         src={heroSrc}
                                         alt={
@@ -1146,9 +1146,9 @@ export function BookingRequestPlanPage({
                                                 en: 'Set table for your dinner',
                                             }[locale]
                                         }
-                                        className="aspect-video w-full object-cover"
+                                        className="aspect-video w-full object-cover @3xl:aspect-auto @3xl:h-full @3xl:min-h-72"
                                     />
-                                    <div className="grid gap-3 p-5 @md:p-6">
+                                    <div className="grid gap-3 p-5 @md:p-6 @3xl:content-center">
                                         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                                             <div className="flex items-center gap-1.5">
                                                 <div
