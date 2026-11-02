@@ -40,8 +40,10 @@ again; dropping from 5 to below 5 requires the follow-up. Default tab and red `N
   `AdminTestimonialImageManager`. AlertDialog confirms publish / unpublish / delete (not browser `confirm`). Star input, not numeric
   dropdowns. **Public view** opens the same detail dialog customers see. Submitter meta is labeled **Submitted by** / **Eingereicht von**
   (not “source”). Placement links open the matching admin city / partner / occasion / user editor.
-- Offer detail **Review** tab when completed or either side already has a testimonial — create, edit, publish, delete per side (separate
-  from the Offer tab); publish/unpublish/delete use AlertDialogs.
+- Offer detail **Review** tab when completed or either side already has a testimonial — side-by-side Customer → cook and Cook → guest
+  columns (`AdminBookingRequestOfferTestimonialsSection`). Missing side shows the create form (including draft photo upload via
+  `imageFileUploadIds`); existing side is a read-only `PageTestimonialCardFace` with photo manager, Edit / publish / delete, plus a link to
+  the dedicated admin customer/cook testimonial page. Publish/unpublish/delete use AlertDialogs.
 - City, partner, and occasion editors: ordered picker across customer and cook testimonials; shared `AdminPageTestimonial.isPubliclyListed`
   (like `AdminFeaturedCook.isPubliclyListed`) flags curated rows that are not yet public. Admin live preview keeps those rows visible with a
   card `StatusBadge` and section `StatusAlert` (public pages still omit them).
@@ -101,8 +103,10 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
   `PageTestimonialDetailDialog` (photo strip, split detail dialog with author avatar; content pages pass `showBookingCta` for occasion
   question + form CTA; mobile always 1 column, `columns={2|3}` from `@md`), `ContentPageTestimonialsEditor`
 - Admin UI: `AdminTestimonialsPage` card grid via `AdminTestimonialListCard`; detail pages (`AdminCustomerTestimonialPage` /
-  `AdminCookTestimonialPage`) use `AdminPinnedFooterLayout` with read-only → edit; offer Review tab AlertDialog confirms; detail **Public
-  view** reuses `PageTestimonialDetailDialog`; `publicPagePlacements` via `adminTestimonialPublicPagePlacementsLoad` /
+  `AdminCookTestimonialPage`) use `AdminPinnedFooterLayout` with read-only → edit; offer Review tab is a two-column comparison
+  (`AdminBookingRequestOfferTestimonialsSection`: create when missing with photos, `PageTestimonialCardFace` +
+  `AdminTestimonialImageManager` + Edit when present, `StatusBadge` publication, AlertDialog confirms); detail **Public view** reuses
+  `PageTestimonialDetailDialog`; `publicPagePlacements` via `adminTestimonialPublicPagePlacementsLoad` /
   `AdminTestimonialPublicPagePlacements*`
 - GraphQL: public `CustomerTestimonial` / `CookTestimonial.authorProfilePicture` (batch-loaded from the author’s current profile picture)
 - Download auth: `fileUploadReferencedByPublishedTestimonial` / `fileUploadReferencedByAnyTestimonial` on `GET /api/file-uploads/:id`

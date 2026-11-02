@@ -816,6 +816,18 @@ export function AdminBookingRequestOfferPage({
                                                     bookingRequestOfferId={offer.bookingRequestOfferId}
                                                     bookingRequestUserId={request?.customer.userId ?? ''}
                                                     cookId={offer.cook.cookId}
+                                                    customerParty={
+                                                        request
+                                                            ? {
+                                                                  displayName: adminBookingRequestCustomerLabel(request.customer),
+                                                                  profilePictureUrl: request.customer.profilePicture?.url ?? null,
+                                                              }
+                                                            : null
+                                                    }
+                                                    cookParty={{
+                                                        displayName: userDisplayName(offer.cook.user),
+                                                        profilePictureUrl: offer.cook.user.profilePicture?.url ?? null,
+                                                    }}
                                                     customerTestimonial={
                                                         offer.customerTestimonial
                                                             ? {
