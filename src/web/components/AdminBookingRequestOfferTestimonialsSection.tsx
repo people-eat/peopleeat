@@ -252,7 +252,7 @@ function TestimonialSide({
             toast.success(
                 next === 'PUBLISHED'
                     ? { de: 'Veröffentlicht.', en: 'Published.' }[locale]
-                    : { de: 'Zurückgestellt.', en: 'Unpublished.' }[locale],
+                    : { de: 'Zurückgezogen.', en: 'Unpublished.' }[locale],
             );
         } catch {
             toast.error({ de: 'Status konnte nicht geändert werden.', en: 'Could not update the status.' }[locale]);
@@ -306,7 +306,7 @@ function TestimonialSide({
                         onClick={() => setConfirm(existing.publicationStatus === 'PUBLISHED' ? 'unpublish' : 'publish')}
                     >
                         {existing.publicationStatus === 'PUBLISHED'
-                            ? { de: 'Zurückstellen', en: 'Unpublish' }[locale]
+                            ? { de: 'Zurückziehen', en: 'Unpublish' }[locale]
                             : { de: 'Veröffentlichen', en: 'Publish' }[locale]}
                     </Button>
                     <Button type="button" size="sm" variant="destructive" disabled={busy} onClick={() => setConfirm('delete')}>
@@ -339,7 +339,9 @@ function TestimonialSide({
                 <AlertDialog open={confirm === 'unpublish'} onOpenChange={(open) => !open && setConfirm(null)}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>{{ de: 'Zurückstellen?', en: 'Unpublish?' }[locale]}</AlertDialogTitle>
+                            <AlertDialogTitle>
+                                {{ de: 'Veröffentlichung zurückziehen?', en: 'Unpublish this review?' }[locale]}
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
                                 {
                                     {
@@ -352,7 +354,7 @@ function TestimonialSide({
                         <AlertDialogFooter>
                             <AlertDialogCancel disabled={busy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
                             <AlertDialogAction disabled={busy} onClick={() => void onConfirmPublish('PENDING_REVIEW')}>
-                                {{ de: 'Zurückstellen', en: 'Unpublish' }[locale]}
+                                {{ de: 'Zurückziehen', en: 'Unpublish' }[locale]}
                             </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>

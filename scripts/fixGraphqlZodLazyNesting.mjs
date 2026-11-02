@@ -61,7 +61,7 @@ source = source.replace(
     'geoCoordinates: GqlSGeoCoordinatesInputSchema().nullish(),',
 );
 
-source = source.replace(
+source = source.replaceAll(
     'lowRatingAnswers: z.lazy(() => GqlSCookTestimonialLowRatingAnswersInputSchema().nullish()),',
     'lowRatingAnswers: GqlSCookTestimonialLowRatingAnswersInputSchema().nullish(),',
 );
@@ -87,6 +87,8 @@ for (const name of [
     'GqlSUserCreate',
     'GqlSAdminUserCreate',
     'GqlSCookBookingRequestOfferTestimonialCreate',
+    'GqlSCookBookingRequestOfferTestimonialUpdate',
+    'GqlSUserBookingRequestOfferTestimonialUpdate',
 ]) {
     // `\s*` tolerates prettier wrapping the return type onto its own line when the
     // single-line signature would exceed the print width.

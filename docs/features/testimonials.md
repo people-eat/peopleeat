@@ -35,9 +35,11 @@ again; dropping from 5 to below 5 requires the follow-up. Default tab and red `N
   author). Cards navigate to detail; no publish/delete on the list. Shared `AdminTestimonialListCard` also powers the user page and admin
   chat `admin.testimonialList`. Cards and detail show **public page placements** (curated city / partner / occasion, plus chef profile for
   published offer-linked customer reviews).
-- Detail editors for content, images, publish/unpublish/delete (AlertDialog confirms, not browser `confirm`). Star input, not numeric
-  dropdowns. **Public view** opens the same detail dialog customers see. Placement links open the matching admin city / partner / occasion /
-  user editor.
+- Detail pages open **read-only** (content + image strip) with a pinned footer: **Edit**, **Public view**, **Publish** when pending, and
+  overflow for **Unpublish** / **Delete**. Edit mode swaps the footer to Cancel / Save and unlocks override fields plus
+  `AdminTestimonialImageManager`. AlertDialog confirms publish / unpublish / delete (not browser `confirm`). Star input, not numeric
+  dropdowns. **Public view** opens the same detail dialog customers see. Submitter meta is labeled **Submitted by** / **Eingereicht von**
+  (not “source”). Placement links open the matching admin city / partner / occasion / user editor.
 - Offer detail **Review** tab when completed or either side already has a testimonial — create, edit, publish, delete per side (separate
   from the Offer tab); publish/unpublish/delete use AlertDialogs.
 - City, partner, and occasion editors: ordered picker across customer and cook testimonials; shared `AdminPageTestimonial.isPubliclyListed`
@@ -98,8 +100,9 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 - Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `PageTestimonialCard` / `PageTestimonialCardFace` /
   `PageTestimonialDetailDialog` (photo strip, split detail dialog with author avatar; content pages pass `showBookingCta` for occasion
   question + form CTA; mobile always 1 column, `columns={2|3}` from `@md`), `ContentPageTestimonialsEditor`
-- Admin UI: `AdminTestimonialsPage` card grid via `AdminTestimonialListCard`; detail pages + offer Review tab AlertDialog confirms; detail
-  **Public view** reuses `PageTestimonialDetailDialog`; `publicPagePlacements` via `adminTestimonialPublicPagePlacementsLoad` /
+- Admin UI: `AdminTestimonialsPage` card grid via `AdminTestimonialListCard`; detail pages (`AdminCustomerTestimonialPage` /
+  `AdminCookTestimonialPage`) use `AdminPinnedFooterLayout` with read-only → edit; offer Review tab AlertDialog confirms; detail **Public
+  view** reuses `PageTestimonialDetailDialog`; `publicPagePlacements` via `adminTestimonialPublicPagePlacementsLoad` /
   `AdminTestimonialPublicPagePlacements*`
 - GraphQL: public `CustomerTestimonial` / `CookTestimonial.authorProfilePicture` (batch-loaded from the author’s current profile picture)
 - Download auth: `fileUploadReferencedByPublishedTestimonial` / `fileUploadReferencedByAnyTestimonial` on `GET /api/file-uploads/:id`

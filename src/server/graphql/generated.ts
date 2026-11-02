@@ -12970,9 +12970,9 @@ export function GqlSCookBookingRequestOfferTestimonialUpdateSchema(): z.ZodObjec
         body: z.string().nullish(),
         bookingRequestOfferId: z.string(),
         imageFileUploadIds: z.array(z.string()).nullish(),
-        lowRatingAnswers: z.lazy(() => GqlSCookTestimonialLowRatingAnswersInputSchema().nullish()),
+        lowRatingAnswers: GqlSCookTestimonialLowRatingAnswersInputSchema().nullish(),
         rating: z.number().nullish(),
-    });
+    }) as z.ZodObject<Properties<GqlSCookBookingRequestOfferTestimonialUpdate>>;
 }
 
 export function GqlSCookCallAvailabilityExceptionCreateSchema(): z.ZodObject<Properties<GqlSCookCallAvailabilityExceptionCreate>> {
@@ -13309,7 +13309,7 @@ export function GqlSUserBookingRequestOfferTestimonialUpdateSchema(): z.ZodObjec
         bookingRequestOfferId: z.string(),
         imageFileUploadIds: z.array(z.string()).nullish(),
         rating: z.number().nullish(),
-    });
+    }) as z.ZodObject<Properties<GqlSUserBookingRequestOfferTestimonialUpdate>>;
 }
 
 export function GqlSUserBookingRequestParticipantCreateSchema(): z.ZodObject<Properties<GqlSUserBookingRequestParticipantCreate>> {
