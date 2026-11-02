@@ -20,7 +20,14 @@ import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
 import type { BookingRequestFormPriceClassType } from '../../shared';
-import { bookingRequestPriceClassInfo, bookingRequestPriceClassTypes, formatCurrency, formatDate, formatTime } from '../../shared';
+import {
+    bookingRequestPriceClassInfo,
+    bookingRequestPriceClassTypes,
+    formatCountryName,
+    formatCurrency,
+    formatDate,
+    formatTime,
+} from '../../shared';
 import { AppImage } from '../components/AppImage';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
 import { AuthPasskeyLogOn } from '../components/auth/AuthPasskeyLogOn';
@@ -632,6 +639,7 @@ export function BookingRequestPlanPage({
     const datePickerEndMonth = bounds.maxDateTime;
     const priceInfo = bookingRequestPriceClassInfo(values.priceClassType, locale);
     const softPrice = formatCurrency(priceInfo.minimumAmountPerPersonCents, { locale });
+    const exactEventCountryName = values.exactEventAddress ? formatCountryName(values.exactEventAddress.country, { locale }) : '';
 
     const greetingName = search.firstName?.trim() || session.user?.firstName?.trim() || '';
     const heroSrc = partner?.firstSectionImageUrl || partner?.heroImageUrl || HERO_FALLBACK_SRC;
@@ -799,8 +807,8 @@ export function BookingRequestPlanPage({
                 </Button>
             </div>
 
-            <div className="mt-5 border-t border-border pt-4">
-                <p className="text-lg font-medium">{{ de: `ab ${softPrice} p.P.`, en: `from ${softPrice} p.p.` }[locale]}</p>
+            <div className="mt-8 border-t border-border pt-6">
+                <p className="text-3xl font-medium">{{ de: `ab ${softPrice} p.P.`, en: `from ${softPrice} p.p.` }[locale]}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
                     {
                         {
@@ -812,13 +820,23 @@ export function BookingRequestPlanPage({
             </div>
 
             {values.exactEventAddress ? (
-                <div className="mt-4 border-t border-border pt-4 text-sm">
+                <div className="mt-6 border-t border-border pt-6 text-sm">
                     <p className="font-medium">{{ de: 'Adresse', en: 'Address' }[locale]}</p>
-                    <p className="mt-1 text-muted-foreground">{values.exactEventAddress.displayText}</p>
+                    <div className="mt-1 text-muted-foreground">
+                        <p>{values.exactEventAddress.addressLine1}</p>
+                        {values.exactEventAddress.addressLine2.trim().length > 0 ? <p>{values.exactEventAddress.addressLine2}</p> : null}
+                        <p>
+                            {[values.exactEventAddress.postCode, values.exactEventAddress.city]
+                                .map((part) => part.trim())
+                                .filter(Boolean)
+                                .join(' ')}
+                        </p>
+                        {exactEventCountryName ? <p>{exactEventCountryName}</p> : null}
+                    </div>
                 </div>
             ) : null}
 
-            <div className="mt-5 grid gap-2">
+            <div className="mt-8 grid gap-2">
                 {step === 'details' ? (
                     <Button type="button" size="lg" className="w-full" onClick={goToContact} disabled={!canContinueToContact()}>
                         {{ de: 'Weiter zur Anfrage', en: 'Continue to request' }[locale]}
