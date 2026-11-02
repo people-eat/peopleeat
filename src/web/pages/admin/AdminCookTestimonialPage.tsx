@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { formatDate, userDisplayName } from '../../../shared';
+import { formatDate, isTestimonialRating, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { AdminTestimonialOfferLink } from '../../components/AdminTestimonialOfferLink';
@@ -41,6 +41,7 @@ import {
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
+import type { Locale } from '../../utils/locale';
 import { adminStubRouteBySlug } from './adminCatalog';
 import { AdminTestimonialImageManager } from './AdminTestimonialImageManager';
 import { testimonialPublicationStatusLabel } from './adminTestimonialsShared';
@@ -74,6 +75,18 @@ function formFromTestimonial(testimonial: AdminCookTestimonialDetail): FormValue
         body: testimonial.body ?? '',
         rating: testimonial.rating ?? null,
     };
+}
+
+function fieldErrorText(errors: unknown[]): string | undefined {
+    const first = errors[0];
+    return typeof first === 'string' && first.length > 0 ? first : undefined;
+}
+
+function requiredRating(value: number | null, locale: Locale): string | undefined {
+    if (!isTestimonialRating(value)) {
+        return { de: 'Bitte wähle eine Sternebewertung.', en: 'Please choose a star rating.' }[locale];
+    }
+    return undefined;
 }
 
 function DetailField({ label, value }: { label: string; value: ReactNode }) {
@@ -134,6 +147,7 @@ export function AdminCookTestimonialPage({
     });
     const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
     const isDirty = useSelector(form.store, (state) => state.isDirty);
+    const submissionAttempts = useSelector(form.store, (state) => state.submissionAttempts);
 
     useEffect(() => {
         setTestimonial(seed);
@@ -421,17 +435,33 @@ export function AdminCookTestimonialPage({
                                         </div>
                                     )}
                                 </form.Field>
-                                <form.Field name="rating">
-                                    {(field) => (
-                                        <div className="grid gap-1.5">
-                                            <span className="text-sm font-medium">{{ de: 'Bewertung', en: 'Rating' }[locale]}</span>
-                                            <TestimonialRatingInput
-                                                value={field.state.value}
-                                                onChange={(next) => field.handleChange(next)}
-                                                allowClear
-                                            />
-                                        </div>
-                                    )}
+                                <form.Field
+                                    name="rating"
+                                    validators={{
+                                        onSubmit: ({ value }) => requiredRating(value, locale),
+                                    }}
+                                >
+                                    {(field) => {
+                                        const errorMessage = fieldErrorText(field.state.meta.errors);
+                                        const showError = errorMessage != null && submissionAttempts > 0;
+                                        const errorId = `${field.name}-error`;
+                                        return (
+                                            <div className="grid gap-1.5">
+                                                <span className="text-sm font-medium">{{ de: 'Bewertung', en: 'Rating' }[locale]}</span>
+                                                <div aria-invalid={showError} aria-describedby={showError ? errorId : undefined}>
+                                                    <TestimonialRatingInput
+                                                        value={field.state.value}
+                                                        onChange={(next) => field.handleChange(next)}
+                                                    />
+                                                </div>
+                                                {showError ? (
+                                                    <p id={errorId} className="text-sm text-destructive" role="alert">
+                                                        {errorMessage}
+                                                    </p>
+                                                ) : null}
+                                            </div>
+                                        );
+                                    }}
                                 </form.Field>
                             </form>
                         ) : (

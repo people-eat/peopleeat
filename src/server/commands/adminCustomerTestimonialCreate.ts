@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { testimonialRatingAssertRequired } from '../../shared/testimonialRating';
 import { textNormalizeProseTitled, textNormalizeTitledOrNull } from '../../shared/textNormalize';
 import { bookingRequestOffers, customerTestimonials, users } from '../db/schema';
 import type { CustomerTestimonialCreate } from '../db/schema';
@@ -28,6 +29,7 @@ export async function adminCustomerTestimonialCreate(
     if (body.length === 0) {
         throw new Error('adminCustomerTestimonialCreate: body must not be empty');
     }
+    const rating = testimonialRatingAssertRequired(input.rating, 'adminCustomerTestimonialCreate');
 
     try {
         const [[user], [offer]] = await Promise.all([
@@ -64,7 +66,7 @@ export async function adminCustomerTestimonialCreate(
             occasion: textNormalizeTitledOrNull(input.occasion),
             body,
             imageUrls,
-            rating: input.rating ?? null,
+            rating,
             publicationStatus: 'PUBLISHED',
             publishedAt: now,
             createdAt: now,

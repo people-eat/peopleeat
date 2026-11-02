@@ -74,6 +74,7 @@ Commands own normalization on every write path (GraphQL scalars are format gates
 | `textNormalizeTitledOrNull`                       | Optional titled fields (`null` when blank)                                                          |
 | `textNormalizeProse` / `textNormalizeProseTitled` | Multiline copy (biography, descriptions, messages); collapses horizontal whitespace, keeps newlines |
 | `invoiceAddressNormalize`                         | Invoice JSON (`firstName` / `lastName` / `companyName` / address lines)                             |
+| `testimonialRatingAssertRequired`                 | Testimonial star ratings: integers **1–5**; reject `0` / null on every write path                   |
 
 Do **not** force Title Case of every word (preserves `McDonald`, particles, intentional internal caps). UI may apply the same helpers for
 feedback; never rely on the client alone.

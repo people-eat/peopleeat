@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { testimonialRatingAssertRequired } from '../../shared/testimonialRating';
 import { textNormalizeProseTitled, textNormalizeTitledOrNull } from '../../shared/textNormalize';
 import { bookingRequestOffers, bookingRequests, customerTestimonials } from '../db/schema';
 import type { CustomerTestimonialCreate } from '../db/schema';
@@ -33,6 +34,7 @@ export async function userBookingRequestOfferTestimonialCreate(
     if (body.length === 0) {
         throw new Error('userBookingRequestOfferTestimonialCreate: body must not be empty');
     }
+    const rating = testimonialRatingAssertRequired(input.rating, 'userBookingRequestOfferTestimonialCreate');
 
     try {
         const [row] = await serverRuntime.db
@@ -75,7 +77,7 @@ export async function userBookingRequestOfferTestimonialCreate(
             commandName: 'userBookingRequestOfferTestimonialCreate',
         });
 
-        const publicationStatus = publicationStatusFromRating(input.rating);
+        const publicationStatus = publicationStatusFromRating(rating);
         const now = new Date();
         const customerTestimonialId = idCreate();
         const values: CustomerTestimonialCreate = {
@@ -87,7 +89,7 @@ export async function userBookingRequestOfferTestimonialCreate(
             occasion: textNormalizeTitledOrNull(input.occasion),
             body,
             imageUrls,
-            rating: input.rating ?? null,
+            rating,
             publicationStatus,
             publishedAt: publicationStatus === 'PUBLISHED' ? now : null,
             createdAt: now,

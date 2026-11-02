@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 
+import { testimonialRatingAssertRequired } from '../../shared/testimonialRating';
 import { textNormalizeProseTitled } from '../../shared/textNormalize';
 import { bookingRequestOffers, bookingRequests, customerTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -30,6 +31,7 @@ export async function userBookingRequestOfferTestimonialUpdate(
     if (body.length === 0) {
         throw new Error('userBookingRequestOfferTestimonialUpdate: body must not be empty');
     }
+    const rating = testimonialRatingAssertRequired(input.rating, 'userBookingRequestOfferTestimonialUpdate');
 
     try {
         const [row] = await serverRuntime.db
@@ -59,7 +61,6 @@ export async function userBookingRequestOfferTestimonialUpdate(
             commandName: 'userBookingRequestOfferTestimonialUpdate',
         });
 
-        const rating = input.rating ?? null;
         const publicationStatus = publicationStatusFromRating(rating);
         const now = new Date();
         const publishedAt = publicationStatus === 'PUBLISHED' ? (row.publicationStatus === 'PUBLISHED' ? row.publishedAt : now) : null;

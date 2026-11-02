@@ -1955,8 +1955,9 @@ export type CookCallSlotBookingCreate = typeof cookCallSlotBookings.$inferInsert
 // Customer- and cook-authored quotes. `bookingRequestOfferId` optionally ties a
 // row to the completed offer it was written about/from — customer rows tied to
 // an offer also count toward that offer's cook public rating
-// (`publicCookCustomerTestimonialRatingSummary`). Low ratings (`rating <= 3`)
-// default to `PENDING_REVIEW` instead of auto-publishing — see
+// (`publicCookCustomerTestimonialRatingSummary`). Ratings are integers 1–5
+// (`testimonialRatingAssert*`); `0` is rejected on every write path. Low ratings
+// (`rating <= 3`) default to `PENDING_REVIEW` instead of auto-publishing — see
 // `publicationStatusFromRating.ts`. `CityTestimonials` / `PartnerTestimonials` /
 // `OccasionTestimonials` are ordered curation junctions (same shape as
 // `CityCooks` / `PartnerCooks` / `OccasionCooks`)

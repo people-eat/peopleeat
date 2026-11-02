@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { testimonialRatingAssertRequired } from '../../shared/testimonialRating';
 import { textNormalizeProseTitled, textNormalizeTitledOrNull } from '../../shared/textNormalize';
 import { bookingRequestOffers, bookingRequests, cookTestimonials } from '../db/schema';
 import type { CookTestimonialCreate } from '../db/schema';
@@ -68,7 +69,8 @@ export async function cookBookingRequestOfferTestimonialCreate(
             throw new Error('cookBookingRequestOfferTestimonialCreate: testimonial already submitted for this offer');
         }
 
-        if (input.rating != null && input.rating < 5 && !input.lowRatingAnswers) {
+        const rating = testimonialRatingAssertRequired(input.rating, 'cookBookingRequestOfferTestimonialCreate');
+        if (rating < 5 && !input.lowRatingAnswers) {
             throw new Error('cookBookingRequestOfferTestimonialCreate: lowRatingAnswers required when rating < 5');
         }
 
@@ -86,7 +88,7 @@ export async function cookBookingRequestOfferTestimonialCreate(
               }
             : null;
 
-        const publicationStatus = publicationStatusFromRating(input.rating);
+        const publicationStatus = publicationStatusFromRating(rating);
         const now = new Date();
         const cookTestimonialId = idCreate();
         const values: CookTestimonialCreate = {
@@ -99,7 +101,7 @@ export async function cookBookingRequestOfferTestimonialCreate(
             occasion: textNormalizeTitledOrNull(input.occasion),
             body: input.body == null ? null : textNormalizeProseTitled(input.body) || null,
             imageUrls,
-            rating: input.rating ?? null,
+            rating,
             lowRatingAnswers,
             publicationStatus,
             publishedAt: publicationStatus === 'PUBLISHED' ? now : null,

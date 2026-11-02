@@ -14,6 +14,7 @@ export { emailNormalize } from './emailNormalize';
 export { invoiceAddressNormalize } from './invoiceAddressNormalize';
 export type { InvoiceAddressInput, InvoiceAddressNormalized } from './invoiceAddressNormalize';
 export { phoneNumberAssert, phoneNumberForWhatsAppApi, phoneNumberNormalize } from './phoneNumber';
+export { isTestimonialRating, testimonialRatingAssertRequired, testimonialRatingNormalize } from './testimonialRating';
 export {
     textNormalizeProse,
     textNormalizeProseTitled,

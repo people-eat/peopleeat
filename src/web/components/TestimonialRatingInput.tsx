@@ -5,9 +5,9 @@ import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 
 /**
- * Interactive 1–5 star rating. Click the current value again to clear when
- * `allowClear` is true (admin forms). Profile capture typically passes
- * `allowClear={false}`.
+ * Interactive 1–5 star rating (`0` is not offered). Click the current value
+ * again to clear when `allowClear` is true (clears to null, not 0). Testimonial
+ * write forms leave `allowClear` false so a rating cannot be removed.
  */
 export function TestimonialRatingInput({
     value,

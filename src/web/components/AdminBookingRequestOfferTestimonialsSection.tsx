@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { fileUploadPublicUrl } from '../../shared';
+import { fileUploadPublicUrl, isTestimonialRating } from '../../shared';
 import {
     AdminCookTestimonialCreateDocument,
     AdminCookTestimonialDeleteDocument,
@@ -86,6 +86,13 @@ function fieldErrorText(errors: unknown[]): string | undefined {
 function requiredBody(value: string, locale: Locale): string | undefined {
     if (value.trim().length === 0) {
         return { de: 'Bitte gib einen Text ein.', en: 'Please enter a review text.' }[locale];
+    }
+    return undefined;
+}
+
+function requiredRating(value: number | null, locale: Locale): string | undefined {
+    if (!isTestimonialRating(value)) {
+        return { de: 'Bitte wähle eine Sternebewertung.', en: 'Please choose a star rating.' }[locale];
     }
     return undefined;
 }
@@ -435,18 +442,40 @@ function TestimonialSide({
                         void form.handleSubmit();
                     }}
                 >
-                    <form.Field name="rating">
-                        {(field) => (
-                            <div className="grid gap-1.5">
-                                <span className="text-sm font-medium text-foreground">{{ de: 'Bewertung', en: 'Rating' }[locale]}</span>
-                                <TestimonialRatingInput
-                                    value={field.state.value}
-                                    onChange={(next) => field.handleChange(next)}
-                                    allowClear
-                                    size="sm"
-                                />
-                            </div>
-                        )}
+                    <form.Field
+                        name="rating"
+                        validators={{
+                            onSubmit: ({ value }) => requiredRating(value, locale),
+                        }}
+                    >
+                        {(field) => {
+                            const errorMessage = fieldErrorText(field.state.meta.errors);
+                            const showError = errorMessage != null && submissionAttempts > 0;
+                            const errorId = `${title}-rating-error`;
+                            return (
+                                <div className="grid gap-1.5">
+                                    <span className="text-sm font-medium text-foreground">
+                                        {{ de: 'Bewertung', en: 'Rating' }[locale]}
+                                        <span className="font-normal text-muted-foreground">
+                                            {' '}
+                                            ({{ de: 'erforderlich', en: 'required' }[locale]})
+                                        </span>
+                                    </span>
+                                    <div aria-invalid={showError} aria-describedby={showError ? errorId : undefined}>
+                                        <TestimonialRatingInput
+                                            value={field.state.value}
+                                            onChange={(next) => field.handleChange(next)}
+                                            size="sm"
+                                        />
+                                    </div>
+                                    {showError ? (
+                                        <p id={errorId} className="text-sm text-destructive" role="alert">
+                                            {errorMessage}
+                                        </p>
+                                    ) : null}
+                                </div>
+                            );
+                        }}
                     </form.Field>
                     <div className="grid gap-3 sm:grid-cols-2">
                         <form.Field name="authorName">

@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
+import { testimonialRatingAssertRequired } from '../../shared/testimonialRating';
 import { textNormalizeProseTitled, textNormalizeTitledOrNull } from '../../shared/textNormalize';
 import { bookingRequestOffers, cooks, cookTestimonials } from '../db/schema';
 import type { CookTestimonialCreate } from '../db/schema';
@@ -18,6 +19,8 @@ export async function adminCookTestimonialCreate(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+
+    const rating = testimonialRatingAssertRequired(input.rating, 'adminCookTestimonialCreate');
 
     try {
         const [[cook], [offer]] = await Promise.all([
@@ -55,7 +58,7 @@ export async function adminCookTestimonialCreate(
             occasion: textNormalizeTitledOrNull(input.occasion),
             body: input.body == null ? null : textNormalizeProseTitled(input.body) || null,
             imageUrls,
-            rating: input.rating ?? null,
+            rating,
             lowRatingAnswers: null,
             publicationStatus: 'PUBLISHED',
             publishedAt: now,

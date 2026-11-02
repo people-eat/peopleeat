@@ -1,5 +1,6 @@
 import { and, eq } from 'drizzle-orm';
 
+import { testimonialRatingAssertRequired } from '../../shared/testimonialRating';
 import { textNormalizeProseTitled } from '../../shared/textNormalize';
 import { bookingRequestOffers, cookTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -30,6 +31,7 @@ export async function cookBookingRequestOfferTestimonialUpdate(
     await assertLegalAcceptanceCurrent(cookId, serverRuntime);
 
     const body = input.body == null ? null : textNormalizeProseTitled(input.body) || null;
+    const rating = testimonialRatingAssertRequired(input.rating, 'cookBookingRequestOfferTestimonialUpdate');
 
     try {
         const [row] = await serverRuntime.db
@@ -53,8 +55,7 @@ export async function cookBookingRequestOfferTestimonialUpdate(
             throw new Error('cookBookingRequestOfferTestimonialUpdate: testimonial not found');
         }
 
-        const rating = input.rating ?? null;
-        if (rating != null && rating < 5 && !input.lowRatingAnswers && !row.lowRatingAnswers) {
+        if (rating < 5 && !input.lowRatingAnswers && !row.lowRatingAnswers) {
             throw new Error('cookBookingRequestOfferTestimonialUpdate: lowRatingAnswers required when rating < 5');
         }
 
@@ -65,7 +66,7 @@ export async function cookBookingRequestOfferTestimonialUpdate(
         });
 
         let lowRatingAnswers: CookTestimonialLowRatingAnswers | null = null;
-        if (rating != null && rating < 5) {
+        if (rating < 5) {
             if (input.lowRatingAnswers) {
                 lowRatingAnswers = {
                     whatWentWrong: input.lowRatingAnswers.whatWentWrong?.trim() || undefined,

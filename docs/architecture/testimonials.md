@@ -17,8 +17,10 @@ Four PascalCase tables:
 | `PartnerTestimonials`  | Same junction for partners                                           |
 | `OccasionTestimonials` | Same junction for occasions                                          |
 
-Publication gate: ratings `<= 3` → `PENDING_REVIEW`; otherwise auto-`PUBLISHED`. Admin-authored rows are always published. Images stay as
-`imageUrls` JSON string arrays (absolute `/api/file-uploads/{id}` URLs for new uploads; migrated absolute URLs remain valid).
+Star ratings are integers **1–5** on every write path (`testimonialRatingAssertRequired`). `0`, null, and other out-of-range values are
+rejected (admin create and offer self-service create/update always require a rating; admin update rejects clearing to null). Publication
+gate: ratings `<= 3` → `PENDING_REVIEW`; otherwise auto-`PUBLISHED`. Admin-authored rows are always published. Images stay as `imageUrls`
+JSON string arrays (absolute `/api/file-uploads/{id}` URLs for new uploads; migrated absolute URLs remain valid).
 
 Public chef pages expose only **published customer** testimonials linked via offers, plus `PublicCookRating`. City, partner, and occasion
 pages show admin-curated selections (published only) as shared `PageTestimonial`. Admin editors use shared `AdminPageTestimonial` with

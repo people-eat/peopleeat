@@ -4,7 +4,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { fileUploadPublicUrl } from '../../shared';
+import { fileUploadPublicUrl, isTestimonialRating } from '../../shared';
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
 import {
     CookBookingRequestOfferTestimonialCreateDocument,
@@ -69,7 +69,7 @@ function fieldErrorText(errors: unknown[]): string | undefined {
 }
 
 function requiredRating(value: number | null, locale: Locale): string | undefined {
-    if (value == null || value < 1 || value > 5) {
+    if (!isTestimonialRating(value)) {
         return { de: 'Bitte wähle deine Sterne.', en: 'Please choose your star rating.' }[locale];
     }
     return undefined;

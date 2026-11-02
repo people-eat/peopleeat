@@ -8,10 +8,10 @@ pages.
 ### Customer
 
 On a dual-accepted, paid offer whose event datetime is in the past, the customer submits rating, text, and optional event photos on the
-offer **Review** tab (TanStack Form with under-field validation; primary Submit sits in the pinned profile action bar). Ratings 4–5 publish
-immediately; 1–3 wait for admin approval. After submit, the thank-you view reuses the public `PageTestimonialCardFace` / detail dialog, and
-the customer can edit rating, text, and photos. Dropping the rating to 1–3 re-applies admin review. The UI also suggests posting the same
-text on Google reviews.
+offer **Review** tab (TanStack Form with under-field validation; primary Submit sits in the pinned profile action bar). Star rating is
+required and must be **1–5** (`0` is rejected on every GraphQL write path). Ratings 4–5 publish immediately; 1–3 wait for admin approval.
+After submit, the thank-you view reuses the public `PageTestimonialCardFace` / detail dialog, and the customer can edit rating, text, and
+photos. Dropping the rating to 1–3 re-applies admin review. The UI also suggests posting the same text on Google reviews.
 
 When a review is still owed:
 
@@ -23,11 +23,11 @@ When a review is still owed:
 
 ### Cook
 
-Same completion gate. Cooks rate the experience (text and photos optional). Ratings below 5 unlock a short structured follow-up; submission
-requires those fields. Same publish rules for low stars. Same form patterns as the customer (TanStack Form, pinned Submit, public-face
-preview, full self-edit of rating / text / photos). Editing a rating below 5 keeps existing follow-up answers unless the cook fills them
-again; dropping from 5 to below 5 requires the follow-up. Default tab and red `NotificationBadge` match the customer when a review is owed
-(no list-card pill on the cook booking list).
+Same completion gate. Cooks rate the experience (text and photos optional). Rating is required and must be **1–5** (`0` rejected). Ratings
+below 5 unlock a short structured follow-up; submission requires those fields. Same publish rules for low stars. Same form patterns as the
+customer (TanStack Form, pinned Submit, public-face preview, full self-edit of rating / text / photos). Editing a rating below 5 keeps
+existing follow-up answers unless the cook fills them again; dropping from 5 to below 5 requires the follow-up. Default tab and red
+`NotificationBadge` match the customer when a review is owed (no list-card pill on the cook booking list).
 
 ### Admin
 
@@ -93,6 +93,8 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
 
 - Tables: `CustomerTestimonials`, `CookTestimonials`, `CityTestimonials`, `PartnerTestimonials`
 - Domain: `src/server/domain/testimonial.ts`
+- Shared rating gate: `src/shared/testimonialRating.ts` (`isTestimonialRating`, `testimonialRatingAssertRequired`) — every create/update
+  command requires an integer 1–5 and rejects `0` / null
 - GraphQL: public and admin types, offer fields, city/partner curation, user/cook create + full self-edit update mutations (body, rating,
   images; cook also `lowRatingAnswers`)
 - Commands / queries: `*Testimonial*` under commands and queries (incl. `userBookingRequestOfferTestimonialUpdate` /
