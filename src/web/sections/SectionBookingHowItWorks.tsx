@@ -185,7 +185,7 @@ export function SectionBookingHowItWorks() {
         <section className="px-4 py-16 @lg:px-6">
             <div className="mx-auto flex w-full max-w-7xl flex-col gap-12">
                 <Reveal className="mx-auto flex max-w-3xl flex-col items-center gap-4 text-center">
-                    <h2 className="font-serif text-3xl font-light @md:text-5xl">{headline}</h2>
+                    <h2 className="font-serif text-3xl font-light @md:text-4xl">{headline}</h2>
                     <p className="text-muted-foreground @md:text-lg">{subheadline}</p>
                     <Button type="button" variant="outline" size="lg" onClick={() => setFilmOpen(true)}>
                         <PlayIcon className="size-4" aria-hidden />

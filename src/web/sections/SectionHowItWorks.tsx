@@ -114,7 +114,7 @@ export function SectionHowItWorks({
                 <div className="grid w-full grid-cols-10 gap-x-8 gap-y-16">
                     <Reveal className="col-span-4 flex flex-col gap-4">
                         <h2 className="font-serif text-2xl font-light @md:text-3xl">{headline}</h2>
-                        <p className="font-serif text-3xl font-light text-muted-foreground @md:text-5xl">{subheadline}</p>
+                        <p className="font-serif text-3xl font-light text-muted-foreground @md:text-4xl">{subheadline}</p>
                     </Reveal>
 
                     {steps.map((step, index) => (

@@ -362,14 +362,10 @@ export function bookingRequestPlanUsesDateChips(bounds: BookingRequestFormDateTi
     return bounds.minDateTime != null && bounds.maxDateTime != null && dayCount > 0 && dayCount <= BOOKING_REQUEST_PLAN_DATE_CHIP_MAX;
 }
 
-export function bookingRequestPlanChefArrivalHint(dateTime: Date, locale: 'de' | 'en'): string {
-    const arrival = new Date(dateTime);
-    arrival.setMinutes(arrival.getMinutes() - 90);
-    const hours = String(arrival.getHours()).padStart(2, '0');
-    const minutes = String(arrival.getMinutes()).padStart(2, '0');
+export function bookingRequestPlanChefArrivalHint(locale: 'de' | 'en'): string {
     return {
-        de: `Ankunft eures Chefs ca. ${hours}:${minutes} Uhr.`,
-        en: `Your chef usually arrives around ${hours}:${minutes}.`,
+        de: 'Euer Koch kommt in der Regel 1.5 Stunden vor Menübeginn an.',
+        en: 'Your chef usually arrives 1.5 hours before the menu starts.',
     }[locale];
 }
 

@@ -131,11 +131,14 @@ export function publicFaqJsonLdEntries(locale: Locale) {
 export function SectionQuestionsAndAnswers({
     className,
     title,
+    titleClassName,
     faqs,
     inset = true,
 }: {
     className?: string;
     title?: string;
+    /** Overrides the default FAQ heading size/weight. */
+    titleClassName?: string;
     faqs?: ReadonlyArray<QuestionsAndAnswersEntry>;
     /** Horizontal padding on heading and rows. Off when nested in a padded content column. */
     inset?: boolean;
@@ -155,7 +158,7 @@ export function SectionQuestionsAndAnswers({
 
     return (
         <section className={cn('mx-auto grid w-full max-w-7xl gap-8', className)}>
-            {heading ? <h2 className={cn('font-serif text-3xl font-light tracking-tight @3xl:text-5xl', insetPad)}>{heading}</h2> : null}
+            {heading ? <h2 className={cn(titleClassName ?? 'font-serif text-3xl font-light @md:text-4xl', insetPad)}>{heading}</h2> : null}
             <dl className="divide-y divide-border/70 border-y border-border/70">
                 {entries.map((faq, index) => {
                     const expanded = expandedFaqIndex === index;

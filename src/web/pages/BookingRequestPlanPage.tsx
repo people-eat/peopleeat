@@ -555,7 +555,7 @@ function BookingRequestPlanForetasteCarousel({ locale }: { locale: 'de' | 'en' }
         <div className="grid gap-4">
             <div className="flex items-start justify-between gap-4">
                 <div className="grid min-w-0 gap-2">
-                    <h2 className="font-serif text-2xl tracking-tight">
+                    <h2 className="font-serif text-3xl font-light @md:text-4xl">
                         {{ de: 'Ein Vorgeschmack auf euren Abend', en: 'A taste of your evening' }[locale]}
                     </h2>
                     <p className="text-sm text-muted-foreground">
@@ -792,13 +792,11 @@ export function BookingRequestPlanPage({
             <dl className="mt-4 grid gap-3 text-sm">
                 <div className="flex justify-between gap-3">
                     <dt className="text-muted-foreground">{{ de: 'Datum', en: 'Date' }[locale]}</dt>
-                    <dd className="text-right font-medium">
-                        {formatDate(values.dateTime, { locale, weekday: true, dateStyle: 'medium' })}
-                    </dd>
+                    <dd className="text-right">{formatDate(values.dateTime, { locale, weekday: true, dateStyle: 'medium' })}</dd>
                 </div>
                 <div className="flex justify-between gap-3">
                     <dt className="text-muted-foreground">{{ de: 'Gäste', en: 'Guests' }[locale]}</dt>
-                    <dd className="text-right font-medium">
+                    <dd className="text-right">
                         {
                             {
                                 de: `${values.adultCount} Erwachsene${values.discountedCount > 0 ? ` · ${values.discountedCount} Kinder` : ''}`,
@@ -809,27 +807,36 @@ export function BookingRequestPlanPage({
                 </div>
                 <div className="flex justify-between gap-3">
                     <dt className="text-muted-foreground">{{ de: 'Menürichtung', en: 'Cuisine' }[locale]}</dt>
-                    <dd className="text-right font-medium">{bookingRequestPlanCuisineLabel(values.cuisine, locale)}</dd>
+                    <dd className="text-right">{bookingRequestPlanCuisineLabel(values.cuisine, locale)}</dd>
                 </div>
                 <div className="grid gap-1">
                     <div className="flex justify-between gap-3">
                         <dt className="text-muted-foreground">{{ de: 'Menübeginn', en: 'Menu start' }[locale]}</dt>
-                        <dd className="text-right font-medium">{formatTime(values.dateTime, { locale })}</dd>
+                        <dd className="text-right">
+                            {formatTime(values.dateTime, { locale })}
+                            {locale === 'de' ? ' Uhr' : ''}
+                        </dd>
                     </div>
-                    <p className="text-xs text-muted-foreground">{bookingRequestPlanChefArrivalHint(values.dateTime, locale)}</p>
+                    <p className="text-xs text-muted-foreground">{bookingRequestPlanChefArrivalHint(locale)}</p>
                 </div>
             </dl>
 
-            <div className="mt-3 flex justify-center">
-                <Button type="button" variant="ghost" size="sm" onClick={() => setDetailsEditorOpen(true)}>
-                    <PencilIcon className="size-3.5" />
+            <div className="mt-3">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto w-fit -translate-x-3 justify-start"
+                    onClick={() => setDetailsEditorOpen(true)}
+                >
                     {{ de: 'Angaben bearbeiten', en: 'Edit details' }[locale]}
+                    <PencilIcon className="size-3.5" />
                 </Button>
             </div>
 
             <div className="mt-8 border-t border-border pt-6">
                 <p className="text-3xl font-medium">
-                    {{ de: `ab ${softPrice}`, en: `from ${softPrice}` }[locale]}{' '}
+                    <span className="text-sm text-gray-400">{{ de: 'ab', en: 'from' }[locale]}</span> {softPrice}{' '}
                     <span className="text-sm text-gray-400">{{ de: 'p.P.', en: 'p.p.' }[locale]}</span>
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -1112,7 +1119,7 @@ export function BookingRequestPlanPage({
                             <>
                                 <div className="grid gap-3">
                                     <div className="flex items-baseline justify-between gap-3">
-                                        <p className="min-w-0 font-serif text-2xl tracking-tight">
+                                        <p className="min-w-0 font-serif text-3xl font-light @md:text-4xl">
                                             {{ de: 'Wählt euren Dinner Abend', en: 'Choose your dinner evening' }[locale]}
                                         </p>
                                         <p className="shrink-0 font-serif text-2xl tracking-tight">{dateChipRangeLabel}</p>
@@ -1267,7 +1274,7 @@ export function BookingRequestPlanPage({
                                             </p>
                                         </div>
                                         <p className="font-medium text-2xl">
-                                            {{ de: `ab ${softPrice}`, en: `from ${softPrice}` }[locale]}{' '}
+                                            <span className="text-sm text-gray-400">{{ de: 'ab', en: 'from' }[locale]}</span> {softPrice}{' '}
                                             <span className="text-sm text-gray-400">{{ de: '/ Erwachsener', en: '/ adult' }[locale]}</span>
                                         </p>
                                         <Button
@@ -1345,7 +1352,7 @@ export function BookingRequestPlanPage({
                                 ) : null}
 
                                 <div className="grid gap-4">
-                                    <h2 className="font-serif text-2xl tracking-tight">
+                                    <h2 className="font-serif text-3xl font-light @md:text-4xl">
                                         {
                                             {
                                                 de: 'Welche Küche macht euren Abend besonders?',
@@ -1418,7 +1425,7 @@ export function BookingRequestPlanPage({
                                 <Reveal>
                                     <div className="grid gap-6">
                                         <div className="grid gap-2">
-                                            <h2 className="text-2xl font-medium tracking-tight text-foreground">
+                                            <h2 className="font-serif text-3xl font-light @md:text-4xl">
                                                 {{ de: 'Ihr genießt. Wir kümmern uns.', en: 'You enjoy. We take care.' }[locale]}
                                             </h2>
                                             <p className="max-w-2xl text-sm text-muted-foreground">
