@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { bookingRequestPriceClassLabel, formatCurrency, formatDateTime, formatParticipants } from '../../../shared';
+import { bookingRequestPriceClassLabel, formatDateTime, formatParticipants } from '../../../shared';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import {
     AlertDialog,
@@ -25,6 +25,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../../components/base/p
 import { StatusAlert } from '../../components/base/status-alert';
 import { Textarea } from '../../components/base/textarea';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
+import { BookingRequestOfferParticipantAmendmentCustomerPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import { CustomerBookingRequestOfferCard } from '../../components/CustomerBookingRequestOfferCard';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
@@ -34,6 +35,7 @@ import {
     ProfileBookingRequestCancelDocument,
     ProfileBookingRequestDiscountUpdateDocument,
     ProfileCustomerBookingRequestPageUpdatesDocument,
+    ProfileCustomerBookingRequestParticipantAmendmentCancelDocument,
 } from '../../graphql/generated';
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
@@ -100,6 +102,9 @@ export function ProfileCustomerBookingRequestPage({
 
     const [, cancelRequest] = useMutation(ProfileBookingRequestCancelDocument);
     const [, updateDiscount] = useMutation(ProfileBookingRequestDiscountUpdateDocument);
+    const [{ fetching: amendmentCancelBusy }, cancelAmendment] = useMutation(
+        ProfileCustomerBookingRequestParticipantAmendmentCancelDocument,
+    );
     const offerAmendmentEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_AMENDMENT');
 
     if (request == null || user == null) {
@@ -117,6 +122,7 @@ export function ProfileCustomerBookingRequestPage({
     const supportRequest = request.supportRequest ?? null;
     const showFooter = canEdit || canCancel;
     const pendingAmendment = pendingAmendmentOffer?.participantAmendment ?? null;
+    const pendingAmendmentOfferId = pendingAmendmentOffer?.bookingRequestOfferId ?? null;
     const statusForPill = request.canceledAt ? 'CANCELED' : request.status;
     const displayName = user.firstName.trim().length > 0 ? user.firstName : '?';
     const priceClassLabel = request.priceClassType != null ? bookingRequestPriceClassLabel(request.priceClassType, locale) : null;
@@ -214,26 +220,34 @@ export function ProfileCustomerBookingRequestPage({
                     </BookingStatusPill>
                 </div>
 
-                {pendingAmendment != null ? (
-                    <StatusAlert
-                        tone="info"
-                        title={
-                            {
-                                de: pendingAmendment.claimedAt != null ? 'Änderung wird angewendet' : 'Änderung vorgeschlagen',
-                                en: pendingAmendment.claimedAt != null ? 'Change is being applied' : 'Change proposed',
-                            }[locale]
-                        }
-                    >
-                        {pendingAmendment.claimedAt != null
-                            ? {
-                                  de: `Dein Koch hat den Vorschlag angenommen. Preis und Zahlung werden gerade aktualisiert. Neuer Gastgeberpreis: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
-                                  en: `Your chef accepted the proposal. Price and payment are updating now. New host price: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
-                              }[locale]
-                            : {
-                                  de: `Dein Vorschlag wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
-                                  en: `Your proposal is waiting for the chef to confirm. New host price: ${formatCurrency(pendingAmendment.totalCentsCustomerAfter, { locale })}.`,
-                              }[locale]}
-                    </StatusAlert>
+                {pendingAmendment != null && pendingAmendmentOfferId != null ? (
+                    <BookingRequestOfferParticipantAmendmentCustomerPanel
+                        locale={locale}
+                        canRequest={false}
+                        preparationsCompletedAt={null}
+                        amendment={pendingAmendment}
+                        currentParticipants={request.participants}
+                        bookingRequestId={bookingRequestId}
+                        cancelBusy={amendmentCancelBusy}
+                        onCancelAmendment={async () => {
+                            const result = await cancelAmendment({ bookingRequestOfferId: pendingAmendmentOfferId });
+                            if (result.error || !result.data?.user.bookingRequestOfferParticipantAmendmentCancel.success) {
+                                toast.error(
+                                    {
+                                        de: 'Vorschlag konnte nicht zurückgezogen werden.',
+                                        en: 'Could not withdraw the proposal.',
+                                    }[locale],
+                                );
+                                return;
+                            }
+                            toast.success(
+                                {
+                                    de: 'Vorschlag zurückgezogen.',
+                                    en: 'Proposal withdrawn.',
+                                }[locale],
+                            );
+                        }}
+                    />
                 ) : null}
 
                 <section className="grid gap-4">

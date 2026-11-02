@@ -944,6 +944,7 @@ function OfferTabPanel({
                         canRequest={offer.canRequestParticipantAmendment}
                         preparationsCompletedAt={offer.preparationsCompletedAt}
                         amendment={offer.participantAmendment}
+                        currentParticipants={request.participants}
                         bookingRequestId={bookingRequestId}
                         cancelBusy={amendmentCancelBusy}
                         onCancelAmendment={onCancelAmendment}

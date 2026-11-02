@@ -63,11 +63,54 @@ function amendmentSummary(amendment: AmendmentPreview, locale: Locale): string {
     return parts.join(' · ');
 }
 
+function customerPendingAmendmentBody(
+    amendment: AmendmentPreview,
+    locale: Locale,
+    currentParticipants: { type: 'ADULT' | 'DISCOUNTED' }[],
+): string {
+    const changedParticipants = amendment.participants != null;
+    const changedVenue = amendment.exactEventAddress != null;
+    const confirmTail = {
+        de: 'Dein Koch wurde informiert und muss die Änderung noch bestätigen. Dadurch kann sich auch der Preis ändern.',
+        en: 'Your chef has been informed and still needs to confirm the change. The price may change as a result.',
+    }[locale];
+
+    if (changedParticipants && amendment.participants) {
+        const before = currentParticipants.length;
+        const after = amendment.participants.length;
+        const participantsClause = {
+            de: `die Teilnehmerzahl von ${before} auf ${after} Personen`,
+            en: `the guest count from ${before} to ${after} people`,
+        }[locale];
+        if (changedVenue) {
+            return {
+                de: `Du hast ${participantsClause} und den Veranstaltungsort geändert. ${confirmTail}`,
+                en: `You changed ${participantsClause} and the venue. ${confirmTail}`,
+            }[locale];
+        }
+        return {
+            de: `Du hast ${participantsClause} geändert. ${confirmTail}`,
+            en: `You changed ${participantsClause}. ${confirmTail}`,
+        }[locale];
+    }
+
+    if (changedVenue) {
+        return {
+            de: `Du hast den Veranstaltungsort geändert. ${confirmTail}`,
+            en: `You changed the venue. ${confirmTail}`,
+        }[locale];
+    }
+
+    return confirmTail;
+}
+
 export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
     locale: Locale;
     canRequest: boolean;
     preparationsCompletedAt: string | null;
     amendment: AmendmentPreview | null;
+    /** Live booking participants (before the pending proposal). Used for customer pending copy. */
+    currentParticipants?: { type: 'ADULT' | 'DISCOUNTED' }[];
     bookingRequestId: string;
     onCancelAmendment?: () => Promise<void>;
     cancelBusy?: boolean;
@@ -83,8 +126,8 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
                 tone="info"
                 title={
                     {
-                        de: claimed ? 'Änderung wird angewendet' : 'Änderung vorgeschlagen',
-                        en: claimed ? 'Change is being applied' : 'Change proposed',
+                        de: claimed ? 'Änderung wird angewendet' : 'Änderungen angefragt',
+                        en: claimed ? 'Change is being applied' : 'Changes requested',
                     }[props.locale]
                 }
                 action={
@@ -96,7 +139,7 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
                             disabled={props.cancelBusy}
                             onClick={() => void props.onCancelAmendment?.()}
                         >
-                            {{ de: 'Zurückziehen', en: 'Withdraw' }[props.locale]}
+                            {{ de: 'Änderung zurückziehen', en: 'Withdraw change' }[props.locale]}
                         </Button>
                     ) : undefined
                 }
@@ -106,10 +149,7 @@ export function BookingRequestOfferParticipantAmendmentCustomerPanel(props: {
                           de: `Dein Koch hat den Vorschlag (${amendmentSummary(props.amendment, props.locale)}) angenommen. Preis und Zahlung werden gerade aktualisiert. Neuer Gastgeberpreis: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
                           en: `Your chef accepted the proposal (${amendmentSummary(props.amendment, props.locale)}). Price and payment are updating now. New host price: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
                       }[props.locale]
-                    : {
-                          de: `Dein Vorschlag (${amendmentSummary(props.amendment, props.locale)}) wartet auf die Bestätigung des Kochs. Neuer Gastgeberpreis: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
-                          en: `Your proposal (${amendmentSummary(props.amendment, props.locale)}) is waiting for the chef to confirm. New host price: ${formatCurrency(props.amendment.totalCentsCustomerAfter, { locale: props.locale })}.`,
-                      }[props.locale]}
+                    : customerPendingAmendmentBody(props.amendment, props.locale, props.currentParticipants ?? [])}
             </StatusAlert>
         );
     }

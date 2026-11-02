@@ -96,15 +96,19 @@ customer is not stuck without Withdraw. Stripe ops use `amendmentApplyId` idempo
 - Apply + Stripe: `bookingRequestOfferParticipantAmendmentApply.ts`; claim-before-money; clear `claimedAt` when apply fails before a
   completed Stripe mutation; `setupIntentCancel` / status-tolerant `paymentIntentCancel`; refundable-cents + reversible-transfer chunking;
   idempotency keys; `pendingDeltaPayment` (+ `cookPayoutDeltaCents`); `extraTransferIds`; `giftCardCredit` / fail-closed `giftCardCharge`;
-  webhook finalize via `bookingRequestOfferPaymentIntentSucceededApply`
+  off-session top-up via `paymentIntentCreateFromPaymentMethodWithSplit` (PaymentMethod’s owning Customer, not a re-resolved
+  `customerEnsure` — see [stripe-payment.md](../architecture/stripe-payment.md)); webhook finalize via
+  `bookingRequestOfferPaymentIntentSucceededApply`
 - GraphQL: `BookingRequestOfferParticipantAmendment.claimedAt`; customer / cook / admin UIs hide withdraw/decline while claimed and show
   apply-in-progress copy (cook **Retry**)
 - Commands: `userBookingRequestOfferParticipantAmendmentCreate` / `Cancel`, `cookBookingRequestOfferParticipantAmendmentAccept` / `Decline`,
   `cookBookingRequestOfferPreparationsComplete`, `adminBookingRequestOfferPreparationsClear`, `adminBookingRequestOfferAmendmentCreate` /
   `Apply` (shared prepare helper + absolute menu/travel overrides)
 - Emails: cook request; customer accept (status-aware: EMPTY checkout / SETUP pull / PAYED refund-charge / gift restore / pending delta)
-- UI: customer propose via `ProfileCustomerBookingRequestEditPage` (amendment mode) + status on booking-request / offer pages; cook
-  Accept/Decline in offer page chrome + footer; prep controls on cook Offer tab; admin prep clear on admin offer page
+- UI: customer propose via `ProfileCustomerBookingRequestEditPage` (amendment mode); pending-proposal banner
+  (`BookingRequestOfferParticipantAmendmentCustomerPanel`: title **Änderungen angefragt**, withdraw **Änderung zurückziehen**) on the
+  booking-request detail page and below the offer **Preisübersicht**; cook Accept/Decline in offer page chrome + footer; prep controls on
+  cook Offer tab; admin prep clear on admin offer page
 
 See [booking-payment.md](./booking-payment.md), [stripe-payment.md](../architecture/stripe-payment.md),
 [admin-feature-toggles.md](./admin-feature-toggles.md).
