@@ -17,11 +17,12 @@ import {
     UsersRoundIcon,
     XIcon,
 } from 'lucide-react';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useClient, useMutation, useQuery } from 'urql';
 
+import type { BookingRequestFormFunnelStep, BookingRequestFormPriceClassType, BookingRequestParticipantDraft, Locale } from '../../shared';
 import {
     bookingRequestFormFunnelArea,
     bookingRequestParticipantsFromCounts,
@@ -36,7 +37,6 @@ import {
     formatParticipants,
     textNormalizeTitled,
 } from '../../shared';
-import type { BookingRequestFormFunnelStep, BookingRequestFormPriceClassType, BookingRequestParticipantDraft, Locale } from '../../shared';
 import { AppImage } from '../components/AppImage';
 import { AUTH_USER_PROFILE_FORM_ID, AuthIdentityGate } from '../components/auth/AuthIdentityGate';
 import { AuthPasskeyLogOn } from '../components/auth/AuthPasskeyLogOn';
@@ -53,18 +53,18 @@ import { TimePicker } from '../components/base/time-picker';
 import { BookingRequestFormBackNext, BookingRequestFormStepLayout } from '../components/BookingRequestFormStepLayout';
 import { BookingRequestParticipantsRestrictionsEditor } from '../components/BookingRequestParticipantsRestrictionsEditor';
 import { SelectableChip } from '../components/SelectableChip';
-import {
-    BookingRequestFormCreateDocument,
-    BookingRequestFormFunnelTrackDocument,
-    BookingRequestFormLocationSuggestionsDocument,
-    BookingRequestFormSessionDiscountDocument,
-} from '../graphql/generated';
 import type {
     GqlCAuthSessionFieldsFragment,
     GqlCBookingRequestFormPageQuery,
     GqlCLocationSuggestion,
     GqlCUserBookingRequestCreate,
     GqlCUserBookingRequestExactEventAddressInput,
+} from '../graphql/generated';
+import {
+    BookingRequestFormCreateDocument,
+    BookingRequestFormFunnelTrackDocument,
+    BookingRequestFormLocationSuggestionsDocument,
+    BookingRequestFormSessionDiscountDocument,
 } from '../graphql/generated';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useLocale } from '../hooks/useLocale';
@@ -932,7 +932,7 @@ export function BookingRequestFormPage({
                                                                 </div>
                                                                 <p className="text-sm text-muted-foreground">{info.description}</p>
                                                             </CardHeader>
-                                                            <CardContent className="grid flex-1 gap-2">
+                                                            <CardContent className="grid flex-1 content-start gap-2">
                                                                 <p className="text-sm text-muted-foreground">
                                                                     {
                                                                         {
@@ -941,7 +941,7 @@ export function BookingRequestFormPage({
                                                                         }[locale]
                                                                     }
                                                                 </p>
-                                                                <div className="flex flex-wrap gap-2">
+                                                                <div className="flex flex-wrap items-start gap-2">
                                                                     {info.commonOccasions.map((occasion) => (
                                                                         <Badge key={occasion} variant="outline">
                                                                             {occasion}
