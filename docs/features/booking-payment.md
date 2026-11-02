@@ -54,7 +54,8 @@ finalize via client `giftCardPay` (not the booking webhook path).
 
 - Customer accept prepares SetupIntent / PaymentIntent / €0 transfer; gift-card / promo fold into `totalCentsCustomer`
 - Checkout: `/profile/booking-requests/$id/offers/$offerId/checkout` (`StripePaymentPanel`); `bookingRequestOfferPaymentStatusUpdate`;
-  `useUserUpdatesSeed`
+  `useUserUpdatesSeed`. Layout is a 1/3 summary column (cook, configured-menu collage from meal images, cost) + 2/3 payment/invoice column
+  (`max-w-6xl`). Event address reuse is a short “Übernehmen” / “Apply” control with a left-side label, not a long button.
 - Checkout + Stripe webhook (`POST /api/webhooks/stripe` → `stripeWebhookApply`) share `bookingRequestOfferPaymentFinalize` for PI/SI
   success; fail/cancel mark `paymentStatus: FAILED`. Dual channel is intentional: the status transition is an atomic claim (conditional
   `paymentStatus` update). Only the winner sends Slack ("Zahlung bestätigt"), confirmation email, session event, offer-timeline milestones,

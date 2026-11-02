@@ -33,6 +33,9 @@ fragment ProfileCustomerBookingRequestOfferCheckoutPageUser on User {
                 title
                 courses {
                     title
+                    meals {
+                        mealImageUrl
+                    }
                 }
             }
             cook {

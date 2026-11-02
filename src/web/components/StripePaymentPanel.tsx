@@ -53,7 +53,10 @@ function stripePromiseGet(publishableKey: string, locale: Locale): Promise<Strip
     const cacheKey = `${publishableKey}:${locale}`;
     const cached = stripePromiseCache.get(cacheKey);
     if (cached) return cached;
-    const promise = loadStripe(publishableKey, { locale });
+    const promise = loadStripe(publishableKey, {
+        locale,
+        developerTools: { assistant: { enabled: false } },
+    });
     stripePromiseCache.set(cacheKey, promise);
     return promise;
 }

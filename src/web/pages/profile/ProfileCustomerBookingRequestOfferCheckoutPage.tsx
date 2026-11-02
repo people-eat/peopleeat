@@ -9,6 +9,7 @@ import { bookingRequestCheckoutFunnelArea } from '../../../shared/bookingRequest
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/base/avatar';
 import { Button } from '../../components/base/button';
 import { StatusAlert } from '../../components/base/status-alert';
+import { CookMenuCardMedia } from '../../components/CookMenuCard';
 import { CookProfileTags } from '../../components/CookProfileTags';
 import { CostBreakdownPanel } from '../../components/CostBreakdownPanel';
 import type {
@@ -117,11 +118,17 @@ function CheckoutMenuSummary({ menu, locale }: { menu: NonNullable<CheckoutOffer
         de: courseCount === 1 ? '1 Gang' : `${courseCount} Gänge`,
         en: courseCount === 1 ? '1 course' : `${courseCount} courses`,
     }[locale];
+    const images = menu.courses
+        .flatMap((course) => course.meals.map((meal) => meal.mealImageUrl))
+        .filter((url): url is string => url != null && url.length > 0);
 
     return (
-        <section className="grid gap-1 rounded-lg border border-border bg-secondary/40 p-4">
-            <h2 className="font-serif text-xl/tight wrap-break-word text-foreground">{menu.title}</h2>
-            <p className="text-sm text-muted-foreground">{courseLabel}</p>
+        <section className="flex items-stretch gap-3 rounded-lg border border-border bg-secondary/40 p-4">
+            <CookMenuCardMedia images={images} />
+            <div className="grid min-w-0 flex-1 content-center gap-1">
+                <h2 className="font-serif text-xl/tight wrap-break-word text-foreground">{menu.title}</h2>
+                <p className="text-sm text-muted-foreground">{courseLabel}</p>
+            </div>
         </section>
     );
 }
@@ -343,7 +350,7 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
             className="@container flex min-h-0 w-[calc(100%+2rem)] max-w-none flex-1 -mx-4 flex-col overflow-hidden"
         >
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-8">
-                <div className="grid w-full max-w-5xl content-start gap-8">
+                <div className="grid w-full max-w-6xl content-start gap-8">
                     <div className="grid gap-1">
                         <h1 className="font-serif text-3xl/tight text-foreground">
                             {profileCustomerBookingRequestOfferCheckoutPageTitle[locale]}
@@ -374,7 +381,7 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
                     ) : null}
 
                     {canPay && liveOffer.payment ? (
-                        <div className="grid items-start gap-8 @3xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+                        <div className="grid items-start gap-8 @3xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
                             <aside className="grid gap-4 @3xl:sticky @3xl:top-0">
                                 <CheckoutCookSummary cook={liveOffer.cook} locale={locale} />
                                 {liveOffer.configuredMenu != null ? (
@@ -401,21 +408,36 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
                                             email: customerUser.emailAddress ?? undefined,
                                         }}
                                         beforeAddress={
-                                            <div className="flex justify-end">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-medium text-foreground">
+                                                        {{ de: 'Veranstaltungsadresse', en: 'Event address' }[locale]}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {
+                                                            {
+                                                                de: 'In die Rechnungsadresse übernehmen',
+                                                                en: 'Copy into the billing address',
+                                                            }[locale]
+                                                        }
+                                                    </p>
+                                                </div>
                                                 <Button
                                                     type="button"
                                                     variant="outline"
                                                     size="sm"
+                                                    className="shrink-0"
                                                     onClick={applyEventAddressAsInvoice}
                                                     disabled={paymentBusy}
-                                                >
-                                                    <ListRestartIcon aria-hidden />
-                                                    {
+                                                    aria-label={
                                                         {
-                                                            de: 'Veranstaltungsadresse als Rechnungsadresse verwenden',
-                                                            en: 'Use event address as invoice address',
+                                                            de: 'Veranstaltungsadresse als Rechnungsadresse übernehmen',
+                                                            en: 'Apply event address as billing address',
                                                         }[locale]
                                                     }
+                                                >
+                                                    <ListRestartIcon aria-hidden />
+                                                    {{ de: 'Übernehmen', en: 'Apply' }[locale]}
                                                 </Button>
                                             </div>
                                         }

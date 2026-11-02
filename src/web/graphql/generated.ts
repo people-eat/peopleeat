@@ -19914,7 +19914,7 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageUserFragment = {
             bookingRequestOfferId: string;
             status: Schema.GqlCBookingRequestOfferStatus;
             plannedPaymentPullDateTime: string | null;
-            configuredMenu: { title: string; courses: Array<{ title: string }> } | null;
+            configuredMenu: { title: string; courses: Array<{ title: string; meals: Array<{ mealImageUrl: string | null }> }> } | null;
             cook: {
                 cookId: string;
                 hasPublicProfile: boolean;
@@ -19962,7 +19962,10 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageQuery = {
                     bookingRequestOfferId: string;
                     status: Schema.GqlCBookingRequestOfferStatus;
                     plannedPaymentPullDateTime: string | null;
-                    configuredMenu: { title: string; courses: Array<{ title: string }> } | null;
+                    configuredMenu: {
+                        title: string;
+                        courses: Array<{ title: string; meals: Array<{ mealImageUrl: string | null }> }>;
+                    } | null;
                     cook: {
                         cookId: string;
                         hasPublicProfile: boolean;
@@ -20011,7 +20014,7 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageUpdatesSubscriptio
                 bookingRequestOfferId: string;
                 status: Schema.GqlCBookingRequestOfferStatus;
                 plannedPaymentPullDateTime: string | null;
-                configuredMenu: { title: string; courses: Array<{ title: string }> } | null;
+                configuredMenu: { title: string; courses: Array<{ title: string; meals: Array<{ mealImageUrl: string | null }> }> } | null;
                 cook: {
                     cookId: string;
                     hasPublicProfile: boolean;
@@ -32592,7 +32595,22 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageUserFragmentDoc = {
                                                             name: { kind: 'Name', value: 'courses' },
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
-                                                                selections: [{ kind: 'Field', name: { kind: 'Name', value: 'title' } }],
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'meals' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'mealImageUrl' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
                                                             },
                                                         },
                                                     ],
@@ -78631,7 +78649,22 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageDocument = {
                                                             name: { kind: 'Name', value: 'courses' },
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
-                                                                selections: [{ kind: 'Field', name: { kind: 'Name', value: 'title' } }],
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'meals' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'mealImageUrl' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
                                                             },
                                                         },
                                                     ],
@@ -78850,7 +78883,22 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageUpdatesDocument = {
                                                             name: { kind: 'Name', value: 'courses' },
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
-                                                                selections: [{ kind: 'Field', name: { kind: 'Name', value: 'title' } }],
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'meals' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'mealImageUrl' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
                                                             },
                                                         },
                                                     ],
