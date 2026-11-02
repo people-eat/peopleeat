@@ -218,6 +218,9 @@ Attention lane — see [cook-profile.md](../features/cook-profile.md).
 - `paymentIntentCancel` cancels abandoned prepared PaymentIntents (gift-card cleanup job).
 - Public checkout uses `Session.giftCard.payment.publishableKey` + `clientSecret` with the reusable `StripePaymentPanel` (`SETUP_INTENT` |
   `PAYMENT_INTENT` + invoice address) — booking reuses the same panel on a dedicated checkout route.
+- `StripePaymentPanel` disables the Stripe sandbox assistant with `developerTools.assistant.enabled: false` when initializing Stripe.js, so
+  test checkout and marketing captures keep the same customer-facing layout without the floating developer widget. Payment Elements and
+  test-mode payment behavior are unchanged. See [Stripe.js initialization options](https://docs.stripe.com/js/initializing).
 - **Confirm is one-shot:** the parent flips `confirm` to `true` to trigger `confirmPayment` / `confirmSetup`. The panel keeps an internal
   latch until the parent resets `confirm` to `false` (failure / retry). Callbacks are Effect Events so parent re-renders after the first
   success do not re-confirm (which would yield Stripe `payment_intent_unexpected_state` and an error toast on top of success). An

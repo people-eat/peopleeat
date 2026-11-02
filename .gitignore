@@ -14,6 +14,7 @@ dist-ssr
 .react-email
 __unconfig*
 todos.json
+scripts/demo-landing-video-manifest.json
 .cursorrules
 .claude
 storybook-static

@@ -1,0 +1,21 @@
+{
+    "name": "d",
+    "source": "raw/raw-d-bestaetigen.mov",
+    "duration": 12.766,
+    "capturedFrames": 138,
+    "captureFramesPerSecond": 10.81,
+    "window": {
+        "width": 1559,
+        "height": 944
+    },
+    "markers": [
+        {
+            "label": "offer",
+            "time": 0
+        },
+        {
+            "label": "accept-dialog",
+            "time": 4.147
+        }
+    ]
+}

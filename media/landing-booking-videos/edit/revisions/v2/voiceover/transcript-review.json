@@ -1,0 +1,39 @@
+{
+    "transcript": "Dein Anlass, deine Küche, ein Privatkoch, der zu dir kommt. In zwei Minuten beschreibst du dein Dinner. Köche in deiner Nähe schicken dir individuelle Menüs mit einem klaren Preis. Du schreibst, du rufst an, du entscheidest in Ruhe. Dann bestätigst du und bezahlst sicher. PeopleEat, Privatkochen einfach gebucht.",
+    "perceivedVoiceGender": "female",
+    "languages": ["de-DE"],
+    "clarityProblems": [],
+    "sentences": [
+        {
+            "text": "Dein Anlass, deine Küche, ein Privatkoch, der zu dir kommt.",
+            "start": 0.0,
+            "end": 4.5
+        },
+        {
+            "text": "In zwei Minuten beschreibst du dein Dinner.",
+            "start": 4.7,
+            "end": 7.3
+        },
+        {
+            "text": "Köche in deiner Nähe schicken dir individuelle Menüs mit einem klaren Preis.",
+            "start": 7.4,
+            "end": 12.3
+        },
+        {
+            "text": "Du schreibst, du rufst an, du entscheidest in Ruhe.",
+            "start": 12.4,
+            "end": 16.0
+        },
+        {
+            "text": "Dann bestätigst du und bezahlst sicher.",
+            "start": 16.2,
+            "end": 18.8
+        },
+        {
+            "text": "PeopleEat, Privatkochen einfach gebucht.",
+            "start": 18.9,
+            "end": 22.4
+        }
+    ],
+    "matchesScript": true
+}

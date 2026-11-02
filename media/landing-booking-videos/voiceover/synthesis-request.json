@@ -1,0 +1,24 @@
+{
+    "model": "gemini-3.8-flash-tts",
+    "contents": [
+        {
+            "role": "user",
+            "parts": [
+                {
+                    "text": "Ein besonderer Abend beginnt mit deiner Idee.\nBeschreibe deinen Anlass und sag uns, wie viele Gäste dabei sind.\nWo und wann möchtest du feiern?\nWähle deinen Menürahmen und was du gerne isst.\nNoch ein persönlicher Wunsch? Schreib ihn einfach dazu.\nPassende Privatköche schicken dir individuelle Menüvorschläge.\nVergleiche die Gerichte und den Gesamtpreis in Ruhe.\nIm Chat und per Videoanruf lernst du deinen Koch direkt hier auf der Plattform kennen.\nBrauchst du Unterstützung? Unser Team ist für dich da und hilft bei der Abstimmung.\nWenn alles passt, nimmst du dein Wunschmenü an und bezahlst sicher.\nJetzt bist du dran: Sende deine Anfrage und freu dich auf deinen Abend.\nWir wünschen dir und deinen Gästen unvergessliche Erlebnisse mit eurem Privatkoch.",
+                    "speech_metadata": {
+                        "style": "Sprich auf natürlichem Hochdeutsch, warm, persönlich und voller ruhiger Vorfreude. Eine erwachsene weibliche Stimme mit klarer Artikulation. Das ist ein motivierender Produktfilm: flüssiges normales Sprechtempo, etwa 145 Wörter pro Minute. Kurze natürliche Satzpausen, keine Pause länger als eine Sekunde. Nicht schleppend oder abgehackt. Kein künstlicher Werbesingsang. Lies ausschließlich den vorgegebenen Text, ohne Einleitung, zusätzliche Wörter, Musik oder Geräusche."
+                    }
+                }
+            ]
+        }
+    ],
+    "generationConfig": {
+        "responseModalities": ["AUDIO"],
+        "speechConfig": {
+            "voiceConfig": {
+                "voice": "Kore"
+            }
+        }
+    }
+}

@@ -1,0 +1,53 @@
+{
+    "name": "a",
+    "source": "raw/raw-a-anfrage.mov",
+    "duration": 31.063,
+    "capturedFrames": 174,
+    "captureFramesPerSecond": 5.6,
+    "window": {
+        "width": 1559,
+        "height": 944
+    },
+    "markers": [
+        {
+            "label": "landing",
+            "time": 0.001
+        },
+        {
+            "label": "occasion",
+            "time": 2.33
+        },
+        {
+            "label": "participants",
+            "time": 4.993
+        },
+        {
+            "label": "location",
+            "time": 10.061
+        },
+        {
+            "label": "dateTime",
+            "time": 12.53
+        },
+        {
+            "label": "priceClass",
+            "time": 16.329
+        },
+        {
+            "label": "preferences",
+            "time": 19.163
+        },
+        {
+            "label": "message",
+            "time": 24.166
+        },
+        {
+            "label": "submit",
+            "time": 26.85
+        },
+        {
+            "label": "submitted",
+            "time": 28.991
+        }
+    ]
+}

@@ -1,0 +1,17 @@
+{
+    "file": "exports/film-60s.mp4",
+    "durationSeconds": 60,
+    "frames": 1800,
+    "width": 1920,
+    "height": 1080,
+    "framesPerSecond": 30,
+    "audioStreams": 1,
+    "audioCodec": "AAC",
+    "audioSampleRate": 48000,
+    "audioChannels": 2,
+    "captionsMatchScript": true,
+    "narrationMatchesScript": true,
+    "maximumNarrationPauseSeconds": 2.528,
+    "bytes": 4591761,
+    "sha256": "b547061947b1e8894b41e92af558c68cf55bb50ebb2cadc5ee09338f895491d1"
+}

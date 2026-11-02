@@ -1,0 +1,5 @@
+{
+    "model": "gemini-3.8-flash-tts",
+    "voice": "Kore",
+    "direction": "Sprich auf natürlichem Hochdeutsch, warm, ruhig und persönlich. Eine erwachsene weibliche Stimme mit klarer Artikulation. Lies in einem entspannten Tempo, etwa 110 Wörter pro Minute, mit kurzen, hörbaren Satzpausen. Die Stimme klingt einladend und vertrauenswürdig, ohne übertriebene Betonung. Sprich den Markennamen peopleeat englisch aus. Lies ausschließlich den vorgegebenen Text, ohne Einleitung, zusätzliche Wörter, Musik oder Geräusche."
+}

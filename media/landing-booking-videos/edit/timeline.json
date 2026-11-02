@@ -1,0 +1,503 @@
+{
+    "revision": 3,
+    "clips": [
+        {
+            "name": "a",
+            "file": "clip-a-anfrage.mp4",
+            "caption": "Anfrage in 2 Minuten",
+            "bitrateKbps": 2000,
+            "shots": [
+                {
+                    "source": "raw/raw-a-continuous.mov",
+                    "in": 28.6,
+                    "out": 31.1,
+                    "duration": 3.2,
+                    "hold": 0.7,
+                    "label": "1. Dein Anlass"
+                },
+                {
+                    "source": "raw/raw-a-continuous.mov",
+                    "in": 35.9,
+                    "out": 39,
+                    "duration": 4.1,
+                    "hold": 1,
+                    "label": "2. Deine Gäste"
+                },
+                {
+                    "source": "raw/raw-a-continuous.mov",
+                    "in": 41.55,
+                    "out": 44.3,
+                    "duration": 3.7,
+                    "hold": 0.95,
+                    "label": "3. Dein Wunschort"
+                },
+                {
+                    "source": "raw/raw-a-continuous.mov",
+                    "in": 46.7,
+                    "out": 49,
+                    "duration": 2.3,
+                    "label": "4. Dein Wunschtermin"
+                },
+                {
+                    "source": "raw/raw-a-continuous.mov",
+                    "in": 52.8,
+                    "out": 55.4,
+                    "duration": 3.7,
+                    "hold": 1.1,
+                    "label": "4. Dein Wunschtermin"
+                },
+                {
+                    "source": "raw/raw-a-continuous.mov",
+                    "in": 62.5,
+                    "out": 65,
+                    "duration": 3.6,
+                    "hold": 1.1,
+                    "label": "5. Dein Menürahmen"
+                },
+                {
+                    "source": "raw/raw-a-continuous.mov",
+                    "in": 68.25,
+                    "out": 70,
+                    "duration": 1.75,
+                    "label": "6. Deine Vorlieben"
+                },
+                {
+                    "source": "raw/raw-a-continuous.mov",
+                    "in": 146.4,
+                    "out": 149,
+                    "duration": 3.4,
+                    "hold": 0.8,
+                    "label": "6. Deine Vorlieben"
+                },
+                {
+                    "source": "raw/raw-a-continuous.mov",
+                    "in": 157.65,
+                    "out": 160.2,
+                    "duration": 3.45,
+                    "hold": 0.9,
+                    "label": "7. Deine Wünsche"
+                },
+                {
+                    "source": "raw/raw-a-continuous.mov",
+                    "in": 239.6,
+                    "out": 245.5,
+                    "duration": 5.1,
+                    "label": "Deine Anfrage ist unterwegs."
+                }
+            ],
+            "hideBrowserStatus": true
+        },
+        {
+            "name": "b",
+            "file": "clip-b-angebote.mp4",
+            "caption": "Echte Menüs. Ein klarer Preis.",
+            "hideBrowserStatus": true,
+            "shots": [
+                {
+                    "source": "raw/raw-bcd-continuous.mov",
+                    "in": 11.5,
+                    "out": 16,
+                    "duration": 4.5
+                },
+                {
+                    "source": "raw/raw-bcd-continuous.mov",
+                    "in": 33.4,
+                    "out": 37.4,
+                    "duration": 4
+                },
+                {
+                    "source": "raw/raw-bcd-continuous.mov",
+                    "in": 43.5,
+                    "out": 51,
+                    "duration": 7.5
+                }
+            ]
+        },
+        {
+            "name": "c",
+            "file": "clip-c-kennenlernen.mp4",
+            "caption": "Vorher kennenlernen",
+            "hideBrowserStatus": true,
+            "shots": [
+                {
+                    "source": "raw/raw-bcd-continuous.mov",
+                    "in": 55.5,
+                    "out": 65,
+                    "duration": 9.5
+                },
+                {
+                    "source": "raw/raw-bcd-continuous.mov",
+                    "in": 72.1,
+                    "out": 78.6,
+                    "duration": 6.5
+                }
+            ]
+        },
+        {
+            "name": "d",
+            "file": "clip-d-bestaetigen.mp4",
+            "caption": "Zusage. Zahlung. Fertig.",
+            "hideBrowserStatus": true,
+            "shots": [
+                {
+                    "source": "raw/raw-bcd-continuous.mov",
+                    "in": 90.8,
+                    "out": 94.8,
+                    "duration": 4
+                },
+                {
+                    "source": "raw/raw-bcd-continuous.mov",
+                    "in": 100.8,
+                    "out": 106.8,
+                    "duration": 4
+                },
+                {
+                    "source": "raw/raw-bcd-continuous.mov",
+                    "in": 124.8,
+                    "out": 132.8,
+                    "duration": 8
+                }
+            ]
+        }
+    ],
+    "film": {
+        "file": "film-60s.mp4",
+        "width": 1920,
+        "height": 1080,
+        "transitionFrames": 10,
+        "sections": [
+            {
+                "name": "intro",
+                "kind": "logo",
+                "duration": 3.5
+            },
+            {
+                "name": "request",
+                "title": "1. Anfrage senden",
+                "shots": [
+                    {
+                        "source": "raw/raw-a-continuous.mov",
+                        "in": 28.7,
+                        "out": 30.7,
+                        "duration": 2
+                    },
+                    {
+                        "source": "raw/raw-a-continuous.mov",
+                        "in": 35.95,
+                        "out": 38.75,
+                        "duration": 2.8
+                    },
+                    {
+                        "source": "raw/raw-a-continuous.mov",
+                        "in": 41.6,
+                        "out": 43.6,
+                        "duration": 2
+                    },
+                    {
+                        "source": "raw/raw-a-continuous.mov",
+                        "in": 52.85,
+                        "out": 55.35,
+                        "duration": 2.5
+                    },
+                    {
+                        "source": "raw/raw-a-continuous.mov",
+                        "in": 62.5,
+                        "out": 64.5,
+                        "duration": 2
+                    },
+                    {
+                        "source": "raw/raw-a-continuous.mov",
+                        "in": 146.3,
+                        "out": 148.5,
+                        "duration": 2.2
+                    },
+                    {
+                        "source": "raw/raw-a-continuous.mov",
+                        "in": 157.7,
+                        "out": 159.7,
+                        "duration": 2
+                    },
+                    {
+                        "source": "raw/raw-a-continuous.mov",
+                        "in": 239.8,
+                        "out": 244.2,
+                        "duration": 3
+                    }
+                ]
+            },
+            {
+                "name": "offers",
+                "title": "2. Menüs vergleichen",
+                "shots": [
+                    {
+                        "source": "raw/raw-bcd-continuous.mov",
+                        "in": 12.2,
+                        "out": 15.7,
+                        "duration": 3.5
+                    },
+                    {
+                        "source": "raw/raw-bcd-continuous.mov",
+                        "in": 33.5,
+                        "out": 35.7,
+                        "duration": 2.2,
+                        "zoom": {
+                            "from": 1,
+                            "to": 1.1,
+                            "x": 0.75,
+                            "y": 0.5
+                        }
+                    },
+                    {
+                        "source": "raw/raw-bcd-continuous.mov",
+                        "in": 43.6,
+                        "out": 46.9,
+                        "duration": 3.3,
+                        "zoom": {
+                            "from": 1.1,
+                            "to": 1.1,
+                            "x": 0.75,
+                            "y": 0.5
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "chat",
+                "title": "3. Deinen Koch kennenlernen",
+                "shots": [
+                    {
+                        "source": "raw/raw-bcd-continuous.mov",
+                        "in": 55.5,
+                        "out": 60,
+                        "duration": 4.5
+                    },
+                    {
+                        "source": "raw/raw-bcd-continuous.mov",
+                        "in": 72.1,
+                        "out": 74.6,
+                        "duration": 2.5
+                    }
+                ]
+            },
+            {
+                "name": "support",
+                "title": "Wir unterstützen dich",
+                "shots": [
+                    {
+                        "source": "raw/raw-bcd-continuous.mov",
+                        "in": 61,
+                        "out": 67,
+                        "duration": 6,
+                        "zoom": {
+                            "from": 1,
+                            "to": 1.16,
+                            "x": 0.7,
+                            "y": 0.25
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "checkout",
+                "title": "4. Dein Wunschmenü bestätigen",
+                "shots": [
+                    {
+                        "source": "raw/raw-bcd-continuous.mov",
+                        "in": 90.8,
+                        "out": 94.3,
+                        "duration": 3.5
+                    },
+                    {
+                        "source": "raw/raw-bcd-continuous.mov",
+                        "in": 100.85,
+                        "out": 106.35,
+                        "duration": 2
+                    },
+                    {
+                        "source": "raw/raw-bcd-continuous.mov",
+                        "in": 124.8,
+                        "out": 130.3,
+                        "duration": 5.5
+                    }
+                ]
+            },
+            {
+                "name": "endcard",
+                "kind": "logo",
+                "duration": 5
+            }
+        ],
+        "voiceoverSegments": [
+            {
+                "in": 0,
+                "out": 3.15,
+                "at": 0.1
+            },
+            {
+                "in": 3.15,
+                "out": 6.75,
+                "at": 3.5
+            },
+            {
+                "in": 6.75,
+                "out": 9.15,
+                "at": 8.3
+            },
+            {
+                "in": 9.15,
+                "out": 12.55,
+                "at": 12
+            },
+            {
+                "in": 12.55,
+                "out": 16,
+                "at": 17
+            },
+            {
+                "in": 16,
+                "out": 23.15,
+                "at": 22.15
+            },
+            {
+                "in": 23.15,
+                "out": 28.5,
+                "at": 31.15
+            },
+            {
+                "in": 28.5,
+                "out": 33.25,
+                "at": 38.1
+            },
+            {
+                "in": 33.25,
+                "out": 37.15,
+                "at": 44.2
+            },
+            {
+                "in": 37.15,
+                "out": 41.75,
+                "at": 49.2
+            },
+            {
+                "in": 41.75,
+                "out": 46.52,
+                "at": 55.1
+            }
+        ],
+        "captions": [
+            {
+                "in": 0.35,
+                "out": 3.2,
+                "text": "Ein besonderer Abend beginnt mit deiner Idee."
+            },
+            {
+                "in": 3.7,
+                "out": 5.3,
+                "text": "Beschreibe deinen Anlass und sag uns,"
+            },
+            {
+                "in": 5.3,
+                "out": 7.1,
+                "text": "wie viele Gäste dabei sind."
+            },
+            {
+                "in": 8.55,
+                "out": 10.55,
+                "text": "Wo und wann möchtest du feiern?"
+            },
+            {
+                "in": 12.25,
+                "out": 13.8,
+                "text": "Wähle deinen Menürahmen"
+            },
+            {
+                "in": 13.8,
+                "out": 15.5,
+                "text": "und was du gerne isst."
+            },
+            {
+                "in": 17.25,
+                "out": 18.6,
+                "text": "Noch ein persönlicher Wunsch?"
+            },
+            {
+                "in": 18.6,
+                "out": 20.4,
+                "text": "Schreib ihn einfach dazu."
+            },
+            {
+                "in": 22.5,
+                "out": 24.3,
+                "text": "Passende Privatköche schicken dir"
+            },
+            {
+                "in": 24.3,
+                "out": 25.9,
+                "text": "individuelle Menüvorschläge."
+            },
+            {
+                "in": 26.3,
+                "out": 29.2,
+                "text": "Vergleiche die Gerichte und den Gesamtpreis in Ruhe."
+            },
+            {
+                "in": 31.5,
+                "out": 33.5,
+                "text": "Im Chat und per Videoanruf lernst du deinen Koch"
+            },
+            {
+                "in": 33.5,
+                "out": 36.4,
+                "text": "direkt hier auf der Plattform kennen."
+            },
+            {
+                "in": 38.3,
+                "out": 39.8,
+                "text": "Brauchst du Unterstützung?"
+            },
+            {
+                "in": 39.8,
+                "out": 42.6,
+                "text": "Unser Team ist für dich da und hilft bei der Abstimmung."
+            },
+            {
+                "in": 44.6,
+                "out": 46.25,
+                "text": "Wenn alles passt, nimmst du dein Wunschmenü an"
+            },
+            {
+                "in": 46.25,
+                "out": 47.9,
+                "text": "und bezahlst sicher."
+            },
+            {
+                "in": 49.5,
+                "out": 50.8,
+                "text": "Jetzt bist du dran:"
+            },
+            {
+                "in": 50.8,
+                "out": 52.25,
+                "text": "Sende deine Anfrage"
+            },
+            {
+                "in": 52.25,
+                "out": 53.7,
+                "text": "und freu dich auf deinen Abend."
+            },
+            {
+                "in": 55.35,
+                "out": 57.25,
+                "text": "Wir wünschen dir und deinen Gästen"
+            },
+            {
+                "in": 57.25,
+                "out": 59.8,
+                "text": "unvergessliche Erlebnisse mit eurem Privatkoch."
+            }
+        ],
+        "duration": 60,
+        "titlesVisibleSeconds": 3,
+        "logoBookends": true
+    }
+}

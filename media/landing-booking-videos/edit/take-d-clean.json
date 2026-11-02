@@ -1,0 +1,25 @@
+{
+    "name": "d-clean",
+    "source": "raw/raw-d-checkout-clean.mov",
+    "duration": 11.597,
+    "capturedFrames": 103,
+    "captureFramesPerSecond": 8.88,
+    "window": {
+        "width": 1559,
+        "height": 944
+    },
+    "markers": [
+        {
+            "label": "checkout-clean",
+            "time": 0.112
+        },
+        {
+            "label": "payment-element",
+            "time": 2.383
+        },
+        {
+            "label": "invoice-address",
+            "time": 6.316
+        }
+    ]
+}

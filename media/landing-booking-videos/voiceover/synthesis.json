@@ -1,0 +1,27 @@
+{
+    "provider": "Gemini API",
+    "model": "gemini-3.8-flash-tts",
+    "voice": "Kore",
+    "language": "de-DE",
+    "source": "vo-source.wav",
+    "durationSeconds": 46.52,
+    "sampleRate": 24000,
+    "usage": {
+        "promptTokenCount": 193,
+        "candidatesTokenCount": 1163,
+        "totalTokenCount": 1356,
+        "promptTokensDetails": [
+            {
+                "modality": "TEXT",
+                "tokenCount": 193
+            }
+        ],
+        "candidatesTokensDetails": [
+            {
+                "modality": "AUDIO",
+                "tokenCount": 1163
+            }
+        ],
+        "serviceTier": "standard"
+    }
+}

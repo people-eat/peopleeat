@@ -1,0 +1,57 @@
+{
+    "source": "raw/raw-a-continuous.mov",
+    "startedAt": 1793627987.9827344,
+    "window": {
+        "width": 1554,
+        "height": 944
+    },
+    "markers": [
+        {
+            "name": "occasionClick",
+            "time": 29.171
+        },
+        {
+            "name": "guests",
+            "time": 36.442
+        },
+        {
+            "name": "location",
+            "time": 42.05
+        },
+        {
+            "name": "calendarOpen",
+            "time": 47.189
+        },
+        {
+            "name": "dateSelect",
+            "time": 53.293
+        },
+        {
+            "name": "signature",
+            "time": 63.049
+        },
+        {
+            "name": "preferences",
+            "time": 68.703
+        },
+        {
+            "name": "preferencesAdded",
+            "time": 146.887
+        },
+        {
+            "name": "messageType",
+            "time": 158.156
+        },
+        {
+            "name": "submitApproved",
+            "time": 240.069
+        }
+    ],
+    "durationSeconds": 264.48964225,
+    "capturedFrames": 11832,
+    "averageFramesPerSecond": 44.74,
+    "requestedFramesPerSecond": 60,
+    "capture": "ScreenCaptureKit window stream",
+    "cursorVisible": false,
+    "audioStreams": 0
+}

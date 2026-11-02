@@ -1,0 +1,25 @@
+{
+    "name": "c",
+    "source": "raw/raw-c-kennenlernen.mov",
+    "duration": 14.34,
+    "capturedFrames": 147,
+    "captureFramesPerSecond": 10.25,
+    "window": {
+        "width": 1559,
+        "height": 944
+    },
+    "markers": [
+        {
+            "label": "chat-presence",
+            "time": 0
+        },
+        {
+            "label": "chat-conversation",
+            "time": 5.108
+        },
+        {
+            "label": "confirmed-slot",
+            "time": 8.325
+        }
+    ]
+}

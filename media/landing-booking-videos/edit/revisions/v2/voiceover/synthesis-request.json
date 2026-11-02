@@ -1,0 +1,24 @@
+{
+    "model": "gemini-3.8-flash-tts",
+    "contents": [
+        {
+            "role": "user",
+            "parts": [
+                {
+                    "text": "Dein Anlass. Deine Küche. Ein Privatkoch, der zu dir kommt. In zwei Minuten beschreibst du dein Dinner. Köche in deiner Nähe schicken dir individuelle Menüs mit einem klaren Preis. Du schreibst, du rufst an, du entscheidest in Ruhe. Dann bestätigst du und bezahlst sicher. peopleeat. Privatkochen, einfach gebucht.",
+                    "speech_metadata": {
+                        "style": "Sprich auf natürlichem Hochdeutsch, warm, ruhig und persönlich. Eine erwachsene weibliche Stimme mit klarer Artikulation. Lies in einem entspannten Tempo, etwa 110 Wörter pro Minute, mit kurzen, hörbaren Satzpausen. Die Stimme klingt einladend und vertrauenswürdig, ohne übertriebene Betonung. Sprich den Markennamen peopleeat englisch aus. Lies ausschließlich den vorgegebenen Text, ohne Einleitung, zusätzliche Wörter, Musik oder Geräusche."
+                    }
+                }
+            ]
+        }
+    ],
+    "generationConfig": {
+        "responseModalities": ["AUDIO"],
+        "speechConfig": {
+            "voiceConfig": {
+                "voice": "Kore"
+            }
+        }
+    }
+}

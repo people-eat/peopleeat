@@ -1,0 +1,61 @@
+{
+    "source": "raw/raw-bcd-continuous.mov",
+    "startedAt": 1793628309.4001527,
+    "window": {
+        "width": 1554,
+        "height": 944
+    },
+    "markers": [
+        {
+            "name": "marcoOpen",
+            "time": 15.701
+        },
+        {
+            "name": "menuTab",
+            "time": 33.78
+        },
+        {
+            "name": "menuScroll",
+            "time": 43.996
+        },
+        {
+            "name": "chatOpen",
+            "time": 55.925
+        },
+        {
+            "name": "chatScroll",
+            "time": 63.821
+        },
+        {
+            "name": "callOpen",
+            "time": 72.572
+        },
+        {
+            "name": "returnToOffer",
+            "time": 81.112
+        },
+        {
+            "name": "acceptButton",
+            "time": 91.535
+        },
+        {
+            "name": "confirmAccept",
+            "time": 101.152
+        },
+        {
+            "name": "cardExpand",
+            "time": 125.277
+        },
+        {
+            "name": "billingCopy",
+            "time": 134.424
+        }
+    ],
+    "durationSeconds": 145.467163917,
+    "capturedFrames": 8240,
+    "averageFramesPerSecond": 56.65,
+    "requestedFramesPerSecond": 60,
+    "capture": "ScreenCaptureKit window stream",
+    "cursorVisible": false,
+    "audioStreams": 0
+}

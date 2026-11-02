@@ -1,0 +1,33 @@
+{
+    "name": "b",
+    "source": "raw/raw-b-angebote.mov",
+    "duration": 19.698,
+    "capturedFrames": 144,
+    "captureFramesPerSecond": 7.31,
+    "window": {
+        "width": 1559,
+        "height": 944
+    },
+    "markers": [
+        {
+            "label": "three-offer-board",
+            "time": 0
+        },
+        {
+            "label": "offer-open",
+            "time": 5.138
+        },
+        {
+            "label": "menu-and-price",
+            "time": 6.055
+        },
+        {
+            "label": "courses",
+            "time": 11.662
+        },
+        {
+            "label": "total",
+            "time": 17.046
+        }
+    ]
+}

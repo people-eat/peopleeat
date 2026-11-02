@@ -20,6 +20,7 @@
         "db:check-applied": "tsx scripts/migrationsCheck.ts",
         "db:reconcile": "tsx scripts/migrationsReconcile.ts",
         "db:wipe": "tsx scripts/databaseWipe.ts",
+        "demo:landing-video-seed": "tsx scripts/demoLandingVideoSeed.ts",
         "images:optimize-public": "tsx scripts/optimizePublicImages.ts",
         "db:pull": "drizzle-kit pull",
         "db:studio": "drizzle-kit studio",

@@ -1,0 +1,47 @@
+1
+00:00:00,350 --> 00:00:01,400
+Dein Anlass.
+
+2
+00:00:01,600 --> 00:00:02,550
+Deine Küche.
+
+3
+00:00:02,700 --> 00:00:04,850
+Ein Privatkoch, der zu dir kommt.
+
+4
+00:00:06,700 --> 00:00:09,500
+In zwei Minuten beschreibst du dein Dinner.
+
+5
+00:00:28,550 --> 00:00:31,050
+Köche in deiner Nähe schicken dir
+
+6
+00:00:31,050 --> 00:00:33,500
+individuelle Menüs mit einem klaren Preis.
+
+7
+00:00:40,450 --> 00:00:42,250
+Du schreibst, du rufst an,
+
+8
+00:00:42,250 --> 00:00:44,000
+du entscheidest in Ruhe.
+
+9
+00:00:49,500 --> 00:00:50,950
+Dann bestätigst du
+
+10
+00:00:50,950 --> 00:00:52,600
+und bezahlst sicher.
+
+11
+00:00:56,300 --> 00:00:57,150
+peopleeat.
+
+12
+00:00:57,150 --> 00:00:59,750
+Privatkochen, einfach gebucht.

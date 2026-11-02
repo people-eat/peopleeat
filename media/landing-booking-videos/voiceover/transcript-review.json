@@ -1,0 +1,84 @@
+{
+    "transcript": "Ein besonderer Abend beginnt mit deiner Idee. Beschreibe deinen Anlass und sag uns, wie viele Gäste dabei sind. Wo und wann möchtest du feiern? Wähle deinen Menürahmen und was du gerne isst. Noch ein persönlicher Wunsch? Schreib ihn einfach dazu. Passende Privatköche schicken dir individuelle Menüvorschläge. Vergleiche die Gerichte und den Gesamtpreis in Ruhe. Im Chat und per Videoanruf lernst du deinen Koch direkt hier auf der Plattform kennen. Brauchst du Unterstützung? Unser Team ist für dich da und hilft bei der Abstimmung. Wenn alles passt, nimmst du dein Wunschmenü an und bezahlst sicher. Jetzt bist du dran. Sende deine Anfrage und freu dich auf deinen Abend. Wir wünschen dir und deinen Gästen unvergessliche Erlebnisse mit eurem Privatkoch.",
+    "perceivedVoiceGender": "female",
+    "languages": ["deu"],
+    "clarityProblems": [],
+    "sentences": [
+        {
+            "start": 0,
+            "end": 2.72,
+            "text": "Ein besonderer Abend beginnt mit deiner Idee."
+        },
+        {
+            "start": 3.06,
+            "end": 6.35,
+            "text": "Beschreibe deinen Anlass und sag uns, wie viele Gäste dabei sind."
+        },
+        {
+            "start": 6.72,
+            "end": 8.52,
+            "text": "Wo und wann möchtest du feiern?"
+        },
+        {
+            "start": 9.07,
+            "end": 12.01,
+            "text": "Wähle deinen Menürahmen und was du gerne isst."
+        },
+        {
+            "start": 12.35,
+            "end": 13.68,
+            "text": "Noch ein persönlicher Wunsch?"
+        },
+        {
+            "start": 13.91,
+            "end": 15.42,
+            "text": "Schreib ihn einfach dazu."
+        },
+        {
+            "start": 16.29,
+            "end": 19.49,
+            "text": "Passende Privatköche schicken dir individuelle Menüvorschläge."
+        },
+        {
+            "start": 20.08,
+            "end": 22.84,
+            "text": "Vergleiche die Gerichte und den Gesamtpreis in Ruhe."
+        },
+        {
+            "start": 23.63,
+            "end": 27.87,
+            "text": "Im Chat und per Videoanruf lernst du deinen Koch direkt hier auf der Plattform kennen."
+        },
+        {
+            "start": 28.53,
+            "end": 29.89,
+            "text": "Brauchst du Unterstützung?"
+        },
+        {
+            "start": 30.15,
+            "end": 33.15,
+            "text": "Unser Team ist für dich da und hilft bei der Abstimmung."
+        },
+        {
+            "start": 33.72,
+            "end": 37.07,
+            "text": "Wenn alles passt, nimmst du dein Wunschmenü an und bezahlst sicher."
+        },
+        {
+            "start": 37.66,
+            "end": 38.71,
+            "text": "Jetzt bist du dran."
+        },
+        {
+            "start": 39.04,
+            "end": 41.76,
+            "text": "Sende deine Anfrage und freu dich auf deinen Abend."
+        },
+        {
+            "start": 42.12,
+            "end": 46.59,
+            "text": "Wir wünschen dir und deinen Gästen unvergessliche Erlebnisse mit eurem Privatkoch."
+        }
+    ],
+    "matchesScript": true
+}
