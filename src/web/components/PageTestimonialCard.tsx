@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronLeftIcon, ChevronRightIcon, StarIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { KeyboardEvent as ReactKeyboardEvent, ReactNode, UIEvent } from 'react';
 
 import { formatDate } from '../../shared';
 import { useLocale } from '../hooks/useLocale';
@@ -198,19 +198,60 @@ function TestimonialGallery({
     onIndexChange: (index: number) => void;
 }) {
     const locale = useLocale();
+    const scrollerRef = useRef<HTMLDivElement>(null);
     const total = imageUrls.length;
-    const safeIndex = Math.max(0, Math.min(index, total - 1));
-    const currentUrl = imageUrls[safeIndex];
-    if (!currentUrl) return null;
+    const safeIndex = total === 0 ? 0 : Math.max(0, Math.min(index, total - 1));
+
+    // Instant sync for arrows / thumbs / keyboard / open-at-index (swipe uses native snap).
+    useLayoutEffect(() => {
+        const scroller = scrollerRef.current;
+        if (scroller == null || scroller.clientWidth === 0 || total === 0) return;
+        const targetLeft = safeIndex * scroller.clientWidth;
+        if (Math.abs(scroller.scrollLeft - targetLeft) < 2) return;
+        scroller.scrollTo({ left: targetLeft, behavior: 'auto' });
+    }, [safeIndex, total]);
+
+    if (total === 0) return null;
 
     const goPrev = () => onIndexChange((safeIndex - 1 + total) % total);
     const goNext = () => onIndexChange((safeIndex + 1) % total);
     const ofLabel = { de: `${safeIndex + 1} von ${total}`, en: `${safeIndex + 1} of ${total}` }[locale];
 
+    const onScrollerScroll = (event: UIEvent<HTMLDivElement>) => {
+        const scroller = event.currentTarget;
+        if (scroller.clientWidth === 0) return;
+        const nextIndex = Math.round(scroller.scrollLeft / scroller.clientWidth);
+        if (nextIndex !== safeIndex && nextIndex >= 0 && nextIndex < total) {
+            onIndexChange(nextIndex);
+        }
+    };
+
     return (
         <div className="flex min-h-0 flex-col gap-3">
-            <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl bg-muted/60">
-                <AppImage key={currentUrl} src={currentUrl} alt="" priority className="size-full object-cover" />
+            <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-muted/60">
+                <div
+                    ref={scrollerRef}
+                    className="flex size-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain no-scrollbar"
+                    onScroll={onScrollerScroll}
+                    aria-roledescription="carousel"
+                    aria-label={{ de: 'Fotos der Bewertung', en: 'Review photos' }[locale]}
+                >
+                    {imageUrls.map((url, imageIndex) => (
+                        <div
+                            key={url}
+                            className="relative aspect-square w-full shrink-0 snap-center snap-always"
+                            aria-hidden={imageIndex !== safeIndex}
+                        >
+                            <AppImage
+                                src={url}
+                                alt=""
+                                priority={imageIndex === safeIndex}
+                                draggable={false}
+                                className="size-full object-cover select-none"
+                            />
+                        </div>
+                    ))}
+                </div>
                 {total > 1 ? (
                     <>
                         <Button
@@ -219,7 +260,7 @@ function TestimonialGallery({
                             size="icon"
                             aria-label={{ de: 'Vorheriges Foto', en: 'Previous photo' }[locale]}
                             onClick={goPrev}
-                            className="absolute top-1/2 left-3 -translate-y-1/2 shadow-md"
+                            className="absolute top-1/2 left-3 z-10 -translate-y-1/2 shadow-md"
                         >
                             <ChevronLeftIcon />
                         </Button>
@@ -229,11 +270,11 @@ function TestimonialGallery({
                             size="icon"
                             aria-label={{ de: 'Nächstes Foto', en: 'Next photo' }[locale]}
                             onClick={goNext}
-                            className="absolute top-1/2 right-3 -translate-y-1/2 shadow-md"
+                            className="absolute top-1/2 right-3 z-10 -translate-y-1/2 shadow-md"
                         >
                             <ChevronRightIcon />
                         </Button>
-                        <span className="absolute right-3 bottom-3 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm">
+                        <span className="absolute right-3 bottom-3 z-10 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm">
                             {ofLabel}
                         </span>
                     </>
@@ -297,7 +338,7 @@ function TestimonialDetailCopy({
     return (
         <div className="flex flex-col gap-6">
             <DialogHeader className="gap-3 text-left">
-                <DialogTitle className="text-balance text-lg/snug font-medium text-foreground">{title}</DialogTitle>
+                <DialogTitle className="text-balance text-lg/snug font-medium text-foreground @md:text-2xl/snug">{title}</DialogTitle>
                 {testimonial.rating != null ? <TestimonialRating rating={testimonial.rating} /> : null}
                 <DialogDescription className="sr-only">
                     {testimonial.location ?? { de: 'Kundenbewertung', en: 'Customer review' }[locale]}

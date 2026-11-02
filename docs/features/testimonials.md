@@ -63,13 +63,13 @@ existing follow-up answers unless the cook fills them again; dropping from 5 to 
   clickable (hover wash + underline on “Bewertung ansehen” / “View review”) and shows the occasion as the card title (stars + numeric rating
   top-right), a 4-line clamped quote with the accent quote-line, a 4-column square photo strip (4th slot becomes “+N more” when there are
   more than four), and author with written date only (city hidden on the tile). The detail dialog opens from the card, the view link, or a
-  photo thumb. With photos: gallery (selected image, arrows, thumbnails) on the left and copy on the right at wider dialog widths; on
-  desktop each column scrolls independently so the gallery stays visible while the copy scrolls. Detail copy leads with “{name}'s experience
-  at {occasion}”, then rating and quote, then author below the body (same footing as the card) with one meta line “{date} in {city}”. On
-  content pages (`showBookingCta`), the booking ask (“Also looking for a … experience?”) sits above the primary CTA into
-  `/booking-request/form` with `occasion` prefilled (free, no obligation, centered under the button), replacing a divider line. Booking
-  request plan keeps testimonials proof-only (no CTA). Default grid is 3 columns; plan uses 2 beside the sticky sidebar. Attachment
-  downloads need a published `imageUrls` hit (public) or any testimonial hit for admins — see
+  photo thumb. With photos: gallery (horizontal snap-scroll so photos swipe on mobile; arrows and thumbnails too) on the left and copy on
+  the right at wider dialog widths; on desktop each column scrolls independently so the gallery stays visible while the copy scrolls. Detail
+  copy leads with “{name}'s experience at {occasion}” (`text-lg`, `text-2xl` from `@md` up), then rating and quote, then author below the
+  body (same footing as the card) with one meta line “{date} in {city}”. On content pages (`showBookingCta`), the booking ask (“Also looking
+  for a … experience?”) sits above the primary CTA into `/booking-request/form` with `occasion` prefilled (free, no obligation, centered
+  under the button), replacing a divider line. Booking request plan keeps testimonials proof-only (no CTA). Default grid is 3 columns; plan
+  uses 2 beside the sticky sidebar. Attachment downloads need a published `imageUrls` hit (public) or any testimonial hit for admins — see
   [file-storage.md](../architecture/file-storage.md).
 - Home: static marketing quotes in a marquee — [landing.md](./landing.md).
 - How to become a chef: static chef quotes (not database-driven).
