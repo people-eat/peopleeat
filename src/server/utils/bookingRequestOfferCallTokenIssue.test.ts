@@ -10,12 +10,22 @@ import {
     cookCallSlotBookings,
     cooks,
 } from '../db/schema';
+import type * as SlackNotifyCallSlotModule from '../slack/slackNotifyCallSlot';
+import { slackNotifyCallRoomEvent } from '../slack/slackNotifyCallSlot';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { bookingRequestOfferCallTokenIssue } from './bookingRequestOfferCallTokenIssue';
 
 vi.mock('./bookingRequestOfferCallRecordingStart', () => ({
     bookingRequestOfferCallRecordingStart: vi.fn(async () => {}),
 }));
+
+vi.mock('../slack/slackNotifyCallSlot', async (importOriginal) => {
+    const actual = await importOriginal<typeof SlackNotifyCallSlotModule>();
+    return {
+        ...actual,
+        slackNotifyCallRoomEvent: vi.fn(async () => {}),
+    };
+});
 
 const berlin = {
     displayText: 'Berlin',
@@ -116,6 +126,15 @@ describe('bookingRequestOfferCallTokenIssue', () => {
             .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
         expect(offer?.cookUnreadNotificationCount).toBe(1);
         expect(offer?.userUnreadNotificationCount).toBe(0);
+
+        expect(slackNotifyCallRoomEvent).toHaveBeenCalledWith(
+            customerSetup.serverRuntime,
+            expect.objectContaining({
+                bookingRequestOfferId,
+                action: 'started',
+                actor: 'customer',
+            }),
+        );
     });
 
     it('writes COOK_CALL_STARTED when the cook starts a spontaneous call', async () => {
@@ -181,5 +200,44 @@ describe('bookingRequestOfferCallTokenIssue', () => {
             .from(bookingRequestOfferCallRooms)
             .where(eq(bookingRequestOfferCallRooms.bookingRequestOfferId, bookingRequestOfferId));
         expect(room?.status).toBe('ACTIVE');
+
+        expect(slackNotifyCallRoomEvent).toHaveBeenCalledWith(
+            customerSetup.serverRuntime,
+            expect.objectContaining({
+                bookingRequestOfferId,
+                action: 'started',
+                actor: 'customer',
+            }),
+        );
+    });
+
+    it('notifies Slack joined when joining an existing active room', async () => {
+        const { cookSetup, customerSetup, bookingRequestOfferId } = await seedOfferFixture();
+        stubLivekit(customerSetup.serverRuntime);
+        stubLivekit(cookSetup.serverRuntime);
+
+        await bookingRequestOfferCallTokenIssue(customerSetup.serverRuntime, {
+            bookingRequestOfferId,
+            actingUserId: customerSetup.user.userId,
+            sessionId: customerSetup.requestingSession.sessionId,
+            mode: 'create',
+        });
+        vi.mocked(slackNotifyCallRoomEvent).mockClear();
+
+        await bookingRequestOfferCallTokenIssue(cookSetup.serverRuntime, {
+            bookingRequestOfferId,
+            actingUserId: cookSetup.user.userId,
+            sessionId: cookSetup.requestingSession.sessionId,
+            mode: 'join',
+        });
+
+        expect(slackNotifyCallRoomEvent).toHaveBeenCalledWith(
+            cookSetup.serverRuntime,
+            expect.objectContaining({
+                bookingRequestOfferId,
+                action: 'joined',
+                actor: 'cook',
+            }),
+        );
     });
 });

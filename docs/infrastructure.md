@@ -263,8 +263,8 @@ trigger ──────────────┤                           
 Typical gate wall-clock on a code PR is ~3–4 minutes (limited by Check or E2e); docs-only PRs skip Vitest shards, Playwright, and codegen
 and run a lighter Check (commitlint + format + spell). Deploy adds ~4 minutes on push.
 
-Node is pinned to **26.13.0** (LTS) in `.nvmrc`, `package.json#engines`, and every Dockerfile (`node:26.13.0-slim`). Bump those together when
-moving Node versions. All gate jobs that install dependencies share the composite action at `.github/actions/setup` which runs
+Node is pinned to **26.13.0** (LTS) in `.nvmrc`, `package.json#engines`, and every Dockerfile (`node:26.13.0-slim`). Bump those together
+when moving Node versions. All gate jobs that install dependencies share the composite action at `.github/actions/setup` which runs
 `actions/setup-node@v6` (reads `.nvmrc`), pins the npm version from `package.json#packageManager`, and runs `npm ci`. Update there if you
 change the dependency-install flow.
 

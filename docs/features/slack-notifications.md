@@ -7,7 +7,8 @@ Internal Slack posts keep ops aware of marketplace, support, sign-up, and gift-c
 Ops receives structured Slack messages (German copy — internal surface):
 
 - **Booking timeline** — one root message per booking request (channel by party size), then thread-only replies for lifecycle events (no
-  `reply_broadcast` into the main channel)
+  `reply_broadcast` into the main channel), including offer **call-slot** lifecycle (request / confirm / decline / cancel) and **live call**
+  room events (started / joined / left)
 - **Sign-ups** — customer and cook registration
 - **Support** — one root message per ticket, then thread replies for customer/admin messages and resolve
 - **Gift cards** — successful purchases
@@ -89,7 +90,7 @@ The route only acks; it does not run slash commands or other interactive workflo
 | `src/server/slack/slackNotifyBooking.ts`           | Booking lifecycle helpers               |
 | `src/server/slack/slackNotifyAdjacent.ts`          | Sign-up / support / gift card           |
 | `src/server/slack/whatsappSlack.ts`                | Concierge WhatsApp inbound + reactions  |
-| `src/server/slack/slackNotifyCallSlot.ts`          | Call-slot events                        |
+| `src/server/slack/slackNotifyCallSlot.ts`          | Offer call events (slots + live room)   |
 | `src/server/slack/adminActionItemsSnapshot.ts`     | Admin-home action queue snapshot        |
 | `src/server/slack/adminActionItemsSlackMessage.ts` | German Block Kit for daily admin report |
 | `src/server/slack/resendUsageSlackMessage.ts`      | German Block Kit for Resend quota alert |

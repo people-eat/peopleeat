@@ -14,6 +14,7 @@ import {
 import type { BookingRequestOfferEventType } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSBookingRequestOfferCallTokenResult } from '../graphql/generated';
+import { offerCallActorFromIds, slackNotifyCallRoomEvent } from '../slack/slackNotifyCallSlot';
 import { bookingRequestOfferCallRecordingStart } from './bookingRequestOfferCallRecordingStart';
 import { bookingRequestOfferCallWritableAssert } from './bookingRequestOfferCallWritableAssert';
 
@@ -64,7 +65,10 @@ export async function bookingRequestOfferCallTokenIssue(
         throw new Error('bookingRequestOfferCallTokenIssue: no active call room');
     }
 
+    let roomCreated = false;
+
     if (!room) {
+        roomCreated = true;
         const prefix = serverRuntime.livekit.roomPrefix();
         const shortId = idCreate().replace(/-/g, '').slice(0, 8);
         const livekitRoomName = `${prefix}-offer-${bookingRequestOfferId}-${shortId}`;
@@ -187,6 +191,17 @@ export async function bookingRequestOfferCallTokenIssue(
         serverRuntime.publish.userUpdates({ userId: row.offer.cookId }),
         serverRuntime.publish.adminUpdates(),
     ]);
+
+    await slackNotifyCallRoomEvent(serverRuntime, {
+        bookingRequestId: row.bookingRequest.bookingRequestId,
+        bookingRequestOfferId,
+        action: roomCreated ? 'started' : 'joined',
+        actor: offerCallActorFromIds({
+            actingUserId,
+            customerUserId: row.bookingRequest.userId,
+            cookUserId: row.offer.cookId,
+        }),
+    });
 
     return {
         token,

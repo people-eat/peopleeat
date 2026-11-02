@@ -17,7 +17,8 @@ On an open offer (customer, cook, or admin offer page), a single **Call** tab co
 2. **Ad-hoc call** — Either party (or admin) starts a live room on the offer; the peer sees a live banner and can join. Start/join lives at
    the top of the Call tab. Creating a room when there is no joinable confirmed slot writes a chat milestone (`USER_CALL_STARTED` /
    `COOK_CALL_STARTED` / `ADMIN_CALL_STARTED`) and bumps the counterparty unread badge(s). Starting inside a confirmed join window only
-   links `videoCallRoomId` (slot REQUESTED / CONFIRMED milestones already cover that path).
+   links `videoCallRoomId` (slot REQUESTED / CONFIRMED milestones already cover that path). Ops gets booking-thread Slack replies for live
+   room start, join, and leave (same thread as call-slot scheduling events).
 3. **Scheduled join** — For a confirmed slot, join is available from 60 minutes before start through 15 minutes after end (same top CTA).
 4. **Admin** — Can create, join, and leave rooms on any offer; can decline PENDING call requests on the offer Call tab on behalf of the
    counterparty (customer or cook). Confirm / cancel / propose stay with the parties. Hub at `/admin/calls` (overview attention board +
@@ -99,6 +100,17 @@ User, cook, and admin offer hydrates batch-load call slot bookings onto `callBoo
 - `booking-request-offer-call-slots-complete` — queued per slot — completed / cancel stale pending past `endAt`
 - `booking-request-expire-notify` — also cancels PENDING slots on expired requests (`BOOKING_REQUEST_EXPIRED`)
 - `booking-request-offer-call-rooms-sweep` — recurring — non-webhook room end
+
+### Slack (ops)
+
+Booking-request Slack thread replies via `slackNotifyCallSlotEvent` / `slackNotifyCallRoomEvent`:
+
+| Event                                                 | When                                                                                      |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Call-slot requested / confirmed / declined / canceled | Slot mutations (customer, cook; admin decline)                                            |
+| Call gestartet                                        | New ACTIVE room created (`bookingRequestOfferCallTokenIssue` create path)                 |
+| Call beigetreten                                      | Participant joins an existing ACTIVE room                                                 |
+| Call verlassen                                        | Explicit leave (`bookingRequestOfferCallRoomParticipantLeft`); not room-sweep force-close |
 
 ### Lifecycle emails
 
