@@ -13,8 +13,8 @@ export function ChatCardList({ children, columns = 'responsive' }: PropsWithChil
             <ul
                 className={cn(
                     'grid w-full grid-cols-1 items-stretch gap-3',
-                    columns === 'responsive' && '@min-[28rem]:grid-cols-2 @min-[42rem]:grid-cols-3',
-                    columns === 'upToTwo' && '@min-[36rem]:grid-cols-2',
+                    columns === 'responsive' && '@md:grid-cols-2 @2xl:grid-cols-3',
+                    columns === 'upToTwo' && '@xl:grid-cols-2',
                 )}
             >
                 {children}
