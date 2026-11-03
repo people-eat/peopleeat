@@ -7,7 +7,7 @@ import type { ReactNode, SubmitEventHandler } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { DEFAULT_TIME_ZONE, formatDate, userDisplayName } from '../../shared';
+import { DEFAULT_TIME_ZONE, formatDate, phoneNumberNormalize, userDisplayName } from '../../shared';
 import { AuthEmailOtpSpamHint } from '../components/auth/AuthEmailOtpSpamHint';
 import { AuthTotpAccountSection } from '../components/auth/AuthTotpAccountSection';
 import {
@@ -21,11 +21,12 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '../components/base/alert-dialog';
+import { Badge } from '../components/base/badge';
 import { Button } from '../components/base/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/base/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/base/dialog';
 import { Input } from '../components/base/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../components/base/input-otp';
-import { Separator } from '../components/base/separator';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { PreferredCommunicationField } from '../components/PreferredCommunicationField';
 import { ProfilePictureEditor } from '../components/ProfilePictureEditor';
@@ -42,6 +43,7 @@ import {
     AccountPageUserUpdatesDocument,
     AccountTerminateSessionsDocument,
     AccountUserAnonymizeDocument,
+    AccountUserAnonymizeOtpRequestDocument,
     AccountUserUpdateDocument,
 } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
@@ -49,7 +51,8 @@ import { useSessionUpdatesSeed } from '../hooks/useSessionUpdatesSeed';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../hooks/useUserUpdatesSeed';
 import { redirectAfterSignOut } from '../utils/locale';
-import { accountPageDescription, accountPageTitle } from './accountLabels';
+import { sessionDeviceLabel } from '../utils/sessionDeviceLabel';
+import { accountPageTitle } from './accountLabels';
 
 export { accountPageDescription, accountPageTitle } from './accountLabels';
 
@@ -70,6 +73,20 @@ function emailAddressUpdateErrorMessage(error: unknown, locale: 'de' | 'en'): st
     return { de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale];
 }
 
+function phoneNumberUpdateErrorMessage(error: unknown, locale: 'de' | 'en'): string {
+    const message = error instanceof Error ? error.message : String(error ?? '');
+    if (/already registered/i.test(message)) {
+        return { de: 'Diese Nummer ist bereits vergeben.', en: 'This number is already in use.' }[locale];
+    }
+    if (/phoneNumber|E\.164/i.test(message)) {
+        return {
+            de: 'Bitte eine Nummer mit Ländervorwahl eingeben, zum Beispiel +49…',
+            en: 'Enter a number with a country code, for example +49…',
+        }[locale];
+    }
+    return { de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale];
+}
+
 export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }) {
     const locale = useLocale();
     const timeZone = useTimeZone();
@@ -78,6 +95,13 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
     const [emailDialogOpen, setEmailDialogOpen] = useState(false);
     const [emailDraft, setEmailDraft] = useState('');
     const [emailError, setEmailError] = useState<string | null>(null);
+    const [phoneDialogOpen, setPhoneDialogOpen] = useState(false);
+    const [phoneDraft, setPhoneDraft] = useState('');
+    const [phoneError, setPhoneError] = useState<string | null>(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleteStep, setDeleteStep] = useState<'confirm' | 'code'>('confirm');
+    const [deleteCode, setDeleteCode] = useState('');
+    const [deleteError, setDeleteError] = useState<string | null>(null);
     const [otpCode, setOtpCode] = useState('');
     const otpVerifyStarted = useRef(false);
 
@@ -89,6 +113,7 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
     const [, registerVerify] = useMutation(AccountAuthPasskeyRegisterVerifyDocument);
     const [, deletePasskey] = useMutation(AccountAuthPasskeyDeleteDocument);
     const [, terminateSessions] = useMutation(AccountTerminateSessionsDocument);
+    const [, anonymizeOtpRequest] = useMutation(AccountUserAnonymizeOtpRequestDocument);
     const [, anonymizeUser] = useMutation(AccountUserAnonymizeDocument);
 
     const seedSession = loaderData.currentSession;
@@ -119,6 +144,7 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
     }
 
     const currentEmailAddress = user.emailAddress ?? '';
+    const phoneNumber = user.phoneNumber ?? '';
     const sessions = user.sessions ?? [];
     const passkeys = user.passkeys ?? [];
 
@@ -140,6 +166,43 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
         setEmailDraft(currentEmailAddress);
         setEmailError(null);
         setEmailDialogOpen(true);
+    }
+
+    function openPhoneDialog() {
+        setPhoneDraft(phoneNumber);
+        setPhoneError(null);
+        setPhoneDialogOpen(true);
+    }
+
+    async function onPhoneNumberSave() {
+        setPhoneError(null);
+        const normalized = phoneNumberNormalize(phoneDraft);
+        if (!normalized) {
+            setPhoneError(
+                {
+                    de: 'Bitte eine Nummer mit Ländervorwahl eingeben, zum Beispiel +49…',
+                    en: 'Enter a number with a country code, for example +49…',
+                }[locale],
+            );
+            return;
+        }
+        if (normalized === phoneNumber) {
+            setPhoneDialogOpen(false);
+            return;
+        }
+        setBusy(true);
+        try {
+            const result = await userUpdate({ user: { phoneNumber: normalized } });
+            if (result.error || !result.data?.user.userUpdate.success) {
+                throw result.error ?? new Error('Could not save.');
+            }
+            toast.success({ de: 'Telefonnummer gespeichert.', en: 'Phone number saved.' }[locale]);
+            setPhoneDialogOpen(false);
+        } catch (error) {
+            setPhoneError(phoneNumberUpdateErrorMessage(error, locale));
+        } finally {
+            setBusy(false);
+        }
     }
 
     async function onEmailAddressUpdateOtpRequest() {
@@ -314,16 +377,54 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
         }
     }
 
-    async function onAccountDelete() {
+    function openDeleteDialog() {
+        setDeleteStep('confirm');
+        setDeleteCode('');
+        setDeleteError(null);
+        setDeleteDialogOpen(true);
+    }
+
+    async function onAccountDeleteOtpRequest() {
+        setDeleteError(null);
         setBusy(true);
         try {
-            const result = await anonymizeUser({});
+            const result = await anonymizeOtpRequest({ locale });
+            if (result.error || !result.data?.user.userAnonymizeOtpRequest.success) {
+                throw result.error ?? new Error('Could not save.');
+            }
+            setDeleteCode('');
+            setDeleteStep('code');
+            toast.success(
+                {
+                    de: 'Code gesendet. Bitte Posteingang und Spam-Ordner prüfen.',
+                    en: 'Code sent. Please check your inbox and spam folder.',
+                }[locale],
+            );
+        } catch (error) {
+            setDeleteError(emailAddressUpdateErrorMessage(error, locale));
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function onAccountDelete() {
+        if (deleteCode.length !== 6 || busy) return;
+        setDeleteError(null);
+        setBusy(true);
+        try {
+            const result = await anonymizeUser({ code: deleteCode });
             if (result.error || !result.data?.user.userAnonymize.success) {
-                toast.error({ de: 'Konto konnte nicht gelöscht werden.', en: 'Could not delete the account.' }[locale]);
-                return;
+                throw result.error ?? new Error('Could not save.');
             }
             toast.success({ de: 'Konto gelöscht.', en: 'Account deleted.' }[locale]);
             redirectAfterSignOut(locale);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error ?? '');
+            if (/invalid or expired|too many attempt/i.test(message)) {
+                setDeleteError({ de: 'Code ungültig oder abgelaufen.', en: 'Invalid or expired code.' }[locale]);
+            } else {
+                setDeleteError({ de: 'Konto konnte nicht gelöscht werden.', en: 'Could not delete the account.' }[locale]);
+            }
         } finally {
             setBusy(false);
         }
@@ -331,32 +432,65 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
 
     const otherSessionIds = sessions.filter((row) => !row.isCurrent).map((row) => row.sessionId);
     const actionBusy = busy || profilePictureBusy;
+    const hasPhoneNumber = phoneNumber.length > 0;
+    const phoneNumberLabel = hasPhoneNumber ? phoneNumber : { de: 'Keine Nummer hinterlegt', en: 'No number on file' }[locale];
+    const birthDateLabel = user.birthDate
+        ? formatDate(user.birthDate, { locale, dateStyle: 'long' })
+        : { de: 'Nicht angegeben', en: 'Not set' }[locale];
+    const registeredLabel = formatDate(user.createdAt, { locale, timeZone, dateStyle: 'long' });
 
     return (
-        <main id="main-content" className="mx-auto grid w-full max-w-3xl content-start gap-8">
-            <div className="grid gap-2">
-                <h1 className="font-serif text-4xl/tight text-foreground">{accountPageTitle[locale]}</h1>
-                <p className="text-muted-foreground">{accountPageDescription[locale]}</p>
-            </div>
+        <main id="main-content" className="mx-auto grid w-full max-w-3xl content-start gap-6">
+            <h1 className="sr-only">{accountPageTitle[locale]}</h1>
 
-            <AccountSection title={{ de: 'Profilbild', en: 'Profile picture' }[locale]}>
-                <ProfilePictureEditor
-                    profilePictureUrl={user.profilePicture?.url ?? null}
-                    displayName={userDisplayName(user)}
-                    disabled={busy}
-                    onLink={onProfilePictureLink}
-                    onClear={onProfilePictureClear}
-                    onBusyChange={setProfilePictureBusy}
+            <Card className="bg-card">
+                <CardContent>
+                    <ProfilePictureEditor
+                        profilePictureUrl={user.profilePicture?.url ?? null}
+                        displayName={userDisplayName(user)}
+                        disabled={busy}
+                        onLink={onProfilePictureLink}
+                        onClear={onProfilePictureClear}
+                        onBusyChange={setProfilePictureBusy}
+                    >
+                        <p className="truncate text-base text-foreground">
+                            {user.firstName} {user.lastName}
+                        </p>
+                        <p className="truncate text-sm text-muted-foreground">
+                            {user.birthDate != null
+                                ? { de: `Geboren am ${birthDateLabel}`, en: `Born ${birthDateLabel}` }[locale]
+                                : { de: 'Kein Geburtsdatum angegeben', en: 'No date of birth on file' }[locale]}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                            {{ de: `Registriert am ${registeredLabel}`, en: `Registered ${registeredLabel}` }[locale]}
+                        </p>
+                    </ProfilePictureEditor>
+                </CardContent>
+            </Card>
+
+            <AccountCard
+                title={{ de: 'So erreichen wir dich', en: 'How we reach you' }[locale]}
+                description={
+                    {
+                        de: 'Updates zu deinem Abend bekommst du per E-Mail und, wenn wir deine Nummer haben, per WhatsApp. Bei Fragen meldet sich unser Concierge direkt bei dir.',
+                        en: 'You will receive updates about your evening via email and, when we have your number, via WhatsApp. If you have questions, our concierge will contact you directly.',
+                    }[locale]
+                }
+            >
+                <AccountValueRow
+                    label={{ de: 'E-Mail', en: 'Email' }[locale]}
+                    value={currentEmailAddress}
+                    action={
+                        pendingUnverifiedOtp == null ? (
+                            <Button type="button" variant="outline" size="sm" disabled={actionBusy} onClick={openEmailDialog}>
+                                {{ de: 'E-Mail ändern', en: 'Change email' }[locale]}
+                            </Button>
+                        ) : null
+                    }
                 />
-            </AccountSection>
-
-            <Separator />
-
-            <AccountSection title={{ de: 'E-Mail', en: 'Email' }[locale]}>
-                <p className="text-sm text-foreground">{currentEmailAddress}</p>
                 {pendingUnverifiedOtp != null ? (
-                    <div className="grid gap-3 rounded-xl border px-4 py-3">
-                        <div className="grid gap-0.5">
+                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card px-4 py-3">
+                        <div className="grid min-w-0 gap-0.5">
                             <p className="text-sm text-foreground">
                                 {
                                     {
@@ -379,307 +513,231 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                             {{ de: 'Änderung verwerfen', en: 'Discard change' }[locale]}
                         </Button>
                     </div>
-                ) : (
-                    <div className="flex justify-end">
-                        <Button type="button" variant="outline" size="sm" disabled={actionBusy} onClick={openEmailDialog}>
-                            {{ de: 'E-Mail ändern', en: 'Change email' }[locale]}
+                ) : null}
+                <AccountValueRow
+                    label={{ de: 'Telefonnummer', en: 'Phone number' }[locale]}
+                    value={phoneNumberLabel}
+                    muted={!hasPhoneNumber}
+                    action={
+                        <Button type="button" variant="outline" size="sm" disabled={actionBusy} onClick={openPhoneDialog}>
+                            {hasPhoneNumber
+                                ? { de: 'Nummer ändern', en: 'Change number' }[locale]
+                                : { de: 'Nummer hinzufügen', en: 'Add a number' }[locale]}
                         </Button>
-                    </div>
-                )}
-            </AccountSection>
-
-            <Separator />
-
-            <AccountSection title={{ de: 'Kommunikation', en: 'Communication' }[locale]}>
+                    }
+                />
                 <PreferredCommunicationField
                     value={preferredCommunicationDraft}
                     onValueChange={(next) => void onPreferredCommunicationChange(next)}
                     disabled={actionBusy}
                     showTitle={false}
+                    showSubtitle={false}
                 />
-            </AccountSection>
 
-            <Separator />
-
-            <AccountSection title={{ de: 'Sprache', en: 'Language' }[locale]}>
-                <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            de: 'Diese Sprache gilt für die Oberfläche und für E-Mails.',
-                            en: 'This language applies to the interface and to emails.',
-                        }[locale]
-                    }
-                </p>
-                <LanguageSwitcher />
-            </AccountSection>
-
-            <Separator />
-
-            <AccountSection title={{ de: 'Zeitzone', en: 'Time zone' }[locale]}>
-                <TimeZoneField
-                    value={timeZoneDraft}
-                    onValueChange={(next) => void onTimeZoneChange(next)}
-                    disabled={actionBusy}
-                    showLabel={false}
-                />
-            </AccountSection>
-
-            <Separator />
-
-            <AccountSection title={{ de: 'Benachrichtigungen', en: 'Notifications' }[locale]}>
-                <StubRow
-                    label={{ de: 'E-Mail-Benachrichtigungen', en: 'Email notifications' }[locale]}
-                    hint={{ de: 'Demnächst verfügbar', en: 'Coming soon' }[locale]}
-                />
-            </AccountSection>
-
-            <Separator />
-
-            <AccountSection title={{ de: 'Rechtliches', en: 'Legal' }[locale]}>
-                <ul className="grid gap-2">
-                    <li>
-                        <Link to="/{-$locale}/privacy-policy" className="text-sm text-foreground underline-offset-4 hover:underline">
-                            {{ de: 'Datenschutzerklärung', en: 'Privacy policy' }[locale]}
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/{-$locale}/terms-and-conditions" className="text-sm text-foreground underline-offset-4 hover:underline">
-                            {{ de: 'AGB', en: 'Terms and conditions' }[locale]}
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/{-$locale}/imprint" className="text-sm text-foreground underline-offset-4 hover:underline">
-                            {{ de: 'Impressum', en: 'Imprint' }[locale]}
-                        </Link>
-                    </li>
-                </ul>
-            </AccountSection>
-
-            <Separator />
-
-            <AccountSection title={{ de: 'Passkeys', en: 'Passkeys' }[locale]}>
-                {passkeys.length === 0 ? (
+                <div className="grid gap-2">
+                    <p className="text-sm font-medium text-foreground">{{ de: 'Sprache', en: 'Language' }[locale]}</p>
                     <p className="text-sm text-muted-foreground">
-                        {{ de: 'Noch keine Passkeys hinterlegt.', en: 'No passkeys registered yet.' }[locale]}
+                        {
+                            {
+                                de: 'Diese Sprache gilt für die Oberfläche und für E-Mails.',
+                                en: 'This language applies to the interface and to emails.',
+                            }[locale]
+                        }
                     </p>
-                ) : (
-                    <ul className="divide-y divide-border overflow-hidden rounded-xl border">
-                        {passkeys.map((passkey) => (
-                            <li key={passkey.authPasskeyId} className="flex items-center justify-between gap-4 px-4 py-3">
-                                <div className="grid min-w-0 gap-0.5">
-                                    <p className="truncate text-sm text-foreground">
-                                        {passkey.deviceType ?? { de: 'Passkey', en: 'Passkey' }[locale]}
-                                        {passkey.backedUp ? { de: ' · gesichert', en: ' · backed up' }[locale] : ''}
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">
-                                        {formatDate(passkey.createdAt, { locale, timeZone, dateStyle: 'medium' })}
-                                    </p>
-                                </div>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button type="button" variant="destructive" size="sm" disabled={actionBusy}>
-                                            {{ de: 'Entfernen', en: 'Remove' }[locale]}
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>
-                                                {{ de: 'Passkey entfernen?', en: 'Remove this passkey?' }[locale]}
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                {
-                                                    {
-                                                        de: 'Du kannst dich mit diesem Passkey nicht mehr anmelden. Andere Passkeys und Anmeldemethoden bleiben unverändert.',
-                                                        en: 'You will no longer be able to sign in with this passkey. Other passkeys and sign-in methods stay unchanged.',
-                                                    }[locale]
-                                                }
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel disabled={actionBusy}>
-                                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
-                                            </AlertDialogCancel>
-                                            <AlertDialogAction
-                                                variant="destructive"
-                                                disabled={actionBusy}
-                                                onClick={() => void onPasskeyDelete(passkey.authPasskeyId)}
-                                            >
-                                                {{ de: 'Entfernen', en: 'Remove' }[locale]}
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                <div className="flex justify-end">
-                    <Button type="button" variant="outline" disabled={actionBusy} onClick={() => void onPasskeyRegister()}>
-                        <KeyRoundIcon />
-                        {{ de: 'Passkey hinzufügen', en: 'Add a passkey' }[locale]}
-                    </Button>
+                    <LanguageSwitcher />
                 </div>
-            </AccountSection>
+                <TimeZoneField value={timeZoneDraft} onValueChange={(next) => void onTimeZoneChange(next)} disabled={actionBusy} />
+            </AccountCard>
 
-            <Separator />
-
-            <AccountSection title={{ de: 'Zwei-Faktor-Authentifizierung', en: 'Two-factor authentication' }[locale]}>
-                <AuthTotpAccountSection totp={user.timeBasedOneTimePassword ?? null} actionBusy={actionBusy} />
-            </AccountSection>
-
-            <Separator />
-
-            <AccountSection title={{ de: 'Gefahrenzone', en: 'Danger zone' }[locale]}>
-                <div className="flex items-center justify-between gap-4 rounded-xl border border-destructive/30 px-4 py-3">
-                    <div className="grid gap-0.5">
-                        <p className="text-sm text-foreground">{{ de: 'Konto löschen', en: 'Delete account' }[locale]}</p>
-                        <p className="text-xs text-muted-foreground">
+            <AccountCard title={{ de: 'Anmeldung', en: 'Sign-in' }[locale]}>
+                <div className="grid gap-3">
+                    <h2 className="text-sm font-medium text-foreground">{{ de: 'Passkeys', en: 'Passkeys' }[locale]}</h2>
+                    {passkeys.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
                             {
                                 {
-                                    de: 'Personenbezogene Daten werden entfernt. Du kannst dich danach nicht mehr anmelden.',
-                                    en: 'Personal profile data will be removed. You will not be able to sign in afterwards.',
+                                    de: 'Melde dich das nächste Mal mit Face ID oder Fingerabdruck an, ohne Code.',
+                                    en: 'Next time, sign in with Face ID or a fingerprint, without a code.',
                                 }[locale]
                             }
                         </p>
+                    ) : (
+                        <ul className="divide-y divide-border overflow-hidden rounded-xl border bg-card">
+                            {passkeys.map((passkey) => (
+                                <li key={passkey.authPasskeyId} className="flex items-center justify-between gap-4 bg-card px-4 py-3">
+                                    <div className="grid min-w-0 gap-0.5">
+                                        <p className="truncate text-sm text-foreground">
+                                            {passkey.deviceType ?? { de: 'Passkey', en: 'Passkey' }[locale]}
+                                            {passkey.backedUp ? { de: ' · gesichert', en: ' · backed up' }[locale] : ''}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {formatDate(passkey.createdAt, { locale, timeZone, dateStyle: 'medium' })}
+                                        </p>
+                                    </div>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button type="button" variant="destructive" size="sm" disabled={actionBusy}>
+                                                {{ de: 'Entfernen', en: 'Remove' }[locale]}
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>
+                                                    {{ de: 'Passkey entfernen?', en: 'Remove this passkey?' }[locale]}
+                                                </AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    {
+                                                        {
+                                                            de: 'Du kannst dich mit diesem Passkey nicht mehr anmelden. Andere Passkeys und Anmeldemethoden bleiben unverändert.',
+                                                            en: 'You will no longer be able to sign in with this passkey. Other passkeys and sign-in methods stay unchanged.',
+                                                        }[locale]
+                                                    }
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel disabled={actionBusy}>
+                                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                                </AlertDialogCancel>
+                                                <AlertDialogAction
+                                                    variant="destructive"
+                                                    disabled={actionBusy}
+                                                    onClick={() => void onPasskeyDelete(passkey.authPasskeyId)}
+                                                >
+                                                    {{ de: 'Entfernen', en: 'Remove' }[locale]}
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                    <div className="flex justify-end">
+                        <Button type="button" variant="outline" disabled={actionBusy} onClick={() => void onPasskeyRegister()}>
+                            <KeyRoundIcon />
+                            {{ de: 'Passkey hinzufügen', en: 'Add a passkey' }[locale]}
+                        </Button>
                     </div>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button type="button" variant="destructive" size="sm" disabled={actionBusy}>
-                                {{ de: 'Konto löschen', en: 'Delete account' }[locale]}
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                    {{ de: 'Konto wirklich löschen?', en: 'Delete your account permanently?' }[locale]}
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {
-                                        {
-                                            de: 'Diese Aktion kann nicht rückgängig gemacht werden. Deine persönlichen Daten werden entfernt und alle Geräte abgemeldet. Buchungsverläufe bleiben für Köche und den Betrieb erhalten, sind aber nicht mehr mit deiner Identität verknüpft.',
-                                            en: 'This cannot be undone. Your personal data will be removed and all devices signed out. Booking history stays available for chefs and operations, but is no longer linked to your identity.',
-                                        }[locale]
-                                    }
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel disabled={actionBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
-                                <AlertDialogAction variant="destructive" disabled={actionBusy} onClick={() => void onAccountDelete()}>
-                                    {{ de: 'Konto löschen', en: 'Delete account' }[locale]}
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
                 </div>
-            </AccountSection>
+                <div className="grid gap-3">
+                    <h2 className="text-sm font-medium text-foreground">
+                        {{ de: 'Zwei-Faktor-Authentifizierung', en: 'Two-factor authentication' }[locale]}
+                    </h2>
+                    <AuthTotpAccountSection totp={user.timeBasedOneTimePassword ?? null} actionBusy={actionBusy} />
+                </div>
 
-            <Separator />
-
-            <AccountSection title={{ de: 'Angemeldete Geräte', en: 'Signed-in devices' }[locale]}>
-                <ul className="divide-y divide-border overflow-hidden rounded-xl border">
-                    {sessions.map((row) => (
-                        <li key={row.sessionId} className="flex items-center justify-between gap-4 px-4 py-3">
-                            <div className="grid min-w-0 gap-0.5">
-                                <p className="truncate text-sm text-foreground">
-                                    {row.isCurrent
-                                        ? { de: 'Dieses Gerät', en: 'This device' }[locale]
-                                        : (row.userAgent ?? { de: 'Anderes Gerät', en: 'Other device' }[locale])}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                    {
-                                        {
-                                            de: `Zuletzt aktiv ${formatDate(row.lastInteractionAt, { locale, timeZone, dateStyle: 'medium' })}`,
-                                            en: `Last active ${formatDate(row.lastInteractionAt, { locale, timeZone, dateStyle: 'medium' })}`,
-                                        }[locale]
-                                    }
-                                </p>
-                            </div>
-                            {row.isCurrent ? (
-                                <span className="shrink-0 text-xs text-muted-foreground">{{ de: 'Aktuell', en: 'Current' }[locale]}</span>
-                            ) : (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={actionBusy}
-                                    onClick={() => void onTerminateSessions([row.sessionId], { signOut: false })}
-                                >
-                                    {{ de: 'Abmelden', en: 'Sign out' }[locale]}
-                                </Button>
-                            )}
-                        </li>
-                    ))}
-                </ul>
-                <div className="flex flex-wrap flex-row-reverse justify-items-end gap-2">
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button type="button" variant="destructive" disabled={actionBusy}>
-                                <LogOutIcon />
-                                {{ de: 'Abmelden', en: 'Sign out' }[locale]}
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                    {{ de: 'Auf diesem Gerät abmelden?', en: 'Sign out on this device?' }[locale]}
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {
-                                        {
-                                            de: 'Du wirst auf diesem Gerät abgemeldet und musst dich erneut anmelden, um auf dein Konto zuzugreifen.',
-                                            en: 'You will be signed out on this device and will need to sign in again to access your account.',
-                                        }[locale]
-                                    }
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel disabled={actionBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
-                                <AlertDialogAction
-                                    variant="destructive"
-                                    disabled={actionBusy}
-                                    onClick={() => void onTerminateSessions([currentSessionId], { signOut: true })}
-                                >
-                                    {{ de: 'Abmelden', en: 'Sign out' }[locale]}
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                    {otherSessionIds.length > 0 ? (
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <Button type="button" variant="destructive" disabled={actionBusy}>
-                                    {{ de: 'Überall sonst abmelden', en: 'Sign out everywhere else' }[locale]}
-                                </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>
-                                        {{ de: 'Überall sonst abmelden?', en: 'Sign out everywhere else?' }[locale]}
-                                    </AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        {
+                <div className="grid gap-3">
+                    <h2 className="text-sm font-medium text-foreground">{{ de: 'Angemeldete Geräte', en: 'Signed-in devices' }[locale]}</h2>
+                    <ul className="divide-y divide-border overflow-hidden rounded-xl border bg-card">
+                        {sessions.map((row) => {
+                            const deviceLabel = sessionDeviceLabel(row.userAgent, locale);
+                            return (
+                                <li key={row.sessionId} className="flex items-center justify-between gap-4 bg-card px-4 py-3">
+                                    <div className="grid min-w-0 gap-0.5">
+                                        <p className="truncate text-sm text-foreground">{deviceLabel}</p>
+                                        <p className="text-xs text-muted-foreground">
                                             {
-                                                de: 'Alle anderen Geräte und Browser werden abgemeldet. Dieses Gerät bleibt angemeldet.',
-                                                en: 'All other devices and browsers will be signed out. This device stays signed in.',
-                                            }[locale]
-                                        }
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel disabled={actionBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
-                                    <AlertDialogAction
-                                        variant="destructive"
-                                        disabled={actionBusy}
-                                        onClick={() => void onTerminateSessions(otherSessionIds, { signOut: false })}
-                                    >
+                                                {
+                                                    de: `Zuletzt aktiv ${formatDate(row.lastInteractionAt, { locale, timeZone, dateStyle: 'medium' })}`,
+                                                    en: `Last active ${formatDate(row.lastInteractionAt, { locale, timeZone, dateStyle: 'medium' })}`,
+                                                }[locale]
+                                            }
+                                        </p>
+                                    </div>
+                                    {row.isCurrent ? (
+                                        <Badge variant="outline">{{ de: 'Dieses Gerät', en: 'This device' }[locale]}</Badge>
+                                    ) : (
+                                        <AccountSignOutDialog
+                                            disabled={actionBusy}
+                                            title={{ de: `${deviceLabel} abmelden?`, en: `Sign out ${deviceLabel}?` }[locale]}
+                                            description={
+                                                {
+                                                    de: `${deviceLabel} wird abgemeldet. Dieses Gerät bleibt angemeldet.`,
+                                                    en: `${deviceLabel} will be signed out. This device stays signed in.`,
+                                                }[locale]
+                                            }
+                                            confirmLabel={{ de: 'Abmelden', en: 'Sign out' }[locale]}
+                                            onConfirm={() => void onTerminateSessions([row.sessionId], { signOut: false })}
+                                            trigger={
+                                                <Button type="button" variant="outline" size="sm" disabled={actionBusy}>
+                                                    {{ de: 'Abmelden', en: 'Sign out' }[locale]}
+                                                </Button>
+                                            }
+                                        />
+                                    )}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    <div className="flex flex-wrap justify-end gap-2">
+                        {otherSessionIds.length > 0 ? (
+                            <AccountSignOutDialog
+                                disabled={actionBusy}
+                                title={{ de: 'Überall sonst abmelden?', en: 'Sign out everywhere else?' }[locale]}
+                                description={
+                                    {
+                                        de: 'Alle anderen Geräte und Browser werden abgemeldet. Dieses Gerät bleibt angemeldet.',
+                                        en: 'All other devices and browsers will be signed out. This device stays signed in.',
+                                    }[locale]
+                                }
+                                confirmLabel={{ de: 'Überall sonst abmelden', en: 'Sign out everywhere else' }[locale]}
+                                onConfirm={() => void onTerminateSessions(otherSessionIds, { signOut: false })}
+                                trigger={
+                                    <Button type="button" variant="outline" disabled={actionBusy}>
                                         {{ de: 'Überall sonst abmelden', en: 'Sign out everywhere else' }[locale]}
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    ) : null}
+                                    </Button>
+                                }
+                            />
+                        ) : null}
+                        <AccountSignOutDialog
+                            disabled={actionBusy}
+                            title={{ de: 'Auf diesem Gerät abmelden?', en: 'Sign out on this device?' }[locale]}
+                            description={
+                                {
+                                    de: 'Du wirst auf diesem Gerät abgemeldet und musst dich erneut anmelden, um auf dein Konto zuzugreifen.',
+                                    en: 'You will be signed out on this device and will need to sign in again to access your account.',
+                                }[locale]
+                            }
+                            confirmLabel={{ de: 'Abmelden', en: 'Sign out' }[locale]}
+                            onConfirm={() => void onTerminateSessions([currentSessionId], { signOut: true })}
+                            trigger={
+                                <Button type="button" variant="outline" disabled={actionBusy}>
+                                    <LogOutIcon />
+                                    {{ de: 'Abmelden', en: 'Sign out' }[locale]}
+                                </Button>
+                            }
+                        />
+                    </div>
                 </div>
-            </AccountSection>
+            </AccountCard>
+
+            <AccountCard
+                title={{ de: 'Konto löschen', en: 'Delete account' }[locale]}
+                description={
+                    {
+                        de: 'Personenbezogene Daten werden entfernt. Du kannst dich danach nicht mehr anmelden.',
+                        en: 'Personal profile data will be removed. You will not be able to sign in afterwards.',
+                    }[locale]
+                }
+            >
+                <div className="flex justify-end">
+                    <Button type="button" variant="destructive" size="sm" disabled={actionBusy} onClick={openDeleteDialog}>
+                        {{ de: 'Konto löschen', en: 'Delete account' }[locale]}
+                    </Button>
+                </div>
+            </AccountCard>
+
+            <nav className="flex flex-wrap gap-x-4 gap-y-2 px-1 text-sm text-muted-foreground">
+                <Link to="/{-$locale}/privacy-policy" className="underline-offset-4 hover:text-foreground hover:underline">
+                    {{ de: 'Datenschutzerklärung', en: 'Privacy policy' }[locale]}
+                </Link>
+                <Link to="/{-$locale}/terms-and-conditions" className="underline-offset-4 hover:text-foreground hover:underline">
+                    {{ de: 'AGB', en: 'Terms and conditions' }[locale]}
+                </Link>
+                <Link to="/{-$locale}/imprint" className="underline-offset-4 hover:text-foreground hover:underline">
+                    {{ de: 'Impressum', en: 'Imprint' }[locale]}
+                </Link>
+            </nav>
 
             <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
                 <DialogContent>
@@ -789,35 +847,211 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                     </form>
                 </DialogContent>
             </Dialog>
+
+            <Dialog
+                open={deleteDialogOpen}
+                onOpenChange={(open) => {
+                    setDeleteDialogOpen(open);
+                    if (!open) {
+                        setDeleteStep('confirm');
+                        setDeleteCode('');
+                        setDeleteError(null);
+                    }
+                }}
+            >
+                <DialogContent>
+                    {deleteStep === 'confirm' ? (
+                        <form
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                void onAccountDeleteOtpRequest();
+                            }}
+                        >
+                            <DialogHeader>
+                                <DialogTitle>
+                                    {{ de: 'Konto wirklich löschen?', en: 'Delete your account permanently?' }[locale]}
+                                </DialogTitle>
+                                <DialogDescription>
+                                    {
+                                        {
+                                            de: 'Diese Aktion kann nicht rückgängig gemacht werden. Deine persönlichen Daten werden entfernt und alle Geräte abgemeldet. Buchungsverläufe bleiben für Köche und den Betrieb erhalten, sind aber nicht mehr mit deiner Identität verknüpft. Wir senden einen Code an deine E-Mail-Adresse.',
+                                            en: 'This cannot be undone. Your personal data will be removed and all devices signed out. Booking history stays available for chefs and operations, but is no longer linked to your identity. We will send a code to your email address.',
+                                        }[locale]
+                                    }
+                                </DialogDescription>
+                            </DialogHeader>
+                            {deleteError != null ? <p className="py-4 text-sm text-destructive">{deleteError}</p> : null}
+                            <DialogFooter className="pt-4">
+                                <Button type="button" variant="outline" disabled={actionBusy} onClick={() => setDeleteDialogOpen(false)}>
+                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                </Button>
+                                <Button type="submit" variant="destructive" disabled={actionBusy}>
+                                    {{ de: actionBusy ? 'Sendet…' : 'Code senden', en: actionBusy ? 'Sending…' : 'Send code' }[locale]}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    ) : (
+                        <form
+                            onSubmit={(event) => {
+                                event.preventDefault();
+                                void onAccountDelete();
+                            }}
+                        >
+                            <DialogHeader>
+                                <DialogTitle>{{ de: 'Code eingeben', en: 'Enter code' }[locale]}</DialogTitle>
+                                <DialogDescription>
+                                    {
+                                        {
+                                            de: `Wir haben einen Code an ${currentEmailAddress} gesendet.`,
+                                            en: `We sent a code to ${currentEmailAddress}.`,
+                                        }[locale]
+                                    }
+                                </DialogDescription>
+                            </DialogHeader>
+                            <AuthEmailOtpSpamHint />
+                            <div className="flex justify-center py-4">
+                                <InputOTP
+                                    maxLength={6}
+                                    value={deleteCode}
+                                    onChange={setDeleteCode}
+                                    autoComplete="one-time-code"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    disabled={actionBusy}
+                                    aria-label={{ de: 'Bestätigungscode', en: 'Verification code' }[locale]}
+                                >
+                                    <InputOTPGroup>
+                                        <InputOTPSlot index={0} />
+                                        <InputOTPSlot index={1} />
+                                        <InputOTPSlot index={2} />
+                                        <InputOTPSlot index={3} />
+                                        <InputOTPSlot index={4} />
+                                        <InputOTPSlot index={5} />
+                                    </InputOTPGroup>
+                                </InputOTP>
+                            </div>
+                            {deleteError != null ? <p className="text-sm text-destructive">{deleteError}</p> : null}
+                            <DialogFooter>
+                                <Button type="button" variant="outline" disabled={actionBusy} onClick={() => setDeleteDialogOpen(false)}>
+                                    {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                                </Button>
+                                <Button type="submit" variant="destructive" disabled={actionBusy || deleteCode.length !== 6}>
+                                    {{ de: 'Konto löschen', en: 'Delete account' }[locale]}
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={phoneDialogOpen} onOpenChange={setPhoneDialogOpen}>
+                <DialogContent>
+                    <form
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            void onPhoneNumberSave();
+                        }}
+                    >
+                        <DialogHeader>
+                            <DialogTitle>
+                                {hasPhoneNumber
+                                    ? { de: 'Telefonnummer ändern', en: 'Change phone number' }[locale]
+                                    : { de: 'Telefonnummer hinzufügen', en: 'Add a phone number' }[locale]}
+                            </DialogTitle>
+                            <DialogDescription>
+                                {
+                                    {
+                                        de: 'Mit Ländervorwahl, zum Beispiel +49…',
+                                        en: 'Include the country code, for example +49…',
+                                    }[locale]
+                                }
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-2 py-4">
+                            <Input
+                                type="tel"
+                                name="tel"
+                                autoComplete="tel"
+                                required
+                                value={phoneDraft}
+                                disabled={actionBusy}
+                                onChange={(event) => setPhoneDraft(event.target.value)}
+                                placeholder="+49…"
+                                aria-invalid={phoneError != null || undefined}
+                            />
+                            {phoneError != null ? <p className="text-sm text-destructive">{phoneError}</p> : null}
+                        </div>
+                        <DialogFooter>
+                            <Button type="button" variant="outline" disabled={actionBusy} onClick={() => setPhoneDialogOpen(false)}>
+                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                            </Button>
+                            <Button type="submit" disabled={actionBusy}>
+                                {{ de: actionBusy ? 'Speichert…' : 'Speichern', en: actionBusy ? 'Saving…' : 'Save' }[locale]}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </main>
     );
 }
 
-function AccountSection({ title, children }: { title: string; children: ReactNode }) {
+function AccountSignOutDialog({
+    trigger,
+    title,
+    description,
+    confirmLabel,
+    disabled,
+    onConfirm,
+}: {
+    trigger: ReactNode;
+    title: string;
+    description: string;
+    confirmLabel: string;
+    disabled: boolean;
+    onConfirm: () => void;
+}) {
+    const locale = useLocale();
+
     return (
-        <section className="grid gap-3">
-            <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">{title}</h2>
-            <div className="grid gap-3">{children}</div>
-        </section>
+        <AlertDialog>
+            <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{title}</AlertDialogTitle>
+                    <AlertDialogDescription>{description}</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel disabled={disabled}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
+                    <AlertDialogAction variant="destructive" disabled={disabled} onClick={onConfirm}>
+                        {confirmLabel}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 }
 
-function StubRow({ label, hint, destructive }: { label: string; hint: string; destructive?: boolean }) {
+function AccountCard({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
     return (
-        <div
-            className={
-                destructive
-                    ? 'flex items-center justify-between gap-4 rounded-xl border border-destructive/30 px-4 py-3'
-                    : 'flex items-center justify-between gap-4 rounded-xl border px-4 py-3'
-            }
-        >
-            <div className="grid gap-0.5">
-                <p className="text-sm text-foreground">{label}</p>
-                <p className="text-xs text-muted-foreground">{hint}</p>
+        <Card className="bg-card">
+            <CardHeader>
+                <CardTitle className="font-serif text-2xl font-normal">{title}</CardTitle>
+                {description ? <CardDescription className="text-sm/relaxed">{description}</CardDescription> : null}
+            </CardHeader>
+            <CardContent className="grid gap-5">{children}</CardContent>
+        </Card>
+    );
+}
+
+function AccountValueRow({ label, value, muted = false, action }: { label: string; value: string; muted?: boolean; action?: ReactNode }) {
+    return (
+        <div className="flex items-center justify-between gap-4">
+            <div className="grid min-w-0 gap-0.5">
+                <p className="text-sm text-muted-foreground">{label}</p>
+                <p className={muted ? 'truncate text-sm text-muted-foreground' : 'truncate text-sm text-foreground'}>{value}</p>
             </div>
-            <Button type="button" variant={destructive ? 'destructive' : 'outline'} size="sm" disabled>
-                {hint}
-            </Button>
+            {action}
         </div>
     );
 }

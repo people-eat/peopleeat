@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 
 import { uploadErrorMessage, uploadFile } from '../chat/fileUpload';
@@ -26,6 +27,7 @@ export function ProfilePictureEditor({
     onLink,
     onClear,
     onBusyChange,
+    children,
 }: {
     profilePictureUrl: string | null;
     displayName: string;
@@ -33,6 +35,7 @@ export function ProfilePictureEditor({
     onLink: (fileUploadId: string) => Promise<void>;
     onClear: () => Promise<void>;
     onBusyChange?: (busy: boolean) => void;
+    children?: ReactNode;
 }) {
     const locale = useLocale();
     const inputRef = useRef<HTMLInputElement>(null);
@@ -108,14 +111,21 @@ export function ProfilePictureEditor({
 
     const actionBusy = disabled || busy;
 
+    const inline = children != null;
+
     return (
         <>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-                <Avatar className="size-24 shrink-0 self-center text-2xl sm:self-start">
+            <div
+                className={
+                    inline ? 'flex flex-wrap items-center gap-x-4 gap-y-3' : 'flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6'
+                }
+            >
+                <Avatar className={inline ? 'size-16 shrink-0 text-lg' : 'size-24 shrink-0 self-center text-2xl sm:self-start'}>
                     {profilePictureUrl != null ? <AvatarImage src={profilePictureUrl} alt="" /> : null}
-                    <AvatarFallback className="text-2xl">{initialsFromName(displayName)}</AvatarFallback>
+                    <AvatarFallback className={inline ? 'text-lg' : 'text-2xl'}>{initialsFromName(displayName)}</AvatarFallback>
                 </Avatar>
-                <div className="grid gap-3">
+                {inline ? <div className="min-w-0 flex-1 basis-40">{children}</div> : null}
+                <div className={inline ? 'flex flex-wrap gap-2' : 'grid gap-3'}>
                     <input
                         ref={inputRef}
                         type="file"

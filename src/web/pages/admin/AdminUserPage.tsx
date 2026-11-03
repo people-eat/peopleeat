@@ -156,6 +156,7 @@ const ADMIN_USER_EMAIL_PURPOSES: GqlCAdminOutboundEmailPurpose[] = [
     'GIFT_CARD_PURCHASED',
     'AUTH_EMAIL_OTP',
     'EMAIL_ADDRESS_UPDATE_CONFIRM',
+    'ACCOUNT_DELETE_CONFIRM',
 ];
 const ADMIN_USER_SESSION_KINDS: GqlCAdminSessionKind[] = ['human', 'bot'];
 

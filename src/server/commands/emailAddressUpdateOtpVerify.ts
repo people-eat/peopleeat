@@ -29,7 +29,13 @@ export async function emailAddressUpdateOtpVerify(
         const [otp] = await serverRuntime.db
             .select()
             .from(authEmailOtps)
-            .where(and(eq(authEmailOtps.sessionId, requestingSession.sessionId), isNull(authEmailOtps.consumedAt)))
+            .where(
+                and(
+                    eq(authEmailOtps.sessionId, requestingSession.sessionId),
+                    eq(authEmailOtps.purpose, 'EMAIL_ADDRESS_UPDATE'),
+                    isNull(authEmailOtps.consumedAt),
+                ),
+            )
             .orderBy(desc(authEmailOtps.createdAt))
             .limit(1);
 

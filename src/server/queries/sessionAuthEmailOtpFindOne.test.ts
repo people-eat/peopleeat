@@ -65,9 +65,9 @@ describe('sessionAuthEmailOtpFindOne', () => {
         await expect(sessionAuthEmailOtpFindOne(requestingSession, serverRuntime)).resolves.toBeNull();
     });
 
-    it('returns null when the only OTP is soft-dismissed', async () => {
+    it('returns null when the only OTP is for account deletion', async () => {
         const { requestingSession, serverRuntime } = await commandSetup();
-        await insertOtp(requestingSession.sessionId, { dismissedAt: new Date() });
+        await insertOtp(requestingSession.sessionId, { purpose: 'ACCOUNT_DELETE' });
 
         await expect(sessionAuthEmailOtpFindOne(requestingSession, serverRuntime)).resolves.toBeNull();
     });

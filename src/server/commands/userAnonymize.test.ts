@@ -5,8 +5,10 @@ import { idCreate } from '../../shared/idCreate';
 import { authPasskeys, authTimeBasedOneTimePasswords, cooks, sessions, users } from '../db/schema';
 import { adminMutationParent, commandSetup, findLogsForSession, testDb, userMutationParent } from '../test/commandTestUtils';
 import { phoneNumberCreate } from '../test/phoneNumberCreate';
+import * as authOtpUtils from '../utils/authOtpUtils';
 import { adminUserAnonymize } from './adminUserAnonymize';
 import { userAnonymize } from './userAnonymize';
+import { userAnonymizeOtpRequest } from './userAnonymizeOtpRequest';
 
 async function passkeyInsert(userId: string) {
     const authPasskeyId = idCreate();
@@ -36,6 +38,19 @@ async function totpInsert(userId: string) {
 }
 
 describe('userAnonymize', () => {
+    async function deleteWithCode(
+        serverRuntime: Awaited<ReturnType<typeof commandSetup.withUser>>['serverRuntime'],
+        requestingSession: Awaited<ReturnType<typeof commandSetup.withUser>>['requestingSession'],
+        userId: string,
+        code: string,
+    ) {
+        vi.spyOn(authOtpUtils, 'authOtpCodeGenerate').mockReturnValue(code);
+        vi.mocked(serverRuntime.email.send).mockResolvedValue({ outboundEmailId: idCreate() });
+        await userAnonymizeOtpRequest(userMutationParent(userId), { locale: 'de' }, requestingSession, serverRuntime);
+        vi.spyOn(authOtpUtils, 'authOtpCodeGenerate').mockRestore();
+        return userAnonymize(userMutationParent(userId), { code }, requestingSession, serverRuntime);
+    }
+
     it('scrubs PII, nulls email, terminates sessions, deletes auth, hides cook, and publishes', async () => {
         const { serverRuntime, requestingSession, user } = await commandSetup.withUser({
             firstName: 'Ada',
@@ -52,7 +67,7 @@ describe('userAnonymize', () => {
         const otherSessionId = idCreate();
         await testDb.insert(sessions).values({ sessionId: otherSessionId, userId: user.userId });
 
-        const result = await userAnonymize(userMutationParent(user.userId), requestingSession, serverRuntime);
+        const result = await deleteWithCode(serverRuntime, requestingSession, user.userId, '246810');
 
         expect(result).toEqual({ success: true, referenceId: user.userId });
 
@@ -90,13 +105,11 @@ describe('userAnonymize', () => {
 
     it('rejects when already anonymized, logs, and does not publish', async () => {
         const { serverRuntime, requestingSession, user } = await commandSetup.withUser();
-        await userAnonymize(userMutationParent(user.userId), requestingSession, serverRuntime);
+        await deleteWithCode(serverRuntime, requestingSession, user.userId, '135791');
         vi.mocked(serverRuntime.publish.userUpdates).mockClear();
         vi.mocked(serverRuntime.publish.adminUpdates).mockClear();
 
-        await expect(userAnonymize(userMutationParent(user.userId), requestingSession, serverRuntime)).rejects.toThrow(
-            /userAnonymize: already anonymized/,
-        );
+        await expect(deleteWithCode(serverRuntime, requestingSession, user.userId, '135792')).rejects.toThrow(/already anonymized/);
 
         const logRows = await findLogsForSession(requestingSession.sessionId);
         expect(logRows.some((row) => row.level === 'error' && /already anonymized/.test(row.message))).toBe(true);

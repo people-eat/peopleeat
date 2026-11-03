@@ -164,6 +164,7 @@ import { sessionNewsletterSubscriptionCreate } from '../commands/sessionNewslett
 import { sessionWebPageInteractionCreate } from '../commands/sessionWebPageInteractionCreate';
 import { sessionWebPageVisitCreate } from '../commands/sessionWebPageVisitCreate';
 import { userAnonymize } from '../commands/userAnonymize';
+import { userAnonymizeOtpRequest } from '../commands/userAnonymizeOtpRequest';
 import { userBookingRequestCancel } from '../commands/userBookingRequestCancel';
 import { userBookingRequestChurnPromoCodeCreate } from '../commands/userBookingRequestChurnPromoCodeCreate';
 import { userBookingRequestCreate } from '../commands/userBookingRequestCreate';
@@ -769,6 +770,8 @@ import type {
     GqlSUserMutationSupportRequestMessageCreateArgs,
     GqlSUserMutationSupportRequestUnreadNotificationCountResetArgs,
     GqlSUserMutationTerminateSessionsArgs,
+    GqlSUserMutationUserAnonymizeArgs,
+    GqlSUserMutationUserAnonymizeOtpRequestArgs,
     GqlSUserMutationUserUpdateArgs,
     GqlSUserSupportRequest,
     GqlSUserSupportRequestArgs,
@@ -2418,8 +2421,15 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             userUpdate(parent: GqlSUserMutation, args: GqlSUserMutationUserUpdateArgs, requestingSession: GqlSSession) {
                 return userUpdate(parent, args, requestingSession, serverRuntime);
             },
-            userAnonymize(parent: GqlSUserMutation, _: unknown, requestingSession: GqlSSession) {
-                return userAnonymize(parent, requestingSession, serverRuntime);
+            userAnonymize(parent: GqlSUserMutation, args: GqlSUserMutationUserAnonymizeArgs, requestingSession: GqlSSession) {
+                return userAnonymize(parent, args, requestingSession, serverRuntime);
+            },
+            userAnonymizeOtpRequest(
+                parent: GqlSUserMutation,
+                args: GqlSUserMutationUserAnonymizeOtpRequestArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return userAnonymizeOtpRequest(parent, args, requestingSession, serverRuntime);
             },
             terminateSessions(parent: GqlSUserMutation, args: GqlSUserMutationTerminateSessionsArgs, requestingSession: GqlSSession) {
                 return userSessionTerminateMany(parent, args, requestingSession, serverRuntime);

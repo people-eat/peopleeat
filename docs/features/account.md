@@ -1,7 +1,7 @@
 # Account
 
-Signed-in users manage profile picture, email, communication preference, language, time zone, passkeys, signed-in devices, and account
-deletion from one settings page inside the profile or admin shell.
+Signed-in users manage their name, date of birth, phone number, profile picture, email, communication preference, language, time zone,
+passkeys, signed-in devices, and account deletion from one settings page inside the profile or admin shell.
 
 ## Behavior
 
@@ -9,22 +9,23 @@ deletion from one settings page inside the profile or admin shell.
 2. Admins choose **Account** in the admin sidebar → `/admin/account`, staying in admin chrome.
 3. Both routes render the same settings page (user-scoped, not role-scoped).
 
-On the account page:
+On the account page, settings sit in cards:
 
-- Change or remove the profile picture (crop → upload → link).
-- View the current email; change it via OTP to the new address (same passwordless pattern as log-on).
-- Set preferred communication (message, WhatsApp, call, email) with immediate save.
-- Switch language (Deutsch / English) via the shared LanguageSwitcher (cookie + URL path). Changing language while signed in opens a hard
-  confirm when the route locale differs from `Users.locale` — confirm updates the profile (and emails); decline returns to the profile
-  language. Emails and the UI use the same profile language.
-- Set time zone (IANA) via a searchable combobox. Saves immediately with `userUpdate({ timeZone })`. UI date/time formatting and
-  recipient-facing emails use `Users.timeZone` (see [i18n.md](../architecture/i18n.md)).
-- List, add, and remove passkeys.
-- Enable, confirm, and disable authenticator-app TOTP (QR + recovery codes).
-- List signed-in devices; sign out another device; sign out here; sign out everywhere else.
-- Delete account (customer copy) — see below.
-- Stub for notifications.
-- Link to terms and conditions.
+- **You**: photo, name, date of birth, and registration date on one row. The card has no title. The page heading is the shell breadcrumb.
+- **How we reach you**: the email address (also the address used to sign in; change it via OTP to the new address) and the phone number
+  (country code required, saved with `userUpdate`). Set preferred communication (message, WhatsApp, call, email) with immediate save. Switch
+  language and time zone.
+- **Sign-in**: list, add, and remove passkeys. Enable, confirm, and disable authenticator-app two-factor (QR + recovery codes). List
+  signed-in devices by browser and device. Signing out another device, signing out here, or signing out everywhere else each asks for
+  confirmation first. The confirm button is destructive. Everywhere-else sits before sign-out-here, both at the end of the card. Add-passkey
+  sits at the end of its section.
+- **Delete account** is the last card, with the action at the end of the card.
+- Privacy, terms, and imprint stay as quiet links under the cards.
+
+Language switches via the shared LanguageSwitcher (cookie + URL path). Changing language while signed in opens a hard confirm when the route
+locale differs from `Users.locale`: confirm updates the profile (and emails); decline returns to the profile language. Emails and the UI use
+the same profile language. Time zone is an IANA zone in a searchable combobox and saves immediately with `userUpdate({ timeZone })`. UI
+date/time formatting and recipient-facing emails use `Users.timeZone` (see [i18n.md](../architecture/i18n.md)).
 
 Unsigned visits to `/profile/account` redirect via the parent profile loader. Admin account is gated by the admin loader.
 
@@ -41,6 +42,11 @@ verify rejects when already signed in so the two flows stay separate. A successf
 Customer-facing copy is **delete account**. The server **anonymizes** the `Users` row so relational history (bookings, offers, chats keyed
 by `userId`) stays joinable for chefs and operations.
 
+Self-serve deletion is two steps. **Send code** emails a one-time code to the current address (`userAnonymizeOtpRequest`). **Delete
+account** checks that code and then anonymizes (`userAnonymize(code)`). Closing the dialog before the code is entered leaves the code
+unused. Admin deletion stays `AdminMutation.userAnonymize(userId)` without the email step. Success toasts, then hard-navigates via
+`redirectAfterSignOut`.
+
 On success the command:
 
 1. Sets `Users.status = ANONYMIZED`, nulls `emailAddress`, clears `previousEmailAddresses`, blanks names, clears phone / birth date /
@@ -56,22 +62,18 @@ verify, passkey authenticate, TOTP complete) rejects `ANONYMIZED` users and allo
 private profile restriction banner; marketplace writes (booking requests, offers, payments) require `ACTIVE`. Admin impersonation stays
 ACTIVE-only. Ban/unban is `AdminMutation.userStatusUpdate` — see [admin-users.md](./admin-users.md).
 
-Self-serve: `UserMutation.userAnonymize` from AccountPage → toast → hard-navigate via `redirectAfterSignOut`. Admin API:
-`AdminMutation.userAnonymize(userId)` (detail danger zone).
-
-| Section            | Status |
-| ------------------ | ------ |
-| Profile picture    | Live   |
-| Email + OTP change | Live   |
-| Preferred comms    | Live   |
-| Language           | Live   |
-| Time zone          | Live   |
-| Passkeys           | Live   |
-| Signed-in devices  | Live   |
-| Two-factor (TOTP)  | Live   |
-| Notifications      | Stub   |
-| Legal link         | Live   |
-| Delete account     | Live   |
+| Section                                            | Status |
+| -------------------------------------------------- | ------ |
+| You (name, birth date, registration date, picture) | Live   |
+| Phone number                                       | Live   |
+| Preferred comms                                    | Live   |
+| Language                                           | Live   |
+| Time zone                                          | Live   |
+| Passkeys                                           | Live   |
+| Signed-in devices                                  | Live   |
+| Two-factor (TOTP)                                  | Live   |
+| Legal links                                        | Live   |
+| Delete account                                     | Live   |
 
 ## Decisions
 
@@ -105,19 +107,21 @@ with a null email.
 - Page: `src/web/pages/AccountPage.tsx` + `AccountPage.graphql`.
 - Live state: `useUserUpdatesSeed` + `userUpdates`; session OTP via `useSessionUpdatesSeed` + `sessionUpdates`. Mutations must not
   `router.invalidate()` — passkey register and preferred communication publish `userUpdates` after commit.
-- GraphQL: `User.sessions` / `passkeys` / `timeBasedOneTimePassword`; `Session.authEmailOtp`; `emailAddressUpdateOtpRequest` /
-  `emailAddressUpdateOtpVerify`; TOTP enroll/confirm/cancel/disable; `userAnonymize`; reuse `authEmailOtpDelete`, `terminateSessions`,
-  passkey mutations. Admin: `AdminMutation.userAnonymize`.
+- GraphQL: `User.sessions` / `passkeys` / `timeBasedOneTimePassword` / `createdAt`; `Session.authEmailOtp`; `emailAddressUpdateOtpRequest` /
+  `emailAddressUpdateOtpVerify`; TOTP enroll/confirm/cancel/disable; `userAnonymizeOtpRequest` then `userAnonymize(code)`; reuse
+  `authEmailOtpDelete`, `terminateSessions`, passkey mutations. Admin: `AdminMutation.userAnonymize`.
+- Delete confirmation uses `AuthEmailOtps.purpose = ACCOUNT_DELETE` so the code does not open the email-change dialog. Email-change rows use
+  `EMAIL_ADDRESS_UPDATE`. Log-on rows stay `LOG_ON`.
 - TOTP UI: `AuthTotpAccountSection` (large QR via `qrcode.react`, manual secret, recovery codes copy/download).
 - Sign-out / post-delete: terminate or anonymize then hard-navigate to `/log-on` so a fresh anonymous session remounts root probes (cookie
   banner, legal gate).
 - Email skip helper: `emailAddressPresent` used by lifecycle/job send paths.
 
-Commands: `userAnonymizeApply.ts`, `userAnonymize.ts`, `adminUserAnonymize.ts`, `emailAddressUpdateOtpRequest.ts`,
-`emailAddressUpdateOtpVerify.ts`. Email template: `EmailAddressUpdateOtpRequestForUserEmail.tsx`. UI: `PreferredCommunicationField.tsx`,
-`AuthEmailOtpSpamHint` on the email-change OTP dialog; `LanguageSwitcher` + `LocaleMismatchGate` (profile language on `Users.locale`);
-`TimeZoneField` + `Users.timeZone` / `useTimeZone`. Klaviyo upsert job: `userKlaviyoProfileSync` (see
-[klaviyo-profile-sync.md](./klaviyo-profile-sync.md)).
+Commands: `userAnonymizeApply.ts`, `userAnonymize.ts`, `userAnonymizeOtpRequest.ts`, `adminUserAnonymize.ts`,
+`emailAddressUpdateOtpRequest.ts`, `emailAddressUpdateOtpVerify.ts`. Email templates: `EmailAddressUpdateOtpRequestForUserEmail.tsx`,
+`AccountDeleteOtpRequestForUserEmail.tsx`. UI: `PreferredCommunicationField.tsx`, `AuthEmailOtpSpamHint` on the email-change OTP dialog;
+`LanguageSwitcher` + `LocaleMismatchGate` (profile language on `Users.locale`); `TimeZoneField` + `Users.timeZone` / `useTimeZone`. Klaviyo
+upsert job: `userKlaviyoProfileSync` (see [klaviyo-profile-sync.md](./klaviyo-profile-sync.md)).
 
 See also [profile.md](./profile.md), [customer-shell.md](./customer-shell.md), [cook-shell.md](./cook-shell.md), [sign-in.md](./sign-in.md),
 [profile-pictures.md](./profile-pictures.md), [authentication.md](../architecture/authentication.md), [i18n.md](../architecture/i18n.md).

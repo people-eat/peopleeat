@@ -938,6 +938,9 @@ export const authEmailOtps = pgTable(
         // Last successful email send; drives the send cooldown.
         lastSentAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
         createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+        // LOG_ON | EMAIL_ADDRESS_UPDATE | ACCOUNT_DELETE. Keeps account-deletion
+        // codes off the log-on and email-change verify paths.
+        purpose: varchar().notNull().default('LOG_ON'),
     },
     (table) => [
         foreignKey({

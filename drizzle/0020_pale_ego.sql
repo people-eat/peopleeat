@@ -1,0 +1,1 @@
+ALTER TABLE "AuthEmailOtps" ADD COLUMN "purpose" varchar DEFAULT 'LOG_ON' NOT NULL;

@@ -1983,6 +1983,7 @@ export type GqlCAdminOutboundEmailLifecycleStatus = 'BOUNCED' | 'FAILED' | 'OPEN
 export type GqlCAdminOutboundEmailProvider = 'console' | 'resend';
 
 export type GqlCAdminOutboundEmailPurpose =
+    | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
     | 'BOOKING_REQUEST_CANCELED'
     | 'BOOKING_REQUEST_COOK_NOTIFY'
@@ -4690,6 +4691,7 @@ export interface GqlCUser {
     bookingRequest?: Maybe<GqlCUserBookingRequest>;
     bookingRequests?: Maybe<Array<GqlCUserBookingRequest>>;
     cook?: Maybe<GqlCCook>;
+    createdAt: Scalars['DateTime']['output'];
     emailAddress?: Maybe<Scalars['EmailAddress']['output']>;
     firstName: Scalars['String']['output'];
     giftCards?: Maybe<Array<GqlCUserGiftCard>>;
@@ -5003,6 +5005,7 @@ export interface GqlCUserMutation {
     supportRequestUnreadNotificationCountReset: GqlCMutationResult;
     terminateSessions: GqlCMutationResult;
     userAnonymize: GqlCMutationResult;
+    userAnonymizeOtpRequest: GqlCMutationResult;
     userLegalAccept: GqlCMutationResult;
     userUpdate: GqlCMutationResult;
 }
@@ -5214,6 +5217,14 @@ export type GqlCUserMutationSupportRequestUnreadNotificationCountResetArgs = {
 
 export type GqlCUserMutationTerminateSessionsArgs = {
     sessionIds: Array<Scalars['ID']['input']>;
+};
+
+export type GqlCUserMutationUserAnonymizeArgs = {
+    code: Scalars['String']['input'];
+};
+
+export type GqlCUserMutationUserAnonymizeOtpRequestArgs = {
+    locale: GqlCLocale;
 };
 
 export type GqlCUserMutationUserUpdateArgs = {
@@ -7501,9 +7512,12 @@ export type GqlCAccountPageUserFragment = {
     emailAddress: string | null;
     firstName: string;
     lastName: string;
+    phoneNumber: string | null;
+    birthDate: string | null;
     preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
     locale: Schema.GqlCLocale;
     timeZone: string;
+    createdAt: string;
     profilePicture: { fileUploadId: string; url: string } | null;
     cook: { cookId: string } | null;
     admin: { adminId: string } | null;
@@ -7531,9 +7545,12 @@ export type GqlCAccountPageSessionFragment = {
         emailAddress: string | null;
         firstName: string;
         lastName: string;
+        phoneNumber: string | null;
+        birthDate: string | null;
         preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
         locale: Schema.GqlCLocale;
         timeZone: string;
+        createdAt: string;
         profilePicture: { fileUploadId: string; url: string } | null;
         cook: { cookId: string } | null;
         admin: { adminId: string } | null;
@@ -7571,9 +7588,12 @@ export type GqlCAccountPageQuery = {
             emailAddress: string | null;
             firstName: string;
             lastName: string;
+            phoneNumber: string | null;
+            birthDate: string | null;
             preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
             locale: Schema.GqlCLocale;
             timeZone: string;
+            createdAt: string;
             profilePicture: { fileUploadId: string; url: string } | null;
             cook: { cookId: string } | null;
             admin: { adminId: string } | null;
@@ -7603,9 +7623,12 @@ export type GqlCAccountPageUserUpdatesSubscription = {
         emailAddress: string | null;
         firstName: string;
         lastName: string;
+        phoneNumber: string | null;
+        birthDate: string | null;
         preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
         locale: Schema.GqlCLocale;
         timeZone: string;
+        createdAt: string;
         profilePicture: { fileUploadId: string; url: string } | null;
         cook: { cookId: string } | null;
         admin: { adminId: string } | null;
@@ -7643,9 +7666,12 @@ export type GqlCAccountPageSessionUpdatesSubscription = {
             emailAddress: string | null;
             firstName: string;
             lastName: string;
+            phoneNumber: string | null;
+            birthDate: string | null;
             preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
             locale: Schema.GqlCLocale;
             timeZone: string;
+            createdAt: string;
             profilePicture: { fileUploadId: string; url: string } | null;
             cook: { cookId: string } | null;
             admin: { adminId: string } | null;
@@ -7718,7 +7744,17 @@ export type GqlCAccountTerminateSessionsMutationVariables = Exact<{
 
 export type GqlCAccountTerminateSessionsMutation = { user: { terminateSessions: { success: boolean } } };
 
-export type GqlCAccountUserAnonymizeMutationVariables = Exact<{ [key: string]: never }>;
+export type GqlCAccountUserAnonymizeOtpRequestMutationVariables = Exact<{
+    locale: Schema.GqlCLocale;
+}>;
+
+export type GqlCAccountUserAnonymizeOtpRequestMutation = {
+    user: { userAnonymizeOtpRequest: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCAccountUserAnonymizeMutationVariables = Exact<{
+    code: string;
+}>;
 
 export type GqlCAccountUserAnonymizeMutation = { user: { userAnonymize: { success: boolean; referenceId: string | null } } };
 
@@ -25278,9 +25314,12 @@ export const AccountPageUserFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'profilePicture' },
@@ -25394,9 +25433,12 @@ export const AccountPageSessionFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'profilePicture' },
@@ -36910,9 +36952,12 @@ export const AccountPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'profilePicture' },
@@ -37044,9 +37089,12 @@ export const AccountPageUserUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'profilePicture' },
@@ -37145,9 +37193,12 @@ export const AccountPageSessionUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'profilePicture' },
@@ -37605,6 +37656,55 @@ export const AccountTerminateSessionsDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAccountTerminateSessionsMutation, GqlCAccountTerminateSessionsMutationVariables>;
+export const AccountUserAnonymizeOtpRequestDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AccountUserAnonymizeOtpRequest' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'locale' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Locale' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'userAnonymizeOtpRequest' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'locale' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'locale' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAccountUserAnonymizeOtpRequestMutation, GqlCAccountUserAnonymizeOtpRequestMutationVariables>;
 export const AccountUserAnonymizeDocument = {
     kind: 'Document',
     definitions: [
@@ -37612,6 +37712,13 @@ export const AccountUserAnonymizeDocument = {
             kind: 'OperationDefinition',
             operation: 'mutation',
             name: { kind: 'Name', value: 'AccountUserAnonymize' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'code' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
@@ -37624,6 +37731,13 @@ export const AccountUserAnonymizeDocument = {
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'userAnonymize' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'code' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'code' } },
+                                        },
+                                    ],
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [

@@ -74,6 +74,7 @@ export async function emailAddressUpdateOtpRequest(
                 and(
                     eq(authEmailOtps.emailAddress, email),
                     eq(authEmailOtps.sessionId, requestingSession.sessionId),
+                    eq(authEmailOtps.purpose, 'EMAIL_ADDRESS_UPDATE'),
                     isNull(authEmailOtps.consumedAt),
                     isNull(authEmailOtps.verifiedAt),
                     gt(authEmailOtps.expiresAt, now),
@@ -136,13 +137,20 @@ export async function emailAddressUpdateOtpRequest(
             codeEncrypted: authOtpCodeEncrypt(code, pepper),
             expiresAt: authOtpExpiresAt(now),
             lastSentAt: now,
+            purpose: 'EMAIL_ADDRESS_UPDATE',
         };
 
         // Phase 2 — Transactional execution (side-effectful)
         await serverRuntime.db.transaction(async (transaction) => {
             await transaction
                 .delete(authEmailOtps)
-                .where(and(eq(authEmailOtps.sessionId, requestingSession.sessionId), isNull(authEmailOtps.consumedAt)));
+                .where(
+                    and(
+                        eq(authEmailOtps.sessionId, requestingSession.sessionId),
+                        eq(authEmailOtps.purpose, 'EMAIL_ADDRESS_UPDATE'),
+                        isNull(authEmailOtps.consumedAt),
+                    ),
+                );
             await transaction.insert(authEmailOtps).values(authEmailOtpInsert);
         });
 

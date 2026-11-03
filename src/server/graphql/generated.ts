@@ -1980,6 +1980,7 @@ export type GqlSAdminOutboundEmailLifecycleStatus = 'BOUNCED' | 'FAILED' | 'OPEN
 export type GqlSAdminOutboundEmailProvider = 'console' | 'resend';
 
 export type GqlSAdminOutboundEmailPurpose =
+    | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
     | 'BOOKING_REQUEST_CANCELED'
     | 'BOOKING_REQUEST_COOK_NOTIFY'
@@ -4687,6 +4688,7 @@ export interface GqlSUser {
     bookingRequest?: Maybe<GqlSUserBookingRequest>;
     bookingRequests?: Maybe<Array<GqlSUserBookingRequest>>;
     cook?: Maybe<GqlSCook>;
+    createdAt: Scalars['DateTime']['output'];
     emailAddress?: Maybe<Scalars['EmailAddress']['output']>;
     firstName: Scalars['String']['output'];
     giftCards?: Maybe<Array<GqlSUserGiftCard>>;
@@ -5000,6 +5002,7 @@ export interface GqlSUserMutation {
     supportRequestUnreadNotificationCountReset: GqlSMutationResult;
     terminateSessions: GqlSMutationResult;
     userAnonymize: GqlSMutationResult;
+    userAnonymizeOtpRequest: GqlSMutationResult;
     userLegalAccept: GqlSMutationResult;
     userUpdate: GqlSMutationResult;
 }
@@ -5211,6 +5214,14 @@ export type GqlSUserMutationSupportRequestUnreadNotificationCountResetArgs = {
 
 export type GqlSUserMutationTerminateSessionsArgs = {
     sessionIds: Array<Scalars['ID']['input']>;
+};
+
+export type GqlSUserMutationUserAnonymizeArgs = {
+    code: Scalars['String']['input'];
+};
+
+export type GqlSUserMutationUserAnonymizeOtpRequestArgs = {
+    locale: GqlSLocale;
 };
 
 export type GqlSUserMutationUserUpdateArgs = {
@@ -10750,6 +10761,7 @@ export type GqlSUserResolvers<
     >;
     bookingRequests?: Resolver<Maybe<Array<GqlSResolversTypes['UserBookingRequest']>>, ParentType, ContextType>;
     cook?: Resolver<Maybe<GqlSResolversTypes['Cook']>, ParentType, ContextType>;
+    createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     emailAddress?: Resolver<Maybe<GqlSResolversTypes['EmailAddress']>, ParentType, ContextType>;
     firstName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     giftCards?: Resolver<Maybe<Array<GqlSResolversTypes['UserGiftCard']>>, ParentType, ContextType>;
@@ -11229,7 +11241,18 @@ export type GqlSUserMutationResolvers<
         ContextType,
         RequireFields<GqlSUserMutationTerminateSessionsArgs, 'sessionIds'>
     >;
-    userAnonymize?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
+    userAnonymize?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserMutationUserAnonymizeArgs, 'code'>
+    >;
+    userAnonymizeOtpRequest?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserMutationUserAnonymizeOtpRequestArgs, 'locale'>
+    >;
     userLegalAccept?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
     userUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -11636,6 +11659,7 @@ export const GqlSAdminOutboundEmailLifecycleStatusSchema: z.ZodType<
 export const GqlSAdminOutboundEmailProviderSchema: z.ZodType<'console' | 'resend', 'console' | 'resend'> = z.enum(['console', 'resend']);
 
 export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
+    | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
     | 'BOOKING_REQUEST_CANCELED'
     | 'BOOKING_REQUEST_COOK_NOTIFY'
@@ -11670,6 +11694,7 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     | 'TESTIMONIAL_REMINDER_EVENING_CUSTOMER'
     | 'TESTIMONIAL_REMINDER_MORNING_COOK'
     | 'TESTIMONIAL_REMINDER_MORNING_CUSTOMER',
+    | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
     | 'BOOKING_REQUEST_CANCELED'
     | 'BOOKING_REQUEST_COOK_NOTIFY'
@@ -11705,6 +11730,7 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     | 'TESTIMONIAL_REMINDER_MORNING_COOK'
     | 'TESTIMONIAL_REMINDER_MORNING_CUSTOMER'
 > = z.enum([
+    'ACCOUNT_DELETE_CONFIRM',
     'AUTH_EMAIL_OTP',
     'BOOKING_REQUEST_CANCELED',
     'BOOKING_REQUEST_COOK_NOTIFY',

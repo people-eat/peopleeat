@@ -8,9 +8,12 @@ fragment AccountPageUser on User {
     emailAddress
     firstName
     lastName
+    phoneNumber
+    birthDate
     preferredCommunication
     locale
     timeZone
+    createdAt
     profilePicture {
         fileUploadId
         url
@@ -137,9 +140,18 @@ mutation AccountTerminateSessions($sessionIds: [ID!]!) {
     }
 }
 
-mutation AccountUserAnonymize {
+mutation AccountUserAnonymizeOtpRequest($locale: Locale!) {
     user {
-        userAnonymize {
+        userAnonymizeOtpRequest(locale: $locale) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AccountUserAnonymize($code: String!) {
+    user {
+        userAnonymize(code: $code) {
             success
             referenceId
         }

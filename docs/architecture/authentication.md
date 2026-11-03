@@ -178,15 +178,16 @@ Own-user read: `User.timeBasedOneTimePassword` (`confirmedAt`, `recoveryCodesRem
 - `src/web/components/auth/` — shared email/OTP/profile gate used by log-on, booking form, chef sign-up, gift-card purchase;
   `AuthEmailOtpSpamHint` on email OTP dialogs; `AuthPasskeyLogOn` as gate footer on log-on, booking form, and gift-card purchase (existing
   users only); `AuthTotpChallenge` when `sessionAuthPhase === 'totpPending'`; `AuthTotpAccountSection` on the account page
-- `src/web/pages/AccountPage.tsx` (routes: `profile/account.tsx`, `admin/account.tsx`) — passkeys, TOTP, email-address change (OTP), session
-  revoke / sign-out
+- `src/web/pages/AccountPage.tsx` (routes: `profile/account.tsx`, `admin/account.tsx`) — profile fields, phone number, passkeys, TOTP,
+  email-address change (OTP), session revoke / sign-out, account deletion (OTP to the current address)
 - `docs/features/sign-in.md` / `docs/features/account.md`
 
 ### Email address change (signed-in)
 
-1. `UserMutation.emailAddressUpdateOtpRequest` writes a session-owned `AuthEmailOtps` row and emails a 6-digit code to the **new** address
-   (`EmailAddressUpdateOtpRequestForUserEmail`, purpose `EMAIL_ADDRESS_UPDATE_CONFIRM`).
-2. Pending state is `Session.authEmailOtp` (same as log-on). Discard via `authEmailOtpDelete`.
+1. `UserMutation.emailAddressUpdateOtpRequest` writes a session-owned `AuthEmailOtps` row (`purpose = EMAIL_ADDRESS_UPDATE`) and emails a
+   6-digit code to the **new** address (`EmailAddressUpdateOtpRequestForUserEmail`, purpose `EMAIL_ADDRESS_UPDATE_CONFIRM`).
+2. Pending state is `Session.authEmailOtp` (same as log-on). That lookup ignores `ACCOUNT_DELETE` rows, so a delete code does not open this
+   dialog. Discard via `authEmailOtpDelete`.
 3. `UserMutation.emailAddressUpdateOtpVerify(code)` updates `Users.emailAddress`, archives the previous address on
    `Users.previousEmailAddresses` (exposed only on `AdminUser`), and consumes the OTP. Log-on `authEmailOtpVerify` rejects when the session
    is already signed in.

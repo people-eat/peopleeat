@@ -13,6 +13,7 @@ export function toGqlUser(user: User): GqlSUser {
         preferredCommunication: user.preferredCommunication ?? null,
         locale: user.locale,
         timeZone: user.timeZone,
+        createdAt: user.createdAt,
         lastAcceptedPrivacyPolicy: user.lastAcceptedPrivacyPolicy,
         lastAcceptedTerms: user.lastAcceptedTerms,
 

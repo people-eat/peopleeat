@@ -428,6 +428,8 @@ type User {
     locale: Locale!
     # IANA zone for date/time display. See docs/architecture/i18n.md.
     timeZone: TimeZone!
+    # When the account was created. Shown on the account page.
+    createdAt: DateTime!
     # Current profile picture. Bytes live in FileUploads; this field resolves
     # the linked upload (url → /api/file-uploads/:id). Public GET when this FK
     # points at the upload. See docs/features/profile-pictures.md.
@@ -2699,10 +2701,12 @@ input UserBookingRequestCreate {
 
 type UserMutation {
     userUpdate(user: UserUpdate!): MutationResult!
-    # Self-serve account deletion: anonymizes the signed-in user (scrubs PII,
+    # Verifies the emailed code, then anonymizes the signed-in user (scrubs PII,
     # nulls email, revokes auth, hides cook profile, keeps relational history).
     # Customer-facing copy is "delete account". See docs/features/account.md.
-    userAnonymize: MutationResult!
+    userAnonymize(code: String!): MutationResult!
+    # Emails a code to the current address before `userAnonymize`.
+    userAnonymizeOtpRequest(locale: Locale!): MutationResult!
     terminateSessions(sessionIds: [ID!]!): MutationResult!
     # Stamps lastAcceptedPrivacyPolicy + lastAcceptedTerms to now(). Always
     # allowed while acceptance is pending (hard-gate exception).
@@ -4151,6 +4155,7 @@ enum AdminOutboundEmailPurpose {
     GIFT_CARD_PURCHASED
     AUTH_EMAIL_OTP
     EMAIL_ADDRESS_UPDATE_CONFIRM
+    ACCOUNT_DELETE_CONFIRM
     CALL_SLOT_BOOKING_REQUEST
     CALL_SLOT_BOOKING_CONFIRM
     CALL_SLOT_BOOKING_DECLINE

@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, isNull } from 'drizzle-orm';
+import { and, desc, eq, gt, isNull, ne } from 'drizzle-orm';
 
 import { authEmailOtps } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -16,6 +16,7 @@ export async function sessionAuthEmailOtpFindOne(
         .where(
             and(
                 eq(authEmailOtps.sessionId, requestingSession.sessionId),
+                ne(authEmailOtps.purpose, 'ACCOUNT_DELETE'),
                 isNull(authEmailOtps.consumedAt),
                 isNull(authEmailOtps.dismissedAt),
                 gt(authEmailOtps.expiresAt, now),

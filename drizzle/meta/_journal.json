@@ -141,6 +141,13 @@
             "when": 1793719289589,
             "tag": "0019_woozy_stepford_cuckoos",
             "breakpoints": true
+        },
+        {
+            "idx": 20,
+            "version": "7",
+            "when": 1793727181998,
+            "tag": "0020_pale_ego",
+            "breakpoints": true
         }
     ]
 }

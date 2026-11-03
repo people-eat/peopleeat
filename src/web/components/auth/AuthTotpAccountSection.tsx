@@ -168,7 +168,7 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
         <>
             {confirmed ? (
                 <div className="grid gap-3">
-                    <div className="flex items-center justify-between gap-4 rounded-xl border px-4 py-3">
+                    <div className="flex items-center justify-between gap-4 rounded-xl border bg-card px-4 py-3">
                         <div className="grid gap-0.5">
                             <p className="flex items-center gap-2 text-sm text-foreground">
                                 <ShieldCheckIcon className="size-4" aria-hidden />
@@ -189,11 +189,9 @@ export function AuthTotpAccountSection({ totp, actionBusy }: { totp: TotpSummary
                     </div>
                 </div>
             ) : (
-                <div className="flex items-center justify-between gap-4 rounded-xl border px-4 py-3">
+                <div className="flex items-center justify-between gap-4 rounded-xl border bg-card px-4 py-3">
                     <div className="grid gap-0.5">
-                        <p className="text-sm text-foreground">
-                            {{ de: 'Authenticator-App (TOTP)', en: 'Authenticator app (TOTP)' }[locale]}
-                        </p>
+                        <p className="text-sm text-foreground">{{ de: 'Authenticator-App', en: 'Authenticator app' }[locale]}</p>
                         <p className="text-xs text-muted-foreground">
                             {
                                 {

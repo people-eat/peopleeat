@@ -38,6 +38,7 @@ export function adminOutboundEmailPurposeLabel(purpose: GqlCAdminOutboundEmailPu
         GIFT_CARD_PURCHASED: { de: 'Gutscheinkauf', en: 'Gift card purchase' },
         AUTH_EMAIL_OTP: { de: 'Login-Code', en: 'Login code' },
         EMAIL_ADDRESS_UPDATE_CONFIRM: { de: 'E-Mail-Änderung', en: 'Email address change' },
+        ACCOUNT_DELETE_CONFIRM: { de: 'Konto-Löschung', en: 'Account deletion' },
         CALL_SLOT_BOOKING_REQUEST: { de: 'Anruf-Anfrage', en: 'Call request' },
         CALL_SLOT_BOOKING_CONFIRM: { de: 'Anruf-Bestätigung', en: 'Call confirmation' },
         CALL_SLOT_BOOKING_DECLINE: { de: 'Anruf-Absage', en: 'Call decline' },
