@@ -1,9 +1,11 @@
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 
+import { formatDateTime } from '../../shared/formatDate';
 import { groupMessagesByDate, peerUserMessageStreak } from '../chat/chatTranscript';
 import type { GqlCHumanChatMessageFieldsFragment } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { ChatTranscriptShell } from './base/chat-transcript-shell';
@@ -82,6 +84,7 @@ export function WhatsAppConversationChat({
     className?: string;
 }) {
     const locale = useLocale();
+    const timeZone = useTimeZone();
     const [draft, setDraft] = useState('');
     const [busy, setBusy] = useState(false);
     const groupedMessages = groupMessagesByDate(messages);
@@ -122,6 +125,14 @@ export function WhatsAppConversationChat({
                                         showAuthorAvatar={streak.showAvatar}
                                         onReactUserMessage={onReact}
                                     />
+                                    {message.__typename === 'ChatMessageUser' && message.linkClickedAt ? (
+                                        <p className="mt-1 text-right text-xs text-muted-foreground">
+                                            <time dateTime={message.linkClickedAt}>
+                                                {{ de: 'Link aufgerufen', en: 'Link opened' }[locale]}:{' '}
+                                                {formatDateTime(message.linkClickedAt, { locale, timeZone })}
+                                            </time>
+                                        </p>
+                                    ) : null}
                                 </MessageScrollerItem>
                             );
                         }),

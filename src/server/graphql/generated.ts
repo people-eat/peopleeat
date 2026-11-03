@@ -2853,6 +2853,7 @@ export interface GqlSChatMessageUser {
     deliveryStatus?: Maybe<GqlSChatMessageDeliveryStatus>;
     hiddenByAdmin: Scalars['Boolean']['output'];
     isOwn: Scalars['Boolean']['output'];
+    linkClickedAt?: Maybe<Scalars['DateTime']['output']>;
     reactions: Array<GqlSChatMessageReaction>;
     showCopyButton: Scalars['Boolean']['output'];
 }
@@ -3971,8 +3972,7 @@ export type GqlSFeatureToggleKey =
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'PUBLICATION_MEALS'
-    | 'PUBLICATION_MENUS'
-    | 'WHATSAPP_ENGLISH_TEMPLATES';
+    | 'PUBLICATION_MENUS';
 
 export interface GqlSFileUpload {
     __typename?: 'FileUpload';
@@ -8993,6 +8993,7 @@ export type GqlSChatMessageUserResolvers<
     deliveryStatus?: Resolver<Maybe<GqlSResolversTypes['ChatMessageDeliveryStatus']>, ParentType, ContextType>;
     hiddenByAdmin?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     isOwn?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    linkClickedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     reactions?: Resolver<Array<GqlSResolversTypes['ChatMessageReaction']>, ParentType, ContextType>;
     showCopyButton?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -12191,8 +12192,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'PUBLICATION_MEALS'
-    | 'PUBLICATION_MENUS'
-    | 'WHATSAPP_ENGLISH_TEMPLATES',
+    | 'PUBLICATION_MENUS',
     | 'AI_BOOKING_REQUEST_MESSAGE'
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
@@ -12209,7 +12209,6 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
-    | 'WHATSAPP_ENGLISH_TEMPLATES'
 > = z.enum([
     'AI_BOOKING_REQUEST_MESSAGE',
     'AI_MENU_EVALUATION',
@@ -12227,7 +12226,6 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'LANDING_BOOKING_HOW_IT_WORKS',
     'PUBLICATION_MEALS',
     'PUBLICATION_MENUS',
-    'WHATSAPP_ENGLISH_TEMPLATES',
 ]);
 
 export const GqlSGiftCardPaymentStatusSchema: z.ZodType<'PAYED' | 'PREPARED', 'PAYED' | 'PREPARED'> = z.enum(['PAYED', 'PREPARED']);

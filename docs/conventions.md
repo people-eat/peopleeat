@@ -156,6 +156,12 @@ Transactional React Email templates under `src/server/email/templates/` use **`{
 - **`OutboundEmailPurpose`** — persisted SCREAMING_SNAKE classifiers on `OutboundEmails`; existing values are stable and need not mirror the
   template filename. See [styles/emails.md](./styles/emails.md).
 
+### WhatsApp template naming
+
+Meta keys use `{entity}_{event}_{recipient}_v{revision}`. Recipients are `customer`, `cook`, or `participant` for shared call notices; DE
+and EN are language variants of the same key. Advance the version per key when registered copy changes. Stable application purposes map to
+these keys; the catalog owns copy, parameter order, and labels. See [architecture/whatsapp.md](./architecture/whatsapp.md).
+
 ### Page component naming
 
 Page modules live under `src/web/pages/` (mirroring the route tree). File name, exported component, colocated `.graphql` operation name, and

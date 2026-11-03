@@ -416,3 +416,6 @@ Surfaces: `BookingRequestOfferChat`, `SupportRequestChat`, `WhatsAppConversation
 | Motion rules for composer states | `docs/styles/motion.md`                            |
 | Foundation / persistence         | `docs/architecture/chat.md`, `chat-persistence.md` |
 | Chat surfaces index              | `docs/features/chat.md`                            |
+
+WhatsApp Concierge template rows render the immutable sent snapshot, including headers and action labels/destinations. An unverified legacy
+template marker replaces guessed historical wording. The first recorded link-open time is separate from delivery/read ticks.

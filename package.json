@@ -35,7 +35,8 @@
         "email:start": "email start",
         "type:check": "npm exec tsc -- --noEmit",
         "usage:check": "knip",
-        "prepare": "husky"
+        "prepare": "husky",
+        "whatsapp:templates": "tsx scripts/whatsappTemplatesSync.ts"
     },
     "dependencies": {
         "@ai-sdk/google": "^4.0.111",

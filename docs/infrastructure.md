@@ -177,7 +177,7 @@ The following environment variables must be configured in the deployment environ
 | `SLACK_CHANNEL_OPS_ALERTS`              | Yes†     | Daily admin action-item report, Resend quota alerts, and other non-booking ops alerts channel ID                                                                                                                                                       |
 | `SLACK_CHANNEL_WHATSAPP_MESSAGES`       | Yes†     | Inbound Concierge WhatsApp messages channel ID                                                                                                                                                                                                         |
 | `WHATSAPP_TRANSPORT`                    | No       | How `serverRuntime.whatsapp` delivers WhatsApp: `meta` (default) or `console` (print to the server terminal). Use `console` for local/dev — see [architecture/whatsapp.md](./architecture/whatsapp.md)                                                 |
-| `WHATSAPP_ACCESS_TOKEN`                 | Yes‡     | Meta Cloud API access token. Required at boot when `WHATSAPP_TRANSPORT=meta`                                                                                                                                                                           |
+| `WHATSAPP_ACCESS_TOKEN`                 | Yes‡     | Meta Cloud API access token with message-send and WABA template-read access. Each template send checks exact copy, approved status, and Utility category. Required at boot when `WHATSAPP_TRANSPORT=meta`                                              |
 | `WHATSAPP_PHONE_NUMBER_ID`              | Yes‡     | Meta WhatsApp phone number id. Required at boot when `WHATSAPP_TRANSPORT=meta`                                                                                                                                                                         |
 | `WHATSAPP_BUSINESS_ACCOUNT_ID`          | Yes‡     | Meta WhatsApp Business Account id. Required at boot when `WHATSAPP_TRANSPORT=meta`                                                                                                                                                                     |
 | `WHATSAPP_APP_SECRET`                   | Yes‡     | Meta app secret for `X-Hub-Signature-256` webhook verification. Required at boot when `WHATSAPP_TRANSPORT=meta`                                                                                                                                        |
@@ -502,3 +502,11 @@ Instagram assets resolve against the test site. Local `npm run email:dev` still 
 4. Attach each domain; enable **Basic Auth** on both applications
 5. Set GitHub secrets `COOLIFY_APPLICATION_UUID_STORYBOOK` and `COOLIFY_APPLICATION_UUID_EMAIL` (reuse `COOLIFY_URL` + `COOLIFY_API_TOKEN`)
 6. Disable GitHub Pages for this repo if it was still serving the old Storybook
+
+### WhatsApp template rollout
+
+Run the generated migration before deploying code that reads template snapshots or link-click stamps. New URL buttons point to
+`/api/whatsapp/links/{opaque-id}` on `WEB_PAGE_URL`; deploy that route before sending them. Register the catalog in both languages, as
+Utility, using `scripts/whatsappTemplatesSync.ts` or WhatsApp Manager. The provider blocks pending, reclassified, or drifted variants rather
+than sending at Marketing pricing. The Meta token must allow reading templates for `WHATSAPP_BUSINESS_ACCOUNT_ID` as well as sending
+messages. See [architecture/whatsapp.md](./architecture/whatsapp.md) for naming, registration commands, and status checks.

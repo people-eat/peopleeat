@@ -2,70 +2,75 @@
 
 ## Context
 
-Customers are promised booking updates by email and WhatsApp. Ops need a Concierge inbox for inbound customer messages on the business
-number. Preferred-communication preference alone is not enough: Meta Cloud API requires approved utility templates outside the 24h
-customer-service window, and every send must be auditable.
+Customers and cooks receive booking updates alongside email. Meta requires approved templates outside the customer-service window. The admin
+inbox must show what was actually sent, and template categorization must not silently introduce Marketing charges.
 
 ## Decision
 
-1. **`WHATSAPP_TRANSPORT`** — `meta` (default) or `console`. When `meta`, boot requires `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`,
-   `WHATSAPP_BUSINESS_ACCOUNT_ID`, `WHATSAPP_APP_SECRET`, `WHATSAPP_WEBHOOK_VERIFY_TOKEN`. When `console`, those are omitted and sends print
-   to the terminal (same pattern as email/Slack).
-2. **`serverRuntime.whatsapp`** — `sendTemplate` / `sendText` orchestrate audit + inbox transcript; `sendReaction` applies/clears a business
-   emoji on an inbound `wamid`; `downloadMedia` / `markMessageAsRead` support inbound media and Meta blue-ticks. Provider lives in
-   `whatsappCreate()` (Graph API `v22.0` `/{phone-number-id}/messages`).
-3. **Email always; WhatsApp for supported purposes** — send WhatsApp whenever the recipient `Users.phoneNumber` is valid E.164 **and**
-   `whatsappTemplateNameByPurpose` has a non-null Meta name, **in addition to** email. Do **not** gate on `preferredCommunication`. Cooks
-   are included when they have a phone. Post-payment money events and some closures stay email-only (`null` names) to limit Meta spend — see
-   [features/whatsapp.md](../features/whatsapp.md).
-4. **Tables** — `OutboundWhatsAppMessages` (one row per send attempt; first-write-wins lifecycle + optional Meta conversation/pricing);
-   `WhatsAppConversations` (unique phone; Meta / migrated inbox often omit leading `+` while `Users.phoneNumber` is E.164 with `+`, so admin
-   joins and user lookups match on digits; optional `userId` / `displayName`, `adminUnreadCount`, `customerServiceWindowExpiresAt`);
-   `WhatsAppMessages` (inbound/outbound transcript with `messageKind`, delivery stamps, FK to outbound audit); `WhatsAppMessageAttachments`
-   → `FileUploads`; `WhatsAppMessageReactions` (current emoji per party on a transcript message; Meta `type: reaction`, not a transcript
-   row; null `emoji` tombstone when cleared).
-5. **Webhook** — `GET`/`POST` `/api/webhooks/whatsapp` (Meta challenge + `X-Hub-Signature-256` when `WHATSAPP_TRANSPORT=meta`). A wrong
-   `WHATSAPP_APP_SECRET` rejects every Meta POST with `400` and no transcript/status updates — the route logs
-   `whatsapp webhook: POST rejected (invalid signature…)`. Happy-path applies (statuses + inbound) are silent; `log.warn` only for
-   unexpected/unhandled inputs (invalid JSON/signature, unknown status, unsupported message type, non-E.164 `from`, reaction target missing)
-   and `log.error` when the handler throws. Inbound upserts conversation/message (conflict-safe on phone), downloads media into
-   `FileUploads` (caption-less audio/voice bodies store `Sprachnachricht` for inbox preview), opens a 24h session window, Slack-notifies
-   `SLACK_CHANNEL_WHATSAPP_MESSAGES`, and routes known reaction quick-replies onto the booking Slack thread when possible. Emoji reactions
-   upsert `WhatsAppMessageReactions` on the target `providerMessageId`, bump unread + 24h window, and skip Slack. Statuses stamp audit +
-   linked transcript delivery columns.
-6. **Admin free-form reply** — only while `customerServiceWindowExpiresAt` is in the future (`CONCIERGE_SESSION_REPLY`). Opening a chat
-   clears admin unread and calls Meta `markMessageAsRead` for the latest inbound. Outside the window, lifecycle templates still send; ops
-   cannot free-type. Admin composer is text-only (no outbound media attach). Admin emoji reactions (`whatsAppMessageReactionUpsert`) target
-   inbound customer messages only (Meta rule), persist as `OUTBOUND` on `WhatsAppMessageReactions`, and are not gated on the 24h window.
-7. **Template buttons** — `sendTemplate` may pass a URL button dynamic path segment (`buttonUrlParameter`) for deep links approved in
-   WhatsApp Manager.
+1. **Provider boundary.** `serverRuntime.whatsapp` orchestrates sends and audit persistence. `whatsappCreate()` owns Meta Cloud API calls
+   (Graph API v22.0). `WHATSAPP_TRANSPORT=console` provides local output without phone delivery. Meta transport requires the existing access
+   token, phone number, business account, app secret, and webhook verification token.
+2. **One versioned catalog.** `src/server/domain/whatsappTemplates.ts` owns approved-intent copy, DE/EN headers, body parameter order,
+   review samples, and button labels. Names follow `{entity}_{event}_{recipient}_v{revision}`, for example `menu_offer_updated_customer_v1`.
+   The recipient is `customer`, `cook`, or `participant` for shared call notices. Versions advance per key when copy changes; languages
+   share a key. `whatsappTemplateNameByPurpose` maps stable application purposes to catalog names.
+3. **Utility-only delivery.** Every new variant is submitted with `category: UTILITY`. Before each Meta send, read the registered variant
+   and require `APPROVED`, `UTILITY`, and matching header/body/buttons/URL. Pending, rejected, reclassified, or drifted variants fail
+   closed; never fall back to Marketing or an unrelated template. The token must permit reading templates for this WABA. This adds a
+   management request per send. Meta remains the approval/category authority; requested category alone does not mean approval.
+4. **Exact language and snapshots.** Send the recipient locale, never silently substitute German for English. Render the transcript from the
+   same definition and normalized parameter values used for the send. Persist an immutable `templateSnapshot` on both
+   `OutboundWhatsAppMessages` and `WhatsAppMessages`, including effective language, header, rendered body, parameters, and rendered buttons.
+   Later catalog changes cannot rewrite history. Audit `bodySnapshot` and transcript `body` retain the complete text projection. After the
+   provider succeeds, conversation/transcript/audit persistence is transactional. Provider failures leave a failed audit, not a fictitious
+   sent message. An audit/transcript persistence failure after provider acceptance retains acceptance evidence when possible and needs
+   operational reconciliation before retrying; an admin refresh failure does not mark delivery failed.
+5. **Historical uncertainty.** Old template rows without a verified snapshot display an explicit unverified-wording marker. Preserve their
+   raw stored bodies in the database, but do not present abbreviated summaries as the actual sent text or reconstruct names/dates from
+   today's mutable booking records. Only original send parameters and the corresponding historical template revision can establish an exact
+   historical rendering. Inbound and free-form text remain verbatim.
+6. **One-suffix deep links.** Every new URL button uses `{WEB_PAGE_URL}/api/whatsapp/links/{{1}}`. Its only dynamic suffix is the send's
+   random 20-character outbound audit id. Store the allowlisted relative destination in `OutboundWhatsAppMessages.linkPath`. No reversible
+   hash, encryption secret, embedded personal data, or new link table is needed. Destinations include locale, the correct customer's offer
+   or cook's offer, and `?tab=chat`, `?tab=call`, or `?tab=testimonial`. New-request notices open the request or cook pool entry.
+7. **Redirect and analytics.** The HTTP route looks up a sent audit, validates the stored relative path, and returns a non-cacheable 302. It
+   grants no login or booking access: existing profile authentication, safe `returnTo`, and ownership guards still apply. Eligible GET
+   requests stamp first-write-wins `linkClickedAt` on audit and transcript in one transaction. HEAD, known bots, and declared prefetches do
+   not count. Tracking/publish failure must not prevent navigation. This measures a link request, not a verified person's click: unknown
+   scanners, forwarded links, and missing user agents limit attribution. Clicks are independent of Meta delivery/read receipts. Admin chat
+   exposes the timestamp separately.
+8. **Send policy.** Email remains available independently. Existing payment and selected closure purposes remain email-only (`null` names).
+   The explicit post-payment addition is testimonial memory/morning/evening reminders for both parties, with the same paid/accepted/
+   canceled/already-reviewed gates as email. Phone delivery requires valid E.164 and ignores preferred-communication preference. Call
+   requests, confirmations, declines, cancellations, and reminders have distinct event semantics. Duplicate legacy menu-update variants and
+   the obsolete account-plus-booking welcome copy converge on one current use case each; Meta's `hello_world` is not a business use case.
+9. **Webhook/inbox.** `GET`/`POST /api/webhooks/whatsapp` retain challenge handling and app-secret signature checks. Conversation phone
+   matching tolerates Meta digits-only values while users store E.164. Inbound media enters `FileUploads`; reactions overlay messages.
+   Inbound messages refresh the 24h reply window and notify Slack. Current DE/EN feedback labels and historical reply labels are recognized.
+   Admin free-form replies stay text-only and limited to the customer-service window; business reactions target inbound messages.
 
-Template **names** in `whatsappTemplateNameByPurpose` (`src/server/domain/whatsapp.ts`) must match keys already approved in WhatsApp Manager
-(e.g. `user_booking_request_create__for_user`, `call_slot_booking_reminder_60_min_before`). Do not invent snake_case purpose slugs — Meta
-rejects unknown names. Purposes mapped to `null` are skipped at send time (email still goes). That is intentional for post-payment and
-selected closure events (cost), not “template missing in Manager.” Bodies and button URL segments must match the approved Meta variable
-order.
+## Registration and rollout
+
+`node --import tsx scripts/whatsappTemplatesSync.ts --base-url https://people-eat.com --offline --manifest /tmp/templates.json` exports the
+exact registration payloads. Without `--offline`, pass `--account-id` matching `WHATSAPP_BUSINESS_ACCOUNT_ID` to inspect the account. Add
+`--apply` to create missing variants and `--report /tmp/status.json` to save observed status. Existing mismatched copy is never overwritten;
+create a new version. No messages are sent by this script. Credentials are read through the environment configuration module and never
+printed. Signed-in WhatsApp Manager is also a supported registration path, using exactly the catalog content.
+
+Generate/apply the additive migration and deploy the redirect route before using the new buttons. Submit both languages, verify exact copy
+and Utility approval, and leave older template definitions available for historical records until migration is reviewed. The first dry
+request-confirmation drafts (`booking_request_received_customer_v1`) were superseded by personality-preserving `_v2` variants; only `_v2` is
+mapped for sends. The obsolete English-language feature toggle is removed: per-variant approval now controls readiness.
 
 ## Alternatives considered
 
-| Option                                 | Why not                                                          |
-| -------------------------------------- | ---------------------------------------------------------------- |
-| Gate sends on `preferredCommunication` | Product decision is email + WhatsApp when purpose has a template |
-| WhatsApp for every lifecycle purpose   | Rejected for now — Meta cost; post-payment stays email-only      |
-| Merge into SupportRequests             | Separate admin catalog surface; Meta phone-keyed                 |
-| Reuse assistant chat spine             | Pollutes LLM replay; same rejection as support/offer             |
-| Silent no-op when Meta secrets unset   | Rejected — use explicit `console` transport                      |
-| Local disk for inbound media           | Rejected — use shared `FileUploads` bytea store                  |
+| Alternative                                         | Why rejected                                                        |
+| --------------------------------------------------- | ------------------------------------------------------------------- |
+| Caller-written transcript summaries                 | They differ from the actual approved message                        |
+| Reconstruct old messages from current entity values | Dates, names, and copy may have changed                             |
+| A reversible URL hash                               | Unnecessary; the audit already stores the destination               |
+| Arbitrary destination query parameters              | Open-redirect risk and incompatible with the single suffix contract |
+| German fallback for English recipients              | Makes rendered history and recipient language inconsistent          |
+| Marketing fallback while approval is pending        | Changes pricing and violates the intended send policy               |
 
-## Consequences
-
-- Local/dev uses `WHATSAPP_TRANSPORT=console` (prints `[whatsapp:console] …`; no Meta delivery).
-- `Users.phoneNumber` must be stored as E.164 with a leading `+` and country code (`phoneNumberAssert` / `phoneNumberNormalize` in
-  `src/shared/phoneNumber.ts`). WhatsApp send normalizes again and strips `+` for Meta (`phoneNumberForWhatsAppApi`). Missing/invalid phone,
-  or `null` template name, skips WhatsApp without failing the booking write (structured `log.info` with raw phone). Meta/provider failures
-  stamp `OutboundWhatsAppMessages.failureReason` and `log.error`.
-- Public `wa.me` marketing CTAs remain; they open the same business number.
-- Ops must keep Meta names in sync with WhatsApp Manager for DE (and EN when ready). Until EN templates are approved, leave
-  `WHATSAPP_ENGLISH_TEMPLATES` off so EN recipients still send with Meta language `de`.
-
-See [features/whatsapp.md](../features/whatsapp.md) and [infrastructure.md](../infrastructure.md).
+See [features/whatsapp.md](../features/whatsapp.md), [testimonials.md](./testimonials.md), and [infrastructure.md](../infrastructure.md).

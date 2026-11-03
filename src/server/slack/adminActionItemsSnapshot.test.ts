@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, min } from 'drizzle-orm';
 import { describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
@@ -195,9 +195,12 @@ describe('adminActionItemsSnapshot', () => {
         expect(snapshot.openSupportRequests.items.some((item) => item.supportRequestId === openSupportRequestId)).toBe(true);
         expect(snapshot.openSupportRequests.items.some((item) => item.supportRequestId === resolvedSupportRequestId)).toBe(false);
 
+        const [oldestOffer] = await testDb.select({ createdAt: min(bookingRequestOffers.createdAt) }).from(bookingRequestOffers);
+        // The queue is oldest-first; keep this fixture ahead of leftovers without changing other rows.
+        const reviewCreatedAt = new Date(new Date(oldestOffer?.createdAt ?? new Date()).getTime() - 1);
         await testDb
             .update(bookingRequestOffers)
-            .set({ adminChatReviewPendingCount: 3 })
+            .set({ adminChatReviewPendingCount: 3, createdAt: reviewCreatedAt })
             .where(eq(bookingRequestOffers.bookingRequestOfferId, dueOfferId));
 
         const withChatReview = await adminActionItemsSnapshot(serverRuntime, { now: new Date(), take: 100 });

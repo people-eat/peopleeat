@@ -1,8 +1,11 @@
 import { eq } from 'drizzle-orm';
 
+import { formatDate } from '../../../shared/formatDate';
+
 import { bookingRequestOffers, bookingRequests, cookTestimonials, customerTestimonials, users } from '../../db/schema';
 import { bookingRequestOfferPaymentIsPaid } from '../../domain/bookingRequest';
-import type { OutboundEmailPurpose } from '../../domain/outboundEmail';
+import { whatsappPhoneNumberNormalize } from '../../domain/whatsapp';
+import type { OutboundWhatsAppPurpose } from '../../domain/whatsapp';
 import type { BookingRequestOfferTestimonialReminderKind } from '../../email/components/bookingRequestOfferTestimonialReminderEmailShared';
 import {
     BookingRequestOfferTestimonialReminderForCookEmail,
@@ -21,7 +24,10 @@ interface BookingRequestOfferTestimonialReminderData {
     kind: BookingRequestOfferTestimonialReminderKind;
 }
 
-function purposeFor(kind: BookingRequestOfferTestimonialReminderKind, audience: 'CUSTOMER' | 'COOK'): OutboundEmailPurpose {
+function purposeFor(
+    kind: BookingRequestOfferTestimonialReminderKind,
+    audience: 'CUSTOMER' | 'COOK',
+): Extract<OutboundWhatsAppPurpose, `TESTIMONIAL_${string}`> {
     if (kind === 'MEMORY_NUDGE') {
         return audience === 'CUSTOMER' ? 'TESTIMONIAL_MEMORY_NUDGE_CUSTOMER' : 'TESTIMONIAL_MEMORY_NUDGE_COOK';
     }
@@ -63,8 +69,8 @@ export const bookingRequestOfferTestimonialReminder: QueuedJobDefinition<Booking
 
         const customerWithEmail = emailAddressPresent(customer);
         const [cookUserRow] = await serverRuntime.db.select().from(users).where(eq(users.userId, offer.cookId)).limit(1);
-        const cookUser = emailAddressPresent(cookUserRow);
-        if (!customerWithEmail || !cookUser) {
+        const cookUser = cookUserRow;
+        if (!cookUser) {
             return;
         }
 
@@ -82,7 +88,7 @@ export const bookingRequestOfferTestimonialReminder: QueuedJobDefinition<Booking
         ]);
 
         const webPageUrl = environmentVariables.webPageUrl.replace(/\/$/, '');
-        const customerLocale = customerWithEmail.locale;
+        const customerLocale = customer.locale;
         const cookLocale = cookUser.locale;
         const tabSuffix = data.kind === 'MEMORY_NUDGE' ? '' : '?tab=testimonial';
         const customerPrimaryUrl = `${webPageUrl}/profile/booking-requests/${bookingRequest.bookingRequestId}/offers/${data.bookingRequestOfferId}${tabSuffix}`;
@@ -90,7 +96,7 @@ export const bookingRequestOfferTestimonialReminder: QueuedJobDefinition<Booking
 
         const sends: Promise<unknown>[] = [];
 
-        if (!customerTestimonial) {
+        if (!customerTestimonial && customerWithEmail) {
             sends.push(
                 serverRuntime.email.send({
                     to: customerWithEmail.emailAddress,
@@ -111,16 +117,16 @@ export const bookingRequestOfferTestimonialReminder: QueuedJobDefinition<Booking
             );
         }
 
-        if (!cookTestimonial) {
+        if (!cookTestimonial && emailAddressPresent(cookUser)) {
             sends.push(
                 serverRuntime.email.send({
-                    to: cookUser.emailAddress,
+                    to: emailAddressPresent(cookUser)!.emailAddress,
                     subject: bookingRequestOfferTestimonialReminderForCookEmailSubject(cookLocale, data.kind),
                     react: BookingRequestOfferTestimonialReminderForCookEmail({
                         locale: cookLocale,
                         webPageUrl,
                         recipientFirstName: cookUser.firstName,
-                        counterpartyFirstName: customerWithEmail.firstName,
+                        counterpartyFirstName: customer.firstName,
                         primaryUrl: cookPrimaryUrl,
                         kind: data.kind,
                     }),
@@ -129,6 +135,34 @@ export const bookingRequestOfferTestimonialReminder: QueuedJobDefinition<Booking
                     relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: data.bookingRequestOfferId },
                     userId: cookUser.userId,
                 }),
+            );
+        }
+
+        for (const [recipient, counterparty, audience, testimonial] of [
+            [customer, cookUser, 'CUSTOMER', customerTestimonial],
+            [cookUser, customer, 'COOK', cookTestimonial],
+        ] as const) {
+            const phone = whatsappPhoneNumberNormalize(recipient.phoneNumber);
+            if (testimonial || !phone) continue;
+            sends.push(
+                serverRuntime.whatsapp
+                    .sendTemplate({
+                        purpose: purposeFor(data.kind, audience),
+                        toPhoneNumber: phone,
+                        userId: recipient.userId,
+                        locale: recipient.locale,
+                        bodyParameters: [
+                            recipient.firstName,
+                            counterparty.firstName,
+                            formatDate(bookingRequest.dateTime, {
+                                locale: recipient.locale,
+                                dateStyle: 'full',
+                                timeZone: recipient.timeZone,
+                            }),
+                        ],
+                        relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: data.bookingRequestOfferId },
+                    })
+                    .catch((error: unknown) => serverRuntime.log.error(error, null)),
             );
         }
 

@@ -117,6 +117,7 @@ export function humanChatMessageUserFragment(
         hiddenByAdmin: message.hiddenByAdmin,
         canHardDelete: message.canHardDelete,
         deliveryStatus: message.deliveryStatus ?? null,
+        linkClickedAt: null,
         reactions: message.reactions.map((reaction) => ({ emoji: reaction.emoji, isOwn: reaction.isOwn })),
         author: {
             display: message.author.display,

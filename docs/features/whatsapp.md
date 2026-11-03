@@ -8,11 +8,13 @@ threads in the admin inbox, including media, quick-reply reactions, and emoji re
 ### Customer / cook
 
 - Lifecycle templates when `Users.phoneNumber` is E.164 with a leading `+` / country code (normalized at send; Meta gets digits-only),
-  including deep-link URL buttons where approved. WhatsApp covers **pre-payment** discovery and negotiation; **after payment**, money and
-  some closure events stay **email-only** (Meta template traffic costs money). Email still sends for every lifecycle purpose.
+  including direct links to the relevant booking, chat, call, or review tab when approved. WhatsApp covers **pre-payment** discovery and
+  negotiation; **after payment**, money and some closure events stay **email-only** (Meta template traffic costs money). Email still sends
+  for every lifecycle purpose.
   - Customer (WhatsApp): request created, new offer, menu update, offer-chat unread reminder, 48h reaction reminder (quick-reply template)
   - Cook (WhatsApp): new request notify, request updated, offer accepted, offer-chat unread reminder
-  - Call slots (both parties, WhatsApp): create, confirm, cancel/decline, 60‑minute reminder
+  - Call slots (both parties, WhatsApp): request, confirm, decline, cancel, 60-minute reminder
+  - After a paid booking: event photo/memory hint, morning review request, evening reminder for each party who has not reviewed
   - Email only (`null` template on purpose): customer offer-accept confirm, payment confirmed, pull-payment announcement, request canceled
     (customer and cook). May add WhatsApp later if product wants those sends.
 - Can message the business WhatsApp number (public `wa.me` CTAs and Meta Cloud API share the same number).
@@ -32,21 +34,22 @@ threads in the admin inbox, including media, quick-reply reactions, and emoji re
   transcript owns the pane scroll under `AdminPinnedFooterLayout` `contentScroll={false}` (chrome breakout so the scrollbar sits on the pane
   edge). Caption-less audio/voice ingest stores body `Sprachnachricht` for inbox / Slack preview.
 - User detail **WhatsApp** tab lists that user’s conversations.
+- New template messages show their complete saved wording and action destinations. Historical template messages without verified original
+  copy are clearly marked instead of displaying invented summaries.
+- Outbound messages show the first recorded link-open time separately from delivery/read ticks. Known previews are excluded; link-open
+  tracking does not prove who opened a forwarded link.
 - Inbound Slack mirror on `SLACK_CHANNEL_WHATSAPP_MESSAGES`; known reaction quick-replies also post on the booking Slack thread. Customer
   emoji reactions (Meta `type: reaction`) do not Slack-notify; they bump unread, refresh the 24h window, and overlay the target message.
 
 ### Ops prerequisite
 
-Before `WHATSAPP_TRANSPORT=meta` in Coolify: subscribe the Meta app webhook to `messages` + `message_statuses`, confirm Meta template
-**names** match `whatsappTemplateNameByPurpose` in `src/server/domain/whatsapp.ts` (approved Manager keys such as
-`user_booking_request_create__for_user`, not reinvented slugs), and set secrets (including Slack WhatsApp channel when
-`SLACK_TRANSPORT=slack`). Local/dev uses `console` (no phone delivery). Purposes mapped to `null` are a product choice (email-only after
-payment / selected closures), not missing Manager entries.
+Before Meta delivery: submit both DE and EN variants from the versioned project catalog as Utility and verify approval. The send path checks
+the registered category and exact wording, so pending, Marketing, rejected, and mismatched variants are not sent. There is no silent
+language or Marketing fallback. Email remains available. New buttons require the deployed tracking redirect and database migration.
 
-Feature toggles (admin `/admin/feature-toggles`, missing = off):
-
-- `WHATSAPP_ENGLISH_TEMPLATES` — enable only after EN templates are approved in WhatsApp Manager; until then EN recipients fall back to Meta
-  language `de`
+Older templates remain available for history but are not mapped for new sends. The request-confirmation v1 drafts are superseded by v2,
+which restores peopleeat's conversational tone, emojis, and team sign-off. All current variants retain that personality while keeping the
+message about the specific booking or conversation.
 
 Webhook signature validation (`X-Hub-Signature-256`) is always on when `WHATSAPP_TRANSPORT=meta`. If `WHATSAPP_APP_SECRET` does not match
 the Meta app secret, Meta POSTs return `400` and inbound never lands in admin (look for
@@ -69,7 +72,7 @@ the Meta app secret, Meta POSTs return `400` and inbound never lands in admin (l
 ### Chosen
 
 Meta Cloud API + audit table + Concierge inbox, mirroring outbound-email / support-request patterns. Keep expensive post-payment WhatsApp
-off until product explicitly extends those purposes.
+off for payment and closure events. Testimonial reminders are the explicit post-payment addition.
 
 ## Ideas
 
@@ -83,7 +86,7 @@ off until product explicitly extends those purposes.
 | Area      | Notes                                                                                                                             |
 | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Provider  | `src/server/whatsapp/whatsappCreate.ts`, `ServerRuntime.whatsapp`                                                                 |
-| Domain    | `src/server/domain/whatsapp.ts`                                                                                                   |
+| Domain    | `src/server/domain/whatsapp.ts`, `whatsappTemplates.ts`                                                                           |
 | Tables    | `WhatsAppConversations`, `WhatsAppMessages`, `WhatsAppMessageAttachments`, `WhatsAppMessageReactions`, `OutboundWhatsAppMessages` |
 | Webhook   | `src/routes/api/webhooks/whatsapp.ts`, `whatsappWebhookApply`                                                                     |
 | Lifecycle | `bookingRequestLifecycleWhatsApp.ts`, `bookingRequestOfferCallSlotWhatsApp.ts`                                                    |
@@ -92,6 +95,8 @@ off until product explicitly extends those purposes.
 | Admin GQL | `whatsAppConversations*`, `whatsAppMessageCreate`, `whatsAppMessageReactionUpsert`, unread reset; `ChatMessageUser.reactions`     |
 | Admin UI  | `AdminWhatsAppChatsPage`, `AdminWhatsAppChatPage`, user tab, sidebar badge                                                        |
 | Docs      | [architecture/whatsapp.md](../architecture/whatsapp.md)                                                                           |
+
+Registration, naming, exact-copy contracts, and redirect/analytics details: [architecture/whatsapp.md](../architecture/whatsapp.md).
 
 See [admin-shell.md](./admin-shell.md), [admin-users.md](./admin-users.md), [booking-request-create.md](./booking-request-create.md),
 [slack-notifications.md](./slack-notifications.md), [styles/chat.md](../styles/chat.md).

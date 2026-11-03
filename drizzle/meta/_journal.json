@@ -134,6 +134,13 @@
             "when": 1793704347122,
             "tag": "0018_tiny_havok",
             "breakpoints": true
+        },
+        {
+            "idx": 19,
+            "version": "7",
+            "when": 1793719289589,
+            "tag": "0019_woozy_stepford_cuckoos",
+            "breakpoints": true
         }
     ]
 }

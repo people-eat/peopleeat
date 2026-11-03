@@ -32,7 +32,6 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
     ASSISTANT_COOK: { de: 'Assistent: Köche', en: 'Assistant: cook' },
     PUBLICATION_MEALS: { de: 'Veröffentlichung: Gerichte', en: 'Publication: meals' },
     PUBLICATION_MENUS: { de: 'Veröffentlichung: Menüs', en: 'Publication: menus' },
-    WHATSAPP_ENGLISH_TEMPLATES: { de: 'WhatsApp: Englische Vorlagen', en: 'WhatsApp: English templates' },
     LANDING_BOOKING_HOW_IT_WORKS: {
         de: 'Startseite: So buchst du deinen Privatkoch',
         en: 'Landing: how booking works',
@@ -99,10 +98,6 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     PUBLICATION_MENUS: {
         de: 'Steuert Veröffentlichen/Zurückziehen und Status-Badges für Menüs im Koch-Profil. Öffentliche Seiten filtern weiter nach Veröffentlichungsdatum.',
         en: 'Controls publish/unpublish and status badges for menus in the cook profile. Public pages still filter by publication date.',
-    },
-    WHATSAPP_ENGLISH_TEMPLATES: {
-        de: 'Wenn an, erhalten englische Empfänger englische Meta-Vorlagen. Wenn aus, werden deutsche Sprachcodes verwendet.',
-        en: 'When on, English recipients get English Meta templates. When off, German language codes are used.',
     },
     LANDING_BOOKING_HOW_IT_WORKS: {
         de: 'Zeigt den Buchungsablauf mit Stumm-Loops und dem 60-Sekunden-Film auf der Startseite.',

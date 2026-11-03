@@ -29,13 +29,10 @@ describe('adminOutboundEmailPurposeStatsFindMany', () => {
         // Arrange
         const { requestingSession, serverRuntime } = await commandSetup.withUser();
         const token = `purpose-${idCreate().slice(0, 8)}`;
-        // Base-36 over the nanoId alphabet (not hex-only): hex filtering can yield '' → NaN → Invalid Date.
-        const dayOffset = Number.parseInt(idCreate().slice(0, 8), 36) % 300;
-        const createdAt = new Date(Date.UTC(2098, 0, 1 + dayOffset, 12, 0, 0));
-        const range = {
-            startDateTime: new Date(Date.UTC(2098, 0, 1 + dayOffset, 0, 0, 0)),
-            endDateTime: new Date(Date.UTC(2098, 0, 1 + dayOffset, 23, 59, 59, 999)),
-        };
+        // A unique millisecond prevents collisions with prior runs in the shared test database.
+        const millisecondOffset = Number.parseInt(idCreate().slice(0, 8), 36);
+        const createdAt = new Date(Date.UTC(2098, 0, 1) + millisecondOffset);
+        const range = { startDateTime: createdAt, endDateTime: createdAt };
 
         for (let index = 0; index < 3; index += 1) {
             await insertOutboundEmail({

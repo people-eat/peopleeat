@@ -2,18 +2,16 @@ import { eq, inArray } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
 import type { Locale } from '../../shared/locale';
+import { textNormalizeSingleLine } from '../../shared/textNormalize';
+import type { Database, DatabaseTransaction } from '../db';
 import { outboundWhatsAppMessages, users, whatsAppConversations, whatsAppMessages } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { OutboundWhatsAppPurpose, OutboundWhatsAppRelatedEntityType } from '../domain/whatsapp';
-import {
-    whatsappPhoneNumberNormalize,
-    whatsappPhoneNumberUserMatchValues,
-    whatsappTemplateLanguageCode,
-    whatsappTemplateNameByPurpose,
-} from '../domain/whatsapp';
+import { whatsappPhoneNumberNormalize, whatsappPhoneNumberUserMatchValues, whatsappTemplateNameByPurpose } from '../domain/whatsapp';
+import { whatsappTemplateDefinitionFind, whatsappTemplateSnapshotCreate, whatsappTemplateSnapshotText } from '../domain/whatsappTemplates';
 import { environmentVariables } from '../env/environmentVariablesCreate';
 import type { WhatsApp } from '../whatsapp/WhatsApp';
-import { featureToggleIsEnabled } from './featureToggleIsEnabled';
+import { whatsappLinkPathAssert, whatsappLinkPathFind } from './whatsappLink';
 
 type RelatedEntity = { type: OutboundWhatsAppRelatedEntityType; id: string };
 
@@ -22,9 +20,7 @@ export type WhatsAppTemplateOutboundArgs = {
     toPhoneNumber: string | null | undefined;
     locale: Locale;
     bodyParameters: ReadonlyArray<string>;
-    bodySnapshot: string;
-    buttonUrlParameter?: string;
-    headerParameters?: ReadonlyArray<string>;
+    linkPath?: string;
     userId?: string | null;
     relatedEntity?: RelatedEntity;
 };
@@ -40,12 +36,12 @@ export type WhatsAppTextOutboundArgs = {
 };
 
 async function conversationUpsert(
-    serverRuntime: ServerRuntime,
+    db: Database | DatabaseTransaction,
     args: { phoneNumber: string; userId: string | null; lastMessageAt: Date; displayName?: string | null },
 ): Promise<string> {
     let userId = args.userId;
     if (!userId) {
-        const [matched] = await serverRuntime.db
+        const [matched] = await db
             .select({ userId: users.userId })
             .from(users)
             .where(inArray(users.phoneNumber, whatsappPhoneNumberUserMatchValues(args.phoneNumber)))
@@ -54,7 +50,7 @@ async function conversationUpsert(
     }
 
     const whatsAppConversationId = idCreate();
-    const [row] = await serverRuntime.db
+    const [row] = await db
         .insert(whatsAppConversations)
         .values({
             whatsAppConversationId,
@@ -81,102 +77,100 @@ async function conversationUpsert(
     return row.whatsAppConversationId;
 }
 
-/**
- * Send a utility template, persist the audit row, and append an outbound transcript line.
- * Returns null when the phone is missing/invalid (caller should treat as skip).
- */
+/** Persist the exact catalog rendering sent to Meta, including its effective language and buttons. */
 export async function whatsappTemplateOutboundSend(
     serverRuntime: ServerRuntime,
     provider: WhatsApp,
     args: WhatsAppTemplateOutboundArgs,
 ): Promise<{ outboundWhatsAppMessageId: string } | null> {
     const toPhoneNumber = whatsappPhoneNumberNormalize(args.toPhoneNumber);
-    if (!toPhoneNumber) {
-        serverRuntime.log.info(`whatsappTemplateOutboundSend: skip purpose=${args.purpose} (missing or invalid E.164 phone)`);
-        return null;
-    }
-
     const templateName = whatsappTemplateNameByPurpose[args.purpose];
-    if (!templateName) {
-        serverRuntime.log.info(`whatsappTemplateOutboundSend: skip purpose=${args.purpose} (no approved Meta template name)`);
+    if (!toPhoneNumber || !templateName) {
+        serverRuntime.log.info(`whatsappTemplateOutboundSend: skipped purpose=${args.purpose} (phone or template unavailable)`);
         return null;
     }
-
+    const definition = whatsappTemplateDefinitionFind(templateName);
     const outboundWhatsAppMessageId = idCreate();
+    const whatsAppMessageId = idCreate();
     const now = new Date();
-    const providerName = environmentVariables.whatsappTransport === 'console' ? 'console' : 'meta';
-    let languageCode = whatsappTemplateLanguageCode(args.locale);
-    if (languageCode === 'en' && !(await featureToggleIsEnabled('WHATSAPP_ENGLISH_TEMPLATES', serverRuntime, args.userId))) {
-        languageCode = 'de';
-    }
-
-    await serverRuntime.db.insert(outboundWhatsAppMessages).values({
+    const linkPath = definition[args.locale].buttonLabel
+        ? whatsappLinkPathAssert(args.linkPath ?? (await whatsappLinkPathFind(serverRuntime, args)))
+        : null;
+    const buttonUrl = linkPath
+        ? `${environmentVariables.webPageUrl.replace(/\/$/u, '')}/api/whatsapp/links/${outboundWhatsAppMessageId}`
+        : undefined;
+    const bodyParameters = args.bodyParameters.map(textNormalizeSingleLine);
+    const snapshot = whatsappTemplateSnapshotCreate(definition, args.locale, bodyParameters, buttonUrl);
+    const body = whatsappTemplateSnapshotText(snapshot);
+    const auditInsert = {
         outboundWhatsAppMessageId,
-        provider: providerName,
+        provider: environmentVariables.whatsappTransport === 'console' ? ('console' as const) : ('meta' as const),
         purpose: args.purpose,
         relatedEntityType: args.relatedEntity?.type ?? null,
         relatedEntityId: args.relatedEntity?.id ?? null,
         userId: args.userId ?? null,
         toPhoneNumber,
         templateName,
-        bodySnapshot: args.bodySnapshot,
+        templateSnapshot: snapshot,
+        linkPath,
+        bodySnapshot: body,
         locale: args.locale,
         createdAt: now,
-    });
-
+    };
+    await serverRuntime.db.insert(outboundWhatsAppMessages).values(auditInsert);
+    let acceptedResult: { providerMessageId: string | null } | undefined;
     try {
         const result = await provider.sendTemplate({
             toPhoneNumber,
             templateName,
-            languageCode,
-            bodyParameters: args.bodyParameters,
-            buttonUrlParameter: args.buttonUrlParameter,
-            headerParameters: args.headerParameters,
+            languageCode: args.locale,
+            bodyParameters,
+            buttonUrlParameter: linkPath ? outboundWhatsAppMessageId : undefined,
         });
-        const conversationId = await conversationUpsert(serverRuntime, {
-            phoneNumber: toPhoneNumber,
-            userId: args.userId ?? null,
-            lastMessageAt: now,
-        });
-        const whatsAppMessageId = idCreate();
-        await serverRuntime.db.insert(whatsAppMessages).values({
-            whatsAppMessageId,
-            whatsAppConversationId: conversationId,
-            direction: 'OUTBOUND',
-            messageKind: 'TEMPLATE',
-            body: args.bodySnapshot,
-            providerMessageId: result.providerMessageId,
-            outboundWhatsAppMessageId,
-            sentByAdminUserId: null,
-            createdAt: now,
-        });
-        await serverRuntime.db
-            .update(outboundWhatsAppMessages)
-            .set({
-                providerMessageId: result.providerMessageId,
-                sentAt: now,
+        acceptedResult = result;
+        await serverRuntime.db.transaction(async (transaction) => {
+            const conversationId = await conversationUpsert(transaction, {
+                phoneNumber: toPhoneNumber,
+                userId: args.userId ?? null,
+                lastMessageAt: now,
+            });
+            await transaction.insert(whatsAppMessages).values({
+                whatsAppMessageId,
                 whatsAppConversationId: conversationId,
-            })
-            .where(eq(outboundWhatsAppMessages.outboundWhatsAppMessageId, outboundWhatsAppMessageId));
-        serverRuntime.log.info(
-            `whatsappTemplateOutboundSend: sent purpose=${args.purpose} template=${templateName} lang=${languageCode} to=${toPhoneNumber} providerMessageId=${result.providerMessageId ?? 'null'}`,
-        );
+                direction: 'OUTBOUND',
+                messageKind: 'TEMPLATE',
+                body,
+                templateSnapshot: snapshot,
+                providerMessageId: result.providerMessageId,
+                outboundWhatsAppMessageId,
+                createdAt: now,
+            });
+            await transaction
+                .update(outboundWhatsAppMessages)
+                .set({ providerMessageId: result.providerMessageId, sentAt: now, whatsAppConversationId: conversationId })
+                .where(eq(outboundWhatsAppMessages.outboundWhatsAppMessageId, outboundWhatsAppMessageId));
+        });
+        try {
+            await serverRuntime.publish.adminUpdates();
+        } catch (error) {
+            serverRuntime.log.error(error, null);
+        }
         return { outboundWhatsAppMessageId };
     } catch (error) {
         const failureReason = error instanceof Error ? error.message.slice(0, 500) : 'WhatsApp template send failed';
         await serverRuntime.db
             .update(outboundWhatsAppMessages)
-            .set({ failedAt: new Date(), failureReason })
+            .set(
+                acceptedResult
+                    ? {
+                          providerMessageId: acceptedResult.providerMessageId,
+                          sentAt: now,
+                          failureReason: `Provider accepted message; transcript persistence failed: ${failureReason}`,
+                      }
+                    : { failedAt: new Date(), failureReason },
+            )
             .where(eq(outboundWhatsAppMessages.outboundWhatsAppMessageId, outboundWhatsAppMessageId));
-        serverRuntime.log.error(
-            error instanceof Error
-                ? new Error(
-                      `whatsappTemplateOutboundSend: failed purpose=${args.purpose} template=${templateName} to=${toPhoneNumber}: ${failureReason}`,
-                      { cause: error },
-                  )
-                : error,
-            null,
-        );
+        serverRuntime.log.error(error, null);
         throw error;
     }
 }

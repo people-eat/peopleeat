@@ -1,4 +1,3 @@
-import type { Locale } from '../../shared/locale';
 import { phoneNumberForWhatsAppApi, phoneNumberNormalize } from '../../shared/phoneNumber';
 
 export type OutboundWhatsAppProvider = 'meta' | 'console';
@@ -20,8 +19,16 @@ export type OutboundWhatsAppPurpose =
     | 'BOOKING_REQUEST_REACTION_REMINDER'
     | 'CALL_SLOT_BOOKING_CREATE'
     | 'CALL_SLOT_BOOKING_CONFIRM'
+    | 'CALL_SLOT_BOOKING_DECLINE'
     | 'CALL_SLOT_BOOKING_CANCEL'
     | 'CALL_SLOT_BOOKING_REMINDER'
+    | 'BOOKING_REQUEST_OFFER_MENU_CHANGES_REQUESTED_COOK'
+    | 'TESTIMONIAL_MEMORY_NUDGE_CUSTOMER'
+    | 'TESTIMONIAL_REMINDER_MORNING_CUSTOMER'
+    | 'TESTIMONIAL_REMINDER_EVENING_CUSTOMER'
+    | 'TESTIMONIAL_MEMORY_NUDGE_COOK'
+    | 'TESTIMONIAL_REMINDER_MORNING_COOK'
+    | 'TESTIMONIAL_REMINDER_EVENING_COOK'
     | 'CONCIERGE_SESSION_REPLY';
 
 export type OutboundWhatsAppRelatedEntityType =
@@ -31,21 +38,16 @@ export type WhatsAppMessageDirection = 'INBOUND' | 'OUTBOUND';
 
 export type WhatsAppMessageKind = 'TEXT' | 'TEMPLATE' | 'MEDIA' | 'BUTTON_REPLY' | 'INTERACTIVE' | 'UNSUPPORTED';
 
-/**
- * Meta Cloud API template name per purpose.
- * Names must match templates already approved in WhatsApp Manager.
- * `null` = email-only on purpose (post-payment / selected closures; Meta sends cost money) —
- * outbound skips WhatsApp; email still goes. See docs/features/whatsapp.md.
- */
+/** Versioned catalog names. Meta delivery additionally requires approved Utility status. */
 export const whatsappTemplateNameByPurpose: Record<Exclude<OutboundWhatsAppPurpose, 'CONCIERGE_SESSION_REPLY'>, string | null> = {
-    BOOKING_REQUEST_CREATED: 'user_booking_request_create__for_user',
-    BOOKING_REQUEST_COOK_NOTIFY: 'user_booking_request_create__for_cook',
-    BOOKING_REQUEST_UPDATED_COOK: 'user_booking_request_update__for_cook',
-    BOOKING_REQUEST_OFFER_CREATED: 'cook_booking_request_offer_create__for_user',
-    BOOKING_REQUEST_OFFER_MENU_UPDATED: 'cook_menu_courses_update_with_relation_to_offer__for_user',
+    BOOKING_REQUEST_CREATED: 'booking_request_received_customer_v2',
+    BOOKING_REQUEST_COOK_NOTIFY: 'booking_request_available_cook_v1',
+    BOOKING_REQUEST_UPDATED_COOK: 'booking_request_updated_cook_v1',
+    BOOKING_REQUEST_OFFER_CREATED: 'menu_offer_created_customer_v1',
+    BOOKING_REQUEST_OFFER_MENU_UPDATED: 'menu_offer_updated_customer_v1',
     // Email-only: customer accept confirm (cook accept still has a template below).
     BOOKING_REQUEST_OFFER_ACCEPTED: null,
-    BOOKING_REQUEST_OFFER_ACCEPTED_COOK: 'user_booking_request_offer_accept__for_cook',
+    BOOKING_REQUEST_OFFER_ACCEPTED_COOK: 'menu_offer_accepted_cook_v1',
     // Email-only after payment (cost).
     BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED: null,
     BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT: null,
@@ -53,29 +55,45 @@ export const whatsappTemplateNameByPurpose: Record<Exclude<OutboundWhatsAppPurpo
     BOOKING_REQUEST_CANCELED: null,
     BOOKING_REQUEST_CANCELED_COOK: null,
     // Cook wrote → notify customer.
-    BOOKING_REQUEST_OFFER_CHAT_UNREAD_CUSTOMER: 'cook_booking_request_offer_unread_notifications',
+    BOOKING_REQUEST_OFFER_CHAT_UNREAD_CUSTOMER: 'offer_chat_message_received_customer_v1',
     // Customer wrote → notify cook.
-    BOOKING_REQUEST_OFFER_CHAT_UNREAD_COOK: 'user_booking_request_offer_unread_notifications',
-    BOOKING_REQUEST_REACTION_REMINDER: 'user_booking_request_reaction_reminder',
-    CALL_SLOT_BOOKING_CREATE: 'call_slot_booking_create',
-    CALL_SLOT_BOOKING_CONFIRM: 'call_slot_booking_confirm',
-    CALL_SLOT_BOOKING_CANCEL: 'call_slot_booking_cancel',
-    CALL_SLOT_BOOKING_REMINDER: 'call_slot_booking_reminder_60_min_before',
+    BOOKING_REQUEST_OFFER_CHAT_UNREAD_COOK: 'offer_chat_message_received_cook_v1',
+    BOOKING_REQUEST_REACTION_REMINDER: 'booking_request_feedback_requested_customer_v1',
+    CALL_SLOT_BOOKING_CREATE: 'video_call_requested_participant_v1',
+    CALL_SLOT_BOOKING_CONFIRM: 'video_call_confirmed_participant_v1',
+    CALL_SLOT_BOOKING_DECLINE: 'video_call_declined_participant_v1',
+    CALL_SLOT_BOOKING_CANCEL: 'video_call_canceled_participant_v1',
+    CALL_SLOT_BOOKING_REMINDER: 'video_call_reminder_participant_v1',
+    BOOKING_REQUEST_OFFER_MENU_CHANGES_REQUESTED_COOK: 'menu_offer_changes_requested_cook_v1',
+    TESTIMONIAL_MEMORY_NUDGE_CUSTOMER: 'booking_review_memory_customer_v1',
+    TESTIMONIAL_REMINDER_MORNING_CUSTOMER: 'booking_review_morning_customer_v1',
+    TESTIMONIAL_REMINDER_EVENING_CUSTOMER: 'booking_review_evening_customer_v1',
+    TESTIMONIAL_MEMORY_NUDGE_COOK: 'booking_review_memory_cook_v1',
+    TESTIMONIAL_REMINDER_MORNING_COOK: 'booking_review_morning_cook_v1',
+    TESTIMONIAL_REMINDER_EVENING_COOK: 'booking_review_evening_cook_v1',
 };
 
-/** Quick-reply labels for the DE reaction-reminder Meta template. */
+/** Current DE/EN replies and historical labels still arriving on older messages. */
 export const WHATSAPP_BOOKING_REQUEST_REACTION_LABELS = new Set([
     'Ich hatte ein niedrigeres Budget erwartet',
     'Ich hatte andere Menüs erwartet',
     'Ich habe die Angebote noch nicht gesehen',
     'Ich brauche noch etwas Zeit',
     'Ich habe kein Interesse mehr',
+    'Angebote noch nicht gesehen',
+    'Niedrigeres Budget erwartet',
+    'Andere Menüs erwartet',
+    'Ich brauche mehr Zeit',
+    'Noch nicht angesehen',
+    'Budget passt nicht',
+    'Menü passt nicht',
+    'Kein Interesse mehr',
+    'I need more time',
+    'Not viewed yet',
+    'Budget does not fit',
+    'Menu does not fit',
+    'No longer interested',
 ]);
-
-/** Meta template language codes for our locales. */
-export function whatsappTemplateLanguageCode(locale: Locale): string {
-    return locale === 'en' ? 'en' : 'de';
-}
 
 /** Customer-service window length after an inbound message (Meta). */
 export const WHATSAPP_CUSTOMER_SERVICE_WINDOW_MS = 24 * 60 * 60 * 1000;

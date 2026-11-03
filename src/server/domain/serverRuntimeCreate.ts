@@ -276,6 +276,8 @@ export function serverRuntimeCreate(): ServerRuntime {
         transport: environmentVariables.whatsappTransport,
         accessToken: environmentVariables.whatsappAccessToken,
         phoneNumberId: environmentVariables.whatsappPhoneNumberId,
+        businessAccountId: environmentVariables.whatsappBusinessAccountId,
+        webPageUrl: environmentVariables.webPageUrl,
         appSecret: environmentVariables.whatsappAppSecret,
         log,
     });

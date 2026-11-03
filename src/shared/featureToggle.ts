@@ -18,7 +18,6 @@ export const featureToggleKeys = [
     'ASSISTANT_COOK',
     'PUBLICATION_MEALS',
     'PUBLICATION_MENUS',
-    'WHATSAPP_ENGLISH_TEMPLATES',
     'LANDING_BOOKING_HOW_IT_WORKS',
 ] as const;
 

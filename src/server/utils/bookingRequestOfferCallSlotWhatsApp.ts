@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { bookingRequestOffers, bookingRequests, cookCallSlotBookings, users } from '../db/schema';
+import type { CookCallSlotBookingStatus } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { OutboundWhatsAppPurpose } from '../domain/whatsapp';
 import { whatsappPhoneNumberNormalize } from '../domain/whatsapp';
@@ -19,6 +20,7 @@ async function sendSafely(serverRuntime: ServerRuntime, label: string, entityId:
 
 type CallSlotWhatsAppContext = {
     cookCallSlotBookingId: string;
+    status: CookCallSlotBookingStatus;
     bookingRequestOfferId: string;
     bookingRequestId: string;
     startAt: Date;
@@ -87,6 +89,7 @@ async function callSlotWhatsAppContextLoad(
 
     return {
         cookCallSlotBookingId: row.booking.cookCallSlotBookingId,
+        status: row.booking.status,
         bookingRequestOfferId: row.bookingRequestOfferId,
         bookingRequestId: row.bookingRequestId,
         startAt: row.booking.startAt,
@@ -133,34 +136,16 @@ async function recipientSend(
     const dateLabel = formatCallSlotDate(args.context.startAt, user.locale, user.timeZone);
     const timeLabel = formatCallSlotTime(args.context.startAt, user.locale, user.timeZone);
     const bookingRequestDateLabel = formatCallSlotDate(args.context.bookingRequestDateTime, user.locale, user.timeZone);
-    // Meta templates: create uses 6 body params; confirm/reminder/cancel have no URL button.
     const bodyParameters =
-        args.purpose === 'CALL_SLOT_BOOKING_CANCEL'
-            ? [user.firstName, args.senderFirstName, args.reason ?? '']
+        args.purpose === 'CALL_SLOT_BOOKING_CANCEL' || args.purpose === 'CALL_SLOT_BOOKING_DECLINE'
+            ? [
+                  user.firstName,
+                  args.senderFirstName,
+                  args.reason?.trim() || { de: 'Kein Grund angegeben.', en: 'No reason provided.' }[user.locale],
+              ]
             : args.purpose === 'CALL_SLOT_BOOKING_CREATE'
               ? [user.firstName, args.senderFirstName, dateLabel, timeLabel, bookingRequestDateLabel, args.context.occasion]
               : [user.firstName, args.senderFirstName, dateLabel, timeLabel];
-
-    const bodySnapshot =
-        args.purpose === 'CALL_SLOT_BOOKING_CANCEL'
-            ? {
-                  de: `Hallo ${user.firstName}, ${args.senderFirstName} hat den Videocall abgesagt.`,
-                  en: `Hi ${user.firstName}, ${args.senderFirstName} cancelled the video call.`,
-              }[user.locale]
-            : args.purpose === 'CALL_SLOT_BOOKING_CONFIRM'
-              ? {
-                    de: `Hallo ${user.firstName}, ${args.senderFirstName} hat den Videocall am ${dateLabel} um ${timeLabel} bestätigt.`,
-                    en: `Hi ${user.firstName}, ${args.senderFirstName} confirmed the video call on ${dateLabel} at ${timeLabel}.`,
-                }[user.locale]
-              : args.purpose === 'CALL_SLOT_BOOKING_REMINDER'
-                ? {
-                      de: `Hallo ${user.firstName}, Erinnerung: Videocall mit ${args.senderFirstName} am ${dateLabel} um ${timeLabel}.`,
-                      en: `Hi ${user.firstName}, reminder: video call with ${args.senderFirstName} on ${dateLabel} at ${timeLabel}.`,
-                  }[user.locale]
-                : {
-                      de: `Hallo ${user.firstName}, ${args.senderFirstName} möchte einen Videocall am ${dateLabel} um ${timeLabel} für ${args.context.occasion}.`,
-                      en: `Hi ${user.firstName}, ${args.senderFirstName} wants a video call on ${dateLabel} at ${timeLabel} for ${args.context.occasion}.`,
-                  }[user.locale];
 
     await sendSafely(serverRuntime, args.label, args.context.cookCallSlotBookingId, () =>
         serverRuntime.whatsapp.sendTemplate({
@@ -168,7 +153,6 @@ async function recipientSend(
             toPhoneNumber,
             locale: user.locale,
             bodyParameters,
-            bodySnapshot,
             userId,
             relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: args.context.cookCallSlotBookingId },
         }),
@@ -215,7 +199,7 @@ export async function bookingRequestOfferCallSlotCancelWhatsAppSend(
         label: 'bookingRequestOfferCallSlotCancelWhatsAppSend',
         context,
         recipient: args.recipient,
-        purpose: 'CALL_SLOT_BOOKING_CANCEL',
+        purpose: context.status === 'DECLINED' ? 'CALL_SLOT_BOOKING_DECLINE' : 'CALL_SLOT_BOOKING_CANCEL',
         senderFirstName: args.recipient === 'COOK' ? context.customer.firstName : context.cookUser.firstName,
         reason: args.reason,
     });

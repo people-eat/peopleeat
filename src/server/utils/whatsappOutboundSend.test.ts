@@ -1,177 +1,151 @@
 import { eq } from 'drizzle-orm';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { outboundWhatsAppMessages, whatsAppConversations, whatsAppMessages } from '../db/schema';
+import { outboundWhatsAppMessages, whatsAppMessages } from '../db/schema';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { phoneNumberCreate } from '../test/phoneNumberCreate';
-import { whatsappCreate } from '../whatsapp/whatsappCreate';
-import { featureToggleIsEnabled } from './featureToggleIsEnabled';
-import type { Logger } from './loggerCreate';
+import type { WhatsApp } from '../whatsapp/WhatsApp';
 import { whatsappTemplateOutboundSend } from './whatsappOutboundSend';
 
-vi.mock('./featureToggleIsEnabled', () => ({
-    featureToggleIsEnabled: vi.fn(async () => false),
-}));
-
-const silentLog: Logger = {
-    error: () => {},
-    warn: () => {},
-    info: () => {},
-    debug: () => {},
-    drain: async () => {},
-};
+function providerCreate() {
+    return { sendTemplate: vi.fn(async () => ({ providerMessageId: `test-${idCreate()}` })) } as unknown as WhatsApp;
+}
 
 describe('whatsappTemplateOutboundSend', () => {
-    beforeEach(() => {
-        vi.mocked(featureToggleIsEnabled).mockReset();
-        vi.mocked(featureToggleIsEnabled).mockResolvedValue(false);
-    });
-
-    it('skips when phone is missing or invalid', async () => {
-        const setup = await commandSetup.withUser();
-        const provider = whatsappCreate({
-            transport: 'console',
-            accessToken: undefined,
-            phoneNumberId: undefined,
-            appSecret: undefined,
-            log: silentLog,
-        });
-
-        const skipped = await whatsappTemplateOutboundSend(setup.serverRuntime, provider, {
-            purpose: 'BOOKING_REQUEST_OFFER_CREATED',
+    it('skips invalid phones and email-only purposes without contacting the provider', async () => {
+        // Arrange
+        const { serverRuntime } = await commandSetup();
+        const provider = providerCreate();
+        // Act
+        const invalid = await whatsappTemplateOutboundSend(serverRuntime, provider, {
+            purpose: 'BOOKING_REQUEST_CREATED',
+            locale: 'de',
             toPhoneNumber: '0151',
-            locale: 'de',
-            bodyParameters: ['A', 'B', 'C'],
-            bodySnapshot: 'x',
-            userId: setup.user.userId,
+            bodyParameters: [],
         });
-        expect(skipped).toBeNull();
-    });
-
-    it('skips when purpose has no approved Meta template name', async () => {
-        const phone = phoneNumberCreate();
-        const customer = await commandSetup.withUser({ phoneNumber: phone });
-        const provider = whatsappCreate({
-            transport: 'console',
-            accessToken: undefined,
-            phoneNumberId: undefined,
-            appSecret: undefined,
-            log: silentLog,
-        });
-        const sendTemplate = vi.spyOn(provider, 'sendTemplate');
-
-        const skipped = await whatsappTemplateOutboundSend(customer.serverRuntime, provider, {
+        const emailOnly = await whatsappTemplateOutboundSend(serverRuntime, provider, {
             purpose: 'BOOKING_REQUEST_CANCELED',
-            toPhoneNumber: phone,
             locale: 'de',
-            bodyParameters: ['Customer'],
-            bodySnapshot: 'cancelled',
-            userId: customer.user.userId,
+            toPhoneNumber: phoneNumberCreate(),
+            bodyParameters: [],
         });
-
-        expect(skipped).toBeNull();
-        expect(sendTemplate).not.toHaveBeenCalled();
+        // Assert
+        expect(invalid).toBeNull();
+        expect(emailOnly).toBeNull();
+        expect(provider.sendTemplate).not.toHaveBeenCalled();
     });
 
-    it('falls back to de Meta language when English templates toggle is off', async () => {
-        vi.mocked(featureToggleIsEnabled).mockResolvedValue(false);
+    it.each(['de', 'en'] as const)('persists the exact %s rendering and opaque URL sent to Meta', async (locale) => {
+        // Arrange
         const phone = phoneNumberCreate();
-        const customer = await commandSetup.withUser({ phoneNumber: phone });
-        const provider = whatsappCreate({
-            transport: 'console',
-            accessToken: undefined,
-            phoneNumberId: undefined,
-            appSecret: undefined,
-            log: silentLog,
-        });
-        const sendTemplate = vi.spyOn(provider, 'sendTemplate');
-
-        await whatsappTemplateOutboundSend(customer.serverRuntime, provider, {
-            purpose: 'BOOKING_REQUEST_OFFER_CREATED',
+        const { serverRuntime, user } = await commandSetup.withUser({ phoneNumber: phone, locale });
+        const provider = providerCreate();
+        const requestId = idCreate();
+        const linkPath = `${locale === 'en' ? '/en' : ''}/profile/booking-requests/${requestId}`;
+        // Act
+        const result = await whatsappTemplateOutboundSend(serverRuntime, provider, {
+            purpose: 'BOOKING_REQUEST_CREATED',
+            locale,
             toPhoneNumber: phone,
-            locale: 'en',
-            bodyParameters: ['A', 'B', 'C'],
-            bodySnapshot: 'Hello',
-            userId: customer.user.userId,
+            bodyParameters: [' Anna ', '2026-12-12', '18:00'],
+            linkPath,
+            userId: user.userId,
         });
-
-        expect(featureToggleIsEnabled).toHaveBeenCalledWith('WHATSAPP_ENGLISH_TEMPLATES', customer.serverRuntime, customer.user.userId);
-        expect(sendTemplate).toHaveBeenCalledWith(
-            expect.objectContaining({
-                languageCode: 'de',
-                templateName: 'cook_booking_request_offer_create__for_user',
-            }),
-        );
-    });
-
-    it('uses en Meta language when English templates toggle is on', async () => {
-        vi.mocked(featureToggleIsEnabled).mockResolvedValue(true);
-        const phone = phoneNumberCreate();
-        const customer = await commandSetup.withUser({ phoneNumber: phone });
-        const provider = whatsappCreate({
-            transport: 'console',
-            accessToken: undefined,
-            phoneNumberId: undefined,
-            appSecret: undefined,
-            log: silentLog,
-        });
-        const sendTemplate = vi.spyOn(provider, 'sendTemplate');
-
-        await whatsappTemplateOutboundSend(customer.serverRuntime, provider, {
-            purpose: 'BOOKING_REQUEST_OFFER_CREATED',
+        // Assert
+        expect(result).not.toBeNull();
+        expect(provider.sendTemplate).toHaveBeenCalledWith({
             toPhoneNumber: phone,
-            locale: 'en',
-            bodyParameters: ['A', 'B', 'C'],
-            bodySnapshot: 'Hello',
-            userId: customer.user.userId,
+            templateName: 'booking_request_received_customer_v2',
+            languageCode: locale,
+            bodyParameters: ['Anna', '2026-12-12', '18:00'],
+            buttonUrlParameter: result!.outboundWhatsAppMessageId,
         });
-
-        expect(sendTemplate).toHaveBeenCalledWith(expect.objectContaining({ languageCode: 'en' }));
-    });
-
-    it('persists audit + transcript rows on console transport', async () => {
-        const phone = phoneNumberCreate();
-        const customer = await commandSetup.withUser({ phoneNumber: phone, firstName: 'Customer' });
-        const provider = whatsappCreate({
-            transport: 'console',
-            accessToken: undefined,
-            phoneNumberId: undefined,
-            appSecret: undefined,
-            log: silentLog,
-        });
-        const offerId = idCreate();
-
-        const result = await whatsappTemplateOutboundSend(customer.serverRuntime, provider, {
-            purpose: 'BOOKING_REQUEST_OFFER_CREATED',
-            toPhoneNumber: phone,
-            locale: 'de',
-            bodyParameters: ['Customer', 'Chef', 'Birthday'],
-            bodySnapshot: 'Hallo Customer, Chef hat ein Angebot erstellt.',
-            userId: customer.user.userId,
-            relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: offerId },
-        });
-
-        expect(result?.outboundWhatsAppMessageId).toBeTruthy();
-
         const [audit] = await testDb
             .select()
             .from(outboundWhatsAppMessages)
             .where(eq(outboundWhatsAppMessages.outboundWhatsAppMessageId, result!.outboundWhatsAppMessageId));
-        expect(audit?.purpose).toBe('BOOKING_REQUEST_OFFER_CREATED');
-        expect(audit?.sentAt).toBeTruthy();
-        expect(audit?.providerMessageId).toMatch(/^console-tpl-/);
-
-        const [conversation] = await testDb.select().from(whatsAppConversations).where(eq(whatsAppConversations.phoneNumber, phone));
-        expect(conversation?.userId).toBe(customer.user.userId);
-
-        const messages = await testDb
+        const [message] = await testDb
             .select()
             .from(whatsAppMessages)
-            .where(eq(whatsAppMessages.whatsAppConversationId, conversation!.whatsAppConversationId));
-        expect(messages).toHaveLength(1);
-        expect(messages[0]?.direction).toBe('OUTBOUND');
-        expect(messages[0]?.messageKind).toBe('TEMPLATE');
-        expect(messages[0]?.outboundWhatsAppMessageId).toBe(result!.outboundWhatsAppMessageId);
+            .where(eq(whatsAppMessages.outboundWhatsAppMessageId, result!.outboundWhatsAppMessageId));
+        expect(audit?.templateSnapshot?.languageCode).toBe(locale);
+        expect(audit?.templateSnapshot?.body).toContain(
+            locale === 'de' ? 'danke für deine Buchungsanfrage' : 'thanks for your booking request',
+        );
+        expect(audit?.templateSnapshot?.body).toContain('🙌');
+        expect(audit?.templateSnapshot?.body).not.toContain('{{');
+        expect(audit?.templateSnapshot?.buttons[0]?.url).toContain(`/api/whatsapp/links/${result!.outboundWhatsAppMessageId}`);
+        expect(audit?.linkPath).toBe(linkPath);
+        expect(audit?.sentAt).not.toBeNull();
+        expect(message?.templateSnapshot).toEqual(audit?.templateSnapshot);
+        expect(message?.body).toBe(audit?.bodySnapshot);
+        expect(serverRuntime.publish.adminUpdates).toHaveBeenCalled();
+    });
+
+    it('rejects incorrect parameters before creating audit history or sending', async () => {
+        // Arrange
+        const { serverRuntime } = await commandSetup();
+        const provider = providerCreate();
+        const phone = phoneNumberCreate();
+        // Act
+        const result = whatsappTemplateOutboundSend(serverRuntime, provider, {
+            purpose: 'BOOKING_REQUEST_CREATED',
+            locale: 'de',
+            toPhoneNumber: phone,
+            bodyParameters: ['Anna'],
+            linkPath: `/profile/booking-requests/${idCreate()}`,
+        });
+        // Assert
+        await expect(result).rejects.toThrow('Invalid body parameters');
+        expect(provider.sendTemplate).not.toHaveBeenCalled();
+        expect(await testDb.select().from(outboundWhatsAppMessages).where(eq(outboundWhatsAppMessages.toPhoneNumber, phone))).toEqual([]);
+    });
+
+    it('records a provider failure without inventing a sent transcript message', async () => {
+        // Arrange
+        const { serverRuntime } = await commandSetup();
+        const provider = providerCreate();
+        vi.mocked(provider.sendTemplate).mockRejectedValueOnce(new Error('Template is pending approval'));
+        const phone = phoneNumberCreate();
+        // Act
+        const result = whatsappTemplateOutboundSend(serverRuntime, provider, {
+            purpose: 'BOOKING_REQUEST_REACTION_REMINDER',
+            locale: 'de',
+            toPhoneNumber: phone,
+            bodyParameters: ['Anna', '2026-12-12'],
+        });
+        // Assert
+        await expect(result).rejects.toThrow('pending approval');
+        const [audit] = await testDb.select().from(outboundWhatsAppMessages).where(eq(outboundWhatsAppMessages.toPhoneNumber, phone));
+        expect(audit?.failedAt).not.toBeNull();
+        expect(audit?.sentAt).toBeNull();
+        expect(
+            await testDb
+                .select()
+                .from(whatsAppMessages)
+                .where(eq(whatsAppMessages.outboundWhatsAppMessageId, audit!.outboundWhatsAppMessageId)),
+        ).toEqual([]);
+    });
+    it('does not mark a sent message failed when the admin refresh notification fails', async () => {
+        // Arrange
+        const { serverRuntime } = await commandSetup();
+        vi.mocked(serverRuntime.publish.adminUpdates).mockRejectedValueOnce(new Error('Refresh unavailable'));
+        const phone = phoneNumberCreate();
+        // Act
+        const result = await whatsappTemplateOutboundSend(serverRuntime, providerCreate(), {
+            purpose: 'BOOKING_REQUEST_CREATED',
+            locale: 'en',
+            toPhoneNumber: phone,
+            bodyParameters: ['Anna', '2026-12-12', '18:00'],
+            linkPath: `/profile/booking-requests/${idCreate()}`,
+        });
+        const [audit] = await testDb
+            .select()
+            .from(outboundWhatsAppMessages)
+            .where(eq(outboundWhatsAppMessages.outboundWhatsAppMessageId, result!.outboundWhatsAppMessageId));
+        // Assert
+        expect(audit?.sentAt).not.toBeNull();
+        expect(audit?.failedAt).toBeNull();
     });
 });

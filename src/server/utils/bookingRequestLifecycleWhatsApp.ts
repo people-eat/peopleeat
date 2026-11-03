@@ -67,8 +67,6 @@ async function templateSend(
         purpose: Exclude<OutboundWhatsAppPurpose, 'CONCIERGE_SESSION_REPLY'>;
         relatedEntity: { type: OutboundWhatsAppRelatedEntityType; id: string };
         bodyParameters: (user: WhatsAppUser) => string[];
-        bodySnapshot: (user: WhatsAppUser) => string;
-        buttonUrlParameter?: string;
     },
 ): Promise<void> {
     const recipient = await userByIdFind(serverRuntime, args.recipientUserId);
@@ -90,15 +88,12 @@ async function templateSend(
             toPhoneNumber,
             locale: recipient.locale,
             bodyParameters: args.bodyParameters(recipient),
-            bodySnapshot: args.bodySnapshot(recipient),
-            buttonUrlParameter: args.buttonUrlParameter,
             userId: recipient.userId,
             relatedEntity: args.relatedEntity,
         }),
     );
 }
 
-/** Meta: `user_booking_request_create__for_user` — body [userName, dateLabel, timeLabel], button bookingRequestId. */
 export async function userBookingRequestCreateWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; customerUserId: string; dateTime: Date },
@@ -109,21 +104,14 @@ export async function userBookingRequestCreateWhatsAppSend(
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_CREATED',
         relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-        buttonUrlParameter: args.bookingRequestId,
         bodyParameters: (customer) => [
             customer.firstName,
             eventDateLabel(args.dateTime, customer),
             eventTimeLabel(args.dateTime, customer),
         ],
-        bodySnapshot: (customer) =>
-            ({
-                de: `Hallo ${customer.firstName}, deine Anfrage für den ${eventDateLabel(args.dateTime, customer)} um ${eventTimeLabel(args.dateTime, customer)} ist bei uns angekommen.`,
-                en: `Hi ${customer.firstName}, your request for ${eventDateLabel(args.dateTime, customer)} at ${eventTimeLabel(args.dateTime, customer)} has been received.`,
-            })[customer.locale],
     });
 }
 
-/** Meta: `user_booking_request_create__for_cook` — body [cookName, locationName, dateLabel], button bookingRequestId. */
 export async function bookingRequestCookNotifyWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; cookUserId: string; city: string; dateTime: Date },
@@ -134,17 +122,10 @@ export async function bookingRequestCookNotifyWhatsAppSend(
         recipientUserId: args.cookUserId,
         purpose: 'BOOKING_REQUEST_COOK_NOTIFY',
         relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-        buttonUrlParameter: args.bookingRequestId,
         bodyParameters: (cook) => [cook.firstName, args.city, eventDateLabel(args.dateTime, cook)],
-        bodySnapshot: (cook) =>
-            ({
-                de: `Hallo ${cook.firstName}, neue Anfrage in ${args.city} für den ${eventDateLabel(args.dateTime, cook)}.`,
-                en: `Hi ${cook.firstName}, new request in ${args.city} for ${eventDateLabel(args.dateTime, cook)}.`,
-            })[cook.locale],
     });
 }
 
-/** Meta: `user_booking_request_update__for_cook` — body [cookName, userName], button bookingRequestOfferId. */
 export async function userBookingRequestUpdateCookWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; cookUserId: string; customerFirstName: string; bookingRequestOfferId: string },
@@ -155,20 +136,10 @@ export async function userBookingRequestUpdateCookWhatsAppSend(
         recipientUserId: args.cookUserId,
         purpose: 'BOOKING_REQUEST_UPDATED_COOK',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        buttonUrlParameter: args.bookingRequestOfferId,
         bodyParameters: (cook) => [cook.firstName, args.customerFirstName],
-        bodySnapshot: (cook) =>
-            ({
-                de: `Hallo ${cook.firstName}, ${args.customerFirstName} hat die Anfrage geändert.`,
-                en: `Hi ${cook.firstName}, ${args.customerFirstName} updated the booking request.`,
-            })[cook.locale],
     });
 }
 
-/**
- * Meta: `cook_booking_request_offer_create__for_user`
- * body [userName, cookName, dateLabel, menusLabel, cookName], button bookingRequestId.
- */
 export async function cookBookingRequestOfferCreateWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: {
@@ -186,26 +157,10 @@ export async function cookBookingRequestOfferCreateWhatsAppSend(
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_OFFER_CREATED',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        buttonUrlParameter: args.bookingRequestId,
-        bodyParameters: (customer) => [
-            customer.firstName,
-            args.cookFirstName,
-            eventDateLabel(args.dateTime, customer),
-            args.menusLabel,
-            args.cookFirstName,
-        ],
-        bodySnapshot: (customer) =>
-            ({
-                de: `Hallo ${customer.firstName}, ${args.cookFirstName} hat ein Angebot für den ${eventDateLabel(args.dateTime, customer)} erstellt.`,
-                en: `Hi ${customer.firstName}, ${args.cookFirstName} created an offer for ${eventDateLabel(args.dateTime, customer)}.`,
-            })[customer.locale],
+        bodyParameters: (customer) => [customer.firstName, args.cookFirstName, eventDateLabel(args.dateTime, customer), args.menusLabel],
     });
 }
 
-/**
- * Meta: `cook_menu_courses_update_with_relation_to_offer__for_user`
- * body [userName, cookName, dateLabel, cookName], button bookingRequestId.
- */
 export async function cookBookingRequestOfferSuggestedMenusUpdateWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; cookFirstName: string },
@@ -224,17 +179,10 @@ export async function cookBookingRequestOfferSuggestedMenusUpdateWhatsAppSend(
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_OFFER_MENU_UPDATED',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        buttonUrlParameter: args.bookingRequestId,
-        bodyParameters: (customer) => [customer.firstName, args.cookFirstName, eventDateLabel(dateTime, customer), args.cookFirstName],
-        bodySnapshot: (customer) =>
-            ({
-                de: `Hallo ${customer.firstName}, ${args.cookFirstName} hat die Menüvorschläge aktualisiert.`,
-                en: `Hi ${customer.firstName}, ${args.cookFirstName} updated the suggested menus.`,
-            })[customer.locale],
+        bodyParameters: (customer) => [customer.firstName, args.cookFirstName, eventDateLabel(dateTime, customer)],
     });
 }
 
-/** Email-only on purpose (customer accept confirm). */
 export async function userBookingRequestOfferAcceptWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; cookFirstName: string },
@@ -245,20 +193,10 @@ export async function userBookingRequestOfferAcceptWhatsAppSend(
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_OFFER_ACCEPTED',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        buttonUrlParameter: args.bookingRequestId,
         bodyParameters: (customer) => [customer.firstName, args.cookFirstName],
-        bodySnapshot: (customer) =>
-            ({
-                de: `Hallo ${customer.firstName}, du hast das Angebot von ${args.cookFirstName} angenommen.`,
-                en: `Hi ${customer.firstName}, you accepted ${args.cookFirstName}’s offer.`,
-            })[customer.locale],
     });
 }
 
-/**
- * Meta: `user_booking_request_offer_accept__for_cook`
- * body [cookName, userName, dateLabel], button bookingRequestOfferId.
- */
 export async function userBookingRequestOfferAcceptCookWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: {
@@ -282,17 +220,10 @@ export async function userBookingRequestOfferAcceptCookWhatsAppSend(
         recipientUserId: args.cookUserId,
         purpose: 'BOOKING_REQUEST_OFFER_ACCEPTED_COOK',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        buttonUrlParameter: args.bookingRequestOfferId,
         bodyParameters: (cook) => [cook.firstName, args.customerFirstName, eventDateLabel(dateTime, cook)],
-        bodySnapshot: (cook) =>
-            ({
-                de: `Hallo ${cook.firstName}, ${args.customerFirstName} hat dein Angebot für den ${eventDateLabel(dateTime, cook)} angenommen.`,
-                en: `Hi ${cook.firstName}, ${args.customerFirstName} accepted your offer for ${eventDateLabel(dateTime, cook)}.`,
-            })[cook.locale],
     });
 }
 
-/** Email-only on purpose (post-payment; Meta cost). */
 export async function bookingRequestOfferPaymentConfirmedWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; cookFirstName: string },
@@ -303,17 +234,10 @@ export async function bookingRequestOfferPaymentConfirmedWhatsAppSend(
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        buttonUrlParameter: args.bookingRequestId,
         bodyParameters: (customer) => [customer.firstName, args.cookFirstName],
-        bodySnapshot: (customer) =>
-            ({
-                de: `Hallo ${customer.firstName}, die Zahlung für dein Event mit ${args.cookFirstName} ist bestätigt.`,
-                en: `Hi ${customer.firstName}, payment for your event with ${args.cookFirstName} is confirmed.`,
-            })[customer.locale],
     });
 }
 
-/** Email-only on purpose (post-payment; Meta cost). */
 export async function bookingRequestOfferPullPaymentAnnouncementWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; totalLabel: string },
@@ -324,17 +248,10 @@ export async function bookingRequestOfferPullPaymentAnnouncementWhatsAppSend(
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        buttonUrlParameter: args.bookingRequestId,
         bodyParameters: (customer) => [customer.firstName, args.totalLabel],
-        bodySnapshot: (customer) =>
-            ({
-                de: `Hallo ${customer.firstName}, wir ziehen bald ${args.totalLabel} von deiner hinterlegten Karte ein.`,
-                en: `Hi ${customer.firstName}, we will soon charge ${args.totalLabel} to your saved card.`,
-            })[customer.locale],
     });
 }
 
-/** Email-only on purpose (closure; Meta cost). */
 export async function userBookingRequestCancelWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; customerUserId: string },
@@ -345,17 +262,10 @@ export async function userBookingRequestCancelWhatsAppSend(
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_CANCELED',
         relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-        buttonUrlParameter: args.bookingRequestId,
         bodyParameters: (customer) => [customer.firstName],
-        bodySnapshot: (customer) =>
-            ({
-                de: `Hallo ${customer.firstName}, deine Anfrage wurde storniert.`,
-                en: `Hi ${customer.firstName}, your booking request was cancelled.`,
-            })[customer.locale],
     });
 }
 
-/** Email-only on purpose (closure; Meta cost). */
 export async function userBookingRequestCancelCookWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; cookUserId: string; customerFirstName: string },
@@ -366,20 +276,10 @@ export async function userBookingRequestCancelCookWhatsAppSend(
         recipientUserId: args.cookUserId,
         purpose: 'BOOKING_REQUEST_CANCELED_COOK',
         relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-        buttonUrlParameter: args.bookingRequestId,
         bodyParameters: (cook) => [cook.firstName, args.customerFirstName],
-        bodySnapshot: (cook) =>
-            ({
-                de: `Hallo ${cook.firstName}, die Anfrage von ${args.customerFirstName} wurde storniert.`,
-                en: `Hi ${cook.firstName}, ${args.customerFirstName}’s booking request was cancelled.`,
-            })[cook.locale],
     });
 }
 
-/**
- * Meta: `cook_booking_request_offer_unread_notifications`
- * body [userName], button bookingRequestOfferId.
- */
 export async function bookingRequestOfferChatUnreadCustomerWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; cookFirstName: string },
@@ -390,20 +290,10 @@ export async function bookingRequestOfferChatUnreadCustomerWhatsAppSend(
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_OFFER_CHAT_UNREAD_CUSTOMER',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        buttonUrlParameter: args.bookingRequestOfferId,
-        bodyParameters: (customer) => [customer.firstName],
-        bodySnapshot: (customer) =>
-            ({
-                de: `Hallo ${customer.firstName}, ${args.cookFirstName} hat dir im Chat geschrieben.`,
-                en: `Hi ${customer.firstName}, ${args.cookFirstName} wrote to you in chat.`,
-            })[customer.locale],
+        bodyParameters: (customer) => [customer.firstName, args.cookFirstName],
     });
 }
 
-/**
- * Meta: `user_booking_request_offer_unread_notifications`
- * body [cookName], button bookingRequestId.
- */
 export async function bookingRequestOfferChatUnreadCookWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestOfferId: string; bookingRequestId: string; cookUserId: string; customerFirstName: string },
@@ -414,32 +304,22 @@ export async function bookingRequestOfferChatUnreadCookWhatsAppSend(
         recipientUserId: args.cookUserId,
         purpose: 'BOOKING_REQUEST_OFFER_CHAT_UNREAD_COOK',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        buttonUrlParameter: args.bookingRequestId,
-        bodyParameters: (cook) => [cook.firstName],
-        bodySnapshot: (cook) =>
-            ({
-                de: `Hallo ${cook.firstName}, ${args.customerFirstName} hat dir im Chat geschrieben.`,
-                en: `Hi ${cook.firstName}, ${args.customerFirstName} wrote to you in chat.`,
-            })[cook.locale],
+        bodyParameters: (cook) => [cook.firstName, args.customerFirstName],
     });
 }
 
-/** Meta: `user_booking_request_reaction_reminder` — no body components, no URL button. */
 export async function userBookingRequestReactionReminderWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: { bookingRequestId: string; customerUserId: string },
 ): Promise<void> {
+    const dateTime = await bookingRequestDateTimeFind(serverRuntime, args.bookingRequestId);
+    if (!dateTime) return;
     await templateSend(serverRuntime, {
         label: 'userBookingRequestReactionReminderWhatsAppSend',
         entityId: args.bookingRequestId,
         recipientUserId: args.customerUserId,
         purpose: 'BOOKING_REQUEST_REACTION_REMINDER',
         relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-        bodyParameters: () => [],
-        bodySnapshot: (customer) =>
-            ({
-                de: `Hallo ${customer.firstName}, hast du die Angebote zu deiner Anfrage schon gesehen?`,
-                en: `Hi ${customer.firstName}, have you looked at the offers for your request yet?`,
-            })[customer.locale],
+        bodyParameters: (customer) => [customer.firstName, eventDateLabel(dateTime, customer)],
     });
 }

@@ -120,8 +120,6 @@ Wired today:
   missing row stays off. Public detail reads `Session.activeFeatureToggleKeys`; cook Preview uses the profile shell provider. See
   [public-chefs.md](./public-chefs.md) and [cook-profile.md](./cook-profile.md)
 - **AI menu evaluation** (`AI_MENU_EVALUATION`) — cook open / refresh / apply gates use the cook `userId`
-- **WhatsApp English templates** (`WHATSAPP_ENGLISH_TEMPLATES`) — when off (default until approved EN templates exist), lifecycle template
-  sends use Meta language `de` even when the recipient locale is `en`; when on, EN locale maps to Meta language `en`
 - **Landing booking how-it-works** (`LANDING_BOOKING_HOW_IT_WORKS`) — shows `SectionBookingHowItWorks` on the home page when on; missing row
   stays off. Public home reads `Session.activeFeatureToggleKeys` (global + signed-in override). See [landing.md](./landing.md)
 

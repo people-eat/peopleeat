@@ -103,6 +103,7 @@ import { Route as Char123LocaleChar125ProfilePublicRouteImport } from './routes/
 import { Route as Char123LocaleChar125ProfileSupportRequestsRouteImport } from './routes/{-$locale}/profile/support-requests'
 import { Route as Char123LocaleChar125ProfileTravelRouteImport } from './routes/{-$locale}/profile/travel'
 import { Route as Char123LocaleChar125ProfileWalletRouteImport } from './routes/{-$locale}/profile/wallet'
+import { Route as ApiWhatsappLinksTokenRouteImport } from './routes/api/whatsapp/links/$token'
 import { Route as ServerGiftCardsGiftCardIdReceiptRouteImport } from './routes/server.gift-cards.$giftCardId.receipt'
 import { Route as ServerGiftCardsGiftCardIdVoucherRouteImport } from './routes/server.gift-cards.$giftCardId.voucher'
 import { Route as Char123LocaleChar125AdminAiGenerationsAiGenerationIdRouteImport } from './routes/{-$locale}/admin/ai-generations_.$aiGenerationId'
@@ -719,6 +720,11 @@ const Char123LocaleChar125ProfileWalletRoute =
     path: '/wallet',
     getParentRoute: () => Char123LocaleChar125ProfileRoute,
   } as any)
+const ApiWhatsappLinksTokenRoute = ApiWhatsappLinksTokenRouteImport.update({
+  id: '/api/whatsapp/links/$token',
+  path: '/api/whatsapp/links/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServerGiftCardsGiftCardIdReceiptRoute =
   ServerGiftCardsGiftCardIdReceiptRouteImport.update({
     id: '/server/gift-cards/$giftCardId/receipt',
@@ -1273,6 +1279,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/profile/wallet': typeof Char123LocaleChar125ProfileWalletRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile/': typeof Char123LocaleChar125ProfileIndexRoute
+  '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
   '/server/gift-cards/$giftCardId/receipt': typeof ServerGiftCardsGiftCardIdReceiptRoute
   '/server/gift-cards/$giftCardId/voucher': typeof ServerGiftCardsGiftCardIdVoucherRoute
   '/{-$locale}/admin/ai-generations/$aiGenerationId': typeof Char123LocaleChar125AdminAiGenerationsAiGenerationIdRoute
@@ -1436,6 +1443,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/profile/wallet': typeof Char123LocaleChar125ProfileWalletRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile': typeof Char123LocaleChar125ProfileIndexRoute
+  '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
   '/server/gift-cards/$giftCardId/receipt': typeof ServerGiftCardsGiftCardIdReceiptRoute
   '/server/gift-cards/$giftCardId/voucher': typeof ServerGiftCardsGiftCardIdVoucherRoute
   '/{-$locale}/admin/ai-generations/$aiGenerationId': typeof Char123LocaleChar125AdminAiGenerationsAiGenerationIdRoute
@@ -1603,6 +1611,7 @@ export interface FileRoutesById {
   '/{-$locale}/profile/wallet': typeof Char123LocaleChar125ProfileWalletRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile/': typeof Char123LocaleChar125ProfileIndexRoute
+  '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
   '/server/gift-cards/$giftCardId/receipt': typeof ServerGiftCardsGiftCardIdReceiptRoute
   '/server/gift-cards/$giftCardId/voucher': typeof ServerGiftCardsGiftCardIdVoucherRoute
   '/{-$locale}/admin/ai-generations_/$aiGenerationId': typeof Char123LocaleChar125AdminAiGenerationsAiGenerationIdRoute
@@ -1771,6 +1780,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/wallet'
     | '/{-$locale}/admin/'
     | '/{-$locale}/profile/'
+    | '/api/whatsapp/links/$token'
     | '/server/gift-cards/$giftCardId/receipt'
     | '/server/gift-cards/$giftCardId/voucher'
     | '/{-$locale}/admin/ai-generations/$aiGenerationId'
@@ -1934,6 +1944,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/wallet'
     | '/{-$locale}/admin'
     | '/{-$locale}/profile'
+    | '/api/whatsapp/links/$token'
     | '/server/gift-cards/$giftCardId/receipt'
     | '/server/gift-cards/$giftCardId/voucher'
     | '/{-$locale}/admin/ai-generations/$aiGenerationId'
@@ -2100,6 +2111,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/wallet'
     | '/{-$locale}/admin/'
     | '/{-$locale}/profile/'
+    | '/api/whatsapp/links/$token'
     | '/server/gift-cards/$giftCardId/receipt'
     | '/server/gift-cards/$giftCardId/voucher'
     | '/{-$locale}/admin/ai-generations_/$aiGenerationId'
@@ -2193,6 +2205,7 @@ export interface RootRouteChildren {
   ApiWebhooksSlackRoute: typeof ApiWebhooksSlackRoute
   ApiWebhooksStripeRoute: typeof ApiWebhooksStripeRoute
   ApiWebhooksWhatsappRoute: typeof ApiWebhooksWhatsappRoute
+  ApiWhatsappLinksTokenRoute: typeof ApiWhatsappLinksTokenRoute
   ServerGiftCardsGiftCardIdReceiptRoute: typeof ServerGiftCardsGiftCardIdReceiptRoute
   ServerGiftCardsGiftCardIdVoucherRoute: typeof ServerGiftCardsGiftCardIdVoucherRoute
   ApiAdminCallRecordingsRecordingIdAudioRoute: typeof ApiAdminCallRecordingsRecordingIdAudioRoute
@@ -2857,6 +2870,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/{-$locale}/profile/wallet'
       preLoaderRoute: typeof Char123LocaleChar125ProfileWalletRouteImport
       parentRoute: typeof Char123LocaleChar125ProfileRoute
+    }
+    '/api/whatsapp/links/$token': {
+      id: '/api/whatsapp/links/$token'
+      path: '/api/whatsapp/links/$token'
+      fullPath: '/api/whatsapp/links/$token'
+      preLoaderRoute: typeof ApiWhatsappLinksTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/server/gift-cards/$giftCardId/receipt': {
       id: '/server/gift-cards/$giftCardId/receipt'
@@ -3803,6 +3823,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWebhooksSlackRoute: ApiWebhooksSlackRoute,
   ApiWebhooksStripeRoute: ApiWebhooksStripeRoute,
   ApiWebhooksWhatsappRoute: ApiWebhooksWhatsappRoute,
+  ApiWhatsappLinksTokenRoute: ApiWhatsappLinksTokenRoute,
   ServerGiftCardsGiftCardIdReceiptRoute: ServerGiftCardsGiftCardIdReceiptRoute,
   ServerGiftCardsGiftCardIdVoucherRoute: ServerGiftCardsGiftCardIdVoucherRoute,
   ApiAdminCallRecordingsRecordingIdAudioRoute:
@@ -3811,3 +3832,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

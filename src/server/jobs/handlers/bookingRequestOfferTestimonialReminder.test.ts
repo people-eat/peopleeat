@@ -4,6 +4,7 @@ import { idCreate } from '../../../shared/idCreate';
 import { bookingRequestOffers, bookingRequests, cooks, cookTestimonials, customerTestimonials } from '../../db/schema';
 import { slackNotifyTestimonialReminderSent } from '../../slack/slackNotifyBooking';
 import { commandSetup, testDb } from '../../test/commandTestUtils';
+import { phoneNumberCreate } from '../../test/phoneNumberCreate';
 import { bookingRequestOfferTestimonialReminder } from './bookingRequestOfferTestimonialReminder';
 
 vi.mock('../../slack/slackNotifyBooking', () => ({
@@ -22,8 +23,13 @@ const berlin = {
     country: 'DE',
 };
 
-async function seedPaidDualAcceptedOffer(options?: { paymentStatus?: 'PAYED' | 'SETUP' | 'EMPTY'; canceledAt?: Date | null }) {
-    const cookSetup = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Review' });
+async function seedPaidDualAcceptedOffer(options?: {
+    paymentStatus?: 'PAYED' | 'SETUP' | 'EMPTY';
+    canceledAt?: Date | null;
+    customerPhoneNumber?: string;
+    cookPhoneNumber?: string;
+}) {
+    const cookSetup = await commandSetup.withUser({ firstName: 'Chef', lastName: 'Review', phoneNumber: options?.cookPhoneNumber });
     await testDb.insert(cooks).values({
         cookId: cookSetup.user.userId,
         isVisible: true,
@@ -35,7 +41,7 @@ async function seedPaidDualAcceptedOffer(options?: { paymentStatus?: 'PAYED' | '
         stripeAccountActive: true,
     });
 
-    const customer = await commandSetup.withUser({ firstName: 'Customer', lastName: 'Review' });
+    const customer = await commandSetup.withUser({ firstName: 'Customer', lastName: 'Review', phoneNumber: options?.customerPhoneNumber });
     const bookingRequestId = idCreate();
     await testDb.insert(bookingRequests).values({
         bookingRequestId,
@@ -198,5 +204,55 @@ describe('bookingRequestOfferTestimonialReminder', () => {
         // Assert
         expect(serverRuntime.email.send).not.toHaveBeenCalled();
         expect(slackNotifyTestimonialReminderSent).not.toHaveBeenCalled();
+    });
+});
+
+describe('testimonial WhatsApp reminders', () => {
+    it.each(['MEMORY_NUDGE', 'REMINDER_MORNING', 'REMINDER_EVENING'] as const)(
+        'sends both audiences the %s purpose with booking context',
+        async (kind) => {
+            // Arrange
+            const customerPhone = phoneNumberCreate(),
+                cookPhone = phoneNumberCreate();
+            const { serverRuntime, bookingRequestOfferId, customerUserId, cookId } = await seedPaidDualAcceptedOffer({
+                customerPhoneNumber: customerPhone,
+                cookPhoneNumber: cookPhone,
+            });
+            // Act
+            await bookingRequestOfferTestimonialReminder.handler({ data: { bookingRequestOfferId, kind }, serverRuntime });
+            // Assert
+            expect(serverRuntime.whatsapp.sendTemplate).toHaveBeenCalledTimes(2);
+            expect(serverRuntime.whatsapp.sendTemplate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    purpose: `TESTIMONIAL_${kind}_CUSTOMER`,
+                    userId: customerUserId,
+                    toPhoneNumber: customerPhone,
+                    bodyParameters: ['Customer', 'Chef', expect.any(String)],
+                    relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: bookingRequestOfferId },
+                }),
+            );
+            expect(serverRuntime.whatsapp.sendTemplate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    purpose: `TESTIMONIAL_${kind}_COOK`,
+                    userId: cookId,
+                    toPhoneNumber: cookPhone,
+                    bodyParameters: ['Chef', 'Customer', expect.any(String)],
+                }),
+            );
+            expect(serverRuntime.email.send).toHaveBeenCalledTimes(2);
+        },
+    );
+    it('keeps email delivery independent of a WhatsApp provider failure', async () => {
+        // Arrange
+        const { serverRuntime, bookingRequestOfferId } = await seedPaidDualAcceptedOffer({
+            customerPhoneNumber: phoneNumberCreate(),
+            cookPhoneNumber: phoneNumberCreate(),
+        });
+        vi.mocked(serverRuntime.whatsapp.sendTemplate).mockRejectedValueOnce(new Error('Utility approval pending'));
+        // Act
+        await bookingRequestOfferTestimonialReminder.handler({ data: { bookingRequestOfferId, kind: 'REMINDER_MORNING' }, serverRuntime });
+        // Assert
+        expect(serverRuntime.email.send).toHaveBeenCalledTimes(2);
+        expect(serverRuntime.whatsapp.sendTemplate).toHaveBeenCalledTimes(2);
     });
 });

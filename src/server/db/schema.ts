@@ -68,6 +68,7 @@ import type {
     WhatsAppMessageDirection,
     WhatsAppMessageKind,
 } from '../domain/whatsapp';
+import type { WhatsAppTemplateSnapshot } from '../domain/whatsappTemplates';
 
 /** Entity PK/FK column — 20-char URL-safe nanoId. */
 function nanoId() {
@@ -2323,6 +2324,9 @@ export const outboundWhatsAppMessages = pgTable(
         toPhoneNumber: varchar().notNull(),
         templateName: varchar(),
         bodySnapshot: text().notNull(),
+        templateSnapshot: jsonb().$type<WhatsAppTemplateSnapshot>(),
+        linkPath: varchar(),
+        linkClickedAt: timestamp({ withTimezone: true }),
         locale: varchar().$type<Locale>().notNull(),
         whatsAppConversationId: nanoId(),
         providerConversationId: varchar(),
@@ -2366,6 +2370,8 @@ export const whatsAppMessages = pgTable(
         whatsAppConversationId: nanoId().notNull(),
         direction: varchar().$type<WhatsAppMessageDirection>().notNull(),
         messageKind: varchar().$type<WhatsAppMessageKind>().notNull().default('TEXT'),
+        templateSnapshot: jsonb().$type<WhatsAppTemplateSnapshot>(),
+        linkClickedAt: timestamp({ withTimezone: true }),
         body: text().notNull(),
         buttonPayload: varchar(),
         providerMessageId: varchar(),

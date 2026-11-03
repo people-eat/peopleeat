@@ -137,6 +137,8 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
   `?tab=testimonial`
 - Jobs: `bookingRequestOfferTestimonialReminder` (memory nudge, morning and evening reminders Europe/Berlin); schedule on payment success
   and datetime changes; cancel on request cancel
+- Email and Utility WhatsApp templates for each nudge kind and audience. WhatsApp uses the recipient locale, saved message snapshots, and
+  direct booking/review links. Email remains independent when Meta approval or delivery is unavailable.
 - Email templates and outbound purposes for each nudge kind — [jobs.md](../architecture/jobs.md#testimonial-reminders),
   [outbound-email.md](../architecture/outbound-email.md)
 

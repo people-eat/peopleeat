@@ -1,6 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 import { whatsappPhoneNumberForMetaApi } from '../domain/whatsapp';
+import { whatsappTemplateDefinitionFind } from '../domain/whatsappTemplates';
 import type { Logger } from '../utils/loggerCreate';
 import type {
     WhatsApp,
@@ -10,11 +11,14 @@ import type {
     WhatsAppTemplateSendArgs,
     WhatsAppTextSendArgs,
 } from './WhatsApp';
+import { whatsappTemplateMetaMatches, whatsappTemplatesMetaCreate } from './whatsappTemplatesMeta';
 
 export type WhatsAppCreateOptions = {
     transport: 'meta' | 'console';
     accessToken: string | undefined;
     phoneNumberId: string | undefined;
+    businessAccountId?: string;
+    webPageUrl?: string;
     appSecret: string | undefined;
     log: Logger;
 };
@@ -62,6 +66,25 @@ export function whatsappCreate(options: WhatsAppCreateOptions): WhatsApp {
                 return { providerMessageId: `console-tpl-${Date.now()}` };
             }
 
+            const { accessToken } = credentialsRequire();
+            if (!options.businessAccountId || !options.webPageUrl || (args.languageCode !== 'de' && args.languageCode !== 'en')) {
+                throw new Error('WhatsApp template management configuration missing');
+            }
+            const definition = whatsappTemplateDefinitionFind(args.templateName);
+            const templates = await whatsappTemplatesMetaCreate({ accessToken, businessAccountId: options.businessAccountId }).findMany(
+                args.templateName,
+            );
+            const template = templates.find((entry) => entry.name === args.templateName && entry.language === args.languageCode);
+            if (
+                !template ||
+                template.status !== 'APPROVED' ||
+                template.category !== 'UTILITY' ||
+                !whatsappTemplateMetaMatches(template, definition, args.languageCode, options.webPageUrl)
+            ) {
+                throw new Error(
+                    `WhatsApp template ${args.templateName}/${args.languageCode} is not an approved, matching Utility template`,
+                );
+            }
             const components: Array<Record<string, unknown>> = [];
             if (args.headerParameters && args.headerParameters.length > 0) {
                 components.push({
@@ -84,7 +107,7 @@ export function whatsappCreate(options: WhatsAppCreateOptions): WhatsApp {
                 });
             }
 
-            return metaMessagesPost({
+            const result = await metaMessagesPost({
                 messaging_product: 'whatsapp',
                 to: whatsappPhoneNumberForMetaApi(args.toPhoneNumber),
                 type: 'template',
@@ -94,6 +117,8 @@ export function whatsappCreate(options: WhatsAppCreateOptions): WhatsApp {
                     ...(components.length > 0 ? { components } : {}),
                 },
             });
+            if (!result.providerMessageId) throw new Error('WhatsApp template send returned no message id');
+            return result;
         },
 
         async sendText(args: WhatsAppTextSendArgs): Promise<WhatsAppSendResult> {

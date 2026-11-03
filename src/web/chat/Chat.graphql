@@ -125,6 +125,7 @@ fragment HumanChatMessageFields on HumanChatMessage {
         hiddenByAdmin
         canHardDelete
         deliveryStatus
+        linkClickedAt
         reactions {
             emoji
             isOwn

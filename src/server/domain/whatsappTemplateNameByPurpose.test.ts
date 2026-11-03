@@ -1,35 +1,63 @@
 import { describe, expect, it } from 'vitest';
 
 import { whatsappTemplateNameByPurpose } from './whatsapp';
+import { whatsappTemplateDefinitionFind, whatsappTemplateDefinitions, whatsappTemplateSnapshotCreate } from './whatsappTemplates';
 
-describe('whatsappTemplateNameByPurpose', () => {
-    it('uses Meta-approved template names', () => {
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_CREATED).toBe('user_booking_request_create__for_user');
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_COOK_NOTIFY).toBe('user_booking_request_create__for_cook');
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_UPDATED_COOK).toBe('user_booking_request_update__for_cook');
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_OFFER_CREATED).toBe('cook_booking_request_offer_create__for_user');
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_OFFER_MENU_UPDATED).toBe(
-            'cook_menu_courses_update_with_relation_to_offer__for_user',
-        );
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_OFFER_ACCEPTED_COOK).toBe('user_booking_request_offer_accept__for_cook');
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_OFFER_CHAT_UNREAD_CUSTOMER).toBe(
-            'cook_booking_request_offer_unread_notifications',
-        );
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_OFFER_CHAT_UNREAD_COOK).toBe(
-            'user_booking_request_offer_unread_notifications',
-        );
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_REACTION_REMINDER).toBe('user_booking_request_reaction_reminder');
-        expect(whatsappTemplateNameByPurpose.CALL_SLOT_BOOKING_CREATE).toBe('call_slot_booking_create');
-        expect(whatsappTemplateNameByPurpose.CALL_SLOT_BOOKING_CONFIRM).toBe('call_slot_booking_confirm');
-        expect(whatsappTemplateNameByPurpose.CALL_SLOT_BOOKING_CANCEL).toBe('call_slot_booking_cancel');
-        expect(whatsappTemplateNameByPurpose.CALL_SLOT_BOOKING_REMINDER).toBe('call_slot_booking_reminder_60_min_before');
+describe('WhatsApp template catalog', () => {
+    it('covers every configured purpose with both locales and exact parameter contracts', () => {
+        // Arrange
+        const names = Object.values(whatsappTemplateNameByPurpose).filter((name) => name !== null);
+        // Act
+        const definitions = names.map(whatsappTemplateDefinitionFind);
+        // Assert
+        expect(new Set(whatsappTemplateDefinitions.map((entry) => entry.name)).size).toBe(21);
+        for (const definition of definitions) {
+            expect(definition.category).toBe('UTILITY');
+            expect(definition.name).toMatch(/^[a-z_]+_v\d+$/u);
+            for (const locale of ['de', 'en'] as const) {
+                const tokens = [...new Set(definition[locale].body.match(/\{\{\d+\}\}/gu))];
+                expect(tokens).toEqual(definition.parameters.map((_parameter, index) => `{{${index + 1}}}`));
+                const snapshot = whatsappTemplateSnapshotCreate(
+                    definition,
+                    locale,
+                    definition.examples,
+                    definition[locale].buttonLabel ? 'https://people-eat.com/api/whatsapp/links/example' : undefined,
+                );
+                expect(snapshot.body).not.toMatch(/\{\{\d+\}\}/u);
+                expect(snapshot.body).toMatch(/\p{Extended_Pictographic}/u);
+                expect(definition[locale].body.length).toBeLessThanOrEqual(1024);
+                expect(definition[locale].header.length).toBeLessThanOrEqual(60);
+            }
+        }
     });
 
-    it('keeps post-payment and selected closure purposes email-only (null)', () => {
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_OFFER_ACCEPTED).toBeNull();
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED).toBeNull();
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT).toBeNull();
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_CANCELED).toBeNull();
-        expect(whatsappTemplateNameByPurpose.BOOKING_REQUEST_CANCELED_COOK).toBeNull();
+    it('keeps post-payment notifications and closures email-only', () => {
+        // Arrange
+        const purposes = [
+            'BOOKING_REQUEST_OFFER_ACCEPTED',
+            'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED',
+            'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
+            'BOOKING_REQUEST_CANCELED',
+            'BOOKING_REQUEST_CANCELED_COOK',
+        ] as const;
+        // Act
+        const names = purposes.map((purpose) => whatsappTemplateNameByPurpose[purpose]);
+        // Assert
+        expect(names).toEqual(purposes.map(() => null));
+    });
+
+    it('does not recursively substitute placeholder-like customer text', () => {
+        // Arrange
+        const definition = whatsappTemplateDefinitionFind('offer_chat_message_received_customer_v1');
+        // Act
+        const snapshot = whatsappTemplateSnapshotCreate(
+            definition,
+            'en',
+            ['{{2}}', 'Michael'],
+            'https://people-eat.com/api/whatsapp/links/example',
+        );
+        // Assert
+        expect(snapshot.body).toContain('*Hello {{2}},*');
+        expect(snapshot.body).toContain('from Michael');
     });
 });
