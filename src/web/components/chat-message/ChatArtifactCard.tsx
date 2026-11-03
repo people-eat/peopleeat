@@ -38,7 +38,7 @@ export function ChatArtifactCard({
         <div
             className={cn(
                 'flex min-w-0 overflow-hidden rounded-xl border border-border/60 bg-muted/40',
-                responsive ? 'flex-row gap-3 @min-[28rem]:h-full @min-[28rem]:flex-col @min-[28rem]:gap-0' : 'flex-row gap-3',
+                responsive ? 'flex-row gap-3 @md:h-full @md:flex-col @md:gap-0' : 'flex-row gap-3',
                 className,
             )}
         >
@@ -51,18 +51,17 @@ export function ChatArtifactCard({
                         // `aspect-*` + `w-auto` here — flex stretch collapses the computed width.
                         'w-20 shrink-0 self-stretch object-cover',
                         // Tile: full-width poster once the CardList container is multi-column.
-                        responsive &&
-                            '@min-[28rem]:aspect-2/3 @min-[28rem]:h-auto @min-[28rem]:max-h-56 @min-[28rem]:w-full @min-[28rem]:self-auto',
+                        responsive && '@md:aspect-2/3 @md:h-auto @md:max-h-56 @md:w-full @md:self-auto',
                     )}
                     referrerPolicy="no-referrer"
                 />
             ) : null}
-            <div className={cn('flex min-w-0 min-h-0 flex-1 flex-col gap-1.5 px-3 py-2.5', responsive && '@min-[28rem]:p-3')}>
+            <div className={cn('flex min-w-0 min-h-0 flex-1 flex-col gap-1.5 px-3 py-2.5', responsive && '@md:p-3')}>
                 <div className="flex min-w-0 items-start justify-between gap-2">
                     <div
                         className={cn(
                             'min-w-0 font-medium text-foreground',
-                            responsive ? 'truncate @min-[28rem]:line-clamp-2 @min-[28rem]:whitespace-normal' : 'truncate',
+                            responsive ? 'truncate @md:line-clamp-2 @md:whitespace-normal' : 'truncate',
                         )}
                     >
                         {card.title}
