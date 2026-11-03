@@ -41,6 +41,7 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { DEFAULT_LOCALE, localePath, LOCALES, setLocaleCookie } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
+import { sessionSwitchUrl } from '../../utils/sessionSwitchUrl';
 import { adminUserTypeLabel } from './adminUsersColumns';
 
 type AdminUserRow = NonNullable<NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['user']>;
@@ -296,17 +297,19 @@ export function AdminUserGeneralSection({
         setImpersonateBusy(true);
         try {
             const result = await bindSession({ userId: user.userId });
-            if (result.error || !result.data?.admin.sessionUserBind.success) {
+            const toSessionId = result.data?.admin.sessionUserBind.referenceId;
+            if (result.error || !result.data?.admin.sessionUserBind.success || !toSessionId) {
                 toast.error({ de: 'Anmeldung als Nutzer fehlgeschlagen.', en: 'Could not sign in as this user.' }[locale]);
                 setImpersonateBusy(false);
                 return;
             }
-            // Hard navigate so SSR picks up the new impersonation cookie. Land
-            // on the target user's profile locale (cookie + path) so we do not
-            // keep the admin `/en/…` route and then hit LocaleMismatchGate.
+            // Cookie swap + redirect in one response (mutation Set-Cookie then
+            // location.assign races — browser can navigate with the old cookie).
+            // Land on the target user's profile locale so LocaleMismatchGate
+            // does not open from a leftover admin `/en/…` URL.
             const targetLocale: Locale = LOCALES.includes(user.locale as Locale) ? (user.locale as Locale) : DEFAULT_LOCALE;
             setLocaleCookie(targetLocale);
-            window.location.assign(localePath(targetLocale, '/profile'));
+            window.location.assign(sessionSwitchUrl(toSessionId, localePath(targetLocale, '/profile')));
         } catch {
             setImpersonateBusy(false);
         }

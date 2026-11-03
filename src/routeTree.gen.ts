@@ -42,6 +42,7 @@ import { Route as Char123LocaleChar125ProfileRouteImport } from './routes/{-$loc
 import { Route as Char123LocaleChar125SignInRouteImport } from './routes/{-$locale}/sign-in'
 import { Route as Char123LocaleChar125TermsAndConditionsRouteImport } from './routes/{-$locale}/terms-and-conditions'
 import { Route as ApiFileUploadsFileUploadIdRouteImport } from './routes/api/file-uploads_.$fileUploadId'
+import { Route as ApiSessionSwitchRouteImport } from './routes/api/session.switch'
 import { Route as ApiWebhooksResendRouteImport } from './routes/api/webhooks/resend'
 import { Route as ApiWebhooksSlackRouteImport } from './routes/api/webhooks/slack'
 import { Route as ApiWebhooksStripeRouteImport } from './routes/api/webhooks/stripe'
@@ -357,6 +358,11 @@ const ApiFileUploadsFileUploadIdRoute =
     path: '/api/file-uploads/$fileUploadId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiSessionSwitchRoute = ApiSessionSwitchRouteImport.update({
+  id: '/api/session/switch',
+  path: '/api/session/switch',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiWebhooksResendRoute = ApiWebhooksResendRouteImport.update({
   id: '/api/webhooks/resend',
   path: '/api/webhooks/resend',
@@ -1206,6 +1212,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
   '/api/file-uploads/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
+  '/api/session/switch': typeof ApiSessionSwitchRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/api/webhooks/slack': typeof ApiWebhooksSlackRoute
   '/api/webhooks/stripe': typeof ApiWebhooksStripeRoute
@@ -1368,6 +1375,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
   '/{-$locale}': typeof Char123LocaleChar125IndexRoute
   '/api/file-uploads/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
+  '/api/session/switch': typeof ApiSessionSwitchRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/api/webhooks/slack': typeof ApiWebhooksSlackRoute
   '/api/webhooks/stripe': typeof ApiWebhooksStripeRoute
@@ -1534,6 +1542,7 @@ export interface FileRoutesById {
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
   '/api/file-uploads_/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
+  '/api/session/switch': typeof ApiSessionSwitchRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
   '/api/webhooks/slack': typeof ApiWebhooksSlackRoute
   '/api/webhooks/stripe': typeof ApiWebhooksStripeRoute
@@ -1701,6 +1710,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/terms-and-conditions'
     | '/{-$locale}/'
     | '/api/file-uploads/$fileUploadId'
+    | '/api/session/switch'
     | '/api/webhooks/resend'
     | '/api/webhooks/slack'
     | '/api/webhooks/stripe'
@@ -1863,6 +1873,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/terms-and-conditions'
     | '/{-$locale}'
     | '/api/file-uploads/$fileUploadId'
+    | '/api/session/switch'
     | '/api/webhooks/resend'
     | '/api/webhooks/slack'
     | '/api/webhooks/stripe'
@@ -2028,6 +2039,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/terms-and-conditions'
     | '/{-$locale}/'
     | '/api/file-uploads_/$fileUploadId'
+    | '/api/session/switch'
     | '/api/webhooks/resend'
     | '/api/webhooks/slack'
     | '/api/webhooks/stripe'
@@ -2176,6 +2188,7 @@ export interface RootRouteChildren {
   ApiHealthRoute: typeof ApiHealthRoute
   ApiStreamRoute: typeof ApiStreamRoute
   ApiFileUploadsFileUploadIdRoute: typeof ApiFileUploadsFileUploadIdRoute
+  ApiSessionSwitchRoute: typeof ApiSessionSwitchRoute
   ApiWebhooksResendRoute: typeof ApiWebhooksResendRoute
   ApiWebhooksSlackRoute: typeof ApiWebhooksSlackRoute
   ApiWebhooksStripeRoute: typeof ApiWebhooksStripeRoute
@@ -2416,6 +2429,13 @@ declare module '@tanstack/react-router' {
       path: '/api/file-uploads/$fileUploadId'
       fullPath: '/api/file-uploads/$fileUploadId'
       preLoaderRoute: typeof ApiFileUploadsFileUploadIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/session/switch': {
+      id: '/api/session/switch'
+      path: '/api/session/switch'
+      fullPath: '/api/session/switch'
+      preLoaderRoute: typeof ApiSessionSwitchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/webhooks/resend': {
@@ -3778,6 +3798,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHealthRoute: ApiHealthRoute,
   ApiStreamRoute: ApiStreamRoute,
   ApiFileUploadsFileUploadIdRoute: ApiFileUploadsFileUploadIdRoute,
+  ApiSessionSwitchRoute: ApiSessionSwitchRoute,
   ApiWebhooksResendRoute: ApiWebhooksResendRoute,
   ApiWebhooksSlackRoute: ApiWebhooksSlackRoute,
   ApiWebhooksStripeRoute: ApiWebhooksStripeRoute,
@@ -3790,12 +3811,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

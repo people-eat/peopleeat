@@ -5,6 +5,7 @@ import { userDisplayName } from '../../shared';
 import { SessionImpersonationEndDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { localePath } from '../utils/locale';
+import { sessionSwitchUrl } from '../utils/sessionSwitchUrl';
 import { Button } from './base/button';
 
 export function SessionImpersonationBanner({ user }: { user: { firstName: string; lastName: string } | null | undefined }) {
@@ -18,11 +19,12 @@ export function SessionImpersonationBanner({ user }: { user: { firstName: string
         setBusy(true);
         try {
             const result = await endImpersonation({});
-            if (result.error || !result.data?.sessionImpersonationEnd.success) {
+            const toSessionId = result.data?.sessionImpersonationEnd.referenceId;
+            if (result.error || !result.data?.sessionImpersonationEnd.success || !toSessionId) {
                 setBusy(false);
                 return;
             }
-            window.location.assign(localePath(locale, '/admin'));
+            window.location.assign(sessionSwitchUrl(toSessionId, localePath(locale, '/admin')));
         } catch {
             setBusy(false);
         }

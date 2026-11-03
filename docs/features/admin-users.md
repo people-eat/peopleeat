@@ -53,12 +53,13 @@ switches into a form for first/last name, email (direct, no OTP), phone, birth d
 (`AdminMutation.userUpdate` / `userEmailAddressUpdate`); **Cancel** or successful **Save** returns to view. Ban keeps sessions bound so the
 private profile restriction banner can appear live; open cook offers are auto-declined; public cook listing already excludes non-`ACTIVE`.
 **Sign in as** mints a **new** cookie session bound to that ACTIVE account (`AdminMutation.sessionUserBind`), leaving the admin session
-intact. The new session stores `Sessions.impersonationReturnSessionId` pointing at the admin session. The response swaps the HttpOnly
-cookie; the client hard-navigates to `/profile` (or `/en/profile`) after setting the locale cookie to that user’s `Users.locale` so the
-locale-mismatch gate does not open on the way in. A sticky **Return to admin** banner (`Session.impersonation` + `sessionImpersonationEnd`)
-restores the admin cookie (or mints a fresh admin session if the return session was terminated). Impersonation sessions are excluded from
-product funnels and badged on admin timelines / session lists. Already-anonymized users cannot be edited, banned, or impersonated. Same
-scrub as self-serve delete — see [account.md](./account.md).
+intact. The new session stores `Sessions.impersonationReturnSessionId` pointing at the admin session. The client then hits
+`GET /api/session/switch?toSessionId=…&redirect=…` so **Set-Cookie and the redirect are the same response** (mutation `Set-Cookie` then
+`location.assign` can race and leave the admin cookie in place). Redirect lands on `/profile` (or `/en/profile`) after setting the locale
+cookie to that user’s `Users.locale` so the locale-mismatch gate does not open on the way in. A sticky **Return to admin** banner
+(`Session.impersonation` + `sessionImpersonationEnd` + the same switch URL) restores the admin cookie (or mints a fresh admin session if the
+return session was terminated). Impersonation sessions are excluded from product funnels and badged on admin timelines / session lists.
+Already-anonymized users cannot be edited, banned, or impersonated. Same scrub as self-serve delete — see [account.md](./account.md).
 
 **Cook profile** defaults to a read-only detail: approval/visibility/Stripe-active badges, optional rating summary, stage name, travel,
 Stripe account + Dashboard link, call scheduling + weekly windows, About logo, tags, biography/summary (with generating hint), public chef
