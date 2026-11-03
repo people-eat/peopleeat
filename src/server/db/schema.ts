@@ -55,6 +55,7 @@ import type { ChatMessageBody, ChatMessageRole, ChatMessageStatus, ChatTurnStatu
 import type { CookCallAvailabilityExceptionType, CookTravelOriginAddress } from '../domain/cook';
 import type { GiftCardInvoiceAddress, GiftCardPaymentStatus } from '../domain/giftCard';
 import type { NewsletterSubscriptionSource } from '../domain/newsletterSubscription';
+import type { UserNotificationSettingsStored } from '../domain/notificationSettings';
 import type { OutboundEmailProvider, OutboundEmailPurpose, OutboundEmailRelatedEntityType } from '../domain/outboundEmail';
 import type { SessionGeoInformation } from '../domain/session';
 import type { SessionEventKey, SessionEventPayloadByKey } from '../domain/sessionEvent';
@@ -362,6 +363,10 @@ export const users = pgTable(
         adminNote: text().notNull().default(''),
         birthDate: date({ mode: 'string' }),
         preferredCommunication: varchar().$type<UserPreferredCommunication>(),
+        // Optional automated email and WhatsApp. Null means every channel is on.
+        // A displayed-off WhatsApp switch with no phone is not stored as false.
+        // See docs/features/notification-settings.md.
+        notificationSettings: jsonb().$type<UserNotificationSettingsStored>(),
         // Profile language for UI mismatch gating and outbound transactional
         // email. Self-registration stamps the UI locale; default `de` for
         // admin-created / backfilled rows. See docs/architecture/i18n.md.

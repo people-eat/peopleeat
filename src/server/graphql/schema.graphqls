@@ -369,6 +369,41 @@ enum UserPreferredCommunication {
     E_MAIL
 }
 
+# One automated channel pair. Missing stored values resolve to on.
+type UserNotificationChannelSettings {
+    email: Boolean!
+    whatsApp: Boolean!
+}
+
+# Own-user automated messages. Sign-in, payments, and support are not fields
+# here: those emails always go to the account address.
+# See docs/features/notification-settings.md.
+type UserNotificationSettings {
+    customerBooking: UserNotificationChannelSettings!
+    customerChat: UserNotificationChannelSettings!
+    customerReview: UserNotificationChannelSettings!
+    cookNewRequest: UserNotificationChannelSettings!
+    cookOffer: UserNotificationChannelSettings!
+    cookChat: UserNotificationChannelSettings!
+    cookReview: UserNotificationChannelSettings!
+}
+
+input UserNotificationChannelSettingsInput {
+    email: Boolean!
+    whatsApp: Boolean!
+}
+
+# Patch. Omitted domains stay as stored (missing means on).
+input UserNotificationSettingsInput {
+    customerBooking: UserNotificationChannelSettingsInput
+    customerChat: UserNotificationChannelSettingsInput
+    customerReview: UserNotificationChannelSettingsInput
+    cookNewRequest: UserNotificationChannelSettingsInput
+    cookOffer: UserNotificationChannelSettingsInput
+    cookChat: UserNotificationChannelSettingsInput
+    cookReview: UserNotificationChannelSettingsInput
+}
+
 # Account lifecycle. `ANONYMIZED` after delete/admin anonymize — email null, no login.
 # `BANNED` may still sign in but marketplace writes are blocked; see docs/features/account.md.
 enum UserStatus {
@@ -407,6 +442,7 @@ input UserUpdate {
     locale: Locale
     timeZone: TimeZone
     profilePictureFileUploadId: ID
+    notificationSettings: UserNotificationSettingsInput
 }
 
 type User {
@@ -423,6 +459,8 @@ type User {
     phoneNumber: PhoneNumber
     birthDate: Date
     preferredCommunication: UserPreferredCommunication
+    # Resolved with defaults (missing means on). See docs/features/notification-settings.md.
+    notificationSettings: UserNotificationSettings!
     # Profile language — drives mismatch gate + outbound transactional email.
     # See docs/architecture/i18n.md.
     locale: Locale!

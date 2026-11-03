@@ -32,6 +32,8 @@ export function PreferredCommunicationField({
     required = false,
     showTitle = true,
     showSubtitle = true,
+    title,
+    subtitle,
     invalid = false,
     errorMessage,
     className,
@@ -42,6 +44,8 @@ export function PreferredCommunicationField({
     required?: boolean;
     showTitle?: boolean;
     showSubtitle?: boolean;
+    title?: { de: string; en: string };
+    subtitle?: { de: string; en: string };
     invalid?: boolean;
     errorMessage?: string;
     className?: string;
@@ -55,17 +59,17 @@ export function PreferredCommunicationField({
                 <div className="grid gap-1.5">
                     {showTitle ? (
                         <p className="text-sm font-medium text-foreground">
-                            {{ de: 'Wie erreichen wir dich am liebsten?', en: 'How should we reach you?' }[locale]}
+                            {(title ?? { de: 'Wie erreichen wir dich am liebsten?', en: 'How should we reach you?' })[locale]}
                             {required ? <span className="text-destructive"> *</span> : null}
                         </p>
                     ) : null}
                     {showSubtitle ? (
                         <p className="text-sm/relaxed text-muted-foreground">
                             {
-                                {
-                                    de: 'Updates zu deinem Abend bekommst du per E-Mail und, wenn wir deine Nummer haben, per WhatsApp. Bei Fragen meldet sich unser Concierge direkt bei dir.',
-                                    en: 'You will receive updates about your evening via email and, when we have your number, via WhatsApp. If you have questions, our concierge will contact you directly.',
-                                }[locale]
+                                (subtitle ?? {
+                                    de: 'So meldet sich unser Concierge, wenn wir dich persönlich erreichen.',
+                                    en: 'How our concierge gets in touch when we contact you personally.',
+                                })[locale]
                             }
                         </p>
                     ) : null}

@@ -1,6 +1,7 @@
 import { inArray } from 'drizzle-orm';
 
 import { users } from '../db/schema';
+import { notificationEmailAllowed } from '../domain/notificationSettings';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import {
     BookingRequestCooksNotifyForCookEmail,
@@ -52,6 +53,7 @@ export async function bookingRequestCooksNotify(
             firstName: users.firstName,
             locale: users.locale,
             timeZone: users.timeZone,
+            notificationSettings: users.notificationSettings,
         })
         .from(users)
         .where(inArray(users.userId, cookIds));
@@ -66,26 +68,29 @@ export async function bookingRequestCooksNotify(
                 return;
             }
             const locale = cookUser.locale;
+            const emailAllowed = notificationEmailAllowed(cookUser.notificationSettings, 'BOOKING_REQUEST_COOK_NOTIFY');
             const city = context.city.trim() || { de: 'deiner Nähe', en: 'your area' }[locale];
             try {
-                await serverRuntime.email.send({
-                    to: cookUser.emailAddress,
-                    subject: bookingRequestCooksNotifyForCookEmailSubject(locale),
-                    react: BookingRequestCooksNotifyForCookEmail({
+                if (emailAllowed) {
+                    await serverRuntime.email.send({
+                        to: cookUser.emailAddress,
+                        subject: bookingRequestCooksNotifyForCookEmailSubject(locale),
+                        react: BookingRequestCooksNotifyForCookEmail({
+                            locale,
+                            timeZone: cookUser.timeZone,
+                            webPageUrl,
+                            recipientFirstName: cookUser.firstName,
+                            occasion: context.occasion,
+                            dateTime: context.dateTime,
+                            city,
+                            poolUrl,
+                        }),
+                        purpose: 'BOOKING_REQUEST_COOK_NOTIFY',
                         locale,
-                        timeZone: cookUser.timeZone,
-                        webPageUrl,
-                        recipientFirstName: cookUser.firstName,
-                        occasion: context.occasion,
-                        dateTime: context.dateTime,
-                        city,
-                        poolUrl,
-                    }),
-                    purpose: 'BOOKING_REQUEST_COOK_NOTIFY',
-                    locale,
-                    relatedEntity: { type: 'BOOKING_REQUEST', id: context.bookingRequestId },
-                    userId: cookUser.userId,
-                });
+                        relatedEntity: { type: 'BOOKING_REQUEST', id: context.bookingRequestId },
+                        userId: cookUser.userId,
+                    });
+                }
             } catch (error) {
                 serverRuntime.log.error(
                     error instanceof Error

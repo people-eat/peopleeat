@@ -44,6 +44,23 @@ describe('userUpdate', () => {
         expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: user.userId });
     });
 
+    it('merges notification settings without turning other channels off', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser();
+
+        const result = await userUpdate(
+            userMutationParent(user.userId),
+            { user: { notificationSettings: { customerBooking: { email: false, whatsApp: true } } } },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(result).toEqual({ success: true });
+        const [row] = await testDb.select().from(users).where(eq(users.userId, user.userId));
+        expect(row?.notificationSettings?.customerBooking).toEqual({ email: false, whatsApp: true });
+        expect(row?.notificationSettings?.cookNewRequest).toEqual({ email: true, whatsApp: true });
+        expect(row?.notificationSettings?.customerChat?.whatsApp).toBe(true);
+    });
+
     it('updates timeZone and publishes userUpdates', async () => {
         const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ timeZone: 'Europe/Berlin' });
 

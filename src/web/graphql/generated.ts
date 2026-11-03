@@ -4700,6 +4700,7 @@ export interface GqlCUser {
     lastName: Scalars['String']['output'];
     legalAcceptance?: Maybe<GqlCUserLegalAcceptance>;
     locale: GqlCLocale;
+    notificationSettings: GqlCUserNotificationSettings;
     passkeys?: Maybe<Array<GqlCAuthPasskey>>;
     phoneNumber?: Maybe<Scalars['PhoneNumber']['output']>;
     preferredCommunication?: Maybe<GqlCUserPreferredCommunication>;
@@ -5231,6 +5232,38 @@ export type GqlCUserMutationUserUpdateArgs = {
     user: GqlCUserUpdate;
 };
 
+export interface GqlCUserNotificationChannelSettings {
+    __typename?: 'UserNotificationChannelSettings';
+    email: Scalars['Boolean']['output'];
+    whatsApp: Scalars['Boolean']['output'];
+}
+
+export type GqlCUserNotificationChannelSettingsInput = {
+    email: Scalars['Boolean']['input'];
+    whatsApp: Scalars['Boolean']['input'];
+};
+
+export interface GqlCUserNotificationSettings {
+    __typename?: 'UserNotificationSettings';
+    cookChat: GqlCUserNotificationChannelSettings;
+    cookNewRequest: GqlCUserNotificationChannelSettings;
+    cookOffer: GqlCUserNotificationChannelSettings;
+    cookReview: GqlCUserNotificationChannelSettings;
+    customerBooking: GqlCUserNotificationChannelSettings;
+    customerChat: GqlCUserNotificationChannelSettings;
+    customerReview: GqlCUserNotificationChannelSettings;
+}
+
+export type GqlCUserNotificationSettingsInput = {
+    cookChat?: InputMaybe<GqlCUserNotificationChannelSettingsInput>;
+    cookNewRequest?: InputMaybe<GqlCUserNotificationChannelSettingsInput>;
+    cookOffer?: InputMaybe<GqlCUserNotificationChannelSettingsInput>;
+    cookReview?: InputMaybe<GqlCUserNotificationChannelSettingsInput>;
+    customerBooking?: InputMaybe<GqlCUserNotificationChannelSettingsInput>;
+    customerChat?: InputMaybe<GqlCUserNotificationChannelSettingsInput>;
+    customerReview?: InputMaybe<GqlCUserNotificationChannelSettingsInput>;
+};
+
 export type GqlCUserPreferredCommunication = 'CALL' | 'E_MAIL' | 'SMS' | 'WHATS_APP';
 
 export interface GqlCUserSession {
@@ -5261,6 +5294,7 @@ export type GqlCUserUpdate = {
     firstName?: InputMaybe<Scalars['String']['input']>;
     lastName?: InputMaybe<Scalars['String']['input']>;
     locale?: InputMaybe<GqlCLocale>;
+    notificationSettings?: InputMaybe<GqlCUserNotificationSettingsInput>;
     phoneNumber?: InputMaybe<Scalars['PhoneNumber']['input']>;
     preferredCommunication?: InputMaybe<GqlCUserPreferredCommunication>;
     profilePictureFileUploadId?: InputMaybe<Scalars['ID']['input']>;
@@ -7518,6 +7552,15 @@ export type GqlCAccountPageUserFragment = {
     locale: Schema.GqlCLocale;
     timeZone: string;
     createdAt: string;
+    notificationSettings: {
+        customerBooking: { email: boolean; whatsApp: boolean };
+        customerChat: { email: boolean; whatsApp: boolean };
+        customerReview: { email: boolean; whatsApp: boolean };
+        cookNewRequest: { email: boolean; whatsApp: boolean };
+        cookOffer: { email: boolean; whatsApp: boolean };
+        cookChat: { email: boolean; whatsApp: boolean };
+        cookReview: { email: boolean; whatsApp: boolean };
+    };
     profilePicture: { fileUploadId: string; url: string } | null;
     cook: { cookId: string } | null;
     admin: { adminId: string } | null;
@@ -7551,6 +7594,15 @@ export type GqlCAccountPageSessionFragment = {
         locale: Schema.GqlCLocale;
         timeZone: string;
         createdAt: string;
+        notificationSettings: {
+            customerBooking: { email: boolean; whatsApp: boolean };
+            customerChat: { email: boolean; whatsApp: boolean };
+            customerReview: { email: boolean; whatsApp: boolean };
+            cookNewRequest: { email: boolean; whatsApp: boolean };
+            cookOffer: { email: boolean; whatsApp: boolean };
+            cookChat: { email: boolean; whatsApp: boolean };
+            cookReview: { email: boolean; whatsApp: boolean };
+        };
         profilePicture: { fileUploadId: string; url: string } | null;
         cook: { cookId: string } | null;
         admin: { adminId: string } | null;
@@ -7594,6 +7646,15 @@ export type GqlCAccountPageQuery = {
             locale: Schema.GqlCLocale;
             timeZone: string;
             createdAt: string;
+            notificationSettings: {
+                customerBooking: { email: boolean; whatsApp: boolean };
+                customerChat: { email: boolean; whatsApp: boolean };
+                customerReview: { email: boolean; whatsApp: boolean };
+                cookNewRequest: { email: boolean; whatsApp: boolean };
+                cookOffer: { email: boolean; whatsApp: boolean };
+                cookChat: { email: boolean; whatsApp: boolean };
+                cookReview: { email: boolean; whatsApp: boolean };
+            };
             profilePicture: { fileUploadId: string; url: string } | null;
             cook: { cookId: string } | null;
             admin: { adminId: string } | null;
@@ -7629,6 +7690,15 @@ export type GqlCAccountPageUserUpdatesSubscription = {
         locale: Schema.GqlCLocale;
         timeZone: string;
         createdAt: string;
+        notificationSettings: {
+            customerBooking: { email: boolean; whatsApp: boolean };
+            customerChat: { email: boolean; whatsApp: boolean };
+            customerReview: { email: boolean; whatsApp: boolean };
+            cookNewRequest: { email: boolean; whatsApp: boolean };
+            cookOffer: { email: boolean; whatsApp: boolean };
+            cookChat: { email: boolean; whatsApp: boolean };
+            cookReview: { email: boolean; whatsApp: boolean };
+        };
         profilePicture: { fileUploadId: string; url: string } | null;
         cook: { cookId: string } | null;
         admin: { adminId: string } | null;
@@ -7672,6 +7742,15 @@ export type GqlCAccountPageSessionUpdatesSubscription = {
             locale: Schema.GqlCLocale;
             timeZone: string;
             createdAt: string;
+            notificationSettings: {
+                customerBooking: { email: boolean; whatsApp: boolean };
+                customerChat: { email: boolean; whatsApp: boolean };
+                customerReview: { email: boolean; whatsApp: boolean };
+                cookNewRequest: { email: boolean; whatsApp: boolean };
+                cookOffer: { email: boolean; whatsApp: boolean };
+                cookChat: { email: boolean; whatsApp: boolean };
+                cookReview: { email: boolean; whatsApp: boolean };
+            };
             profilePicture: { fileUploadId: string; url: string } | null;
             cook: { cookId: string } | null;
             admin: { adminId: string } | null;
@@ -25317,6 +25396,92 @@ export const AccountPageUserFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'notificationSettings' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerBooking' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerChat' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerReview' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookNewRequest' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookOffer' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookChat' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookReview' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
@@ -25436,6 +25601,92 @@ export const AccountPageSessionFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'notificationSettings' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerBooking' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerChat' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerReview' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookNewRequest' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookOffer' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookChat' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookReview' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
@@ -36955,6 +37206,92 @@ export const AccountPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'notificationSettings' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerBooking' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerChat' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerReview' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookNewRequest' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookOffer' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookChat' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookReview' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
@@ -37092,6 +37429,92 @@ export const AccountPageUserUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'notificationSettings' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerBooking' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerChat' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerReview' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookNewRequest' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookOffer' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookChat' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookReview' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
@@ -37196,6 +37619,92 @@ export const AccountPageSessionUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'preferredCommunication' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'notificationSettings' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerBooking' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerChat' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'customerReview' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookNewRequest' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookOffer' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookChat' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookReview' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'email' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'whatsApp' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },

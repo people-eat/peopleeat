@@ -4,6 +4,7 @@ import { formatDate } from '../../../shared/formatDate';
 
 import { bookingRequestOffers, bookingRequests, cookTestimonials, customerTestimonials, users } from '../../db/schema';
 import { bookingRequestOfferPaymentIsPaid } from '../../domain/bookingRequest';
+import { notificationEmailAllowed, notificationWhatsAppAllowed } from '../../domain/notificationSettings';
 import { whatsappPhoneNumberNormalize } from '../../domain/whatsapp';
 import type { OutboundWhatsAppPurpose } from '../../domain/whatsapp';
 import type { BookingRequestOfferTestimonialReminderKind } from '../../email/components/bookingRequestOfferTestimonialReminderEmailShared';
@@ -96,7 +97,11 @@ export const bookingRequestOfferTestimonialReminder: QueuedJobDefinition<Booking
 
         const sends: Promise<unknown>[] = [];
 
-        if (!customerTestimonial && customerWithEmail) {
+        if (
+            !customerTestimonial &&
+            customerWithEmail &&
+            notificationEmailAllowed(customer.notificationSettings, purposeFor(data.kind, 'CUSTOMER'))
+        ) {
             sends.push(
                 serverRuntime.email.send({
                     to: customerWithEmail.emailAddress,
@@ -117,7 +122,11 @@ export const bookingRequestOfferTestimonialReminder: QueuedJobDefinition<Booking
             );
         }
 
-        if (!cookTestimonial && emailAddressPresent(cookUser)) {
+        if (
+            !cookTestimonial &&
+            emailAddressPresent(cookUser) &&
+            notificationEmailAllowed(cookUser.notificationSettings, purposeFor(data.kind, 'COOK'))
+        ) {
             sends.push(
                 serverRuntime.email.send({
                     to: emailAddressPresent(cookUser)!.emailAddress,
@@ -143,7 +152,9 @@ export const bookingRequestOfferTestimonialReminder: QueuedJobDefinition<Booking
             [cookUser, customer, 'COOK', cookTestimonial],
         ] as const) {
             const phone = whatsappPhoneNumberNormalize(recipient.phoneNumber);
-            if (testimonial || !phone) continue;
+            if (testimonial || !phone || !notificationWhatsAppAllowed(recipient.notificationSettings, purposeFor(data.kind, audience))) {
+                continue;
+            }
             sends.push(
                 serverRuntime.whatsapp
                     .sendTemplate({

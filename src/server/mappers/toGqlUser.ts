@@ -1,4 +1,5 @@
 import type { User } from '../db/schema';
+import { notificationSettingsResolve } from '../domain/notificationSettings';
 import type { GqlSUser } from '../graphql/generated';
 
 export function toGqlUser(user: User): GqlSUser {
@@ -11,6 +12,7 @@ export function toGqlUser(user: User): GqlSUser {
         phoneNumber: user.phoneNumber ?? null,
         birthDate: user.birthDate ?? null,
         preferredCommunication: user.preferredCommunication ?? null,
+        notificationSettings: notificationSettingsResolve(user.notificationSettings),
         locale: user.locale,
         timeZone: user.timeZone,
         createdAt: user.createdAt,

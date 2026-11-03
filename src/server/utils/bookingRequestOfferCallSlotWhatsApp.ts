@@ -2,6 +2,8 @@ import { eq } from 'drizzle-orm';
 
 import { bookingRequestOffers, bookingRequests, cookCallSlotBookings, users } from '../db/schema';
 import type { CookCallSlotBookingStatus } from '../domain/bookingRequest';
+import { notificationWhatsAppAllowed } from '../domain/notificationSettings';
+import type { UserNotificationSettingsStored } from '../domain/notificationSettings';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { OutboundWhatsAppPurpose } from '../domain/whatsapp';
 import { whatsappPhoneNumberNormalize } from '../domain/whatsapp';
@@ -28,8 +30,20 @@ type CallSlotWhatsAppContext = {
     bookingRequestDateTime: Date;
     customerUserId: string;
     cookId: string;
-    customer: { firstName: string; locale: 'de' | 'en'; timeZone: string; phoneNumber: string | null };
-    cookUser: { firstName: string; locale: 'de' | 'en'; timeZone: string; phoneNumber: string | null };
+    customer: {
+        firstName: string;
+        locale: 'de' | 'en';
+        timeZone: string;
+        phoneNumber: string | null;
+        notificationSettings: UserNotificationSettingsStored;
+    };
+    cookUser: {
+        firstName: string;
+        locale: 'de' | 'en';
+        timeZone: string;
+        phoneNumber: string | null;
+        notificationSettings: UserNotificationSettingsStored;
+    };
 };
 
 async function callSlotWhatsAppContextLoad(
@@ -64,6 +78,7 @@ async function callSlotWhatsAppContextLoad(
                 locale: users.locale,
                 timeZone: users.timeZone,
                 phoneNumber: users.phoneNumber,
+                notificationSettings: users.notificationSettings,
             })
             .from(users)
             .where(eq(users.userId, row.customerUserId))
@@ -76,6 +91,7 @@ async function callSlotWhatsAppContextLoad(
                 locale: users.locale,
                 timeZone: users.timeZone,
                 phoneNumber: users.phoneNumber,
+                notificationSettings: users.notificationSettings,
             })
             .from(users)
             .where(eq(users.userId, row.cookId))
@@ -102,12 +118,14 @@ async function callSlotWhatsAppContextLoad(
             locale: customer.locale,
             timeZone: customer.timeZone,
             phoneNumber: customer.phoneNumber,
+            notificationSettings: customer.notificationSettings,
         },
         cookUser: {
             firstName: cookUser.firstName,
             locale: cookUser.locale,
             timeZone: cookUser.timeZone,
             phoneNumber: cookUser.phoneNumber,
+            notificationSettings: cookUser.notificationSettings,
         },
     };
 }
@@ -125,6 +143,12 @@ async function recipientSend(
 ): Promise<void> {
     const user = args.recipient === 'COOK' ? args.context.cookUser : args.context.customer;
     const userId = args.recipient === 'COOK' ? args.context.cookId : args.context.customerUserId;
+    if (!notificationWhatsAppAllowed(user.notificationSettings, args.purpose, args.recipient)) {
+        serverRuntime.log.info(
+            `${args.label}: skip WhatsApp for ${args.context.cookCallSlotBookingId} (notification settings for user ${userId})`,
+        );
+        return;
+    }
     const toPhoneNumber = whatsappPhoneNumberNormalize(user.phoneNumber);
     if (!toPhoneNumber) {
         serverRuntime.log.info(

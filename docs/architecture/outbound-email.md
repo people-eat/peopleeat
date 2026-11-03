@@ -53,6 +53,8 @@ and retries must not erase history.
 - Pre-account outbound rows become visible on the user emails tab only after signup backfill (or if `userId` was known at send).
 - Marketing audience continuity lives in Klaviyo profile sync, not OutboundEmails — see
   [features/klaviyo-profile-sync.md](../features/klaviyo-profile-sync.md).
+- Optional automated mail (booking, chat, reviews, new cook requests) respects `Users.notificationSettings`. Sign-in, payment, support, gift
+  card, and cook-approval mail always send. See [notification-settings.md](../features/notification-settings.md).
 - **Locale on send** — `OutboundEmails.locale` is required at send time. Lifecycle / job emails for known users take each recipient’s
   `Users.locale` (see [i18n.md](./i18n.md)). Interactive OTP and gift-card purchase still pass request-time or entity-snapshot locale
   (guest-safe). Slack ops formatting stays German.

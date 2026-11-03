@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { DEFAULT_TIME_ZONE, formatDate, phoneNumberNormalize, userDisplayName } from '../../shared';
+import { AccountNotificationSettings } from '../components/AccountNotificationSettings';
 import { AuthEmailOtpSpamHint } from '../components/auth/AuthEmailOtpSpamHint';
 import { AuthTotpAccountSection } from '../components/auth/AuthTotpAccountSection';
 import {
@@ -197,6 +198,16 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                 throw result.error ?? new Error('Could not save.');
             }
             toast.success({ de: 'Telefonnummer gespeichert.', en: 'Phone number saved.' }[locale]);
+            const addingPhone = phoneNumber.length === 0;
+            const whatsAppOn = user != null && Object.values(user.notificationSettings).some((row) => row.whatsApp);
+            if (addingPhone && whatsAppOn) {
+                toast.success(
+                    {
+                        de: 'WhatsApp ist für die Nachrichten unten an. Einzelne kannst du ausschalten.',
+                        en: 'WhatsApp is on for the messages below. You can turn individual ones off.',
+                    }[locale],
+                );
+            }
             setPhoneDialogOpen(false);
         } catch (error) {
             setPhoneError(phoneNumberUpdateErrorMessage(error, locale));
@@ -472,13 +483,13 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                 title={{ de: 'So erreichen wir dich', en: 'How we reach you' }[locale]}
                 description={
                     {
-                        de: 'Updates zu deinem Abend bekommst du per E-Mail und, wenn wir deine Nummer haben, per WhatsApp. Bei Fragen meldet sich unser Concierge direkt bei dir.',
-                        en: 'You will receive updates about your evening via email and, when we have your number, via WhatsApp. If you have questions, our concierge will contact you directly.',
+                        de: 'E-Mail und Telefon für dein Konto. Die Auswahl gilt für unseren Concierge, nicht für automatische Nachrichten.',
+                        en: 'Your account email and phone. This choice is for our concierge, not for automatic messages.',
                     }[locale]
                 }
             >
                 <AccountValueRow
-                    label={{ de: 'E-Mail', en: 'Email' }[locale]}
+                    label={{ de: 'E-Mail-Adresse', en: 'Email address' }[locale]}
                     value={currentEmailAddress}
                     action={
                         pendingUnverifiedOtp == null ? (
@@ -530,8 +541,8 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                     value={preferredCommunicationDraft}
                     onValueChange={(next) => void onPreferredCommunicationChange(next)}
                     disabled={actionBusy}
-                    showTitle={false}
                     showSubtitle={false}
+                    title={{ de: 'Wie soll sich der Concierge melden?', en: 'How should the concierge reach you?' }}
                 />
 
                 <div className="grid gap-2">
@@ -539,8 +550,8 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                     <p className="text-sm text-muted-foreground">
                         {
                             {
-                                de: 'Diese Sprache gilt für die Oberfläche und für E-Mails.',
-                                en: 'This language applies to the interface and to emails.',
+                                de: 'Diese Sprache gilt für die Oberfläche, für E-Mails und für WhatsApp.',
+                                en: 'This language applies to the interface, to emails, and to WhatsApp.',
                             }[locale]
                         }
                     </p>
@@ -549,7 +560,7 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                 <TimeZoneField value={timeZoneDraft} onValueChange={(next) => void onTimeZoneChange(next)} disabled={actionBusy} />
             </AccountCard>
 
-            <AccountCard title={{ de: 'Anmeldung', en: 'Sign-in' }[locale]}>
+            <AccountCard title={{ de: 'Anmeldung und Sicherheit', en: 'Sign-in and security' }[locale]}>
                 <div className="grid gap-3">
                     <h2 className="text-sm font-medium text-foreground">{{ de: 'Passkeys', en: 'Passkeys' }[locale]}</h2>
                     {passkeys.length === 0 ? (
@@ -709,6 +720,35 @@ export function AccountPage({ loaderData }: { loaderData: GqlCAccountPageQuery }
                         />
                     </div>
                 </div>
+            </AccountCard>
+
+            <AccountCard
+                title={{ de: 'Benachrichtigungen', en: 'Notifications' }[locale]}
+                description={
+                    {
+                        de: 'Lege fest, wobei wir dir schreiben. In der App bleibt alles sichtbar. Anmeldecodes, Zahlungen und Support gehen immer an deine E-Mail.',
+                        en: 'Choose what we write to you about. Everything still shows in the app. Sign-in codes, payments, and support always go to your email.',
+                    }[locale]
+                }
+            >
+                <AccountNotificationSettings
+                    value={user.notificationSettings}
+                    hasPhoneNumber={hasPhoneNumber}
+                    isCook={user.cook != null}
+                    disabled={actionBusy}
+                    onAddPhone={openPhoneDialog}
+                    onSave={async (notificationSettings) => {
+                        setBusy(true);
+                        try {
+                            const result = await userUpdate({ user: { notificationSettings } });
+                            if (result.error || !result.data?.user.userUpdate.success) {
+                                throw result.error ?? new Error('Could not save.');
+                            }
+                        } finally {
+                            setBusy(false);
+                        }
+                    }}
+                />
             </AccountCard>
 
             <AccountCard

@@ -148,6 +148,13 @@
             "when": 1793727181998,
             "tag": "0020_pale_ego",
             "breakpoints": true
+        },
+        {
+            "idx": 21,
+            "version": "7",
+            "when": 1793728313096,
+            "tag": "0021_stormy_night_thrasher",
+            "breakpoints": true
         }
     ]
 }

@@ -2,6 +2,9 @@ import { eq } from 'drizzle-orm';
 
 import type { Locale } from '../../shared/locale';
 import { bookingRequestOffers, bookingRequests, cookCallSlotBookings, users } from '../db/schema';
+import { notificationEmailAllowed } from '../domain/notificationSettings';
+import type { NotificationAudience, UserNotificationSettingsStored } from '../domain/notificationSettings';
+import type { OutboundEmailPurpose } from '../domain/outboundEmail';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { bookingRequestOfferCallSlotOfferUrls } from '../email/components/bookingRequestOfferCallSlotEmailFormat';
 import {
@@ -53,9 +56,36 @@ type CallSlotEmailContext = {
     eventDateTime: Date;
     customerUserId: string;
     cookId: string;
-    customer: { emailAddress: string; firstName: string; locale: Locale; timeZone: string };
-    cookUser: { emailAddress: string; firstName: string; locale: Locale; timeZone: string };
+    customer: {
+        emailAddress: string;
+        firstName: string;
+        locale: Locale;
+        timeZone: string;
+        notificationSettings: UserNotificationSettingsStored;
+    };
+    cookUser: {
+        emailAddress: string;
+        firstName: string;
+        locale: Locale;
+        timeZone: string;
+        notificationSettings: UserNotificationSettingsStored;
+    };
 };
+
+function sendCallSlotEmail(
+    serverRuntime: ServerRuntime,
+    label: string,
+    entityId: string,
+    user: { notificationSettings: UserNotificationSettingsStored },
+    purpose: OutboundEmailPurpose,
+    audience: NotificationAudience,
+    send: () => Promise<unknown>,
+): Promise<void> {
+    if (!notificationEmailAllowed(user.notificationSettings, purpose, audience)) {
+        return Promise.resolve();
+    }
+    return sendSafely(serverRuntime, label, entityId, send);
+}
 
 async function callSlotEmailContextLoad(serverRuntime: ServerRuntime, cookCallSlotBookingId: string): Promise<CallSlotEmailContext | null> {
     const [row] = await serverRuntime.db
@@ -80,13 +110,25 @@ async function callSlotEmailContextLoad(serverRuntime: ServerRuntime, cookCallSl
 
     const [customer, cookUser] = await Promise.all([
         serverRuntime.db
-            .select({ emailAddress: users.emailAddress, firstName: users.firstName, locale: users.locale, timeZone: users.timeZone })
+            .select({
+                emailAddress: users.emailAddress,
+                firstName: users.firstName,
+                locale: users.locale,
+                timeZone: users.timeZone,
+                notificationSettings: users.notificationSettings,
+            })
             .from(users)
             .where(eq(users.userId, row.customerUserId))
             .limit(1)
             .then((rows) => rows[0]),
         serverRuntime.db
-            .select({ emailAddress: users.emailAddress, firstName: users.firstName, locale: users.locale, timeZone: users.timeZone })
+            .select({
+                emailAddress: users.emailAddress,
+                firstName: users.firstName,
+                locale: users.locale,
+                timeZone: users.timeZone,
+                notificationSettings: users.notificationSettings,
+            })
             .from(users)
             .where(eq(users.userId, row.cookId))
             .limit(1)
@@ -151,26 +193,33 @@ export async function bookingRequestOfferCallSlotRequestEmailSend(
 
     if (args.recipient === 'COOK') {
         await Promise.all([
-            sendSafely(serverRuntime, 'bookingRequestOfferCallSlotRequestEmailSend', args.cookCallSlotBookingId, () =>
-                serverRuntime.email.send({
-                    to: context.cookUser.emailAddress,
-                    subject: bookingRequestOfferCallSlotRequestForCookEmailSubject(locale),
-                    react: BookingRequestOfferCallSlotRequestForCookEmail({
+            sendCallSlotEmail(
+                serverRuntime,
+                'bookingRequestOfferCallSlotRequestEmailSend',
+                args.cookCallSlotBookingId,
+                context.cookUser,
+                'CALL_SLOT_BOOKING_REQUEST',
+                'COOK',
+                () =>
+                    serverRuntime.email.send({
+                        to: context.cookUser.emailAddress,
+                        subject: bookingRequestOfferCallSlotRequestForCookEmailSubject(locale),
+                        react: BookingRequestOfferCallSlotRequestForCookEmail({
+                            locale,
+                            timeZone,
+                            webPageUrl,
+                            recipientFirstName: context.cookUser.firstName,
+                            senderFirstName: context.customer.firstName,
+                            startAt: context.startAt,
+                            eventDateTime: context.eventDateTime,
+                            occasion: context.occasion,
+                            offerUrl: urls.cook,
+                        }),
+                        purpose: 'CALL_SLOT_BOOKING_REQUEST',
                         locale,
-                        timeZone,
-                        webPageUrl,
-                        recipientFirstName: context.cookUser.firstName,
-                        senderFirstName: context.customer.firstName,
-                        startAt: context.startAt,
-                        eventDateTime: context.eventDateTime,
-                        occasion: context.occasion,
-                        offerUrl: urls.cook,
+                        relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
+                        userId: context.cookId,
                     }),
-                    purpose: 'CALL_SLOT_BOOKING_REQUEST',
-                    locale,
-                    relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
-                    userId: context.cookId,
-                }),
             ),
             bookingRequestOfferCallSlotRequestWhatsAppSend(serverRuntime, args),
         ]);
@@ -178,26 +227,33 @@ export async function bookingRequestOfferCallSlotRequestEmailSend(
     }
 
     await Promise.all([
-        sendSafely(serverRuntime, 'bookingRequestOfferCallSlotRequestEmailSend', args.cookCallSlotBookingId, () =>
-            serverRuntime.email.send({
-                to: context.customer.emailAddress,
-                subject: bookingRequestOfferCallSlotRequestForCustomerEmailSubject(locale),
-                react: BookingRequestOfferCallSlotRequestForCustomerEmail({
+        sendCallSlotEmail(
+            serverRuntime,
+            'bookingRequestOfferCallSlotRequestEmailSend',
+            args.cookCallSlotBookingId,
+            context.customer,
+            'CALL_SLOT_BOOKING_REQUEST',
+            'CUSTOMER',
+            () =>
+                serverRuntime.email.send({
+                    to: context.customer.emailAddress,
+                    subject: bookingRequestOfferCallSlotRequestForCustomerEmailSubject(locale),
+                    react: BookingRequestOfferCallSlotRequestForCustomerEmail({
+                        locale,
+                        timeZone,
+                        webPageUrl,
+                        recipientFirstName: context.customer.firstName,
+                        senderFirstName: context.cookUser.firstName,
+                        startAt: context.startAt,
+                        eventDateTime: context.eventDateTime,
+                        occasion: context.occasion,
+                        offerUrl: urls.customer,
+                    }),
+                    purpose: 'CALL_SLOT_BOOKING_REQUEST',
                     locale,
-                    timeZone,
-                    webPageUrl,
-                    recipientFirstName: context.customer.firstName,
-                    senderFirstName: context.cookUser.firstName,
-                    startAt: context.startAt,
-                    eventDateTime: context.eventDateTime,
-                    occasion: context.occasion,
-                    offerUrl: urls.customer,
+                    relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
+                    userId: context.customerUserId,
                 }),
-                purpose: 'CALL_SLOT_BOOKING_REQUEST',
-                locale,
-                relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
-                userId: context.customerUserId,
-            }),
         ),
         bookingRequestOfferCallSlotRequestWhatsAppSend(serverRuntime, args),
     ]);
@@ -222,24 +278,31 @@ export async function bookingRequestOfferCallSlotConfirmEmailSend(
 
     if (args.recipient === 'COOK') {
         await Promise.all([
-            sendSafely(serverRuntime, 'bookingRequestOfferCallSlotConfirmEmailSend', args.cookCallSlotBookingId, () =>
-                serverRuntime.email.send({
-                    to: context.cookUser.emailAddress,
-                    subject: bookingRequestOfferCallSlotConfirmForCookEmailSubject(locale),
-                    react: BookingRequestOfferCallSlotConfirmForCookEmail({
+            sendCallSlotEmail(
+                serverRuntime,
+                'bookingRequestOfferCallSlotConfirmEmailSend',
+                args.cookCallSlotBookingId,
+                context.cookUser,
+                'CALL_SLOT_BOOKING_CONFIRM',
+                'COOK',
+                () =>
+                    serverRuntime.email.send({
+                        to: context.cookUser.emailAddress,
+                        subject: bookingRequestOfferCallSlotConfirmForCookEmailSubject(locale),
+                        react: BookingRequestOfferCallSlotConfirmForCookEmail({
+                            locale,
+                            timeZone,
+                            webPageUrl,
+                            recipientFirstName: context.cookUser.firstName,
+                            accepterFirstName: context.customer.firstName,
+                            startAt: context.startAt,
+                            offerUrl: urls.cook,
+                        }),
+                        purpose: 'CALL_SLOT_BOOKING_CONFIRM',
                         locale,
-                        timeZone,
-                        webPageUrl,
-                        recipientFirstName: context.cookUser.firstName,
-                        accepterFirstName: context.customer.firstName,
-                        startAt: context.startAt,
-                        offerUrl: urls.cook,
+                        relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
+                        userId: context.cookId,
                     }),
-                    purpose: 'CALL_SLOT_BOOKING_CONFIRM',
-                    locale,
-                    relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
-                    userId: context.cookId,
-                }),
             ),
             bookingRequestOfferCallSlotConfirmWhatsAppSend(serverRuntime, args),
         ]);
@@ -247,24 +310,31 @@ export async function bookingRequestOfferCallSlotConfirmEmailSend(
     }
 
     await Promise.all([
-        sendSafely(serverRuntime, 'bookingRequestOfferCallSlotConfirmEmailSend', args.cookCallSlotBookingId, () =>
-            serverRuntime.email.send({
-                to: context.customer.emailAddress,
-                subject: bookingRequestOfferCallSlotConfirmForCustomerEmailSubject(locale),
-                react: BookingRequestOfferCallSlotConfirmForCustomerEmail({
+        sendCallSlotEmail(
+            serverRuntime,
+            'bookingRequestOfferCallSlotConfirmEmailSend',
+            args.cookCallSlotBookingId,
+            context.customer,
+            'CALL_SLOT_BOOKING_CONFIRM',
+            'CUSTOMER',
+            () =>
+                serverRuntime.email.send({
+                    to: context.customer.emailAddress,
+                    subject: bookingRequestOfferCallSlotConfirmForCustomerEmailSubject(locale),
+                    react: BookingRequestOfferCallSlotConfirmForCustomerEmail({
+                        locale,
+                        timeZone,
+                        webPageUrl,
+                        recipientFirstName: context.customer.firstName,
+                        accepterFirstName: context.cookUser.firstName,
+                        startAt: context.startAt,
+                        offerUrl: urls.customer,
+                    }),
+                    purpose: 'CALL_SLOT_BOOKING_CONFIRM',
                     locale,
-                    timeZone,
-                    webPageUrl,
-                    recipientFirstName: context.customer.firstName,
-                    accepterFirstName: context.cookUser.firstName,
-                    startAt: context.startAt,
-                    offerUrl: urls.customer,
+                    relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
+                    userId: context.customerUserId,
                 }),
-                purpose: 'CALL_SLOT_BOOKING_CONFIRM',
-                locale,
-                relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
-                userId: context.customerUserId,
-            }),
         ),
         bookingRequestOfferCallSlotConfirmWhatsAppSend(serverRuntime, args),
     ]);
@@ -288,23 +358,30 @@ export async function bookingRequestOfferCallSlotDeclineEmailSend(
 
     if (args.recipient === 'COOK') {
         await Promise.all([
-            sendSafely(serverRuntime, 'bookingRequestOfferCallSlotDeclineEmailSend', args.cookCallSlotBookingId, () =>
-                serverRuntime.email.send({
-                    to: context.cookUser.emailAddress,
-                    subject: bookingRequestOfferCallSlotDeclineForCookEmailSubject(locale),
-                    react: BookingRequestOfferCallSlotDeclineForCookEmail({
+            sendCallSlotEmail(
+                serverRuntime,
+                'bookingRequestOfferCallSlotDeclineEmailSend',
+                args.cookCallSlotBookingId,
+                context.cookUser,
+                'CALL_SLOT_BOOKING_DECLINE',
+                'COOK',
+                () =>
+                    serverRuntime.email.send({
+                        to: context.cookUser.emailAddress,
+                        subject: bookingRequestOfferCallSlotDeclineForCookEmailSubject(locale),
+                        react: BookingRequestOfferCallSlotDeclineForCookEmail({
+                            locale,
+                            webPageUrl,
+                            recipientFirstName: context.cookUser.firstName,
+                            declinerFirstName: context.customer.firstName,
+                            reason: args.reason,
+                            offerUrl: urls.cook,
+                        }),
+                        purpose: 'CALL_SLOT_BOOKING_DECLINE',
                         locale,
-                        webPageUrl,
-                        recipientFirstName: context.cookUser.firstName,
-                        declinerFirstName: context.customer.firstName,
-                        reason: args.reason,
-                        offerUrl: urls.cook,
+                        relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
+                        userId: context.cookId,
                     }),
-                    purpose: 'CALL_SLOT_BOOKING_DECLINE',
-                    locale,
-                    relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
-                    userId: context.cookId,
-                }),
             ),
             bookingRequestOfferCallSlotCancelWhatsAppSend(serverRuntime, {
                 cookCallSlotBookingId: args.cookCallSlotBookingId,
@@ -316,23 +393,30 @@ export async function bookingRequestOfferCallSlotDeclineEmailSend(
     }
 
     await Promise.all([
-        sendSafely(serverRuntime, 'bookingRequestOfferCallSlotDeclineEmailSend', args.cookCallSlotBookingId, () =>
-            serverRuntime.email.send({
-                to: context.customer.emailAddress,
-                subject: bookingRequestOfferCallSlotDeclineForCustomerEmailSubject(locale),
-                react: BookingRequestOfferCallSlotDeclineForCustomerEmail({
+        sendCallSlotEmail(
+            serverRuntime,
+            'bookingRequestOfferCallSlotDeclineEmailSend',
+            args.cookCallSlotBookingId,
+            context.customer,
+            'CALL_SLOT_BOOKING_DECLINE',
+            'CUSTOMER',
+            () =>
+                serverRuntime.email.send({
+                    to: context.customer.emailAddress,
+                    subject: bookingRequestOfferCallSlotDeclineForCustomerEmailSubject(locale),
+                    react: BookingRequestOfferCallSlotDeclineForCustomerEmail({
+                        locale,
+                        webPageUrl,
+                        recipientFirstName: context.customer.firstName,
+                        declinerFirstName: context.cookUser.firstName,
+                        reason: args.reason,
+                        offerUrl: urls.customer,
+                    }),
+                    purpose: 'CALL_SLOT_BOOKING_DECLINE',
                     locale,
-                    webPageUrl,
-                    recipientFirstName: context.customer.firstName,
-                    declinerFirstName: context.cookUser.firstName,
-                    reason: args.reason,
-                    offerUrl: urls.customer,
+                    relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
+                    userId: context.customerUserId,
                 }),
-                purpose: 'CALL_SLOT_BOOKING_DECLINE',
-                locale,
-                relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
-                userId: context.customerUserId,
-            }),
         ),
         bookingRequestOfferCallSlotCancelWhatsAppSend(serverRuntime, {
             cookCallSlotBookingId: args.cookCallSlotBookingId,
@@ -367,26 +451,33 @@ export async function bookingRequestOfferCallSlotCancelEmailSend(
 
     if (args.recipient === 'COOK') {
         await Promise.all([
-            sendSafely(serverRuntime, 'bookingRequestOfferCallSlotCancelEmailSend', args.cookCallSlotBookingId, () =>
-                serverRuntime.email.send({
-                    to: context.cookUser.emailAddress,
-                    subject: bookingRequestOfferCallSlotCancelForCookEmailSubject(locale),
-                    react: BookingRequestOfferCallSlotCancelForCookEmail({
+            sendCallSlotEmail(
+                serverRuntime,
+                'bookingRequestOfferCallSlotCancelEmailSend',
+                args.cookCallSlotBookingId,
+                context.cookUser,
+                'CALL_SLOT_BOOKING_CANCEL',
+                'COOK',
+                () =>
+                    serverRuntime.email.send({
+                        to: context.cookUser.emailAddress,
+                        subject: bookingRequestOfferCallSlotCancelForCookEmailSubject(locale),
+                        react: BookingRequestOfferCallSlotCancelForCookEmail({
+                            locale,
+                            timeZone,
+                            webPageUrl,
+                            recipientFirstName: context.cookUser.firstName,
+                            cancelerFirstName: context.customer.firstName,
+                            startAt: context.startAt,
+                            reason: args.reason,
+                            wasConfirmed: args.wasConfirmed,
+                            offerUrl: urls.cook,
+                        }),
+                        purpose: 'CALL_SLOT_BOOKING_CANCEL',
                         locale,
-                        timeZone,
-                        webPageUrl,
-                        recipientFirstName: context.cookUser.firstName,
-                        cancelerFirstName: context.customer.firstName,
-                        startAt: context.startAt,
-                        reason: args.reason,
-                        wasConfirmed: args.wasConfirmed,
-                        offerUrl: urls.cook,
+                        relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
+                        userId: context.cookId,
                     }),
-                    purpose: 'CALL_SLOT_BOOKING_CANCEL',
-                    locale,
-                    relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
-                    userId: context.cookId,
-                }),
             ),
             bookingRequestOfferCallSlotCancelWhatsAppSend(serverRuntime, {
                 cookCallSlotBookingId: args.cookCallSlotBookingId,
@@ -398,26 +489,33 @@ export async function bookingRequestOfferCallSlotCancelEmailSend(
     }
 
     await Promise.all([
-        sendSafely(serverRuntime, 'bookingRequestOfferCallSlotCancelEmailSend', args.cookCallSlotBookingId, () =>
-            serverRuntime.email.send({
-                to: context.customer.emailAddress,
-                subject: bookingRequestOfferCallSlotCancelForCustomerEmailSubject(locale),
-                react: BookingRequestOfferCallSlotCancelForCustomerEmail({
+        sendCallSlotEmail(
+            serverRuntime,
+            'bookingRequestOfferCallSlotCancelEmailSend',
+            args.cookCallSlotBookingId,
+            context.customer,
+            'CALL_SLOT_BOOKING_CANCEL',
+            'CUSTOMER',
+            () =>
+                serverRuntime.email.send({
+                    to: context.customer.emailAddress,
+                    subject: bookingRequestOfferCallSlotCancelForCustomerEmailSubject(locale),
+                    react: BookingRequestOfferCallSlotCancelForCustomerEmail({
+                        locale,
+                        timeZone,
+                        webPageUrl,
+                        recipientFirstName: context.customer.firstName,
+                        cancelerFirstName: context.cookUser.firstName,
+                        startAt: context.startAt,
+                        reason: args.reason,
+                        wasConfirmed: args.wasConfirmed,
+                        offerUrl: urls.customer,
+                    }),
+                    purpose: 'CALL_SLOT_BOOKING_CANCEL',
                     locale,
-                    timeZone,
-                    webPageUrl,
-                    recipientFirstName: context.customer.firstName,
-                    cancelerFirstName: context.cookUser.firstName,
-                    startAt: context.startAt,
-                    reason: args.reason,
-                    wasConfirmed: args.wasConfirmed,
-                    offerUrl: urls.customer,
+                    relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
+                    userId: context.customerUserId,
                 }),
-                purpose: 'CALL_SLOT_BOOKING_CANCEL',
-                locale,
-                relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
-                userId: context.customerUserId,
-            }),
         ),
         bookingRequestOfferCallSlotCancelWhatsAppSend(serverRuntime, {
             cookCallSlotBookingId: args.cookCallSlotBookingId,

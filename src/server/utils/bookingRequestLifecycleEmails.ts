@@ -5,6 +5,9 @@ import { bookingRequestPriceClassLabel } from '../../shared/bookingRequestFormDe
 import type { Locale } from '../../shared/locale';
 import { bookingRequestParticipants, bookingRequests, users } from '../db/schema';
 import type { BookingRequest, BookingRequestOffer } from '../db/schema';
+import { notificationEmailAllowed } from '../domain/notificationSettings';
+import type { NotificationAudience, UserNotificationSettingsStored } from '../domain/notificationSettings';
+import type { OutboundEmailPurpose } from '../domain/outboundEmail';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import {
     bookingRequestEmailCookOfferUrl,
@@ -82,7 +85,29 @@ import {
 } from './bookingRequestLifecycleWhatsApp';
 import { emailAddressPresent } from './emailAddressPresent';
 
-type EmailUser = { userId: string; emailAddress: string; firstName: string; locale: Locale; timeZone: string };
+type EmailUser = {
+    userId: string;
+    emailAddress: string;
+    firstName: string;
+    locale: Locale;
+    timeZone: string;
+    notificationSettings: UserNotificationSettingsStored;
+};
+
+function sendUserEmail(
+    serverRuntime: ServerRuntime,
+    label: string,
+    entityId: string,
+    user: EmailUser,
+    purpose: OutboundEmailPurpose,
+    audience: NotificationAudience | undefined,
+    send: () => Promise<unknown>,
+): Promise<void> {
+    if (!notificationEmailAllowed(user.notificationSettings, purpose, audience)) {
+        return Promise.resolve();
+    }
+    return sendSafely(serverRuntime, label, entityId, send);
+}
 
 async function sendSafely(serverRuntime: ServerRuntime, label: string, entityId: string, send: () => Promise<unknown>): Promise<void> {
     try {
@@ -107,6 +132,7 @@ async function usersByIdsFind(serverRuntime: ServerRuntime, userIds: string[]): 
             firstName: users.firstName,
             locale: users.locale,
             timeZone: users.timeZone,
+            notificationSettings: users.notificationSettings,
         })
         .from(users)
         .where(inArray(users.userId, uniqueIds));
@@ -153,29 +179,36 @@ export async function userBookingRequestCreateEmailSend(
     const discountedCount = participantRows.filter((row) => row.type === 'DISCOUNTED').length;
 
     await Promise.all([
-        sendSafely(serverRuntime, 'userBookingRequestCreateEmailSend', args.bookingRequestId, () =>
-            serverRuntime.email.send({
-                to: customer.emailAddress,
-                subject: userBookingRequestCreateForCustomerEmailSubject(locale),
-                react: UserBookingRequestCreateForCustomerEmail({
+        sendUserEmail(
+            serverRuntime,
+            'userBookingRequestCreateEmailSend',
+            args.bookingRequestId,
+            customer,
+            'BOOKING_REQUEST_CREATED',
+            undefined,
+            () =>
+                serverRuntime.email.send({
+                    to: customer.emailAddress,
+                    subject: userBookingRequestCreateForCustomerEmailSubject(locale),
+                    react: UserBookingRequestCreateForCustomerEmail({
+                        locale,
+                        timeZone: customer.timeZone,
+                        webPageUrl,
+                        recipientFirstName: customer.firstName,
+                        bookingRequestId: bookingRequest.bookingRequestId,
+                        occasion: bookingRequest.occasion,
+                        dateTime: bookingRequest.dateTime,
+                        address: bookingRequest.exactEventAddress.displayText,
+                        priceClassLabel: priceClassLabelResolve(bookingRequest.priceClassType, locale),
+                        adultCount,
+                        discountedCount,
+                        requestUrl: bookingRequestEmailCustomerRequestUrl(webPageUrl, bookingRequest.bookingRequestId),
+                    }),
+                    purpose: 'BOOKING_REQUEST_CREATED',
                     locale,
-                    timeZone: customer.timeZone,
-                    webPageUrl,
-                    recipientFirstName: customer.firstName,
-                    bookingRequestId: bookingRequest.bookingRequestId,
-                    occasion: bookingRequest.occasion,
-                    dateTime: bookingRequest.dateTime,
-                    address: bookingRequest.exactEventAddress.displayText,
-                    priceClassLabel: priceClassLabelResolve(bookingRequest.priceClassType, locale),
-                    adultCount,
-                    discountedCount,
-                    requestUrl: bookingRequestEmailCustomerRequestUrl(webPageUrl, bookingRequest.bookingRequestId),
+                    relatedEntity: { type: 'BOOKING_REQUEST', id: bookingRequest.bookingRequestId },
+                    userId: customer.userId,
                 }),
-                purpose: 'BOOKING_REQUEST_CREATED',
-                locale,
-                relatedEntity: { type: 'BOOKING_REQUEST', id: bookingRequest.bookingRequestId },
-                userId: customer.userId,
-            }),
         ),
         userBookingRequestCreateWhatsAppSend(serverRuntime, {
             bookingRequestId: bookingRequest.bookingRequestId,
@@ -212,7 +245,7 @@ export async function userBookingRequestUpdateEmailSend(
             }
             const locale = cook.locale;
             await Promise.all([
-                sendSafely(serverRuntime, 'userBookingRequestUpdateEmailSend', offerId, () =>
+                sendUserEmail(serverRuntime, 'userBookingRequestUpdateEmailSend', offerId, cook, 'BOOKING_REQUEST_UPDATED', undefined, () =>
                     serverRuntime.email.send({
                         to: cook.emailAddress,
                         subject: userBookingRequestUpdateForCookEmailSubject(locale),
@@ -255,20 +288,27 @@ export async function userBookingRequestCancelEmailSend(
     if (customer) {
         const customerLocale = customer.locale;
         tasks.push(
-            sendSafely(serverRuntime, 'userBookingRequestCancelEmailSend.customer', args.bookingRequestId, () =>
-                serverRuntime.email.send({
-                    to: customer.emailAddress,
-                    subject: userBookingRequestCancelForCustomerEmailSubject(customerLocale),
-                    react: UserBookingRequestCancelForCustomerEmail({
+            sendUserEmail(
+                serverRuntime,
+                'userBookingRequestCancelEmailSend.customer',
+                args.bookingRequestId,
+                customer,
+                'BOOKING_REQUEST_CANCELED',
+                'CUSTOMER',
+                () =>
+                    serverRuntime.email.send({
+                        to: customer.emailAddress,
+                        subject: userBookingRequestCancelForCustomerEmailSubject(customerLocale),
+                        react: UserBookingRequestCancelForCustomerEmail({
+                            locale: customerLocale,
+                            webPageUrl,
+                            recipientFirstName: customer.firstName,
+                        }),
+                        purpose: 'BOOKING_REQUEST_CANCELED',
                         locale: customerLocale,
-                        webPageUrl,
-                        recipientFirstName: customer.firstName,
+                        relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
+                        userId: customer.userId,
                     }),
-                    purpose: 'BOOKING_REQUEST_CANCELED',
-                    locale: customerLocale,
-                    relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-                    userId: customer.userId,
-                }),
             ),
             userBookingRequestCancelWhatsAppSend(serverRuntime, {
                 bookingRequestId: args.bookingRequestId,
@@ -282,21 +322,28 @@ export async function userBookingRequestCancelEmailSend(
         if (!cook) continue;
         const cookLocale = cook.locale;
         tasks.push(
-            sendSafely(serverRuntime, 'userBookingRequestCancelEmailSend.cook', args.bookingRequestId, () =>
-                serverRuntime.email.send({
-                    to: cook.emailAddress,
-                    subject: userBookingRequestCancelForCookEmailSubject(cookLocale),
-                    react: UserBookingRequestCancelForCookEmail({
+            sendUserEmail(
+                serverRuntime,
+                'userBookingRequestCancelEmailSend.cook',
+                args.bookingRequestId,
+                cook,
+                'BOOKING_REQUEST_CANCELED',
+                'COOK',
+                () =>
+                    serverRuntime.email.send({
+                        to: cook.emailAddress,
+                        subject: userBookingRequestCancelForCookEmailSubject(cookLocale),
+                        react: UserBookingRequestCancelForCookEmail({
+                            locale: cookLocale,
+                            webPageUrl,
+                            recipientFirstName: cook.firstName,
+                            reason: args.reason,
+                        }),
+                        purpose: 'BOOKING_REQUEST_CANCELED',
                         locale: cookLocale,
-                        webPageUrl,
-                        recipientFirstName: cook.firstName,
-                        reason: args.reason,
+                        relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
+                        userId: cook.userId,
                     }),
-                    purpose: 'BOOKING_REQUEST_CANCELED',
-                    locale: cookLocale,
-                    relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-                    userId: cook.userId,
-                }),
             ),
             userBookingRequestCancelCookWhatsAppSend(serverRuntime, {
                 bookingRequestId: args.bookingRequestId,
@@ -336,28 +383,35 @@ export async function cookBookingRequestOfferCreateEmailSend(
     const webPageUrl = environmentVariables.webPageUrl;
 
     await Promise.all([
-        sendSafely(serverRuntime, 'cookBookingRequestOfferCreateEmailSend', args.bookingRequestOfferId, () =>
-            serverRuntime.email.send({
-                to: customer.emailAddress,
-                subject: cookBookingRequestOfferCreateForCustomerEmailSubject(locale),
-                react: CookBookingRequestOfferCreateForCustomerEmail({
+        sendUserEmail(
+            serverRuntime,
+            'cookBookingRequestOfferCreateEmailSend',
+            args.bookingRequestOfferId,
+            customer,
+            'BOOKING_REQUEST_OFFER_CREATED',
+            undefined,
+            () =>
+                serverRuntime.email.send({
+                    to: customer.emailAddress,
+                    subject: cookBookingRequestOfferCreateForCustomerEmailSubject(locale),
+                    react: CookBookingRequestOfferCreateForCustomerEmail({
+                        locale,
+                        timeZone: customer.timeZone,
+                        webPageUrl,
+                        recipientFirstName: customer.firstName,
+                        cookFirstName: cook.firstName,
+                        bookingRequestId: args.bookingRequestId,
+                        occasion: args.occasion,
+                        dateTime: args.dateTime,
+                        address: args.address,
+                        suggestedMenuTitles: args.suggestedMenuTitles,
+                        offerUrl: bookingRequestEmailCustomerOfferUrl(webPageUrl, args.bookingRequestId, args.bookingRequestOfferId),
+                    }),
+                    purpose: 'BOOKING_REQUEST_OFFER_CREATED',
                     locale,
-                    timeZone: customer.timeZone,
-                    webPageUrl,
-                    recipientFirstName: customer.firstName,
-                    cookFirstName: cook.firstName,
-                    bookingRequestId: args.bookingRequestId,
-                    occasion: args.occasion,
-                    dateTime: args.dateTime,
-                    address: args.address,
-                    suggestedMenuTitles: args.suggestedMenuTitles,
-                    offerUrl: bookingRequestEmailCustomerOfferUrl(webPageUrl, args.bookingRequestId, args.bookingRequestOfferId),
+                    relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
+                    userId: customer.userId,
                 }),
-                purpose: 'BOOKING_REQUEST_OFFER_CREATED',
-                locale,
-                relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-                userId: customer.userId,
-            }),
         ),
         cookBookingRequestOfferCreateWhatsAppSend(serverRuntime, {
             bookingRequestOfferId: args.bookingRequestOfferId,
@@ -388,23 +442,35 @@ export async function cookBookingRequestOfferSuggestedMenusUpdateEmailSend(
     const webPageUrl = environmentVariables.webPageUrl;
 
     await Promise.all([
-        sendSafely(serverRuntime, 'cookBookingRequestOfferSuggestedMenusUpdateEmailSend', args.bookingRequestOfferId, () =>
-            serverRuntime.email.send({
-                to: customer.emailAddress,
-                subject: cookBookingRequestOfferSuggestedMenusUpdateForCustomerEmailSubject(locale),
-                react: CookBookingRequestOfferSuggestedMenusUpdateForCustomerEmail({
+        sendUserEmail(
+            serverRuntime,
+            'cookBookingRequestOfferSuggestedMenusUpdateEmailSend',
+            args.bookingRequestOfferId,
+            customer,
+            'BOOKING_REQUEST_OFFER_MENU_UPDATED',
+            undefined,
+            () =>
+                serverRuntime.email.send({
+                    to: customer.emailAddress,
+                    subject: cookBookingRequestOfferSuggestedMenusUpdateForCustomerEmailSubject(locale),
+                    react: CookBookingRequestOfferSuggestedMenusUpdateForCustomerEmail({
+                        locale,
+                        webPageUrl,
+                        recipientFirstName: customer.firstName,
+                        cookFirstName: cook.firstName,
+                        bookingRequestId: args.bookingRequestId,
+                        offerUrl: bookingRequestEmailCustomerOfferUrl(
+                            webPageUrl,
+                            args.bookingRequestId,
+                            args.bookingRequestOfferId,
+                            'offer',
+                        ),
+                    }),
+                    purpose: 'BOOKING_REQUEST_OFFER_MENU_UPDATED',
                     locale,
-                    webPageUrl,
-                    recipientFirstName: customer.firstName,
-                    cookFirstName: cook.firstName,
-                    bookingRequestId: args.bookingRequestId,
-                    offerUrl: bookingRequestEmailCustomerOfferUrl(webPageUrl, args.bookingRequestId, args.bookingRequestOfferId, 'offer'),
+                    relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
+                    userId: customer.userId,
                 }),
-                purpose: 'BOOKING_REQUEST_OFFER_MENU_UPDATED',
-                locale,
-                relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-                userId: customer.userId,
-            }),
         ),
         cookBookingRequestOfferSuggestedMenusUpdateWhatsAppSend(serverRuntime, {
             bookingRequestOfferId: args.bookingRequestOfferId,
@@ -439,22 +505,29 @@ export async function userBookingRequestOfferAcceptEmailSend(
     const cookLocale = cook.locale;
 
     const tasks: Promise<void>[] = [
-        sendSafely(serverRuntime, 'userBookingRequestOfferAcceptEmailSend.cook', args.bookingRequestOfferId, () =>
-            serverRuntime.email.send({
-                to: cook.emailAddress,
-                subject: userBookingRequestOfferAcceptForCookEmailSubject(cookLocale),
-                react: UserBookingRequestOfferAcceptForCookEmail({
+        sendUserEmail(
+            serverRuntime,
+            'userBookingRequestOfferAcceptEmailSend.cook',
+            args.bookingRequestOfferId,
+            cook,
+            'BOOKING_REQUEST_OFFER_ACCEPTED',
+            undefined,
+            () =>
+                serverRuntime.email.send({
+                    to: cook.emailAddress,
+                    subject: userBookingRequestOfferAcceptForCookEmailSubject(cookLocale),
+                    react: UserBookingRequestOfferAcceptForCookEmail({
+                        locale: cookLocale,
+                        webPageUrl,
+                        recipientFirstName: cook.firstName,
+                        customerFirstName: customer.firstName,
+                        chatUrl: bookingRequestEmailCookOfferUrl(webPageUrl, args.bookingRequestOfferId, 'chat'),
+                    }),
+                    purpose: 'BOOKING_REQUEST_OFFER_ACCEPTED',
                     locale: cookLocale,
-                    webPageUrl,
-                    recipientFirstName: cook.firstName,
-                    customerFirstName: customer.firstName,
-                    chatUrl: bookingRequestEmailCookOfferUrl(webPageUrl, args.bookingRequestOfferId, 'chat'),
+                    relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
+                    userId: cook.userId,
                 }),
-                purpose: 'BOOKING_REQUEST_OFFER_ACCEPTED',
-                locale: cookLocale,
-                relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-                userId: cook.userId,
-            }),
         ),
     ];
 
@@ -463,21 +536,28 @@ export async function userBookingRequestOfferAcceptEmailSend(
         if (!sibling) continue;
         const siblingLocale = sibling.locale;
         tasks.push(
-            sendSafely(serverRuntime, 'userBookingRequestOfferAcceptEmailSend.notChosen', args.bookingRequestOfferId, () =>
-                serverRuntime.email.send({
-                    to: sibling.emailAddress,
-                    subject: userBookingRequestOfferAcceptForNotChosenCookEmailSubject(siblingLocale),
-                    react: UserBookingRequestOfferAcceptForNotChosenCookEmail({
+            sendUserEmail(
+                serverRuntime,
+                'userBookingRequestOfferAcceptEmailSend.notChosen',
+                args.bookingRequestOfferId,
+                sibling,
+                'BOOKING_REQUEST_OFFER_NOT_CHOSEN',
+                undefined,
+                () =>
+                    serverRuntime.email.send({
+                        to: sibling.emailAddress,
+                        subject: userBookingRequestOfferAcceptForNotChosenCookEmailSubject(siblingLocale),
+                        react: UserBookingRequestOfferAcceptForNotChosenCookEmail({
+                            locale: siblingLocale,
+                            webPageUrl,
+                            recipientFirstName: sibling.firstName,
+                            customerFirstName: customer.firstName,
+                        }),
+                        purpose: 'BOOKING_REQUEST_OFFER_NOT_CHOSEN',
                         locale: siblingLocale,
-                        webPageUrl,
-                        recipientFirstName: sibling.firstName,
-                        customerFirstName: customer.firstName,
+                        relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
+                        userId: sibling.userId,
                     }),
-                    purpose: 'BOOKING_REQUEST_OFFER_NOT_CHOSEN',
-                    locale: siblingLocale,
-                    relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-                    userId: sibling.userId,
-                }),
             ),
         );
     }
@@ -516,22 +596,29 @@ export async function userBookingRequestOfferDeclineEmailSend(
     const locale = cook.locale;
     const webPageUrl = environmentVariables.webPageUrl;
 
-    await sendSafely(serverRuntime, 'userBookingRequestOfferDeclineEmailSend', args.bookingRequestOfferId, () =>
-        serverRuntime.email.send({
-            to: cook.emailAddress,
-            subject: userBookingRequestOfferDeclineForCookEmailSubject(locale),
-            react: UserBookingRequestOfferDeclineForCookEmail({
+    await sendUserEmail(
+        serverRuntime,
+        'userBookingRequestOfferDeclineEmailSend',
+        args.bookingRequestOfferId,
+        cook,
+        'BOOKING_REQUEST_OFFER_DECLINED',
+        undefined,
+        () =>
+            serverRuntime.email.send({
+                to: cook.emailAddress,
+                subject: userBookingRequestOfferDeclineForCookEmailSubject(locale),
+                react: UserBookingRequestOfferDeclineForCookEmail({
+                    locale,
+                    webPageUrl,
+                    recipientFirstName: cook.firstName,
+                    customerFirstName: customer.firstName,
+                    reason: args.reason,
+                }),
+                purpose: 'BOOKING_REQUEST_OFFER_DECLINED',
                 locale,
-                webPageUrl,
-                recipientFirstName: cook.firstName,
-                customerFirstName: customer.firstName,
-                reason: args.reason,
+                relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
+                userId: cook.userId,
             }),
-            purpose: 'BOOKING_REQUEST_OFFER_DECLINED',
-            locale,
-            relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-            userId: cook.userId,
-        }),
     );
 }
 
@@ -556,28 +643,35 @@ export async function bookingRequestOfferPaymentConfirmedEmailSend(
     const webPageUrl = environmentVariables.webPageUrl;
 
     await Promise.all([
-        sendSafely(serverRuntime, 'bookingRequestOfferPaymentConfirmedEmailSend', args.offer.bookingRequestOfferId, () =>
-            serverRuntime.email.send({
-                to: customer.emailAddress,
-                subject: bookingRequestOfferPaymentFinalizeForCustomerEmailSubject(locale),
-                react: BookingRequestOfferPaymentFinalizeForCustomerEmail({
-                    locale,
-                    webPageUrl,
-                    recipientFirstName: customer.firstName,
-                    cookFirstName: cook.firstName,
-                    bookingRequestId: args.bookingRequest.bookingRequestId,
-                    chatUrl: bookingRequestEmailCustomerOfferUrl(
+        sendUserEmail(
+            serverRuntime,
+            'bookingRequestOfferPaymentConfirmedEmailSend',
+            args.offer.bookingRequestOfferId,
+            customer,
+            'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED',
+            undefined,
+            () =>
+                serverRuntime.email.send({
+                    to: customer.emailAddress,
+                    subject: bookingRequestOfferPaymentFinalizeForCustomerEmailSubject(locale),
+                    react: BookingRequestOfferPaymentFinalizeForCustomerEmail({
+                        locale,
                         webPageUrl,
-                        args.bookingRequest.bookingRequestId,
-                        args.offer.bookingRequestOfferId,
-                        'chat',
-                    ),
+                        recipientFirstName: customer.firstName,
+                        cookFirstName: cook.firstName,
+                        bookingRequestId: args.bookingRequest.bookingRequestId,
+                        chatUrl: bookingRequestEmailCustomerOfferUrl(
+                            webPageUrl,
+                            args.bookingRequest.bookingRequestId,
+                            args.offer.bookingRequestOfferId,
+                            'chat',
+                        ),
+                    }),
+                    purpose: 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED',
+                    locale,
+                    relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
+                    userId: customer.userId,
                 }),
-                purpose: 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED',
-                locale,
-                relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
-                userId: customer.userId,
-            }),
         ),
         bookingRequestOfferPaymentConfirmedWhatsAppSend(serverRuntime, {
             bookingRequestOfferId: args.offer.bookingRequestOfferId,
@@ -613,25 +707,32 @@ export async function bookingRequestOfferPullPaymentAnnouncementEmailSend(
     const totalLabel = formatCurrency(args.totalCentsCustomer, { locale });
 
     await Promise.all([
-        sendSafely(serverRuntime, 'bookingRequestOfferPullPaymentAnnouncementEmailSend', args.bookingRequestOfferId, () =>
-            serverRuntime.email.send({
-                to: customer.emailAddress,
-                subject: bookingRequestOfferPullPaymentAnnouncementForCustomerEmailSubject(locale),
-                react: BookingRequestOfferPullPaymentAnnouncementForCustomerEmail({
+        sendUserEmail(
+            serverRuntime,
+            'bookingRequestOfferPullPaymentAnnouncementEmailSend',
+            args.bookingRequestOfferId,
+            customer,
+            'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
+            undefined,
+            () =>
+                serverRuntime.email.send({
+                    to: customer.emailAddress,
+                    subject: bookingRequestOfferPullPaymentAnnouncementForCustomerEmailSubject(locale),
+                    react: BookingRequestOfferPullPaymentAnnouncementForCustomerEmail({
+                        locale,
+                        timeZone: customer.timeZone,
+                        webPageUrl,
+                        recipientFirstName: customer.firstName,
+                        bookingRequestId: args.bookingRequestId,
+                        totalCentsCustomer: args.totalCentsCustomer,
+                        pullPaymentDate: args.pullPaymentDate,
+                        requestUrl: bookingRequestEmailCustomerRequestUrl(webPageUrl, args.bookingRequestId),
+                    }),
+                    purpose: 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
                     locale,
-                    timeZone: customer.timeZone,
-                    webPageUrl,
-                    recipientFirstName: customer.firstName,
-                    bookingRequestId: args.bookingRequestId,
-                    totalCentsCustomer: args.totalCentsCustomer,
-                    pullPaymentDate: args.pullPaymentDate,
-                    requestUrl: bookingRequestEmailCustomerRequestUrl(webPageUrl, args.bookingRequestId),
+                    relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
+                    userId: customer.userId,
                 }),
-                purpose: 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
-                locale,
-                relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-                userId: customer.userId,
-            }),
         ),
         bookingRequestOfferPullPaymentAnnouncementWhatsAppSend(serverRuntime, {
             bookingRequestOfferId: args.bookingRequestOfferId,
@@ -653,22 +754,29 @@ export async function bookingRequestOfferParticipantAmendmentCreateEmailSend(
 ): Promise<void> {
     const locale = args.cook.locale;
     const webPageUrl = environmentVariables.webPageUrl;
-    await sendSafely(serverRuntime, 'bookingRequestOfferParticipantAmendmentCreateEmailSend', args.offer.bookingRequestOfferId, () =>
-        serverRuntime.email.send({
-            to: args.cook.emailAddress,
-            subject: userBookingRequestOfferParticipantAmendmentCreateForCookEmailSubject(locale),
-            react: UserBookingRequestOfferParticipantAmendmentCreateForCookEmail({
+    await sendUserEmail(
+        serverRuntime,
+        'bookingRequestOfferParticipantAmendmentCreateEmailSend',
+        args.offer.bookingRequestOfferId,
+        args.cook,
+        'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED',
+        undefined,
+        () =>
+            serverRuntime.email.send({
+                to: args.cook.emailAddress,
+                subject: userBookingRequestOfferParticipantAmendmentCreateForCookEmailSubject(locale),
+                react: UserBookingRequestOfferParticipantAmendmentCreateForCookEmail({
+                    locale,
+                    webPageUrl,
+                    recipientFirstName: args.cook.firstName,
+                    customerFirstName: args.customer.firstName,
+                    offerUrl: bookingRequestEmailCookOfferUrl(webPageUrl, args.offer.bookingRequestOfferId, 'offer'),
+                }),
+                purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED',
                 locale,
-                webPageUrl,
-                recipientFirstName: args.cook.firstName,
-                customerFirstName: args.customer.firstName,
-                offerUrl: bookingRequestEmailCookOfferUrl(webPageUrl, args.offer.bookingRequestOfferId, 'offer'),
+                relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
+                userId: args.cook.userId,
             }),
-            purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED',
-            locale,
-            relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
-            userId: args.cook.userId,
-        }),
     );
 }
 
@@ -693,27 +801,34 @@ export async function bookingRequestOfferParticipantAmendmentAcceptEmailSend(
         args.offer.bookingRequestOfferId,
     );
     const checkoutUrl = `${offerUrl}/checkout`;
-    await sendSafely(serverRuntime, 'bookingRequestOfferParticipantAmendmentAcceptEmailSend', args.offer.bookingRequestOfferId, () =>
-        serverRuntime.email.send({
-            to: args.customer.emailAddress,
-            subject: cookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmailSubject(locale),
-            react: CookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmail({
+    await sendUserEmail(
+        serverRuntime,
+        'bookingRequestOfferParticipantAmendmentAcceptEmailSend',
+        args.offer.bookingRequestOfferId,
+        args.customer,
+        'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED',
+        undefined,
+        () =>
+            serverRuntime.email.send({
+                to: args.customer.emailAddress,
+                subject: cookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmailSubject(locale),
+                react: CookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmail({
+                    locale,
+                    webPageUrl,
+                    recipientFirstName: args.customer.firstName,
+                    cookFirstName: args.cook.firstName,
+                    offerUrl,
+                    checkoutUrl,
+                    customerDeltaCents: args.customerDeltaCents,
+                    giftCardDeltaCents: args.giftCardDeltaCents,
+                    paymentStatus: args.paymentStatus,
+                    pendingDeltaPaymentDue: args.pendingDeltaPaymentDue,
+                }),
+                purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED',
                 locale,
-                webPageUrl,
-                recipientFirstName: args.customer.firstName,
-                cookFirstName: args.cook.firstName,
-                offerUrl,
-                checkoutUrl,
-                customerDeltaCents: args.customerDeltaCents,
-                giftCardDeltaCents: args.giftCardDeltaCents,
-                paymentStatus: args.paymentStatus,
-                pendingDeltaPaymentDue: args.pendingDeltaPaymentDue,
+                relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
+                userId: args.customer.userId,
             }),
-            purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED',
-            locale,
-            relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
-            userId: args.customer.userId,
-        }),
     );
 }
 
@@ -728,25 +843,32 @@ export async function bookingRequestOfferParticipantAmendmentDeclineEmailSend(
 ): Promise<void> {
     const locale = args.customer.locale;
     const webPageUrl = environmentVariables.webPageUrl;
-    await sendSafely(serverRuntime, 'bookingRequestOfferParticipantAmendmentDeclineEmailSend', args.offer.bookingRequestOfferId, () =>
-        serverRuntime.email.send({
-            to: args.customer.emailAddress,
-            subject: cookBookingRequestOfferParticipantAmendmentDeclineForCustomerEmailSubject(locale),
-            react: CookBookingRequestOfferParticipantAmendmentDeclineForCustomerEmail({
-                locale,
-                webPageUrl,
-                recipientFirstName: args.customer.firstName,
-                cookFirstName: args.cook.firstName,
-                offerUrl: bookingRequestEmailCustomerOfferUrl(
+    await sendUserEmail(
+        serverRuntime,
+        'bookingRequestOfferParticipantAmendmentDeclineEmailSend',
+        args.offer.bookingRequestOfferId,
+        args.customer,
+        'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED',
+        undefined,
+        () =>
+            serverRuntime.email.send({
+                to: args.customer.emailAddress,
+                subject: cookBookingRequestOfferParticipantAmendmentDeclineForCustomerEmailSubject(locale),
+                react: CookBookingRequestOfferParticipantAmendmentDeclineForCustomerEmail({
+                    locale,
                     webPageUrl,
-                    args.bookingRequest.bookingRequestId,
-                    args.offer.bookingRequestOfferId,
-                ),
+                    recipientFirstName: args.customer.firstName,
+                    cookFirstName: args.cook.firstName,
+                    offerUrl: bookingRequestEmailCustomerOfferUrl(
+                        webPageUrl,
+                        args.bookingRequest.bookingRequestId,
+                        args.offer.bookingRequestOfferId,
+                    ),
+                }),
+                purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED',
+                locale,
+                relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
+                userId: args.customer.userId,
             }),
-            purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED',
-            locale,
-            relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
-            userId: args.customer.userId,
-        }),
     );
 }

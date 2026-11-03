@@ -5,6 +5,8 @@ import { phoneNumberAssert } from '../../shared/phoneNumber';
 import { textNormalizeTitled } from '../../shared/textNormalize';
 import { userBirthDateAssertMinimumAge } from '../../shared/userBirthDate';
 import { fileUploads, users } from '../db/schema';
+import { notificationSettingsMerge, notificationSettingsPatchHasDomain } from '../domain/notificationSettings';
+import type { UserNotificationSettings } from '../domain/notificationSettings';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { UserPreferredCommunication } from '../domain/user';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationUserUpdateArgs } from '../graphql/generated';
@@ -28,6 +30,7 @@ export async function userUpdate(
         const hasLocale = user.locale !== undefined && user.locale !== null;
         const hasTimeZone = user.timeZone !== undefined && user.timeZone !== null;
         const hasProfilePicture = user.profilePictureFileUploadId !== undefined;
+        const hasNotificationSettings = notificationSettingsPatchHasDomain(user.notificationSettings);
         if (
             !hasFirstName &&
             !hasLastName &&
@@ -36,7 +39,8 @@ export async function userUpdate(
             !hasPreferredCommunication &&
             !hasLocale &&
             !hasTimeZone &&
-            !hasProfilePicture
+            !hasProfilePicture &&
+            !hasNotificationSettings
         ) {
             throw new Error('userUpdate: at least one field is required');
         }
@@ -50,6 +54,7 @@ export async function userUpdate(
             locale?: Locale;
             timeZone?: string;
             profilePictureFileUploadId?: string | null;
+            notificationSettings?: UserNotificationSettings;
         } = {};
         let previousProfilePictureFileUploadId: string | null | undefined;
 
@@ -101,6 +106,18 @@ export async function userUpdate(
                 throw new Error('userUpdate: timeZone must not be empty');
             }
             set.timeZone = timeZone;
+        }
+
+        if (hasNotificationSettings) {
+            const [current] = await serverRuntime.db
+                .select({ notificationSettings: users.notificationSettings })
+                .from(users)
+                .where(eq(users.userId, userId))
+                .limit(1);
+            if (!current) {
+                throw new Error('userUpdate: user not found');
+            }
+            set.notificationSettings = notificationSettingsMerge(current.notificationSettings, user.notificationSettings ?? {});
         }
 
         if (hasProfilePicture) {

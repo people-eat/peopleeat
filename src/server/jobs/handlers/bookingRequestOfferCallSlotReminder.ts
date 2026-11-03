@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 
 import { bookingRequestOffers, bookingRequests, cookCallSlotBookings, users } from '../../db/schema';
+import { notificationEmailAllowed } from '../../domain/notificationSettings';
 import { bookingRequestOfferCallSlotOfferUrls } from '../../email/components/bookingRequestOfferCallSlotEmailFormat';
 import {
     BookingRequestOfferCallSlotReminderForCookEmail,
@@ -47,6 +48,7 @@ export const bookingRequestOfferCallSlotReminder: QueuedJobDefinition<BookingReq
                     firstName: users.firstName,
                     locale: users.locale,
                     timeZone: users.timeZone,
+                    notificationSettings: users.notificationSettings,
                 })
                 .from(users)
                 .where(eq(users.userId, row.customerUserId))
@@ -58,6 +60,7 @@ export const bookingRequestOfferCallSlotReminder: QueuedJobDefinition<BookingReq
                     firstName: users.firstName,
                     locale: users.locale,
                     timeZone: users.timeZone,
+                    notificationSettings: users.notificationSettings,
                 })
                 .from(users)
                 .where(eq(users.userId, row.cookId))
@@ -76,45 +79,54 @@ export const bookingRequestOfferCallSlotReminder: QueuedJobDefinition<BookingReq
         const cookLocale = cookUserWithEmail.locale;
         const urls = bookingRequestOfferCallSlotOfferUrls(webPageUrl, row.bookingRequestId, row.booking.bookingRequestOfferId);
 
-        await Promise.all([
-            serverRuntime.email.send({
-                to: customerWithEmail.emailAddress,
-                subject: bookingRequestOfferCallSlotReminderForCustomerEmailSubject(customerLocale),
-                react: BookingRequestOfferCallSlotReminderForCustomerEmail({
-                    locale: customerLocale,
-                    timeZone: customerWithEmail.timeZone,
-                    webPageUrl,
-                    recipientFirstName: customerWithEmail.firstName,
-                    startAt: row.booking.startAt,
-                    counterpartyFirstName: cookUserWithEmail.firstName,
-                    offerUrl: urls.customer,
-                }),
-                purpose: 'CALL_SLOT_BOOKING_REMINDER',
-                locale: customerLocale,
-                relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: row.booking.cookCallSlotBookingId },
-                userId: row.customerUserId,
-            }),
-            serverRuntime.email.send({
-                to: cookUserWithEmail.emailAddress,
-                subject: bookingRequestOfferCallSlotReminderForCookEmailSubject(cookLocale),
-                react: BookingRequestOfferCallSlotReminderForCookEmail({
-                    locale: cookLocale,
-                    timeZone: cookUserWithEmail.timeZone,
-                    webPageUrl,
-                    recipientFirstName: cookUserWithEmail.firstName,
-                    startAt: row.booking.startAt,
-                    counterpartyFirstName: customerWithEmail.firstName,
-                    offerUrl: urls.cook,
-                }),
-                purpose: 'CALL_SLOT_BOOKING_REMINDER',
-                locale: cookLocale,
-                relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: row.booking.cookCallSlotBookingId },
-                userId: row.cookId,
-            }),
+        const sends: Promise<unknown>[] = [
             bookingRequestOfferCallSlotReminderWhatsAppSend(serverRuntime, {
                 cookCallSlotBookingId: row.booking.cookCallSlotBookingId,
             }),
-        ]);
+        ];
+        if (notificationEmailAllowed(customerWithEmail.notificationSettings, 'CALL_SLOT_BOOKING_REMINDER', 'CUSTOMER')) {
+            sends.push(
+                serverRuntime.email.send({
+                    to: customerWithEmail.emailAddress,
+                    subject: bookingRequestOfferCallSlotReminderForCustomerEmailSubject(customerLocale),
+                    react: BookingRequestOfferCallSlotReminderForCustomerEmail({
+                        locale: customerLocale,
+                        timeZone: customerWithEmail.timeZone,
+                        webPageUrl,
+                        recipientFirstName: customerWithEmail.firstName,
+                        startAt: row.booking.startAt,
+                        counterpartyFirstName: cookUserWithEmail.firstName,
+                        offerUrl: urls.customer,
+                    }),
+                    purpose: 'CALL_SLOT_BOOKING_REMINDER',
+                    locale: customerLocale,
+                    relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: row.booking.cookCallSlotBookingId },
+                    userId: row.customerUserId,
+                }),
+            );
+        }
+        if (notificationEmailAllowed(cookUserWithEmail.notificationSettings, 'CALL_SLOT_BOOKING_REMINDER', 'COOK')) {
+            sends.push(
+                serverRuntime.email.send({
+                    to: cookUserWithEmail.emailAddress,
+                    subject: bookingRequestOfferCallSlotReminderForCookEmailSubject(cookLocale),
+                    react: BookingRequestOfferCallSlotReminderForCookEmail({
+                        locale: cookLocale,
+                        timeZone: cookUserWithEmail.timeZone,
+                        webPageUrl,
+                        recipientFirstName: cookUserWithEmail.firstName,
+                        startAt: row.booking.startAt,
+                        counterpartyFirstName: customerWithEmail.firstName,
+                        offerUrl: urls.cook,
+                    }),
+                    purpose: 'CALL_SLOT_BOOKING_REMINDER',
+                    locale: cookLocale,
+                    relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: row.booking.cookCallSlotBookingId },
+                    userId: row.cookId,
+                }),
+            );
+        }
+        await Promise.all(sends);
     },
     options: {
         retryLimit: 3,

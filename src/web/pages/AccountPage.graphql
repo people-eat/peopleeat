@@ -11,6 +11,36 @@ fragment AccountPageUser on User {
     phoneNumber
     birthDate
     preferredCommunication
+    notificationSettings {
+        customerBooking {
+            email
+            whatsApp
+        }
+        customerChat {
+            email
+            whatsApp
+        }
+        customerReview {
+            email
+            whatsApp
+        }
+        cookNewRequest {
+            email
+            whatsApp
+        }
+        cookOffer {
+            email
+            whatsApp
+        }
+        cookChat {
+            email
+            whatsApp
+        }
+        cookReview {
+            email
+            whatsApp
+        }
+    }
     locale
     timeZone
     createdAt

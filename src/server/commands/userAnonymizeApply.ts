@@ -33,6 +33,7 @@ export async function userAnonymizeApply(userId: string, serverRuntime: ServerRu
                 phoneNumber: null,
                 birthDate: null,
                 preferredCommunication: null,
+                notificationSettings: null,
                 profilePictureFileUploadId: null,
             })
             .where(eq(users.userId, userId));

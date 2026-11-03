@@ -80,6 +80,7 @@ describe('userAnonymize', () => {
         expect(anonymized?.phoneNumber).toBeNull();
         expect(anonymized?.birthDate).toBeNull();
         expect(anonymized?.preferredCommunication).toBeNull();
+        expect(anonymized?.notificationSettings).toBeNull();
         expect(anonymized?.profilePictureFileUploadId).toBeNull();
 
         const userSessions = await testDb.select().from(sessions).where(eq(sessions.userId, user.userId));

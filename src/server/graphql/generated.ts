@@ -4697,6 +4697,7 @@ export interface GqlSUser {
     lastName: Scalars['String']['output'];
     legalAcceptance?: Maybe<GqlSUserLegalAcceptance>;
     locale: GqlSLocale;
+    notificationSettings: GqlSUserNotificationSettings;
     passkeys?: Maybe<Array<GqlSAuthPasskey>>;
     phoneNumber?: Maybe<Scalars['PhoneNumber']['output']>;
     preferredCommunication?: Maybe<GqlSUserPreferredCommunication>;
@@ -5228,6 +5229,38 @@ export type GqlSUserMutationUserUpdateArgs = {
     user: GqlSUserUpdate;
 };
 
+export interface GqlSUserNotificationChannelSettings {
+    __typename?: 'UserNotificationChannelSettings';
+    email: Scalars['Boolean']['output'];
+    whatsApp: Scalars['Boolean']['output'];
+}
+
+export type GqlSUserNotificationChannelSettingsInput = {
+    email: Scalars['Boolean']['input'];
+    whatsApp: Scalars['Boolean']['input'];
+};
+
+export interface GqlSUserNotificationSettings {
+    __typename?: 'UserNotificationSettings';
+    cookChat: GqlSUserNotificationChannelSettings;
+    cookNewRequest: GqlSUserNotificationChannelSettings;
+    cookOffer: GqlSUserNotificationChannelSettings;
+    cookReview: GqlSUserNotificationChannelSettings;
+    customerBooking: GqlSUserNotificationChannelSettings;
+    customerChat: GqlSUserNotificationChannelSettings;
+    customerReview: GqlSUserNotificationChannelSettings;
+}
+
+export type GqlSUserNotificationSettingsInput = {
+    cookChat?: InputMaybe<GqlSUserNotificationChannelSettingsInput>;
+    cookNewRequest?: InputMaybe<GqlSUserNotificationChannelSettingsInput>;
+    cookOffer?: InputMaybe<GqlSUserNotificationChannelSettingsInput>;
+    cookReview?: InputMaybe<GqlSUserNotificationChannelSettingsInput>;
+    customerBooking?: InputMaybe<GqlSUserNotificationChannelSettingsInput>;
+    customerChat?: InputMaybe<GqlSUserNotificationChannelSettingsInput>;
+    customerReview?: InputMaybe<GqlSUserNotificationChannelSettingsInput>;
+};
+
 export type GqlSUserPreferredCommunication = 'CALL' | 'E_MAIL' | 'SMS' | 'WHATS_APP';
 
 export interface GqlSUserSession {
@@ -5258,6 +5291,7 @@ export type GqlSUserUpdate = {
     firstName?: InputMaybe<Scalars['String']['input']>;
     lastName?: InputMaybe<Scalars['String']['input']>;
     locale?: InputMaybe<GqlSLocale>;
+    notificationSettings?: InputMaybe<GqlSUserNotificationSettingsInput>;
     phoneNumber?: InputMaybe<Scalars['PhoneNumber']['input']>;
     preferredCommunication?: InputMaybe<GqlSUserPreferredCommunication>;
     profilePictureFileUploadId?: InputMaybe<Scalars['ID']['input']>;
@@ -5986,6 +6020,10 @@ export type GqlSResolversTypes = ResolversObject<{
     UserGiftCard: ResolverTypeWrapper<GqlSUserGiftCard>;
     UserLegalAcceptance: ResolverTypeWrapper<GqlSUserLegalAcceptance>;
     UserMutation: ResolverTypeWrapper<GqlSUserMutation>;
+    UserNotificationChannelSettings: ResolverTypeWrapper<GqlSUserNotificationChannelSettings>;
+    UserNotificationChannelSettingsInput: GqlSUserNotificationChannelSettingsInput;
+    UserNotificationSettings: ResolverTypeWrapper<GqlSUserNotificationSettings>;
+    UserNotificationSettingsInput: GqlSUserNotificationSettingsInput;
     UserPreferredCommunication: GqlSUserPreferredCommunication;
     UserSession: ResolverTypeWrapper<GqlSUserSession>;
     UserStatus: GqlSUserStatus;
@@ -6453,6 +6491,10 @@ export type GqlSResolversParentTypes = ResolversObject<{
     UserGiftCard: GqlSUserGiftCard;
     UserLegalAcceptance: GqlSUserLegalAcceptance;
     UserMutation: GqlSUserMutation;
+    UserNotificationChannelSettings: GqlSUserNotificationChannelSettings;
+    UserNotificationChannelSettingsInput: GqlSUserNotificationChannelSettingsInput;
+    UserNotificationSettings: GqlSUserNotificationSettings;
+    UserNotificationSettingsInput: GqlSUserNotificationSettingsInput;
     UserSession: GqlSUserSession;
     UserSupportRequest: Omit<GqlSUserSupportRequest, 'bookingRequest' | 'messages'> & {
         bookingRequest?: Maybe<GqlSResolversParentTypes['SupportRequestBookingRequestSummary']>;
@@ -10770,6 +10812,7 @@ export type GqlSUserResolvers<
     lastName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     legalAcceptance?: Resolver<Maybe<GqlSResolversTypes['UserLegalAcceptance']>, ParentType, ContextType>;
     locale?: Resolver<GqlSResolversTypes['Locale'], ParentType, ContextType>;
+    notificationSettings?: Resolver<GqlSResolversTypes['UserNotificationSettings'], ParentType, ContextType>;
     passkeys?: Resolver<Maybe<Array<GqlSResolversTypes['AuthPasskey']>>, ParentType, ContextType>;
     phoneNumber?: Resolver<Maybe<GqlSResolversTypes['PhoneNumber']>, ParentType, ContextType>;
     preferredCommunication?: Resolver<Maybe<GqlSResolversTypes['UserPreferredCommunication']>, ParentType, ContextType>;
@@ -11262,6 +11305,28 @@ export type GqlSUserMutationResolvers<
     >;
 }>;
 
+export type GqlSUserNotificationChannelSettingsResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['UserNotificationChannelSettings'] =
+        GqlSResolversParentTypes['UserNotificationChannelSettings'],
+> = ResolversObject<{
+    email?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    whatsApp?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type GqlSUserNotificationSettingsResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['UserNotificationSettings'] = GqlSResolversParentTypes['UserNotificationSettings'],
+> = ResolversObject<{
+    cookChat?: Resolver<GqlSResolversTypes['UserNotificationChannelSettings'], ParentType, ContextType>;
+    cookNewRequest?: Resolver<GqlSResolversTypes['UserNotificationChannelSettings'], ParentType, ContextType>;
+    cookOffer?: Resolver<GqlSResolversTypes['UserNotificationChannelSettings'], ParentType, ContextType>;
+    cookReview?: Resolver<GqlSResolversTypes['UserNotificationChannelSettings'], ParentType, ContextType>;
+    customerBooking?: Resolver<GqlSResolversTypes['UserNotificationChannelSettings'], ParentType, ContextType>;
+    customerChat?: Resolver<GqlSResolversTypes['UserNotificationChannelSettings'], ParentType, ContextType>;
+    customerReview?: Resolver<GqlSResolversTypes['UserNotificationChannelSettings'], ParentType, ContextType>;
+}>;
+
 export type GqlSUserSessionResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['UserSession'] = GqlSResolversParentTypes['UserSession'],
@@ -11521,6 +11586,8 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     UserGiftCard?: GqlSUserGiftCardResolvers<ContextType>;
     UserLegalAcceptance?: GqlSUserLegalAcceptanceResolvers<ContextType>;
     UserMutation?: GqlSUserMutationResolvers<ContextType>;
+    UserNotificationChannelSettings?: GqlSUserNotificationChannelSettingsResolvers<ContextType>;
+    UserNotificationSettings?: GqlSUserNotificationSettingsResolvers<ContextType>;
     UserSession?: GqlSUserSessionResolvers<ContextType>;
     UserSupportRequest?: GqlSUserSupportRequestResolvers<ContextType>;
 }>;
@@ -12524,7 +12591,7 @@ export function GqlSAdminBookingRequestUpdateSchema(): z.ZodObject<Properties<Gq
         adjustedMessage: z.string().nullish(),
         createdAt: z.date().nullish(),
         dateTime: z.date().nullish(),
-        exactEventAddress: z.lazy(() => GqlSAdminBookingRequestExactEventAddressInputSchema().nullish()),
+        exactEventAddress: GqlSAdminBookingRequestExactEventAddressInputSchema().nullish(),
         expiresAt: z.date().nullish(),
         occasion: z.string().nullish(),
         originalMessage: z.string().nullish(),
@@ -13324,15 +13391,35 @@ export function GqlSUserCreateSchema(): z.ZodObject<Properties<GqlSUserCreate>> 
     }) as z.ZodObject<Properties<GqlSUserCreate>>;
 }
 
+export function GqlSUserNotificationChannelSettingsInputSchema(): z.ZodObject<Properties<GqlSUserNotificationChannelSettingsInput>> {
+    return z.object({
+        email: z.boolean(),
+        whatsApp: z.boolean(),
+    });
+}
+
+export function GqlSUserNotificationSettingsInputSchema(): z.ZodObject<Properties<GqlSUserNotificationSettingsInput>> {
+    return z.object({
+        cookChat: GqlSUserNotificationChannelSettingsInputSchema().nullish(),
+        cookNewRequest: GqlSUserNotificationChannelSettingsInputSchema().nullish(),
+        cookOffer: GqlSUserNotificationChannelSettingsInputSchema().nullish(),
+        cookReview: GqlSUserNotificationChannelSettingsInputSchema().nullish(),
+        customerBooking: GqlSUserNotificationChannelSettingsInputSchema().nullish(),
+        customerChat: GqlSUserNotificationChannelSettingsInputSchema().nullish(),
+        customerReview: GqlSUserNotificationChannelSettingsInputSchema().nullish(),
+    }) as z.ZodObject<Properties<GqlSUserNotificationSettingsInput>>;
+}
+
 export function GqlSUserUpdateSchema(): z.ZodObject<Properties<GqlSUserUpdate>> {
     return z.object({
         birthDate: z.string().nullish(),
         firstName: z.string().nullish(),
         lastName: z.string().nullish(),
         locale: GqlSLocaleSchema.nullish(),
+        notificationSettings: GqlSUserNotificationSettingsInputSchema().nullish(),
         phoneNumber: z.string().nullish(),
         preferredCommunication: GqlSUserPreferredCommunicationSchema.nullish(),
         profilePictureFileUploadId: z.string().nullish(),
         timeZone: z.string().nullish(),
-    });
+    }) as z.ZodObject<Properties<GqlSUserUpdate>>;
 }

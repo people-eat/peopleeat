@@ -1,7 +1,7 @@
 # Account
 
-Signed-in users manage their name, date of birth, phone number, profile picture, email, communication preference, language, time zone,
-passkeys, signed-in devices, and account deletion from one settings page inside the profile or admin shell.
+Signed-in users manage their name, date of birth, phone number, profile picture, email, concierge preference, notification settings,
+language, time zone, passkeys, signed-in devices, and account deletion from one settings page inside the profile or admin shell.
 
 ## Behavior
 
@@ -13,19 +13,22 @@ On the account page, settings sit in cards:
 
 - **You**: photo, name, date of birth, and registration date on one row. The card has no title. The page heading is the shell breadcrumb.
 - **How we reach you**: the email address (also the address used to sign in; change it via OTP to the new address) and the phone number
-  (country code required, saved with `userUpdate`). Set preferred communication (message, WhatsApp, call, email) with immediate save. Switch
-  language and time zone.
-- **Sign-in**: list, add, and remove passkeys. Enable, confirm, and disable authenticator-app two-factor (QR + recovery codes). List
+  (country code required, saved with `userUpdate`). Preferred communication (message, WhatsApp, call, email) is how the concierge reaches
+  you, not which automatic messages are sent. Switch language and time zone.
+- **Sign-in and security**: list, add, and remove passkeys. Enable, confirm, and disable authenticator-app two-factor (QR + recovery codes). List
   signed-in devices by browser and device. Signing out another device, signing out here, or signing out everywhere else each asks for
   confirmation first. The confirm button is destructive. Everywhere-else sits before sign-out-here, both at the end of the card. Add-passkey
   sits at the end of its section.
+- **Notifications**: email and WhatsApp on or off per topic. Cook topics appear only when the account has a cook profile. Sign-in codes,
+  payments, and support always go to the account email. See [notification-settings.md](./notification-settings.md).
 - **Delete account** is the last card, with the action at the end of the card.
 - Privacy, terms, and imprint stay as quiet links under the cards.
 
 Language switches via the shared LanguageSwitcher (cookie + URL path). Changing language while signed in opens a hard confirm when the route
-locale differs from `Users.locale`: confirm updates the profile (and emails); decline returns to the profile language. Emails and the UI use
-the same profile language. Time zone is an IANA zone in a searchable combobox and saves immediately with `userUpdate({ timeZone })`. UI
-date/time formatting and recipient-facing emails use `Users.timeZone` (see [i18n.md](../architecture/i18n.md)).
+locale differs from `Users.locale`: confirm updates the profile (and emails); decline returns to the profile language. The interface,
+emails, and WhatsApp use the same profile language. Time zone is an IANA zone in a searchable combobox and saves immediately with
+`userUpdate({ timeZone })`. UI date/time formatting and recipient-facing emails use `Users.timeZone` (see
+[i18n.md](../architecture/i18n.md)).
 
 Unsigned visits to `/profile/account` redirect via the parent profile loader. Admin account is gated by the admin loader.
 
@@ -50,7 +53,7 @@ unused. Admin deletion stays `AdminMutation.userAnonymize(userId)` without the e
 On success the command:
 
 1. Sets `Users.status = ANONYMIZED`, nulls `emailAddress`, clears `previousEmailAddresses`, blanks names, clears phone / birth date /
-   preferred communication / profile picture.
+   preferred communication / notification settings / profile picture.
 2. Terminates all sessions for the user (and clears pending TOTP session state).
 3. Deletes passkeys, TOTP secrets, and WebAuthn challenges.
 4. Sets `Cooks.isVisible = false` when a cook row exists (biography, travel address, Stripe ids retained for now).
@@ -67,6 +70,7 @@ ACTIVE-only. Ban/unban is `AdminMutation.userStatusUpdate` — see [admin-users.
 | You (name, birth date, registration date, picture) | Live   |
 | Phone number                                       | Live   |
 | Preferred comms                                    | Live   |
+| Notifications                                      | Live   |
 | Language                                           | Live   |
 | Time zone                                          | Live   |
 | Passkeys                                           | Live   |

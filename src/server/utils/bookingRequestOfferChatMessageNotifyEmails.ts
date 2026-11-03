@@ -1,6 +1,7 @@
 import { and, desc, eq } from 'drizzle-orm';
 
 import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests, users } from '../db/schema';
+import { notificationEmailAllowed } from '../domain/notificationSettings';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { bookingRequestEmailCookOfferUrl, bookingRequestEmailCustomerOfferUrl } from '../email/components/bookingRequestEmailUrls';
 import { bookingRequestOfferChatMessageNotifyAttachmentFallback } from '../email/components/BookingRequestOfferChatMessageNotifyBody';
@@ -50,6 +51,7 @@ export async function bookingRequestOfferChatMessageNotifyEmailSend(
             customerEmailAddress: users.emailAddress,
             customerFirstName: users.firstName,
             customerLocale: users.locale,
+            customerNotificationSettings: users.notificationSettings,
         })
         .from(bookingRequestOffers)
         .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestOffers.bookingRequestId))
@@ -63,6 +65,7 @@ export async function bookingRequestOfferChatMessageNotifyEmailSend(
                   emailAddress: row.customerEmailAddress,
                   firstName: row.customerFirstName,
                   locale: row.customerLocale,
+                  notificationSettings: row.customerNotificationSettings,
                   customerUserId: row.customerUserId,
                   bookingRequestOfferId: row.bookingRequestOfferId,
                   bookingRequestId: row.bookingRequestId,
@@ -75,7 +78,12 @@ export async function bookingRequestOfferChatMessageNotifyEmailSend(
     }
 
     const [cookRow] = await serverRuntime.db
-        .select({ emailAddress: users.emailAddress, firstName: users.firstName, locale: users.locale })
+        .select({
+            emailAddress: users.emailAddress,
+            firstName: users.firstName,
+            locale: users.locale,
+            notificationSettings: users.notificationSettings,
+        })
         .from(users)
         .where(eq(users.userId, customer.cookId))
         .limit(1);
@@ -111,24 +119,26 @@ export async function bookingRequestOfferChatMessageNotifyEmailSend(
         const chatUrl = bookingRequestEmailCustomerOfferUrl(webPageUrl, customer.bookingRequestId, customer.bookingRequestOfferId, 'chat');
 
         await Promise.all([
-            sendSafely(serverRuntime, 'bookingRequestOfferChatMessageNotifyEmailSend', args.bookingRequestOfferId, () =>
-                serverRuntime.email.send({
-                    to: customer.emailAddress,
-                    subject: bookingRequestOfferChatMessageNotifyForCustomerEmailSubject(locale),
-                    react: BookingRequestOfferChatMessageNotifyForCustomerEmail({
-                        locale,
-                        webPageUrl,
-                        recipientFirstName: customer.firstName,
-                        senderFirstName: cook.firstName,
-                        messageBody,
-                        chatUrl,
-                    }),
-                    purpose: 'BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_CUSTOMER',
-                    locale,
-                    relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: customer.bookingRequestOfferId },
-                    userId: customer.customerUserId,
-                }),
-            ),
+            notificationEmailAllowed(customer.notificationSettings, 'BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_CUSTOMER')
+                ? sendSafely(serverRuntime, 'bookingRequestOfferChatMessageNotifyEmailSend', args.bookingRequestOfferId, () =>
+                      serverRuntime.email.send({
+                          to: customer.emailAddress,
+                          subject: bookingRequestOfferChatMessageNotifyForCustomerEmailSubject(locale),
+                          react: BookingRequestOfferChatMessageNotifyForCustomerEmail({
+                              locale,
+                              webPageUrl,
+                              recipientFirstName: customer.firstName,
+                              senderFirstName: cook.firstName,
+                              messageBody,
+                              chatUrl,
+                          }),
+                          purpose: 'BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_CUSTOMER',
+                          locale,
+                          relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: customer.bookingRequestOfferId },
+                          userId: customer.customerUserId,
+                      }),
+                  )
+                : Promise.resolve(),
             bookingRequestOfferChatUnreadCustomerWhatsAppSend(serverRuntime, {
                 bookingRequestOfferId: customer.bookingRequestOfferId,
                 bookingRequestId: customer.bookingRequestId,
@@ -146,24 +156,26 @@ export async function bookingRequestOfferChatMessageNotifyEmailSend(
         const chatUrl = bookingRequestEmailCookOfferUrl(webPageUrl, customer.bookingRequestOfferId, 'chat');
 
         await Promise.all([
-            sendSafely(serverRuntime, 'bookingRequestOfferChatMessageNotifyEmailSend', args.bookingRequestOfferId, () =>
-                serverRuntime.email.send({
-                    to: cook.emailAddress,
-                    subject: bookingRequestOfferChatMessageNotifyForCookEmailSubject(locale),
-                    react: BookingRequestOfferChatMessageNotifyForCookEmail({
-                        locale,
-                        webPageUrl,
-                        recipientFirstName: cook.firstName,
-                        senderFirstName: customer.firstName,
-                        messageBody,
-                        chatUrl,
-                    }),
-                    purpose: 'BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_COOK',
-                    locale,
-                    relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: customer.bookingRequestOfferId },
-                    userId: customer.cookId,
-                }),
-            ),
+            notificationEmailAllowed(cook.notificationSettings, 'BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_COOK')
+                ? sendSafely(serverRuntime, 'bookingRequestOfferChatMessageNotifyEmailSend', args.bookingRequestOfferId, () =>
+                      serverRuntime.email.send({
+                          to: cook.emailAddress,
+                          subject: bookingRequestOfferChatMessageNotifyForCookEmailSubject(locale),
+                          react: BookingRequestOfferChatMessageNotifyForCookEmail({
+                              locale,
+                              webPageUrl,
+                              recipientFirstName: cook.firstName,
+                              senderFirstName: customer.firstName,
+                              messageBody,
+                              chatUrl,
+                          }),
+                          purpose: 'BOOKING_REQUEST_OFFER_CHAT_MESSAGE_TO_COOK',
+                          locale,
+                          relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: customer.bookingRequestOfferId },
+                          userId: customer.cookId,
+                      }),
+                  )
+                : Promise.resolve(),
             bookingRequestOfferChatUnreadCookWhatsAppSend(serverRuntime, {
                 bookingRequestOfferId: customer.bookingRequestOfferId,
                 bookingRequestId: customer.bookingRequestId,

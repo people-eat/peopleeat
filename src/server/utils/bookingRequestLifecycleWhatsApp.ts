@@ -3,6 +3,8 @@ import { eq, inArray } from 'drizzle-orm';
 import { formatDate, formatTime } from '../../shared/formatDate';
 import type { Locale } from '../../shared/locale';
 import { bookingRequests, users } from '../db/schema';
+import { notificationWhatsAppAllowed } from '../domain/notificationSettings';
+import type { UserNotificationSettingsStored } from '../domain/notificationSettings';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { OutboundWhatsAppPurpose, OutboundWhatsAppRelatedEntityType } from '../domain/whatsapp';
 import { whatsappPhoneNumberNormalize } from '../domain/whatsapp';
@@ -13,6 +15,7 @@ type WhatsAppUser = {
     locale: Locale;
     timeZone: string;
     phoneNumber: string | null;
+    notificationSettings: UserNotificationSettingsStored;
 };
 
 async function userByIdFind(serverRuntime: ServerRuntime, userId: string): Promise<WhatsAppUser | null> {
@@ -23,6 +26,7 @@ async function userByIdFind(serverRuntime: ServerRuntime, userId: string): Promi
             locale: users.locale,
             timeZone: users.timeZone,
             phoneNumber: users.phoneNumber,
+            notificationSettings: users.notificationSettings,
         })
         .from(users)
         .where(inArray(users.userId, [userId]))
@@ -72,6 +76,10 @@ async function templateSend(
     const recipient = await userByIdFind(serverRuntime, args.recipientUserId);
     if (!recipient) {
         serverRuntime.log.info(`${args.label}: skip WhatsApp for ${args.entityId} (recipient user ${args.recipientUserId} not found)`);
+        return;
+    }
+    if (!notificationWhatsAppAllowed(recipient.notificationSettings, args.purpose)) {
+        serverRuntime.log.info(`${args.label}: skip WhatsApp for ${args.entityId} (notification settings)`);
         return;
     }
     const toPhoneNumber = whatsappPhoneNumberNormalize(recipient.phoneNumber);

@@ -68,6 +68,16 @@ source = source.replaceAll(
 
 source = source.replaceAll('cook: z.lazy(() => GqlSCookCreateSchema().nullish()),', 'cook: GqlSCookCreateSchema().nullish(),');
 
+source = source.replaceAll(
+    'z.lazy(() => GqlSUserNotificationChannelSettingsInputSchema().nullish())',
+    'GqlSUserNotificationChannelSettingsInputSchema().nullish()',
+);
+
+source = source.replace(
+    'notificationSettings: z.lazy(() => GqlSUserNotificationSettingsInputSchema().nullish()),',
+    'notificationSettings: GqlSUserNotificationSettingsInputSchema().nullish(),',
+);
+
 for (const name of [
     'GqlSGiftCardPay',
     'GqlSCityUpsert',
@@ -87,6 +97,8 @@ for (const name of [
     'GqlSAdminBookingRequestOfferAmendmentInput',
     'GqlSPublicCookFindManyCriterion',
     'GqlSUserCreate',
+    'GqlSUserUpdate',
+    'GqlSUserNotificationSettingsInput',
     'GqlSAdminUserCreate',
     'GqlSCookBookingRequestOfferTestimonialUpsert',
     'GqlSUserBookingRequestOfferTestimonialUpsert',
