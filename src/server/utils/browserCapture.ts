@@ -1,4 +1,4 @@
-import type { Browser } from 'playwright';
+import type { Browser, Page } from 'playwright';
 
 // Server-side rendering capability. See
 // `docs/architecture/browser-capture.md` for the full design — this
@@ -78,14 +78,7 @@ export async function browserCapture(options: BrowserCaptureOptions): Promise<Bu
             timeout,
         });
 
-        if (options.waitForSelector) {
-            await page.waitForSelector(options.waitForSelector, { timeout });
-        } else {
-            // Small paint budget for the case where the caller did not
-            // specify a selector. 200 ms is enough to cover one frame of
-            // post-DCL React hydration without noticeably slowing exports.
-            await page.waitForTimeout(200);
-        }
+        await waitForCaptureContent(page, options);
 
         return await page.screenshot({
             type: options.type ?? 'png',
@@ -136,11 +129,7 @@ export async function browserCapturePdf(options: BrowserCapturePdfOptions): Prom
             timeout,
         });
 
-        if (options.waitForSelector) {
-            await page.waitForSelector(options.waitForSelector, { timeout });
-        } else {
-            await page.waitForTimeout(200);
-        }
+        await waitForCaptureContent(page, { waitForSelector: options.waitForSelector, timeoutMs: timeout });
 
         // `print` media so the route's `@media print` rules (and Streamdown's
         // print-friendly defaults) apply, matching what a browser's own
@@ -155,4 +144,23 @@ export async function browserCapturePdf(options: BrowserCapturePdfOptions): Prom
     } finally {
         await page.close();
     }
+}
+
+/**
+ * Selector (or a short paint delay), then webfonts. `font-display: block` hides text until the face loads, and the ready
+ * marker is already in the server HTML.
+ */
+async function waitForCaptureContent(page: Page, options: { waitForSelector?: string; timeoutMs?: number }): Promise<void> {
+    const timeout = options.timeoutMs ?? 15_000;
+    if (options.waitForSelector) {
+        await page.waitForSelector(options.waitForSelector, { timeout });
+    } else {
+        // Small paint budget for the case where the caller did not
+        // specify a selector. 200 ms is enough to cover one frame of
+        // post-DCL React hydration without noticeably slowing exports.
+        await page.waitForTimeout(200);
+    }
+    await page.evaluate(async () => {
+        await document.fonts.ready;
+    });
 }

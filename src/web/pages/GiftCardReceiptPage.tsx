@@ -1,19 +1,20 @@
-import { DEFAULT_TIME_ZONE, formatCurrency, formatDate } from '../../shared';
+import { DEFAULT_TIME_ZONE, formatCountryName, formatCurrency, formatDate } from '../../shared';
 import type { Locale } from '../../shared/locale';
+import { GIFT_CARD_RECEIPT_ISSUER_LINES } from '../../shared/siteBranding';
 import type { GqlCInvoiceAddress } from '../graphql/generated';
 
 // PDF capture surface for Playwright — not a GraphQL client page. Props are a
 // narrow view model (not DB row types). `locale` is not on `GqlCGiftCard`, so
 // the receipt fields are listed explicitly; invoice address matches the GraphQL
-// `InvoiceAddress` shape.
+// `InvoiceAddress` shape. The redeem code stays on the voucher and the purchase
+// email, not on this document.
 
 export type GiftCardReceiptPageProps = {
     giftCard: {
         giftCardId: string;
         locale: Locale;
         originalBalanceCents: number;
-        redeemCode: string;
-        createdAt: Date;
+        payedAt: Date;
     };
     invoiceAddress: GqlCInvoiceAddress;
 };
@@ -22,17 +23,21 @@ export function GiftCardReceiptPage({ giftCard, invoiceAddress }: GiftCardReceip
     const locale: Locale = giftCard.locale;
     const timeZone = DEFAULT_TIME_ZONE;
     const amount = formatCurrency(giftCard.originalBalanceCents, { locale });
-    const purchasedAt = formatDate(giftCard.createdAt, { locale, timeZone, dateStyle: 'long' });
+    const purchasedAt = formatDate(giftCard.payedAt, { locale, timeZone, dateStyle: 'long' });
+    const country = formatCountryName(invoiceAddress.country, { locale });
 
     return (
-        <main
-            id="main-content"
-            data-receipt-ready
-            className="relative mx-auto min-h-screen w-full max-w-[720px] bg-white px-10 py-12 text-neutral-900"
-        >
-            <header className="grid gap-2 border-b border-neutral-200 pb-6">
-                <p className="font-serif text-3xl tracking-tight">peopleeat</p>
-                <h1 className="text-lg font-medium">{{ de: 'Kaufbeleg: Gutschein', en: 'Purchase receipt: Gift card' }[locale]}</h1>
+        <main id="main-content" data-receipt-ready className="relative mx-auto w-full max-w-[720px] bg-white px-10 py-12 text-neutral-900">
+            <header className="grid gap-4 border-b border-neutral-200 pb-6">
+                <div className="grid gap-2">
+                    <p className="font-serif text-3xl tracking-tight">peopleeat</p>
+                    <h1 className="text-lg font-medium">{{ de: 'Kaufbeleg: Gutschein', en: 'Purchase receipt: Gift card' }[locale]}</h1>
+                </div>
+                <address className="grid gap-0.5 text-sm/relaxed text-neutral-700 not-italic">
+                    {GIFT_CARD_RECEIPT_ISSUER_LINES.map((line) => (
+                        <span key={line}>{line}</span>
+                    ))}
+                </address>
             </header>
 
             <section className="grid gap-6 py-8">
@@ -40,7 +45,6 @@ export function GiftCardReceiptPage({ giftCard, invoiceAddress }: GiftCardReceip
                     <ReceiptRow label={{ de: 'Datum', en: 'Date' }[locale]} value={purchasedAt} />
                     <ReceiptRow label={{ de: 'Betrag', en: 'Amount' }[locale]} value={amount} />
                     <ReceiptRow label={{ de: 'Gutschein-ID', en: 'Gift card ID' }[locale]} value={giftCard.giftCardId} mono />
-                    <ReceiptRow label={{ de: 'Code', en: 'Code' }[locale]} value={giftCard.redeemCode} mono />
                 </dl>
             </section>
 
@@ -58,15 +62,15 @@ export function GiftCardReceiptPage({ giftCard, invoiceAddress }: GiftCardReceip
                     <span>
                         {invoiceAddress.postalCode} {invoiceAddress.city}
                     </span>
-                    <span>{invoiceAddress.country}</span>
+                    <span>{country}</span>
                 </div>
             </section>
 
             <footer className="mt-12 border-t border-neutral-200 pt-6 text-xs text-neutral-500">
                 {
                     {
-                        de: 'Dies ist ein Kaufbeleg für Ihren peopleeat-Gutschein. Der Code zum Einlösen ist auch in der Kauf-E-Mail enthalten.',
-                        en: 'This is a purchase receipt for your peopleeat gift card. The redeem code is also included in the purchase email.',
+                        de: 'Kaufbeleg für einen peopleeat-Mehrzweck-Gutschein. Keine Rechnung. Umsatzsteuer entsteht bei der Einlösung. Der Einlöscode steht auf dem Gutschein und in der Kauf-E-Mail.',
+                        en: 'Purchase receipt for a peopleeat multi-purpose gift card. Not an invoice. VAT is due when the gift card is redeemed. The redeem code is on the gift card and in the purchase email.',
                     }[locale]
                 }
             </footer>

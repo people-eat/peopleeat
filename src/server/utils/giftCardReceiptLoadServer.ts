@@ -30,8 +30,7 @@ export async function giftCardReceiptLoadServer(input: { giftCardId: string; tok
             giftCardId: row.giftCardId,
             locale: row.locale,
             originalBalanceCents: row.originalBalanceCents,
-            redeemCode: row.redeemCode,
-            createdAt: row.createdAt,
+            payedAt: row.payedAt ?? row.createdAt,
         },
         invoiceAddress: {
             companyName: row.invoiceAddress.companyName ?? null,

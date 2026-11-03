@@ -25,6 +25,9 @@ const giftCardReceiptLoad: (input: { giftCardId: string; token: string }) => Pro
     });
 
 export const Route = createFileRoute('/server/gift-cards/$giftCardId/receipt')({
+    // Hydration keeps the server payload. A client reload would hit the
+    // `.client()` loader and replace the receipt with the app 404 before print.
+    staleTime: Infinity,
     validateSearch: (search: Record<string, unknown>) => ({
         token: typeof search.token === 'string' ? search.token : '',
     }),

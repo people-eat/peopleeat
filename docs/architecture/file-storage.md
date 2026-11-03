@@ -35,10 +35,11 @@ FileUploads
 Chat is the first interactive consumer: the `ChatMessageUserAttachments` join row links a `ChatMessagesUser` message to one or more
 `FileUploads` rows in send-order. Offer negotiation chats use `BookingRequestOfferEventAttachments` (MESSAGE_SIMPLE events); support request
 chats use `SupportRequestMessageAttachments`. Gift-card purchase receipts store `GiftCards.invoiceFileUploadId` and may also appear on
-`OutboundEmailAttachments`. Profile pictures store `Users.profilePictureFileUploadId` (see
-[profile-pictures.md](../features/profile-pictures.md)). New consumers follow the same pattern — reference `FileUploads.fileUploadId` from a
-domain-specific join or FK, layer per-consumer cascade and authorization rules on top. A new domain-specific blob table is the exception,
-not the default.
+`OutboundEmailAttachments`. Regenerating a gift-card PDF deletes the previous file only when no outbound email or WhatsApp attachment still
+references it. `OutboundEmailAttachments.fileUploadId` cascades on file delete, so an emailed copy is kept. Profile pictures store
+`Users.profilePictureFileUploadId` (see [profile-pictures.md](../features/profile-pictures.md)). New consumers follow the same pattern —
+reference `FileUploads.fileUploadId` from a domain-specific join or FK, layer per-consumer cascade and authorization rules on top. A new
+domain-specific blob table is the exception, not the default.
 
 **Bytes never travel through GraphQL.** The `FileUpload` GraphQL type exposes metadata plus a URL (`fileUploadId`, `filename`, `mediaType`,
 `size`, `url`). Resolvers and hydrates select only those columns via `fileUploadMetadataColumns` / `fileUploadMetadataLoad`

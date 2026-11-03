@@ -1,0 +1,1 @@
+ALTER TABLE "GiftCards" ADD COLUMN "payedAt" timestamp with time zone;

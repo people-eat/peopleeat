@@ -15,6 +15,14 @@ export const SITE_LOGO_DISPLAY = { width: 140, height: 29 } as const;
 
 // External contact / social profiles linked from site chrome and email.
 export const SITE_CONTACT_EMAIL = 'contact@people-eat.com' as const;
+
+/** Issuer lines on the gift-card purchase receipt. Matches the published imprint. */
+export const GIFT_CARD_RECEIPT_ISSUER_LINES = [
+    'PeopleEat UG',
+    'Montgolfier-Allee 24',
+    '60486 Frankfurt am Main',
+    SITE_CONTACT_EMAIL,
+] as const;
 export const SITE_WHATSAPP_URL = 'https://wa.me/message/5ADGYOIYNW2JO1' as const;
 export const SITE_GOOGLE_MAPS_URL = 'https://maps.app.goo.gl/t7nk5wcMstwupC5p8' as const;
 export const SITE_INSTAGRAM_URL = 'https://www.instagram.com/peopleeat_official' as const;

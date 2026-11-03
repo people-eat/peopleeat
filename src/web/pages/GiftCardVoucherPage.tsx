@@ -24,7 +24,7 @@ export function GiftCardVoucherPage({ giftCard }: GiftCardVoucherPageProps) {
         <main
             id="main-content"
             data-voucher-ready
-            className="relative mx-auto flex min-h-screen w-full max-w-[720px] flex-col justify-center bg-white px-10 py-12 text-neutral-900"
+            className="relative mx-auto flex w-full max-w-[720px] flex-col bg-white px-10 py-12 text-neutral-900"
         >
             <div className="grid gap-8 border border-neutral-200 px-10 py-12">
                 <header className="grid gap-3 text-center">

@@ -90,13 +90,17 @@ Routes intended for server-side capture live under `src/routes/server.*` (matche
   via `createIsomorphicFn().server(…)`, and `await import(…)` a server-only helper from that callback — see
   `src/routes/server.gift-cards.$giftCardId.receipt.tsx` + `src/server/utils/giftCardReceiptLoadServer.ts`. Pure `server.handlers` routes
   (sitemaps, robots) can import `db` at the top level because those handlers are stripped from the client bundle.
+- Set `staleTime: Infinity` when the client half of the loader throws `notFound()`. Hydration keeps the server payload. A later client
+  reload would otherwise replace the document with the app 404 before `page.pdf()`.
 
 **First shipped consumers:** gift-card purchase receipt at `/server/gift-cards/$giftCardId/receipt` and printable voucher at
 `/server/gift-cards/$giftCardId/voucher` (HMAC subject = `giftCardId`), rendered by `GiftCardReceiptPage` / `GiftCardVoucherPage` and
 captured via `browser.capturePdf` from `giftCardPay`. See [gift-card-purchase.md](../features/gift-card-purchase.md).
 
-`__root`'s document shell should detect `/server/*` and **omit site chrome** (navigation progress, toasters, floating UI, ambient backdrops
-when present) and **force a white / neutral `body` background**. Without that:
+`__root`'s document shell should detect `/server/*` and **omit site chrome** (navigation progress, toasters, floating UI, the GraphQL
+client, and session startup gates) and **force a white / neutral `body` background**. Skipping the session shell keeps Chromium from minting
+an anonymous session on every capture. When the loader carries a `giftCard.locale`, that locale is the document `lang`. These routes have no
+`{-$locale}` param, so the URL locale would otherwise stay German. Without the chrome skip:
 
 - Fixed overlays (nav progress, ambient chrome) **reprint on every PDF page**
 - Global theme backgrounds (e.g. cool off-white `--background`) show in PDF page margins and in the empty trailing region of the last page
@@ -117,10 +121,12 @@ browser: {
 
 `capture` screenshots (PNG/JPEG); `capturePdf` renders the page to a PDF via `page.pdf()` on the same singleton browser (`format: 'A4'`,
 `printBackground: true`, margins, `print` media emulation). Both take a caller-constructed absolute URL and reuse the singleton Chromium.
+After the ready selector (or the short paint delay), both wait for `document.fonts.ready`. DM Sans uses `font-display: block`, and the ready
+marker is already in the server HTML, so a capture that does not wait for fonts can print invisible text.
 
-**PDF layout constraint.** `page.pdf()` paginates from document-flow height. Print routes must let content grow the page (`relative` /
-`min-h-screen`, etc.) — a `fixed inset-0` + `overflow-auto` sheet only exposes one viewport to the printer and truncates multi-page
-documents.
+**PDF layout constraint.** `page.pdf()` paginates from document-flow height. Print routes must let content grow in normal flow. Do not use
+`min-h-screen`: `100vh` plus the 15 mm page margins overflows A4 and adds a blank page. A `fixed inset-0` + `overflow-auto` sheet only
+exposes one viewport to the printer and truncates multi-page documents.
 
 Wired in `serverRuntimeCreate.ts` to delegate to `browserCapture` / `browserCapturePdf`. The capture pipeline does not know about the app's
 base URL or token format — callers construct the absolute URL (typically `${baseUrl}/server/${path}?token=${createServerToken(...)}`) and

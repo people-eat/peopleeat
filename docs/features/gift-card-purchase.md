@@ -10,13 +10,19 @@ personal message.
 Anonymous buyers complete identity before purchase: email OTP (+ name-only registration for new accounts), or passkey for existing users who
 already registered one (skips OTP). Phone, birth date, and preferred communication stay optional.
 
-After configuration, checkout opens on a dedicated full-page Stripe flow. Successful payment marks the card paid, generates a printable
-voucher and a purchase receipt as PDFs, and emails the redeem code with both attachments. PDF generation is best-effort per file — email
-still sends if one capture fails.
+After configuration, checkout opens on a dedicated full-page Stripe flow. Successful payment marks the card paid (`payedAt`), generates a
+printable voucher and a purchase receipt as PDFs, and emails the redeem code with both attachments. PDF generation is best-effort per file.
+Email still sends if one capture fails.
+
+The receipt is a purchase record, not an invoice. It shows the payment date (`payedAt`, or `createdAt` when a card was paid before that
+timestamp existed), the gift-card id, the amount, the billing address with a localized country name, and the issuer (PeopleEat UG,
+Montgolfier-Allee 24, 60486 Frankfurt am Main, contact@people-eat.com). The redeem code stays on the voucher and in the purchase email. The
+footer states that this is a multi-purpose voucher and that VAT is due on redemption.
 
 Buyers review codes, status, and PDF downloads under `/profile/gift-cards` (customer sidebar). Paid cards always offer **Generate /
 Regenerate PDFs** so missing or stale voucher/receipt files can be re-captured on demand (same headless path as pay). Admins can do the same
-from gift-card detail — see [admin-gift-cards.md](./admin-gift-cards.md).
+from gift-card detail. See [admin-gift-cards.md](./admin-gift-cards.md). Regenerating replaces the files linked from the gift card. The PDF
+attached to the purchase email is kept. A later regenerate deletes an intermediate file that no email or WhatsApp message still references.
 
 Voucher validity is three years from create or update.
 
@@ -44,7 +50,7 @@ Voucher validity is three years from create or update.
 - Single `recipientName` field.
 - Redeem code on public types only when paid; admins always see it.
 - Explicit locale on create, persisted for the pay email.
-- Both voucher (no billing block) and simple receipt PDFs via headless capture, soft-fail per PDF.
+- Both voucher (no billing block) and receipt PDFs via headless capture, soft-fail per PDF. The receipt omits the redeem code.
 
 ## Next steps
 
@@ -55,7 +61,7 @@ the same finalize path as pay so abandoned tabs still mint codes. See [architect
 
 | Piece     | Location                                                                                                                                                                                                                                                |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Table     | `giftCards` in `src/server/db/schema.ts` (`invoiceFileUploadId`, `voucherFileUploadId` → `FileUploads`)                                                                                                                                                 |
+| Table     | `giftCards` in `src/server/db/schema.ts` (`payedAt`, `invoiceFileUploadId`, `voucherFileUploadId` → `FileUploads`)                                                                                                                                      |
 | Commands  | `giftCardCreate`, `giftCardPay`, `giftCardPdfsRegenerate` under `UserMutation`; admin `giftCardPdfsRegenerate`                                                                                                                                          |
 | PDF utils | `giftCardPdfsCreate` / `giftCardPdfsRegenerateForPayedCard` in `src/server/utils/giftCardPdfsCreate.ts`                                                                                                                                                 |
 | Queries   | `sessionGiftCardFindOne`, `sessionGiftCardPurchaseErrorFindOne`, `userGiftCardFindMany`, `adminGiftCardFindMany`, `adminGiftCardCounts`, `adminGiftCardCreationsFindMany`, `adminGiftCardOccasionStatsFindMany`, `adminGiftCardSalesMonthStatsFindMany` |

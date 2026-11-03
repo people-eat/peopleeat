@@ -256,6 +256,10 @@ export const giftCards = pgTable(
         }),
         cleanupJobId: varchar(),
         expiresAt: timestamp({ withTimezone: true }).notNull(),
+        // Wall time of the PAYED transition. Null while PREPARED, and on rows
+        // paid before this column existed (no backfill). The receipt uses
+        // `payedAt ?? createdAt`.
+        payedAt: timestamp({ withTimezone: true }),
         createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
     },
     (table) => [
@@ -1112,7 +1116,8 @@ export type OutboundEmailCreate = typeof outboundEmails.$inferInsert;
 // (e.g. gift-card purchase receipt PDF). `position` preserves send order.
 // On outbound-email delete, join rows cascade; the underlying `FileUploads`
 // row is preserved (gift cards may still reference it via
-// `invoiceFileUploadId`).
+// `invoiceFileUploadId`). Deleting the `FileUploads` row cascades this join,
+// so gift-card regenerate keeps a file an email still attaches.
 
 export const outboundEmailAttachments = pgTable(
     'OutboundEmailAttachments',

@@ -75,6 +75,13 @@ describe('giftCardPay', () => {
         expect(row?.locale).toBe('en');
         expect(row?.voucherFileUploadId).toBe(emailCall?.attachments?.[0]?.fileUploadId);
         expect(row?.invoiceFileUploadId).toBe(emailCall?.attachments?.[1]?.fileUploadId);
+        expect(row?.payedAt).toBeInstanceOf(Date);
+        expect(serverRuntime.browser.capturePdf).toHaveBeenCalledWith(
+            expect.objectContaining({
+                url: expect.stringContaining(`/server/gift-cards/${created.referenceId}/receipt`),
+                waitForSelector: '[data-receipt-ready]',
+            }),
+        );
     });
 
     it('still emails when receipt PDF capture fails', async () => {
@@ -133,6 +140,7 @@ describe('giftCardPay', () => {
             requestingSession,
             serverRuntime,
         );
+        const [paid] = await testDb.select().from(giftCards).where(eq(giftCards.giftCardId, created.referenceId!));
         vi.mocked(serverRuntime.email.send).mockClear();
         vi.mocked(serverRuntime.stripe.paymentIntentSucceededCheck).mockClear();
 
@@ -148,6 +156,8 @@ describe('giftCardPay', () => {
         expect(again.success).toBe(true);
         expect(serverRuntime.email.send).not.toHaveBeenCalled();
         expect(serverRuntime.stripe.paymentIntentSucceededCheck).not.toHaveBeenCalled();
+        const [againRow] = await testDb.select().from(giftCards).where(eq(giftCards.giftCardId, created.referenceId!));
+        expect(againRow?.payedAt?.getTime()).toBe(paid?.payedAt?.getTime());
     });
 
     it('returns success false when the PaymentIntent has not succeeded', async () => {

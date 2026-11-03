@@ -1,5 +1,5 @@
 import dmSansLatin from '@fontsource-variable/dm-sans/files/dm-sans-latin-opsz-normal.woff2?url';
-import { createRootRoute, HeadContent, Outlet, Scripts, useLocation } from '@tanstack/react-router';
+import { createRootRoute, HeadContent, Outlet, Scripts, useLocation, useMatches } from '@tanstack/react-router';
 import type { PropsWithChildren } from 'react';
 import { Provider as GraphQLClientProvider } from 'urql';
 import appCss from '../styles.css?url';
@@ -14,7 +14,8 @@ import { useLocale } from '../web/hooks/useLocale';
 import { DEFAULT_SHARE_IMAGE, DEFAULT_SHARE_IMAGE_DIMENSIONS, SITE_NAME } from '../web/seo/seoConstants';
 import { webPageUrlGet } from '../web/seo/webPageUrlGet';
 import { cn } from '../web/utils/cn';
-import { isWorkspaceNoDocumentScrollPath, pathWithoutLocale } from '../web/utils/locale';
+import { isWorkspaceNoDocumentScrollPath, LOCALES, pathWithoutLocale } from '../web/utils/locale';
+import type { Locale } from '../web/utils/locale';
 
 // peopleeat is light-only — force the light class before paint so OS dark
 // preference never flashes a dark shell.
@@ -105,14 +106,29 @@ function RootComponent() {
     return <Outlet />;
 }
 
+function captureDocumentLocale(matches: ReturnType<typeof useMatches>): Locale | null {
+    for (let index = matches.length - 1; index >= 0; index -= 1) {
+        const data = matches[index]?.loaderData;
+        if (!data || typeof data !== 'object' || !('giftCard' in data)) continue;
+        const giftCard = data.giftCard;
+        if (!giftCard || typeof giftCard !== 'object' || !('locale' in giftCard)) continue;
+        const locale = giftCard.locale;
+        if (typeof locale === 'string' && LOCALES.includes(locale as Locale)) return locale as Locale;
+    }
+    return null;
+}
+
 function RootDocument({ children }: PropsWithChildren) {
-    const locale = useLocale();
+    const routeLocale = useLocale();
     // `/server/*` routes are headless Chromium capture targets (PDF /
     // screenshot) — see docs/architecture/browser-capture.md. They must not
     // inherit site chrome: NavigationProgress and the toaster would pollute
-    // screenshots / PDF pages.
+    // screenshots / PDF pages. They also have no `{-$locale}` param, so the
+    // document language comes from the captured gift card.
     const pathname = useLocation({ select: (location) => location.pathname });
     const isBrowserCaptureRoute = pathname.startsWith('/server/');
+    const matches = useMatches();
+    const locale = captureDocumentLocale(matches) ?? routeLocale;
     // Admin / profile shells and the booking form lock the document and scroll
     // an inset pane — drop the document scrollbar gutters there (see theme.md).
     const workspaceNoDocumentScroll = isWorkspaceNoDocumentScrollPath(pathWithoutLocale(pathname, locale));
@@ -143,11 +159,15 @@ function RootDocument({ children }: PropsWithChildren) {
                     </a>
                 )}
                 {!isBrowserCaptureRoute && <NavigationProgress />}
-                <TooltipProvider>
-                    <GraphQLClientProvider value={urqlClient}>
-                        <SessionStartupGates enableCookieShell={!isBrowserCaptureRoute}>{children}</SessionStartupGates>
-                    </GraphQLClientProvider>
-                </TooltipProvider>
+                {isBrowserCaptureRoute ? (
+                    children
+                ) : (
+                    <TooltipProvider>
+                        <GraphQLClientProvider value={urqlClient}>
+                            <SessionStartupGates enableCookieShell>{children}</SessionStartupGates>
+                        </GraphQLClientProvider>
+                    </TooltipProvider>
+                )}
                 {!isBrowserCaptureRoute && <Toaster position="bottom-center" richColors />}
                 <Scripts />
             </body>

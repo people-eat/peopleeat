@@ -155,6 +155,13 @@
             "when": 1793728313096,
             "tag": "0021_stormy_night_thrasher",
             "breakpoints": true
+        },
+        {
+            "idx": 22,
+            "version": "7",
+            "when": 1793742482992,
+            "tag": "0022_lethal_weapon_omega",
+            "breakpoints": true
         }
     ]
 }

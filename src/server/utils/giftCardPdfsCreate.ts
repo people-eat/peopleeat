@@ -4,6 +4,7 @@ import { fileUploadCreate } from '../commands/fileUploadCreate';
 import { fileUploads, giftCards } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { environmentVariables } from '../env/environmentVariablesCreate';
+import { fileUploadReferencedByOutboundEmailAttachment, fileUploadReferencedByWhatsAppAttachment } from './fileUploadContentAccess';
 import { createServerToken } from './serverToken';
 
 const RECEIPT_FILENAME = 'peopleeat-gift-card-receipt.pdf';
@@ -21,7 +22,8 @@ export const giftCardPdfFilenames = {
 /**
  * Capture receipt + voucher PDFs for a PAYED gift card, persist FileUploads, and
  * point `GiftCards` FKs at the new rows. Soft-fails per PDF (logs + null). Deletes
- * previous upload rows when replaced.
+ * a replaced upload only when no outbound email or WhatsApp message still
+ * attaches it (`OutboundEmailAttachments.fileUploadId` cascades on file delete).
  */
 export async function giftCardPdfsCreate(
     giftCardId: string,
@@ -43,11 +45,28 @@ export async function giftCardPdfsCreate(
             : null,
     ].filter((id): id is string => id != null);
 
-    if (obsoleteIds.length > 0) {
-        await serverRuntime.db.delete(fileUploads).where(inArray(fileUploads.fileUploadId, obsoleteIds));
-    }
+    await giftCardPdfObsoleteDelete(serverRuntime, obsoleteIds);
 
     return { receipt, voucher };
+}
+
+/** Drop replaced PDFs that nothing else still points at. */
+async function giftCardPdfObsoleteDelete(serverRuntime: ServerRuntime, obsoleteIds: string[]): Promise<void> {
+    const deletable = (
+        await Promise.all(
+            obsoleteIds.map(async (fileUploadId) => {
+                const [keptByEmail, keptByWhatsApp] = await Promise.all([
+                    fileUploadReferencedByOutboundEmailAttachment(serverRuntime.db, fileUploadId),
+                    fileUploadReferencedByWhatsAppAttachment(serverRuntime.db, fileUploadId),
+                ]);
+                return keptByEmail || keptByWhatsApp ? null : fileUploadId;
+            }),
+        )
+    ).filter((fileUploadId): fileUploadId is string => fileUploadId != null);
+
+    if (deletable.length === 0) return;
+
+    await serverRuntime.db.delete(fileUploads).where(inArray(fileUploads.fileUploadId, deletable));
 }
 
 /** Shared regenerate for PAYED cards. Returns false when missing / not paid / both captures failed. */

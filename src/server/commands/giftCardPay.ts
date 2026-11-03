@@ -78,6 +78,7 @@ export async function giftCardPay(
             .update(giftCards)
             .set({
                 paymentStatus: 'PAYED',
+                payedAt: new Date(),
                 invoiceAddress,
                 cleanupJobId: null,
             })
