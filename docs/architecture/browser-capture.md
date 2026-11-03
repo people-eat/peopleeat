@@ -97,10 +97,11 @@ Routes intended for server-side capture live under `src/routes/server.*` (matche
 `/server/gift-cards/$giftCardId/voucher` (HMAC subject = `giftCardId`), rendered by `GiftCardReceiptPage` / `GiftCardVoucherPage` and
 captured via `browser.capturePdf` from `giftCardPay`. See [gift-card-purchase.md](../features/gift-card-purchase.md).
 
-`__root`'s document shell should detect `/server/*` and **omit site chrome** (navigation progress, toasters, floating UI, the GraphQL
-client, and session startup gates) and **force a white / neutral `body` background**. Skipping the session shell keeps Chromium from minting
-an anonymous session on every capture. When the loader carries a `giftCard.locale`, that locale is the document `lang`. These routes have no
-`{-$locale}` param, so the URL locale would otherwise stay German. Without the chrome skip:
+`RootDocument` (`src/web/components/RootDocument.tsx`) detects `/server/*` and **omits site chrome** (navigation progress, toasters,
+floating UI, the GraphQL client, and session startup gates) and **forces a white / neutral `body` background**. Skipping the session shell
+keeps Chromium from minting an anonymous session on every capture. Document `lang` comes from the gift-card receipt and voucher matches
+(`giftCard.locale`). These routes have no `{-$locale}` param, so the URL locale would otherwise stay German. A new capture route that
+carries its own locale needs a match in `useDocumentLocale`. Without the chrome skip:
 
 - Fixed overlays (nav progress, ambient chrome) **reprint on every PDF page**
 - Global theme backgrounds (e.g. cool off-white `--background`) show in PDF page margins and in the empty trailing region of the last page

@@ -37,12 +37,12 @@ open state.
 
 ## Implementation
 
-| Area         | Path                                                              |
-| ------------ | ----------------------------------------------------------------- |
-| Orchestrator | `src/web/components/SessionStartupGates.tsx` (+ `.graphql`)       |
-| Locale UI    | `src/web/components/LocaleMismatchGate.tsx`                       |
-| Legal UI     | `src/web/components/LegalAcceptanceGate.tsx`                      |
-| Cookie UI    | `src/web/components/CookieBanner.tsx`, `CookieConsentContext.tsx` |
-| Mount        | `src/routes/__root.tsx` under `GraphQLClientProvider`             |
+| Area         | Path                                                                |
+| ------------ | ------------------------------------------------------------------- |
+| Orchestrator | `src/web/components/SessionStartupGates.tsx` (+ `.graphql`)         |
+| Locale UI    | `src/web/components/LocaleMismatchGate.tsx`                         |
+| Legal UI     | `src/web/components/LegalAcceptanceGate.tsx`                        |
+| Cookie UI    | `src/web/components/CookieBanner.tsx`, `CookieConsentContext.tsx`   |
+| Mount        | `src/web/components/RootDocument.tsx` under `GraphQLClientProvider` |
 
 See [cookie-consent.md](./cookie-consent.md), [admin-legal.md](./admin-legal.md), [i18n.md](../architecture/i18n.md).

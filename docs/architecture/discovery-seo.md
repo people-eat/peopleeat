@@ -14,16 +14,16 @@ Router's `head()` callback. Sitemap and robots are served dynamically so the abs
 
 The pieces:
 
-| Concern             | Where                                                                                                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Per-page meta+links | `src/web/seo/seoMeta.ts` — pure helper; tests in `seoMeta.test.ts`                                                                                       |
-| Site-wide constants | `src/web/seo/seoConstants.ts` — `SITE_NAME`, `SITE_LOGO` (+ density `srcSet`), default share image (+ dimensions), OG locale map                         |
-| Root-level defaults | `src/routes/__root.tsx` — fallback OG/Twitter card, theme-color, favicon / apple-touch links, and related chrome when a page omits `head()`              |
-| Absolute origin     | `WEB_PAGE_URL` env var → `EnvironmentVariables.webPageUrl`; resolved on the client via `webPageUrlGet()`                                                 |
-| Sitemap             | Index at `src/routes/sitemap[.]xml.ts`; static pages in `sitemap-pages[.]xml.ts` from `SITEMAP_PATHS`; shared builders in `sitemapXmlBuild.ts`           |
-| Robots              | Dynamic route `src/routes/robots[.]txt.ts` + `robotsTxtBuild.ts` — query-param Disallows, AI crawler groups (see [discovery-geo.md](./discovery-geo.md)) |
-| LLM index           | Dynamic route `src/routes/llms[.]txt.ts` — see [discovery-geo.md](./discovery-geo.md)                                                                    |
-| Structured data     | `src/web/seo/jsonLd.ts` — `WebSite` + `Organization` (+ optional `FAQPage`); wire via `head().scripts`                                                   |
+| Concern             | Where                                                                                                                                                                              |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Per-page meta+links | `src/web/seo/seoMeta.ts` — pure helper; tests in `seoMeta.test.ts`                                                                                                                 |
+| Site-wide constants | `src/web/seo/seoConstants.ts` — `SITE_NAME`, `SITE_LOGO` (+ density `srcSet`), default share image (+ dimensions), OG locale map                                                   |
+| Root-level defaults | `src/web/seo/rootHead.ts` — fallback OG/Twitter card, theme-color, favicon / apple-touch links, and related chrome when a page omits `head()`. Wired from `src/routes/__root.tsx`. |
+| Absolute origin     | `WEB_PAGE_URL` env var → `EnvironmentVariables.webPageUrl`; resolved on the client via `webPageUrlGet()`                                                                           |
+| Sitemap             | Index at `src/routes/sitemap[.]xml.ts`; static pages in `sitemap-pages[.]xml.ts` from `SITEMAP_PATHS`; shared builders in `sitemapXmlBuild.ts`                                     |
+| Robots              | Dynamic route `src/routes/robots[.]txt.ts` + `robotsTxtBuild.ts` — query-param Disallows, AI crawler groups (see [discovery-geo.md](./discovery-geo.md))                           |
+| LLM index           | Dynamic route `src/routes/llms[.]txt.ts` — see [discovery-geo.md](./discovery-geo.md)                                                                                              |
+| Structured data     | `src/web/seo/jsonLd.ts` — `WebSite` + `Organization` (+ optional `FAQPage`); wire via `head().scripts`                                                                             |
 
 Optional structured data (JSON-LD) is available via `src/web/seo/jsonLd.ts` (`WebSite` + `Organization` with `logo`, optional `FAQPage`) —
 emit from a route's `head().scripts` when needed. AI-search / GEO layers (`/llms.txt`, AI crawler policy, freshness) live in

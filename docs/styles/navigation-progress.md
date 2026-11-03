@@ -32,7 +32,8 @@ read directly from `useRouterState` so it tracks both loader fetches and React t
   `completing`). Applies `animate-[nav-progress-grow_8s_ease-out_forwards]` while loading and a fade-out transition while completing. A
   bilingual `role="status"` sr-only label announces the in-flight navigation; `motion-reduce:animate-none` skips the grow animation.
 - `src/styles.css` — defines the `nav-progress-grow` keyframes (scaleX 0 → 0.9).
-- `src/routes/__root.tsx` — mounts `<NavigationProgress />` in the document body so it spans every route.
+- `src/web/components/RootDocument.tsx` — mounts `<NavigationProgress />` in the document body so it spans every route (omitted on
+  `/server/*` capture routes).
 
 ### Why a delay before showing
 

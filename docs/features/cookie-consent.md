@@ -50,6 +50,6 @@ shell so the footer can reopen settings.
 | Banner   | `CookieBanner.tsx`                                                            |
 | Footer   | `Footer.tsx` — Cookie settings button                                         |
 | Scripts  | `AnalyticsGoogle.tsx` (`G-165LKCGVJJ`), `AnalyticsClarity.tsx` (`l6qxwo5j7v`) |
-| Mount    | `src/routes/__root.tsx` via `SessionStartupGates`                             |
+| Mount    | `src/web/components/RootDocument.tsx` via `SessionStartupGates`               |
 
 Out of scope: per-tool GA vs Clarity toggles, legacy click-tracking hooks, env overrides for measurement IDs.

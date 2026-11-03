@@ -915,7 +915,7 @@ The template ships a server-side image-rendering pipeline. To use it:
 - **Never `import 'playwright'` directly.** Capture is exposed on the runtime as `serverRuntime.browser.capture(options)`. Tests inject a
   stub.
 - **Render targets live under `/server/*`** (e.g. `src/routes/server.reports.$reportId.tsx`). They authenticate with a one-shot HMAC token
-  from `src/server/utils/serverToken.ts`, not the session cookie. `__root` should omit nav-progress / toaster / floating chrome on these
+  from `src/server/utils/serverToken.ts`, not the session cookie. `RootDocument` omits nav-progress / toaster / floating chrome on these
   paths and force a white / neutral body so PDF pages don't pick up site chrome or themed `--background`.
 - **The signing secret is `SERVER_TOKEN_SECRET`** (capability-specific — only required by features that actually call `browserCapture`). Set
   it in `.env.local` and in your Coolify environment.
