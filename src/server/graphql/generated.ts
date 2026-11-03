@@ -85,6 +85,7 @@ export interface GqlSAdmin {
     logCounts: Array<Scalars['Int']['output']>;
     logCreations: Array<GqlSAdminTimeBucket>;
     logs: Array<GqlSAdminLog>;
+    map: GqlSAdminMap;
     objectStorageObjects: GqlSAdminObjectStorageObjectPage;
     occasion?: Maybe<GqlSAdminOccasion>;
     occasions: Array<GqlSAdminOccasion>;
@@ -1355,6 +1356,62 @@ export type GqlSAdminLogCriterion = {
 export type GqlSAdminLogLevel = 'debug' | 'error' | 'info' | 'warn';
 
 export type GqlSAdminLogSortField = 'createdAt' | 'message';
+
+export interface GqlSAdminMap {
+    __typename?: 'AdminMap';
+    bookingRequests: Array<GqlSAdminMapBookingRequestPoint>;
+    cities: Array<GqlSAdminMapCityPoint>;
+    cooks: Array<GqlSAdminMapCookPoint>;
+    cooksMissingOriginCount: Scalars['Int']['output'];
+    partners: Array<GqlSAdminMapPartnerPoint>;
+    partnersMissingLocationCount: Scalars['Int']['output'];
+}
+
+export type GqlSAdminMapBookingRequestsArgs = {
+    range: GqlSDateTimeRange;
+};
+
+export interface GqlSAdminMapBookingRequestPoint {
+    __typename?: 'AdminMapBookingRequestPoint';
+    bookingRequestId: Scalars['ID']['output'];
+    dateTime: Scalars['DateTime']['output'];
+    latitude: Scalars['Latitude']['output'];
+    longitude: Scalars['Longitude']['output'];
+    occasion: Scalars['String']['output'];
+    publicationStatus: GqlSBookingRequestPublicationStatus;
+    status: GqlSBookingRequestStatus;
+}
+
+export interface GqlSAdminMapCityPoint {
+    __typename?: 'AdminMapCityPoint';
+    cityId: Scalars['ID']['output'];
+    latitude: Scalars['Latitude']['output'];
+    longitude: Scalars['Longitude']['output'];
+    nameDe: Scalars['String']['output'];
+    nameEn: Scalars['String']['output'];
+    published: Scalars['Boolean']['output'];
+}
+
+export interface GqlSAdminMapCookPoint {
+    __typename?: 'AdminMapCookPoint';
+    cookId: Scalars['ID']['output'];
+    displayName: Scalars['String']['output'];
+    latitude: Scalars['Latitude']['output'];
+    longitude: Scalars['Longitude']['output'];
+    mapStatus: GqlSAdminMapCookStatus;
+    maximumTravelDistance?: Maybe<Scalars['Int']['output']>;
+}
+
+export type GqlSAdminMapCookStatus = 'HIDDEN' | 'LISTABLE' | 'PENDING';
+
+export interface GqlSAdminMapPartnerPoint {
+    __typename?: 'AdminMapPartnerPoint';
+    latitude: Scalars['Latitude']['output'];
+    longitude: Scalars['Longitude']['output'];
+    name: Scalars['String']['output'];
+    partnerId: Scalars['ID']['output'];
+    published: Scalars['Boolean']['output'];
+}
 
 export interface GqlSAdminMutation {
     __typename?: 'AdminMutation';
@@ -5477,6 +5534,12 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminLogCriterion: GqlSAdminLogCriterion;
     AdminLogLevel: GqlSAdminLogLevel;
     AdminLogSortField: GqlSAdminLogSortField;
+    AdminMap: ResolverTypeWrapper<GqlSAdminMap>;
+    AdminMapBookingRequestPoint: ResolverTypeWrapper<GqlSAdminMapBookingRequestPoint>;
+    AdminMapCityPoint: ResolverTypeWrapper<GqlSAdminMapCityPoint>;
+    AdminMapCookPoint: ResolverTypeWrapper<GqlSAdminMapCookPoint>;
+    AdminMapCookStatus: GqlSAdminMapCookStatus;
+    AdminMapPartnerPoint: ResolverTypeWrapper<GqlSAdminMapPartnerPoint>;
     AdminMutation: ResolverTypeWrapper<GqlSAdminMutation>;
     AdminObjectStorageObject: ResolverTypeWrapper<GqlSAdminObjectStorageObject>;
     AdminObjectStorageObjectCriterion: GqlSAdminObjectStorageObjectCriterion;
@@ -6042,6 +6105,11 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminLegalTermsAndConditions: GqlSAdminLegalTermsAndConditions;
     AdminLog: GqlSAdminLog;
     AdminLogCriterion: GqlSAdminLogCriterion;
+    AdminMap: GqlSAdminMap;
+    AdminMapBookingRequestPoint: GqlSAdminMapBookingRequestPoint;
+    AdminMapCityPoint: GqlSAdminMapCityPoint;
+    AdminMapCookPoint: GqlSAdminMapCookPoint;
+    AdminMapPartnerPoint: GqlSAdminMapPartnerPoint;
     AdminMutation: GqlSAdminMutation;
     AdminObjectStorageObject: GqlSAdminObjectStorageObject;
     AdminObjectStorageObjectCriterion: GqlSAdminObjectStorageObjectCriterion;
@@ -6677,6 +6745,7 @@ export type GqlSAdminResolvers<
         RequireFields<GqlSAdminLogCreationsArgs, 'granularity' | 'range'>
     >;
     logs?: Resolver<Array<GqlSResolversTypes['AdminLog']>, ParentType, ContextType, RequireFields<GqlSAdminLogsArgs, 'criterion'>>;
+    map?: Resolver<GqlSResolversTypes['AdminMap'], ParentType, ContextType>;
     objectStorageObjects?: Resolver<
         GqlSResolversTypes['AdminObjectStorageObjectPage'],
         ParentType,
@@ -7536,6 +7605,71 @@ export type GqlSAdminLogResolvers<
     message?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     session?: Resolver<Maybe<GqlSResolversTypes['AdminSession']>, ParentType, ContextType>;
     sessionId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+}>;
+
+export type GqlSAdminMapResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminMap'] = GqlSResolversParentTypes['AdminMap'],
+> = ResolversObject<{
+    bookingRequests?: Resolver<
+        Array<GqlSResolversTypes['AdminMapBookingRequestPoint']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMapBookingRequestsArgs, 'range'>
+    >;
+    cities?: Resolver<Array<GqlSResolversTypes['AdminMapCityPoint']>, ParentType, ContextType>;
+    cooks?: Resolver<Array<GqlSResolversTypes['AdminMapCookPoint']>, ParentType, ContextType>;
+    cooksMissingOriginCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    partners?: Resolver<Array<GqlSResolversTypes['AdminMapPartnerPoint']>, ParentType, ContextType>;
+    partnersMissingLocationCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminMapBookingRequestPointResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminMapBookingRequestPoint'] = GqlSResolversParentTypes['AdminMapBookingRequestPoint'],
+> = ResolversObject<{
+    bookingRequestId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    dateTime?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    latitude?: Resolver<GqlSResolversTypes['Latitude'], ParentType, ContextType>;
+    longitude?: Resolver<GqlSResolversTypes['Longitude'], ParentType, ContextType>;
+    occasion?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    publicationStatus?: Resolver<GqlSResolversTypes['BookingRequestPublicationStatus'], ParentType, ContextType>;
+    status?: Resolver<GqlSResolversTypes['BookingRequestStatus'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminMapCityPointResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminMapCityPoint'] = GqlSResolversParentTypes['AdminMapCityPoint'],
+> = ResolversObject<{
+    cityId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    latitude?: Resolver<GqlSResolversTypes['Latitude'], ParentType, ContextType>;
+    longitude?: Resolver<GqlSResolversTypes['Longitude'], ParentType, ContextType>;
+    nameDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    nameEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    published?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminMapCookPointResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminMapCookPoint'] = GqlSResolversParentTypes['AdminMapCookPoint'],
+> = ResolversObject<{
+    cookId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    displayName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    latitude?: Resolver<GqlSResolversTypes['Latitude'], ParentType, ContextType>;
+    longitude?: Resolver<GqlSResolversTypes['Longitude'], ParentType, ContextType>;
+    mapStatus?: Resolver<GqlSResolversTypes['AdminMapCookStatus'], ParentType, ContextType>;
+    maximumTravelDistance?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
+}>;
+
+export type GqlSAdminMapPartnerPointResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminMapPartnerPoint'] = GqlSResolversParentTypes['AdminMapPartnerPoint'],
+> = ResolversObject<{
+    latitude?: Resolver<GqlSResolversTypes['Latitude'], ParentType, ContextType>;
+    longitude?: Resolver<GqlSResolversTypes['Longitude'], ParentType, ContextType>;
+    name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    partnerId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    published?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminMutationResolvers<
@@ -11150,6 +11284,11 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminLegalPrivacyPolicy?: GqlSAdminLegalPrivacyPolicyResolvers<ContextType>;
     AdminLegalTermsAndConditions?: GqlSAdminLegalTermsAndConditionsResolvers<ContextType>;
     AdminLog?: GqlSAdminLogResolvers<ContextType>;
+    AdminMap?: GqlSAdminMapResolvers<ContextType>;
+    AdminMapBookingRequestPoint?: GqlSAdminMapBookingRequestPointResolvers<ContextType>;
+    AdminMapCityPoint?: GqlSAdminMapCityPointResolvers<ContextType>;
+    AdminMapCookPoint?: GqlSAdminMapCookPointResolvers<ContextType>;
+    AdminMapPartnerPoint?: GqlSAdminMapPartnerPointResolvers<ContextType>;
     AdminMutation?: GqlSAdminMutationResolvers<ContextType>;
     AdminObjectStorageObject?: GqlSAdminObjectStorageObjectResolvers<ContextType>;
     AdminObjectStorageObjectPage?: GqlSAdminObjectStorageObjectPageResolvers<ContextType>;
@@ -11458,6 +11597,12 @@ export const GqlSAdminLogLevelSchema: z.ZodType<'debug' | 'error' | 'info' | 'wa
 ]);
 
 export const GqlSAdminLogSortFieldSchema: z.ZodType<'createdAt' | 'message', 'createdAt' | 'message'> = z.enum(['createdAt', 'message']);
+
+export const GqlSAdminMapCookStatusSchema: z.ZodType<'HIDDEN' | 'LISTABLE' | 'PENDING', 'HIDDEN' | 'LISTABLE' | 'PENDING'> = z.enum([
+    'HIDDEN',
+    'LISTABLE',
+    'PENDING',
+]);
 
 export const GqlSAdminOutboundEmailLifecycleStatusSchema: z.ZodType<
     'BOUNCED' | 'FAILED' | 'OPENED' | 'PENDING' | 'SENT',

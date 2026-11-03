@@ -98,6 +98,7 @@
         "livekit-client": "^2.23.0",
         "livekit-server-sdk": "^2.19.2",
         "lucide-react": "^1.65.0",
+        "maplibre-gl": "^6.16.0",
         "nanoid": "^6.0.2",
         "nitro": "^3.0.261029-rc",
         "otpauth": "^9.5.2",

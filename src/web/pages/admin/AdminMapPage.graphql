@@ -1,0 +1,79 @@
+# Admin ops map. Loaded by `/admin/map`.
+# See `docs/features/admin-map.md`.
+
+query AdminMapPage($range: DateTimeRange!, $includeBookings: Boolean!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                map {
+                    cooks {
+                        cookId
+                        latitude
+                        longitude
+                        displayName
+                        maximumTravelDistance
+                        mapStatus
+                    }
+                    cooksMissingOriginCount
+                    bookingRequests(range: $range) @include(if: $includeBookings) {
+                        bookingRequestId
+                        latitude
+                        longitude
+                        status
+                        publicationStatus
+                        dateTime
+                        occasion
+                    }
+                    cities {
+                        cityId
+                        latitude
+                        longitude
+                        nameDe
+                        nameEn
+                        published
+                    }
+                    partners {
+                        partnerId
+                        latitude
+                        longitude
+                        name
+                        published
+                    }
+                    partnersMissingLocationCount
+                }
+            }
+        }
+    }
+}
+
+# Covering cooks for a selected booking/city (or arbitrary point).
+query AdminMapCoverage($latitude: Latitude!, $longitude: Longitude!) {
+    currentSession {
+        sessionId
+        user {
+            userId
+            admin {
+                adminId
+                cooksInTravelRadius(latitude: $latitude, longitude: $longitude) {
+                    estimatedTravelDistanceKm
+                    cook {
+                        cookId
+                        maximumTravelDistance
+                        stageName
+                        exactTravelOriginAddress {
+                            latitude
+                            longitude
+                        }
+                        user {
+                            userId
+                            firstName
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

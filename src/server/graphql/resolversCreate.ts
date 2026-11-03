@@ -278,6 +278,12 @@ import { adminLogCounts } from '../queries/adminLogCounts';
 import { adminLogCreationsFindMany } from '../queries/adminLogCreationsFindMany';
 import { adminLogFindMany } from '../queries/adminLogFindMany';
 import { adminLogFindOne } from '../queries/adminLogFindOne';
+import { adminMapBookingRequestPointsFindMany } from '../queries/adminMapBookingRequestPointsFindMany';
+import { adminMapCityPointsFindMany } from '../queries/adminMapCityPointsFindMany';
+import { adminMapCookPointsFindMany } from '../queries/adminMapCookPointsFindMany';
+import { adminMapCooksMissingOriginCount } from '../queries/adminMapCooksMissingOriginCount';
+import { adminMapPartnerPointsFindMany } from '../queries/adminMapPartnerPointsFindMany';
+import { adminMapPartnersMissingLocationCount } from '../queries/adminMapPartnersMissingLocationCount';
 import { adminObjectStorageObjectFindMany } from '../queries/adminObjectStorageObjectFindMany';
 import { adminOccasionCooksFindMany } from '../queries/adminOccasionCooksFindMany';
 import { adminOccasionFindMany } from '../queries/adminOccasionFindMany';
@@ -484,6 +490,8 @@ import type {
     GqlSAdminLogCountsArgs,
     GqlSAdminLogCreationsArgs,
     GqlSAdminLogsArgs,
+    GqlSAdminMap,
+    GqlSAdminMapBookingRequestsArgs,
     GqlSAdminMutation,
     GqlSAdminMutationBlogPostDeleteArgs,
     GqlSAdminMutationBlogPostUpsertArgs,
@@ -1409,6 +1417,29 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             queuedJobs(_parent: GqlSAdmin, _: unknown, requestingSession: GqlSSession) {
                 return adminQueuedJobsFindMany(requestingSession, serverRuntime);
+            },
+            map() {
+                return {} as GqlSAdminMap;
+            },
+        },
+        AdminMap: {
+            cooks() {
+                return adminMapCookPointsFindMany(serverRuntime);
+            },
+            cooksMissingOriginCount() {
+                return adminMapCooksMissingOriginCount(serverRuntime);
+            },
+            bookingRequests(_parent: GqlSAdminMap, args: GqlSAdminMapBookingRequestsArgs, requestingSession: GqlSSession) {
+                return adminMapBookingRequestPointsFindMany(args, requestingSession, serverRuntime);
+            },
+            cities() {
+                return adminMapCityPointsFindMany(serverRuntime);
+            },
+            partners() {
+                return adminMapPartnerPointsFindMany(serverRuntime);
+            },
+            partnersMissingLocationCount() {
+                return adminMapPartnersMissingLocationCount(serverRuntime);
             },
         },
         AdminCustomerTestimonial: {

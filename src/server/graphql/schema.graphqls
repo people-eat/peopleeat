@@ -3929,6 +3929,64 @@ type Admin {
     # catalog. Recurring crons have no per-fire row until they enqueue.
     # See docs/features/admin-jobs.md.
     queuedJobs: [AdminQueuedJob!]!
+
+    # Slim geo points for `/admin/map`. See docs/features/admin-map.md.
+    map: AdminMap!
+}
+
+# Ops map payload — pin DTOs only (no nested AdminCook / AdminBookingRequest).
+# Booking points are date-bounded; cooks/cities/partners load as full slim sets.
+# See docs/features/admin-map.md.
+type AdminMap {
+    cooks: [AdminMapCookPoint!]!
+    cooksMissingOriginCount: Int!
+    bookingRequests(range: DateTimeRange!): [AdminMapBookingRequestPoint!]!
+    cities: [AdminMapCityPoint!]!
+    partners: [AdminMapPartnerPoint!]!
+    partnersMissingLocationCount: Int!
+}
+
+enum AdminMapCookStatus {
+    LISTABLE
+    PENDING
+    HIDDEN
+}
+
+type AdminMapCookPoint {
+    cookId: ID!
+    latitude: Latitude!
+    longitude: Longitude!
+    displayName: String!
+    # Null = unlimited travel radius.
+    maximumTravelDistance: Int
+    mapStatus: AdminMapCookStatus!
+}
+
+type AdminMapBookingRequestPoint {
+    bookingRequestId: ID!
+    latitude: Latitude!
+    longitude: Longitude!
+    status: BookingRequestStatus!
+    publicationStatus: BookingRequestPublicationStatus!
+    dateTime: DateTime!
+    occasion: String!
+}
+
+type AdminMapCityPoint {
+    cityId: ID!
+    latitude: Latitude!
+    longitude: Longitude!
+    nameDe: String!
+    nameEn: String!
+    published: Boolean!
+}
+
+type AdminMapPartnerPoint {
+    partnerId: ID!
+    latitude: Latitude!
+    longitude: Longitude!
+    name: String!
+    published: Boolean!
 }
 
 type AdminObjectStorageObject {

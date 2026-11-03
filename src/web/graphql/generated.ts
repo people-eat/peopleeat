@@ -88,6 +88,7 @@ export interface GqlCAdmin {
     logCounts: Array<Scalars['Int']['output']>;
     logCreations: Array<GqlCAdminTimeBucket>;
     logs: Array<GqlCAdminLog>;
+    map: GqlCAdminMap;
     objectStorageObjects: GqlCAdminObjectStorageObjectPage;
     occasion?: Maybe<GqlCAdminOccasion>;
     occasions: Array<GqlCAdminOccasion>;
@@ -1358,6 +1359,62 @@ export type GqlCAdminLogCriterion = {
 export type GqlCAdminLogLevel = 'debug' | 'error' | 'info' | 'warn';
 
 export type GqlCAdminLogSortField = 'createdAt' | 'message';
+
+export interface GqlCAdminMap {
+    __typename?: 'AdminMap';
+    bookingRequests: Array<GqlCAdminMapBookingRequestPoint>;
+    cities: Array<GqlCAdminMapCityPoint>;
+    cooks: Array<GqlCAdminMapCookPoint>;
+    cooksMissingOriginCount: Scalars['Int']['output'];
+    partners: Array<GqlCAdminMapPartnerPoint>;
+    partnersMissingLocationCount: Scalars['Int']['output'];
+}
+
+export type GqlCAdminMapBookingRequestsArgs = {
+    range: GqlCDateTimeRange;
+};
+
+export interface GqlCAdminMapBookingRequestPoint {
+    __typename?: 'AdminMapBookingRequestPoint';
+    bookingRequestId: Scalars['ID']['output'];
+    dateTime: Scalars['DateTime']['output'];
+    latitude: Scalars['Latitude']['output'];
+    longitude: Scalars['Longitude']['output'];
+    occasion: Scalars['String']['output'];
+    publicationStatus: GqlCBookingRequestPublicationStatus;
+    status: GqlCBookingRequestStatus;
+}
+
+export interface GqlCAdminMapCityPoint {
+    __typename?: 'AdminMapCityPoint';
+    cityId: Scalars['ID']['output'];
+    latitude: Scalars['Latitude']['output'];
+    longitude: Scalars['Longitude']['output'];
+    nameDe: Scalars['String']['output'];
+    nameEn: Scalars['String']['output'];
+    published: Scalars['Boolean']['output'];
+}
+
+export interface GqlCAdminMapCookPoint {
+    __typename?: 'AdminMapCookPoint';
+    cookId: Scalars['ID']['output'];
+    displayName: Scalars['String']['output'];
+    latitude: Scalars['Latitude']['output'];
+    longitude: Scalars['Longitude']['output'];
+    mapStatus: GqlCAdminMapCookStatus;
+    maximumTravelDistance?: Maybe<Scalars['Int']['output']>;
+}
+
+export type GqlCAdminMapCookStatus = 'HIDDEN' | 'LISTABLE' | 'PENDING';
+
+export interface GqlCAdminMapPartnerPoint {
+    __typename?: 'AdminMapPartnerPoint';
+    latitude: Scalars['Latitude']['output'];
+    longitude: Scalars['Longitude']['output'];
+    name: Scalars['String']['output'];
+    partnerId: Scalars['ID']['output'];
+    published: Scalars['Boolean']['output'];
+}
 
 export interface GqlCAdminMutation {
     __typename?: 'AdminMutation';
@@ -13114,6 +13171,80 @@ export type GqlCAdminLogsPageQuery = {
                         sessionId: string;
                         user: { userId: string; firstName: string; lastName: string; emailAddress: string | null } | null;
                     } | null;
+                }>;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCAdminMapPageQueryVariables = Exact<{
+    range: Schema.GqlCDateTimeRange;
+    includeBookings: boolean;
+}>;
+
+export type GqlCAdminMapPageQuery = {
+    currentSession: {
+        sessionId: string;
+        user: {
+            userId: string;
+            admin: {
+                adminId: string;
+                map: {
+                    cooksMissingOriginCount: number;
+                    partnersMissingLocationCount: number;
+                    cooks: Array<{
+                        cookId: string;
+                        latitude: number;
+                        longitude: number;
+                        displayName: string;
+                        maximumTravelDistance: number | null;
+                        mapStatus: Schema.GqlCAdminMapCookStatus;
+                    }>;
+                    bookingRequests?: Array<{
+                        bookingRequestId: string;
+                        latitude: number;
+                        longitude: number;
+                        status: Schema.GqlCBookingRequestStatus;
+                        publicationStatus: Schema.GqlCBookingRequestPublicationStatus;
+                        dateTime: string;
+                        occasion: string;
+                    }>;
+                    cities: Array<{
+                        cityId: string;
+                        latitude: number;
+                        longitude: number;
+                        nameDe: string;
+                        nameEn: string;
+                        published: boolean;
+                    }>;
+                    partners: Array<{ partnerId: string; latitude: number; longitude: number; name: string; published: boolean }>;
+                };
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCAdminMapCoverageQueryVariables = Exact<{
+    latitude: number;
+    longitude: number;
+}>;
+
+export type GqlCAdminMapCoverageQuery = {
+    currentSession: {
+        sessionId: string;
+        user: {
+            userId: string;
+            admin: {
+                adminId: string;
+                cooksInTravelRadius: Array<{
+                    estimatedTravelDistanceKm: number;
+                    cook: {
+                        cookId: string;
+                        maximumTravelDistance: number | null;
+                        stageName: string | null;
+                        exactTravelOriginAddress: { latitude: number; longitude: number } | null;
+                        user: { userId: string; firstName: string };
+                    };
                 }>;
             } | null;
         } | null;
@@ -56145,6 +56276,360 @@ export const AdminLogsPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminLogsPageQuery, GqlCAdminLogsPageQueryVariables>;
+export const AdminMapPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminMapPage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'DateTimeRange' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeBookings' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'admin' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'map' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'cooks' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'latitude' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'longitude' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'displayName' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'maximumTravelDistance' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'mapStatus' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'cooksMissingOriginCount' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'bookingRequests' },
+                                                                        arguments: [
+                                                                            {
+                                                                                kind: 'Argument',
+                                                                                name: { kind: 'Name', value: 'range' },
+                                                                                value: {
+                                                                                    kind: 'Variable',
+                                                                                    name: { kind: 'Name', value: 'range' },
+                                                                                },
+                                                                            },
+                                                                        ],
+                                                                        directives: [
+                                                                            {
+                                                                                kind: 'Directive',
+                                                                                name: { kind: 'Name', value: 'include' },
+                                                                                arguments: [
+                                                                                    {
+                                                                                        kind: 'Argument',
+                                                                                        name: { kind: 'Name', value: 'if' },
+                                                                                        value: {
+                                                                                            kind: 'Variable',
+                                                                                            name: {
+                                                                                                kind: 'Name',
+                                                                                                value: 'includeBookings',
+                                                                                            },
+                                                                                        },
+                                                                                    },
+                                                                                ],
+                                                                            },
+                                                                        ],
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'bookingRequestId' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'latitude' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'longitude' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'publicationStatus' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'dateTime' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'occasion' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'cities' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'cityId' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'latitude' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'longitude' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'published' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'partners' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'partnerId' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'latitude' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'longitude' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'published' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'partnersMissingLocationCount' },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminMapPageQuery, GqlCAdminMapPageQueryVariables>;
+export const AdminMapCoverageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminMapCoverage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'latitude' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Latitude' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'longitude' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Longitude' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'admin' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'cooksInTravelRadius' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'latitude' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'latitude' } },
+                                                                },
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'longitude' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'longitude' } },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'estimatedTravelDistanceKm' },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'cook' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'maximumTravelDistance' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'stageName' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'exactTravelOriginAddress',
+                                                                                    },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'latitude' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'longitude' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'user' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'userId' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'firstName' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminMapCoverageQuery, GqlCAdminMapCoverageQueryVariables>;
 export const AdminMealPageDocument = {
     kind: 'Document',
     definitions: [

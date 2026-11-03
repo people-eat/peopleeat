@@ -79,6 +79,7 @@ docs/
 │   ├── admin-users.md
 │   ├── admin-sessions.md
 │   ├── admin-analytics.md        # Booking funnel Sankey + visit buckets
+│   ├── admin-map.md              # Ops map (cooks / bookings / cities / partners)
 │   ├── admin-logs.md
 │   ├── admin-database-slow-statements.md # pg_stat_statements top-N via Admin GraphQL
 │   ├── admin-outbound-emails.md

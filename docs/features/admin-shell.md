@@ -63,9 +63,9 @@ non-zero queues (two columns from `lg`). When every queue is clear, one success 
 filter + ⌘K/Ctrl+K pages dialog sit under the logo (evolve in place: entity global search). When the sidebar nav is scrolled down, a
 floating scroll-to-top control appears at the top of the visible sidebar.
 
-Stub routes show bilingual “coming soon” until shipped. Sessions, analytics, logs, scheduled jobs, AI generations, promo codes, booking
-requests, assistant chats, gift cards, outbound emails (overview + list), important links, web pages SEO, and feature toggles are
-implemented.
+Stub routes show bilingual “coming soon” until shipped. Sessions, analytics, map ([admin-map.md](./admin-map.md)), logs, scheduled jobs, AI
+generations, promo codes, booking requests, assistant chats, gift cards, outbound emails (overview + list), important links, web pages SEO,
+and feature toggles are implemented.
 
 ### Breadcrumbs
 
