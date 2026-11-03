@@ -1,7 +1,8 @@
 import { and, eq } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 
-import { sessionEvents } from '../db/schema';
+import { idCreate } from '../../shared/idCreate';
+import { sessionEvents, sessions } from '../db/schema';
 import { commandSetup } from '../test/commandTestUtils';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { adminAnalyticsBookingRequestFormFlow } from './adminAnalyticsBookingRequestFormFlow';
@@ -248,6 +249,44 @@ describe('adminAnalyticsBookingRequestFormFlow', () => {
         expect(created?.completedCount).toBe(1);
         expect(flow.bookingRequestsCreated).toBe(1);
         expect(flow.links.some((link) => link.source === 'message' && link.target === 'created')).toBe(true);
+    });
+
+    it('excludes impersonation sessions from the funnel', async () => {
+        const setup = await commandSetup();
+        const returnSessionId = idCreate();
+        await setup.serverRuntime.db.insert(sessions).values({ sessionId: returnSessionId });
+        await setup.serverRuntime.db
+            .update(sessions)
+            .set({ impersonationReturnSessionId: returnSessionId })
+            .where(eq(sessions.sessionId, setup.requestingSession.sessionId));
+
+        const startMs = Date.UTC(2100, 0, 1) + Math.floor(Math.random() * 1e12);
+        const startDateTime = new Date(startMs);
+        const endDateTime = new Date(startMs + 86_400_000);
+
+        await sessionEventCreate(setup.serverRuntime, {
+            sessionId: setup.requestingSession.sessionId,
+            type: 'WEB_PAGE_INTERACTION',
+            payload: {
+                webPageKey: 'BOOKING_REQUEST_FORM',
+                area: 'booking_request_form',
+                interaction: { type: 'step_completed', step: 'occasion' },
+            },
+        });
+        await setup.serverRuntime.db
+            .update(sessionEvents)
+            .set({ createdAt: new Date(startMs + 3_600_000) })
+            .where(eq(sessionEvents.sessionId, setup.requestingSession.sessionId));
+
+        const flow = await adminAnalyticsBookingRequestFormFlow(
+            { startDateTime, endDateTime },
+            setup.requestingSession,
+            setup.serverRuntime,
+        );
+
+        expect(flow.nodes).toHaveLength(0);
+        expect(flow.sessionsWithCompletion).toBe(0);
+        expect(flow.steps.find((step) => step.id === 'occasion')?.completedCount).toBe(0);
     });
 });
 

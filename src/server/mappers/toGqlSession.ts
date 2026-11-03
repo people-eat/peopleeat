@@ -5,6 +5,7 @@ export function toGqlSession(session: Session): GqlSSession {
     return {
         sessionId: session.sessionId,
         userId: session.userId,
+        impersonationReturnSessionId: session.impersonationReturnSessionId,
 
         // resolved fields
         user: null,
@@ -15,5 +16,6 @@ export function toGqlSession(session: Session): GqlSSession {
         cookieSetting: null,
         activeFeatureToggleKeys: [],
         locationSuggestions: [],
+        impersonation: session.impersonationReturnSessionId ? { active: true } : null,
     };
 }

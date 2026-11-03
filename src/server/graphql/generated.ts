@@ -2153,6 +2153,7 @@ export interface GqlSAdminSession {
     createdAt: Scalars['DateTime']['output'];
     ipHash?: Maybe<Scalars['String']['output']>;
     isBot: Scalars['Boolean']['output'];
+    isImpersonation: Scalars['Boolean']['output'];
     landingPath?: Maybe<Scalars['String']['output']>;
     lastInteractionAt: Scalars['DateTime']['output'];
     referrer?: Maybe<Scalars['String']['output']>;
@@ -2178,6 +2179,7 @@ export interface GqlSAdminSessionEvent {
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    isImpersonation: Scalars['Boolean']['output'];
     link?: Maybe<Scalars['String']['output']>;
     sessionEventId: Scalars['ID']['output'];
     sessionId: Scalars['ID']['output'];
@@ -4088,6 +4090,7 @@ export interface GqlSMutation {
     clientObservabilityReport: GqlSMutationResult;
     sessionCookieSettingAcceptAll: GqlSMutationResult;
     sessionCookieSettingAcceptMandatory: GqlSMutationResult;
+    sessionImpersonationEnd: GqlSMutationResult;
     sessionNewsletterSubscriptionCreate: GqlSMutationResult;
     sessionWebPageInteractionCreate: GqlSMutationResult;
     sessionWebPageVisitCreate: GqlSMutationResult;
@@ -4588,6 +4591,7 @@ export interface GqlSSession {
     discount?: Maybe<GqlSSessionDiscount>;
     giftCard?: Maybe<GqlSGiftCard>;
     giftCardPurchaseError?: Maybe<GqlSGiftCardPurchaseError>;
+    impersonation?: Maybe<GqlSSessionImpersonation>;
     locationSuggestions: Array<GqlSLocationSuggestion>;
     sessionId: Scalars['ID']['output'];
     user?: Maybe<GqlSUser>;
@@ -4613,6 +4617,11 @@ export interface GqlSSessionDiscount {
     amountCents: Scalars['Int']['output'];
     name: Scalars['String']['output'];
     redeemCode: Scalars['String']['output'];
+}
+
+export interface GqlSSessionImpersonation {
+    __typename?: 'SessionImpersonation';
+    active: Scalars['Boolean']['output'];
 }
 
 export type GqlSSessionWebPageInteractionCreateInput = {
@@ -5903,6 +5912,7 @@ export type GqlSResolversTypes = ResolversObject<{
     Session: ResolverTypeWrapper<Omit<GqlSSession, 'user'> & { user?: Maybe<GqlSResolversTypes['User']> }>;
     SessionCookieSetting: ResolverTypeWrapper<GqlSSessionCookieSetting>;
     SessionDiscount: ResolverTypeWrapper<GqlSSessionDiscount>;
+    SessionImpersonation: ResolverTypeWrapper<GqlSSessionImpersonation>;
     SessionWebPageInteractionCreateInput: GqlSSessionWebPageInteractionCreateInput;
     SessionWebPageVisitCreateInput: GqlSSessionWebPageVisitCreateInput;
     SortDirection: GqlSSortDirection;
@@ -6387,6 +6397,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     Session: Omit<GqlSSession, 'user'> & { user?: Maybe<GqlSResolversParentTypes['User']> };
     SessionCookieSetting: GqlSSessionCookieSetting;
     SessionDiscount: GqlSSessionDiscount;
+    SessionImpersonation: GqlSSessionImpersonation;
     SessionWebPageInteractionCreateInput: GqlSSessionWebPageInteractionCreateInput;
     SessionWebPageVisitCreateInput: GqlSSessionWebPageVisitCreateInput;
     String: Scalars['String']['output'];
@@ -8390,6 +8401,7 @@ export type GqlSAdminSessionResolvers<
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     ipHash?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     isBot?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    isImpersonation?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     landingPath?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     lastInteractionAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     referrer?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
@@ -8407,6 +8419,7 @@ export type GqlSAdminSessionEventResolvers<
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    isImpersonation?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     link?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     sessionEventId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     sessionId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
@@ -10167,6 +10180,7 @@ export type GqlSMutationResolvers<
     >;
     sessionCookieSettingAcceptAll?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
     sessionCookieSettingAcceptMandatory?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
+    sessionImpersonationEnd?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
     sessionNewsletterSubscriptionCreate?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -10635,6 +10649,7 @@ export type GqlSSessionResolvers<
     >;
     giftCard?: Resolver<Maybe<GqlSResolversTypes['GiftCard']>, ParentType, ContextType>;
     giftCardPurchaseError?: Resolver<Maybe<GqlSResolversTypes['GiftCardPurchaseError']>, ParentType, ContextType>;
+    impersonation?: Resolver<Maybe<GqlSResolversTypes['SessionImpersonation']>, ParentType, ContextType>;
     locationSuggestions?: Resolver<
         Array<GqlSResolversTypes['LocationSuggestion']>,
         ParentType,
@@ -10660,6 +10675,13 @@ export type GqlSSessionDiscountResolvers<
     amountCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     redeemCode?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type GqlSSessionImpersonationResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['SessionImpersonation'] = GqlSResolversParentTypes['SessionImpersonation'],
+> = ResolversObject<{
+    active?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type GqlSSubscriptionResolvers<
@@ -11458,6 +11480,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     Session?: GqlSSessionResolvers<ContextType>;
     SessionCookieSetting?: GqlSSessionCookieSettingResolvers<ContextType>;
     SessionDiscount?: GqlSSessionDiscountResolvers<ContextType>;
+    SessionImpersonation?: GqlSSessionImpersonationResolvers<ContextType>;
     Subscription?: GqlSSubscriptionResolvers<ContextType>;
     SupportRequestBookingRequestSummary?: GqlSSupportRequestBookingRequestSummaryResolvers<ContextType>;
     Testimonial?: GqlSTestimonialResolvers<ContextType>;

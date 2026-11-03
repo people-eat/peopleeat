@@ -178,6 +178,7 @@ query AdminUserPage(
                     connectionActive
                     userAgent
                     isBot
+                    isImpersonation
                     createdAt
                 }
                 sessionEvents(criterion: $sessionEventsCriterion) @include(if: $includeSessionEvents) {
@@ -188,6 +189,7 @@ query AdminUserPage(
                     descriptionEn
                     createdAt
                     link
+                    isImpersonation
                 }
                 sessionEventsCounts(criteria: [$sessionEventsCriterion]) @include(if: $includeSessionEvents)
                 cookMeals(criterion: $mealsCriterion) @include(if: $includeMeals) {

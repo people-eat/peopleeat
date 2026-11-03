@@ -86,6 +86,7 @@ export async function adminAnalyticsCookBookingRequestOfferFlow(
             WHERE s."isBot" = false
               AND s."userId" IS NOT NULL
               AND a."adminId" IS NULL
+              AND s."impersonationReturnSessionId" IS NULL
               AND brc."notifiedAt" IS NOT NULL
               AND brc."notifiedAt" >= ${startDateTime}
               AND brc."notifiedAt" < ${endDateTime}

@@ -159,6 +159,7 @@ import { giftCardPay } from '../commands/giftCardPay';
 import { giftCardPdfsRegenerate } from '../commands/giftCardPdfsRegenerate';
 import { sessionCookieSettingAcceptAll } from '../commands/sessionCookieSettingAcceptAll';
 import { sessionCookieSettingAcceptMandatory } from '../commands/sessionCookieSettingAcceptMandatory';
+import { sessionImpersonationEnd as sessionImpersonationEndCommand } from '../commands/sessionImpersonationEnd';
 import { sessionNewsletterSubscriptionCreate } from '../commands/sessionNewsletterSubscriptionCreate';
 import { sessionWebPageInteractionCreate } from '../commands/sessionWebPageInteractionCreate';
 import { sessionWebPageVisitCreate } from '../commands/sessionWebPageVisitCreate';
@@ -2833,6 +2834,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return sessionWebPageInteractionCreate(args, requestingSession, serverRuntime);
+            },
+            sessionImpersonationEnd(_parent: unknown, __: unknown, requestingSession: GqlSSession) {
+                return sessionImpersonationEndCommand(requestingSession, serverRuntime);
             },
             clientObservabilityReport(_parent: unknown, args: GqlSMutationClientObservabilityReportArgs, requestingSession: GqlSSession) {
                 return clientObservabilityReport(args, requestingSession, serverRuntime);

@@ -37,25 +37,32 @@ export async function adminSessionEventFindMany(
 
         if (criterion.userIds && criterion.userIds.length > 0) {
             const rows = await serverRuntime.db
-                .select({ event: sessionEvents })
+                .select({
+                    event: sessionEvents,
+                    impersonationReturnSessionId: sessions.impersonationReturnSessionId,
+                })
                 .from(sessionEvents)
                 .innerJoin(sessions, eq(sessionEvents.sessionId, sessions.sessionId))
                 .where(and(inArray(sessions.userId, criterion.userIds), ...(conditions.length > 0 ? conditions : [])))
                 .orderBy(order)
                 .offset(skip)
                 .limit(take);
-            return rows.map((row) => toGqlAdminSessionEvent(row.event));
+            return rows.map((row) => toGqlAdminSessionEvent(row.event, row.impersonationReturnSessionId != null));
         }
 
         const rows = await serverRuntime.db
-            .select()
+            .select({
+                event: sessionEvents,
+                impersonationReturnSessionId: sessions.impersonationReturnSessionId,
+            })
             .from(sessionEvents)
+            .innerJoin(sessions, eq(sessionEvents.sessionId, sessions.sessionId))
             .where(conditions.length > 0 ? and(...conditions) : undefined)
             .orderBy(order)
             .offset(skip)
             .limit(take);
 
-        return rows.map(toGqlAdminSessionEvent);
+        return rows.map((row) => toGqlAdminSessionEvent(row.event, row.impersonationReturnSessionId != null));
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);
         throw error;

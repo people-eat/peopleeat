@@ -1,5 +1,5 @@
 import { useForm, useSelector } from '@tanstack/react-form';
-import { useNavigate, useRouter } from '@tanstack/react-router';
+import { useRouter } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { de as dateFnsDe, enUS as dateFnsEn } from 'date-fns/locale';
 import { CheckIcon, CopyIcon, LogInIcon, MailIcon, PhoneIcon } from 'lucide-react';
@@ -206,7 +206,6 @@ export function AdminUserGeneralSection({
     const locale = useLocale();
     const timeZone = useTimeZone();
     const router = useRouter();
-    const navigate = useNavigate();
     const [, updateUser] = useMutation(AdminUserUpdateDocument);
     const [, updateEmail] = useMutation(AdminUserEmailAddressUpdateDocument);
     const [, bindSession] = useMutation(AdminUserSessionUserBindDocument);
@@ -299,16 +298,16 @@ export function AdminUserGeneralSection({
             const result = await bindSession({ userId: user.userId });
             if (result.error || !result.data?.admin.sessionUserBind.success) {
                 toast.error({ de: 'Anmeldung als Nutzer fehlgeschlagen.', en: 'Could not sign in as this user.' }[locale]);
+                setImpersonateBusy(false);
                 return;
             }
-            toast.success({ de: 'Als Nutzer angemeldet.', en: 'Signed in as user.' }[locale]);
-            // Land on the target user's profile locale (cookie + path) so we do
-            // not keep the admin `/en/…` route and then hit LocaleMismatchGate
-            // (which previously could build `/en/en/…` when rewriting).
+            // Hard navigate so SSR picks up the new impersonation cookie. Land
+            // on the target user's profile locale (cookie + path) so we do not
+            // keep the admin `/en/…` route and then hit LocaleMismatchGate.
             const targetLocale: Locale = LOCALES.includes(user.locale as Locale) ? (user.locale as Locale) : DEFAULT_LOCALE;
             setLocaleCookie(targetLocale);
-            await navigate({ href: localePath(targetLocale, '/profile') });
-        } finally {
+            window.location.assign(localePath(targetLocale, '/profile'));
+        } catch {
             setImpersonateBusy(false);
         }
     }

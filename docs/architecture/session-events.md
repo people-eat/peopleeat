@@ -91,8 +91,11 @@ Admin descriptions mark these with “(Legacy)” / “(legacy)”.
 - Cook analytics profile-view counts use a second partial index `SessionEvents_webPageVisit_chefs_cookId_createdAt_idx` on
   `(payload->'params'->>'cookId', createdAt)` where `type = 'WEB_PAGE_VISITED'` and `webPageKey = 'CHEFS'` (human sessions only in the
   query). See [cook-analytics.md](../features/cook-analytics.md).
-- Booking-form funnel queries exclude bots and sessions whose user is admin or cook. Cook offer funnel cohorts are notified cooks (excluding
-  admins); create-UI mid-steps still come from human cook sessions.
+- Booking-form funnel queries exclude bots, sessions whose user is admin or cook, and **admin impersonation sessions**
+  (`Sessions.impersonationReturnSessionId IS NOT NULL`). Cook offer funnel cohorts are notified cooks (excluding admins); create-UI
+  mid-steps still come from human cook sessions. Cook public-profile visit counts also drop impersonation sessions.
+- Admin timelines keep impersonation events but expose `AdminSessionEvent.isImpersonation` (and session-list badges) so operators can tell
+  support browsing from real user traffic.
 - Admin descriptions are bilingual (`descriptionDe` / `descriptionEn`); raw payload stays off the GraphQL surface unless a deep link is
   needed (`link`).
 - Historical keys stay in the domain map so imported timelines remain typed.

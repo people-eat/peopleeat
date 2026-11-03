@@ -169,6 +169,7 @@ export async function cookAnalyticsFind(
                   AND e.payload->>'webPageKey' = 'CHEFS'
                   AND e.payload->'params'->>'cookId' = ${parent.cookId}
                   AND s."isBot" = false
+                  AND s."impersonationReturnSessionId" IS NULL
                   AND e."createdAt" >= ${startDateTime}
                   AND e."createdAt" <= ${endDateTime}
             ),
@@ -193,6 +194,7 @@ export async function cookAnalyticsFind(
                           AND e.payload->>'webPageKey' = 'CHEFS'
                           AND e.payload->'params'->>'cookId' = ${parent.cookId}
                           AND s."isBot" = false
+                          AND s."impersonationReturnSessionId" IS NULL
                     )
                 ) AS has_insights
             )

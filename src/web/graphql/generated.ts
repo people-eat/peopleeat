@@ -2156,6 +2156,7 @@ export interface GqlCAdminSession {
     createdAt: Scalars['DateTime']['output'];
     ipHash?: Maybe<Scalars['String']['output']>;
     isBot: Scalars['Boolean']['output'];
+    isImpersonation: Scalars['Boolean']['output'];
     landingPath?: Maybe<Scalars['String']['output']>;
     lastInteractionAt: Scalars['DateTime']['output'];
     referrer?: Maybe<Scalars['String']['output']>;
@@ -2181,6 +2182,7 @@ export interface GqlCAdminSessionEvent {
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
+    isImpersonation: Scalars['Boolean']['output'];
     link?: Maybe<Scalars['String']['output']>;
     sessionEventId: Scalars['ID']['output'];
     sessionId: Scalars['ID']['output'];
@@ -4091,6 +4093,7 @@ export interface GqlCMutation {
     clientObservabilityReport: GqlCMutationResult;
     sessionCookieSettingAcceptAll: GqlCMutationResult;
     sessionCookieSettingAcceptMandatory: GqlCMutationResult;
+    sessionImpersonationEnd: GqlCMutationResult;
     sessionNewsletterSubscriptionCreate: GqlCMutationResult;
     sessionWebPageInteractionCreate: GqlCMutationResult;
     sessionWebPageVisitCreate: GqlCMutationResult;
@@ -4591,6 +4594,7 @@ export interface GqlCSession {
     discount?: Maybe<GqlCSessionDiscount>;
     giftCard?: Maybe<GqlCGiftCard>;
     giftCardPurchaseError?: Maybe<GqlCGiftCardPurchaseError>;
+    impersonation?: Maybe<GqlCSessionImpersonation>;
     locationSuggestions: Array<GqlCLocationSuggestion>;
     sessionId: Scalars['ID']['output'];
     user?: Maybe<GqlCUser>;
@@ -4616,6 +4620,11 @@ export interface GqlCSessionDiscount {
     amountCents: Scalars['Int']['output'];
     name: Scalars['String']['output'];
     redeemCode: Scalars['String']['output'];
+}
+
+export interface GqlCSessionImpersonation {
+    __typename?: 'SessionImpersonation';
+    active: Scalars['Boolean']['output'];
 }
 
 export type GqlCSessionWebPageInteractionCreateInput = {
@@ -7282,14 +7291,21 @@ export type GqlCFooterNewsletterSubscriptionCreateMutation = {
 
 export type GqlCPublicHeaderUserFragment = { admin: { adminId: string } | null; cook: { cookId: string } | null };
 
+export type GqlCSessionImpersonationEndMutationVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCSessionImpersonationEndMutation = { sessionImpersonationEnd: { success: boolean; referenceId: string | null } };
+
 export type GqlCSessionStartupGatesQueryVariables = Exact<{ [key: string]: never }>;
 
 export type GqlCSessionStartupGatesQuery = {
     currentSession: {
         sessionId: string;
+        impersonation: { active: boolean } | null;
         cookieSetting: { googleAnalytics: boolean; clarity: boolean } | null;
         user: {
             userId: string;
+            firstName: string;
+            lastName: string;
             locale: Schema.GqlCLocale;
             timeZone: string;
             legalAcceptance: {
@@ -15368,6 +15384,7 @@ export type GqlCAdminSessionPageQuery = {
                     referrer: string | null;
                     landingPath: string | null;
                     isBot: boolean;
+                    isImpersonation: boolean;
                     createdAt: string;
                     user: { userId: string; firstName: string; lastName: string; profilePicture: { url: string } | null } | null;
                 } | null;
@@ -15379,6 +15396,7 @@ export type GqlCAdminSessionPageQuery = {
                     descriptionEn: string;
                     createdAt: string;
                     link: string | null;
+                    isImpersonation: boolean;
                 }>;
             } | null;
         } | null;
@@ -15425,6 +15443,7 @@ export type GqlCAdminSessionsPageQuery = {
                     connectionActive: boolean;
                     userAgent: string | null;
                     isBot: boolean;
+                    isImpersonation: boolean;
                     createdAt: string;
                     user: { userId: string; firstName: string; lastName: string } | null;
                 }>;
@@ -16207,6 +16226,7 @@ export type GqlCAdminUserPageQuery = {
                     connectionActive: boolean;
                     userAgent: string | null;
                     isBot: boolean;
+                    isImpersonation: boolean;
                     createdAt: string;
                 }>;
                 sessionEvents?: Array<{
@@ -16217,6 +16237,7 @@ export type GqlCAdminUserPageQuery = {
                     descriptionEn: string;
                     createdAt: string;
                     link: string | null;
+                    isImpersonation: boolean;
                 }>;
                 cookMeals?: Array<{
                     mealId: string;
@@ -35781,6 +35802,32 @@ export const FooterNewsletterSubscriptionCreateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCFooterNewsletterSubscriptionCreateMutation, GqlCFooterNewsletterSubscriptionCreateMutationVariables>;
+export const SessionImpersonationEndDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'SessionImpersonationEnd' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'sessionImpersonationEnd' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCSessionImpersonationEndMutation, GqlCSessionImpersonationEndMutationVariables>;
 export const SessionStartupGatesDocument = {
     kind: 'Document',
     definitions: [
@@ -35800,6 +35847,14 @@ export const SessionStartupGatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'impersonation' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'active' } }],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     name: { kind: 'Name', value: 'cookieSetting' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -35816,6 +35871,8 @@ export const SessionStartupGatesDocument = {
                                         kind: 'SelectionSet',
                                         selections: [
                                             { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
                                             {
@@ -63446,6 +63503,7 @@ export const AdminSessionPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'referrer' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'landingPath' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'isBot' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'isImpersonation' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                 ],
                                                             },
@@ -63489,6 +63547,7 @@ export const AdminSessionPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'link' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'isImpersonation' } },
                                                                 ],
                                                             },
                                                         },
@@ -63726,6 +63785,7 @@ export const AdminSessionsPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'connectionActive' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'userAgent' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'isBot' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'isImpersonation' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                 ],
                                                             },
@@ -66459,6 +66519,7 @@ export const AdminUserPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'connectionActive' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'userAgent' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'isBot' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'isImpersonation' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                 ],
                                                             },
@@ -66502,6 +66563,7 @@ export const AdminUserPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'link' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'isImpersonation' } },
                                                                 ],
                                                             },
                                                         },

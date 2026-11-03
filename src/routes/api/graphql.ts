@@ -17,12 +17,12 @@ export const Route = createFileRoute('/api/graphql')({
                 try {
                     const body = await request.clone().json();
                     const existingSessionId = sessionUtils.getSessionIdFromRequest(environmentVariables.sessionCookie, request);
-                    const { body: result } = await graphqlHttpQueryRun({
+                    const { body: result, session } = await graphqlHttpQueryRun({
                         query: body.query,
                         variables: body.variables,
                         operationName: typeof body.operationName === 'string' ? body.operationName : undefined,
                         sessionLoad: async () => {
-                            const session = await sessionUpsert(
+                            return sessionUpsert(
                                 db,
                                 log,
                                 existingSessionId,
@@ -31,10 +31,16 @@ export const Route = createFileRoute('/api/graphql')({
                                 request.headers.get('referer'),
                                 request.headers.get('x-landing-path'),
                             );
-                            sessionCookie = sessionUtils.createSetSessionCookie(environmentVariables.sessionCookie, session);
-                            return session;
                         },
                     });
+
+                    // Prefer a one-shot cookie override from Sign in as / Return to
+                    // admin (`pendingSessionCookieId`); otherwise refresh the
+                    // upserted session cookie as usual.
+                    const cookieSessionId = session.pendingSessionCookieId ?? session.sessionId;
+                    sessionCookie = sessionUtils.createSetSessionCookie(environmentVariables.sessionCookie, {
+                        sessionId: cookieSessionId,
+                    } as typeof session);
 
                     return new Response(JSON.stringify(result), {
                         status: 200,

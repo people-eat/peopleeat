@@ -4,12 +4,17 @@
 query SessionStartupGates {
     currentSession {
         sessionId
+        impersonation {
+            active
+        }
         cookieSetting {
             googleAnalytics
             clarity
         }
         user {
             userId
+            firstName
+            lastName
             locale
             timeZone
             legalAcceptance {

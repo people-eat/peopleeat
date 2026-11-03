@@ -36,6 +36,11 @@ consent is not the HttpOnly session cookie — see [cookie-consent.md](../featur
 - **User binding**: `userId` column exists on the session but is nullable — sessions start anonymous and can be linked to a user later.
   Email OTP / passkey / TOTP may bind `ACTIVE` or `BANNED` accounts; `ANONYMIZED` stays rejected. Marketplace mutations and admin
   impersonation still require `ACTIVE` — see [account.md](../features/account.md) and [admin-users.md](../features/admin-users.md).
+- **Admin impersonation**: `AdminMutation.sessionUserBind` inserts a **new** session with `userId = target` and
+  `impersonationReturnSessionId = adminSessionId`, then `/api/graphql` sets the cookie to that new id via `pendingSessionCookieId`. The
+  admin session stays bound and unterminated. `sessionImpersonationEnd` soft-terminates the impersonation session and restores the return
+  cookie (or mints a fresh admin-bound session if the return session was terminated). Presence of `impersonationReturnSessionId` is the
+  impersonation probe (`Session.impersonation`); the acting admin is `returnSession.userId`.
 
 ### Key Files
 
@@ -165,6 +170,7 @@ Own-user read: `User.timeBasedOneTimePassword` (`confirmedAt`, `recoveryCodesRem
   `authTotpVerify.ts` / `authTotpChallengeDelete.ts` / `sessionPrimaryAuthComplete.ts`
 - `src/server/utils/authTotpUtils.ts`
 - `src/server/commands/sessionUserBind.ts`
+- `src/server/commands/adminSessionUserBind.ts` / `sessionImpersonationEnd.ts` — admin Sign in as / Return to admin
 - `src/web/pages/LogOnPage.tsx` (route: `src/routes/{-$locale}/log-on.tsx`; `/sign-in` redirects)
 - `src/web/components/auth/` — shared email/OTP/profile gate used by log-on, booking form, chef sign-up, gift-card purchase;
   `AuthEmailOtpSpamHint` on email OTP dialogs; `AuthPasskeyLogOn` as gate footer on log-on, booking form, and gift-card purchase (existing

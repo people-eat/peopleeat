@@ -1161,6 +1161,7 @@ function AdminUserSessionsSection({ sessions }: { sessions: AdminUserSession[] }
     const botLabel = { de: 'Bot', en: 'Bot' }[locale];
     const activeLabel = { de: 'Aktiv', en: 'Active' }[locale];
     const terminatedLabel = { de: 'Beendet', en: 'Terminated' }[locale];
+    const impersonationLabel = { de: 'Impersonation', en: 'Impersonation' }[locale];
     const detailsLabel = { de: 'Details', en: 'Details' }[locale];
 
     async function onTerminateSession(sessionId: string) {
@@ -1191,6 +1192,7 @@ function AdminUserSessionsSection({ sessions }: { sessions: AdminUserSession[] }
             {sessions.map((session) => {
                 const badges: { label: string; variant: 'secondary' | 'outline' }[] = [];
                 if (session.isBot) badges.push({ label: botLabel, variant: 'secondary' });
+                if (session.isImpersonation) badges.push({ label: impersonationLabel, variant: 'secondary' });
                 if (session.connectionActive) badges.push({ label: activeLabel, variant: 'secondary' });
                 if (session.wasTerminatedAt) badges.push({ label: terminatedLabel, variant: 'outline' });
                 const canTerminate = session.wasTerminatedAt == null;

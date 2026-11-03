@@ -13,6 +13,7 @@ export function toGqlAdminSession(session: Session): GqlSAdminSession {
         referrer: session.referrer,
         landingPath: session.landingPath,
         isBot: session.isBot,
+        isImpersonation: session.impersonationReturnSessionId != null,
         createdAt: session.createdAt,
 
         // resolved fields

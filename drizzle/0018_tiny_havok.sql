@@ -1,0 +1,3 @@
+ALTER TABLE "Sessions" ADD COLUMN "impersonationReturnSessionId" varchar(20);--> statement-breakpoint
+ALTER TABLE "Sessions" ADD CONSTRAINT "Sessions_impersonationReturnSessionId_Sessions_sessionId_fk" FOREIGN KEY ("impersonationReturnSessionId") REFERENCES "public"."Sessions"("sessionId") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+CREATE INDEX "Sessions_impersonationReturnSessionId_idx" ON "Sessions" USING btree ("impersonationReturnSessionId");

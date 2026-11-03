@@ -275,7 +275,7 @@ function authTotpVerifyDescription(payload: SessionEventPayload<'AUTH_TOTP_VERIF
     };
 }
 
-export function toGqlAdminSessionEvent(event: SessionEvent): GqlSAdminSessionEvent {
+export function toGqlAdminSessionEvent(event: SessionEvent, isImpersonation = false): GqlSAdminSessionEvent {
     const rawType = event.type;
     const fallback = isSessionEventKey(rawType)
         ? STATIC_DESCRIPTIONS[rawType]
@@ -395,5 +395,6 @@ export function toGqlAdminSessionEvent(event: SessionEvent): GqlSAdminSessionEve
         descriptionEn,
         createdAt: event.createdAt,
         link,
+        isImpersonation,
     };
 }

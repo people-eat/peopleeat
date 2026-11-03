@@ -1,0 +1,6 @@
+mutation SessionImpersonationEnd {
+    sessionImpersonationEnd {
+        success
+        referenceId
+    }
+}

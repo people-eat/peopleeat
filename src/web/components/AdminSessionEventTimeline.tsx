@@ -14,6 +14,7 @@ export type AdminSessionEventTimelineItem = {
     descriptionEn: string;
     createdAt: string;
     link?: string | null;
+    isImpersonation?: boolean;
 };
 
 function EventDeepLink({ link }: { link: string }) {
@@ -41,6 +42,7 @@ export function AdminSessionEventTimeline({
     const locale = useLocale();
     const timeZone = useTimeZone();
     const sessionLabel = { de: 'Sitzung', en: 'Session' }[locale];
+    const impersonationLabel = { de: 'Impersonation', en: 'Impersonation' }[locale];
 
     if (events.length === 0) {
         return <p className="text-sm text-muted-foreground">{emptyLabel}</p>;
@@ -58,6 +60,7 @@ export function AdminSessionEventTimeline({
                                 <Badge variant="outline" className="font-mono">
                                     {event.type}
                                 </Badge>
+                                {event.isImpersonation ? <Badge variant="secondary">{impersonationLabel}</Badge> : null}
                                 <time className="tabular-nums">
                                     {formatDateTime(event.createdAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}
                                 </time>

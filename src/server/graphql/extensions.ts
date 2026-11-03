@@ -3,6 +3,11 @@ import './generated';
 declare module './generated' {
     export interface GqlSSession {
         userId?: string | null | undefined;
+        // DB column — presence means admin impersonation (see Sessions.impersonationReturnSessionId).
+        impersonationReturnSessionId?: string | null | undefined;
+        // One-shot cookie override after Sign in as / Return to admin. Read by
+        // `/api/graphql` after the operation; not part of the GraphQL schema.
+        pendingSessionCookieId?: string | null | undefined;
     }
     export interface GqlSUserMutation {
         userId: string;

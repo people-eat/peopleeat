@@ -29,6 +29,7 @@ query AdminSessionPage($sessionId: ID!, $includeEvents: Boolean!, $eventsCriteri
                     referrer
                     landingPath
                     isBot
+                    isImpersonation
                     createdAt
                 }
                 sessionEvents(criterion: $eventsCriterion) @include(if: $includeEvents) {
@@ -39,6 +40,7 @@ query AdminSessionPage($sessionId: ID!, $includeEvents: Boolean!, $eventsCriteri
                     descriptionEn
                     createdAt
                     link
+                    isImpersonation
                 }
                 sessionEventsCounts(criteria: [$eventsCriterion]) @include(if: $includeEvents)
             }

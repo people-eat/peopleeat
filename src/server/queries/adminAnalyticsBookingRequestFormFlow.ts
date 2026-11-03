@@ -58,6 +58,7 @@ export async function adminAnalyticsBookingRequestFormFlow(
             WHERE s."isBot" = false
               AND a."adminId" IS NULL
               AND c."cookId" IS NULL
+              AND s."impersonationReturnSessionId" IS NULL
               AND e."createdAt" >= ${startDateTime}
               AND e."createdAt" < ${endDateTime}
               AND (

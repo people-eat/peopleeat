@@ -120,6 +120,11 @@ export const sessions = pgTable(
         // See docs/architecture/authentication.md.
         pendingTotpUserId: nanoId(),
         pendingTotpExpiresAt: timestamp({ withTimezone: true }),
+        // Admin "Sign in as": non-null means this cookie session is an
+        // impersonation of `userId`; the pointed-at session is the admin
+        // cookie to restore on return. Acting admin is
+        // `returnSession.userId`. See docs/features/admin-users.md.
+        impersonationReturnSessionId: nanoId(),
         createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
     },
     (table) => [
@@ -135,9 +140,16 @@ export const sessions = pgTable(
         })
             .onUpdate('cascade')
             .onDelete('set null'),
+        foreignKey({
+            columns: [table.impersonationReturnSessionId],
+            foreignColumns: [table.sessionId],
+        })
+            .onUpdate('cascade')
+            .onDelete('set null'),
         index('Sessions_ipHash_idx').on(table.ipHash),
         index('Sessions_createdAt_idx').on(table.createdAt),
         index('Sessions_pendingTotpUserId_idx').on(table.pendingTotpUserId),
+        index('Sessions_impersonationReturnSessionId_idx').on(table.impersonationReturnSessionId),
     ],
 );
 

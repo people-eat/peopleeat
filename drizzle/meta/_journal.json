@@ -127,6 +127,13 @@
             "when": 1793293063749,
             "tag": "0017_parched_nitro",
             "breakpoints": true
+        },
+        {
+            "idx": 18,
+            "version": "7",
+            "when": 1793704347122,
+            "tag": "0018_tiny_havok",
+            "breakpoints": true
         }
     ]
 }

@@ -22,6 +22,7 @@ query AdminSessionsPage($criterion: AdminSessionCriterion!) {
                     connectionActive
                     userAgent
                     isBot
+                    isImpersonation
                     createdAt
                 }
                 sessionCounts(criteria: [$criterion])

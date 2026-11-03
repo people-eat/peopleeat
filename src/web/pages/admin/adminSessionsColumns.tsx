@@ -15,6 +15,7 @@ export type AdminSessionsTableRow = {
     connectionActive: boolean;
     userAgent: string | null;
     isBot: boolean;
+    isImpersonation: boolean;
 };
 
 export const ADMIN_SESSIONS_SORT_FIELDS = ['user', 'userAgent', 'lastInteractionAt'] as const;
@@ -28,6 +29,7 @@ export function adminSessionsColumns(locale: Locale, timeZone: string) {
     const botLabel = { de: 'Bot', en: 'Bot' }[locale];
     const activeLabel = { de: 'Aktiv', en: 'Active' }[locale];
     const terminatedLabel = { de: 'Beendet', en: 'Terminated' }[locale];
+    const impersonationLabel = { de: 'Impersonation', en: 'Impersonation' }[locale];
 
     return columnHelper.columns([
         columnHelper.accessor((row) => (row.user ? userDisplayName(row.user) : ''), {
@@ -63,11 +65,12 @@ export function adminSessionsColumns(locale: Locale, timeZone: string) {
             cell: ({ row }) => {
                 const badges: string[] = [];
                 if (row.original.isBot) badges.push(botLabel);
+                if (row.original.isImpersonation) badges.push(impersonationLabel);
                 if (row.original.connectionActive) badges.push(activeLabel);
                 if (row.original.wasTerminatedAt) badges.push(terminatedLabel);
 
                 if (badges.length === 0) {
-                    return <span className="text-muted-foreground">—</span>;
+                    return <span className="text-muted-foreground">-</span>;
                 }
 
                 return (

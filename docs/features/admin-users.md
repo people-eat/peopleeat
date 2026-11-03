@@ -52,10 +52,13 @@ the bottom (view-only; hidden while editing): **Ban** / **Unban** (`AdminMutatio
 switches into a form for first/last name, email (direct, no OTP), phone, birth date, preferred communication, time zone, and profile picture
 (`AdminMutation.userUpdate` / `userEmailAddressUpdate`); **Cancel** or successful **Save** returns to view. Ban keeps sessions bound so the
 private profile restriction banner can appear live; open cook offers are auto-declined; public cook listing already excludes non-`ACTIVE`.
-**Sign in as** rebinds the admin cookie session to that ACTIVE account (`AdminMutation.sessionUserBind`), sets the locale cookie to that
-user’s `Users.locale`, and navigates to `/profile` (or `/en/profile`) in that locale so the locale-mismatch gate does not open on the way in
-(exit = re-auth as admin). Already-anonymized users cannot be edited, banned, or impersonated. Same scrub as self-serve delete — see
-[account.md](./account.md).
+**Sign in as** mints a **new** cookie session bound to that ACTIVE account (`AdminMutation.sessionUserBind`), leaving the admin session
+intact. The new session stores `Sessions.impersonationReturnSessionId` pointing at the admin session. The response swaps the HttpOnly
+cookie; the client hard-navigates to `/profile` (or `/en/profile`) after setting the locale cookie to that user’s `Users.locale` so the
+locale-mismatch gate does not open on the way in. A sticky **Return to admin** banner (`Session.impersonation` + `sessionImpersonationEnd`)
+restores the admin cookie (or mints a fresh admin session if the return session was terminated). Impersonation sessions are excluded from
+product funnels and badged on admin timelines / session lists. Already-anonymized users cannot be edited, banned, or impersonated. Same
+scrub as self-serve delete — see [account.md](./account.md).
 
 **Cook profile** defaults to a read-only detail: approval/visibility/Stripe-active badges, optional rating summary, stage name, travel,
 Stripe account + Dashboard link, call scheduling + weekly windows, About logo, tags, biography/summary (with generating hint), public chef
@@ -99,8 +102,9 @@ detail with URL tabs; manual create with optional admin and cook payloads.
 - Queries: `adminUserFindMany`, `adminUserCounts`, `adminUserRegistrationsFindMany`, `adminUserInsightsFindOne`,
   `adminUserUpcomingBirthdaysFindMany`, `adminUserFindOne`; criterion helpers
 - Commands: `adminUserCreate` (transaction when membership rows); `adminUserAdminNoteUpdate`; `adminUserUpdate`;
-  `adminUserEmailAddressUpdate`; `adminUserStatusUpdate`; `adminSessionUserBind`; `adminUserAnonymize`; `adminSessionTerminateMany`;
-  `adminCookUpdate`; `adminCookBiographySuggest`; `adminCookBiographySummarySuggest`; `adminCookMealUpsert`; `adminCookMenuUpsert`
+  `adminUserEmailAddressUpdate`; `adminUserStatusUpdate`; `adminSessionUserBind`; `sessionImpersonationEnd`; `adminUserAnonymize`;
+  `adminSessionTerminateMany`; `adminCookUpdate`; `adminCookBiographySuggest`; `adminCookBiographySummarySuggest`; `adminCookMealUpsert`;
+  `adminCookMenuUpsert`
 - Mapper: `toGqlAdminUser` (`profilePicture` resolved like public `User`)
 - Resolvers under `Admin` / `AdminMutation`
 - UI: overview with stat cards, insights breakdowns, upcoming birthdays, + chart; list with tabs, data table, and pinned

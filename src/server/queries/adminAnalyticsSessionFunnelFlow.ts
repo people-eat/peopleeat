@@ -61,6 +61,7 @@ export async function adminAnalyticsSessionFunnelFlow(
             ${cookJoin}
             WHERE s."isBot" = false
               AND a."adminId" IS NULL
+              AND s."impersonationReturnSessionId" IS NULL
               ${cookFilter}
               AND e."createdAt" >= ${startDateTime}
               AND e."createdAt" < ${endDateTime}

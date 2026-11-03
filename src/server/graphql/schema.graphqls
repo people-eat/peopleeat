@@ -2620,6 +2620,12 @@ type SessionDiscount {
     amountCents: Int!
 }
 
+# Non-null on Session when the cookie session was minted via admin Sign in as.
+# `active` is always true when the object is present (GraphQL needs a field).
+type SessionImpersonation {
+    active: Boolean!
+}
+
 type Session {
     sessionId: ID!
     user: User
@@ -2641,6 +2647,9 @@ type Session {
     # Lookup a global promo or paid gift card by redeem code. Null when unknown,
     # expired, empty balance, or booking-request-scoped.
     discount(redeemCode: String!): SessionDiscount
+    # Set while browsing as another user via admin Sign in as. Drives the
+    # Return to admin control. See docs/features/admin-users.md.
+    impersonation: SessionImpersonation
 }
 
 type MutationResult {
@@ -2889,6 +2898,11 @@ type Mutation {
     sessionWebPageVisitCreate(input: SessionWebPageVisitCreateInput!): MutationResult!
     # First-party product analytics — structured interaction (e.g. booking form step).
     sessionWebPageInteractionCreate(input: SessionWebPageInteractionCreateInput!): MutationResult!
+    # End admin Sign in as: terminate the impersonation session and restore the
+    # admin cookie (or mint a fresh admin session if the return session was
+    # terminated). Returns the restored `sessionId` as `referenceId`.
+    # See docs/features/admin-users.md.
+    sessionImpersonationEnd: MutationResult!
     # Browser RUM ingest (Web Vitals / client GraphQL errors / route errors). Soft-succeeds.
     # See docs/architecture/observability.md.
     clientObservabilityReport(input: ClientObservabilityReportInput!): MutationResult!
@@ -3477,6 +3491,8 @@ type AdminSession {
     referrer: String
     landingPath: String
     isBot: Boolean!
+    # True when this session was minted via admin Sign in as (impersonation).
+    isImpersonation: Boolean!
     createdAt: DateTime!
 }
 
@@ -3490,6 +3506,8 @@ type AdminSessionEvent {
     createdAt: DateTime!
     # Optional admin-relative path for deep-linking (e.g. booking request).
     link: String
+    # True when the owning session is an admin impersonation (not real user traffic).
+    isImpersonation: Boolean!
 }
 
 # Filter + pagination for `Admin.sessionEvents` / `Admin.sessionEventsCounts`.
@@ -4417,9 +4435,10 @@ type AdminMutation {
     # auto-declined. Sessions stay bound so the profile restriction banner can
     # appear live. Returns `userId` as `referenceId`. See docs/features/admin-users.md.
     userStatusUpdate(userId: ID!, status: UserStatus!): MutationResult!
-    # Rebind the admin's current cookie session to `userId` (impersonation).
-    # Target must be ACTIVE. Skips TOTP. Client should navigate to `/profile`.
-    # Returns `userId` as `referenceId`. See docs/features/admin-users.md.
+    # Mint a new cookie session bound to a target ACTIVE user (impersonation).
+    # Admin session stays intact; client gets Set-Cookie for the new session.
+    # Skips TOTP. Client should hard-navigate to `/profile`. Returns the new
+    # `sessionId` as `referenceId`. See docs/features/admin-users.md.
     sessionUserBind(userId: ID!): MutationResult!
     # End any sessions by id (sets `wasTerminatedAt`). Used from the admin user
     # sessions tab. See docs/features/admin-sessions.md.

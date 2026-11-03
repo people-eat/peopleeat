@@ -205,6 +205,7 @@ function AdminSessionOverviewFields({ session }: { session: AdminSessionDetail }
     const terminated = session.wasTerminatedAt ? formatDate(session.wasTerminatedAt, { locale, timeZone, dateStyle: 'long' }) : empty;
     const connectionActive = session.connectionActive ? yes : no;
     const isBot = session.isBot ? yes : no;
+    const isImpersonation = session.isImpersonation ? yes : no;
     const userAgent = session.userAgent ?? empty;
     const ipHash = session.ipHash ?? empty;
     const referrer = session.referrer ?? empty;
@@ -242,6 +243,8 @@ function AdminSessionOverviewFields({ session }: { session: AdminSessionDetail }
             />
             <Separator />
             <DetailField label={{ de: 'Bot', en: 'Bot' }[locale]} value={isBot} copyText={isBot} />
+            <Separator />
+            <DetailField label={{ de: 'Impersonation', en: 'Impersonation' }[locale]} value={isImpersonation} copyText={isImpersonation} />
             <Separator />
             <DetailField
                 label={{ de: 'User-Agent', en: 'User agent' }[locale]}

@@ -1,14 +1,15 @@
 import { eq } from 'drizzle-orm';
 
+import { idCreate } from '../../shared/idCreate';
 import { sessions, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminMutation, GqlSAdminMutationSessionUserBindArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { sessionUserBind } from './sessionUserBind';
 
 /**
- * Admin impersonation: rebind the current cookie session to a target ACTIVE user.
- * Skips TOTP. Exit is a normal sign-out / re-auth as admin.
+ * Admin impersonation: mint a new cookie session bound to a target ACTIVE user.
+ * The admin session stays intact; `/api/graphql` swaps the HttpOnly cookie via
+ * `pendingSessionCookieId`. Exit is `sessionImpersonationEnd`.
  */
 export async function adminSessionUserBind(
     { adminId }: GqlSAdminMutation,
@@ -19,6 +20,10 @@ export async function adminSessionUserBind(
     await assertLegalAcceptanceCurrent(adminId, serverRuntime);
 
     try {
+        if (requestingSession.impersonationReturnSessionId) {
+            throw new Error('adminSessionUserBind: already impersonating');
+        }
+
         if (userId === adminId) {
             throw new Error('adminSessionUserBind: cannot bind to the current admin');
         }
@@ -36,15 +41,40 @@ export async function adminSessionUserBind(
             throw new Error('adminSessionUserBind: user is not ACTIVE');
         }
 
-        await serverRuntime.db
-            .update(sessions)
-            .set({ pendingTotpUserId: null, pendingTotpExpiresAt: null })
-            .where(eq(sessions.sessionId, requestingSession.sessionId));
+        const [adminSession] = await serverRuntime.db
+            .select({
+                sessionId: sessions.sessionId,
+                userAgent: sessions.userAgent,
+                ipHash: sessions.ipHash,
+                isBot: sessions.isBot,
+            })
+            .from(sessions)
+            .where(eq(sessions.sessionId, requestingSession.sessionId))
+            .limit(1);
 
-        await sessionUserBind(requestingSession.sessionId, userId, requestingSession, serverRuntime);
+        if (!adminSession) {
+            throw new Error('adminSessionUserBind: admin session not found');
+        }
+
+        const impersonationSessionId = idCreate();
+        await serverRuntime.db.insert(sessions).values({
+            sessionId: impersonationSessionId,
+            userId: target.userId,
+            impersonationReturnSessionId: adminSession.sessionId,
+            userAgent: adminSession.userAgent,
+            ipHash: adminSession.ipHash,
+            isBot: adminSession.isBot,
+        });
+
+        requestingSession.pendingSessionCookieId = impersonationSessionId;
+
+        serverRuntime.log.info(
+            `adminSessionUserBind adminId=${adminId} targetUserId=${target.userId} impersonationSessionId=${impersonationSessionId}`,
+            requestingSession,
+        );
         await serverRuntime.publish.adminUpdates();
 
-        return { success: true, referenceId: userId };
+        return { success: true, referenceId: impersonationSessionId };
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);
         throw error;

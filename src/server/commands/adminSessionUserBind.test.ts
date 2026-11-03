@@ -6,7 +6,7 @@ import { adminMutationParent, commandSetup, testDb } from '../test/commandTestUt
 import { adminSessionUserBind } from './adminSessionUserBind';
 
 describe('adminSessionUserBind', () => {
-    it('rebinds the admin session to an ACTIVE user and publishes', async () => {
+    it('mints an impersonation session and leaves the admin session bound', async () => {
         const admin = await commandSetup.withUser({ firstName: 'Impersonate', lastName: 'Admin' });
         await testDb.insert(admins).values({ adminId: admin.user.userId });
         const target = await commandSetup.withUser({ firstName: 'Target', lastName: 'Customer' });
@@ -18,11 +18,17 @@ describe('adminSessionUserBind', () => {
             admin.serverRuntime,
         );
 
-        expect(result).toEqual({ success: true, referenceId: target.user.userId });
-        const [row] = await testDb.select().from(sessions).where(eq(sessions.sessionId, admin.requestingSession.sessionId));
-        expect(row?.userId).toBe(target.user.userId);
-        expect(admin.requestingSession.userId).toBe(target.user.userId);
-        expect(admin.serverRuntime.publish.sessionUpdates).toHaveBeenCalledWith({ sessionId: admin.requestingSession.sessionId });
+        expect(result.success).toBe(true);
+        expect(result.referenceId).toBeTruthy();
+        expect(admin.requestingSession.pendingSessionCookieId).toBe(result.referenceId);
+
+        const [adminSession] = await testDb.select().from(sessions).where(eq(sessions.sessionId, admin.requestingSession.sessionId));
+        expect(adminSession?.userId).toBe(admin.user.userId);
+        expect(adminSession?.impersonationReturnSessionId).toBeNull();
+
+        const [impersonationSession] = await testDb.select().from(sessions).where(eq(sessions.sessionId, result.referenceId!));
+        expect(impersonationSession?.userId).toBe(target.user.userId);
+        expect(impersonationSession?.impersonationReturnSessionId).toBe(admin.requestingSession.sessionId);
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledTimes(1);
     });
 
@@ -41,7 +47,7 @@ describe('adminSessionUserBind', () => {
             ),
         ).rejects.toThrow(/user is not ACTIVE/);
 
-        expect(admin.requestingSession.userId).toBe(admin.user.userId);
+        expect(admin.requestingSession.pendingSessionCookieId).toBeUndefined();
         expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 
@@ -57,5 +63,21 @@ describe('adminSessionUserBind', () => {
                 admin.serverRuntime,
             ),
         ).rejects.toThrow(/cannot bind to the current admin/);
+    });
+
+    it('rejects nesting when already impersonating', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'Nested', lastName: 'Admin' });
+        await testDb.insert(admins).values({ adminId: admin.user.userId });
+        const target = await commandSetup.withUser({ firstName: 'Target', lastName: 'Customer' });
+        admin.requestingSession.impersonationReturnSessionId = admin.requestingSession.sessionId;
+
+        await expect(
+            adminSessionUserBind(
+                adminMutationParent(admin.user.userId),
+                { userId: target.user.userId },
+                admin.requestingSession,
+                admin.serverRuntime,
+            ),
+        ).rejects.toThrow(/already impersonating/);
     });
 });
