@@ -25,13 +25,14 @@ import { CookLogoEditor } from '../../components/CookLogoEditor';
 import { Footer } from '../../components/Footer';
 import { Header } from '../../components/Header';
 import { PublicCookCard } from '../../components/PublicCookCard';
+import { ShareButton } from '../../components/ShareButton';
 import type { GqlCProfileCookPublicPageQuery } from '../../graphql/generated';
 import { ProfileCookPublicCookUpdateDocument, ProfileCookPublicPageUpdatesDocument } from '../../graphql/generated';
+import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
-import { webPageUrlGet } from '../../seo/webPageUrlGet';
-import { DEFAULT_LOCALE } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
+import { publicChefUrl } from '../../utils/webShare';
 import { cookNavRouteBySlug } from './cookCatalog';
 
 const route = cookNavRouteBySlug('public');
@@ -50,12 +51,6 @@ export function parseProfileCookPublicSearch(search: Record<string, unknown>): P
 
 function resolvePublicTab(tab: ProfileCookPublicSearch['tab']): ProfileCookPublicTab {
     return tab === 'manage' ? 'manage' : 'preview';
-}
-
-function publicChefUrl(cookId: string, locale: Locale): string {
-    const origin = webPageUrlGet();
-    const prefix = locale === DEFAULT_LOCALE ? '' : `/${locale}`;
-    return `${origin}${prefix}/chefs/${cookId}`;
 }
 
 function visibilityConfirmCopy({
@@ -100,6 +95,7 @@ function visibilityConfirmCopy({
 
 export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookPublicPageQuery; search: ProfileCookPublicSearch }) {
     const locale = useLocale();
+    const shareEnabled = useFeatureToggleActive('COOK_PUBLIC_PROFILE_SHARE');
     const seedUser = data.currentSession.user ?? null;
     const user = useUserUpdatesSeed(seedUser, ProfileCookPublicPageUpdatesDocument);
     const [copied, setCopied] = useState(false);
@@ -221,6 +217,19 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
                                   }[locale]}
                         </p>
                         <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+                            {shareEnabled ? (
+                                <ShareButton
+                                    title={user.firstName}
+                                    text={
+                                        {
+                                            de: `Schau dir ${user.firstName} auf peopleeat an`,
+                                            en: `Check out ${user.firstName} on peopleeat`,
+                                        }[locale]
+                                    }
+                                    url={publicChefUrl(cookId, locale)}
+                                    disabled={!isLive}
+                                />
+                            ) : null}
                             <Button type="button" variant="outline" size="sm" disabled={!isLive} onClick={() => void copyPublicLink()}>
                                 {copied ? <CheckIcon className="size-4" aria-hidden /> : <CopyIcon className="size-4" aria-hidden />}
                                 {{ de: 'Link kopieren', en: 'Copy link' }[locale]}

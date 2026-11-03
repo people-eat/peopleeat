@@ -59,7 +59,7 @@ Gift-card funnel: `src/shared/giftCardFunnel.ts` (`area: gift_card`, client step
 `paid` from lifecycle events). Chef sign-up funnel: `src/shared/chefSignUpFunnel.ts` (`area: chef_sign_up`, client steps `auth` / `profile`;
 terminal `created` from `COOK_CREATED`). Booking checkout funnel: `src/shared/bookingRequestCheckoutFunnel.ts`
 (`area: booking_request_checkout`, client step `checkout`; terminal `paid` from `BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED`). Discovery
-interactions on chefs pages use `area: chefs` with `change` (`searchText`) and `click` (`book_cta`).
+interactions on chefs pages use `area: chefs` with `change` (`searchText`) and `click` (`book_cta`, `share`).
 
 ### Historical (imported only; no longer produced)
 

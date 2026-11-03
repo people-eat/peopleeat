@@ -3911,6 +3911,7 @@ export type GqlCFeatureToggleKey =
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
+    | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'PUBLICATION_MEALS'
@@ -8073,7 +8074,10 @@ export type GqlCChefPageQueryVariables = Exact<{
 }>;
 
 export type GqlCChefPageQuery = {
-    currentSession: { user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null };
+    currentSession: {
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
+        user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null;
+    };
     publicCook: {
         findOne: {
             cookId: string;
@@ -39139,6 +39143,7 @@ export const ChefPageDocument = {
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'user' },

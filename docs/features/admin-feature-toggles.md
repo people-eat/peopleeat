@@ -116,6 +116,9 @@ Wired today:
   transactions on `/profile/wallet`; `Cook.stripeWallet` returns null when off for the cook `userId` (no Stripe balance calls)
 - **Cook analytics** (`COOK_ANALYTICS`) — shows overview KPIs and `/profile/analytics`; `Cook.analytics` returns null when off for the cook
   `userId`. See [cook-analytics.md](./cook-analytics.md)
+- **Cook public profile share** (`COOK_PUBLIC_PROFILE_SHARE`) — shows Share on `/chefs/$cookId` (top bar) and on `/profile/public` Preview;
+  missing row stays off. Public detail reads `Session.activeFeatureToggleKeys`; cook Preview uses the profile shell provider. See
+  [public-chefs.md](./public-chefs.md) and [cook-profile.md](./cook-profile.md)
 - **AI menu evaluation** (`AI_MENU_EVALUATION`) — cook open / refresh / apply gates use the cook `userId`
 - **WhatsApp English templates** (`WHATSAPP_ENGLISH_TEMPLATES`) — when off (default until approved EN templates exist), lifecycle template
   sends use Meta language `de` even when the recipient locale is `en`; when on, EN locale maps to Meta language `en`

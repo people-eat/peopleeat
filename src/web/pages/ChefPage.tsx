@@ -1,18 +1,25 @@
 import { useMutation } from 'urql';
 
-import { chefsDiscoveryArea, chefsDiscoveryBookCtaKey } from '../../shared/chefsDiscovery';
+import { chefsDiscoveryArea, chefsDiscoveryBookCtaKey, chefsDiscoveryShareKey } from '../../shared/chefsDiscovery';
+import { featureToggleIsActive } from '../../shared/featureToggle';
 import { ChefProfileView } from '../components/ChefProfileView';
 import type { ChefProfileViewModel } from '../components/ChefProfileView';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
+import { ShareButton } from '../components/ShareButton';
 import type { GqlCChefPageQuery } from '../graphql/generated';
 import { ChefsDiscoveryTrackDocument } from '../graphql/generated';
+import { useLocale } from '../hooks/useLocale';
+import { publicChefUrl } from '../utils/webShare';
 
 export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
+    const locale = useLocale();
     const cook = data.publicCook.findOne!;
     const [, trackDiscovery] = useMutation(ChefsDiscoveryTrackDocument);
+    const shareEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'COOK_PUBLIC_PROFILE_SHARE');
+    const displayName = cook.user.display;
     const view: ChefProfileViewModel = {
-        displayName: cook.user.display,
+        displayName,
         profilePictureUrl: cook.user.profilePicture?.url ?? null,
         city: cook.city,
         cuisineStyle: cook.cuisineStyle,
@@ -50,11 +57,40 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
         });
     }
 
+    function onShared() {
+        void trackDiscovery({
+            input: {
+                webPageKey: 'CHEFS',
+                area: chefsDiscoveryArea,
+                interaction: { type: 'click', key: chefsDiscoveryShareKey },
+            },
+        });
+    }
+
     return (
         <>
             <Header user={data.currentSession.user} />
             <main id="main-content">
-                <ChefProfileView cook={view} onBookCtaClick={onBookCtaClick} />
+                <ChefProfileView
+                    cook={view}
+                    onBookCtaClick={onBookCtaClick}
+                    shareButton={
+                        shareEnabled ? (
+                            <ShareButton
+                                title={displayName}
+                                text={
+                                    {
+                                        de: `Schau dir ${displayName} auf peopleeat an`,
+                                        en: `Check out ${displayName} on peopleeat`,
+                                    }[locale]
+                                }
+                                url={publicChefUrl(cook.cookId, locale)}
+                                variant="secondary"
+                                onShared={onShared}
+                            />
+                        ) : undefined
+                    }
+                />
             </main>
             <Footer />
         </>

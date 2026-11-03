@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { ArrowLeftIcon, MapPinIcon, StarIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '../components/base/avatar';
 import { Button } from '../components/base/button';
@@ -60,32 +61,39 @@ export function SectionCookHero({
     cook,
     showChefsIndexLink = true,
     onBookCtaClick,
+    shareButton,
 }: {
     cook: SectionCookHeroCook;
     showChefsIndexLink?: boolean;
     /** Fired when the visitor clicks the booking-request CTA (public chef page). */
     onBookCtaClick?: () => void;
+    /** Optional Share control top-right beside the chefs index link (public chef page only). */
+    shareButton?: ReactNode;
 }) {
     const locale = useLocale();
+    const showTopBar = showChefsIndexLink || shareButton != null;
 
     return (
         <section className="mx-auto w-full max-w-7xl px-4 @lg:px-6">
-            {showChefsIndexLink ? (
-                <Button asChild variant="link" className="h-auto gap-1.5 -mx-2 px-2 text-muted-foreground">
-                    <Link to="/{-$locale}/chefs">
-                        <ArrowLeftIcon aria-hidden />
-                        {{ de: 'Alle Köche', en: 'All chefs' }[locale]}
-                    </Link>
-                </Button>
+            {showTopBar ? (
+                <div className="flex items-center gap-3">
+                    {showChefsIndexLink ? (
+                        <Button asChild variant="link" className="h-auto gap-1.5 -mx-2 px-2 text-muted-foreground">
+                            <Link to="/{-$locale}/chefs">
+                                <ArrowLeftIcon aria-hidden />
+                                {{ de: 'Alle Köche', en: 'All chefs' }[locale]}
+                            </Link>
+                        </Button>
+                    ) : null}
+                    {shareButton != null ? <div className="ml-auto shrink-0">{shareButton}</div> : null}
+                </div>
             ) : null}
 
             {/*
               Stack until ~48rem so the square photo never fights the copy in the
               tablet band; row layout only when both columns have room.
             */}
-            <div
-                className={cn('flex flex-col gap-8 @3xl:flex-row @3xl:items-center @3xl:gap-10 @4xl:gap-12', showChefsIndexLink && 'mt-4')}
-            >
+            <div className={cn('flex flex-col gap-8 @3xl:flex-row @3xl:items-center @3xl:gap-10 @4xl:gap-12', showTopBar && 'mt-4')}>
                 <div className="relative mx-auto aspect-square w-full max-w-sm shrink-0 overflow-hidden rounded-2xl bg-muted @sm:max-w-md @3xl:mx-0 @3xl:w-72 @3xl:max-w-none @4xl:w-80 @5xl:w-96">
                     <Avatar className="size-full rounded-2xl text-5xl @3xl:text-6xl @4xl:text-7xl">
                         {cook.profilePictureUrl != null && (

@@ -21,10 +21,12 @@ Visitors discover admin-approved cooks with published meals that have images and
 
 Shared profile layout (`ChefProfileView`, container-query driven):
 
-- **Hero** — large photo, name, city, cuisine and philosophy pills (`CookProfileTags`, md size), summary, star rating when there is at least
-  one published review (hidden otherwise; cook self-preview can still show “no reviews yet”), primary CTA to the booking form with
-  non-binding copy underneath. Stacks until ~48rem (`@3xl`); photo grows stepwise in the row (`@3xl` / `@4xl` / `@5xl`) so resize never
-  crushes copy beside a full-width square.
+- **Hero** — top bar with back to all chefs (left) and **Share** (right; secondary button; native share sheet when available, else copy
+  link; gated by `COOK_PUBLIC_PROFILE_SHARE`). Large photo, name, city, cuisine and philosophy pills (`CookProfileTags`, md size), summary,
+  star rating when there is at least one published review (hidden otherwise; cook self-preview can still show “no reviews yet”), primary CTA
+  to the booking form with non-binding copy underneath. Successful share/copy tracks discovery `click` / `share` (same `chefs` area as
+  `book_cta`). Share is wired only on the public detail page — cook WYSIWYG preview omits it. Stacks until ~48rem (`@3xl`); photo grows
+  stepwise in the row (`@3xl` / `@4xl` / `@5xl`) so resize never crushes copy beside a full-width square.
 - **Meals** — published dishes **with an image** as marketing meal tiles (`CustomerMealCard` `variant="marketing"`: square image on top,
   title, up to two lines of description); published meals without an image are omitted. Click opens the shared meal details dialog. Shows
   the first 5 meals; when there are more, a bilingual Show more / Show less control sits top-right on the section title row. Grid 2 → 3
@@ -88,9 +90,11 @@ ship.
   (`@container`) / `SectionCookHero` / meals / about / testimonials, `PublicCookCard` / `SectionFeaturedCooks` for list and content-page
   featured cooks, `CookProfileTags` on detail hero; About uses `PublicCook.logo` or `CookAboutBenefitsFallback`; detail multi-column layouts
   use `@2xl` / `@3xl` / `@5xl` (not early `@sm` / `@md`) so browser resize and profile public preview stay readable
-- Cook preview: `ProfileCookPublicPage` at `/profile/public` — Preview tab (default; share + static `PublicCookCard` + detail WYSIWYG) and
-  Manage tab (`?tab=manage`; visibility + additional picture); both previews use `Cook.rating`; testimonials section still omitted on
-  preview
+- Share: `ShareButton` + `webShareOrCopy` / `publicChefUrl` (`src/web/utils/webShare.ts`); gated by `COOK_PUBLIC_PROFILE_SHARE`; hero Share
+  only from `ChefPage` (discovery `chefsDiscoveryShareKey`, secondary variant); cook Preview toolbar Share / Copy / Open when live
+- Cook preview: `ProfileCookPublicPage` at `/profile/public` — Preview tab (default; Share / Copy / Open + static `PublicCookCard` + detail
+  WYSIWYG) and Manage tab (`?tab=manage`; visibility + additional picture); both previews use `Cook.rating`; testimonials section still
+  omitted on preview
 - Routes: `chefs.tsx`, `chefs_.$cookId.tsx`, `profile/public.tsx`
 - Sitemap: `/sitemap-chefs.xml` in index
 
