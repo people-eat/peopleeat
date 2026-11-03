@@ -9,6 +9,7 @@ import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
 import { DATE_FNS_LOCALE } from '../utils/dateFnsLocale';
+import { localePath } from '../utils/locale';
 import type { Locale } from '../utils/locale';
 import { Button } from './base/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './base/card';
@@ -42,6 +43,9 @@ export type BookingRequestOfferScheduleTabProps = {
     /** Customer slot picker — free slots from the cook. */
     callSlots?: readonly BookingRequestOfferScheduleCallSlot[];
     peerDisplayName?: string;
+    occasion?: string | null;
+    /** Customer offer URLs need the request id. Cook URLs use the offer id only. */
+    bookingRequestId?: string;
     requestDocument?: DocumentInput;
     confirmDocument?: DocumentInput;
     declineDocument?: DocumentInput;
@@ -49,6 +53,23 @@ export type BookingRequestOfferScheduleTabProps = {
 };
 
 const MS_PER_MINUTE = 60_000;
+
+function confirmedCallOfferUrl(
+    role: BookingRequestOfferScheduleRole,
+    locale: Locale,
+    bookingRequestOfferId: string,
+    bookingRequestId: string | undefined,
+): string | undefined {
+    if (role === 'admin' || typeof window === 'undefined') return undefined;
+    const path =
+        role === 'cook'
+            ? localePath(locale, `/profile/booking-request-offers/${bookingRequestOfferId}?tab=call`)
+            : bookingRequestId
+              ? localePath(locale, `/profile/booking-requests/${bookingRequestId}/offers/${bookingRequestOfferId}?tab=call`)
+              : undefined;
+    if (!path) return undefined;
+    return new URL(path, window.location.origin).href;
+}
 
 function mutationSucceeded(data: unknown): boolean {
     if (!data || typeof data !== 'object') return false;
@@ -88,6 +109,8 @@ export function BookingRequestOfferScheduleTab({
     callDurationMinutes,
     callSlots = [],
     peerDisplayName,
+    occasion,
+    bookingRequestId,
     requestDocument,
     confirmDocument,
     declineDocument,
@@ -97,6 +120,7 @@ export function BookingRequestOfferScheduleTab({
     const timeZone = useTimeZone();
     // Admin stays off propose / confirm / cancel; decline is enabled when a decline doc is passed.
     const readOnly = role === 'admin' ? !declineDocument : !requestDocument;
+    const calendarOfferUrl = confirmedCallOfferUrl(role, locale, bookingRequestOfferId, bookingRequestId);
 
     const [, requestMutation] = useMutation(requestDocument ?? ({} as DocumentInput));
     const [, confirmMutation] = useMutation(confirmDocument ?? ({} as DocumentInput));
@@ -275,6 +299,8 @@ export function BookingRequestOfferScheduleTab({
                                 timeZone={timeZone}
                                 callDurationMinutes={callDurationMinutes}
                                 peerDisplayName={peerDisplayName}
+                                calendarOfferUrl={calendarOfferUrl}
+                                occasion={occasion}
                                 busy={busy}
                                 decliningId={decliningId}
                                 declineReason={declineReason}
@@ -326,6 +352,8 @@ export function BookingRequestOfferScheduleTab({
                             timeZone={timeZone}
                             callDurationMinutes={callDurationMinutes}
                             peerDisplayName={peerDisplayName}
+                            calendarOfferUrl={calendarOfferUrl}
+                            occasion={occasion}
                             busy={busy}
                             decliningId={decliningId}
                             declineReason={declineReason}

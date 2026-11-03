@@ -36,6 +36,10 @@ export function BookingRequestOfferCallSlotConfirmBody({
         de: 'Du erhältst 60 Minuten vor Beginn eine Erinnerung mit dem Link zum Video-Call.',
         en: 'You will receive a reminder with the video call link 60 minutes before it starts.',
     }[locale];
+    const calendarNote = {
+        de: 'Im Anhang ist eine Kalenderdatei. Sie erinnert dich 15 Minuten vorher.',
+        en: 'A calendar file is attached. It reminds you 15 minutes before.',
+    }[locale];
     const linkLabel = {
         de: 'Zum Angebot',
         en: 'Open the offer',
@@ -47,6 +51,7 @@ export function BookingRequestOfferCallSlotConfirmBody({
             <EmailText style={{ marginBottom: '4px' }}>{callDate}</EmailText>
             <EmailText>{callTime}</EmailText>
             <EmailText>{reminderNote}</EmailText>
+            <EmailText>{calendarNote}</EmailText>
             <EmailButton href={offerUrl}>{linkLabel}</EmailButton>
         </EmailLayout>
     );

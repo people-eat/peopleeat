@@ -1,6 +1,5 @@
-import { CalendarPlusIcon } from 'lucide-react';
-
 import { formatDate, formatTime } from '../../shared';
+import { callCalendarEventIcsInput } from '../../shared/calendarEventContent';
 import type {
     CookCallSlotBookingActor,
     CookCallSlotBookingAudience,
@@ -8,8 +7,9 @@ import type {
 } from '../../shared/cookCallSlotBookingStatus';
 import { cookCallSlotBookingStatusLabel, cookCallSlotBookingStatusTone } from '../../shared/cookCallSlotBookingStatus';
 import { cn } from '../utils/cn';
-import { callCalendarEventCopy, downloadCalendarEvent } from '../utils/downloadCalendarEvent';
+import { downloadCalendarEvent } from '../utils/downloadCalendarEvent';
 import type { Locale } from '../utils/locale';
+import { AddToCalendarLink } from './AddToCalendarLink';
 import { Button } from './base/button';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from './base/card';
 import { StatusBadge } from './base/status-badge';
@@ -45,6 +45,9 @@ export type BookingRequestOfferCallBookingCardProps = {
     timeZone: string;
     callDurationMinutes: number;
     peerDisplayName?: string;
+    /** Confirmed-slot calendar file. Hidden for admin. */
+    calendarOfferUrl?: string;
+    occasion?: string | null;
     busy: boolean;
     decliningId: string | null;
     declineReason: string;
@@ -80,6 +83,8 @@ export function BookingRequestOfferCallBookingCard({
     timeZone,
     callDurationMinutes,
     peerDisplayName,
+    calendarOfferUrl,
+    occasion,
     busy,
     decliningId,
     declineReason,
@@ -115,12 +120,13 @@ export function BookingRequestOfferCallBookingCard({
         : { de: 'Als Koch ablehnen', en: 'Decline as chef' }[locale];
     const whenLabel = `${formatDate(start, { locale, timeZone, weekday: true })} · ${formatCallTime(start, locale, timeZone)}–${formatCallTime(end, locale, timeZone)}${locale === 'de' ? ' Uhr' : ''}`;
 
+    const showCalendar = isConfirmed && role !== 'admin' && Boolean(calendarOfferUrl);
     const hasBody =
         Boolean(booking.customerMessage) ||
         Boolean(booking.cookMessage) ||
         Boolean(reasonText) ||
         (!readOnly && (canRespondAsUser || canRespondAsCook || canDeclineAsAdmin)) ||
-        isConfirmed ||
+        (!readOnly && canCancelConfirmed) ||
         (!readOnly && (canWithdrawAsUser || canWithdrawAsCook)) ||
         (!readOnly && isCanceling);
 
@@ -134,6 +140,25 @@ export function BookingRequestOfferCallBookingCard({
                     ) : (
                         <CardTitle className="text-sm font-medium">{whenLabel}</CardTitle>
                     )}
+                    {showCalendar && calendarOfferUrl ? (
+                        <AddToCalendarLink
+                            locale={locale}
+                            onClick={() => {
+                                downloadCalendarEvent({
+                                    filename: 'peopleeat-call.ics',
+                                    ...callCalendarEventIcsInput({
+                                        locale,
+                                        peerName: peerDisplayName?.trim() || { de: 'Gast', en: 'Guest' }[locale],
+                                        occasion,
+                                        offerUrl: calendarOfferUrl,
+                                        start,
+                                        end,
+                                        cookCallSlotBookingId: booking.cookCallSlotBookingId,
+                                    }),
+                                });
+                            }}
+                        />
+                    ) : null}
                     <CardDescription className="text-xs">
                         {
                             {
@@ -239,41 +264,20 @@ export function BookingRequestOfferCallBookingCard({
                         </div>
                     ) : null}
 
-                    {isConfirmed && !isCanceling ? (
+                    {isConfirmed && !isCanceling && !readOnly && canCancelConfirmed ? (
                         <div className="flex flex-wrap justify-end gap-2">
                             <Button
                                 type="button"
                                 size="sm"
                                 variant="outline"
+                                disabled={busy}
                                 onClick={() => {
-                                    const copy = callCalendarEventCopy(locale);
-                                    const peer = peerDisplayName?.trim() || { de: 'Gast', en: 'Guest' }[locale];
-                                    downloadCalendarEvent({
-                                        start,
-                                        end,
-                                        title: `${copy.titlePrefix} ${peer}`,
-                                        description: copy.description,
-                                        uid: `${booking.cookCallSlotBookingId}@peopleeat`,
-                                    });
+                                    setCancelingId(booking.cookCallSlotBookingId);
+                                    setCancelReason('');
                                 }}
                             >
-                                <CalendarPlusIcon className="size-4" aria-hidden />
-                                {callCalendarEventCopy(locale).addToCalendar}
+                                {{ de: 'Termin absagen', en: 'Cancel appointment' }[locale]}
                             </Button>
-                            {!readOnly && canCancelConfirmed ? (
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={busy}
-                                    onClick={() => {
-                                        setCancelingId(booking.cookCallSlotBookingId);
-                                        setCancelReason('');
-                                    }}
-                                >
-                                    {{ de: 'Termin absagen', en: 'Cancel appointment' }[locale]}
-                                </Button>
-                            ) : null}
                         </div>
                     ) : null}
 

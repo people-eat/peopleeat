@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 
+import { callCalendarEventIcs } from '../../shared/calendarEventContent';
 import type { Locale } from '../../shared/locale';
 import { bookingRequestOffers, bookingRequests, cookCallSlotBookings, users } from '../db/schema';
 import { notificationEmailAllowed } from '../domain/notificationSettings';
@@ -52,6 +53,7 @@ type CallSlotEmailContext = {
     bookingRequestOfferId: string;
     bookingRequestId: string;
     startAt: Date;
+    endAt: Date;
     occasion: string;
     eventDateTime: Date;
     customerUserId: string;
@@ -146,12 +148,29 @@ async function callSlotEmailContextLoad(serverRuntime: ServerRuntime, cookCallSl
         bookingRequestOfferId: row.bookingRequestOfferId,
         bookingRequestId: row.bookingRequestId,
         startAt: row.booking.startAt,
+        endAt: row.booking.endAt,
         occasion: row.occasion,
         eventDateTime: row.eventDateTime,
         customerUserId: row.customerUserId,
         cookId: row.cookId,
         customer: customerWithEmail,
         cookUser: cookUserWithEmail,
+    };
+}
+
+function callCalendarAttachment(input: {
+    locale: Locale;
+    peerName: string;
+    occasion: string;
+    offerUrl: string;
+    start: Date;
+    end: Date;
+    cookCallSlotBookingId: string;
+}) {
+    return {
+        filename: 'peopleeat-call.ics',
+        content: Buffer.from(callCalendarEventIcs(input), 'utf8'),
+        mediaType: 'text/calendar;charset=utf-8' as const,
     };
 }
 
@@ -302,6 +321,17 @@ export async function bookingRequestOfferCallSlotConfirmEmailSend(
                         locale,
                         relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
                         userId: context.cookId,
+                        attachments: [
+                            callCalendarAttachment({
+                                locale,
+                                peerName: context.customer.firstName,
+                                occasion: context.occasion,
+                                offerUrl: urls.cook,
+                                start: context.startAt,
+                                end: context.endAt,
+                                cookCallSlotBookingId: context.cookCallSlotBookingId,
+                            }),
+                        ],
                     }),
             ),
             bookingRequestOfferCallSlotConfirmWhatsAppSend(serverRuntime, args),
@@ -334,6 +364,17 @@ export async function bookingRequestOfferCallSlotConfirmEmailSend(
                     locale,
                     relatedEntity: { type: 'COOK_CALL_SLOT_BOOKING', id: context.cookCallSlotBookingId },
                     userId: context.customerUserId,
+                    attachments: [
+                        callCalendarAttachment({
+                            locale,
+                            peerName: context.cookUser.firstName,
+                            occasion: context.occasion,
+                            offerUrl: urls.customer,
+                            start: context.startAt,
+                            end: context.endAt,
+                            cookCallSlotBookingId: context.cookCallSlotBookingId,
+                        }),
+                    ],
                 }),
         ),
         bookingRequestOfferCallSlotConfirmWhatsAppSend(serverRuntime, args),

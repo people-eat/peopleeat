@@ -6,6 +6,7 @@ import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests } from
 import { bookingRequestCancelableStatuses, bookingRequestStatusDerive } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { slackNotifyBookingRequestCanceled } from '../slack/slackNotifyBooking';
+import { customerReceivedBookingEventCalendar } from './bookingEventCalendarFile';
 import { userBookingRequestCancelEmailSend } from './bookingRequestLifecycleEmails';
 import {
     bookingRequestOfferPendingCallSlotsClose,
@@ -104,6 +105,9 @@ export async function bookingRequestCancelApply(
         customerUserId,
         cookIds,
         reason,
+        savedEvent: accepted
+            ? { cookId: accepted.cookId, customerHadFile: customerReceivedBookingEventCalendar(accepted.paymentStatus) }
+            : undefined,
     });
 
     await slackNotifyBookingRequestCanceled(serverRuntime, {

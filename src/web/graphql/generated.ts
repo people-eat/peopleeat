@@ -1985,6 +1985,7 @@ export type GqlCAdminOutboundEmailProvider = 'console' | 'resend';
 export type GqlCAdminOutboundEmailPurpose =
     | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
+    | 'BOOKING_EVENT_CALENDAR'
     | 'BOOKING_REQUEST_CANCELED'
     | 'BOOKING_REQUEST_COOK_NOTIFY'
     | 'BOOKING_REQUEST_CREATED'
@@ -3454,6 +3455,7 @@ export interface GqlCCookCallSlotBooking {
     endAt: Scalars['DateTime']['output'];
     initiator: GqlCCookCallSlotBookingActor;
     lastModifiedAt: Scalars['DateTime']['output'];
+    occasion: Scalars['String']['output'];
     startAt: Scalars['DateTime']['output'];
     status: GqlCCookCallSlotBookingStatus;
     userId: Scalars['ID']['output'];
@@ -18923,6 +18925,7 @@ export type GqlCProfileCookBookingRequestPoolPageUpdatesSubscription = {
 export type GqlCProfileCookCallsSlotBookingFragment = {
     cookCallSlotBookingId: string;
     bookingRequestOfferId: string;
+    occasion: string;
     startAt: string;
     endAt: string;
     status: Schema.GqlCCookCallSlotBookingStatus;
@@ -18952,6 +18955,7 @@ export type GqlCProfileCookCallsCookFragment = {
     callSlotBookings: Array<{
         cookCallSlotBookingId: string;
         bookingRequestOfferId: string;
+        occasion: string;
         startAt: string;
         endAt: string;
         status: Schema.GqlCCookCallSlotBookingStatus;
@@ -18984,6 +18988,7 @@ export type GqlCProfileCookCallsUserFragment = {
         callSlotBookings: Array<{
             cookCallSlotBookingId: string;
             bookingRequestOfferId: string;
+            occasion: string;
             startAt: string;
             endAt: string;
             status: Schema.GqlCCookCallSlotBookingStatus;
@@ -19025,6 +19030,7 @@ export type GqlCProfileCookCallsPageQuery = {
                 callSlotBookings: Array<{
                     cookCallSlotBookingId: string;
                     bookingRequestOfferId: string;
+                    occasion: string;
                     startAt: string;
                     endAt: string;
                     status: Schema.GqlCCookCallSlotBookingStatus;
@@ -19066,6 +19072,7 @@ export type GqlCProfileCookCallsPageUpdatesSubscription = {
             callSlotBookings: Array<{
                 cookCallSlotBookingId: string;
                 bookingRequestOfferId: string;
+                occasion: string;
                 startAt: string;
                 endAt: string;
                 status: Schema.GqlCCookCallSlotBookingStatus;
@@ -20333,9 +20340,18 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
     profilePicture: { url: string } | null;
     bookingRequest: {
         bookingRequestId: string;
+        status: Schema.GqlCBookingRequestStatus;
+        canceledAt: string | null;
         occasion: string;
         dateTime: string;
-        exactEventAddress: { addressLine1: string; addressLine2: string; city: string; postCode: string; country: string };
+        exactEventAddress: {
+            displayText: string;
+            addressLine1: string;
+            addressLine2: string;
+            city: string;
+            postCode: string;
+            country: string;
+        };
         invoiceAddress: {
             companyName: string | null;
             firstName: string;
@@ -20511,9 +20527,18 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
             profilePicture: { url: string } | null;
             bookingRequest: {
                 bookingRequestId: string;
+                status: Schema.GqlCBookingRequestStatus;
+                canceledAt: string | null;
                 occasion: string;
                 dateTime: string;
-                exactEventAddress: { addressLine1: string; addressLine2: string; city: string; postCode: string; country: string };
+                exactEventAddress: {
+                    displayText: string;
+                    addressLine1: string;
+                    addressLine2: string;
+                    city: string;
+                    postCode: string;
+                    country: string;
+                };
                 invoiceAddress: {
                     companyName: string | null;
                     firstName: string;
@@ -20700,9 +20725,18 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
         profilePicture: { url: string } | null;
         bookingRequest: {
             bookingRequestId: string;
+            status: Schema.GqlCBookingRequestStatus;
+            canceledAt: string | null;
             occasion: string;
             dateTime: string;
-            exactEventAddress: { addressLine1: string; addressLine2: string; city: string; postCode: string; country: string };
+            exactEventAddress: {
+                displayText: string;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                country: string;
+            };
             invoiceAddress: {
                 companyName: string | null;
                 firstName: string;
@@ -31915,6 +31949,7 @@ export const ProfileCookCallsSlotBookingFragmentDoc = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookCallSlotBookingId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'startAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'endAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'status' } },
@@ -32003,6 +32038,7 @@ export const ProfileCookCallsCookFragmentDoc = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookCallSlotBookingId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'startAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'endAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'status' } },
@@ -32050,6 +32086,7 @@ export const ProfileCookCallsUserFragmentDoc = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookCallSlotBookingId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'startAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'endAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'status' } },
@@ -33231,6 +33268,8 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canceledAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
                                 {
@@ -33239,6 +33278,7 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
@@ -76014,6 +76054,7 @@ export const ProfileCookCallsPageDocument = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookCallSlotBookingId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'startAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'endAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'status' } },
@@ -76151,6 +76192,7 @@ export const ProfileCookCallsPageUpdatesDocument = {
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'cookCallSlotBookingId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'startAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'endAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'status' } },
@@ -80427,6 +80469,8 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canceledAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
                                 {
@@ -80435,6 +80479,7 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
@@ -81039,6 +81084,8 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'status' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canceledAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'dateTime' } },
                                 {
@@ -81047,6 +81094,7 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },

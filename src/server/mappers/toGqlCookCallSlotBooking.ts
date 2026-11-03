@@ -1,12 +1,17 @@
 import type { CookCallSlotBooking } from '../db/schema';
 import type { GqlSCookCallSlotBooking, GqlSCookCallSlotBookingCustomer } from '../graphql/generated';
 
-export function toGqlCookCallSlotBooking(row: CookCallSlotBooking, customer?: GqlSCookCallSlotBookingCustomer): GqlSCookCallSlotBooking {
+export function toGqlCookCallSlotBooking(
+    row: CookCallSlotBooking,
+    customer?: GqlSCookCallSlotBookingCustomer,
+    occasion = '',
+): GqlSCookCallSlotBooking {
     return {
         cookCallSlotBookingId: row.cookCallSlotBookingId,
         cookId: row.cookId,
         userId: row.userId,
         bookingRequestOfferId: row.bookingRequestOfferId,
+        occasion,
         startAt: row.startAt,
         endAt: row.endAt,
         status: row.status,

@@ -33,6 +33,8 @@ export type BookingRequestOfferCallTabProps = {
     callDurationMinutes?: number;
     callSlots?: readonly BookingRequestOfferScheduleCallSlot[];
     peerDisplayName?: string;
+    occasion?: string | null;
+    bookingRequestId?: string;
     requestDocument?: DocumentInput;
     confirmDocument?: DocumentInput;
     declineDocument?: DocumentInput;
@@ -51,6 +53,8 @@ export function BookingRequestOfferCallTab({
     callDurationMinutes = 30,
     callSlots,
     peerDisplayName,
+    occasion,
+    bookingRequestId,
     requestDocument,
     confirmDocument,
     declineDocument,
@@ -174,6 +178,8 @@ export function BookingRequestOfferCallTab({
                         callDurationMinutes={callDurationMinutes}
                         callSlots={callSlots}
                         peerDisplayName={peerDisplayName}
+                        occasion={occasion}
+                        bookingRequestId={bookingRequestId}
                         requestDocument={requestDocument}
                         confirmDocument={confirmDocument}
                         declineDocument={declineDocument}

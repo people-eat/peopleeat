@@ -9,8 +9,8 @@ Open **Account** and use the **Notifications** card under **Sign-in and security
 The card says sign-in codes, payments, and support always go to the account email. Those have no switch. Cook approval is the same kind of
 mail and is not listed as a row. Everything still shows in the app. Concierge replies are not affected.
 
-Each row has **Email address** and **WhatsApp**. A missing saved choice means on, so existing mail continues until someone turns a channel off.
-Chat, review reminders, and new requests may have both channels off.
+Each row has **Email address** and **WhatsApp**. A missing saved choice means on, so existing mail continues until someone turns a channel
+off. Chat, review reminders, and new requests may have both channels off.
 
 **Evenings you book** (everyone)
 

@@ -93,7 +93,9 @@ empty and delete room; recurring sweep for stale active rooms (~90s threshold). 
 
 ### Hydration
 
-User, cook, and admin offer hydrates batch-load call slot bookings onto `callBookings`.
+User, cook, and admin offer hydrates batch-load call slot bookings onto `callBookings`. Confirmed-call calendar copy is
+`src/shared/calendarEventContent.ts` (`callCalendarEventIcs`); the file is `METHOD:PUBLISH` from `src/shared/calendarEventIcs.ts`. Confirm
+mail attaches it in `bookingRequestOfferCallSlotEmails.ts`. On-page download is `downloadCalendarEvent`.
 
 ### Jobs
 
@@ -130,6 +132,11 @@ Sends via dedicated email helpers or reminder job. Email failure does not roll b
 is confirmed, and pending-slot closes when an offer is declined / the request expires or is canceled, do **not** send decline/cancel mail.
 CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’s `Users.timeZone`.
 
+Confirm mail attaches one shared calendar file (`peopleeat-call.ics`) for both people. The title is the call with the other person’s name.
+The description names the occasion when there is one and includes the offer Call-tab link. The event uses the real slot end and one reminder
+15 minutes before the start. A confirmed cancel asks the other person to remove the saved appointment. The file is a one-time copy: saving
+it again does not update an entry that is already in a calendar. The 60-minute email reminder stays.
+
 ### UI
 
 - `BookingRequestOfferCallSessionProvider` owns create/join/leave + LiveKit room on customer, cook, and admin offer pages (above tabs) so
@@ -150,7 +157,8 @@ CTAs deep-link to offer Call tab (`?tab=call`); email times use the recipient’
 - Cook `/profile/calls` scheduled-call rows use the same `Card` + `StatusBadge` pattern
 - Admin `/admin/calls` attention board rows use the same compact `Card` density (badges in `CardAction`, CTAs in `CardFooter`)
 - Offer pages: tabs offer / chat / call (plus role-specific tabs); legacy `?tab=schedule` aliases to `call`
-- Confirmed slots: calendar ICS download utility
+- Confirmed slots: text link **Zum Kalender hinzufügen** / **Add to calendar** under the printed time on the offer Call tab (customer and
+  cook) and on `/profile/calls`. Hidden for admin and while a cancel is in progress. The button row stays Cancel / Go to call.
 - Profile overviews: `callBookingOverviewHint` — cook inbox uses info `Popover` on `CookBookingRequestOfferCard`; customer cards omit the
   label (deep-link only); admin cards keep inline hint text; `openCall` deep-links to `?tab=call`. Which call to surface (response needed →
   pending → confirmed) and the time window wording come from `src/shared/cookCallSlotBookingStatus.ts`, shared with the server's

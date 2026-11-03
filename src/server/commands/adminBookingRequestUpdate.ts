@@ -18,11 +18,12 @@ import { bookingRequestOfferPaymentIsPaid } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminMutation, GqlSAdminMutationBookingRequestUpdateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { customerReceivedBookingEventCalendar } from '../utils/bookingEventCalendarFile';
 import { bookingRequestAdjustedMessageGenerateScheduleIfEnabled } from '../utils/bookingRequestAdjustedMessageGenerateSchedule';
 import { bookingRequestCookTravelDistanceKmClear } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
 import { bookingRequestExpireNotifySchedule } from '../utils/bookingRequestExpireNotifySchedule';
 import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
-import { userBookingRequestUpdateEmailSend } from '../utils/bookingRequestLifecycleEmails';
+import { bookingEventCalendarDateMovedEmailSend, userBookingRequestUpdateEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestNoOffersNotifySchedule } from '../utils/bookingRequestNoOffersNotifySchedule';
 import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/bookingRequestOfferEventTomorrowNotifySchedule';
 import { bookingRequestOfferPriceSnapshot } from '../utils/bookingRequestOfferPriceSnapshot';
@@ -627,6 +628,7 @@ export async function adminBookingRequestUpdate(
         }
 
         const cookUserIds = [...new Set(offers.map(({ offer }) => offer.cookId))];
+        const savedEventOffer = offers.find(({ offer }) => offer.userAccepted === true && offer.cookAccepted === true);
         const poolMembershipMayChange = requestPatch.exactEventAddress != null || requestPatch.expiresAt !== undefined;
         await Promise.all([
             serverRuntime.publish.userUpdates({ userId: bookingRequest.userId }),
@@ -643,6 +645,14 @@ export async function adminBookingRequestUpdate(
                 customerUserId: bookingRequest.userId,
                 cookIds: cookUserIds,
                 offerIdsByCookId: new Map(offers.map(({ offer }) => [offer.cookId, offer.bookingRequestOfferId])),
+                cookIdsWithSavedEvent: dateTimeChanged && savedEventOffer ? [savedEventOffer.offer.cookId] : [],
+            });
+        }
+
+        if (dateTimeChanged && savedEventOffer && customerReceivedBookingEventCalendar(savedEventOffer.offer.paymentStatus)) {
+            await bookingEventCalendarDateMovedEmailSend(serverRuntime, {
+                bookingRequestId,
+                customerUserId: bookingRequest.userId,
             });
         }
 

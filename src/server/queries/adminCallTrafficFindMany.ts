@@ -165,7 +165,7 @@ export async function adminCallTrafficFindMany(
                     customerDisplayName: row.customerDisplayName,
                     occasion: row.occasion,
                     callRoom: null,
-                    callSlotBooking: toGqlCookCallSlotBooking(row.booking),
+                    callSlotBooking: toGqlCookCallSlotBooking(row.booking, undefined, row.occasion),
                 },
             });
         }

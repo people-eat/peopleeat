@@ -13,7 +13,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { bookingRequestOfferChatCanSend, userDisplayName } from '../../../shared';
+import { bookingRequestOfferChatCanSend, formatDateTime, userDisplayName } from '../../../shared';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../../shared/bookingRequestOfferStatus';
 import {
     AlertDialog,
@@ -32,6 +32,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { NotificationBadge } from '../../components/base/notification-badge';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/base/tabs';
+import { BookingEventCalendarLink } from '../../components/BookingEventCalendarLink';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
 import { BookingRequestOfferAttentionBanner } from '../../components/BookingRequestOfferAttentionBanner';
 import { BookingRequestOfferCallControls } from '../../components/BookingRequestOfferCallPanel';
@@ -76,9 +77,11 @@ import {
     ProfileCustomerBookingRequestOfferUnreadNotificationCountResetDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { bookingPaymentPullIsPast } from '../../utils/bookingPaymentPullIsPast';
 import { cn } from '../../utils/cn';
+import { localePath } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
 
 export {
@@ -682,6 +685,8 @@ export function ProfileCustomerBookingRequestOfferPage({
                                 callDurationMinutes={offer.cook.callDurationMinutes}
                                 callSlots={offer.cook.callSlots}
                                 peerDisplayName={offer.cook.user.display}
+                                occasion={request.occasion}
+                                bookingRequestId={bookingRequestId}
                                 requestDocument={ProfileCustomerBookingRequestOfferCallSlotRequestDocument}
                                 confirmDocument={ProfileCustomerBookingRequestOfferCallSlotConfirmDocument}
                                 declineDocument={ProfileCustomerBookingRequestOfferCallSlotDeclineDocument}
@@ -825,9 +830,35 @@ function OfferTabPanel({
     const hasMenu = offer.configuredMenu != null || canConfigure || offer.suggestedMenus.length > 0;
     const pullIsPast = bookingPaymentPullIsPast(offer.plannedPaymentPullDateTime);
     const isSetupIntent = offer.payment?.type === 'SETUP_INTENT';
+    const timeZone = useTimeZone();
+    const showEventCalendar =
+        !canPay &&
+        dualAccepted &&
+        request.status !== 'CANCELED' &&
+        !request.canceledAt &&
+        (offer.paymentStatus === 'SETUP' ||
+            offer.paymentStatus === 'PAYED' ||
+            offer.paymentStatus === 'TRANSFERRED' ||
+            offer.paymentStatus === 'PAYED_OUT_OF_SYSTEM');
 
     return (
         <div className={cn('grid gap-8', hasMenu && '@5xl:grid-cols-2 @5xl:items-start @5xl:gap-10')}>
+            {showEventCalendar ? (
+                <p className={cn('grid gap-1 text-sm text-foreground', hasMenu && '@5xl:col-span-2')}>
+                    <span>{formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}</span>
+                    <BookingEventCalendarLink
+                        locale={locale}
+                        timeZone={timeZone}
+                        occasion={request.occasion}
+                        peerName={offer.cook.user.display}
+                        guestCount={request.participants.length}
+                        start={request.dateTime}
+                        location={request.exactEventAddress.displayText}
+                        bookingPath={localePath(locale, `/profile/booking-requests/${bookingRequestId}`)}
+                        bookingRequestId={bookingRequestId}
+                    />
+                </p>
+            ) : null}
             {offer.configuredMenu ? (
                 <section className="grid min-w-0 gap-3">
                     <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Menü', en: 'Menu' }[locale]}</h2>

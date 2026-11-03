@@ -47,6 +47,7 @@ export function adminOutboundEmailPurposeLabel(purpose: GqlCAdminOutboundEmailPu
         BOOKING_REQUEST_COOK_NOTIFY: { de: 'Buchungsanfrage an Koch', en: 'Booking request to cook' },
         BOOKING_REQUEST_CREATED: { de: 'Buchungsanfrage erstellt', en: 'Booking request created' },
         BOOKING_REQUEST_UPDATED: { de: 'Buchungsanfrage geändert', en: 'Booking request updated' },
+        BOOKING_EVENT_CALENDAR: { de: 'Kalender', en: 'Calendar' },
         BOOKING_REQUEST_CANCELED: { de: 'Buchungsanfrage storniert', en: 'Booking request canceled' },
         BOOKING_REQUEST_OFFER_CREATED: { de: 'Angebot erstellt', en: 'Offer created' },
         BOOKING_REQUEST_OFFER_MENU_UPDATED: { de: 'Angebotsmenü angepasst', en: 'Offer menu updated' },

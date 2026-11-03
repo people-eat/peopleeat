@@ -9,6 +9,7 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { customerReceivedBookingEventCalendar } from '../utils/bookingEventCalendarFile';
 import { bookingRequestOfferParticipantAmendmentAcceptEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestOfferAdminAmendmentPrepare } from '../utils/bookingRequestOfferAdminAmendmentPrepare';
 import { bookingRequestOfferParticipantAmendmentApply } from '../utils/bookingRequestOfferParticipantAmendmentApply';
@@ -98,6 +99,10 @@ export async function adminBookingRequestOfferAmendmentApply(
                 giftCardDeltaCents: applyResult.giftCardDeltaCents,
                 paymentStatus: applyResult.paymentStatus,
                 pendingDeltaPaymentDue: applyResult.pendingDeltaPaymentDue,
+                venueDisplayText:
+                    prepared.amendment.exactEventAddress && customerReceivedBookingEventCalendar(freshOffer.paymentStatus)
+                        ? prepared.amendment.exactEventAddress.displayText
+                        : null,
             });
         }
 

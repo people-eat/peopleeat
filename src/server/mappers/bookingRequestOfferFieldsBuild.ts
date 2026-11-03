@@ -24,7 +24,7 @@ import { toGqlCostBreakdown } from './toGqlCostBreakdown';
 
 export type BookingRequestOfferFieldsInput = {
     offer: BookingRequestOffer;
-    bookingRequest: Pick<BookingRequest, 'dateTime' | 'expiresAt' | 'canceledAt'>;
+    bookingRequest: Pick<BookingRequest, 'dateTime' | 'expiresAt' | 'canceledAt' | 'occasion'>;
     hasAcceptedAlternative: boolean;
     locale: Locale;
     participantCount?: number | null;
@@ -188,7 +188,7 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
         plannedPayoutDateTime: offer.plannedPayoutDateTime ?? null,
         payoutDateTime: offer.payoutDateTime ?? null,
         createdAt: offer.createdAt,
-        callBookings: callBookings.map((booking) => toGqlCookCallSlotBooking(booking)),
+        callBookings: callBookings.map((booking) => toGqlCookCallSlotBooking(booking, undefined, input.bookingRequest.occasion)),
         preparationsCompletedAt: offer.preparationsCompletedAt ?? null,
         participantAmendment:
             offer.participantAmendment != null

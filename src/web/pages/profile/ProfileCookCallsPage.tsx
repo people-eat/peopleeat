@@ -1,12 +1,14 @@
 import { Link } from '@tanstack/react-router';
-import { CalendarPlusIcon, PencilIcon, Trash2Icon } from 'lucide-react';
+import { PencilIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { formatDate, formatTime, isCallJoinable } from '../../../shared';
+import { callCalendarEventIcsInput } from '../../../shared/calendarEventContent';
 import { COOK_CALL_DURATIONS_MINUTES, COOK_CALL_MAX_WEEKLY_RULES, formatMinuteOfDay } from '../../../shared/cookCallAvailability';
 import { cookCallSlotBookingStatusLabel, cookCallSlotBookingStatusTone } from '../../../shared/cookCallSlotBookingStatus';
+import { AddToCalendarLink } from '../../components/AddToCalendarLink';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -40,7 +42,8 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { cn } from '../../utils/cn';
-import { callCalendarEventCopy, downloadCalendarEvent } from '../../utils/downloadCalendarEvent';
+import { downloadCalendarEvent } from '../../utils/downloadCalendarEvent';
+import { localePath } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
 import { cookNavRouteBySlug } from './cookCatalog';
 import { ProfileCookCallsExceptionDialog } from './ProfileCookCallsExceptionDialog';
@@ -363,6 +366,32 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                         <div className="grid gap-0.5">
                                             <CardTitle className="font-medium">{booking.customer.display}</CardTitle>
                                             <p className="text-sm text-foreground">{whenLabel}</p>
+                                            {isConfirmed && !isCanceling ? (
+                                                <AddToCalendarLink
+                                                    locale={locale}
+                                                    onClick={() => {
+                                                        const offerUrl = new URL(
+                                                            localePath(
+                                                                locale,
+                                                                `/profile/booking-request-offers/${booking.bookingRequestOfferId}?tab=call`,
+                                                            ),
+                                                            window.location.origin,
+                                                        ).href;
+                                                        downloadCalendarEvent({
+                                                            filename: 'peopleeat-call.ics',
+                                                            ...callCalendarEventIcsInput({
+                                                                locale,
+                                                                peerName: booking.customer.display,
+                                                                occasion: booking.occasion,
+                                                                offerUrl,
+                                                                start,
+                                                                end,
+                                                                cookCallSlotBookingId: booking.cookCallSlotBookingId,
+                                                            }),
+                                                        });
+                                                    }}
+                                                />
+                                            ) : null}
                                         </div>
                                         <CardAction>
                                             <StatusBadge tone={cookCallSlotBookingStatusTone(booking, 'cook')}>
@@ -473,24 +502,6 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
 
                                             {isConfirmed && !isCanceling ? (
                                                 <div className="flex flex-wrap justify-end gap-2">
-                                                    <Button
-                                                        type="button"
-                                                        size="sm"
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            const copy = callCalendarEventCopy(locale);
-                                                            downloadCalendarEvent({
-                                                                start,
-                                                                end,
-                                                                title: `${copy.titlePrefix} ${booking.customer.display}`,
-                                                                description: copy.description,
-                                                                uid: `${booking.cookCallSlotBookingId}@peopleeat`,
-                                                            });
-                                                        }}
-                                                    >
-                                                        <CalendarPlusIcon className="size-4" aria-hidden />
-                                                        {callCalendarEventCopy(locale).addToCalendar}
-                                                    </Button>
                                                     <Button
                                                         type="button"
                                                         size="sm"

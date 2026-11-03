@@ -72,8 +72,16 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    request cancel / expiry cancel those PENDING slots. Customer request edits can clear cook acceptance and email cooks; paid-headcount
    changes auto-scale each open offer’s menu from that offer’s current per-person rate, and address changes may auto-adjust travel
    (`priceAutoAdjustReason`). Menu updates email the customer.
-5. Dual acceptance moves into payment — see [booking-payment.md](./booking-payment.md). Chat rules:
-   [booking-offer-chat.md](./booking-offer-chat.md). Calls: [booking-request-offer-calls.md](./booking-request-offer-calls.md).
+5. Dual acceptance moves into payment — see [booking-payment.md](./booking-payment.md). The chosen cook’s accept email includes an evening
+   calendar file (`peopleeat-event.ics`): a 60-minute marker at the start, the venue, and a reminder the day before. The customer gets the
+   same file on the booking-confirmation email (card saved, paid, or €0). Not-chosen cooks get no file. On the page, **Zum Kalender
+   hinzufügen** / **Add to calendar** sits under the time only after that email would already have gone out: customer request detail and
+   cook request summary once both have accepted and the booking is not canceled; cook Offer tab in the same state; customer offer page only
+   after payment is confirmed. List cards, the pool, pinned footers, and admin stay without the link. A new download does not update an
+   entry already in a calendar. Later changes are sentences on existing mail: cancel asks people who already received a file to remove the
+   evening; an admin date change that clears cook acceptance asks those people to remove the old evening (no new file); when the cook
+   accepts again and the customer had already accepted, both get a fresh file if the customer already had one, otherwise only the cook does.
+   Chat rules: [booking-offer-chat.md](./booking-offer-chat.md). Calls: [booking-request-offer-calls.md](./booking-request-offer-calls.md).
 
 Admins can create / edit offers, cancel cancelable requests, and hand a dual-accepted offer to another cook (close old + create/upgrade new;
 never mutate `cookId` in place) — [admin-booking-requests.md](./admin-booking-requests.md). After a customer freezes a configured menu on an

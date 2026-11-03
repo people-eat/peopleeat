@@ -3,6 +3,7 @@
 fragment ProfileCookCallsSlotBooking on CookCallSlotBooking {
     cookCallSlotBookingId
     bookingRequestOfferId
+    occasion
     startAt
     endAt
     status

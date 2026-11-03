@@ -34,7 +34,8 @@ preparations done. Amendment propose is gated by `BOOKING_REQUEST_OFFER_AMENDMEN
      positive customer delta under 50¢ is rounded up to 50¢; cook payout stays at the true delta; the surplus is added to
      `platformFeeCentsCustomer` (platform win) so offer line items equal the charged amount. When cook payout exceeds the pull, Connect
      still sends the delta PI to the cook and the win is a smaller platform top-up. Live `priceImpact` / `travelImpact` host totals and
-     pending amendment GraphQL use the same rounded figure.
+     pending amendment GraphQL use the same rounded figure. When the venue changed and the customer already has the evening calendar file,
+     the accept email asks them to update the address. The cook sees the same sentence on the accept confirmation.
 7. On decline or customer cancel, the pending proposal is cleared (both are blocked once accept has claimed the amendment). If apply fails
    **before** any Stripe mutation that may have moved money / payment instruments, the claim is cleared again so withdraw / decline / retry
    work. After a successful Stripe mutation, the claim stays for idempotent cook **Retry**. The booking is otherwise unchanged on decline /

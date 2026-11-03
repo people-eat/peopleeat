@@ -1982,6 +1982,7 @@ export type GqlSAdminOutboundEmailProvider = 'console' | 'resend';
 export type GqlSAdminOutboundEmailPurpose =
     | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
+    | 'BOOKING_EVENT_CALENDAR'
     | 'BOOKING_REQUEST_CANCELED'
     | 'BOOKING_REQUEST_COOK_NOTIFY'
     | 'BOOKING_REQUEST_CREATED'
@@ -3451,6 +3452,7 @@ export interface GqlSCookCallSlotBooking {
     endAt: Scalars['DateTime']['output'];
     initiator: GqlSCookCallSlotBookingActor;
     lastModifiedAt: Scalars['DateTime']['output'];
+    occasion: Scalars['String']['output'];
     startAt: Scalars['DateTime']['output'];
     status: GqlSCookCallSlotBookingStatus;
     userId: Scalars['ID']['output'];
@@ -9611,6 +9613,7 @@ export type GqlSCookCallSlotBookingResolvers<
     endAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     initiator?: Resolver<GqlSResolversTypes['CookCallSlotBookingActor'], ParentType, ContextType>;
     lastModifiedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    occasion?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     startAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['CookCallSlotBookingStatus'], ParentType, ContextType>;
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
@@ -11728,6 +11731,7 @@ export const GqlSAdminOutboundEmailProviderSchema: z.ZodType<'console' | 'resend
 export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
+    | 'BOOKING_EVENT_CALENDAR'
     | 'BOOKING_REQUEST_CANCELED'
     | 'BOOKING_REQUEST_COOK_NOTIFY'
     | 'BOOKING_REQUEST_CREATED'
@@ -11763,6 +11767,7 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     | 'TESTIMONIAL_REMINDER_MORNING_CUSTOMER',
     | 'ACCOUNT_DELETE_CONFIRM'
     | 'AUTH_EMAIL_OTP'
+    | 'BOOKING_EVENT_CALENDAR'
     | 'BOOKING_REQUEST_CANCELED'
     | 'BOOKING_REQUEST_COOK_NOTIFY'
     | 'BOOKING_REQUEST_CREATED'
@@ -11799,6 +11804,7 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
 > = z.enum([
     'ACCOUNT_DELETE_CONFIRM',
     'AUTH_EMAIL_OTP',
+    'BOOKING_EVENT_CALENDAR',
     'BOOKING_REQUEST_CANCELED',
     'BOOKING_REQUEST_COOK_NOTIFY',
     'BOOKING_REQUEST_CREATED',
@@ -12591,7 +12597,7 @@ export function GqlSAdminBookingRequestUpdateSchema(): z.ZodObject<Properties<Gq
         adjustedMessage: z.string().nullish(),
         createdAt: z.date().nullish(),
         dateTime: z.date().nullish(),
-        exactEventAddress: GqlSAdminBookingRequestExactEventAddressInputSchema().nullish(),
+        exactEventAddress: z.lazy(() => GqlSAdminBookingRequestExactEventAddressInputSchema().nullish()),
         expiresAt: z.date().nullish(),
         occasion: z.string().nullish(),
         originalMessage: z.string().nullish(),

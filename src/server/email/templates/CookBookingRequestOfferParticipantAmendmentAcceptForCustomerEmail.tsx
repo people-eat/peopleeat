@@ -12,6 +12,7 @@ interface Props {
     giftCardDeltaCents: number;
     paymentStatus: string;
     pendingDeltaPaymentDue: boolean;
+    venueDisplayText?: string | null;
 }
 
 export function CookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmail({
@@ -25,6 +26,7 @@ export function CookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmai
     giftCardDeltaCents,
     paymentStatus,
     pendingDeltaPaymentDue,
+    venueDisplayText,
 }: Props) {
     const subject = cookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmailSubject(locale);
     const preview = {
@@ -72,10 +74,18 @@ export function CookBookingRequestOfferParticipantAmendmentAcceptForCustomerEmai
     }[locale];
     const ctaOffer = { de: 'Angebot ansehen', en: 'View offer' }[locale];
     const ctaPay = { de: 'Jetzt zahlen', en: 'Pay now' }[locale];
+    const venue = venueDisplayText?.trim();
+    const venueNote = venue
+        ? {
+              de: `Die Adresse hat sich geändert: ${venue}. Bitte aktualisiere sie in deinem Kalender.`,
+              en: `The address has changed: ${venue}. Please update it in your calendar.`,
+          }[locale]
+        : null;
 
     return (
         <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
             <EmailText>{body}</EmailText>
+            {venueNote ? <EmailText>{venueNote}</EmailText> : null}
             {checkoutUrl && (pendingDeltaPaymentDue || paymentStatus === 'EMPTY') ? (
                 <EmailButton href={checkoutUrl}>{ctaPay}</EmailButton>
             ) : (

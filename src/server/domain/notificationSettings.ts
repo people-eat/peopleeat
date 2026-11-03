@@ -114,6 +114,7 @@ function emailDelivery(purpose: OutboundEmailPurpose, audience: NotificationAudi
         case 'CALL_SLOT_BOOKING_CANCEL':
         case 'CALL_SLOT_BOOKING_REMINDER':
         case 'BOOKING_REQUEST_CANCELED':
+        case 'BOOKING_EVENT_CALENDAR':
             return { kind: 'optional', domain: audienceDomain(purpose, audience, 'customerBooking', 'cookOffer') };
         case 'BOOKING_REQUEST_COOK_NOTIFY':
             return { kind: 'optional', domain: 'cookNewRequest' };

@@ -162,7 +162,7 @@ export async function adminCallsFindMany(
                 customerDisplayName: row.customerDisplayName,
                 occasion: row.occasion,
                 callRoom: null,
-                callSlotBooking: toGqlCookCallSlotBooking(row.booking),
+                callSlotBooking: toGqlCookCallSlotBooking(row.booking, undefined, row.occasion),
             });
         }
 
@@ -183,7 +183,7 @@ export async function adminCallsFindMany(
                 customerDisplayName: row.customerDisplayName,
                 occasion: row.occasion,
                 callRoom: null,
-                callSlotBooking: toGqlCookCallSlotBooking(row.booking),
+                callSlotBooking: toGqlCookCallSlotBooking(row.booking, undefined, row.occasion),
             });
         }
 
@@ -213,7 +213,7 @@ export async function adminCallsFindMany(
                 customerDisplayName: row.customerDisplayName,
                 occasion: row.occasion,
                 callRoom: null,
-                callSlotBooking: toGqlCookCallSlotBooking(row.booking),
+                callSlotBooking: toGqlCookCallSlotBooking(row.booking, undefined, row.occasion),
             });
         }
 

@@ -12,6 +12,8 @@ import type {
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { slackNotifyOfferAccept } from '../slack/slackNotifyBooking';
+import { customerReceivedBookingEventCalendar } from '../utils/bookingEventCalendarFile';
+import { bookingEventCalendarRestoredEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/bookingRequestOfferEventTomorrowNotifySchedule';
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
 import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
@@ -110,6 +112,16 @@ export async function cookBookingRequestOfferAccept(
                 actor: 'cook',
             },
         });
+
+        if (row.offer.userAccepted === true) {
+            await bookingEventCalendarRestoredEmailSend(serverRuntime, {
+                bookingRequestId: row.bookingRequest.bookingRequestId,
+                bookingRequestOfferId,
+                customerUserId: row.bookingRequest.userId,
+                cookId,
+                customerHadFile: customerReceivedBookingEventCalendar(row.offer.paymentStatus),
+            });
+        }
 
         return { success: true, referenceId: bookingRequestOfferId };
     } catch (error) {

@@ -1,7 +1,7 @@
 import { and, asc, eq, gte, inArray, lt } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
 
-import { cookCallSlotBookings, users } from '../db/schema';
+import { bookingRequestOffers, bookingRequests, cookCallSlotBookings, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
     GqlSCook,
@@ -43,13 +43,17 @@ export async function cookCallSlotBookingsFindMany(
         }
 
         const rows = await serverRuntime.db
-            .select({ booking: cookCallSlotBookings, customerFirstName: users.firstName })
+            .select({ booking: cookCallSlotBookings, customerFirstName: users.firstName, occasion: bookingRequests.occasion })
             .from(cookCallSlotBookings)
             .innerJoin(users, eq(users.userId, cookCallSlotBookings.userId))
+            .innerJoin(bookingRequestOffers, eq(bookingRequestOffers.bookingRequestOfferId, cookCallSlotBookings.bookingRequestOfferId))
+            .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestOffers.bookingRequestId))
             .where(and(...parts))
             .orderBy(asc(cookCallSlotBookings.startAt));
 
-        return rows.map(({ booking, customerFirstName }) => toGqlCookCallSlotBooking(booking, { display: customerFirstName }));
+        return rows.map(({ booking, customerFirstName, occasion }) =>
+            toGqlCookCallSlotBooking(booking, { display: customerFirstName }, occasion),
+        );
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);
         throw error;

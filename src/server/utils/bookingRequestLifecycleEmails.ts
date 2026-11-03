@@ -15,6 +15,14 @@ import {
     bookingRequestEmailCustomerRequestUrl,
 } from '../email/components/bookingRequestEmailUrls';
 import {
+    BookingEventCalendarDateMovedEmail,
+    bookingEventCalendarDateMovedEmailSubject,
+} from '../email/templates/BookingEventCalendarDateMovedEmail';
+import {
+    BookingEventCalendarRestoredEmail,
+    bookingEventCalendarRestoredEmailSubject,
+} from '../email/templates/BookingEventCalendarRestoredEmail';
+import {
     BookingRequestOfferPaymentFinalizeForCustomerEmail,
     bookingRequestOfferPaymentFinalizeForCustomerEmailSubject,
 } from '../email/templates/BookingRequestOfferPaymentFinalizeForCustomerEmail';
@@ -71,6 +79,7 @@ import {
     userBookingRequestUpdateForCookEmailSubject,
 } from '../email/templates/UserBookingRequestUpdateForCookEmail';
 import { environmentVariables } from '../env/environmentVariablesCreate';
+import { bookingEventCalendarAttachment } from './bookingEventCalendarFile';
 import {
     bookingRequestOfferPaymentConfirmedWhatsAppSend,
     bookingRequestOfferPullPaymentAnnouncementWhatsAppSend,
@@ -223,7 +232,14 @@ export async function userBookingRequestCreateEmailSend(
  */
 export async function userBookingRequestUpdateEmailSend(
     serverRuntime: ServerRuntime,
-    args: { bookingRequestId: string; customerUserId: string; cookIds: string[]; offerIdsByCookId: Map<string, string> },
+    args: {
+        bookingRequestId: string;
+        customerUserId: string;
+        cookIds: string[];
+        offerIdsByCookId: Map<string, string>;
+        /** Cooks who already received an evening calendar file. They are asked to remove the old evening. */
+        cookIdsWithSavedEvent?: readonly string[];
+    },
 ): Promise<void> {
     if (args.cookIds.length === 0) {
         return;
@@ -255,6 +271,7 @@ export async function userBookingRequestUpdateEmailSend(
                             recipientFirstName: cook.firstName,
                             customerFirstName: customer.firstName,
                             offerUrl: bookingRequestEmailCookOfferUrl(webPageUrl, offerId),
+                            dateNoLongerConfirmed: args.cookIdsWithSavedEvent?.includes(cookId) === true,
                         }),
                         purpose: 'BOOKING_REQUEST_UPDATED',
                         locale,
@@ -278,7 +295,14 @@ export async function userBookingRequestUpdateEmailSend(
  */
 export async function userBookingRequestCancelEmailSend(
     serverRuntime: ServerRuntime,
-    args: { bookingRequestId: string; customerUserId: string; cookIds: string[]; reason: string },
+    args: {
+        bookingRequestId: string;
+        customerUserId: string;
+        cookIds: string[];
+        reason: string;
+        /** Present when an evening calendar file was already sent. */
+        savedEvent?: { cookId: string; customerHadFile: boolean };
+    },
 ): Promise<void> {
     const userMap = await usersByIdsFind(serverRuntime, [args.customerUserId, ...args.cookIds]);
     const customer = userMap.get(args.customerUserId);
@@ -303,6 +327,7 @@ export async function userBookingRequestCancelEmailSend(
                             locale: customerLocale,
                             webPageUrl,
                             recipientFirstName: customer.firstName,
+                            removeSavedEvent: args.savedEvent?.customerHadFile === true,
                         }),
                         purpose: 'BOOKING_REQUEST_CANCELED',
                         locale: customerLocale,
@@ -338,6 +363,7 @@ export async function userBookingRequestCancelEmailSend(
                             webPageUrl,
                             recipientFirstName: cook.firstName,
                             reason: args.reason,
+                            removeSavedEvent: args.savedEvent?.cookId === cookId,
                         }),
                         purpose: 'BOOKING_REQUEST_CANCELED',
                         locale: cookLocale,
@@ -503,6 +529,26 @@ export async function userBookingRequestOfferAcceptEmailSend(
 
     const webPageUrl = environmentVariables.webPageUrl;
     const cookLocale = cook.locale;
+    const [request] = await serverRuntime.db
+        .select({
+            occasion: bookingRequests.occasion,
+            dateTime: bookingRequests.dateTime,
+            exactEventAddress: bookingRequests.exactEventAddress,
+        })
+        .from(bookingRequests)
+        .where(eq(bookingRequests.bookingRequestId, args.bookingRequestId))
+        .limit(1);
+    if (!request) {
+        return;
+    }
+    const calendarFile = await bookingEventCalendarAttachment(serverRuntime, {
+        bookingRequestId: args.bookingRequestId,
+        bookingRequestOfferId: args.bookingRequestOfferId,
+        locale: cookLocale,
+        timeZone: cook.timeZone,
+        peerName: customer.firstName,
+        audience: 'cook',
+    });
 
     const tasks: Promise<void>[] = [
         sendUserEmail(
@@ -518,15 +564,20 @@ export async function userBookingRequestOfferAcceptEmailSend(
                     subject: userBookingRequestOfferAcceptForCookEmailSubject(cookLocale),
                     react: UserBookingRequestOfferAcceptForCookEmail({
                         locale: cookLocale,
+                        timeZone: cook.timeZone,
                         webPageUrl,
                         recipientFirstName: cook.firstName,
                         customerFirstName: customer.firstName,
+                        occasion: request.occasion,
+                        startAt: request.dateTime,
+                        venue: request.exactEventAddress.displayText,
                         chatUrl: bookingRequestEmailCookOfferUrl(webPageUrl, args.bookingRequestOfferId, 'chat'),
                     }),
                     purpose: 'BOOKING_REQUEST_OFFER_ACCEPTED',
                     locale: cookLocale,
                     relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
                     userId: cook.userId,
+                    attachments: calendarFile ? [calendarFile] : undefined,
                 }),
         ),
     ];
@@ -623,6 +674,154 @@ export async function userBookingRequestOfferDeclineEmailSend(
 }
 
 /**
+ * Customer already has an evening file, and an admin date change cleared cook acceptance.
+ */
+export async function bookingEventCalendarDateMovedEmailSend(
+    serverRuntime: ServerRuntime,
+    args: { bookingRequestId: string; customerUserId: string },
+): Promise<void> {
+    const userMap = await usersByIdsFind(serverRuntime, [args.customerUserId]);
+    const customer = userMap.get(args.customerUserId);
+    if (!customer) return;
+    const webPageUrl = environmentVariables.webPageUrl;
+    await sendUserEmail(
+        serverRuntime,
+        'bookingEventCalendarDateMovedEmailSend',
+        args.bookingRequestId,
+        customer,
+        'BOOKING_EVENT_CALENDAR',
+        'CUSTOMER',
+        () =>
+            serverRuntime.email.send({
+                to: customer.emailAddress,
+                subject: bookingEventCalendarDateMovedEmailSubject(customer.locale),
+                react: BookingEventCalendarDateMovedEmail({
+                    locale: customer.locale,
+                    webPageUrl,
+                    recipientFirstName: customer.firstName,
+                    requestUrl: bookingRequestEmailCustomerRequestUrl(webPageUrl, args.bookingRequestId),
+                }),
+                purpose: 'BOOKING_EVENT_CALENDAR',
+                locale: customer.locale,
+                relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
+                userId: customer.userId,
+            }),
+    );
+}
+
+/**
+ * Cook accept restored a dual-accepted evening. Sends a fresh calendar file.
+ * The customer receives it only when they already had one.
+ */
+export async function bookingEventCalendarRestoredEmailSend(
+    serverRuntime: ServerRuntime,
+    args: {
+        bookingRequestId: string;
+        bookingRequestOfferId: string;
+        customerUserId: string;
+        cookId: string;
+        customerHadFile: boolean;
+    },
+): Promise<void> {
+    const userMap = await usersByIdsFind(serverRuntime, [args.customerUserId, args.cookId]);
+    const customer = userMap.get(args.customerUserId);
+    const cook = userMap.get(args.cookId);
+    if (!customer || !cook) return;
+
+    const [request] = await serverRuntime.db
+        .select({ occasion: bookingRequests.occasion, dateTime: bookingRequests.dateTime })
+        .from(bookingRequests)
+        .where(eq(bookingRequests.bookingRequestId, args.bookingRequestId))
+        .limit(1);
+    if (!request) return;
+
+    const webPageUrl = environmentVariables.webPageUrl;
+    const tasks: Promise<void>[] = [
+        (async () => {
+            const calendarFile = await bookingEventCalendarAttachment(serverRuntime, {
+                bookingRequestId: args.bookingRequestId,
+                bookingRequestOfferId: args.bookingRequestOfferId,
+                locale: cook.locale,
+                timeZone: cook.timeZone,
+                peerName: customer.firstName,
+                audience: 'cook',
+            });
+            await sendUserEmail(
+                serverRuntime,
+                'bookingEventCalendarRestoredEmailSend.cook',
+                args.bookingRequestOfferId,
+                cook,
+                'BOOKING_EVENT_CALENDAR',
+                'COOK',
+                () =>
+                    serverRuntime.email.send({
+                        to: cook.emailAddress,
+                        subject: bookingEventCalendarRestoredEmailSubject(cook.locale),
+                        react: BookingEventCalendarRestoredEmail({
+                            locale: cook.locale,
+                            timeZone: cook.timeZone,
+                            webPageUrl,
+                            recipientFirstName: cook.firstName,
+                            occasion: request.occasion,
+                            startAt: request.dateTime,
+                            bookingUrl: bookingRequestEmailCookOfferUrl(webPageUrl, args.bookingRequestOfferId, 'offer'),
+                        }),
+                        purpose: 'BOOKING_EVENT_CALENDAR',
+                        locale: cook.locale,
+                        relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
+                        userId: cook.userId,
+                        attachments: calendarFile ? [calendarFile] : undefined,
+                    }),
+            );
+        })(),
+    ];
+
+    if (args.customerHadFile) {
+        tasks.push(
+            (async () => {
+                const calendarFile = await bookingEventCalendarAttachment(serverRuntime, {
+                    bookingRequestId: args.bookingRequestId,
+                    bookingRequestOfferId: args.bookingRequestOfferId,
+                    locale: customer.locale,
+                    timeZone: customer.timeZone,
+                    peerName: cook.firstName,
+                    audience: 'customer',
+                });
+                await sendUserEmail(
+                    serverRuntime,
+                    'bookingEventCalendarRestoredEmailSend.customer',
+                    args.bookingRequestOfferId,
+                    customer,
+                    'BOOKING_EVENT_CALENDAR',
+                    'CUSTOMER',
+                    () =>
+                        serverRuntime.email.send({
+                            to: customer.emailAddress,
+                            subject: bookingEventCalendarRestoredEmailSubject(customer.locale),
+                            react: BookingEventCalendarRestoredEmail({
+                                locale: customer.locale,
+                                timeZone: customer.timeZone,
+                                webPageUrl,
+                                recipientFirstName: customer.firstName,
+                                occasion: request.occasion,
+                                startAt: request.dateTime,
+                                bookingUrl: bookingRequestEmailCustomerRequestUrl(webPageUrl, args.bookingRequestId),
+                            }),
+                            purpose: 'BOOKING_EVENT_CALENDAR',
+                            locale: customer.locale,
+                            relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
+                            userId: customer.userId,
+                            attachments: calendarFile ? [calendarFile] : undefined,
+                        }),
+                );
+            })(),
+        );
+    }
+
+    await Promise.all(tasks);
+}
+
+/**
  * Customer booking confirmation after payment advances (SETUP / PAYED) or €0 accept.
  */
 export async function bookingRequestOfferPaymentConfirmedEmailSend(
@@ -641,6 +840,22 @@ export async function bookingRequestOfferPaymentConfirmedEmailSend(
 
     const locale = customer.locale;
     const webPageUrl = environmentVariables.webPageUrl;
+    const [request] = await serverRuntime.db
+        .select({ dateTime: bookingRequests.dateTime })
+        .from(bookingRequests)
+        .where(eq(bookingRequests.bookingRequestId, args.bookingRequest.bookingRequestId))
+        .limit(1);
+    if (!request) {
+        return;
+    }
+    const calendarFile = await bookingEventCalendarAttachment(serverRuntime, {
+        bookingRequestId: args.bookingRequest.bookingRequestId,
+        bookingRequestOfferId: args.offer.bookingRequestOfferId,
+        locale,
+        timeZone: customer.timeZone,
+        peerName: cook.firstName,
+        audience: 'customer',
+    });
 
     await Promise.all([
         sendUserEmail(
@@ -656,9 +871,11 @@ export async function bookingRequestOfferPaymentConfirmedEmailSend(
                     subject: bookingRequestOfferPaymentFinalizeForCustomerEmailSubject(locale),
                     react: BookingRequestOfferPaymentFinalizeForCustomerEmail({
                         locale,
+                        timeZone: customer.timeZone,
                         webPageUrl,
                         recipientFirstName: customer.firstName,
                         cookFirstName: cook.firstName,
+                        startAt: request.dateTime,
                         bookingRequestId: args.bookingRequest.bookingRequestId,
                         chatUrl: bookingRequestEmailCustomerOfferUrl(
                             webPageUrl,
@@ -671,6 +888,7 @@ export async function bookingRequestOfferPaymentConfirmedEmailSend(
                     locale,
                     relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
                     userId: customer.userId,
+                    attachments: calendarFile ? [calendarFile] : undefined,
                 }),
         ),
         bookingRequestOfferPaymentConfirmedWhatsAppSend(serverRuntime, {
@@ -791,6 +1009,7 @@ export async function bookingRequestOfferParticipantAmendmentAcceptEmailSend(
         giftCardDeltaCents: number;
         paymentStatus: string;
         pendingDeltaPaymentDue: boolean;
+        venueDisplayText?: string | null;
     },
 ): Promise<void> {
     const locale = args.customer.locale;
@@ -823,6 +1042,7 @@ export async function bookingRequestOfferParticipantAmendmentAcceptEmailSend(
                     giftCardDeltaCents: args.giftCardDeltaCents,
                     paymentStatus: args.paymentStatus,
                     pendingDeltaPaymentDue: args.pendingDeltaPaymentDue,
+                    venueDisplayText: args.venueDisplayText,
                 }),
                 purpose: 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED',
                 locale,

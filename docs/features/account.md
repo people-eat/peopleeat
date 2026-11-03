@@ -15,8 +15,8 @@ On the account page, settings sit in cards:
 - **How we reach you**: the email address (also the address used to sign in; change it via OTP to the new address) and the phone number
   (country code required, saved with `userUpdate`). Preferred communication (message, WhatsApp, call, email) is how the concierge reaches
   you, not which automatic messages are sent. Switch language and time zone.
-- **Sign-in and security**: list, add, and remove passkeys. Enable, confirm, and disable authenticator-app two-factor (QR + recovery codes). List
-  signed-in devices by browser and device. Signing out another device, signing out here, or signing out everywhere else each asks for
+- **Sign-in and security**: list, add, and remove passkeys. Enable, confirm, and disable authenticator-app two-factor (QR + recovery codes).
+  List signed-in devices by browser and device. Signing out another device, signing out here, or signing out everywhere else each asks for
   confirmation first. The confirm button is destructive. Everywhere-else sits before sign-out-here, both at the end of the card. Add-passkey
   sits at the end of its section.
 - **Notifications**: email and WhatsApp on or off per topic. Cook topics appear only when the account has a cook profile. Sign-in codes,

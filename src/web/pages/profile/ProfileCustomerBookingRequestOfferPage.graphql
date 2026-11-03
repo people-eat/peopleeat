@@ -11,9 +11,12 @@ fragment ProfileCustomerBookingRequestOfferPageUser on User {
     }
     bookingRequest(bookingRequestId: $bookingRequestId) {
         bookingRequestId
+        status
+        canceledAt
         occasion
         dateTime
         exactEventAddress {
+            displayText
             addressLine1
             addressLine2
             city

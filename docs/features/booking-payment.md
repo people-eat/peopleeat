@@ -7,9 +7,9 @@ After dual acceptance, the customer pays (or completes a €0 path); later an ad
 1. When customer and cook both accept an offer, the customer is guided to a **dedicated checkout** page for that offer (invoice address +
    card / setup flow). Gift cards and promo codes fold into the customer total when applied.
 2. **€0** totals (fully covered by credit) skip card collection and still confirm the booking.
-3. After successful payment (or €0 accept), the customer receives a confirmation email. Accept also emails the chosen cook and notifies
-   sibling cooks who were not chosen. The chosen cook can read the checkout **invoice address** on the offer Request tab (for their own
-   invoicing).
+3. After successful payment (or €0 accept), the customer receives a confirmation email with an evening calendar file. Accept also emails the
+   chosen cook (same file) and notifies sibling cooks who were not chosen (no file). The chosen cook can read the checkout **invoice
+   address** on the offer Request tab (for their own invoicing).
 4. For pull/charge-later paths, the customer receives an announcement email before the card is charged. If the customer only completes
    SetupIntent checkout **after** `plannedPaymentPullDateTime`, checkout / offer copy warns that the card is charged right after saving
    details (the pull job is enqueued with a past `startAfter` and runs ASAP). Admin Costs shows the same overdue note next to the planned
@@ -70,7 +70,9 @@ finalize via client `giftCardPay` (not the booking webhook path).
   `BookingRequestOfferPullPaymentAnnouncementForCustomerEmail`)
 - Admin: `bookingRequestOfferPayoutRelease` / `bookingRequestOfferPayoutAlreadyTookPlaceCheck` / `bookingRequestOfferPayoutMarkOutOfSystem`
   (due queue on `/admin`)
-- Lifecycle emails: accept (+ not-chosen) / payment confirm / pull announcement — `src/server/utils/bookingRequestLifecycleEmails.ts`
+- Lifecycle emails: accept (+ not-chosen) / payment confirm / pull announcement — `src/server/utils/bookingRequestLifecycleEmails.ts`.
+  Evening file: `bookingEventCalendarAttachment` (`BOOKING_EVENT_CALENDAR` for date-moved and restored-accept follow-ups). Copy shared with
+  the page via `src/shared/calendarEventContent.ts`.
 
 ### Key files
 

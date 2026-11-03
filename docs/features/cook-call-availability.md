@@ -7,7 +7,8 @@ Cooks define when they can take discovery calls and manage pending and confirmed
 Signed-in cooks manage discovery-call availability on `/profile/calls`:
 
 1. **Scheduled calls** — pending and confirmed bookings across offers at the top (customer name, time, status). Confirm or decline incoming
-   requests, withdraw suggestions, cancel confirmed appointments, download calendar files, or open the offer Call tab when joinable.
+   requests, withdraw suggestions, cancel confirmed appointments, add a confirmed call to the calendar, or open the offer Call tab when
+   joinable.
 2. **Enable + duration** — toggle call scheduling (AlertDialog explains enable/disable, then confirm → mutate) and pick 15 / 30 / 45 / 60
    minutes (dropdown saves immediately with a toast). No batch Save.
 3. **Weekly time windows** — up to **3** recurring windows (day of week; minutes after midnight, inclusive start / exclusive end). Create,

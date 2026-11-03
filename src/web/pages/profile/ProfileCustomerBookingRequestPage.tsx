@@ -24,6 +24,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/base/popover';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Textarea } from '../../components/base/textarea';
+import { BookingEventCalendarLink } from '../../components/BookingEventCalendarLink';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
 import { BookingRequestOfferParticipantAmendmentCustomerPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
@@ -42,6 +43,7 @@ import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { cn } from '../../utils/cn';
+import { localePath } from '../../utils/locale';
 
 export const profileCustomerBookingRequestPageTitle = {
     de: 'Buchungsanfrage',
@@ -119,6 +121,11 @@ export function ProfileCustomerBookingRequestPage({
     const canEdit = canUpdate || canAmendParticipants;
     const canEditDiscount = canUpdate;
     const offers = request.offers;
+    const calendarOffer = request.canceledAt
+        ? null
+        : (offers.find(
+              (offer) => offer.status === 'PAYMENT_PULL_PENDING' || offer.status === 'EVENT_PENDING' || offer.status === 'COMPLETED',
+          ) ?? null);
     const supportRequest = request.supportRequest ?? null;
     const showFooter = canEdit || canCancel;
     const pendingAmendment = pendingAmendmentOffer?.participantAmendment ?? null;
@@ -320,7 +327,24 @@ export function ProfileCustomerBookingRequestPage({
                         ) : null}
                         <DetailField
                             label={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
-                            value={formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}
+                            value={
+                                <span className="grid gap-1">
+                                    <span>{formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}</span>
+                                    {calendarOffer ? (
+                                        <BookingEventCalendarLink
+                                            locale={locale}
+                                            timeZone={timeZone}
+                                            occasion={request.occasion}
+                                            peerName={calendarOffer.cook.user.display}
+                                            guestCount={request.participants.length}
+                                            start={request.dateTime}
+                                            location={exactAddress}
+                                            bookingPath={localePath(locale, `/profile/booking-requests/${bookingRequestId}`)}
+                                            bookingRequestId={bookingRequestId}
+                                        />
+                                    ) : null}
+                                </span>
+                            }
                         />
                         <DetailField
                             label={{ de: 'Präferenzen', en: 'Preferences' }[locale]}

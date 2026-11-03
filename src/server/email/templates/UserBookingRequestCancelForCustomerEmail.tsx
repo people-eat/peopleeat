@@ -5,12 +5,14 @@ interface UserBookingRequestCancelForCustomerEmailProps {
     locale: Locale;
     webPageUrl: string;
     recipientFirstName?: string;
+    removeSavedEvent?: boolean;
 }
 
 export function UserBookingRequestCancelForCustomerEmail({
     locale,
     webPageUrl,
     recipientFirstName,
+    removeSavedEvent = false,
 }: UserBookingRequestCancelForCustomerEmailProps) {
     const subject = userBookingRequestCancelForCustomerEmailSubject(locale);
     const preview = {
@@ -25,10 +27,15 @@ export function UserBookingRequestCancelForCustomerEmail({
         de: 'Alles Gute und bis bald!',
         en: 'All the best, see you soon!',
     }[locale];
+    const calendarRemoval = {
+        de: 'Falls du den Abend gespeichert hast, nimm ihn bitte aus dem Kalender.',
+        en: 'If you saved the evening, please remove it from your calendar.',
+    }[locale];
 
     return (
         <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
             <EmailText>{body}</EmailText>
+            {removeSavedEvent ? <EmailText>{calendarRemoval}</EmailText> : null}
             <EmailText>{closing}</EmailText>
         </EmailLayout>
     );

@@ -51,6 +51,12 @@ export function BookingRequestOfferCallSlotCancelBody({
         de: 'Du kannst gerne einen neuen Termin vereinbaren.',
         en: 'Feel free to schedule a new time.',
     }[locale];
+    const calendarRemoval = wasConfirmed
+        ? {
+              de: 'Falls du den Termin gespeichert hast, nimm ihn bitte aus dem Kalender.',
+              en: 'If you saved this, please remove it from your calendar.',
+          }[locale]
+        : undefined;
     const linkLabel = {
         de: 'Zum Angebot',
         en: 'Open the offer',
@@ -63,6 +69,7 @@ export function BookingRequestOfferCallSlotCancelBody({
             <EmailText>{callTime}</EmailText>
             {reasonLine ? <EmailText>{reasonLine}</EmailText> : null}
             <EmailText>{nextStep}</EmailText>
+            {calendarRemoval ? <EmailText>{calendarRemoval}</EmailText> : null}
             <EmailButton href={offerUrl}>{linkLabel}</EmailButton>
         </EmailLayout>
     );

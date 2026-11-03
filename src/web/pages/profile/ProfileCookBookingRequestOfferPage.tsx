@@ -10,6 +10,7 @@ import {
     bookingRequestPaidParticipants,
     formatCountryName,
     formatCurrency,
+    formatDateTime,
     userDisplayName,
 } from '../../../shared';
 import { bookingRequestOfferStatusHue, bookingRequestOfferStatusLabel } from '../../../shared/bookingRequestOfferStatus';
@@ -29,6 +30,7 @@ import { NotificationBadge } from '../../components/base/notification-badge';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { Textarea } from '../../components/base/textarea';
+import { BookingEventCalendarLink } from '../../components/BookingEventCalendarLink';
 import { BookingRequestOfferAttentionBanner } from '../../components/BookingRequestOfferAttentionBanner';
 import { BookingRequestOfferCallControls } from '../../components/BookingRequestOfferCallPanel';
 import { BookingRequestOfferCallSessionProvider } from '../../components/BookingRequestOfferCallSession';
@@ -74,6 +76,7 @@ import {
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
+import { localePath } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
 import { cookStubRouteBySlug } from './cookCatalog';
 
@@ -250,6 +253,7 @@ export function ProfileCookBookingRequestOfferPage({
     }
 
     async function onAcceptParticipantAmendment() {
+        const venue = offer?.participantAmendment?.exactEventAddress?.displayText.trim() ?? '';
         const result = await acceptParticipantAmendment({ bookingRequestOfferId });
         if (result.error || !result.data?.user.cook?.bookingRequestOfferParticipantAmendmentAccept.success) {
             toast.error(
@@ -261,10 +265,15 @@ export function ProfileCookBookingRequestOfferPage({
             return;
         }
         toast.success(
-            {
-                de: 'Teilnehmeränderung angenommen.',
-                en: 'Participant change accepted.',
-            }[locale],
+            venue
+                ? {
+                      de: `Die Adresse hat sich geändert: ${venue}. Bitte aktualisiere sie in deinem Kalender.`,
+                      en: `The address has changed: ${venue}. Please update it in your calendar.`,
+                  }[locale]
+                : {
+                      de: 'Teilnehmeränderung angenommen.',
+                      en: 'Participant change accepted.',
+                  }[locale],
         );
     }
 
@@ -636,6 +645,8 @@ export function ProfileCookBookingRequestOfferPage({
                                 callSchedulingEnabled={cook.callSchedulingEnabled}
                                 callDurationMinutes={cook.callDurationMinutes}
                                 peerDisplayName={request.user.display}
+                                occasion={request.occasion}
+                                bookingRequestId={request.bookingRequestId}
                                 requestDocument={ProfileCookBookingRequestOfferCallSlotRequestDocument}
                                 confirmDocument={ProfileCookBookingRequestOfferCallSlotConfirmDocument}
                                 declineDocument={ProfileCookBookingRequestOfferCallSlotDeclineDocument}
@@ -751,9 +762,28 @@ function OfferTabPanel({
         ? { de: 'Menüvorschlag ändern', en: 'Suggest another menu' }[locale]
         : { de: 'Menü vorschlagen', en: 'Suggest a menu' }[locale];
     const canReAccept = offer.status === 'COOK_NEEDS_TO_ACCEPT';
+    const timeZone = useTimeZone();
+    const request = offer.bookingRequest;
+    const showEventCalendar = offer.userAccepted === true && offer.cookAccepted === true && request.status !== 'CANCELED';
 
     return (
         <div className="grid w-full min-w-0 gap-16">
+            {showEventCalendar ? (
+                <p className="grid gap-1 text-sm text-foreground">
+                    <span>{formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}</span>
+                    <BookingEventCalendarLink
+                        locale={locale}
+                        timeZone={timeZone}
+                        occasion={request.occasion}
+                        peerName={request.user.display}
+                        guestCount={request.participants.length}
+                        start={request.dateTime}
+                        location={request.exactEventAddress.displayText}
+                        bookingPath={localePath(locale, `/profile/booking-request-offers/${bookingRequestOfferId}?tab=offer`)}
+                        bookingRequestId={request.bookingRequestId}
+                    />
+                </p>
+            ) : null}
             <BookingRequestOfferParticipantAmendmentCookPanel
                 locale={locale}
                 amendment={offer.participantAmendment}
@@ -940,6 +970,21 @@ function RequestTabPanel({
             estimatedTravelDistanceKm={offer.travelDistanceKm}
             estimatedTravelExpensesCents={offer.travelExpensesCents}
             invoiceAddress={revealExactAddress ? (request.invoiceAddress ?? null) : null}
+            dateTimeAction={
+                revealExactAddress && request.status !== 'CANCELED' ? (
+                    <BookingEventCalendarLink
+                        locale={locale}
+                        timeZone={timeZone}
+                        occasion={request.occasion}
+                        peerName={request.user.display}
+                        guestCount={request.participants.length}
+                        start={request.dateTime}
+                        location={eventLocation}
+                        bookingPath={localePath(locale, `/profile/booking-request-offers/${offer.bookingRequestOfferId}?tab=offer`)}
+                        bookingRequestId={request.bookingRequestId}
+                    />
+                ) : undefined
+            }
         />
     );
 }

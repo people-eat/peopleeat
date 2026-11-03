@@ -6,6 +6,7 @@ interface UserBookingRequestCancelForCookEmailProps {
     webPageUrl: string;
     recipientFirstName?: string;
     reason?: string | null;
+    removeSavedEvent?: boolean;
 }
 
 export function UserBookingRequestCancelForCookEmail({
@@ -13,6 +14,7 @@ export function UserBookingRequestCancelForCookEmail({
     webPageUrl,
     recipientFirstName,
     reason,
+    removeSavedEvent = false,
 }: UserBookingRequestCancelForCookEmailProps) {
     const subject = userBookingRequestCancelForCookEmailSubject(locale);
     const preview = {
@@ -29,6 +31,10 @@ export function UserBookingRequestCancelForCookEmail({
         en: "Keep an eye on the booking request pool so you don't miss new opportunities. We'll also email you about new requests in your area.",
     }[locale];
     const trimmedReason = reason?.trim() || null;
+    const calendarRemoval = {
+        de: 'Falls du den Abend gespeichert hast, nimm ihn bitte aus dem Kalender.',
+        en: 'If you saved the evening, please remove it from your calendar.',
+    }[locale];
 
     return (
         <EmailLayout locale={locale} webPageUrl={webPageUrl} preview={preview} subject={subject} recipientFirstName={recipientFirstName}>
@@ -38,6 +44,7 @@ export function UserBookingRequestCancelForCookEmail({
                     {reasonLabel}: {trimmedReason}
                 </EmailText>
             ) : null}
+            {removeSavedEvent ? <EmailText>{calendarRemoval}</EmailText> : null}
             <EmailText>{closing}</EmailText>
         </EmailLayout>
     );
