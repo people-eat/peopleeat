@@ -33,7 +33,7 @@
         "email:dev": "email dev --dir src/server/email/previews --port 3030",
         "email:build": "email build --dir src/server/email/previews",
         "email:start": "email start",
-        "type:check": "npm exec tsc -- --noEmit",
+        "type:check": "NODE_OPTIONS=--max-old-space-size=4096 npm exec tsc -- --noEmit",
         "usage:check": "knip",
         "prepare": "husky",
         "whatsapp:templates": "tsx scripts/whatsappTemplatesSync.ts"
