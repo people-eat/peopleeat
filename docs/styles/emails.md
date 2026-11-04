@@ -79,8 +79,15 @@ CDN. Clients that strip remote fonts (notably Gmail web) fall back to Helvetica.
 ## Colors
 
 Use the hex values in `components/emailStyles.ts` — they mirror [`theme.md`](./theme.md) (`text` `#040316`, page canvas `#fffdf9`, white
-content surface, primary `#404040`). Do not invent a second email palette. Inline styles are required here; Tailwind tokens do not survive
-email clients.
+content surface, primary `#404040`, border `#e5e7eb`). Do not invent a second email palette. Inline styles are required here; Tailwind
+tokens do not survive email clients.
+
+`#ffffff` on `#fffdf9` is nearly the same color, so from 600px up the content column is a card: `1px solid` `emailColors.border`, `12px`
+radius (same as site `rounded-xl` cards). The page canvas shows as a gutter around it (`16px` vertical, `12px` horizontal on
+`emailStyles.canvas`). Below 600px, `emailNarrowLayoutCss` (a `<style>` block in `EmailLayout`) removes the border, the radius, and that
+gutter so the white surface runs edge to edge. The query uses `!important` because the desktop values are inline. Outlook on Windows ignores
+media queries and keeps the card. Copy padding inside the column (`40px 24px 32px`) stays at every width. A drop shadow is not the
+separator: Outlook drops it. The border is.
 
 ## Assets
 

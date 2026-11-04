@@ -1,7 +1,8 @@
 import type { PropsWithChildren } from 'react';
-import { Body, Container, Head, Html } from 'react-email';
+import { Body, Head, Html } from 'react-email';
 
 import type { Locale } from '../../../shared/locale';
+import { EmailNarrowLayoutStyle, EmailShell } from '../components/EmailShell';
 import { EMAIL_PREVIEW_WEB_PAGE_URL, emailStyles } from '../components/emailStyles';
 
 /**
@@ -53,9 +54,10 @@ export function EmailComponentPreview({ locale, children }: PropsWithChildren<{ 
         <Html lang={locale}>
             <Head>
                 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap" rel="stylesheet" />
+                <EmailNarrowLayoutStyle />
             </Head>
             <Body style={emailStyles.body}>
-                <Container style={emailStyles.container}>{children}</Container>
+                <EmailShell>{children}</EmailShell>
             </Body>
         </Html>
     );

@@ -24,6 +24,26 @@ const emailFontSans = "'DM Sans', ui-sans-serif, system-ui, -apple-system, Robot
 
 const emailFontSerif = emailFontSans;
 
+export const emailClassNames = {
+    canvas: 'email-canvas',
+    card: 'email-card',
+} as const;
+
+// Inline styles beat a stylesheet unless the override is !important. Outlook on
+// Windows ignores this query and keeps the desktop card, which is what we want
+// there. Phone clients that honor media queries drop the border and gutter.
+export const emailNarrowLayoutCss = `
+@media only screen and (max-width: 600px) {
+  .${emailClassNames.canvas} {
+    padding: 0 !important;
+  }
+  .${emailClassNames.card} {
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+}
+`.trim();
+
 export const emailStyles = {
     body: {
         margin: '0',
@@ -35,11 +55,19 @@ export const emailStyles = {
         lineHeight: '1.5',
         WebkitFontSmoothing: 'antialiased',
     } satisfies CSSProperties,
+    // Gutter around the card. `#ffffff` on `#fffdf9` needs the gap so the
+    // border reads. `emailNarrowLayoutCss` removes it below 600px.
+    canvas: {
+        padding: '16px 12px',
+        backgroundColor: emailColors.page,
+    } satisfies CSSProperties,
     container: {
         margin: '0 auto',
         padding: '40px 24px 32px',
         maxWidth: '560px',
         backgroundColor: emailColors.background,
+        border: `1px solid ${emailColors.border}`,
+        borderRadius: '12px',
     } satisfies CSSProperties,
     header: {
         textAlign: 'center',
