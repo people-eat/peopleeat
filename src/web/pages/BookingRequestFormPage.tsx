@@ -908,71 +908,73 @@ export function BookingRequestFormPage({
                                 <div className="grid gap-8">
                                     <form.Field name="priceClassType">
                                         {(field) => (
-                                            <div className="grid gap-4 lg:grid-cols-3">
-                                                {bookingRequestPriceClassTypes.map((priceClass) => {
-                                                    const info = bookingRequestPriceClassInfo(priceClass, locale);
-                                                    const selected = field.state.value === priceClass;
-                                                    return (
-                                                        <Card
-                                                            key={priceClass}
-                                                            className={
-                                                                selected
-                                                                    ? 'h-full justify-between border-primary shadow-md'
-                                                                    : 'h-full justify-between border-border'
-                                                            }
-                                                        >
-                                                            <CardHeader>
-                                                                <div className="flex items-center justify-between gap-2">
-                                                                    <CardTitle className="text-xl">{info.title}</CardTitle>
-                                                                    {info.isPopular ? (
-                                                                        <Badge className="border-green-300 bg-green-100 text-foreground">
-                                                                            {{ de: 'Populär', en: 'Popular' }[locale]}
-                                                                        </Badge>
-                                                                    ) : null}
-                                                                </div>
-                                                                <p className="text-sm text-muted-foreground">{info.description}</p>
-                                                            </CardHeader>
-                                                            <CardContent className="grid flex-1 content-start gap-2">
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {
+                                            <div className="@container w-full min-w-0">
+                                                <div className="grid gap-4 @3xl:grid-cols-3">
+                                                    {bookingRequestPriceClassTypes.map((priceClass) => {
+                                                        const info = bookingRequestPriceClassInfo(priceClass, locale);
+                                                        const selected = field.state.value === priceClass;
+                                                        return (
+                                                            <Card
+                                                                key={priceClass}
+                                                                className={
+                                                                    selected
+                                                                        ? 'h-full justify-between border-primary shadow-md'
+                                                                        : 'h-full justify-between border-border'
+                                                                }
+                                                            >
+                                                                <CardHeader>
+                                                                    <div className="flex items-center justify-between gap-2">
+                                                                        <CardTitle className="text-xl">{info.title}</CardTitle>
+                                                                        {info.isPopular ? (
+                                                                            <Badge className="border-green-300 bg-green-100 text-foreground">
+                                                                                {{ de: 'Populär', en: 'Popular' }[locale]}
+                                                                            </Badge>
+                                                                        ) : null}
+                                                                    </div>
+                                                                    <p className="text-sm text-muted-foreground">{info.description}</p>
+                                                                </CardHeader>
+                                                                <CardContent className="grid flex-1 content-start gap-2">
+                                                                    <p className="text-sm text-muted-foreground">
                                                                         {
-                                                                            de: 'Häufig gebucht für',
-                                                                            en: 'Frequently booked for',
-                                                                        }[locale]
-                                                                    }
-                                                                </p>
-                                                                <div className="flex flex-wrap items-start gap-2">
-                                                                    {info.commonOccasions.map((occasion) => (
-                                                                        <Badge key={occasion} variant="outline">
-                                                                            {occasion}
-                                                                        </Badge>
-                                                                    ))}
-                                                                </div>
-                                                            </CardContent>
-                                                            <CardFooter className="mt-auto flex flex-col items-stretch gap-4">
-                                                                <p className="text-center">
-                                                                    <span className="text-2xl font-semibold">
-                                                                        {{ de: 'ab', en: 'starting at' }[locale]}{' '}
-                                                                        {formatCurrency(info.minimumAmountPerPersonCents, { locale })}
-                                                                    </span>{' '}
-                                                                    <span className="text-sm text-muted-foreground">
-                                                                        {{ de: 'pro Person', en: 'per person' }[locale]}
-                                                                    </span>
-                                                                </p>
-                                                                <Button
-                                                                    type="button"
-                                                                    variant={selected ? 'default' : 'outline'}
-                                                                    disabled={busy}
-                                                                    onClick={() => field.handleChange(priceClass)}
-                                                                >
-                                                                    {selected
-                                                                        ? { de: 'Ausgewählt', en: 'Selected' }[locale]
-                                                                        : { de: 'Auswählen', en: 'Select' }[locale]}
-                                                                </Button>
-                                                            </CardFooter>
-                                                        </Card>
-                                                    );
-                                                })}
+                                                                            {
+                                                                                de: 'Häufig gebucht für',
+                                                                                en: 'Frequently booked for',
+                                                                            }[locale]
+                                                                        }
+                                                                    </p>
+                                                                    <div className="flex flex-wrap items-start gap-2">
+                                                                        {info.commonOccasions.map((occasion) => (
+                                                                            <Badge key={occasion} variant="outline">
+                                                                                {occasion}
+                                                                            </Badge>
+                                                                        ))}
+                                                                    </div>
+                                                                </CardContent>
+                                                                <CardFooter className="mt-auto flex flex-col items-stretch gap-4">
+                                                                    <p className="text-center">
+                                                                        <span className="text-2xl font-semibold">
+                                                                            {{ de: 'ab', en: 'starting at' }[locale]}{' '}
+                                                                            {formatCurrency(info.minimumAmountPerPersonCents, { locale })}
+                                                                        </span>{' '}
+                                                                        <span className="text-sm text-muted-foreground">
+                                                                            {{ de: 'pro Person', en: 'per person' }[locale]}
+                                                                        </span>
+                                                                    </p>
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant={selected ? 'default' : 'outline'}
+                                                                        disabled={busy}
+                                                                        onClick={() => field.handleChange(priceClass)}
+                                                                    >
+                                                                        {selected
+                                                                            ? { de: 'Ausgewählt', en: 'Selected' }[locale]
+                                                                            : { de: 'Auswählen', en: 'Select' }[locale]}
+                                                                    </Button>
+                                                                </CardFooter>
+                                                            </Card>
+                                                        );
+                                                    })}
+                                                </div>
                                             </div>
                                         )}
                                     </form.Field>

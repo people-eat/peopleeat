@@ -1115,87 +1115,6 @@ export function BookingRequestPlanPage({
                     <div className="grid gap-10">
                         {step === 'details' ? (
                             <>
-                                <div className="grid gap-3">
-                                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                                        <p className="min-w-0 font-serif text-3xl font-light @md:text-4xl">
-                                            {{ de: 'Wählt euren Dinner Abend', en: 'Choose your dinner evening' }[locale]}
-                                        </p>
-                                        <p className="shrink-0 text-sm text-muted-foreground">{dateChipRangeLabel}</p>
-                                    </div>
-                                    {useDateChips ? (
-                                        <div className="grid grid-cols-3 gap-3 @md:grid-cols-4 @2xl:grid-cols-6">
-                                            {selectableDays.map((day, index) => {
-                                                const key = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
-                                                const selected = key === selectedDayKey;
-                                                const languageTag = locale === 'de' ? 'de-DE' : 'en-US';
-                                                const weekday = new Intl.DateTimeFormat(languageTag, {
-                                                    weekday: 'short',
-                                                }).format(day);
-                                                const weekdayWithDot = weekday.endsWith('.') ? weekday : `${weekday}.`;
-                                                const month = new Intl.DateTimeFormat(languageTag, {
-                                                    month: 'short',
-                                                }).format(day);
-                                                const partnerStayLabel = search.partnerId
-                                                    ? index === 0
-                                                        ? { de: 'Anreise', en: 'Arrival' }[locale]
-                                                        : index === selectableDays.length - 1
-                                                          ? { de: 'Abreise', en: 'Departure' }[locale]
-                                                          : null
-                                                    : null;
-                                                const footLabel = partnerStayLabel ?? month;
-                                                return (
-                                                    <button
-                                                        key={key}
-                                                        type="button"
-                                                        onClick={() => selectDay(day)}
-                                                        aria-pressed={selected}
-                                                        className={cn(
-                                                            'flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-xl border',
-                                                            selectionControlClassName,
-                                                            selectionSurfaceClassName(selected),
-                                                        )}
-                                                    >
-                                                        <span className="text-xs leading-none opacity-80">{weekdayWithDot}</span>
-                                                        <span className="text-2xl font-medium tabular-nums leading-none">
-                                                            {day.getDate()}
-                                                        </span>
-                                                        <span className="text-xs leading-none opacity-80">{footLabel}</span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    ) : (
-                                        <DatePicker
-                                            value={values.dateTime}
-                                            onValueChange={(date) => {
-                                                if (!date) return;
-                                                selectDay(date);
-                                            }}
-                                            placeholder={{ de: 'Datum wählen', en: 'Choose a date' }[locale]}
-                                            locale={locale === 'de' ? dateFnsDe : dateFnsEn}
-                                            startMonth={datePickerStartMonth}
-                                            endMonth={datePickerEndMonth}
-                                            disabled={(date) => {
-                                                const startOfToday = new Date();
-                                                startOfToday.setHours(0, 0, 0, 0);
-                                                if (date.getTime() < startOfToday.getTime()) return true;
-                                                if (bounds.minDateTime) {
-                                                    const minDay = new Date(bounds.minDateTime);
-                                                    minDay.setHours(0, 0, 0, 0);
-                                                    if (date.getTime() < minDay.getTime()) return true;
-                                                }
-                                                if (bounds.maxDateTime) {
-                                                    const maxDay = new Date(bounds.maxDateTime);
-                                                    maxDay.setHours(23, 59, 59, 999);
-                                                    if (date.getTime() > maxDay.getTime()) return true;
-                                                }
-                                                return false;
-                                            }}
-                                            className="w-full max-w-xs"
-                                        />
-                                    )}
-                                </div>
-
                                 <div className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-xs @3xl:grid @3xl:grid-cols-2 @3xl:items-stretch">
                                     <div className="group relative aspect-video overflow-hidden @3xl:aspect-auto @3xl:h-full @3xl:min-h-72">
                                         <AppImage
@@ -1283,6 +1202,87 @@ export function BookingRequestPlanPage({
                                     </div>
                                 </div>
 
+                                <div className="grid gap-3">
+                                    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                                        <p className="min-w-0 font-serif text-3xl font-light @md:text-4xl">
+                                            {{ de: 'Wählt euren Dinner Abend', en: 'Choose your dinner evening' }[locale]}
+                                        </p>
+                                        <p className="shrink-0 text-sm text-muted-foreground">{dateChipRangeLabel}</p>
+                                    </div>
+                                    {useDateChips ? (
+                                        <div className="grid grid-cols-3 gap-3 @md:grid-cols-4 @2xl:grid-cols-6">
+                                            {selectableDays.map((day, index) => {
+                                                const key = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
+                                                const selected = key === selectedDayKey;
+                                                const languageTag = locale === 'de' ? 'de-DE' : 'en-US';
+                                                const weekday = new Intl.DateTimeFormat(languageTag, {
+                                                    weekday: 'short',
+                                                }).format(day);
+                                                const weekdayWithDot = weekday.endsWith('.') ? weekday : `${weekday}.`;
+                                                const month = new Intl.DateTimeFormat(languageTag, {
+                                                    month: 'short',
+                                                }).format(day);
+                                                const partnerStayLabel = search.partnerId
+                                                    ? index === 0
+                                                        ? { de: 'Anreise', en: 'Arrival' }[locale]
+                                                        : index === selectableDays.length - 1
+                                                          ? { de: 'Abreise', en: 'Departure' }[locale]
+                                                          : null
+                                                    : null;
+                                                const footLabel = partnerStayLabel ?? month;
+                                                return (
+                                                    <button
+                                                        key={key}
+                                                        type="button"
+                                                        onClick={() => selectDay(day)}
+                                                        aria-pressed={selected}
+                                                        className={cn(
+                                                            'flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-xl border',
+                                                            selectionControlClassName,
+                                                            selectionSurfaceClassName(selected),
+                                                        )}
+                                                    >
+                                                        <span className="text-xs leading-none opacity-80">{weekdayWithDot}</span>
+                                                        <span className="text-2xl font-medium tabular-nums leading-none">
+                                                            {day.getDate()}
+                                                        </span>
+                                                        <span className="text-xs leading-none opacity-80">{footLabel}</span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <DatePicker
+                                            value={values.dateTime}
+                                            onValueChange={(date) => {
+                                                if (!date) return;
+                                                selectDay(date);
+                                            }}
+                                            placeholder={{ de: 'Datum wählen', en: 'Choose a date' }[locale]}
+                                            locale={locale === 'de' ? dateFnsDe : dateFnsEn}
+                                            startMonth={datePickerStartMonth}
+                                            endMonth={datePickerEndMonth}
+                                            disabled={(date) => {
+                                                const startOfToday = new Date();
+                                                startOfToday.setHours(0, 0, 0, 0);
+                                                if (date.getTime() < startOfToday.getTime()) return true;
+                                                if (bounds.minDateTime) {
+                                                    const minDay = new Date(bounds.minDateTime);
+                                                    minDay.setHours(0, 0, 0, 0);
+                                                    if (date.getTime() < minDay.getTime()) return true;
+                                                }
+                                                if (bounds.maxDateTime) {
+                                                    const maxDay = new Date(bounds.maxDateTime);
+                                                    maxDay.setHours(23, 59, 59, 999);
+                                                    if (date.getTime() > maxDay.getTime()) return true;
+                                                }
+                                                return false;
+                                            }}
+                                            className="w-full max-w-xs"
+                                        />
+                                    )}
+                                </div>
+
                                 {!partnerAddress ? renderLocationPicker() : null}
 
                                 <div className="grid gap-4">
@@ -1299,7 +1299,7 @@ export function BookingRequestPlanPage({
                                             }
                                         </p>
                                     </div>
-                                    <div className="@container">
+                                    <div className="@container w-full min-w-0">
                                         <div className="grid gap-4 @3xl:grid-cols-3">
                                             {bookingRequestPriceClassTypes.map((priceClass) => {
                                                 const info = bookingRequestPriceClassInfo(priceClass, locale);
