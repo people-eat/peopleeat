@@ -19,8 +19,8 @@ import {
     varchar,
 } from 'drizzle-orm/pg-core';
 
-import type { CookPresenceLinks } from '../../shared/cookPresenceLinks';
 import type { ContentSection } from '../../shared/contentSection';
+import type { CookPresenceLinks } from '../../shared/cookPresenceLinks';
 import type { FeatureToggleKey } from '../../shared/featureToggle';
 import { NANO_ID_LENGTH } from '../../shared/idCreate';
 

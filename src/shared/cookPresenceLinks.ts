@@ -7,7 +7,7 @@ export const cookPresenceOtherPlatforms = ['YHUNGRY', 'COZYMEAL', 'EATWITH', 'CH
 
 export type CookPresenceOtherPlatform = (typeof cookPresenceOtherPlatforms)[number];
 
-export type CookPresenceOtherProfile = {
+type CookPresenceOtherProfile = {
     platform: CookPresenceOtherPlatform;
     /** Set for `OTHER`. Null for a named platform. */
     label: string | null;
@@ -46,9 +46,9 @@ export type CookPresenceLinksFormValue = {
     }>;
 };
 
-export type CookPresenceLinkField = 'websiteUrl' | 'instagramUrl' | 'googleProfileUrl' | 'takeAChefUrl' | 'otherProfiles';
+type CookPresenceLinkField = 'websiteUrl' | 'instagramUrl' | 'googleProfileUrl' | 'takeAChefUrl' | 'otherProfiles';
 
-export type CookPresenceLinksIssueCode =
+type CookPresenceLinksIssueCode =
     | 'url'
     | 'https'
     | 'credentials'
@@ -68,8 +68,8 @@ export type CookPresenceLinksIssue = {
     index?: number;
 };
 
-export const COOK_PRESENCE_URL_MAX_LENGTH = 500;
-export const COOK_PRESENCE_LABEL_MAX_LENGTH = 80;
+const COOK_PRESENCE_URL_MAX_LENGTH = 500;
+const COOK_PRESENCE_LABEL_MAX_LENGTH = 80;
 export const COOK_PRESENCE_OTHER_PROFILES_MAX = 5;
 
 const storedOtherProfileSchema = z.object({
@@ -86,7 +86,7 @@ const storedSchema = z.object({
     otherProfiles: z.array(storedOtherProfileSchema),
 });
 
-export const cookPresenceLinksFormEmpty: CookPresenceLinksFormValue = {
+const cookPresenceLinksFormEmpty: CookPresenceLinksFormValue = {
     websiteUrl: '',
     instagramUrl: '',
     googleProfileUrl: '',
