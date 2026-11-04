@@ -4,7 +4,7 @@ import { formatTime } from './formatDate';
 import type { Locale } from './locale';
 
 const CALL_CALENDAR_ALARM_MINUTES = 15;
-const BOOKING_EVENT_DURATION_MS = 60 * 60 * 1000;
+const BOOKING_EVENT_DURATION_MS = 4 * 60 * 60 * 1000;
 const BOOKING_EVENT_ALARM_MINUTES = 24 * 60;
 
 function callCalendarUid(cookCallSlotBookingId: string): string {
