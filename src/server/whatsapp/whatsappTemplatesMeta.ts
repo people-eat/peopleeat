@@ -76,18 +76,45 @@ export function whatsappTemplateMetaMatches(
     );
 }
 
+type MetaGraphError = {
+    message?: string;
+    code?: number;
+    error_subcode?: number;
+    error_user_msg?: string;
+    error_data?: { details?: string };
+    fbtrace_id?: string;
+};
+
+function metaTemplateErrorMessage(status: number, error: MetaGraphError | undefined, bodyText: string): string {
+    if (!error) return `Meta template management failed (${status}): ${bodyText.slice(0, 300)}`;
+    const codes = [`code ${error.code ?? 'unknown'}`];
+    if (error.error_subcode !== undefined) codes.push(`subcode ${error.error_subcode}`);
+    const detail = [error.message, error.error_user_msg, error.error_data?.details].filter(Boolean).join(' ');
+    const trace = error.fbtrace_id ? ` fbtrace_id=${error.fbtrace_id}` : '';
+    return `Meta template management failed (${status}, ${codes.join(', ')})${detail ? `: ${detail}` : ''}${trace}`;
+}
+
 export function whatsappTemplatesMetaCreate(options: { accessToken: string; businessAccountId: string }) {
-    const base = `https://graph.facebook.com/v22.0/${options.businessAccountId}/message_templates`;
+    const accessToken = options.accessToken.trim();
+    const businessAccountId = options.businessAccountId.trim();
+    const base = `https://graph.facebook.com/v22.0/${encodeURIComponent(businessAccountId)}/message_templates`;
     async function request<T>(url: string, payload?: unknown): Promise<T> {
         if (new URL(url).origin !== 'https://graph.facebook.com') throw new Error('Unexpected Meta pagination origin');
         const response = await fetch(url, {
             method: payload ? 'POST' : 'GET',
-            headers: { Authorization: `Bearer ${options.accessToken}`, 'Content-Type': 'application/json' },
+            headers: { Authorization: `Bearer ${accessToken}`, ...(payload ? { 'Content-Type': 'application/json' } : {}) },
             ...(payload ? { body: JSON.stringify(payload) } : {}),
         });
-        const result = (await response.json()) as T & { error?: { code?: number } };
-        if (!response.ok) throw new Error(`Meta template management failed (${response.status}, code ${result.error?.code ?? 'unknown'})`);
-        return result;
+        const bodyText = await response.text();
+        let body: (T & { error?: MetaGraphError }) | undefined;
+        try {
+            body = bodyText ? (JSON.parse(bodyText) as T & { error?: MetaGraphError }) : undefined;
+        } catch {
+            body = undefined;
+        }
+        if (!response.ok) throw new Error(metaTemplateErrorMessage(response.status, body?.error, bodyText));
+        if (!body) throw new Error(`Meta template management failed (${response.status}): empty response`);
+        return body;
     }
     return {
         async findMany(name?: string): Promise<MetaTemplate[]> {

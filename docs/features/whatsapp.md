@@ -51,6 +51,10 @@ Older templates remain available for history but are not mapped for new sends. T
 which restores peopleeat's conversational tone, emojis, and team sign-off. All current variants retain that personality while keeping the
 message about the specific booking or conversation.
 
+A template read that fails before send is logged as `Meta template management failed`, including Meta's message. HTTP 400 code 100 means
+`WHATSAPP_BUSINESS_ACCOUNT_ID` is not the WhatsApp Business Account id. That id is `asset_id` in the WhatsApp Manager URL. `business_id` in
+the same URL is the portfolio, and the phone number id is separate. A token without template-read access on that account fails the same way.
+
 Webhook signature validation (`X-Hub-Signature-256`) is always on when `WHATSAPP_TRANSPORT=meta`. If `WHATSAPP_APP_SECRET` does not match
 the Meta app secret, Meta POSTs return `400` and inbound never lands in admin (look for
 `whatsapp webhook: POST rejected (invalid signature…)` in Admin Logs / Coolify logs).

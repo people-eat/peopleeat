@@ -17,7 +17,10 @@ inbox must show what was actually sent, and template categorization must not sil
 3. **Utility-only delivery.** Every new variant is submitted with `category: UTILITY`. Before each Meta send, read the registered variant
    and require `APPROVED`, `UTILITY`, and matching header/body/buttons/URL. Pending, rejected, reclassified, or drifted variants fail
    closed; never fall back to Marketing or an unrelated template. The token must permit reading templates for this WABA. This adds a
-   management request per send. Meta remains the approval/category authority; requested category alone does not mean approval.
+   management request per send. A rejected read is logged with Meta's message, code, and subcode. HTTP 400 code 100 on that read means
+   `WHATSAPP_BUSINESS_ACCOUNT_ID` is not the WhatsApp Business Account (`asset_id` in the WhatsApp Manager URL; `business_id` there is the
+   portfolio, and the phone number id is a third node), or the token lacks template-read access. Meta remains the approval/category
+   authority; requested category alone does not mean approval.
 4. **Exact language and snapshots.** Send the recipient locale, never silently substitute German for English. Render the transcript from the
    same definition and normalized parameter values used for the send. Persist an immutable `templateSnapshot` on both
    `OutboundWhatsAppMessages` and `WhatsAppMessages`, including effective language, header, rendered body, parameters, and rendered buttons.
