@@ -28,6 +28,16 @@ fragment AdminBookingRequestOfferPageOffer on AdminBookingRequestOffer {
     paymentDateTime
     plannedPayoutDateTime
     payoutDateTime
+    customerReceiptFileUpload {
+        fileUploadId
+        filename
+        url
+    }
+    cookStatementFileUpload {
+        fileUploadId
+        filename
+        url
+    }
     cookPayoutReady
     cookPayoutBlockedReason
     stripePaymentIntentUrl
@@ -362,6 +372,15 @@ mutation AdminBookingRequestOfferCallSlotDecline($cookCallSlotBookingId: ID!, $o
 mutation AdminBookingRequestOfferPreparationsClear($bookingRequestOfferId: ID!) {
     admin {
         bookingRequestOfferPreparationsClear(bookingRequestOfferId: $bookingRequestOfferId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminBookingRequestOfferPaymentDocumentsRegenerate($bookingRequestOfferId: ID!) {
+    admin {
+        bookingRequestOfferPaymentDocumentsRegenerate(bookingRequestOfferId: $bookingRequestOfferId) {
             success
             referenceId
         }

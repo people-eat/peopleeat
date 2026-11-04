@@ -67,6 +67,7 @@ export function adminOutboundEmailPurposeLabel(purpose: GqlCAdminOutboundEmailPu
             en: 'Participant amendment declined',
         },
         BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED: { de: 'Buchungsbestätigung', en: 'Booking confirmation' },
+        BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT: { de: 'Abrechnung an Koch', en: 'Payout statement to cook' },
         BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT: { de: 'Zahlungseinzug angekündigt', en: 'Pull payment announced' },
         TESTIMONIAL_MEMORY_NUDGE_CUSTOMER: { de: 'Erinnerungs-Nudge (Kunde)', en: 'Memory nudge (customer)' },
         TESTIMONIAL_MEMORY_NUDGE_COOK: { de: 'Erinnerungs-Nudge (Koch)', en: 'Memory nudge (cook)' },

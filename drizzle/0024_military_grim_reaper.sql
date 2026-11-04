@@ -1,0 +1,6 @@
+ALTER TABLE "BookingRequestOffers" ADD COLUMN "customerReceiptFileUploadId" varchar(20);--> statement-breakpoint
+ALTER TABLE "BookingRequestOffers" ADD COLUMN "cookStatementFileUploadId" varchar(20);--> statement-breakpoint
+ALTER TABLE "BookingRequestOffers" ADD CONSTRAINT "BookingRequestOffers_customerReceiptFileUploadId_FileUploads_fileUploadId_fk" FOREIGN KEY ("customerReceiptFileUploadId") REFERENCES "public"."FileUploads"("fileUploadId") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "BookingRequestOffers" ADD CONSTRAINT "BookingRequestOffers_cookStatementFileUploadId_FileUploads_fileUploadId_fk" FOREIGN KEY ("cookStatementFileUploadId") REFERENCES "public"."FileUploads"("fileUploadId") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
+CREATE INDEX "BookingRequestOffers_customerReceiptFileUploadId_idx" ON "BookingRequestOffers" USING btree ("customerReceiptFileUploadId");--> statement-breakpoint
+CREATE INDEX "BookingRequestOffers_cookStatementFileUploadId_idx" ON "BookingRequestOffers" USING btree ("cookStatementFileUploadId");

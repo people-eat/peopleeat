@@ -1678,6 +1678,16 @@ export const bookingRequestOffers = pgTable(
         paymentDateTime: timestamp({ withTimezone: true }),
         plannedPayoutDateTime: timestamp({ withTimezone: true }),
         payoutDateTime: timestamp({ withTimezone: true }),
+        // Courtesy PDFs for a paid offer. Not tax invoices. Null until capture
+        // succeeds. See docs/features/booking-payment-receipts.md.
+        customerReceiptFileUploadId: nanoId().references(() => fileUploads.fileUploadId, {
+            onUpdate: 'cascade',
+            onDelete: 'set null',
+        }),
+        cookStatementFileUploadId: nanoId().references(() => fileUploads.fileUploadId, {
+            onUpdate: 'cascade',
+            onDelete: 'set null',
+        }),
         // pg-boss job ids for `bookingRequestOfferTestimonialReminder` sends —
         // scheduled once payment succeeds, rescheduled on event dateTime
         // change, cancelled on booking cancel. See `scheduleTestimonialReminderJobs.ts`.
@@ -1714,6 +1724,8 @@ export const bookingRequestOffers = pgTable(
         index('BookingRequestOffers_paymentStatus_idx').on(table.paymentStatus),
         index('BookingRequestOffers_createdAt_idx').on(table.createdAt),
         index('BookingRequestOffers_adminChatReviewPendingCount_idx').on(table.adminChatReviewPendingCount),
+        index('BookingRequestOffers_customerReceiptFileUploadId_idx').on(table.customerReceiptFileUploadId),
+        index('BookingRequestOffers_cookStatementFileUploadId_idx').on(table.cookStatementFileUploadId),
     ],
 );
 

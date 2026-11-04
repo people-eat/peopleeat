@@ -66,7 +66,8 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    `CookMenuCard` grid that opens `/profile/menus/$menuId` (view-first detail with edit). Auto-adjusted prices show an info banner above the
    cost overview (copy distinguishes guest-count vs travel vs both via `priceAutoAdjustReason`). After the event (`COMPLETED`), an info
    banner under the cost overview tells the cook which amount to invoice (menu + travel, before the peopleeat fee) and that the fee was
-   deducted at payout; the guest invoice address stays on the Request tab. They can also re-accept or withdraw.
+   deducted at payout. When payment receipts are on for that cook, the banner also points at the emailed payout statement. The guest invoice
+   address stays on the Request tab. They can also re-accept or withdraw.
 4. Negotiation continues until both sides accept (at most one dual-accepted offer per request) or someone declines / the request is canceled
    / expires. Declining an offer (or a cook ban that auto-declines open offers) also declines PENDING discovery-call requests on that offer;
    request cancel / expiry cancel those PENDING slots. Customer request edits can clear cook acceptance and email cooks; paid-headcount

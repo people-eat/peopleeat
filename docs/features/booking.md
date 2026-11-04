@@ -15,6 +15,7 @@ cook payout. **Go-live path is live** (form, pool, offers, chat, payment, calls,
 | Offer chat (timeline, concierge presence, phone block, chat emails)  | [booking-offer-chat.md](./booking-offer-chat.md)                                   |
 | Admin offer-chat review pipeline                                     | [admin-offer-chat-review.md](./admin-offer-chat-review.md)                         |
 | Payment (checkout, pull charge, confirmation, cook payout)           | [booking-payment.md](./booking-payment.md)                                         |
+| Payment receipts (guest receipt + cook statement, not invoices)      | [booking-payment-receipts.md](./booking-payment-receipts.md)                       |
 | Post-accept participant amendment (cook-gated + prep lock)           | [booking-offer-participant-amendment.md](./booking-offer-participant-amendment.md) |
 | Discovery calls + slots                                              | [booking-request-offer-calls.md](./booking-request-offer-calls.md)                 |
 | Call recordings / transcripts                                        | [call-recordings.md](./call-recordings.md)                                         |

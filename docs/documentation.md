@@ -60,6 +60,7 @@ docs/
 │   ├── booking-offer-chat.md     # Offer timeline chat, concierge, phone block
 │   ├── admin-offer-chat-review.md # Post-hoc admin review pipeline for offer chats
 │   ├── booking-payment.md        # Checkout, pull payment, cook payout
+│   ├── booking-payment-receipts.md # Guest payment receipt + cook payout statement
 │   ├── booking-offer-participant-amendment.md # Post-accept headcount change + prep lock
 │   ├── cook-arrival-identity-verification.md # QR host check when cook arrives (idea)
 │   ├── booking-request-share.md # Readonly share link for family / friends (idea)

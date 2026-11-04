@@ -14,7 +14,9 @@ After dual acceptance, the customer pays (or completes a €0 path); later an ad
    SetupIntent checkout **after** `plannedPaymentPullDateTime`, checkout / offer copy warns that the card is charged right after saving
    details (the pull job is enqueued with a past `startAfter` and runs ASAP). Admin Costs shows the same overdue note next to the planned
    pull timestamp.
-5. After the event, **cook bank payout** is admin-gated: due payouts surface on the admin overview; an admin releases a Connect payout,
+5. When payment receipts are turned on for that person, a paid offer also produces courtesy PDFs: a customer payment receipt and a cook
+   payout statement. Neither is an invoice. See [booking-payment-receipts.md](./booking-payment-receipts.md).
+6. After the event, **cook bank payout** is admin-gated: due payouts surface on the admin overview; an admin releases a Connect payout,
    checks whether a Stripe payout already took place, or marks out-of-system. Cooks do not self-trigger payout. On completed offers, the
    cook Offer tab shows an info banner with the invoice amount (menu + travel before the platform fee) and notes that the fee was deducted
    at payout.

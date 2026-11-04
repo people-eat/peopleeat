@@ -3,6 +3,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import { idCreate } from '../../shared/idCreate';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant, Cook, GiftCard, PromoCode, User } from '../db/schema';
 import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequestParticipants, bookingRequests } from '../db/schema';
+import { bookingRequestOfferPaymentIsPaid } from '../domain/bookingRequest';
 import type {
     BookingRequestExactEventAddress,
     BookingRequestOfferParticipantAmendment,
@@ -19,6 +20,7 @@ import {
     paymentDataWithExtraTransfer,
     paymentTransferIdsForCookReverse,
 } from './bookingRequestOfferPaymentDataTransfers';
+import { bookingRequestOfferPaymentPdfsCreate } from './bookingRequestOfferPaymentPdfsCreate';
 import { bookingRequestOfferPaymentPrepare } from './bookingRequestOfferPaymentPrepare';
 import { bookingRequestOfferPriceSnapshot } from './bookingRequestOfferPriceSnapshot';
 import { giftCardChargeInTransaction } from './giftCardCharge';
@@ -529,6 +531,10 @@ export async function bookingRequestOfferParticipantAmendmentApply(
             await bookingRequestCookTravelDistanceKmClear(serverRuntime, {
                 bookingRequestId: bookingRequest.bookingRequestId,
             });
+        }
+
+        if (bookingRequestOfferPaymentIsPaid(nextPaymentStatus)) {
+            await bookingRequestOfferPaymentPdfsCreate(offer.bookingRequestOfferId, serverRuntime);
         }
 
         if (becamePayedFromEmpty) {

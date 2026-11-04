@@ -208,6 +208,20 @@ export async function fileUploadReferencedAsCookLogo(db: Database, fileUploadId:
     return Boolean(hit);
 }
 
+export async function fileUploadReferencedByBookingRequestOfferPaymentPdf(db: Database, fileUploadId: string): Promise<boolean> {
+    const [row] = await db
+        .select({ bookingRequestOfferId: bookingRequestOffers.bookingRequestOfferId })
+        .from(bookingRequestOffers)
+        .where(
+            or(
+                eq(bookingRequestOffers.customerReceiptFileUploadId, fileUploadId),
+                eq(bookingRequestOffers.cookStatementFileUploadId, fileUploadId),
+            ),
+        )
+        .limit(1);
+    return row != null;
+}
+
 /** True when a gift card stores this upload as its receipt or voucher PDF. */
 export async function fileUploadReferencedByGiftCardPdf(db: Database, fileUploadId: string): Promise<boolean> {
     const [hit] = await db

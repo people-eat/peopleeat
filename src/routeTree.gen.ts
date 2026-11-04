@@ -104,6 +104,8 @@ import { Route as Char123LocaleChar125ProfileSupportRequestsRouteImport } from '
 import { Route as Char123LocaleChar125ProfileTravelRouteImport } from './routes/{-$locale}/profile/travel'
 import { Route as Char123LocaleChar125ProfileWalletRouteImport } from './routes/{-$locale}/profile/wallet'
 import { Route as ApiWhatsappLinksTokenRouteImport } from './routes/api/whatsapp/links/$token'
+import { Route as ServerBookingRequestOffersBookingRequestOfferIdCookStatementRouteImport } from './routes/server.booking-request-offers.$bookingRequestOfferId.cook-statement'
+import { Route as ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRouteImport } from './routes/server.booking-request-offers.$bookingRequestOfferId.customer-receipt'
 import { Route as ServerGiftCardsGiftCardIdReceiptRouteImport } from './routes/server.gift-cards.$giftCardId.receipt'
 import { Route as ServerGiftCardsGiftCardIdVoucherRouteImport } from './routes/server.gift-cards.$giftCardId.voucher'
 import { Route as Char123LocaleChar125AdminAiGenerationsAiGenerationIdRouteImport } from './routes/{-$locale}/admin/ai-generations_.$aiGenerationId'
@@ -725,6 +727,22 @@ const ApiWhatsappLinksTokenRoute = ApiWhatsappLinksTokenRouteImport.update({
   path: '/api/whatsapp/links/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute =
+  ServerBookingRequestOffersBookingRequestOfferIdCookStatementRouteImport.update(
+    {
+      id: '/server/booking-request-offers/$bookingRequestOfferId/cook-statement',
+      path: '/server/booking-request-offers/$bookingRequestOfferId/cook-statement',
+      getParentRoute: () => rootRouteImport,
+    } as any,
+  )
+const ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRoute =
+  ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRouteImport.update(
+    {
+      id: '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt',
+      path: '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt',
+      getParentRoute: () => rootRouteImport,
+    } as any,
+  )
 const ServerGiftCardsGiftCardIdReceiptRoute =
   ServerGiftCardsGiftCardIdReceiptRouteImport.update({
     id: '/server/gift-cards/$giftCardId/receipt',
@@ -1280,6 +1298,8 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile/': typeof Char123LocaleChar125ProfileIndexRoute
   '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
+  '/server/booking-request-offers/$bookingRequestOfferId/cook-statement': typeof ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute
+  '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt': typeof ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRoute
   '/server/gift-cards/$giftCardId/receipt': typeof ServerGiftCardsGiftCardIdReceiptRoute
   '/server/gift-cards/$giftCardId/voucher': typeof ServerGiftCardsGiftCardIdVoucherRoute
   '/{-$locale}/admin/ai-generations/$aiGenerationId': typeof Char123LocaleChar125AdminAiGenerationsAiGenerationIdRoute
@@ -1444,6 +1464,8 @@ export interface FileRoutesByTo {
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile': typeof Char123LocaleChar125ProfileIndexRoute
   '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
+  '/server/booking-request-offers/$bookingRequestOfferId/cook-statement': typeof ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute
+  '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt': typeof ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRoute
   '/server/gift-cards/$giftCardId/receipt': typeof ServerGiftCardsGiftCardIdReceiptRoute
   '/server/gift-cards/$giftCardId/voucher': typeof ServerGiftCardsGiftCardIdVoucherRoute
   '/{-$locale}/admin/ai-generations/$aiGenerationId': typeof Char123LocaleChar125AdminAiGenerationsAiGenerationIdRoute
@@ -1612,6 +1634,8 @@ export interface FileRoutesById {
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile/': typeof Char123LocaleChar125ProfileIndexRoute
   '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
+  '/server/booking-request-offers/$bookingRequestOfferId/cook-statement': typeof ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute
+  '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt': typeof ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRoute
   '/server/gift-cards/$giftCardId/receipt': typeof ServerGiftCardsGiftCardIdReceiptRoute
   '/server/gift-cards/$giftCardId/voucher': typeof ServerGiftCardsGiftCardIdVoucherRoute
   '/{-$locale}/admin/ai-generations_/$aiGenerationId': typeof Char123LocaleChar125AdminAiGenerationsAiGenerationIdRoute
@@ -1781,6 +1805,8 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/'
     | '/{-$locale}/profile/'
     | '/api/whatsapp/links/$token'
+    | '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
+    | '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt'
     | '/server/gift-cards/$giftCardId/receipt'
     | '/server/gift-cards/$giftCardId/voucher'
     | '/{-$locale}/admin/ai-generations/$aiGenerationId'
@@ -1945,6 +1971,8 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin'
     | '/{-$locale}/profile'
     | '/api/whatsapp/links/$token'
+    | '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
+    | '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt'
     | '/server/gift-cards/$giftCardId/receipt'
     | '/server/gift-cards/$giftCardId/voucher'
     | '/{-$locale}/admin/ai-generations/$aiGenerationId'
@@ -2112,6 +2140,8 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/'
     | '/{-$locale}/profile/'
     | '/api/whatsapp/links/$token'
+    | '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
+    | '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt'
     | '/server/gift-cards/$giftCardId/receipt'
     | '/server/gift-cards/$giftCardId/voucher'
     | '/{-$locale}/admin/ai-generations_/$aiGenerationId'
@@ -2206,6 +2236,8 @@ export interface RootRouteChildren {
   ApiWebhooksStripeRoute: typeof ApiWebhooksStripeRoute
   ApiWebhooksWhatsappRoute: typeof ApiWebhooksWhatsappRoute
   ApiWhatsappLinksTokenRoute: typeof ApiWhatsappLinksTokenRoute
+  ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute: typeof ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute
+  ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRoute: typeof ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRoute
   ServerGiftCardsGiftCardIdReceiptRoute: typeof ServerGiftCardsGiftCardIdReceiptRoute
   ServerGiftCardsGiftCardIdVoucherRoute: typeof ServerGiftCardsGiftCardIdVoucherRoute
   ApiAdminCallRecordingsRecordingIdAudioRoute: typeof ApiAdminCallRecordingsRecordingIdAudioRoute
@@ -2876,6 +2908,20 @@ declare module '@tanstack/react-router' {
       path: '/api/whatsapp/links/$token'
       fullPath: '/api/whatsapp/links/$token'
       preLoaderRoute: typeof ApiWhatsappLinksTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/server/booking-request-offers/$bookingRequestOfferId/cook-statement': {
+      id: '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
+      path: '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
+      fullPath: '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
+      preLoaderRoute: typeof ServerBookingRequestOffersBookingRequestOfferIdCookStatementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt': {
+      id: '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt'
+      path: '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt'
+      fullPath: '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt'
+      preLoaderRoute: typeof ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/server/gift-cards/$giftCardId/receipt': {
@@ -3824,6 +3870,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiWebhooksStripeRoute: ApiWebhooksStripeRoute,
   ApiWebhooksWhatsappRoute: ApiWebhooksWhatsappRoute,
   ApiWhatsappLinksTokenRoute: ApiWhatsappLinksTokenRoute,
+  ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute:
+    ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute,
+  ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRoute:
+    ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRoute,
   ServerGiftCardsGiftCardIdReceiptRoute: ServerGiftCardsGiftCardIdReceiptRoute,
   ServerGiftCardsGiftCardIdVoucherRoute: ServerGiftCardsGiftCardIdVoucherRoute,
   ApiAdminCallRecordingsRecordingIdAudioRoute:

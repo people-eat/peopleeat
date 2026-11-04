@@ -67,6 +67,8 @@ export type BookingRequestOfferFields = {
     paymentDateTime: Date | null;
     plannedPayoutDateTime: Date | null;
     payoutDateTime: Date | null;
+    customerReceiptFileUploadId: string | null;
+    cookStatementFileUploadId: string | null;
     createdAt: Date;
     callBookings: GqlSCookCallSlotBooking[];
     preparationsCompletedAt: Date | null;
@@ -187,6 +189,8 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
         paymentDateTime: offer.paymentDateTime ?? null,
         plannedPayoutDateTime: offer.plannedPayoutDateTime ?? null,
         payoutDateTime: offer.payoutDateTime ?? null,
+        customerReceiptFileUploadId: offer.customerReceiptFileUploadId ?? null,
+        cookStatementFileUploadId: offer.cookStatementFileUploadId ?? null,
         createdAt: offer.createdAt,
         callBookings: callBookings.map((booking) => toGqlCookCallSlotBooking(booking, undefined, input.bookingRequest.occasion)),
         preparationsCompletedAt: offer.preparationsCompletedAt ?? null,

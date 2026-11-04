@@ -72,6 +72,8 @@ const offer = {
     paymentDateTime: null,
     plannedPayoutDateTime: null,
     payoutDateTime: null,
+    customerReceiptFileUploadId: null,
+    cookStatementFileUploadId: null,
     testimonialMemoryNudgeJobId: null,
     testimonialReminderMorningJobId: null,
     testimonialReminderEveningJobId: null,

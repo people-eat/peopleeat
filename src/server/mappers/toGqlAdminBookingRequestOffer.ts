@@ -45,6 +45,8 @@ export function toGqlAdminBookingRequestOffer(input: ToGqlAdminBookingRequestOff
         suggestedMenus,
         cookPayoutReady,
         cookPayoutBlockedReason,
+        customerReceiptFileUpload: null,
+        cookStatementFileUpload: null,
         messages: [],
         callRecordings: [],
         queuedJobs: [],

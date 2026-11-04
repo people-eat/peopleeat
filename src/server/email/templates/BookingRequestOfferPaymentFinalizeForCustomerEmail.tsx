@@ -17,6 +17,7 @@ interface BookingRequestOfferPaymentFinalizeForCustomerEmailProps {
     startAt: Date;
     bookingRequestId: string;
     chatUrl: string;
+    receiptAttached?: boolean;
 }
 
 export function BookingRequestOfferPaymentFinalizeForCustomerEmail({
@@ -28,6 +29,7 @@ export function BookingRequestOfferPaymentFinalizeForCustomerEmail({
     startAt,
     bookingRequestId,
     chatUrl,
+    receiptAttached = false,
 }: BookingRequestOfferPaymentFinalizeForCustomerEmailProps) {
     const subject = bookingRequestOfferPaymentFinalizeForCustomerEmailSubject(locale);
     const preview = {
@@ -47,6 +49,12 @@ export function BookingRequestOfferPaymentFinalizeForCustomerEmail({
         de: 'Im Anhang ist eine Kalenderdatei. Die Uhrzeit ist der Beginn, und sie erinnert dich einen Tag vorher.',
         en: 'A calendar file is attached. The time is the start, and it reminds you the day before.',
     }[locale];
+    const receiptNote = receiptAttached
+        ? {
+              de: 'Im Anhang ist zusätzlich ein Zahlungsbeleg. Das ist keine Rechnung. Die Bewirtung rechnet der Koch direkt mit dir ab.',
+              en: 'A payment receipt is also attached. It is not an invoice. The cook invoices you directly for the catering.',
+          }[locale]
+        : null;
     const cta = { de: 'Zum Chat', en: 'Open chat' }[locale];
 
     return (
@@ -57,6 +65,7 @@ export function BookingRequestOfferPaymentFinalizeForCustomerEmail({
             <EmailText>{intro}</EmailText>
             <EmailText>{when}</EmailText>
             <EmailText>{calendarNote}</EmailText>
+            {receiptNote ? <EmailText>{receiptNote}</EmailText> : null}
             <EmailButton href={chatUrl}>{cta}</EmailButton>
             <BookingRequestEmailBookingNumber locale={locale} bookingRequestId={bookingRequestId} />
             <BookingRequestEmailCancellationPolicy locale={locale} webPageUrl={webPageUrl} />

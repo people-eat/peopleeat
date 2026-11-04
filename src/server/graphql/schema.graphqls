@@ -1304,6 +1304,9 @@ type CookMutation {
     # Mark groceries / preparations done — locks further customer amendments.
     # Gated by BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE.
     bookingRequestOfferPreparationsComplete(bookingRequestOfferId: ID!): MutationResult!
+    # Re-capture the cook payout statement for a paid offer owned by this cook.
+    # Requires BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS for this cook.
+    bookingRequestOfferCookStatementRegenerate(bookingRequestOfferId: ID!): MutationResult!
     bookingRequestOfferPriceUpdate(input: BookingRequestOfferPriceUpdate!): MutationResult!
     bookingRequestOfferSuggestedMenusUpdate(input: BookingRequestOfferSuggestedMenusUpdate!): MutationResult!
     # Append a free-text negotiation message (`COOK_MESSAGE_SIMPLE` event).
@@ -1888,6 +1891,9 @@ type UserBookingRequestOffer {
     paymentDateTime: DateTime
     plannedPayoutDateTime: DateTime
     payoutDateTime: DateTime
+    # Courtesy payment receipt. Not a tax invoice. Null until generated.
+    customerReceiptFileUploadId: ID
+    customerReceiptFileUpload: FileUpload
     createdAt: DateTime!
     cook: PublicCook!
     suggestedMenus: [PublicCookMenu!]!
@@ -1970,6 +1976,9 @@ type CookBookingRequestOffer {
     paymentDateTime: DateTime
     plannedPayoutDateTime: DateTime
     payoutDateTime: DateTime
+    # Courtesy payout statement. Not a tax invoice. Null until generated.
+    cookStatementFileUploadId: ID
+    cookStatementFileUpload: FileUpload
     createdAt: DateTime!
     suggestedMenus: [CookMenu!]!
     callBookings: [CookCallSlotBooking!]!
@@ -2026,6 +2035,12 @@ type AdminBookingRequestOffer {
     paymentDateTime: DateTime
     plannedPayoutDateTime: DateTime
     payoutDateTime: DateTime
+    # Courtesy payment receipt for the customer. Not a tax invoice.
+    customerReceiptFileUploadId: ID
+    customerReceiptFileUpload: FileUpload
+    # Courtesy payout statement for the cook. Not a tax invoice.
+    cookStatementFileUploadId: ID
+    cookStatementFileUpload: FileUpload
     # True when the cook can receive a Stripe bank payout (account present, active, payouts enabled).
     cookPayoutReady: Boolean!
     # Present when `cookPayoutReady` is false — drives admin copy (no raw Stripe errors).
@@ -2864,6 +2879,9 @@ type UserMutation {
     bookingRequestOfferParticipantAmendmentCancel(bookingRequestOfferId: ID!): MutationResult!
     # After Elements confirms SI/PI — advances paymentStatus and stores invoice address.
     bookingRequestOfferPaymentStatusUpdate(bookingRequestOfferId: ID!, invoiceAddress: InvoiceAddressInput!): MutationResult!
+    # Re-capture the customer payment receipt for a paid offer owned by this user.
+    # Requires BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS for this user.
+    bookingRequestOfferCustomerReceiptRegenerate(bookingRequestOfferId: ID!): MutationResult!
     bookingRequestOfferDecline(bookingRequestOfferId: ID!, reason: String!): MutationResult!
     bookingRequestOfferConfiguredMenuCreate(
         bookingRequestOfferId: ID!
@@ -4275,6 +4293,8 @@ enum AdminOutboundEmailPurpose {
     BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_ACCEPTED
     BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED
     BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED
+    # Cook payout statement emailed when a paid offer's receipt feature is on.
+    BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT
     BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT
     TESTIMONIAL_MEMORY_NUDGE_CUSTOMER
     TESTIMONIAL_MEMORY_NUDGE_COOK
@@ -4683,6 +4703,9 @@ type AdminMutation {
     # when already transferred / out-of-system / `payoutDateTime` set.
     # Returns `bookingRequestOfferId` as `referenceId`.
     bookingRequestOfferPayoutMarkOutOfSystem(bookingRequestOfferId: ID!): MutationResult!
+    # Re-capture customer receipt and cook statement when each party's
+    # BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS toggle is on. Success when at least one PDF is written.
+    bookingRequestOfferPaymentDocumentsRegenerate(bookingRequestOfferId: ID!): MutationResult!
     # Checks Stripe for a matching Connect bank payout on a due PAYED offer, or
     # on a `PAYED_OUT_OF_SYSTEM` offer (ops may have marked that by accident).
     # When found, sets `TRANSFERRED` + `payoutDateTime` without calling
@@ -5681,6 +5704,8 @@ enum FeatureToggleKey {
     BOOKING_REQUEST_OFFER_AMENDMENT
     BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW
     BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE
+    # Customer payment receipt and cook payout statement for a paid offer.
+    BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS
     ASSISTANT_CUSTOMER
     ASSISTANT_COOK
     PUBLICATION_MEALS

@@ -24,7 +24,7 @@ function isBrowserCapturePath(pathname: string): boolean {
 
 function useDocumentLocale(): Locale {
     const routeLocale = useLocale();
-    // `/server/*` routes have no `{-$locale}` param. Language comes from the captured gift card.
+    // `/server/*` routes have no `{-$locale}` param. Language comes from the captured document.
     // A new capture route that carries its own locale needs a match here.
     const receiptLocale = useMatch({
         from: '/server/gift-cards/$giftCardId/receipt',
@@ -36,7 +36,17 @@ function useDocumentLocale(): Locale {
         shouldThrow: false,
         select: (match) => match.loaderData?.giftCard.locale,
     });
-    return receiptLocale ?? voucherLocale ?? routeLocale;
+    const customerReceiptLocale = useMatch({
+        from: '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt',
+        shouldThrow: false,
+        select: (match) => match.loaderData?.locale,
+    });
+    const cookStatementLocale = useMatch({
+        from: '/server/booking-request-offers/$bookingRequestOfferId/cook-statement',
+        shouldThrow: false,
+        select: (match) => match.loaderData?.locale,
+    });
+    return receiptLocale ?? voucherLocale ?? customerReceiptLocale ?? cookStatementLocale ?? routeLocale;
 }
 
 export function RootDocument({ children }: PropsWithChildren) {

@@ -38,6 +38,12 @@ fragment ProfileCookBookingRequestOfferPageUser on User {
             travelExpensesCents
             totalWithoutDiscountsCentsCustomer
             payoutCentsCook
+            paymentStatus
+            cookStatementFileUpload {
+                fileUploadId
+                filename
+                url
+            }
             priceAutoAdjustReason
             configuredMenu {
                 title
@@ -183,6 +189,17 @@ query ProfileCookBookingRequestOfferPage($bookingRequestOfferId: ID!) {
 subscription ProfileCookBookingRequestOfferPageUpdates($bookingRequestOfferId: ID!) {
     userUpdates {
         ...ProfileCookBookingRequestOfferPageUser
+    }
+}
+
+mutation ProfileCookBookingRequestOfferCookStatementRegenerate($bookingRequestOfferId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferCookStatementRegenerate(bookingRequestOfferId: $bookingRequestOfferId) {
+                success
+                referenceId
+            }
+        }
     }
 }
 

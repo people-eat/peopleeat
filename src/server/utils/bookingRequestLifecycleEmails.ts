@@ -3,7 +3,7 @@ import { eq, inArray } from 'drizzle-orm';
 import { formatCurrency } from '../../shared';
 import { bookingRequestPriceClassLabel } from '../../shared/bookingRequestFormDefaults';
 import type { Locale } from '../../shared/locale';
-import { bookingRequestParticipants, bookingRequests, users } from '../db/schema';
+import { bookingRequestOffers, bookingRequestParticipants, bookingRequests, users } from '../db/schema';
 import type { BookingRequest, BookingRequestOffer } from '../db/schema';
 import { notificationEmailAllowed } from '../domain/notificationSettings';
 import type { NotificationAudience, UserNotificationSettingsStored } from '../domain/notificationSettings';
@@ -26,6 +26,10 @@ import {
     BookingRequestOfferPaymentFinalizeForCustomerEmail,
     bookingRequestOfferPaymentFinalizeForCustomerEmailSubject,
 } from '../email/templates/BookingRequestOfferPaymentFinalizeForCustomerEmail';
+import {
+    BookingRequestOfferPaymentStatementForCookEmail,
+    bookingRequestOfferPaymentStatementForCookEmailSubject,
+} from '../email/templates/BookingRequestOfferPaymentStatementForCookEmail';
 import {
     BookingRequestOfferPullPaymentAnnouncementForCustomerEmail,
     bookingRequestOfferPullPaymentAnnouncementForCustomerEmailSubject,
@@ -92,6 +96,7 @@ import {
     userBookingRequestOfferAcceptWhatsAppSend,
     userBookingRequestUpdateCookWhatsAppSend,
 } from './bookingRequestLifecycleWhatsApp';
+import { bookingRequestOfferPaymentPdfFilenames, bookingRequestOfferPaymentPdfsCreate } from './bookingRequestOfferPaymentPdfsCreate';
 import { emailAddressPresent } from './emailAddressPresent';
 
 type EmailUser = {
@@ -841,13 +846,23 @@ export async function bookingRequestOfferPaymentConfirmedEmailSend(
     const locale = customer.locale;
     const webPageUrl = environmentVariables.webPageUrl;
     const [request] = await serverRuntime.db
-        .select({ dateTime: bookingRequests.dateTime })
+        .select({ dateTime: bookingRequests.dateTime, occasion: bookingRequests.occasion })
         .from(bookingRequests)
         .where(eq(bookingRequests.bookingRequestId, args.bookingRequest.bookingRequestId))
         .limit(1);
     if (!request) {
         return;
     }
+    const [offerRow] = await serverRuntime.db
+        .select({ paymentStatus: bookingRequestOffers.paymentStatus })
+        .from(bookingRequestOffers)
+        .where(eq(bookingRequestOffers.bookingRequestOfferId, args.offer.bookingRequestOfferId))
+        .limit(1);
+    const pdfs =
+        offerRow?.paymentStatus === 'PAYED'
+            ? await bookingRequestOfferPaymentPdfsCreate(args.offer.bookingRequestOfferId, serverRuntime)
+            : null;
+    const cookStatement = pdfs?.cookStatement ?? null;
     const calendarFile = await bookingEventCalendarAttachment(serverRuntime, {
         bookingRequestId: args.bookingRequest.bookingRequestId,
         bookingRequestOfferId: args.offer.bookingRequestOfferId,
@@ -856,6 +871,19 @@ export async function bookingRequestOfferPaymentConfirmedEmailSend(
         peerName: cook.firstName,
         audience: 'customer',
     });
+    const customerAttachments = [
+        ...(calendarFile ? [calendarFile] : []),
+        ...(pdfs?.customerReceipt
+            ? [
+                  {
+                      filename: bookingRequestOfferPaymentPdfFilenames.receipt,
+                      content: pdfs.customerReceipt.content,
+                      mediaType: bookingRequestOfferPaymentPdfFilenames.mediaType,
+                      fileUploadId: pdfs.customerReceipt.fileUploadId,
+                  },
+              ]
+            : []),
+    ];
 
     await Promise.all([
         sendUserEmail(
@@ -877,6 +905,7 @@ export async function bookingRequestOfferPaymentConfirmedEmailSend(
                         cookFirstName: cook.firstName,
                         startAt: request.dateTime,
                         bookingRequestId: args.bookingRequest.bookingRequestId,
+                        receiptAttached: pdfs?.customerReceipt != null,
                         chatUrl: bookingRequestEmailCustomerOfferUrl(
                             webPageUrl,
                             args.bookingRequest.bookingRequestId,
@@ -888,9 +917,44 @@ export async function bookingRequestOfferPaymentConfirmedEmailSend(
                     locale,
                     relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
                     userId: customer.userId,
-                    attachments: calendarFile ? [calendarFile] : undefined,
+                    attachments: customerAttachments.length > 0 ? customerAttachments : undefined,
                 }),
         ),
+        cookStatement
+            ? sendUserEmail(
+                  serverRuntime,
+                  'bookingRequestOfferPaymentStatementForCookEmailSend',
+                  args.offer.bookingRequestOfferId,
+                  cook,
+                  'BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT',
+                  undefined,
+                  () =>
+                      serverRuntime.email.send({
+                          to: cook.emailAddress,
+                          subject: bookingRequestOfferPaymentStatementForCookEmailSubject(cook.locale),
+                          react: BookingRequestOfferPaymentStatementForCookEmail({
+                              locale: cook.locale,
+                              webPageUrl,
+                              recipientFirstName: cook.firstName,
+                              bookingRequestId: args.bookingRequest.bookingRequestId,
+                              bookingRequestOfferId: args.offer.bookingRequestOfferId,
+                              occasion: request.occasion,
+                          }),
+                          purpose: 'BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT',
+                          locale: cook.locale,
+                          relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.offer.bookingRequestOfferId },
+                          userId: cook.userId,
+                          attachments: [
+                              {
+                                  filename: bookingRequestOfferPaymentPdfFilenames.statement,
+                                  content: cookStatement.content,
+                                  mediaType: bookingRequestOfferPaymentPdfFilenames.mediaType,
+                                  fileUploadId: cookStatement.fileUploadId,
+                              },
+                          ],
+                      }),
+              )
+            : Promise.resolve(),
         bookingRequestOfferPaymentConfirmedWhatsAppSend(serverRuntime, {
             bookingRequestOfferId: args.offer.bookingRequestOfferId,
             bookingRequestId: args.bookingRequest.bookingRequestId,

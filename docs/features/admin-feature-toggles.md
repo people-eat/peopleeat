@@ -24,6 +24,7 @@ Keys today:
 - Offer participant and venue amendment after accept (cook-gated propose / accept)
 - Booking-request edit auto price-adjustment preview (customer headcount `priceImpact`)
 - Offer shopping / preparations done (cook mark that locks further customer amendments)
+- Offer payment receipts (guest payment receipt and cook payout statement on paid offers)
 - Customer assistant
 - Cook assistant
 - Meal publication
@@ -110,6 +111,9 @@ Wired today:
 - **Offer preparations complete** (`BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE`) — cook **shopping / preparations done** control that locks
   further customer amendments as a side effect; cook prep-complete rejects when off for the cook `userId`. Already-locked offers still show
   the lock state (and admin clear) when the toggle is off
+- **Offer payment receipts** (`BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS`) — on a paid offer, a customer payment receipt and a cook payout
+  statement. Each side follows that person's effective toggle. Neither document is an invoice. See
+  [booking-payment-receipts.md](./booking-payment-receipts.md)
 - **Cook biography AI writing** (`COOK_BIOGRAPHY_AI_WRITE`) — shows Write / Improve with AI on the cook chef-profile editor; cook and admin
   suggest mutations reject when off for the **cook** `userId`. Biography **summary** generation (auto job on cook save + admin Generate
   summary) is not toggled and always runs. Admin shells keep the AI write button visible for ops (same as publication / restrictions); the

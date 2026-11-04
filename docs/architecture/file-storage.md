@@ -63,8 +63,9 @@ The upload and download routes are likewise consumer-agnostic:
   8. the session user is an **admin** and any content page (draft or published) or any meal (including drafts / soft-deleted) references the
      id (see [`content-sections.md`](./content-sections.md)), or
   9. the session user is an **admin** and any customer or cook testimonial (including `PENDING_REVIEW`) lists the URL in `imageUrls`, or
-  10. the session user is an **admin** and the id is a gift-card `invoiceFileUploadId`, an `OutboundEmailAttachments` row, or a
-      `WhatsAppMessageAttachments` row (Concierge inbound media). Unauthenticated public pages rely on (2), (3), (4), (5), and (6).
+  10. the session user is an **admin** and the id is a gift-card `invoiceFileUploadId`, a booking-offer `customerReceiptFileUploadId` /
+      `cookStatementFileUploadId`, an `OutboundEmailAttachments` row, or a `WhatsAppMessageAttachments` row (Concierge inbound media).
+      Unauthenticated public pages rely on (2), (3), (4), (5), and (6).
 
 ### Why `bytea` over `oid` / large objects
 

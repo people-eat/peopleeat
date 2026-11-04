@@ -38,18 +38,18 @@ React Email shows **one sidebar entry per file with a default export** (raw file
 component isolation therefore lives under `src/server/email/previews/` (the `email:dev` `--dir`), grouped by domain so the sidebar stays
 scannable. Preview filenames drop folder-redundant prefixes and keep **`{action}-for-{audience}.{locale}.tsx`** so labels fit the sidebar.
 
-| Folder                      | What you see                                                                     |
-| --------------------------- | -------------------------------------------------------------------------------- |
-| `previews/_components/`     | Shared building blocks in isolation (DE / EN when copy differs); `_` sorts first |
-| `previews/auth/`            | Auth OTP + email-address update confirmation                                     |
-| `previews/booking/`         | Booking-request lifecycle (create / update / cancel / cooks-notify)              |
-| `previews/offers/`          | Offer create / menus update / accept / decline / chat-message notify             |
-| `previews/payments/`        | Payment finalize + pull-payment announcement                                     |
-| `previews/call-scheduling/` | Call-slot lifecycle (request / confirm / decline / cancel / reminder)            |
-| `previews/gift-cards/`      | Gift-card purchase / delivery                                                    |
-| `previews/testimonials/`    | Post-event testimonial reminder nudges                                           |
-| `previews/support/`         | Support-request create / admin reply / resolve (customer)                        |
-| `previews/cook-profile/`    | Cook admin approval                                                              |
+| Folder                      | What you see                                                                                    |
+| --------------------------- | ----------------------------------------------------------------------------------------------- |
+| `previews/_components/`     | Shared building blocks in isolation (DE / EN when copy differs); `_` sorts first                |
+| `previews/auth/`            | Auth OTP + email-address update confirmation                                                    |
+| `previews/booking/`         | Booking-request lifecycle (create / update / cancel / cooks-notify)                             |
+| `previews/offers/`          | Offer create / menus update / accept / decline / chat-message notify                            |
+| `previews/payments/`        | Payment finalize, payment receipt on the confirmation, cook payout statement, pull announcement |
+| `previews/call-scheduling/` | Call-slot lifecycle (request / confirm / decline / cancel / reminder)                           |
+| `previews/gift-cards/`      | Gift-card purchase / delivery                                                                   |
+| `previews/testimonials/`    | Post-event testimonial reminder nudges                                                          |
+| `previews/support/`         | Support-request create / admin reply / resolve (customer)                                       |
+| `previews/cook-profile/`    | Cook admin approval                                                                             |
 
 Add new templates under `previews/{domain}/`. Shared sample props and the minimal isolation shell are in `previews/emailPreviewUtils.tsx`.
 Run `npm run dev` alongside the previewer so logo / Instagram assets at `EMAIL_PREVIEW_WEB_PAGE_URL` (`http://localhost:3000`) resolve.

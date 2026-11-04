@@ -18,6 +18,7 @@ export function toGqlCookBookingRequestOffer(input: ToGqlCookBookingRequestOffer
         ...fields,
         suggestedMenus,
         bookingRequest: bookingRequestContext,
+        cookStatementFileUpload: null,
         messages: [],
         // Field resolvers populate the cook's own platform testimonial and its eligibility flag.
         cookTestimonial: null,

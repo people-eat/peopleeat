@@ -31,6 +31,7 @@ import { adminBookingRequestOfferChatReviewAcknowledge } from '../commands/admin
 import { adminBookingRequestOfferConfiguredMenuUpdate } from '../commands/adminBookingRequestOfferConfiguredMenuUpdate';
 import { adminBookingRequestOfferCreate } from '../commands/adminBookingRequestOfferCreate';
 import { adminBookingRequestOfferHandover } from '../commands/adminBookingRequestOfferHandover';
+import { adminBookingRequestOfferPaymentDocumentsRegenerate } from '../commands/adminBookingRequestOfferPaymentDocumentsRegenerate';
 import { adminBookingRequestOfferPayoutAlreadyTookPlaceCheck } from '../commands/adminBookingRequestOfferPayoutAlreadyTookPlaceCheck';
 import { adminBookingRequestOfferPayoutMarkOutOfSystem } from '../commands/adminBookingRequestOfferPayoutMarkOutOfSystem';
 import { adminBookingRequestOfferPayoutRelease } from '../commands/adminBookingRequestOfferPayoutRelease';
@@ -107,6 +108,8 @@ import { authTotpEnrollConfirm } from '../commands/authTotpEnrollConfirm';
 import { authTotpEnrollStart } from '../commands/authTotpEnrollStart';
 import { authTotpVerify } from '../commands/authTotpVerify';
 import { bookingRequestOfferChatMessageReactionUpsert } from '../commands/bookingRequestOfferChatMessageReactionUpsert';
+import { bookingRequestOfferCookStatementRegenerate } from '../commands/bookingRequestOfferCookStatementRegenerate';
+import { bookingRequestOfferCustomerReceiptRegenerate } from '../commands/bookingRequestOfferCustomerReceiptRegenerate';
 import { chatDelete } from '../commands/chatDelete';
 import { chatInputCollectionRespond } from '../commands/chatInputCollectionRespond';
 import { chatMessageCreate } from '../commands/chatMessageCreate';
@@ -522,6 +525,7 @@ import type {
     GqlSAdminMutationBookingRequestOfferConfiguredMenuUpdateArgs,
     GqlSAdminMutationBookingRequestOfferCreateArgs,
     GqlSAdminMutationBookingRequestOfferHandoverArgs,
+    GqlSAdminMutationBookingRequestOfferPaymentDocumentsRegenerateArgs,
     GqlSAdminMutationBookingRequestOfferPayoutAlreadyTookPlaceCheckArgs,
     GqlSAdminMutationBookingRequestOfferPayoutMarkOutOfSystemArgs,
     GqlSAdminMutationBookingRequestOfferPayoutReleaseArgs,
@@ -661,6 +665,7 @@ import type {
     GqlSCookMutationBookingRequestOfferCallSlotRequestArgs,
     GqlSCookMutationBookingRequestOfferChatMessageCreateArgs,
     GqlSCookMutationBookingRequestOfferChatMessageReactionUpsertArgs,
+    GqlSCookMutationBookingRequestOfferCookStatementRegenerateArgs,
     GqlSCookMutationBookingRequestOfferCreateArgs,
     GqlSCookMutationBookingRequestOfferDeclineArgs,
     GqlSCookMutationBookingRequestOfferParticipantAmendmentAcceptArgs,
@@ -753,6 +758,7 @@ import type {
     GqlSUserMutationBookingRequestOfferChatMessageCreateArgs,
     GqlSUserMutationBookingRequestOfferChatMessageReactionUpsertArgs,
     GqlSUserMutationBookingRequestOfferConfiguredMenuCreateArgs,
+    GqlSUserMutationBookingRequestOfferCustomerReceiptRegenerateArgs,
     GqlSUserMutationBookingRequestOfferDeclineArgs,
     GqlSUserMutationBookingRequestOfferParticipantAmendmentCancelArgs,
     GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs,
@@ -944,6 +950,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             customerTestimonial(parent: GqlSUserBookingRequestOffer) {
                 return userBookingRequestOfferCustomerTestimonialFindOne(parent, serverRuntime);
             },
+            customerReceiptFileUpload(parent: GqlSUserBookingRequestOffer) {
+                return giftCardFileUploadFindOne(parent.customerReceiptFileUploadId, serverRuntime);
+            },
             testimonialMissing(parent: GqlSUserBookingRequestOffer) {
                 return userBookingRequestOfferTestimonialMissing(parent, serverRuntime);
             },
@@ -985,6 +994,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             cookTestimonial(parent: GqlSCookBookingRequestOffer) {
                 return cookBookingRequestOfferCookTestimonialFindOne(parent, serverRuntime);
             },
+            cookStatementFileUpload(parent: GqlSCookBookingRequestOffer) {
+                return giftCardFileUploadFindOne(parent.cookStatementFileUploadId, serverRuntime);
+            },
             testimonialMissing(parent: GqlSCookBookingRequestOffer) {
                 return cookBookingRequestOfferTestimonialMissing(parent, serverRuntime);
             },
@@ -1016,6 +1028,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             customerTestimonial(parent: GqlSAdminBookingRequestOffer, _: unknown, requestingSession: GqlSSession) {
                 return adminCustomerTestimonialFindOneByOfferId(parent.bookingRequestOfferId, requestingSession, serverRuntime);
+            },
+            customerReceiptFileUpload(parent: GqlSAdminBookingRequestOffer) {
+                return giftCardFileUploadFindOne(parent.customerReceiptFileUploadId, serverRuntime);
+            },
+            cookStatementFileUpload(parent: GqlSAdminBookingRequestOffer) {
+                return giftCardFileUploadFindOne(parent.cookStatementFileUploadId, serverRuntime);
             },
             cookTestimonial(parent: GqlSAdminBookingRequestOffer, _: unknown, requestingSession: GqlSSession) {
                 return adminCookTestimonialFindOneByOfferId(parent.bookingRequestOfferId, requestingSession, serverRuntime);
@@ -1819,6 +1837,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return cookBookingRequestOfferPreparationsComplete(parent, args, requestingSession, serverRuntime);
             },
+            bookingRequestOfferCookStatementRegenerate(
+                parent: GqlSCookMutation,
+                args: GqlSCookMutationBookingRequestOfferCookStatementRegenerateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return bookingRequestOfferCookStatementRegenerate(parent, args, requestingSession, serverRuntime);
+            },
             bookingRequestOfferPriceUpdate(
                 parent: GqlSCookMutation,
                 args: GqlSCookMutationBookingRequestOfferPriceUpdateArgs,
@@ -2262,6 +2287,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             ) {
                 return adminBookingRequestOfferPayoutMarkOutOfSystem(parent, args, requestingSession, serverRuntime);
             },
+            bookingRequestOfferPaymentDocumentsRegenerate(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationBookingRequestOfferPaymentDocumentsRegenerateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminBookingRequestOfferPaymentDocumentsRegenerate(parent, args, requestingSession, serverRuntime);
+            },
             bookingRequestOfferPayoutAlreadyTookPlaceCheck(
                 parent: GqlSAdminMutation,
                 args: GqlSAdminMutationBookingRequestOfferPayoutAlreadyTookPlaceCheckArgs,
@@ -2556,6 +2588,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return userBookingRequestOfferPaymentStatusUpdate(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferCustomerReceiptRegenerate(
+                parent: GqlSUserMutation,
+                args: GqlSUserMutationBookingRequestOfferCustomerReceiptRegenerateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return bookingRequestOfferCustomerReceiptRegenerate(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestOfferTestimonialUpsert(
                 parent: GqlSUserMutation,

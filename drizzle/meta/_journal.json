@@ -169,6 +169,13 @@
             "when": 1793781572812,
             "tag": "0023_moaning_bloodstrike",
             "breakpoints": true
+        },
+        {
+            "idx": 24,
+            "version": "7",
+            "when": 1793826581165,
+            "tag": "0024_military_grim_reaper",
+            "breakpoints": true
         }
     ]
 }

@@ -64,6 +64,10 @@ import {
     BookingRequestOfferParticipantAmendmentAdminPanel,
     BookingRequestOfferParticipantAmendmentAdminPendingAlert,
 } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
+import {
+    BookingRequestOfferPaymentDocumentPanel,
+    bookingRequestOfferPaymentDocumentVisible,
+} from '../../components/BookingRequestOfferPaymentDocumentPanel';
 import { BookingRequestOfferCostOverviewPanel } from '../../components/BookingRequestOfferPriceConfigurationPanel';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import { CookMenuCard } from '../../components/CookMenuCard';
@@ -87,6 +91,7 @@ import {
     AdminBookingRequestOfferChatMessageUpdateDocument,
     AdminBookingRequestOfferChatMessageVisibilityUpdateDocument,
     AdminBookingRequestOfferPageUpdatesDocument,
+    AdminBookingRequestOfferPaymentDocumentsRegenerateDocument,
     AdminBookingRequestOfferPayoutAlreadyTookPlaceCheckDocument,
     AdminBookingRequestOfferPayoutMarkOutOfSystemDocument,
     AdminBookingRequestOfferPayoutReleaseDocument,
@@ -1549,6 +1554,56 @@ function CostsTabPanel({
             </div>
 
             <OfferCostViews offer={offer} request={request} locale={locale} />
+            <OfferPaymentDocuments offer={offer} locale={locale} />
+        </div>
+    );
+}
+
+function OfferPaymentDocuments({ offer, locale }: { offer: GqlCAdminBookingRequestOfferPageOfferFragment; locale: Locale }) {
+    const [{ fetching }, regenerate] = useMutation(AdminBookingRequestOfferPaymentDocumentsRegenerateDocument);
+    if (!bookingRequestOfferPaymentDocumentVisible(offer.paymentStatus)) {
+        return null;
+    }
+    const onRegenerate = () => {
+        void regenerate({ bookingRequestOfferId: offer.bookingRequestOfferId }).then((result) => {
+            if (result.error || !result.data?.admin.bookingRequestOfferPaymentDocumentsRegenerate.success) {
+                toast.error(
+                    {
+                        de: 'Belege sind für diesen Gast oder Koch noch nicht aktiv, oder die PDF-Erstellung ist fehlgeschlagen.',
+                        en: 'Receipts are not turned on for this guest or cook yet, or PDF creation failed.',
+                    }[locale],
+                );
+            }
+        });
+    };
+    return (
+        <div className="grid gap-4 @3xl:grid-cols-2">
+            <BookingRequestOfferPaymentDocumentPanel
+                locale={locale}
+                title={{ de: 'Zahlungsbeleg (Gast)', en: 'Payment receipt (guest)' }[locale]}
+                description={
+                    {
+                        de: 'Nur wenn das Feature für den Gast aktiv ist. Keine Rechnung.',
+                        en: 'Only when the feature is on for the guest. Not an invoice.',
+                    }[locale]
+                }
+                file={offer.customerReceiptFileUpload}
+                busy={fetching}
+                onRegenerate={onRegenerate}
+            />
+            <BookingRequestOfferPaymentDocumentPanel
+                locale={locale}
+                title={{ de: 'Abrechnung (Koch)', en: 'Payout statement (cook)' }[locale]}
+                description={
+                    {
+                        de: 'Nur wenn das Feature für den Koch aktiv ist. Keine Rechnung.',
+                        en: 'Only when the feature is on for the cook. Not an invoice.',
+                    }[locale]
+                }
+                file={offer.cookStatementFileUpload}
+                busy={fetching}
+                onRegenerate={onRegenerate}
+            />
         </div>
     );
 }

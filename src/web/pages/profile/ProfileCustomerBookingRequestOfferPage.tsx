@@ -41,6 +41,10 @@ import { BookingRequestOfferCallTab } from '../../components/BookingRequestOffer
 import { BookingRequestOfferChat } from '../../components/BookingRequestOfferChat';
 import { BookingRequestOfferParticipantAmendmentCustomerPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import {
+    BookingRequestOfferPaymentDocumentPanel,
+    bookingRequestOfferPaymentDocumentVisible,
+} from '../../components/BookingRequestOfferPaymentDocumentPanel';
+import {
     BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID,
     BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID,
     BookingRequestOfferTestimonialPanel,
@@ -72,10 +76,12 @@ import {
     ProfileCustomerBookingRequestOfferChatMessageCreateDocument,
     ProfileCustomerBookingRequestOfferChatMessageReactionUpsertDocument,
     ProfileCustomerBookingRequestOfferConfiguredMenuCreateDocument,
+    ProfileCustomerBookingRequestOfferCustomerReceiptRegenerateDocument,
     ProfileCustomerBookingRequestOfferPageUpdatesDocument,
     ProfileCustomerBookingRequestOfferParticipantAmendmentCancelDocument,
     ProfileCustomerBookingRequestOfferUnreadNotificationCountResetDocument,
 } from '../../graphql/generated';
+import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
@@ -831,6 +837,9 @@ function OfferTabPanel({
     const pullIsPast = bookingPaymentPullIsPast(offer.plannedPaymentPullDateTime);
     const isSetupIntent = offer.payment?.type === 'SETUP_INTENT';
     const timeZone = useTimeZone();
+    const receiptsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS');
+    const [{ fetching: receiptBusy }, regenerateReceipt] = useMutation(ProfileCustomerBookingRequestOfferCustomerReceiptRegenerateDocument);
+    const showPaymentReceipt = receiptsEnabled && bookingRequestOfferPaymentDocumentVisible(offer.paymentStatus);
     const showEventCalendar =
         !canPay &&
         dualAccepted &&
@@ -856,6 +865,34 @@ function OfferTabPanel({
                         location={request.exactEventAddress.displayText}
                         bookingPath={localePath(locale, `/profile/booking-requests/${bookingRequestId}`)}
                         bookingRequestId={bookingRequestId}
+                    />
+                </div>
+            ) : null}
+            {showPaymentReceipt ? (
+                <div className={cn(hasMenu && '@5xl:col-span-2')}>
+                    <BookingRequestOfferPaymentDocumentPanel
+                        locale={locale}
+                        title={{ de: 'Zahlungsbeleg', en: 'Payment receipt' }[locale]}
+                        description={
+                            {
+                                de: 'Beleg über den gezahlten Betrag. Keine Rechnung. Die Bewirtung rechnet der Koch direkt mit dir ab.',
+                                en: 'Receipt for the amount you paid. Not an invoice. The cook invoices you directly for the catering.',
+                            }[locale]
+                        }
+                        file={offer.customerReceiptFileUpload}
+                        busy={receiptBusy}
+                        onRegenerate={() => {
+                            void regenerateReceipt({ bookingRequestOfferId }).then((result) => {
+                                if (result.error || !result.data?.user.bookingRequestOfferCustomerReceiptRegenerate.success) {
+                                    toast.error(
+                                        {
+                                            de: 'Der Zahlungsbeleg konnte nicht erstellt werden.',
+                                            en: 'The payment receipt could not be created.',
+                                        }[locale],
+                                    );
+                                }
+                            });
+                        }}
                     />
                 </div>
             ) : null}

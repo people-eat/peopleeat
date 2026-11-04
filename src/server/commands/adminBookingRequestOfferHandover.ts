@@ -35,6 +35,7 @@ import {
     bookingRequestOfferInitialMessageResolve,
 } from '../utils/bookingRequestOfferInitialChatMessage';
 import { paymentTransferIdsForCookReverse } from '../utils/bookingRequestOfferPaymentDataTransfers';
+import { bookingRequestOfferPaymentPdfsCreate } from '../utils/bookingRequestOfferPaymentPdfsCreate';
 import { bookingRequestOfferPaymentPrepare } from '../utils/bookingRequestOfferPaymentPrepare';
 import { bookingRequestOfferQueuedJobsCancel } from '../utils/bookingRequestOfferQueuedJobsCancel';
 
@@ -575,6 +576,7 @@ export async function adminBookingRequestOfferHandover(
         );
 
         if (bookingRequestOfferPaymentIsPaid(nextPaymentStatus)) {
+            await bookingRequestOfferPaymentPdfsCreate(targetOfferId, serverRuntime);
             await bookingRequestOfferEventTomorrowNotifySchedule(serverRuntime, {
                 bookingRequestId: sourceOffer.bookingRequestId,
                 bookingRequestOfferId: targetOfferId,

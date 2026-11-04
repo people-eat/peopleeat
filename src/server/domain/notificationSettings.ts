@@ -102,6 +102,7 @@ function emailDelivery(purpose: OutboundEmailPurpose, audience: NotificationAudi
         case 'EMAIL_ADDRESS_UPDATE_CONFIRM':
         case 'ACCOUNT_DELETE_CONFIRM':
         case 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED':
+        case 'BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT':
         case 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT':
         case 'SUPPORT_REQUEST_CREATED':
         case 'SUPPORT_REQUEST_MESSAGE_FROM_ADMIN':

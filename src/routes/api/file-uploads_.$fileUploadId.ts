@@ -11,6 +11,7 @@ import {
     fileUploadReferencedByAnyContent,
     fileUploadReferencedByAnyMeal,
     fileUploadReferencedByAnyTestimonial,
+    fileUploadReferencedByBookingRequestOfferPaymentPdf,
     fileUploadReferencedByGiftCardPdf,
     fileUploadReferencedByOutboundEmailAttachment,
     fileUploadReferencedByPublishedContent,
@@ -99,6 +100,7 @@ export const Route = createFileRoute('/api/file-uploads_/$fileUploadId')({
                             (await fileUploadReferencedByAnyContent(db, fileUpload.fileUploadId)) ||
                             (await fileUploadReferencedByAnyMeal(db, fileUpload.fileUploadId)) ||
                             (await fileUploadReferencedByAnyTestimonial(db, fileUpload.fileUploadId)) ||
+                            (await fileUploadReferencedByBookingRequestOfferPaymentPdf(db, fileUpload.fileUploadId)) ||
                             (await fileUploadReferencedByGiftCardPdf(db, fileUpload.fileUploadId)) ||
                             (await fileUploadReferencedByOutboundEmailAttachment(db, fileUpload.fileUploadId)) ||
                             (await fileUploadReferencedByWhatsAppAttachment(db, fileUpload.fileUploadId));

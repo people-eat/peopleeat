@@ -40,6 +40,10 @@ import {
     BookingRequestOfferParticipantAmendmentCookPanel,
     BookingRequestOfferParticipantAmendmentCookReview,
 } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
+import {
+    BookingRequestOfferPaymentDocumentPanel,
+    bookingRequestOfferPaymentDocumentVisible,
+} from '../../components/BookingRequestOfferPaymentDocumentPanel';
 import { BookingRequestOfferCostOverviewPanel } from '../../components/BookingRequestOfferPriceConfigurationPanel';
 import {
     BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID,
@@ -66,6 +70,7 @@ import {
     ProfileCookBookingRequestOfferCallSlotRequestDocument,
     ProfileCookBookingRequestOfferChatMessageCreateDocument,
     ProfileCookBookingRequestOfferChatMessageReactionUpsertDocument,
+    ProfileCookBookingRequestOfferCookStatementRegenerateDocument,
     ProfileCookBookingRequestOfferDeclineDocument,
     ProfileCookBookingRequestOfferPageUpdatesDocument,
     ProfileCookBookingRequestOfferParticipantAmendmentAcceptDocument,
@@ -73,6 +78,7 @@ import {
     ProfileCookBookingRequestOfferPreparationsCompleteDocument,
     ProfileCookBookingRequestOfferUnreadNotificationCountResetDocument,
 } from '../../graphql/generated';
+import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
@@ -763,6 +769,9 @@ function OfferTabPanel({
         : { de: 'Menü vorschlagen', en: 'Suggest a menu' }[locale];
     const canReAccept = offer.status === 'COOK_NEEDS_TO_ACCEPT';
     const timeZone = useTimeZone();
+    const receiptsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS');
+    const [{ fetching: statementBusy }, regenerateStatement] = useMutation(ProfileCookBookingRequestOfferCookStatementRegenerateDocument);
+    const showPayoutStatement = receiptsEnabled && bookingRequestOfferPaymentDocumentVisible(offer.paymentStatus);
     const request = offer.bookingRequest;
     const showEventCalendar = offer.userAccepted === true && offer.cookAccepted === true && request.status !== 'CANCELED';
 
@@ -897,12 +906,48 @@ function OfferTabPanel({
                             </span>
                             {
                                 {
-                                    de: ' wurde bereits bei der Auszahlung automatisch abgezogen. Du erhältst von uns per Email einen Beleg mit dem Auszahlungsbetrag zur Dokumentation.',
-                                    en: ' was already automatically deducted at payout. You will receive a receipt with the payout amount from us by email for documentation.',
+                                    de: ' wurde bereits bei der Auszahlung automatisch abgezogen.',
+                                    en: ' was already automatically deducted at payout.',
                                 }[locale]
                             }
                         </p>
+                        {receiptsEnabled ? (
+                            <p>
+                                {
+                                    {
+                                        de: 'Wenn die Buchung bezahlt ist, schicken wir dir die Abrechnung per Email. Du kannst sie auch hier herunterladen.',
+                                        en: 'Once the booking is paid, we email you the statement. You can also download it here.',
+                                    }[locale]
+                                }
+                            </p>
+                        ) : null}
                     </StatusAlert>
+                ) : null}
+                {showPayoutStatement ? (
+                    <BookingRequestOfferPaymentDocumentPanel
+                        locale={locale}
+                        title={{ de: 'Abrechnung', en: 'Payout statement' }[locale]}
+                        description={
+                            {
+                                de: 'Auszahlungsbetrag und einbehaltene Gebühr. Keine Rechnung. Die Rechnung an den Gast stellst du selbst.',
+                                en: 'Payout amount and the fee we withheld. Not an invoice. You still invoice the guest yourself.',
+                            }[locale]
+                        }
+                        file={offer.cookStatementFileUpload}
+                        busy={statementBusy}
+                        onRegenerate={() => {
+                            void regenerateStatement({ bookingRequestOfferId }).then((result) => {
+                                if (result.error || !result.data?.user.cook.bookingRequestOfferCookStatementRegenerate.success) {
+                                    toast.error(
+                                        {
+                                            de: 'Die Abrechnung konnte nicht erstellt werden.',
+                                            en: 'The payout statement could not be created.',
+                                        }[locale],
+                                    );
+                                }
+                            });
+                        }}
+                    />
                 ) : null}
                 {canNegotiate ? (
                     <Button type="button" variant="outline" className="justify-self-end" asChild disabled={busy}>

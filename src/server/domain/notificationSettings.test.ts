@@ -39,6 +39,7 @@ describe('notificationSettings', () => {
         expect(notificationEmailAllowed(allOff, 'ACCOUNT_DELETE_CONFIRM')).toBe(true);
         expect(notificationEmailAllowed(allOff, 'GIFT_CARD_PURCHASED')).toBe(true);
         expect(notificationEmailAllowed(allOff, 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED')).toBe(true);
+        expect(notificationEmailAllowed(allOff, 'BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT')).toBe(true);
         expect(notificationEmailAllowed(allOff, 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT')).toBe(true);
         expect(notificationEmailAllowed(allOff, 'SUPPORT_REQUEST_MESSAGE_FROM_ADMIN')).toBe(true);
         expect(notificationEmailAllowed(allOff, 'COOK_APPROVED_BY_ADMIN')).toBe(true);

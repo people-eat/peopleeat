@@ -29,6 +29,10 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
         de: 'Angebot: Einkauf / Vorbereitung erledigt',
         en: 'Offer: shopping / preparations done',
     },
+    BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS: {
+        de: 'Angebot: Zahlungsbeleg und Abrechnung',
+        en: 'Offer: payment receipt and payout statement',
+    },
     ASSISTANT_CUSTOMER: { de: 'Assistent: Kunden', en: 'Assistant: customer' },
     ASSISTANT_COOK: { de: 'Assistent: Köche', en: 'Assistant: cook' },
     PUBLICATION_MEALS: { de: 'Veröffentlichung: Gerichte', en: 'Publication: meals' },
@@ -91,6 +95,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE: {
         de: 'Erlaubt dem Koch, Einkauf bzw. Vorbereitung als erledigt zu markieren. Danach sind Kundenänderungen an Teilnehmerzahl und Ort gesperrt.',
         en: 'Lets the cook mark shopping or preparations as done. That locks further customer changes to participants and venue.',
+    },
+    BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS: {
+        de: 'Erstellt für bezahlte Angebote einen Zahlungsbeleg für den Gast und eine Abrechnung für den Koch. Beides ist keine Rechnung. Der Koch stellt weiter selbst die Rechnung an den Gast. Gilt jeweils für den Gast oder den Koch.',
+        en: 'Creates a payment receipt for the guest and a payout statement for the cook on paid offers. Neither is an invoice. The cook still invoices the guest. Applies separately to the guest and the cook.',
     },
     ASSISTANT_CUSTOMER: {
         de: 'Zeigt den Kunden-Assistenten im Profil (Trigger, Seitenleiste und Route).',

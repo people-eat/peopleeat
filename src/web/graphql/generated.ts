@@ -761,10 +761,14 @@ export interface GqlCAdminBookingRequestOffer {
     cookId: Scalars['ID']['output'];
     cookPayoutBlockedReason?: Maybe<GqlCAdminCookPayoutBlockedReason>;
     cookPayoutReady: Scalars['Boolean']['output'];
+    cookStatementFileUpload?: Maybe<GqlCFileUpload>;
+    cookStatementFileUploadId?: Maybe<Scalars['ID']['output']>;
     cookTestimonial?: Maybe<GqlCAdminCookTestimonial>;
     cookUnreadNotificationCount: Scalars['Int']['output'];
     costBreakdown: GqlCCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
+    customerReceiptFileUpload?: Maybe<GqlCFileUpload>;
+    customerReceiptFileUploadId?: Maybe<Scalars['ID']['output']>;
     customerTestimonial?: Maybe<GqlCAdminCustomerTestimonial>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlCHumanChatMessage>;
@@ -1442,6 +1446,7 @@ export interface GqlCAdminMutation {
     bookingRequestOfferConfiguredMenuUpdate: GqlCMutationResult;
     bookingRequestOfferCreate: GqlCMutationResult;
     bookingRequestOfferHandover: GqlCMutationResult;
+    bookingRequestOfferPaymentDocumentsRegenerate: GqlCMutationResult;
     bookingRequestOfferPayoutAlreadyTookPlaceCheck: GqlCMutationResult;
     bookingRequestOfferPayoutMarkOutOfSystem: GqlCMutationResult;
     bookingRequestOfferPayoutRelease: GqlCMutationResult;
@@ -1608,6 +1613,10 @@ export type GqlCAdminMutationBookingRequestOfferCreateArgs = {
 
 export type GqlCAdminMutationBookingRequestOfferHandoverArgs = {
     input: GqlCAdminBookingRequestOfferHandover;
+};
+
+export type GqlCAdminMutationBookingRequestOfferPaymentDocumentsRegenerateArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
 };
 
 export type GqlCAdminMutationBookingRequestOfferPayoutAlreadyTookPlaceCheckArgs = {
@@ -2007,6 +2016,7 @@ export type GqlCAdminOutboundEmailPurpose =
     | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED'
     | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED'
+    | 'BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT'
     | 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT'
     | 'BOOKING_REQUEST_UPDATED'
     | 'CALL_SLOT_BOOKING_CANCEL'
@@ -3332,6 +3342,8 @@ export interface GqlCCookBookingRequestOffer {
     cookAccepted?: Maybe<Scalars['Boolean']['output']>;
     cookDeclinationReason?: Maybe<Scalars['String']['output']>;
     cookId: Scalars['ID']['output'];
+    cookStatementFileUpload?: Maybe<GqlCFileUpload>;
+    cookStatementFileUploadId?: Maybe<Scalars['ID']['output']>;
     cookTestimonial?: Maybe<GqlCCookTestimonial>;
     cookUnreadNotificationCount: Scalars['Int']['output'];
     costBreakdown: GqlCCostBreakdown;
@@ -3625,6 +3637,7 @@ export interface GqlCCookMutation {
     bookingRequestOfferCallSlotRequest: GqlCMutationResult;
     bookingRequestOfferChatMessageCreate: GqlCMutationResult;
     bookingRequestOfferChatMessageReactionUpsert: GqlCMutationResult;
+    bookingRequestOfferCookStatementRegenerate: GqlCMutationResult;
     bookingRequestOfferCreate: GqlCMutationResult;
     bookingRequestOfferDecline: GqlCMutationResult;
     bookingRequestOfferParticipantAmendmentAccept: GqlCMutationResult;
@@ -3717,6 +3730,10 @@ export type GqlCCookMutationBookingRequestOfferChatMessageCreateArgs = {
 export type GqlCCookMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
     bookingRequestOfferEventId: Scalars['ID']['input'];
     emoji: Scalars['String']['input'];
+};
+
+export type GqlCCookMutationBookingRequestOfferCookStatementRegenerateArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
 };
 
 export type GqlCCookMutationBookingRequestOfferCreateArgs = {
@@ -4014,6 +4031,7 @@ export type GqlCFeatureToggleKey =
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
+    | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
     | 'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE'
     | 'BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW'
     | 'BOOKING_REQUEST_RESTRICTIONS'
@@ -4899,6 +4917,8 @@ export interface GqlCUserBookingRequestOffer {
     cookId: Scalars['ID']['output'];
     costBreakdown: GqlCCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
+    customerReceiptFileUpload?: Maybe<GqlCFileUpload>;
+    customerReceiptFileUploadId?: Maybe<Scalars['ID']['output']>;
     customerTestimonial?: Maybe<GqlCCustomerTestimonial>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlCHumanChatMessage>;
@@ -5038,6 +5058,7 @@ export interface GqlCUserMutation {
     bookingRequestOfferChatMessageCreate: GqlCMutationResult;
     bookingRequestOfferChatMessageReactionUpsert: GqlCMutationResult;
     bookingRequestOfferConfiguredMenuCreate: GqlCMutationResult;
+    bookingRequestOfferCustomerReceiptRegenerate: GqlCMutationResult;
     bookingRequestOfferDecline: GqlCMutationResult;
     bookingRequestOfferParticipantAmendmentCancel: GqlCMutationResult;
     bookingRequestOfferParticipantAmendmentCreate: GqlCMutationResult;
@@ -5153,6 +5174,10 @@ export type GqlCUserMutationBookingRequestOfferConfiguredMenuCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     courseSelections: Array<GqlCBookingRequestOfferConfiguredMenuCourseSelectionInput>;
     menuId: Scalars['ID']['input'];
+};
+
+export type GqlCUserMutationBookingRequestOfferCustomerReceiptRegenerateArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
 };
 
 export type GqlCUserMutationBookingRequestOfferDeclineArgs = {
@@ -10473,6 +10498,8 @@ export type GqlCAdminBookingRequestOfferPageOfferFragment = {
     canRequestParticipantAmendment: boolean;
     canCompletePreparations: boolean;
     createdAt: string;
+    customerReceiptFileUpload: { fileUploadId: string; filename: string; url: string } | null;
+    cookStatementFileUpload: { fileUploadId: string; filename: string; url: string } | null;
     participantAmendment: {
         requestedAt: string;
         claimedAt: string | null;
@@ -10708,6 +10735,8 @@ export type GqlCAdminBookingRequestOfferPageQuery = {
                     canRequestParticipantAmendment: boolean;
                     canCompletePreparations: boolean;
                     createdAt: string;
+                    customerReceiptFileUpload: { fileUploadId: string; filename: string; url: string } | null;
+                    cookStatementFileUpload: { fileUploadId: string; filename: string; url: string } | null;
                     participantAmendment: {
                         requestedAt: string;
                         claimedAt: string | null;
@@ -10956,6 +10985,8 @@ export type GqlCAdminBookingRequestOfferPageUpdatesSubscription = {
             canRequestParticipantAmendment: boolean;
             canCompletePreparations: boolean;
             createdAt: string;
+            customerReceiptFileUpload: { fileUploadId: string; filename: string; url: string } | null;
+            cookStatementFileUpload: { fileUploadId: string; filename: string; url: string } | null;
             participantAmendment: {
                 requestedAt: string;
                 claimedAt: string | null;
@@ -11209,6 +11240,14 @@ export type GqlCAdminBookingRequestOfferPreparationsClearMutationVariables = Exa
 
 export type GqlCAdminBookingRequestOfferPreparationsClearMutation = {
     admin: { bookingRequestOfferPreparationsClear: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCAdminBookingRequestOfferPaymentDocumentsRegenerateMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+}>;
+
+export type GqlCAdminBookingRequestOfferPaymentDocumentsRegenerateMutation = {
+    admin: { bookingRequestOfferPaymentDocumentsRegenerate: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCAdminBookingRequestOfferPayoutReleaseMutationVariables = Exact<{
@@ -17670,10 +17709,12 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
             travelExpensesCents: number;
             totalWithoutDiscountsCentsCustomer: number;
             payoutCentsCook: number;
+            paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
             priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
             testimonialMissing: boolean;
             preparationsCompletedAt: string | null;
             canCompletePreparations: boolean;
+            cookStatementFileUpload: { fileUploadId: string; filename: string; url: string } | null;
             configuredMenu: {
                 title: string;
                 description: string;
@@ -17846,10 +17887,12 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                     travelExpensesCents: number;
                     totalWithoutDiscountsCentsCustomer: number;
                     payoutCentsCook: number;
+                    paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
                     priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
                     testimonialMissing: boolean;
                     preparationsCompletedAt: string | null;
                     canCompletePreparations: boolean;
+                    cookStatementFileUpload: { fileUploadId: string; filename: string; url: string } | null;
                     configuredMenu: {
                         title: string;
                         description: string;
@@ -18033,10 +18076,12 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                 travelExpensesCents: number;
                 totalWithoutDiscountsCentsCustomer: number;
                 payoutCentsCook: number;
+                paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
                 priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
                 testimonialMissing: boolean;
                 preparationsCompletedAt: string | null;
                 canCompletePreparations: boolean;
+                cookStatementFileUpload: { fileUploadId: string; filename: string; url: string } | null;
                 configuredMenu: {
                     title: string;
                     description: string;
@@ -18188,6 +18233,14 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
             } | null;
         } | null;
     };
+};
+
+export type GqlCProfileCookBookingRequestOfferCookStatementRegenerateMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+}>;
+
+export type GqlCProfileCookBookingRequestOfferCookStatementRegenerateMutation = {
+    user: { cook: { bookingRequestOfferCookStatementRegenerate: { success: boolean; referenceId: string | null } } };
 };
 
 export type GqlCProfileCookBookingRequestOfferAcceptMutationVariables = Exact<{
@@ -20594,6 +20647,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
                 totalBeforeDiscount: { title: string; amountCents: number } | null;
                 totalPerPerson: { title: string; amountCents: number } | null;
             };
+            customerReceiptFileUpload: { fileUploadId: string; filename: string; url: string } | null;
             payment: { clientSecret: string; publishableKey: string; type: Schema.GqlCBookingRequestOfferPaymentDataType } | null;
             participantAmendment: {
                 requestedAt: string;
@@ -20781,6 +20835,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
                         totalBeforeDiscount: { title: string; amountCents: number } | null;
                         totalPerPerson: { title: string; amountCents: number } | null;
                     };
+                    customerReceiptFileUpload: { fileUploadId: string; filename: string; url: string } | null;
                     payment: { clientSecret: string; publishableKey: string; type: Schema.GqlCBookingRequestOfferPaymentDataType } | null;
                     participantAmendment: {
                         requestedAt: string;
@@ -20979,6 +21034,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
                     totalBeforeDiscount: { title: string; amountCents: number } | null;
                     totalPerPerson: { title: string; amountCents: number } | null;
                 };
+                customerReceiptFileUpload: { fileUploadId: string; filename: string; url: string } | null;
                 payment: { clientSecret: string; publishableKey: string; type: Schema.GqlCBookingRequestOfferPaymentDataType } | null;
                 participantAmendment: {
                     requestedAt: string;
@@ -21037,6 +21093,14 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
             }>;
         } | null;
     };
+};
+
+export type GqlCProfileCustomerBookingRequestOfferCustomerReceiptRegenerateMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+}>;
+
+export type GqlCProfileCustomerBookingRequestOfferCustomerReceiptRegenerateMutation = {
+    user: { bookingRequestOfferCustomerReceiptRegenerate: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCProfileCustomerBookingRequestOfferAcceptMutationVariables = Exact<{
@@ -26731,6 +26795,30 @@ export const AdminBookingRequestOfferPageOfferFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'payoutDateTime' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'customerReceiptFileUpload' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cookStatementFileUpload' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookPayoutReady' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookPayoutBlockedReason' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripePaymentIntentUrl' } },
@@ -30917,6 +31005,19 @@ export const ProfileCookBookingRequestOfferPageUserFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'cookStatementFileUpload' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
                                             { kind: 'Field', name: { kind: 'Name', value: 'priceAutoAdjustReason' } },
                                             {
                                                 kind: 'Field',
@@ -33849,6 +33950,18 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                                                 },
                                             },
                                             { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'customerReceiptFileUpload' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'payment' },
@@ -48477,6 +48590,30 @@ export const AdminBookingRequestOfferPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'payoutDateTime' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'customerReceiptFileUpload' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cookStatementFileUpload' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookPayoutReady' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookPayoutBlockedReason' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripePaymentIntentUrl' } },
@@ -49112,6 +49249,30 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'paymentDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'plannedPayoutDateTime' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'payoutDateTime' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'customerReceiptFileUpload' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cookStatementFileUpload' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookPayoutReady' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookPayoutBlockedReason' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'stripePaymentIntentUrl' } },
@@ -50062,6 +50223,58 @@ export const AdminBookingRequestOfferPreparationsClearDocument = {
 } as unknown as DocumentNode<
     GqlCAdminBookingRequestOfferPreparationsClearMutation,
     GqlCAdminBookingRequestOfferPreparationsClearMutationVariables
+>;
+export const AdminBookingRequestOfferPaymentDocumentsRegenerateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminBookingRequestOfferPaymentDocumentsRegenerate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferPaymentDocumentsRegenerate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminBookingRequestOfferPaymentDocumentsRegenerateMutation,
+    GqlCAdminBookingRequestOfferPaymentDocumentsRegenerateMutationVariables
 >;
 export const AdminBookingRequestOfferPayoutReleaseDocument = {
     kind: 'Document',
@@ -72715,6 +72928,19 @@ export const ProfileCookBookingRequestOfferPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'cookStatementFileUpload' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
                                             { kind: 'Field', name: { kind: 'Name', value: 'priceAutoAdjustReason' } },
                                             {
                                                 kind: 'Field',
@@ -73238,6 +73464,19 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'travelExpensesCents' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'totalWithoutDiscountsCentsCustomer' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'payoutCentsCook' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'cookStatementFileUpload' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
                                             { kind: 'Field', name: { kind: 'Name', value: 'priceAutoAdjustReason' } },
                                             {
                                                 kind: 'Field',
@@ -73534,6 +73773,67 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
 } as unknown as DocumentNode<
     GqlCProfileCookBookingRequestOfferPageUpdatesSubscription,
     GqlCProfileCookBookingRequestOfferPageUpdatesSubscriptionVariables
+>;
+export const ProfileCookBookingRequestOfferCookStatementRegenerateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookBookingRequestOfferCookStatementRegenerate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'bookingRequestOfferCookStatementRegenerate' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCookBookingRequestOfferCookStatementRegenerateMutation,
+    GqlCProfileCookBookingRequestOfferCookStatementRegenerateMutationVariables
 >;
 export const ProfileCookBookingRequestOfferAcceptDocument = {
     kind: 'Document',
@@ -81282,6 +81582,18 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
                                             {
                                                 kind: 'Field',
+                                                name: { kind: 'Name', value: 'customerReceiptFileUpload' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'payment' },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
@@ -81897,6 +82209,18 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
                                             {
                                                 kind: 'Field',
+                                                name: { kind: 'Name', value: 'customerReceiptFileUpload' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'filename' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'payment' },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
@@ -81976,6 +82300,58 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
 } as unknown as DocumentNode<
     GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription,
     GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscriptionVariables
+>;
+export const ProfileCustomerBookingRequestOfferCustomerReceiptRegenerateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCustomerBookingRequestOfferCustomerReceiptRegenerate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferCustomerReceiptRegenerate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCustomerBookingRequestOfferCustomerReceiptRegenerateMutation,
+    GqlCProfileCustomerBookingRequestOfferCustomerReceiptRegenerateMutationVariables
 >;
 export const ProfileCustomerBookingRequestOfferAcceptDocument = {
     kind: 'Document',

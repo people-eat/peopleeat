@@ -758,10 +758,14 @@ export interface GqlSAdminBookingRequestOffer {
     cookId: Scalars['ID']['output'];
     cookPayoutBlockedReason?: Maybe<GqlSAdminCookPayoutBlockedReason>;
     cookPayoutReady: Scalars['Boolean']['output'];
+    cookStatementFileUpload?: Maybe<GqlSFileUpload>;
+    cookStatementFileUploadId?: Maybe<Scalars['ID']['output']>;
     cookTestimonial?: Maybe<GqlSAdminCookTestimonial>;
     cookUnreadNotificationCount: Scalars['Int']['output'];
     costBreakdown: GqlSCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
+    customerReceiptFileUpload?: Maybe<GqlSFileUpload>;
+    customerReceiptFileUploadId?: Maybe<Scalars['ID']['output']>;
     customerTestimonial?: Maybe<GqlSAdminCustomerTestimonial>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlSHumanChatMessage>;
@@ -1439,6 +1443,7 @@ export interface GqlSAdminMutation {
     bookingRequestOfferConfiguredMenuUpdate: GqlSMutationResult;
     bookingRequestOfferCreate: GqlSMutationResult;
     bookingRequestOfferHandover: GqlSMutationResult;
+    bookingRequestOfferPaymentDocumentsRegenerate: GqlSMutationResult;
     bookingRequestOfferPayoutAlreadyTookPlaceCheck: GqlSMutationResult;
     bookingRequestOfferPayoutMarkOutOfSystem: GqlSMutationResult;
     bookingRequestOfferPayoutRelease: GqlSMutationResult;
@@ -1605,6 +1610,10 @@ export type GqlSAdminMutationBookingRequestOfferCreateArgs = {
 
 export type GqlSAdminMutationBookingRequestOfferHandoverArgs = {
     input: GqlSAdminBookingRequestOfferHandover;
+};
+
+export type GqlSAdminMutationBookingRequestOfferPaymentDocumentsRegenerateArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
 };
 
 export type GqlSAdminMutationBookingRequestOfferPayoutAlreadyTookPlaceCheckArgs = {
@@ -2004,6 +2013,7 @@ export type GqlSAdminOutboundEmailPurpose =
     | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED'
     | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED'
+    | 'BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT'
     | 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT'
     | 'BOOKING_REQUEST_UPDATED'
     | 'CALL_SLOT_BOOKING_CANCEL'
@@ -3329,6 +3339,8 @@ export interface GqlSCookBookingRequestOffer {
     cookAccepted?: Maybe<Scalars['Boolean']['output']>;
     cookDeclinationReason?: Maybe<Scalars['String']['output']>;
     cookId: Scalars['ID']['output'];
+    cookStatementFileUpload?: Maybe<GqlSFileUpload>;
+    cookStatementFileUploadId?: Maybe<Scalars['ID']['output']>;
     cookTestimonial?: Maybe<GqlSCookTestimonial>;
     cookUnreadNotificationCount: Scalars['Int']['output'];
     costBreakdown: GqlSCostBreakdown;
@@ -3622,6 +3634,7 @@ export interface GqlSCookMutation {
     bookingRequestOfferCallSlotRequest: GqlSMutationResult;
     bookingRequestOfferChatMessageCreate: GqlSMutationResult;
     bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
+    bookingRequestOfferCookStatementRegenerate: GqlSMutationResult;
     bookingRequestOfferCreate: GqlSMutationResult;
     bookingRequestOfferDecline: GqlSMutationResult;
     bookingRequestOfferParticipantAmendmentAccept: GqlSMutationResult;
@@ -3714,6 +3727,10 @@ export type GqlSCookMutationBookingRequestOfferChatMessageCreateArgs = {
 export type GqlSCookMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
     bookingRequestOfferEventId: Scalars['ID']['input'];
     emoji: Scalars['String']['input'];
+};
+
+export type GqlSCookMutationBookingRequestOfferCookStatementRegenerateArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
 };
 
 export type GqlSCookMutationBookingRequestOfferCreateArgs = {
@@ -4011,6 +4028,7 @@ export type GqlSFeatureToggleKey =
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
+    | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
     | 'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE'
     | 'BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW'
     | 'BOOKING_REQUEST_RESTRICTIONS'
@@ -4896,6 +4914,8 @@ export interface GqlSUserBookingRequestOffer {
     cookId: Scalars['ID']['output'];
     costBreakdown: GqlSCostBreakdown;
     createdAt: Scalars['DateTime']['output'];
+    customerReceiptFileUpload?: Maybe<GqlSFileUpload>;
+    customerReceiptFileUploadId?: Maybe<Scalars['ID']['output']>;
     customerTestimonial?: Maybe<GqlSCustomerTestimonial>;
     menuPriceCents: Scalars['Int']['output'];
     messages: Array<GqlSHumanChatMessage>;
@@ -5035,6 +5055,7 @@ export interface GqlSUserMutation {
     bookingRequestOfferChatMessageCreate: GqlSMutationResult;
     bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
     bookingRequestOfferConfiguredMenuCreate: GqlSMutationResult;
+    bookingRequestOfferCustomerReceiptRegenerate: GqlSMutationResult;
     bookingRequestOfferDecline: GqlSMutationResult;
     bookingRequestOfferParticipantAmendmentCancel: GqlSMutationResult;
     bookingRequestOfferParticipantAmendmentCreate: GqlSMutationResult;
@@ -5150,6 +5171,10 @@ export type GqlSUserMutationBookingRequestOfferConfiguredMenuCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     courseSelections: Array<GqlSBookingRequestOfferConfiguredMenuCourseSelectionInput>;
     menuId: Scalars['ID']['input'];
+};
+
+export type GqlSUserMutationBookingRequestOfferCustomerReceiptRegenerateArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
 };
 
 export type GqlSUserMutationBookingRequestOfferDeclineArgs = {
@@ -7292,10 +7317,14 @@ export type GqlSAdminBookingRequestOfferResolvers<
     cookId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     cookPayoutBlockedReason?: Resolver<Maybe<GqlSResolversTypes['AdminCookPayoutBlockedReason']>, ParentType, ContextType>;
     cookPayoutReady?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    cookStatementFileUpload?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
+    cookStatementFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     cookTestimonial?: Resolver<Maybe<GqlSResolversTypes['AdminCookTestimonial']>, ParentType, ContextType>;
     cookUnreadNotificationCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     costBreakdown?: Resolver<GqlSResolversTypes['CostBreakdown'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    customerReceiptFileUpload?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
+    customerReceiptFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     customerTestimonial?: Resolver<Maybe<GqlSResolversTypes['AdminCustomerTestimonial']>, ParentType, ContextType>;
     menuPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     messages?: Resolver<Array<GqlSResolversTypes['HumanChatMessage']>, ParentType, ContextType>;
@@ -7946,6 +7975,12 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationBookingRequestOfferHandoverArgs, 'input'>
+    >;
+    bookingRequestOfferPaymentDocumentsRegenerate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationBookingRequestOfferPaymentDocumentsRegenerateArgs, 'bookingRequestOfferId'>
     >;
     bookingRequestOfferPayoutAlreadyTookPlaceCheck?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -9566,6 +9601,8 @@ export type GqlSCookBookingRequestOfferResolvers<
     cookAccepted?: Resolver<Maybe<GqlSResolversTypes['Boolean']>, ParentType, ContextType>;
     cookDeclinationReason?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     cookId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    cookStatementFileUpload?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
+    cookStatementFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     cookTestimonial?: Resolver<Maybe<GqlSResolversTypes['CookTestimonial']>, ParentType, ContextType>;
     cookUnreadNotificationCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     costBreakdown?: Resolver<GqlSResolversTypes['CostBreakdown'], ParentType, ContextType>;
@@ -9890,6 +9927,12 @@ export type GqlSCookMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSCookMutationBookingRequestOfferChatMessageReactionUpsertArgs, 'bookingRequestOfferEventId' | 'emoji'>
+    >;
+    bookingRequestOfferCookStatementRegenerate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationBookingRequestOfferCookStatementRegenerateArgs, 'bookingRequestOfferId'>
     >;
     bookingRequestOfferCreate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -11028,6 +11071,8 @@ export type GqlSUserBookingRequestOfferResolvers<
     cookId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     costBreakdown?: Resolver<GqlSResolversTypes['CostBreakdown'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    customerReceiptFileUpload?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
+    customerReceiptFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     customerTestimonial?: Resolver<Maybe<GqlSResolversTypes['CustomerTestimonial']>, ParentType, ContextType>;
     menuPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     messages?: Resolver<Array<GqlSResolversTypes['HumanChatMessage']>, ParentType, ContextType>;
@@ -11251,6 +11296,12 @@ export type GqlSUserMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSUserMutationBookingRequestOfferConfiguredMenuCreateArgs, 'bookingRequestOfferId' | 'courseSelections' | 'menuId'>
+    >;
+    bookingRequestOfferCustomerReceiptRegenerate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserMutationBookingRequestOfferCustomerReceiptRegenerateArgs, 'bookingRequestOfferId'>
     >;
     bookingRequestOfferDecline?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -11859,6 +11910,7 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED'
     | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED'
+    | 'BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT'
     | 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT'
     | 'BOOKING_REQUEST_UPDATED'
     | 'CALL_SLOT_BOOKING_CANCEL'
@@ -11895,6 +11947,7 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED'
     | 'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED'
+    | 'BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT'
     | 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT'
     | 'BOOKING_REQUEST_UPDATED'
     | 'CALL_SLOT_BOOKING_CANCEL'
@@ -11932,6 +11985,7 @@ export const GqlSAdminOutboundEmailPurposeSchema: z.ZodType<
     'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_DECLINED',
     'BOOKING_REQUEST_OFFER_PARTICIPANT_AMENDMENT_REQUESTED',
     'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED',
+    'BOOKING_REQUEST_OFFER_PAYMENT_STATEMENT',
     'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
     'BOOKING_REQUEST_UPDATED',
     'CALL_SLOT_BOOKING_CANCEL',
@@ -12400,6 +12454,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
+    | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
     | 'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE'
     | 'BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW'
     | 'BOOKING_REQUEST_RESTRICTIONS'
@@ -12418,6 +12473,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
+    | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
     | 'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE'
     | 'BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW'
     | 'BOOKING_REQUEST_RESTRICTIONS'
@@ -12437,6 +12493,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'ASSISTANT_CUSTOMER',
     'BOOKING_REQUEST_OFFER_AMENDMENT',
     'BOOKING_REQUEST_OFFER_CHAT_REACTIONS',
+    'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS',
     'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE',
     'BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW',
     'BOOKING_REQUEST_RESTRICTIONS',

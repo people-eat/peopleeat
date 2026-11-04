@@ -18,6 +18,7 @@ export function toGqlUserBookingRequestOffer(input: ToGqlUserBookingRequestOffer
         ...fields,
         cook,
         suggestedMenus,
+        customerReceiptFileUpload: null,
         messages: [],
         // Field resolvers populate the review and its eligibility flag.
         customerTestimonial: null,

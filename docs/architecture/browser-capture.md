@@ -95,13 +95,17 @@ Routes intended for server-side capture live under `src/routes/server.*` (matche
 
 **First shipped consumers:** gift-card purchase receipt at `/server/gift-cards/$giftCardId/receipt` and printable voucher at
 `/server/gift-cards/$giftCardId/voucher` (HMAC subject = `giftCardId`), rendered by `GiftCardReceiptPage` / `GiftCardVoucherPage` and
-captured via `browser.capturePdf` from `giftCardPay`. See [gift-card-purchase.md](../features/gift-card-purchase.md).
+captured via `browser.capturePdf` from `giftCardPay`. See [gift-card-purchase.md](../features/gift-card-purchase.md). Paid booking offers
+use the same path for a customer receipt at `/server/booking-request-offers/$bookingRequestOfferId/customer-receipt` and a cook statement at
+`/server/booking-request-offers/$bookingRequestOfferId/cook-statement` (HMAC subject = `bookingRequestOfferId`). See
+[booking-payment-receipts.md](../features/booking-payment-receipts.md).
 
 `RootDocument` (`src/web/components/RootDocument.tsx`) detects `/server/*` and **omits site chrome** (navigation progress, toasters,
 floating UI, the GraphQL client, and session startup gates) and **forces a white / neutral `body` background**. Skipping the session shell
 keeps Chromium from minting an anonymous session on every capture. Document `lang` comes from the gift-card receipt and voucher matches
-(`giftCard.locale`). These routes have no `{-$locale}` param, so the URL locale would otherwise stay German. A new capture route that
-carries its own locale needs a match in `useDocumentLocale`. Without the chrome skip:
+(`giftCard.locale`) and from the booking payment-document matches (`locale` on the loader data). These routes have no `{-$locale}` param, so
+the URL locale would otherwise stay German. A new capture route that carries its own locale needs a match in `useDocumentLocale`. Without
+the chrome skip:
 
 - Fixed overlays (nav progress, ambient chrome) **reprint on every PDF page**
 - Global theme backgrounds (e.g. cool off-white `--background`) show in PDF page margins and in the empty trailing region of the last page
