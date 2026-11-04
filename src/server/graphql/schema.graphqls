@@ -5711,6 +5711,8 @@ enum FeatureToggleKey {
     PUBLICATION_MEALS
     PUBLICATION_MENUS
     LANDING_BOOKING_HOW_IT_WORKS
+    # Home testimonials section uses the shared public review card instead of the scrolling quote marquee.
+    LANDING_TESTIMONIAL_CARDS
     PARTNER_PAGE_PARTNERS_EXPLORE
 }
 

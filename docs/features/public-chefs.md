@@ -33,7 +33,8 @@ Shared profile layout (`ChefProfileView`, container-query driven):
   (`@md`) → 4 (`@2xl`) → 5 (`@5xl`).
 - **About** — full biography plus cook additional picture when uploaded, otherwise the bilingual peopleeat benefits list (taste / relaxed /
   secure booking); two columns from `@3xl`. Hidden when the cook has no biography.
-- **Testimonials** — published customer reviews; hidden when none — [testimonials.md](./testimonials.md). Grid 1 → 2 (`@2xl`) → 3 (`@5xl`).
+- **Testimonials** — published customer reviews as the shared public review card; hidden when none — [testimonials.md](./testimonials.md).
+  Grid 1 → 2 (`@2xl`) → 3 (`@5xl`).
 - **FAQ** — shared public booking FAQ. The same entries are emitted as `FAQPage` JSON-LD.
 
 The document title is “{name}, Privatkoch in {city}” (English: “private chef in {city}”), kept to 60 characters before the peopleeat suffix.

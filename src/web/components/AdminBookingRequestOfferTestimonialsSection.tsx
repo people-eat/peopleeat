@@ -36,7 +36,7 @@ import { Input } from './base/input';
 import { StatusAlert } from './base/status-alert';
 import { StatusBadge } from './base/status-badge';
 import { Textarea } from './base/textarea';
-import { PageTestimonialCardFace } from './PageTestimonialCard';
+import { TestimonialCardFace } from './TestimonialCard';
 import { TestimonialRatingInput } from './TestimonialRatingInput';
 
 export type AdminOfferTestimonial = {
@@ -386,7 +386,7 @@ function TestimonialSide({
 
             {existing && !editing ? (
                 <>
-                    <PageTestimonialCardFace
+                    <TestimonialCardFace
                         testimonial={{
                             authorName: existing.displayAuthorName,
                             location: existing.displayLocation,

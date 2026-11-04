@@ -15,8 +15,8 @@ import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { Button } from './base/button';
 import { Spinner } from './base/spinner';
 import { Textarea } from './base/textarea';
-import type { PageTestimonialCardModel } from './PageTestimonialCard';
-import { PageTestimonialCardFace, PageTestimonialDetailDialog } from './PageTestimonialCard';
+import type { TestimonialCardModel } from './TestimonialCard';
+import { TestimonialCardFace, TestimonialDetailDialog } from './TestimonialCard';
 import { TestimonialRatingInput } from './TestimonialRatingInput';
 
 export const BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID = 'booking-request-offer-testimonial-form';
@@ -117,7 +117,7 @@ function imageIdsFromUrls(imageUrls: string[] | undefined): string[] {
     return (imageUrls ?? []).map(fileUploadIdFromUrl).filter((id): id is string => id != null);
 }
 
-function toCardModel(shown: ExistingTestimonial, authorFallback: AuthorFallback): PageTestimonialCardModel {
+function toCardModel(shown: ExistingTestimonial, authorFallback: AuthorFallback): TestimonialCardModel {
     return {
         authorName: shown.authorName?.trim() || authorFallback.authorName,
         authorProfilePictureUrl: shown.authorProfilePictureUrl ?? authorFallback.authorProfilePictureUrl ?? null,
@@ -717,7 +717,7 @@ export function BookingRequestOfferTestimonialPanel({
                     </p>
                 </div>
 
-                <PageTestimonialCardFace
+                <TestimonialCardFace
                     testimonial={card}
                     onOpenImage={card.imageUrls != null && card.imageUrls.length > 0 ? openDetail : undefined}
                 />
@@ -731,7 +731,7 @@ export function BookingRequestOfferTestimonialPanel({
                     </Button>
                 </div>
 
-                <PageTestimonialDetailDialog
+                <TestimonialDetailDialog
                     testimonial={card}
                     open={detailOpen}
                     onOpenChange={setDetailOpen}

@@ -49,6 +49,7 @@ testimonial tab).
   image update, and publish stay separate. Offer self-service uses `bookingRequestOfferTestimonialUpsert` keyed by `bookingRequestOfferId`
   (insert requires completed offer; update re-applies the publication gate).
 - Display fallbacks load offer/booking context (author, **city only**, occasion, participants) — never street address.
-- Home / how-to-become-a-chef marketing quotes stay static (not DB-driven).
+- Home / how-to-become-a-chef marketing quotes stay static (not DB-driven). Home can render those quotes with the shared public card when
+  `LANDING_TESTIMONIAL_CARDS` is on; the chef-recruitment quotes stay the large quote figures.
 - Testimonial `imageUrls` are `/api/file-uploads/{id}` paths. Download auth treats published testimonials as public references and any
   testimonial (including `PENDING_REVIEW`) as an admin reference — see [file-storage.md](./file-storage.md).

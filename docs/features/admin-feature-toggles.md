@@ -31,6 +31,7 @@ Keys today:
 - Menu publication
 - WhatsApp English templates (when off, EN recipients get DE Meta template language codes)
 - Landing booking how-it-works section (muted loops + 60s film on `/` and `/en/`)
+- Landing testimonial cards (shared review card on `/` and `/en/` instead of the scrolling quote marquee)
 - Partner page partners-explore CTA (“Entdecke mehr unserer Partner” on `/partners/$pathName`)
 
 Calls, scheduling, and WhatsApp webhook signature validation stay always on and are not toggles.
@@ -131,6 +132,9 @@ Wired today:
 - **AI menu evaluation** (`AI_MENU_EVALUATION`) — cook open / refresh / apply gates use the cook `userId`
 - **Landing booking how-it-works** (`LANDING_BOOKING_HOW_IT_WORKS`) — shows `SectionBookingHowItWorks` on the home page when on; missing row
   stays off. Public home reads `Session.activeFeatureToggleKeys` (global + signed-in override). See [landing.md](./landing.md)
+- **Landing testimonial cards** (`LANDING_TESTIMONIAL_CARDS`) — home testimonials use the shared public review card when on; missing row
+  stays off and the scrolling marketing marquee stays. Quotes stay the fixed marketing copy. Public home reads
+  `Session.activeFeatureToggleKeys` (global + signed-in override). See [landing.md](./landing.md)
 - **Partner page partners explore** (`PARTNER_PAGE_PARTNERS_EXPLORE`) — shows `SectionPartnersExplore` on public partner detail pages when
   on; missing row stays off. Public partner page reads `Session.activeFeatureToggleKeys` (global + signed-in override). Admin partner
   preview keeps the section for ops. See [partners.md](./partners.md)

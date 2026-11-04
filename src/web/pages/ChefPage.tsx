@@ -39,11 +39,13 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
         testimonials: cook.testimonials.map((testimonial) => ({
             customerTestimonialId: testimonial.customerTestimonialId,
             authorName: testimonial.authorName,
+            authorProfilePictureUrl: testimonial.authorProfilePicture?.url ?? null,
             location: testimonial.location,
             occasion: testimonial.occasion,
             body: testimonial.body,
             rating: testimonial.rating,
             imageUrls: testimonial.imageUrls,
+            createdAt: testimonial.createdAt,
         })),
         // Hero rating row only when there is at least one published review;
         // omit so visitors never see “no reviews yet” on the public page.

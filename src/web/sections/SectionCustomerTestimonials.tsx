@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 
 import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
+import { TestimonialCard } from '../components/TestimonialCard';
 import { useLocale } from '../hooks/useLocale';
 
 type Testimonial = {
@@ -13,7 +14,7 @@ type Testimonial = {
     imageUrl?: string;
 };
 
-function TestimonialCard({ testimonial, peopleLabel }: { testimonial: Testimonial; peopleLabel: string }) {
+function MarqueeQuoteCard({ testimonial, peopleLabel }: { testimonial: Testimonial; peopleLabel: string }) {
     const locale = useLocale();
 
     return (
@@ -48,7 +49,7 @@ function TestimonialCard({ testimonial, peopleLabel }: { testimonial: Testimonia
     );
 }
 
-export function SectionCustomerTestimonials() {
+export function SectionCustomerTestimonials({ variant = 'marquee' }: { variant?: 'marquee' | 'cards' }) {
     const locale = useLocale();
 
     const testimonials: Testimonial[] = [
@@ -89,33 +90,70 @@ export function SectionCustomerTestimonials() {
     const duplicatedTestimonials = [...testimonials, ...testimonials, ...testimonials];
     const peopleLabel = { de: 'Personen', en: 'people' }[locale];
 
+    const intro = (
+        <div className={variant === 'cards' ? 'flex flex-col justify-center' : 'flex flex-col justify-center p-8 @lg:flex-1 @lg:p-16'}>
+            <h2 className="mb-6 font-serif text-3xl font-light @md:text-4xl">
+                {{ de: 'Was sagen unsere Kunden', en: 'What do our customers say?' }[locale]}
+            </h2>
+            <p className="mb-8 text-lg text-muted-foreground">
+                {
+                    {
+                        de: 'Du musst nicht warten und kannst direkt aus einem unserer Top-Menüs auswählen, die speziell für jede Saison zusammengestellt wurden.',
+                        en: "You don't have to wait and can choose directly from one of our top menus, which have been specially put together for each season.",
+                    }[locale]
+                }
+            </p>
+            <div className="flex gap-4">
+                <Button asChild>
+                    <Link to="/{-$locale}/booking-request/form">{{ de: 'Anfrage senden', en: 'Send request' }[locale]}</Link>
+                </Button>
+            </div>
+        </div>
+    );
+
+    if (variant === 'cards') {
+        return (
+            <section className="mx-auto grid w-full max-w-7xl items-start gap-10 px-4 @lg:grid-cols-2 @lg:px-6">
+                {intro}
+                <ul className="flex flex-col gap-6">
+                    {testimonials.map((testimonial) => {
+                        const people = testimonial.people != null ? `${testimonial.people} ${peopleLabel}` : null;
+                        const location = [testimonial.location, people].filter(Boolean).join(', ');
+                        return (
+                            <li key={testimonial.id}>
+                                <TestimonialCard
+                                    showBookingCta
+                                    testimonial={{
+                                        authorName: testimonial.name,
+                                        location,
+                                        occasion: null,
+                                        body: testimonial.text,
+                                        rating: null,
+                                        imageUrls: testimonial.imageUrl ? [testimonial.imageUrl] : [],
+                                    }}
+                                />
+                            </li>
+                        );
+                    })}
+                </ul>
+            </section>
+        );
+    }
+
     return (
         <section className="mx-auto flex h-[1200px] w-full max-w-7xl flex-col @lg:h-[700px] @lg:flex-row">
-            <div className="flex flex-col justify-center p-8 @lg:flex-1 @lg:p-16">
-                <h2 className="mb-6 font-serif text-3xl font-light @md:text-4xl">
-                    {{ de: 'Was sagen unsere Kunden', en: 'What do our customers say?' }[locale]}
-                </h2>
-                <p className="mb-8 text-lg text-muted-foreground">
-                    {
-                        {
-                            de: 'Du musst nicht warten und kannst direkt aus einem unserer Top-Menüs auswählen, die speziell für jede Saison zusammengestellt wurden.',
-                            en: "You don't have to wait and can choose directly from one of our top menus, which have been specially put together for each season.",
-                        }[locale]
-                    }
-                </p>
-                <div className="flex gap-4">
-                    <Button asChild>
-                        <Link to="/{-$locale}/booking-request/form">{{ de: 'Anfrage senden', en: 'Send request' }[locale]}</Link>
-                    </Button>
-                </div>
-            </div>
+            {intro}
 
             <div className="relative flex flex-1 overflow-hidden bg-muted">
                 <div className="flex w-full gap-4 px-4">
                     <div className="relative flex-1 overflow-hidden">
                         <div className="absolute inset-x-0 flex animate-testimonial-scroll flex-col gap-6 py-8 motion-reduce:animate-none">
                             {duplicatedTestimonials.map((testimonial, index) => (
-                                <TestimonialCard key={`${testimonial.id}-a-${index}`} peopleLabel={peopleLabel} testimonial={testimonial} />
+                                <MarqueeQuoteCard
+                                    key={`${testimonial.id}-a-${index}`}
+                                    peopleLabel={peopleLabel}
+                                    testimonial={testimonial}
+                                />
                             ))}
                         </div>
                     </div>
@@ -123,7 +161,11 @@ export function SectionCustomerTestimonials() {
                     <div className="relative hidden flex-1 overflow-hidden @lg:block">
                         <div className="absolute inset-x-0 flex animate-testimonial-scroll-delayed flex-col gap-6 py-8 motion-reduce:animate-none">
                             {duplicatedTestimonials.map((testimonial, index) => (
-                                <TestimonialCard key={`${testimonial.id}-b-${index}`} peopleLabel={peopleLabel} testimonial={testimonial} />
+                                <MarqueeQuoteCard
+                                    key={`${testimonial.id}-b-${index}`}
+                                    peopleLabel={peopleLabel}
+                                    testimonial={testimonial}
+                                />
                             ))}
                         </div>
                     </div>

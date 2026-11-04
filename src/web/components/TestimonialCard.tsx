@@ -14,7 +14,7 @@ import { Button } from './base/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './base/dialog';
 import { Sheet, SheetClose, SheetContent } from './base/sheet';
 
-export type PageTestimonialCardModel = {
+export type TestimonialCardModel = {
     authorName: string;
     authorProfilePictureUrl?: string | null;
     location: string | null;
@@ -85,7 +85,8 @@ function TestimonialAuthor({
             meta = writtenAt ?? city;
         }
     } else {
-        meta = writtenAt;
+        // Tiles hide the city when a written date exists. Undated quotes (landing marketing cards) use the city as the meta line.
+        meta = writtenAt ?? city;
     }
 
     return (
@@ -322,7 +323,7 @@ function TestimonialDetailCopy({
     testimonial,
     showBookingCta = false,
 }: {
-    testimonial: PageTestimonialCardModel;
+    testimonial: TestimonialCardModel;
     /** Content pages only. Plan funnel keeps testimonials proof-only. */
     showBookingCta?: boolean;
 }) {
@@ -383,14 +384,14 @@ function TestimonialDetailCopy({
 }
 
 /** Presentational card face shared by public tiles and admin list cards. */
-export function PageTestimonialCardFace({
+export function TestimonialCardFace({
     testimonial,
     className,
     header,
     footerAction,
     onOpenImage,
 }: {
-    testimonial: PageTestimonialCardModel;
+    testimonial: TestimonialCardModel;
     className?: string;
     /** Optional admin chips / meta above the rating row. */
     header?: ReactNode;
@@ -399,18 +400,21 @@ export function PageTestimonialCardFace({
     onOpenImage?: (index: number) => void;
 }) {
     const imageUrls = testimonial.imageUrls ?? [];
+    const showTitleRow = Boolean(testimonial.occasion) || testimonial.rating != null;
 
     return (
         <figure className={cn('flex h-full flex-col gap-4', className)}>
             {header}
-            <div className="flex items-start justify-between gap-3">
-                {testimonial.occasion ? (
-                    <p className="min-w-0 flex-1 truncate text-base font-medium text-foreground">{testimonial.occasion}</p>
-                ) : (
-                    <span />
-                )}
-                {testimonial.rating != null ? <TestimonialRating rating={testimonial.rating} className="shrink-0" /> : null}
-            </div>
+            {showTitleRow ? (
+                <div className="flex items-start justify-between gap-3">
+                    {testimonial.occasion ? (
+                        <p className="min-w-0 flex-1 truncate text-base font-medium text-foreground">{testimonial.occasion}</p>
+                    ) : (
+                        <span />
+                    )}
+                    {testimonial.rating != null ? <TestimonialRating rating={testimonial.rating} className="shrink-0" /> : null}
+                </div>
+            ) : null}
 
             <blockquote className="border-l-2 border-accent/40 pl-4 text-base/relaxed text-foreground">
                 <p className="line-clamp-4">{testimonial.body}</p>
@@ -442,7 +446,7 @@ function TestimonialDetailSheet({
     onImageIndexChange,
     showBookingCta,
 }: {
-    testimonial: PageTestimonialCardModel;
+    testimonial: TestimonialCardModel;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     imageUrls: ReadonlyArray<string>;
@@ -483,14 +487,14 @@ function TestimonialDetailSheet({
 }
 
 /** Controlled public detail. Full-page sheet below `md`, centered dialog from `md` up. */
-export function PageTestimonialDetailDialog({
+export function TestimonialDetailDialog({
     testimonial,
     open,
     onOpenChange,
     initialImageIndex = 0,
     showBookingCta = false,
 }: {
-    testimonial: PageTestimonialCardModel;
+    testimonial: TestimonialCardModel;
     open: boolean;
     onOpenChange: (open: boolean) => void;
     /** Applied when the dialog opens (e.g. photo strip click). */
@@ -563,14 +567,14 @@ export function PageTestimonialDetailDialog({
     );
 }
 
-/** Curated public testimonial tile — clamped quote, photo strip, detail dialog. Used by `SectionPageTestimonials`. */
-export function PageTestimonialCard({
+/** Public testimonial tile: clamped quote, photo strip, and detail dialog. */
+export function TestimonialCard({
     testimonial,
     className,
     header,
     showBookingCta = false,
 }: {
-    testimonial: PageTestimonialCardModel;
+    testimonial: TestimonialCardModel;
     className?: string;
     /** Optional admin preview chips (e.g. pending-review visibility). */
     header?: ReactNode;
@@ -608,7 +612,7 @@ export function PageTestimonialCard({
                 onClick={() => openAt(0)}
                 onKeyDown={onCardKeyDown}
             >
-                <PageTestimonialCardFace
+                <TestimonialCardFace
                     testimonial={testimonial}
                     className="min-h-0 flex-1"
                     header={header}
@@ -629,7 +633,7 @@ export function PageTestimonialCard({
                     }
                 />
             </div>
-            <PageTestimonialDetailDialog
+            <TestimonialDetailDialog
                 testimonial={testimonial}
                 open={open}
                 onOpenChange={setOpen}

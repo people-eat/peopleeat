@@ -21,6 +21,7 @@ export const featureToggleKeys = [
     'PUBLICATION_MEALS',
     'PUBLICATION_MENUS',
     'LANDING_BOOKING_HOW_IT_WORKS',
+    'LANDING_TESTIMONIAL_CARDS',
     'PARTNER_PAGE_PARTNERS_EXPLORE',
 ] as const;
 

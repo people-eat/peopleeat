@@ -1,16 +1,16 @@
-import { StarIcon, UserIcon } from 'lucide-react';
-
+import { TestimonialCard } from '../components/TestimonialCard';
 import { useLocale } from '../hooks/useLocale';
-import { cn } from '../utils/cn';
 
 export type SectionCookTestimonial = {
     customerTestimonialId: string;
     authorName: string;
+    authorProfilePictureUrl?: string | null;
     location: string | null;
     occasion: string | null;
     body: string;
     rating: number | null;
     imageUrls: ReadonlyArray<string>;
+    createdAt?: string | null;
 };
 
 /**
@@ -30,40 +30,22 @@ export function SectionCookTestimonials({ testimonials }: { testimonials?: Reado
                 {{ de: 'Das sagen unsere Kunden', en: 'What our customers say' }[locale]}
             </h2>
             <ul className="mt-10 grid grid-cols-1 gap-10 @2xl:grid-cols-2 @5xl:grid-cols-3">
-                {testimonials.map((testimonial) => {
-                    const role = [testimonial.occasion, testimonial.location].filter(Boolean).join(' · ');
-                    return (
-                        <li key={testimonial.customerTestimonialId}>
-                            <figure className="flex h-full flex-col gap-6">
-                                {testimonial.rating != null ? (
-                                    <div className="flex items-center gap-1" aria-hidden>
-                                        {Array.from({ length: 5 }, (_, index) => (
-                                            <StarIcon
-                                                key={index}
-                                                className={cn(
-                                                    'size-4',
-                                                    index < testimonial.rating! ? 'fill-accent text-accent' : 'text-muted-foreground/40',
-                                                )}
-                                            />
-                                        ))}
-                                    </div>
-                                ) : null}
-                                <blockquote className="flex-1 text-base/relaxed text-foreground">
-                                    <p>{testimonial.body}</p>
-                                </blockquote>
-                                <figcaption className="flex items-center gap-3">
-                                    <span className="inline-flex size-10 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground">
-                                        <UserIcon aria-hidden className="size-5" />
-                                    </span>
-                                    <div className="text-sm">
-                                        <div className="font-medium text-foreground">{testimonial.authorName}</div>
-                                        {role ? <div className="text-muted-foreground">{role}</div> : null}
-                                    </div>
-                                </figcaption>
-                            </figure>
-                        </li>
-                    );
-                })}
+                {testimonials.map((testimonial) => (
+                    <li key={testimonial.customerTestimonialId}>
+                        <TestimonialCard
+                            testimonial={{
+                                authorName: testimonial.authorName,
+                                authorProfilePictureUrl: testimonial.authorProfilePictureUrl,
+                                location: testimonial.location,
+                                occasion: testimonial.occasion,
+                                body: testimonial.body,
+                                rating: testimonial.rating,
+                                imageUrls: testimonial.imageUrls,
+                                createdAt: testimonial.createdAt,
+                            }}
+                        />
+                    </li>
+                ))}
             </ul>
         </section>
     );

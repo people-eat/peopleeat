@@ -8,7 +8,7 @@ import type { AdminTestimonialPublicPagePlacement } from './AdminTestimonialPubl
 import { Badge } from './base/badge';
 import { StatusBadge } from './base/status-badge';
 import { bookingRequestCardInteractionClassName } from './bookingRequestCardInteraction';
-import { PageTestimonialCardFace } from './PageTestimonialCard';
+import { TestimonialCardFace } from './TestimonialCard';
 
 export type AdminTestimonialListCardTestimonial = {
     kind: 'customer' | 'cook';
@@ -54,7 +54,7 @@ export function AdminTestimonialListCard({ testimonial }: { testimonial: AdminTe
                 bookingRequestCardInteractionClassName,
             )}
         >
-            <PageTestimonialCardFace
+            <TestimonialCardFace
                 testimonial={{
                     authorName: testimonial.displayAuthorName,
                     location: testimonial.displayLocation,

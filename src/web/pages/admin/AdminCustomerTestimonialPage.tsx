@@ -27,7 +27,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '../../components/base/input';
 import { StatusBadge } from '../../components/base/status-badge';
 import { Textarea } from '../../components/base/textarea';
-import { PageTestimonialDetailDialog } from '../../components/PageTestimonialCard';
+import { TestimonialDetailDialog } from '../../components/TestimonialCard';
 import { TestimonialRatingInput } from '../../components/TestimonialRatingInput';
 import type { GqlCAdminCustomerTestimonialPageQuery } from '../../graphql/generated';
 import {
@@ -426,7 +426,7 @@ export function AdminCustomerTestimonialPage({
                         <AdminTestimonialPublicPagePlacementsSection placements={testimonial.publicPagePlacements} />
                     </AdminPinnedFooterLayout>
 
-                    <PageTestimonialDetailDialog
+                    <TestimonialDetailDialog
                         testimonial={{
                             authorName: testimonial.displayAuthorName,
                             location: testimonial.displayLocation,

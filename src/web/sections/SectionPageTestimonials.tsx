@@ -1,7 +1,7 @@
 import type { Locale } from '../../shared';
 import { StatusAlert } from '../components/base/status-alert';
 import { StatusBadge } from '../components/base/status-badge';
-import { PageTestimonialCard } from '../components/PageTestimonialCard';
+import { TestimonialCard } from '../components/TestimonialCard';
 import { cn } from '../utils/cn';
 
 // `body` is non-null on `CustomerTestimonial` but nullable on `CookTestimonial`
@@ -106,7 +106,7 @@ export function SectionPageTestimonials({
                     const hidden = entry.isPubliclyListed === false;
                     return (
                         <li key={testimonialKey(entry)}>
-                            <PageTestimonialCard
+                            <TestimonialCard
                                 showBookingCta={showBookingCta}
                                 header={
                                     hidden ? (

@@ -10,7 +10,7 @@ pages.
 On a dual-accepted, paid offer whose event datetime is in the past, the customer submits rating, text, and optional event photos on the
 offer **Review** tab (TanStack Form with under-field validation; primary Submit sits in the pinned profile action bar). Star rating is
 required and must be **1–5** (`0` is rejected on every GraphQL write path). Ratings 4–5 publish immediately; 1–3 wait for admin approval.
-After submit, the thank-you view reuses the public `PageTestimonialCardFace` / detail dialog, and the customer can edit rating, text, and
+After submit, the thank-you view reuses the public `TestimonialCardFace` / detail dialog, and the customer can edit rating, text, and
 photos. Dropping the rating to 1–3 re-applies admin review. The UI also suggests posting the same text on Google reviews.
 
 When a review is still owed:
@@ -45,36 +45,38 @@ existing follow-up answers unless the cook fills them again; dropping from 5 to 
   partner / occasion / chef). Cook detail also shows the low-rating alert when present. Pinned footer: **Edit**, **Public view**,
   **Publish** when pending, and overflow for **Unpublish** / **Delete**. Edit mode swaps the footer to Cancel / Save and unlocks override
   fields plus `AdminTestimonialImageManager`. AlertDialog confirms publish / unpublish / delete (not browser `confirm`). Star input, not
-  numeric dropdowns. **Public view** alone opens `PageTestimonialDetailDialog`. Publication uses `StatusBadge` (green published / yellow
+  numeric dropdowns. **Public view** alone opens `TestimonialDetailDialog`. Publication uses `StatusBadge` (green published / yellow
   pending).
 - Offer detail **Review** tab when completed or either side already has a testimonial — side-by-side Customer → cook and Cook → guest
   columns (`AdminBookingRequestOfferTestimonialsSection`). Missing side shows the create form (including draft photo upload via
-  `imageFileUploadIds`); existing side is a read-only `PageTestimonialCardFace` with photo manager, Edit / publish / delete, plus a link to
-  the dedicated admin customer/cook testimonial page. Publish/unpublish/delete use AlertDialogs.
+  `imageFileUploadIds`); existing side is a read-only `TestimonialCardFace` with photo manager, Edit / publish / delete, plus a link to the
+  dedicated admin customer/cook testimonial page. Publish/unpublish/delete use AlertDialogs.
 - City, partner, and occasion editors: ordered picker across customer and cook testimonials; shared `AdminPageTestimonial.isPubliclyListed`
   (like `AdminFeaturedCook.isPubliclyListed`) flags curated rows that are not yet public. Admin live preview keeps those rows visible with a
   card `StatusBadge` and section `StatusAlert` (public pages still omit them).
 
 ### Public
 
-- Chef profile: hero star row and testimonials section from published customer reviews (section hidden when empty); cook’s own public
-  preview omits both (no live public fetch there).
-- City and partner pages: curated testimonial section after featured cooks; hidden when empty. Each tile (`PageTestimonialCard`) is fully
-  clickable (hover wash + underline on “Bewertung ansehen” / “View review”) and shows the occasion as the card title (stars + numeric rating
-  top-right), a 4-line clamped quote with the accent quote-line, a 4-column square photo strip (4th slot becomes “+N more” when there are
-  more than four), and author with written date only (city hidden on the tile). The detail opens from the card, the view link, or a photo
-  thumb. Below `md` that detail is a full-page sheet sliding in from the right: a back control, one scroll, and an edge-to-edge photo when
-  there are images. From `md` up it stays a centered dialog. With photos, the gallery (horizontal snap-scroll so photos swipe on mobile;
-  arrows and thumbnails too) and the copy split that dialog evenly once it is wide enough (gallery left, copy right); each column scrolls
-  independently so the gallery stays visible while the copy scrolls. Detail copy leads with “{name}'s experience at {occasion}” (`text-lg`,
-  `text-2xl` from `@md` up), then rating and quote, then author below the body (same footing as the card) with one meta line “{date} in
-  {city}”. On content pages (`showBookingCta`), the booking ask (“Also looking for a … experience?”) sits above the primary CTA into
-  `/booking-request/form` with `occasion` prefilled (free, no obligation, centered under the button), replacing a divider line. Booking
-  request plan keeps testimonials proof-only (no CTA). Default grid is 3 columns; plan uses 2 beside the sticky sidebar. Attachment
-  downloads need a published `imageUrls` hit (public) or any testimonial hit for admins — see
+- Shared public tile (`TestimonialCard`): fully clickable (hover wash + underline on “Bewertung ansehen” / “View review”), occasion as the
+  card title (stars + numeric rating top-right; that row is omitted when both are missing), a 4-line clamped quote with the accent
+  quote-line, a 4-column square photo strip (4th slot becomes “+N more” when there are more than four), and author with written date only
+  (city hidden on the tile when a date exists; undated quotes show the city instead). The detail opens from the card, the view link, or a
+  photo thumb. Below `md` that detail is a full-page sheet sliding in from the right: a back control, one scroll, and an edge-to-edge photo
+  when there are images. From `md` up it stays a centered dialog. With photos, the gallery (horizontal snap-scroll so photos swipe on
+  mobile; arrows and thumbnails too) and the copy split that dialog evenly once it is wide enough (gallery left, copy right); each column
+  scrolls independently so the gallery stays visible while the copy scrolls. Detail copy leads with “{name}'s experience at {occasion}”
+  (`text-lg`, `text-2xl` from `@md` up), then rating and quote, then author below the body (same footing as the card) with one meta line
+  “{date} in {city}”. On content pages and the landing card variant (`showBookingCta`), the booking ask (“Also looking for a … experience?”)
+  sits above the primary CTA into `/booking-request/form` with `occasion` prefilled (free, no obligation, centered under the button). Chef
+  profiles and the booking request plan keep testimonials proof-only (no CTA in the dialog).
+- Chef profile: hero star row and the same card from published customer reviews (section hidden when empty). Grid 1 → 2 (`@2xl`) → 3
+  (`@5xl`). Cook’s own public preview omits both (no live public fetch there).
+- City, partner, and occasion pages: curated section after featured cooks; hidden when empty. Default grid is 3 columns; plan uses 2 beside
+  the sticky sidebar. Attachment downloads need a published `imageUrls` hit (public) or any testimonial hit for admins — see
   [file-storage.md](../architecture/file-storage.md).
-- Home: static marketing quotes in a marquee — [landing.md](./landing.md).
-- How to become a chef: static chef quotes (not database-driven).
+- Home: static marketing quotes. Scrolling marquee unless `LANDING_TESTIMONIAL_CARDS` is on, which renders the same quotes as the shared
+  card — [landing.md](./landing.md).
+- How to become a chef: static chef quotes (not the shared card, not database-driven).
 
 ## Ideas
 
@@ -111,27 +113,26 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
   `cookBookingRequestOfferTestimonialUpsert`, which re-apply `publicationStatusFromRating`); admin assistant list tool
   `toolAdminTestimonialsFindMany` (customer + cook, in-process filters) → `admin.testimonialList` cards
 - Utils: publication from rating, offer fallbacks, image URLs from file uploads, junction cleanup
-- Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `PageTestimonialCard` / `PageTestimonialCardFace` /
-  `PageTestimonialDetailDialog` (photo strip; full-page right sheet below `md` via `useIsMobile`, split dialog from `md` up; content pages
-  pass `showBookingCta` for occasion question + form CTA; mobile always 1 column, `columns={2|3}` from `@md`),
-  `ContentPageTestimonialsEditor`
+- Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `TestimonialCard` / `TestimonialCardFace` /
+  `TestimonialDetailDialog` in `src/web/components/TestimonialCard.tsx` (photo strip; full-page right sheet below `md` via `useIsMobile`,
+  split dialog from `md` up; content pages and the landing card variant pass `showBookingCta` for occasion question + form CTA; mobile
+  always 1 column, `columns={2|3}` from `@md`), `ContentPageTestimonialsEditor`
 - Admin UI: `AdminTestimonialsPage` card grid via `AdminTestimonialListCard` on unified `Admin.testimonials`; detail entry
   `AdminTestimonialPage` (kind `customer` | `cook`) with typed routes and kind modules (`AdminCustomerTestimonialPage` /
   `AdminCookTestimonialPage`) using `AdminPinnedFooterLayout` with read-only `AdminTestimonialDetailContent` +
   `AdminTestimonialAuthorCard` + placement link cards → edit form + image manager; offer Review tab is a two-column comparison
-  (`AdminBookingRequestOfferTestimonialsSection`: upsert when missing/editing with photos, `PageTestimonialCardFace` +
+  (`AdminBookingRequestOfferTestimonialsSection`: upsert when missing/editing with photos, `TestimonialCardFace` +
   `AdminTestimonialImageManager` + Edit when present, `StatusBadge` publication, AlertDialog confirms); detail **Public view** reuses
-  `PageTestimonialDetailDialog`; `publicPagePlacements` via `adminTestimonialPublicPagePlacementsLoad` /
-  `AdminTestimonialPublicPagePlacements*`
+  `TestimonialDetailDialog`; `publicPagePlacements` via `adminTestimonialPublicPagePlacementsLoad` / `AdminTestimonialPublicPagePlacements*`
 - GraphQL: admin `testimonials` union list + `customerTestimonialUpsert` / `cookTestimonialUpsert`; public `CustomerTestimonial` /
   `CookTestimonial.authorProfilePicture` (batch-loaded from the author’s current profile picture)
 - Download auth: `fileUploadReferencedByPublishedTestimonial` / `fileUploadReferencedByAnyTestimonial` on `GET /api/file-uploads/:id`
 - Capture UI: `BookingRequestOfferTestimonialPanel` (TanStack Form, accent stars, 4-col photo strip, inline validation, optional
   `imageFileUploadIds`; multi-select file input up to 8 photos; each image is client-compressed via `imageCompress` /
-  `IMAGE_COMPRESS_PRESETS.testimonial` before `POST /api/file-uploads` — no crop dialog; post-submit reuses `PageTestimonialCardFace` +
-  `PageTestimonialDetailDialog` with Edit review / View review in a dedicated action row under the card (stacked full-width on small
-  screens); full self-edit of rating / text / photos with pinned Save/Cancel) — Review tab on customer and cook offer pages; compose Submit
-  via `BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID`, edit via `BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID` in `ProfilePinnedFooterLayout`.
+  `IMAGE_COMPRESS_PRESETS.testimonial` before `POST /api/file-uploads` — no crop dialog; post-submit reuses `TestimonialCardFace` +
+  `TestimonialDetailDialog` with Edit review / View review in a dedicated action row under the card (stacked full-width on small screens);
+  full self-edit of rating / text / photos with pinned Save/Cancel) — Review tab on customer and cook offer pages; compose Submit via
+  `BOOKING_REQUEST_OFFER_TESTIMONIAL_FORM_ID`, edit via `BOOKING_REQUEST_OFFER_TESTIMONIAL_EDIT_FORM_ID` in `ProfilePinnedFooterLayout`.
   Compose form is a bordered card with counterpart avatar/name (“Bewertung für…”), prompt-style field titles (stars, body, photos) with
   required/optional hints, `md` stars, and a photo prompt (“Teile deine Eindrücke” / “Share your impressions”, optional up to 8).
   Outstanding Review tab uses inline `NotificationBadge`. Admin offer Review tab and detail `AdminTestimonialImageManager` use the same

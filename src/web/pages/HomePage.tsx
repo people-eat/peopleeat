@@ -21,6 +21,7 @@ export function HomePage({ loaderData }: { loaderData: GqlCHomePageQuery }) {
         loaderData.currentSession.activeFeatureToggleKeys,
         'LANDING_BOOKING_HOW_IT_WORKS',
     );
+    const testimonialCardsEnabled = featureToggleIsActive(loaderData.currentSession.activeFeatureToggleKeys, 'LANDING_TESTIMONIAL_CARDS');
 
     return (
         <main id="main-content">
@@ -56,7 +57,7 @@ export function HomePage({ loaderData }: { loaderData: GqlCHomePageQuery }) {
                 {bookingHowItWorksEnabled ? <SectionBookingHowItWorks /> : null}
                 <SectionHowItWorks />
                 <SectionSharedExperiences />
-                <SectionCustomerTestimonials />
+                <SectionCustomerTestimonials variant={testimonialCardsEnabled ? 'cards' : 'marquee'} />
                 <SectionKnownFrom />
                 <SectionQuestionsAndAnswers />
                 <SectionSupport />
