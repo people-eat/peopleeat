@@ -4,7 +4,7 @@ peopleeat runs as **one Node process in one container**. TanStack Start serves t
 (`POST /api/graphql`) and subscriptions (`/api/stream`). PostgreSQL holds application data (Drizzle), the pg-boss job queue, and the
 NOTIFY/LISTEN channels that fan subscriptions out. GitHub Actions builds the image, pushes it to GHCR, and Coolify runs it behind Traefik.
 
-![System architecture of peopleeat](../assets/system-architecture.png)
+![System architecture of peopleeat](../assets/system-architecture.excalidraw.png)
 
 The sketch is a map of that shape. The files below are the specification. Per-area decisions stay in the other docs under
 `docs/architecture/`; the index is the architecture table in [`AGENTS.md`](../../AGENTS.md).
