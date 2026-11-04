@@ -34,7 +34,8 @@ can open chat or offer details without leaving the room. Mic, camera, and leave 
 tab shows the video grid (and recording notice) while connected.
 
 **Add to calendar** — Confirmed slots expose a client-side calendar download on the Call tab schedule section and on cook `/profile/calls`
-(stable event id per slot booking).
+(stable event id per slot booking). The printed time and **Zum Kalender hinzufügen** / **Add to calendar** sit in one button, with a
+calendar-plus icon to the left.
 
 **Profile overviews** — Cook offer inbox cards surface pending/confirmed calls via a top-left info icon + popover (keeps grid card heights
 even) and still deep-link to the Call tab. Customer booking-request list and request-detail offer cards stay clean (no inline call copy) but
@@ -157,8 +158,9 @@ it again does not update an entry that is already in a calendar. The 60-minute e
 - Cook `/profile/calls` scheduled-call rows use the same `Card` + `StatusBadge` pattern
 - Admin `/admin/calls` attention board rows use the same compact `Card` density (badges in `CardAction`, CTAs in `CardFooter`)
 - Offer pages: tabs offer / chat / call (plus role-specific tabs); legacy `?tab=schedule` aliases to `call`
-- Confirmed slots: text link **Zum Kalender hinzufügen** / **Add to calendar** under the printed time on the offer Call tab (customer and
-  cook) and on `/profile/calls`. Hidden for admin and while a cancel is in progress. The button row stays Cancel / Go to call.
+- Confirmed slots: a button with a calendar-plus icon to the left of the printed time and **Zum Kalender hinzufügen** / **Add to calendar**,
+  on the offer Call tab (customer and cook) and on `/profile/calls`. Hidden for admin and while a cancel is in progress. The button row
+  stays Cancel / Go to call.
 - Profile overviews: `callBookingOverviewHint` — cook inbox uses info `Popover` on `CookBookingRequestOfferCard`; customer cards omit the
   label (deep-link only); admin cards keep inline hint text; `openCall` deep-links to `?tab=call`. Which call to surface (response needed →
   pending → confirmed) and the time window wording come from `src/shared/cookCallSlotBookingStatus.ts`, shared with the server's

@@ -844,10 +844,10 @@ function OfferTabPanel({
     return (
         <div className={cn('grid gap-8', hasMenu && '@5xl:grid-cols-2 @5xl:items-start @5xl:gap-10')}>
             {showEventCalendar ? (
-                <p className={cn('grid gap-1 text-sm text-foreground', hasMenu && '@5xl:col-span-2')}>
-                    <span>{formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}</span>
+                <div className={cn(hasMenu && '@5xl:col-span-2')}>
                     <BookingEventCalendarLink
                         locale={locale}
+                        whenLabel={formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}
                         timeZone={timeZone}
                         occasion={request.occasion}
                         peerName={offer.cook.user.display}
@@ -857,7 +857,7 @@ function OfferTabPanel({
                         bookingPath={localePath(locale, `/profile/booking-requests/${bookingRequestId}`)}
                         bookingRequestId={bookingRequestId}
                     />
-                </p>
+                </div>
             ) : null}
             {offer.configuredMenu ? (
                 <section className="grid min-w-0 gap-3">

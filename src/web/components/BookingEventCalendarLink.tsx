@@ -5,6 +5,7 @@ import { AddToCalendarLink } from './AddToCalendarLink';
 
 export function BookingEventCalendarLink({
     locale,
+    whenLabel,
     timeZone,
     occasion,
     peerName,
@@ -15,6 +16,7 @@ export function BookingEventCalendarLink({
     bookingRequestId,
 }: {
     locale: Locale;
+    whenLabel: string;
     timeZone: string;
     occasion: string;
     peerName: string;
@@ -27,6 +29,7 @@ export function BookingEventCalendarLink({
     return (
         <AddToCalendarLink
             locale={locale}
+            whenLabel={whenLabel}
             onClick={() => {
                 const bookingUrl = new URL(bookingPath, window.location.origin).href;
                 downloadCalendarEvent({

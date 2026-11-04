@@ -328,22 +328,22 @@ export function ProfileCustomerBookingRequestPage({
                         <DetailField
                             label={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
                             value={
-                                <span className="grid gap-1">
-                                    <span>{formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}</span>
-                                    {calendarOffer ? (
-                                        <BookingEventCalendarLink
-                                            locale={locale}
-                                            timeZone={timeZone}
-                                            occasion={request.occasion}
-                                            peerName={calendarOffer.cook.user.display}
-                                            guestCount={request.participants.length}
-                                            start={request.dateTime}
-                                            location={exactAddress}
-                                            bookingPath={localePath(locale, `/profile/booking-requests/${bookingRequestId}`)}
-                                            bookingRequestId={bookingRequestId}
-                                        />
-                                    ) : null}
-                                </span>
+                                calendarOffer ? (
+                                    <BookingEventCalendarLink
+                                        locale={locale}
+                                        whenLabel={formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}
+                                        timeZone={timeZone}
+                                        occasion={request.occasion}
+                                        peerName={calendarOffer.cook.user.display}
+                                        guestCount={request.participants.length}
+                                        start={request.dateTime}
+                                        location={exactAddress}
+                                        bookingPath={localePath(locale, `/profile/booking-requests/${bookingRequestId}`)}
+                                        bookingRequestId={bookingRequestId}
+                                    />
+                                ) : (
+                                    formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })
+                                )
                             }
                         />
                         <DetailField

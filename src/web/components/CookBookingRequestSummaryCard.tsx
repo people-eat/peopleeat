@@ -81,10 +81,11 @@ export function CookBookingRequestSummaryCard({
     estimatedTravelExpensesCents: number | null | undefined;
     invoiceAddress?: CookBookingRequestSummaryCardInvoiceAddress | null;
     message?: CookBookingRequestSummaryCardMessage | null;
-    dateTimeAction?: ReactNode;
+    dateTimeAction?: (whenLabel: string) => ReactNode;
 }) {
     const hasMessage = message != null && message.text.trim().length > 0;
     const participantsWithRestrictions = participants.filter((participant) => participant.restrictions.length > 0);
+    const whenLabel = `${formatDateTime(dateTime, { locale, timeZone, dateStyle: 'full' })} (${formatRelativeDays(dateTime, locale)})`;
 
     return (
         <div
@@ -115,8 +116,7 @@ export function CookBookingRequestSummaryCard({
                 ) : null}
                 <DetailField
                     label={{ de: 'Datum & Uhrzeit', en: 'Date & time' }[locale]}
-                    value={`${formatDateTime(dateTime, { locale, timeZone, dateStyle: 'full' })} (${formatRelativeDays(dateTime, locale)})`}
-                    hint={dateTimeAction}
+                    value={dateTimeAction != null ? dateTimeAction(whenLabel) : whenLabel}
                 />
                 <DetailField
                     label={{ de: 'Präferenzen', en: 'Preferences' }[locale]}

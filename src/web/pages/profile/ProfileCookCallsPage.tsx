@@ -365,10 +365,10 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                     <CardHeader className={bookingOfferCallCardSectionClassName}>
                                         <div className="grid gap-0.5">
                                             <CardTitle className="font-medium">{booking.customer.display}</CardTitle>
-                                            <p className="text-sm text-foreground">{whenLabel}</p>
                                             {isConfirmed && !isCanceling ? (
                                                 <AddToCalendarLink
                                                     locale={locale}
+                                                    whenLabel={whenLabel}
                                                     onClick={() => {
                                                         const offerUrl = new URL(
                                                             localePath(
@@ -391,7 +391,9 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                         });
                                                     }}
                                                 />
-                                            ) : null}
+                                            ) : (
+                                                <p className="text-sm text-foreground">{whenLabel}</p>
+                                            )}
                                         </div>
                                         <CardAction>
                                             <StatusBadge tone={cookCallSlotBookingStatusTone(booking, 'cook')}>

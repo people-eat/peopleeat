@@ -769,20 +769,18 @@ function OfferTabPanel({
     return (
         <div className="grid w-full min-w-0 gap-16">
             {showEventCalendar ? (
-                <p className="grid gap-1 text-sm text-foreground">
-                    <span>{formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}</span>
-                    <BookingEventCalendarLink
-                        locale={locale}
-                        timeZone={timeZone}
-                        occasion={request.occasion}
-                        peerName={request.user.display}
-                        guestCount={request.participants.length}
-                        start={request.dateTime}
-                        location={request.exactEventAddress.displayText}
-                        bookingPath={localePath(locale, `/profile/booking-request-offers/${bookingRequestOfferId}?tab=offer`)}
-                        bookingRequestId={request.bookingRequestId}
-                    />
-                </p>
+                <BookingEventCalendarLink
+                    locale={locale}
+                    whenLabel={formatDateTime(request.dateTime, { locale, timeZone, dateStyle: 'full' })}
+                    timeZone={timeZone}
+                    occasion={request.occasion}
+                    peerName={request.user.display}
+                    guestCount={request.participants.length}
+                    start={request.dateTime}
+                    location={request.exactEventAddress.displayText}
+                    bookingPath={localePath(locale, `/profile/booking-request-offers/${bookingRequestOfferId}?tab=offer`)}
+                    bookingRequestId={request.bookingRequestId}
+                />
             ) : null}
             <BookingRequestOfferParticipantAmendmentCookPanel
                 locale={locale}
@@ -971,19 +969,22 @@ function RequestTabPanel({
             estimatedTravelExpensesCents={offer.travelExpensesCents}
             invoiceAddress={revealExactAddress ? (request.invoiceAddress ?? null) : null}
             dateTimeAction={
-                revealExactAddress && request.status !== 'CANCELED' ? (
-                    <BookingEventCalendarLink
-                        locale={locale}
-                        timeZone={timeZone}
-                        occasion={request.occasion}
-                        peerName={request.user.display}
-                        guestCount={request.participants.length}
-                        start={request.dateTime}
-                        location={eventLocation}
-                        bookingPath={localePath(locale, `/profile/booking-request-offers/${offer.bookingRequestOfferId}?tab=offer`)}
-                        bookingRequestId={request.bookingRequestId}
-                    />
-                ) : undefined
+                revealExactAddress && request.status !== 'CANCELED'
+                    ? (whenLabel) => (
+                          <BookingEventCalendarLink
+                              locale={locale}
+                              whenLabel={whenLabel}
+                              timeZone={timeZone}
+                              occasion={request.occasion}
+                              peerName={request.user.display}
+                              guestCount={request.participants.length}
+                              start={request.dateTime}
+                              location={eventLocation}
+                              bookingPath={localePath(locale, `/profile/booking-request-offers/${offer.bookingRequestOfferId}?tab=offer`)}
+                              bookingRequestId={request.bookingRequestId}
+                          />
+                      )
+                    : undefined
             }
         />
     );

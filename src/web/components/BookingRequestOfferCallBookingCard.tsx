@@ -135,14 +135,10 @@ export function BookingRequestOfferCallBookingCard({
             <CardHeader className={bookingOfferCallCardSectionClassName}>
                 <div className="grid gap-0.5">
                     {peerDisplayName ? <CardTitle className="font-medium">{peerDisplayName}</CardTitle> : null}
-                    {peerDisplayName ? (
-                        <p className="text-sm text-foreground">{whenLabel}</p>
-                    ) : (
-                        <CardTitle className="text-sm font-medium">{whenLabel}</CardTitle>
-                    )}
                     {showCalendar && calendarOfferUrl ? (
                         <AddToCalendarLink
                             locale={locale}
+                            whenLabel={whenLabel}
                             onClick={() => {
                                 downloadCalendarEvent({
                                     filename: 'peopleeat-call.ics',
@@ -158,7 +154,11 @@ export function BookingRequestOfferCallBookingCard({
                                 });
                             }}
                         />
-                    ) : null}
+                    ) : peerDisplayName ? (
+                        <p className="text-sm text-foreground">{whenLabel}</p>
+                    ) : (
+                        <CardTitle className="text-sm font-medium">{whenLabel}</CardTitle>
+                    )}
                     <CardDescription className="text-xs">
                         {
                             {
