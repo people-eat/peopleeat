@@ -1,5 +1,5 @@
 import { useForm, useSelector } from '@tanstack/react-form';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { de as dateFnsDe, enUS as dateFnsEn } from 'date-fns/locale';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -34,7 +34,9 @@ import { AppImage } from '../components/AppImage';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
 import { AuthPasskeyLogOn } from '../components/auth/AuthPasskeyLogOn';
 import { sessionAuthPhase } from '../components/auth/sessionAuthPhase';
+import { Badge } from '../components/base/badge';
 import { Button } from '../components/base/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/base/card';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../components/base/combobox';
 import { DatePicker } from '../components/base/date-picker';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/base/dialog';
@@ -811,6 +813,10 @@ export function BookingRequestPlanPage({
                     <dt className="text-muted-foreground">{{ de: 'Menürichtung', en: 'Cuisine' }[locale]}</dt>
                     <dd className="text-right">{bookingRequestPlanCuisineLabel(values.cuisine, locale)}</dd>
                 </div>
+                <div className="flex justify-between gap-3">
+                    <dt className="text-muted-foreground">{{ de: 'Preisklasse', en: 'Price class' }[locale]}</dt>
+                    <dd className="text-right">{priceInfo.title}</dd>
+                </div>
                 <div className="grid gap-1">
                     <div className="flex justify-between gap-3">
                         <dt className="text-muted-foreground">{{ de: 'Menübeginn', en: 'Menu start' }[locale]}</dt>
@@ -836,39 +842,6 @@ export function BookingRequestPlanPage({
                 </Button>
             </div>
 
-            <div className="mt-8 border-t border-border pt-6">
-                <p className="text-3xl font-medium">
-                    <span className="text-sm text-gray-400">{{ de: 'ab', en: 'from' }[locale]}</span> {softPrice}{' '}
-                    <span className="text-sm text-gray-400">{{ de: 'p.P.', en: 'p.p.' }[locale]}</span>
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">{{ de: 'Mindestbuchung 400 €', en: 'Minimum booking €400' }[locale]}</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                    {
-                        {
-                            de: `Beispielpreis ${priceInfo.title}. Finales Angebot setzt euer Chef. Kinderportionen günstiger.`,
-                            en: `Example ${priceInfo.title} price. Your chef sets the final offer. Children portions cost less.`,
-                        }[locale]
-                    }
-                </p>
-            </div>
-
-            {values.exactEventAddress ? (
-                <div className="mt-6 border-t border-border pt-6 text-sm">
-                    <p className="font-medium">{{ de: 'Adresse', en: 'Address' }[locale]}</p>
-                    <div className="mt-1 text-muted-foreground">
-                        <p>{values.exactEventAddress.addressLine1}</p>
-                        {values.exactEventAddress.addressLine2.trim().length > 0 ? <p>{values.exactEventAddress.addressLine2}</p> : null}
-                        <p>
-                            {[values.exactEventAddress.postCode, values.exactEventAddress.city]
-                                .map((part) => part.trim())
-                                .filter(Boolean)
-                                .join(' ')}
-                        </p>
-                        {exactEventCountryName ? <p>{exactEventCountryName}</p> : null}
-                    </div>
-                </div>
-            ) : null}
-
             <div className="mt-8 grid gap-2">
                 <Button type="button" size="lg" className="w-full" onClick={goToContact} disabled={!canContinueToContact()}>
                     {{ de: 'Weiter zur Anfrage', en: 'Continue to request' }[locale]}
@@ -885,6 +858,71 @@ export function BookingRequestPlanPage({
             </div>
         </aside>
     );
+
+    function renderLocationPicker() {
+        return (
+            <div className="grid gap-2">
+                <p className="text-sm font-medium">{{ de: 'Adresse', en: 'Address' }[locale]}</p>
+                <Combobox
+                    filter={null}
+                    items={suggestions.map((suggestion) => suggestion.displayText)}
+                    value={null}
+                    inputValue={values.locationSearchText}
+                    onValueChange={(next) => {
+                        if (next == null) return;
+                        const match = suggestions.find((suggestion) => suggestion.displayText === next);
+                        if (!match) return;
+                        const address = addressFromSuggestion(match);
+                        if (!address) {
+                            toast.error(
+                                {
+                                    de: 'Bitte eine vollständige Adresse wählen.',
+                                    en: 'Please choose a full address.',
+                                }[locale],
+                            );
+                            return;
+                        }
+                        form.setFieldValue('exactEventAddress', address);
+                        form.setFieldValue('locationSearchText', match.displayText);
+                    }}
+                    onInputValueChange={(next) => {
+                        form.setFieldValue('locationSearchText', next);
+                        if (values.exactEventAddress && next !== values.exactEventAddress.displayText) {
+                            form.setFieldValue('exactEventAddress', null);
+                        }
+                    }}
+                    itemToStringLabel={(item: string) => item}
+                >
+                    <ComboboxInput
+                        className="w-full"
+                        placeholder={
+                            {
+                                de: 'Musterstraße 1, 80331 München',
+                                en: '123 Main Street, 12345 Springfield',
+                            }[locale]
+                        }
+                        showClear={false}
+                        required={!values.exactEventAddress}
+                        disabled={busy}
+                    />
+                    <ComboboxContent>
+                        <ComboboxEmpty>
+                            {suggestionsFetching
+                                ? { de: 'Suche…', en: 'Searching…' }[locale]
+                                : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
+                        </ComboboxEmpty>
+                        <ComboboxList>
+                            {(item: string) => (
+                                <ComboboxItem key={item} value={item}>
+                                    {item}
+                                </ComboboxItem>
+                            )}
+                        </ComboboxList>
+                    </ComboboxContent>
+                </Combobox>
+            </div>
+        );
+    }
 
     const detailsEditorFields = (
         <div className="grid gap-6">
@@ -984,6 +1022,31 @@ export function BookingRequestPlanPage({
                     </SelectContent>
                 </Select>
             </div>
+            {!partnerAddress && detailsEditorOpen ? renderLocationPicker() : null}
+            {partnerAddress && values.exactEventAddress ? (
+                <div className="grid gap-1.5 border-t border-border pt-6 text-sm">
+                    <span className="font-medium">{{ de: 'Adresse', en: 'Address' }[locale]}</span>
+                    <p className="text-xs text-muted-foreground">
+                        {
+                            {
+                                de: 'Standort des Partners. Hier findet euer Dinner statt.',
+                                en: 'Partner location. This is where your dinner takes place.',
+                            }[locale]
+                        }
+                    </p>
+                    <div className="text-muted-foreground">
+                        <p>{values.exactEventAddress.addressLine1}</p>
+                        {values.exactEventAddress.addressLine2.trim().length > 0 ? <p>{values.exactEventAddress.addressLine2}</p> : null}
+                        <p>
+                            {[values.exactEventAddress.postCode, values.exactEventAddress.city]
+                                .map((part) => part.trim())
+                                .filter(Boolean)
+                                .join(' ')}
+                        </p>
+                        {exactEventCountryName ? <p>{exactEventCountryName}</p> : null}
+                    </div>
+                </div>
+            ) : null}
         </div>
     );
 
@@ -1069,23 +1132,7 @@ export function BookingRequestPlanPage({
                         </div>
 
                         {partner ? (
-                            <Link
-                                to="/{-$locale}/partners/$pathName"
-                                params={{ pathName: partner.pathName }}
-                                className={cn(
-                                    'mx-auto flex w-fit max-w-full items-center gap-4 rounded-xl border border-border bg-secondary/60 p-4',
-                                    '@xl:mx-0 @xl:max-w-md',
-                                    selectionControlClassName,
-                                    'hover:bg-muted active:bg-muted/80',
-                                )}
-                            >
-                                <div className="min-w-0 text-right">
-                                    <p className="text-sm text-muted-foreground">
-                                        {{ de: 'Exklusiv für Gäste bei', en: 'Exclusive for guests at' }[locale]}
-                                    </p>
-                                    <p className="truncate text-base font-medium">{partner.name}</p>
-                                    {partnerCity ? <p className="truncate text-sm text-muted-foreground">{partnerCity}</p> : null}
-                                </div>
+                            <div className="flex w-fit max-w-full items-center gap-4 @xl:max-w-md @xl:flex-row-reverse">
                                 {partner.firstSectionImageUrl || partner.heroImageUrl ? (
                                     <AppImage
                                         src={partner.firstSectionImageUrl || partner.heroImageUrl || HERO_FALLBACK_SRC}
@@ -1093,7 +1140,14 @@ export function BookingRequestPlanPage({
                                         className="size-18 shrink-0 rounded-xl object-cover"
                                     />
                                 ) : null}
-                            </Link>
+                                <div className="min-w-0 text-left @xl:text-right">
+                                    <p className="text-sm text-muted-foreground">
+                                        {{ de: 'Exklusiv für Gäste bei', en: 'Exclusive for guests at' }[locale]}
+                                    </p>
+                                    <p className="truncate text-base font-medium">{partner.name}</p>
+                                    {partnerCity ? <p className="truncate text-sm text-muted-foreground">{partnerCity}</p> : null}
+                                </div>
+                            </div>
                         ) : null}
                     </div>
                 ) : null}
@@ -1112,10 +1166,10 @@ export function BookingRequestPlanPage({
                                         <p className="min-w-0 font-serif text-3xl font-light @md:text-4xl">
                                             {{ de: 'Wählt euren Dinner Abend', en: 'Choose your dinner evening' }[locale]}
                                         </p>
-                                        <p className="shrink-0 font-serif text-2xl tracking-tight">{dateChipRangeLabel}</p>
+                                        <p className="shrink-0 text-sm text-muted-foreground">{dateChipRangeLabel}</p>
                                     </div>
                                     {useDateChips ? (
-                                        <div className="grid grid-cols-3 gap-3 @md:grid-cols-4 @2xl:grid-cols-5">
+                                        <div className="grid grid-cols-3 gap-3 @md:grid-cols-4 @2xl:grid-cols-6">
                                             {selectableDays.map((day, index) => {
                                                 const key = `${day.getFullYear()}-${day.getMonth()}-${day.getDate()}`;
                                                 const selected = key === selectedDayKey;
@@ -1142,7 +1196,7 @@ export function BookingRequestPlanPage({
                                                         onClick={() => selectDay(day)}
                                                         aria-pressed={selected}
                                                         className={cn(
-                                                            'flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-xl border',
+                                                            'flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-xl border',
                                                             selectionControlClassName,
                                                             selectionSurfaceClassName(selected),
                                                         )}
@@ -1263,23 +1317,6 @@ export function BookingRequestPlanPage({
                                                 }
                                             </p>
                                         </div>
-                                        <div className="grid gap-1">
-                                            <p className="font-medium text-2xl">
-                                                <span className="text-sm text-gray-400">{{ de: 'ab', en: 'from' }[locale]}</span>{' '}
-                                                {softPrice}{' '}
-                                                <span className="text-sm text-gray-400">
-                                                    {{ de: '/ Erwachsener', en: '/ adult' }[locale]}
-                                                </span>
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {
-                                                    {
-                                                        de: 'Kinder bis 10 Jahre zahlen den halben Preis',
-                                                        en: 'Children up to 10 years pay half price',
-                                                    }[locale]
-                                                }
-                                            </p>
-                                        </div>
                                         <Button
                                             type="button"
                                             variant="link"
@@ -1292,77 +1329,106 @@ export function BookingRequestPlanPage({
                                     </div>
                                 </div>
 
-                                {!values.exactEventAddress ? (
-                                    <div className="grid gap-2">
-                                        <p className="text-sm font-medium">{{ de: 'Adresse', en: 'Address' }[locale]}</p>
-                                        <Combobox
-                                            filter={null}
-                                            items={suggestions.map((suggestion) => suggestion.displayText)}
-                                            value={null}
-                                            inputValue={values.locationSearchText}
-                                            onValueChange={(next) => {
-                                                if (next == null) return;
-                                                const match = suggestions.find((suggestion) => suggestion.displayText === next);
-                                                if (!match) return;
-                                                const address = addressFromSuggestion(match);
-                                                if (!address) {
-                                                    toast.error(
-                                                        {
-                                                            de: 'Bitte eine vollständige Adresse wählen.',
-                                                            en: 'Please choose a full address.',
-                                                        }[locale],
-                                                    );
-                                                    return;
-                                                }
-                                                form.setFieldValue('exactEventAddress', address);
-                                                form.setFieldValue('locationSearchText', match.displayText);
-                                            }}
-                                            onInputValueChange={(next) => {
-                                                form.setFieldValue('locationSearchText', next);
-                                                if (values.exactEventAddress && next !== values.exactEventAddress.displayText) {
-                                                    form.setFieldValue('exactEventAddress', null);
-                                                }
-                                            }}
-                                            itemToStringLabel={(item: string) => item}
-                                        >
-                                            <ComboboxInput
-                                                className="w-full"
-                                                placeholder={
-                                                    {
-                                                        de: 'Musterstraße 1, 80331 München',
-                                                        en: '123 Main Street, 12345 Springfield',
-                                                    }[locale]
-                                                }
-                                                showClear={false}
-                                                required={!values.exactEventAddress}
-                                            />
-                                            <ComboboxContent>
-                                                <ComboboxEmpty>
-                                                    {suggestionsFetching
-                                                        ? { de: 'Suche…', en: 'Searching…' }[locale]
-                                                        : { de: 'Keine Treffer.', en: 'No matches.' }[locale]}
-                                                </ComboboxEmpty>
-                                                <ComboboxList>
-                                                    {(item: string) => (
-                                                        <ComboboxItem key={item} value={item}>
-                                                            {item}
-                                                        </ComboboxItem>
-                                                    )}
-                                                </ComboboxList>
-                                            </ComboboxContent>
-                                        </Combobox>
-                                    </div>
-                                ) : null}
+                                {!partnerAddress ? renderLocationPicker() : null}
 
                                 <div className="grid gap-4">
-                                    <h2 className="font-serif text-3xl font-light @md:text-4xl">
-                                        {
+                                    <div className="grid gap-2">
+                                        <h2 className="font-serif text-3xl font-light @md:text-4xl">
+                                            {{ de: 'Wählt euren Preisrahmen', en: 'Choose your price range' }[locale]}
+                                        </h2>
+                                        <p className="text-sm text-muted-foreground">
                                             {
-                                                de: 'Welche Küche macht euren Abend besonders?',
-                                                en: 'Which cuisine makes your evening special?',
-                                            }[locale]
-                                        }
-                                    </h2>
+                                                {
+                                                    de: 'Als Orientierung für den Menüvorschlag eures Kochs.',
+                                                    en: "As a guide for your chef's menu proposal.",
+                                                }[locale]
+                                            }
+                                        </p>
+                                    </div>
+                                    <div className="@container">
+                                        <div className="grid gap-4 @3xl:grid-cols-3">
+                                            {bookingRequestPriceClassTypes.map((priceClass) => {
+                                                const info = bookingRequestPriceClassInfo(priceClass, locale);
+                                                const selected = values.priceClassType === priceClass;
+                                                return (
+                                                    <Card
+                                                        key={priceClass}
+                                                        className={
+                                                            selected
+                                                                ? 'h-full justify-between border-primary shadow-md'
+                                                                : 'h-full justify-between border-border'
+                                                        }
+                                                    >
+                                                        <CardHeader>
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <CardTitle className="text-xl">{info.title}</CardTitle>
+                                                                {info.isPopular ? (
+                                                                    <Badge className="border-green-300 bg-green-100 text-foreground">
+                                                                        {{ de: 'Populär', en: 'Popular' }[locale]}
+                                                                    </Badge>
+                                                                ) : null}
+                                                            </div>
+                                                            <p className="text-sm text-muted-foreground">{info.description}</p>
+                                                        </CardHeader>
+                                                        <CardContent className="grid flex-1 content-start gap-2">
+                                                            <p className="text-sm text-muted-foreground">
+                                                                {{ de: 'Häufig gebucht für', en: 'Frequently booked for' }[locale]}
+                                                            </p>
+                                                            <div className="flex flex-wrap items-start gap-2">
+                                                                {info.commonOccasions.map((occasion) => (
+                                                                    <Badge key={occasion} variant="outline">
+                                                                        {occasion}
+                                                                    </Badge>
+                                                                ))}
+                                                            </div>
+                                                        </CardContent>
+                                                        <CardFooter className="mt-auto flex flex-col items-stretch gap-4">
+                                                            <p className="text-center">
+                                                                <span className="text-2xl font-semibold">
+                                                                    {{ de: 'ab', en: 'starting at' }[locale]}{' '}
+                                                                    {formatCurrency(info.minimumAmountPerPersonCents, { locale })}
+                                                                </span>{' '}
+                                                                <span className="text-sm text-muted-foreground">
+                                                                    {{ de: 'pro Person', en: 'per person' }[locale]}
+                                                                </span>
+                                                            </p>
+                                                            <Button
+                                                                type="button"
+                                                                variant={selected ? 'default' : 'outline'}
+                                                                disabled={busy}
+                                                                onClick={() => form.setFieldValue('priceClassType', priceClass)}
+                                                            >
+                                                                {selected
+                                                                    ? { de: 'Ausgewählt', en: 'Selected' }[locale]
+                                                                    : { de: 'Auswählen', en: 'Select' }[locale]}
+                                                            </Button>
+                                                        </CardFooter>
+                                                    </Card>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid gap-4">
+                                    <div className="grid gap-2">
+                                        <h2 className="font-serif text-3xl font-light @md:text-4xl">
+                                            {
+                                                {
+                                                    de: 'Welche Küche macht euren Abend besonders?',
+                                                    en: 'Which cuisine makes your evening special?',
+                                                }[locale]
+                                            }
+                                        </h2>
+                                        <p className="text-sm text-muted-foreground">
+                                            {
+                                                {
+                                                    de: 'Als Inspiration für euren Koch. Euren Menüvorschlag erhaltet ihr nach der Anfrage.',
+                                                    en: 'As inspiration for your chef. You receive your menu proposal after the request.',
+                                                }[locale]
+                                            }
+                                        </p>
+                                    </div>
                                     <div className="grid grid-cols-2 gap-3 @xl:grid-cols-4">
                                         {bookingRequestPlanCuisineKeys.map((key) => {
                                             const selected = values.cuisine === key;
@@ -1617,14 +1683,7 @@ export function BookingRequestPlanPage({
                                     }
                                 </span>
                                 <span className="inline-flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-                                    <span className="truncate">
-                                        {
-                                            {
-                                                de: `${priceInfo.title} · ab ${softPrice}`,
-                                                en: `${priceInfo.title} · from ${softPrice}`,
-                                            }[locale]
-                                        }
-                                    </span>
+                                    <span className="truncate">{priceInfo.title}</span>
                                     <span className="inline-flex shrink-0 items-center gap-1 underline-offset-2 hover:underline">
                                         {{ de: 'Bearbeiten', en: 'Edit' }[locale]}
                                         <PencilIcon className="size-3 shrink-0" aria-hidden />
