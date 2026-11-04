@@ -1,10 +1,27 @@
 import { CalendarPlusIcon } from 'lucide-react';
 
+import { cn } from '../utils/cn';
 import type { Locale } from '../utils/locale';
 import { Button } from './base/button';
 
-/** Time on the first line, action on the second, icon to the left. Sized to the label so the press fill stays on the cluster. */
-export function AddToCalendarLink({ locale, whenLabel, onClick }: { locale: Locale; whenLabel: string; onClick: () => void }) {
+type AddToCalendarLinkProps = {
+    locale: Locale;
+    onClick: () => void;
+    className?: string;
+} & ({ appearance?: 'button'; whenLabel: string } | { appearance: 'action' });
+
+/** `button` is the free-standing date cluster. `action` is a small button in a card's action row. */
+export function AddToCalendarLink({ locale, onClick, className, ...rest }: AddToCalendarLinkProps) {
+    if (rest.appearance === 'action') {
+        return (
+            <Button type="button" variant="outline" size="sm" className={cn('w-fit', className)} onClick={onClick}>
+                <CalendarPlusIcon aria-hidden />
+                {{ de: 'Zum Kalender hinzufügen', en: 'Add to calendar' }[locale]}
+            </Button>
+        );
+    }
+
+    const { whenLabel } = rest;
     return (
         <Button
             type="button"

@@ -4,6 +4,25 @@ import type { StatusTone } from './statusTone';
 
 export type CookCallSlotBookingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELED' | 'COMPLETED' | 'DECLINED';
 
+/** List order: confirmed, pending, declined, then canceled and completed. */
+const cookCallSlotBookingListRank: Record<CookCallSlotBookingStatus, number> = {
+    CONFIRMED: 0,
+    PENDING: 1,
+    DECLINED: 2,
+    CANCELED: 3,
+    COMPLETED: 4,
+};
+
+/** Confirmed first, then pending, then declined. Earlier start time wins inside a status. */
+export function compareCookCallSlotBookings(
+    left: { status: CookCallSlotBookingStatus; startAt: string | Date },
+    right: { status: CookCallSlotBookingStatus; startAt: string | Date },
+): number {
+    const byStatus = cookCallSlotBookingListRank[left.status] - cookCallSlotBookingListRank[right.status];
+    if (byStatus !== 0) return byStatus;
+    return new Date(left.startAt).getTime() - new Date(right.startAt).getTime();
+}
+
 export type CookCallSlotBookingActor = 'CUSTOMER' | 'COOK';
 
 export type CookCallSlotBookingAudience = 'customer' | 'cook' | 'admin';

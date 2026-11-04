@@ -16,8 +16,12 @@ import { StatusBadge } from './base/status-badge';
 import { Textarea } from './base/textarea';
 
 /** Compact Card density for offer call schedule/call surfaces (rows + action panels). */
-export const bookingOfferCallCardClassName = 'gap-4 py-4';
+export const bookingOfferCallCardClassName = '@container/call-card gap-4 py-4';
 export const bookingOfferCallCardSectionClassName = 'px-4';
+/** Full-width stack until the card is wide enough for one action row. */
+export const bookingOfferCallActionsClassName =
+    'flex flex-col gap-2 @min-[28rem]/call-card:flex-row @min-[28rem]/call-card:flex-wrap @min-[28rem]/call-card:items-center @min-[28rem]/call-card:justify-end';
+export const bookingOfferCallActionButtonClassName = 'w-full @min-[28rem]/call-card:w-auto';
 
 export type BookingRequestOfferCallBookingCardBooking = {
     cookCallSlotBookingId: string;
@@ -65,6 +69,30 @@ export type BookingRequestOfferCallBookingCardProps = {
 
 function formatCallTime(value: string | Date, locale: Locale, timeZone: string): string {
     return formatTime(value, { locale, timeZone });
+}
+
+/** Date on its own line until the column can hold date and time range together. The range never breaks mid-clock. */
+export function BookingOfferCallWhen({
+    start,
+    end,
+    locale,
+    timeZone,
+}: {
+    start: string | Date;
+    end: string | Date;
+    locale: Locale;
+    timeZone: string;
+}) {
+    const dateLabel = formatDate(start, { locale, timeZone, weekday: true });
+    const rangeLabel = `${formatCallTime(start, locale, timeZone)}–${formatCallTime(end, locale, timeZone)}${locale === 'de' ? ' Uhr' : ''}`;
+
+    return (
+        <>
+            <span className="block @min-[19rem]/call-when:inline">{dateLabel}</span>
+            <span className="hidden @min-[19rem]/call-when:inline"> · </span>
+            <span className="block whitespace-nowrap @min-[19rem]/call-when:inline">{rangeLabel}</span>
+        </>
+    );
 }
 
 function describeReason(reason: string | null | undefined, locale: Locale): string | null {
@@ -118,7 +146,6 @@ export function BookingRequestOfferCallBookingCard({
     const adminDeclineLabel = fromCook
         ? { de: 'Als Kunde ablehnen', en: 'Decline as customer' }[locale]
         : { de: 'Als Koch ablehnen', en: 'Decline as chef' }[locale];
-    const whenLabel = `${formatDate(start, { locale, timeZone, weekday: true })} · ${formatCallTime(start, locale, timeZone)}–${formatCallTime(end, locale, timeZone)}${locale === 'de' ? ' Uhr' : ''}`;
 
     const showCalendar = isConfirmed && role !== 'admin' && Boolean(calendarOfferUrl);
     const hasBody =
@@ -126,6 +153,7 @@ export function BookingRequestOfferCallBookingCard({
         Boolean(booking.cookMessage) ||
         Boolean(reasonText) ||
         (!readOnly && (canRespondAsUser || canRespondAsCook || canDeclineAsAdmin)) ||
+        showCalendar ||
         (!readOnly && canCancelConfirmed) ||
         (!readOnly && (canWithdrawAsUser || canWithdrawAsCook)) ||
         (!readOnly && isCanceling);
@@ -133,31 +161,16 @@ export function BookingRequestOfferCallBookingCard({
     return (
         <Card className={bookingOfferCallCardClassName}>
             <CardHeader className={bookingOfferCallCardSectionClassName}>
-                <div className="grid gap-0.5">
+                <div className="@container/call-when grid min-w-0 gap-0.5">
                     {peerDisplayName ? <CardTitle className="font-medium">{peerDisplayName}</CardTitle> : null}
-                    {showCalendar && calendarOfferUrl ? (
-                        <AddToCalendarLink
-                            locale={locale}
-                            whenLabel={whenLabel}
-                            onClick={() => {
-                                downloadCalendarEvent({
-                                    filename: 'peopleeat-call.ics',
-                                    ...callCalendarEventIcsInput({
-                                        locale,
-                                        peerName: peerDisplayName?.trim() || { de: 'Gast', en: 'Guest' }[locale],
-                                        occasion,
-                                        offerUrl: calendarOfferUrl,
-                                        start,
-                                        end,
-                                        cookCallSlotBookingId: booking.cookCallSlotBookingId,
-                                    }),
-                                });
-                            }}
-                        />
-                    ) : peerDisplayName ? (
-                        <p className="text-sm text-foreground">{whenLabel}</p>
+                    {peerDisplayName ? (
+                        <p className="text-sm text-foreground">
+                            <BookingOfferCallWhen start={start} end={end} locale={locale} timeZone={timeZone} />
+                        </p>
                     ) : (
-                        <CardTitle className="text-sm font-medium">{whenLabel}</CardTitle>
+                        <CardTitle className="text-sm font-medium">
+                            <BookingOfferCallWhen start={start} end={end} locale={locale} timeZone={timeZone} />
+                        </CardTitle>
                     )}
                     <CardDescription className="text-xs">
                         {
@@ -240,7 +253,7 @@ export function BookingRequestOfferCallBookingCard({
                     ) : null}
 
                     {!readOnly && isDeclining ? (
-                        <div className="grid gap-2 rounded-md bg-secondary/40 p-3">
+                        <div className="grid gap-2 rounded-md bg-secondary/40">
                             <Textarea
                                 value={declineReason}
                                 onChange={(event) => setDeclineReason(event.target.value)}
@@ -264,20 +277,44 @@ export function BookingRequestOfferCallBookingCard({
                         </div>
                     ) : null}
 
-                    {isConfirmed && !isCanceling && !readOnly && canCancelConfirmed ? (
-                        <div className="flex flex-wrap justify-end gap-2">
-                            <Button
-                                type="button"
-                                size="sm"
-                                variant="outline"
-                                disabled={busy}
-                                onClick={() => {
-                                    setCancelingId(booking.cookCallSlotBookingId);
-                                    setCancelReason('');
-                                }}
-                            >
-                                {{ de: 'Termin absagen', en: 'Cancel appointment' }[locale]}
-                            </Button>
+                    {isConfirmed && !isCanceling && (showCalendar || (!readOnly && canCancelConfirmed)) ? (
+                        <div className={bookingOfferCallActionsClassName}>
+                            {!readOnly && canCancelConfirmed ? (
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    className={cn(bookingOfferCallActionButtonClassName, '@min-[28rem]/call-card:mr-auto')}
+                                    disabled={busy}
+                                    onClick={() => {
+                                        setCancelingId(booking.cookCallSlotBookingId);
+                                        setCancelReason('');
+                                    }}
+                                >
+                                    {{ de: 'Termin absagen', en: 'Cancel appointment' }[locale]}
+                                </Button>
+                            ) : null}
+                            {showCalendar && calendarOfferUrl ? (
+                                <AddToCalendarLink
+                                    appearance="action"
+                                    className={bookingOfferCallActionButtonClassName}
+                                    locale={locale}
+                                    onClick={() => {
+                                        downloadCalendarEvent({
+                                            filename: 'peopleeat-call.ics',
+                                            ...callCalendarEventIcsInput({
+                                                locale,
+                                                peerName: peerDisplayName?.trim() || { de: 'Gast', en: 'Guest' }[locale],
+                                                occasion,
+                                                offerUrl: calendarOfferUrl,
+                                                start,
+                                                end,
+                                                cookCallSlotBookingId: booking.cookCallSlotBookingId,
+                                            }),
+                                        });
+                                    }}
+                                />
+                            ) : null}
                         </div>
                     ) : null}
 
@@ -299,7 +336,7 @@ export function BookingRequestOfferCallBookingCard({
                     ) : null}
 
                     {!readOnly && isCanceling ? (
-                        <div className="grid gap-2 rounded-md bg-secondary/40 p-3">
+                        <div className="grid gap-2 rounded-md bg-secondary/40">
                             <p className="text-sm font-medium">
                                 {
                                     {

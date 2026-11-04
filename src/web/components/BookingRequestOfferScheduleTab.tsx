@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { formatDate, formatTime } from '../../shared';
+import { compareCookCallSlotBookings } from '../../shared/cookCallSlotBookingStatus';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
@@ -136,10 +137,7 @@ export function BookingRequestOfferScheduleTab({
     const [cancelingId, setCancelingId] = useState<string | null>(null);
     const [cancelReason, setCancelReason] = useState('');
 
-    const sortedBookings = useMemo(
-        () => [...callBookings].sort((left, right) => new Date(left.startAt).getTime() - new Date(right.startAt).getTime()),
-        [callBookings],
-    );
+    const sortedBookings = useMemo(() => [...callBookings].sort(compareCookCallSlotBookings), [callBookings]);
     const hasConfirmed = sortedBookings.some((booking) => booking.status === 'CONFIRMED');
 
     const dateBuckets = useMemo(() => {

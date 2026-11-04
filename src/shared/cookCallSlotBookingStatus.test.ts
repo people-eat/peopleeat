@@ -1,11 +1,40 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    compareCookCallSlotBookings,
     cookCallSlotBookingNextStepIsBefore,
     cookCallSlotBookingNextStepPick,
     cookCallSlotBookingStatusLabel,
     cookCallSlotBookingStatusTone,
 } from './cookCallSlotBookingStatus';
+
+describe('compareCookCallSlotBookings', () => {
+    it('lists confirmed, then pending, then declined, with the earlier start first inside a status', () => {
+        // Arrange
+        const sameStart = '2026-11-04T22:10:00.000Z';
+        const bookings = [
+            { status: 'DECLINED' as const, startAt: sameStart },
+            { status: 'CANCELED' as const, startAt: '2026-11-01T22:10:00.000Z' },
+            { status: 'PENDING' as const, startAt: sameStart },
+            { status: 'CONFIRMED' as const, startAt: '2026-11-05T22:10:00.000Z' },
+            { status: 'COMPLETED' as const, startAt: sameStart },
+            { status: 'CONFIRMED' as const, startAt: sameStart },
+        ];
+
+        // Act
+        const sorted = [...bookings].sort(compareCookCallSlotBookings);
+
+        // Assert
+        expect(sorted.map((booking) => `${booking.status}:${booking.startAt}`)).toEqual([
+            `CONFIRMED:${sameStart}`,
+            'CONFIRMED:2026-11-05T22:10:00.000Z',
+            `PENDING:${sameStart}`,
+            `DECLINED:${sameStart}`,
+            'CANCELED:2026-11-01T22:10:00.000Z',
+            `COMPLETED:${sameStart}`,
+        ]);
+    });
+});
 
 describe('cookCallSlotBookingNextStepPick', () => {
     it('prefers the call the audience must answer, then their own request, then a confirmed call', () => {

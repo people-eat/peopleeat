@@ -34,8 +34,12 @@ can open chat or offer details without leaving the room. Mic, camera, and leave 
 tab shows the video grid (and recording notice) while connected.
 
 **Add to calendar** — Confirmed slots expose a client-side calendar download on the Call tab schedule section and on cook `/profile/calls`
-(stable event id per slot booking). The printed time and **Zum Kalender hinzufügen** / **Add to calendar** sit in one button, with a
-calendar-plus icon to the left.
+(stable event id per slot booking). The name, time, and duration stay a plain header. In the action row, **Termin absagen** / **Cancel
+appointment** comes first, then **Zum Kalender hinzufügen** / **Add to calendar**, then go to call. Opening cancel replaces that row with
+the reason field and its actions, lined up with the rest of the card.
+
+Appointment rows on the Call tab and on `/profile/calls` list confirmed calls first, then pending, then declined, then canceled and
+completed. Within a status, the earlier start time comes first.
 
 **Profile overviews** — Cook offer inbox cards surface pending/confirmed calls via a top-left info icon + popover (keeps grid card heights
 even) and still deep-link to the Call tab. Customer booking-request list and request-detail offer cards stay clean (no inline call copy) but
@@ -158,9 +162,11 @@ it again does not update an entry that is already in a calendar. The 60-minute e
 - Cook `/profile/calls` scheduled-call rows use the same `Card` + `StatusBadge` pattern
 - Admin `/admin/calls` attention board rows use the same compact `Card` density (badges in `CardAction`, CTAs in `CardFooter`)
 - Offer pages: tabs offer / chat / call (plus role-specific tabs); legacy `?tab=schedule` aliases to `call`
-- Confirmed slots: a button with a calendar-plus icon to the left of the printed time and **Zum Kalender hinzufügen** / **Add to calendar**,
-  on the offer Call tab (customer and cook) and on `/profile/calls`. Hidden for admin and while a cancel is in progress. The button row
-  stays Cancel / Go to call.
+- Confirmed slots: **Termin absagen** / **Cancel appointment** comes first, then **Zum Kalender hinzufügen** / **Add to calendar**, on the
+  offer Call tab (customer and cook) and on `/profile/calls`. The header stays name, time, and duration. On a narrow card the time range
+  drops onto its own line, and those actions stack full width. The cancel reason panel has no extra inset. Hidden for admin and while a
+  cancel is in progress.
+- Appointment rows: confirmed, then pending, then declined, then canceled and completed. Within a status, earlier `startAt` first.
 - Profile overviews: `callBookingOverviewHint` — cook inbox uses info `Popover` on `CookBookingRequestOfferCard`; customer cards omit the
   label (deep-link only); admin cards keep inline hint text; `openCall` deep-links to `?tab=call`. Which call to surface (response needed →
   pending → confirmed) and the time window wording come from `src/shared/cookCallSlotBookingStatus.ts`, shared with the server's

@@ -4,10 +4,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { formatDate, formatTime, isCallJoinable } from '../../../shared';
+import { formatDate, isCallJoinable } from '../../../shared';
 import { callCalendarEventIcsInput } from '../../../shared/calendarEventContent';
 import { COOK_CALL_DURATIONS_MINUTES, COOK_CALL_MAX_WEEKLY_RULES, formatMinuteOfDay } from '../../../shared/cookCallAvailability';
-import { cookCallSlotBookingStatusLabel, cookCallSlotBookingStatusTone } from '../../../shared/cookCallSlotBookingStatus';
+import {
+    compareCookCallSlotBookings,
+    cookCallSlotBookingStatusLabel,
+    cookCallSlotBookingStatusTone,
+} from '../../../shared/cookCallSlotBookingStatus';
 import { AddToCalendarLink } from '../../components/AddToCalendarLink';
 import {
     AlertDialog,
@@ -25,7 +29,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { StatusBadge } from '../../components/base/status-badge';
 import { Switch } from '../../components/base/switch';
 import { Textarea } from '../../components/base/textarea';
-import { bookingOfferCallCardClassName, bookingOfferCallCardSectionClassName } from '../../components/BookingRequestOfferScheduleTab';
+import {
+    bookingOfferCallActionButtonClassName,
+    bookingOfferCallActionsClassName,
+    bookingOfferCallCardClassName,
+    bookingOfferCallCardSectionClassName,
+    BookingOfferCallWhen,
+} from '../../components/BookingRequestOfferCallBookingCard';
 import type { GqlCProfileCookCallsCookFragment, GqlCProfileCookCallsPageQuery } from '../../graphql/generated';
 import {
     ProfileCookCallsCallSlotCancelDocument,
@@ -72,10 +82,6 @@ function sortExceptions(exceptions: GqlCProfileCookCallsCookFragment['callAvaila
         }
         return (left.startMinuteOfDay ?? -1) - (right.startMinuteOfDay ?? -1);
     });
-}
-
-function formatCallTime(value: string, locale: Locale, timeZone: string): string {
-    return formatTime(value, { locale, timeZone });
 }
 
 function schedulingEnabledConfirmCopy({ nextEnabled, locale }: { nextEnabled: boolean; locale: Locale }): {
@@ -142,7 +148,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
     const sortedExceptions = useMemo(() => sortExceptions(cook?.callAvailabilityExceptions ?? []), [cook?.callAvailabilityExceptions]);
     const sortedBookings = useMemo(() => {
         const bookings = cook?.callSlotBookings ?? [];
-        return [...bookings].sort((left, right) => new Date(left.startAt).getTime() - new Date(right.startAt).getTime());
+        return [...bookings].sort(compareCookCallSlotBookings);
     }, [cook?.callSlotBookings]);
 
     const dayLabels =
@@ -351,7 +357,6 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                             const isDeclining = decliningId === booking.cookCallSlotBookingId;
                             const isCanceling = cancelingId === booking.cookCallSlotBookingId;
                             const joinable = isCallJoinable(booking, now);
-                            const whenLabel = `${formatDate(start, { locale, timeZone, weekday: true })} · ${formatCallTime(booking.startAt, locale, timeZone)}–${formatCallTime(booking.endAt, locale, timeZone)}${locale === 'de' ? ' Uhr' : ''}`;
                             const hasBody =
                                 Boolean(booking.customerMessage) ||
                                 Boolean(booking.cookMessage) ||
@@ -363,37 +368,11 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                             return (
                                 <Card key={booking.cookCallSlotBookingId} className={bookingOfferCallCardClassName}>
                                     <CardHeader className={bookingOfferCallCardSectionClassName}>
-                                        <div className="grid gap-0.5">
+                                        <div className="@container/call-when grid min-w-0 gap-0.5">
                                             <CardTitle className="font-medium">{booking.customer.display}</CardTitle>
-                                            {isConfirmed && !isCanceling ? (
-                                                <AddToCalendarLink
-                                                    locale={locale}
-                                                    whenLabel={whenLabel}
-                                                    onClick={() => {
-                                                        const offerUrl = new URL(
-                                                            localePath(
-                                                                locale,
-                                                                `/profile/booking-request-offers/${booking.bookingRequestOfferId}?tab=call`,
-                                                            ),
-                                                            window.location.origin,
-                                                        ).href;
-                                                        downloadCalendarEvent({
-                                                            filename: 'peopleeat-call.ics',
-                                                            ...callCalendarEventIcsInput({
-                                                                locale,
-                                                                peerName: booking.customer.display,
-                                                                occasion: booking.occasion,
-                                                                offerUrl,
-                                                                start,
-                                                                end,
-                                                                cookCallSlotBookingId: booking.cookCallSlotBookingId,
-                                                            }),
-                                                        });
-                                                    }}
-                                                />
-                                            ) : (
-                                                <p className="text-sm text-foreground">{whenLabel}</p>
-                                            )}
+                                            <p className="text-sm text-foreground">
+                                                <BookingOfferCallWhen start={start} end={end} locale={locale} timeZone={timeZone} />
+                                            </p>
                                         </div>
                                         <CardAction>
                                             <StatusBadge tone={cookCallSlotBookingStatusTone(booking, 'cook')}>
@@ -446,7 +425,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                             ) : null}
 
                                             {isPending && fromCustomer && isDeclining ? (
-                                                <div className="grid gap-2 rounded-md bg-secondary/40 p-3">
+                                                <div className="grid gap-2 rounded-md bg-secondary/40">
                                                     <Textarea
                                                         value={declineReason}
                                                         onChange={(event) => setDeclineReason(event.target.value)}
@@ -503,11 +482,15 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                             ) : null}
 
                                             {isConfirmed && !isCanceling ? (
-                                                <div className="flex flex-wrap justify-end gap-2">
+                                                <div className={bookingOfferCallActionsClassName}>
                                                     <Button
                                                         type="button"
                                                         size="sm"
                                                         variant="outline"
+                                                        className={cn(
+                                                            bookingOfferCallActionButtonClassName,
+                                                            '@min-[28rem]/call-card:mr-auto',
+                                                        )}
                                                         disabled={slotBusy}
                                                         onClick={() => {
                                                             setCancelingId(booking.cookCallSlotBookingId);
@@ -516,7 +499,38 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                                     >
                                                         {{ de: 'Termin absagen', en: 'Cancel appointment' }[locale]}
                                                     </Button>
-                                                    <Button asChild type="button" size="sm">
+                                                    <AddToCalendarLink
+                                                        appearance="action"
+                                                        className={bookingOfferCallActionButtonClassName}
+                                                        locale={locale}
+                                                        onClick={() => {
+                                                            const offerUrl = new URL(
+                                                                localePath(
+                                                                    locale,
+                                                                    `/profile/booking-request-offers/${booking.bookingRequestOfferId}?tab=call`,
+                                                                ),
+                                                                window.location.origin,
+                                                            ).href;
+                                                            downloadCalendarEvent({
+                                                                filename: 'peopleeat-call.ics',
+                                                                ...callCalendarEventIcsInput({
+                                                                    locale,
+                                                                    peerName: booking.customer.display,
+                                                                    occasion: booking.occasion,
+                                                                    offerUrl,
+                                                                    start,
+                                                                    end,
+                                                                    cookCallSlotBookingId: booking.cookCallSlotBookingId,
+                                                                }),
+                                                            });
+                                                        }}
+                                                    />
+                                                    <Button
+                                                        asChild
+                                                        type="button"
+                                                        size="sm"
+                                                        className={bookingOfferCallActionButtonClassName}
+                                                    >
                                                         <Link
                                                             to="/{-$locale}/profile/booking-request-offers/$bookingRequestOfferId"
                                                             params={{ bookingRequestOfferId: booking.bookingRequestOfferId }}
@@ -534,7 +548,7 @@ export function ProfileCookCallsPage({ data }: { data: GqlCProfileCookCallsPageQ
                                             ) : null}
 
                                             {isCanceling ? (
-                                                <div className="grid gap-2 rounded-md bg-secondary/40 p-3">
+                                                <div className="grid gap-2 rounded-md bg-secondary/40">
                                                     <p className="text-sm font-medium">
                                                         {
                                                             {
