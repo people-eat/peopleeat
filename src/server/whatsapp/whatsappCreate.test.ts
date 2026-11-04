@@ -31,10 +31,10 @@ afterEach(() => vi.restoreAllMocks());
 
 describe('whatsappCreate template approval checks', () => {
     it.each([
-        { status: 'PENDING', category: 'UTILITY', changed: false },
-        { status: 'APPROVED', category: 'MARKETING', changed: false },
-        { status: 'APPROVED', category: 'UTILITY', changed: true },
-    ])('blocks $status/$category templates and copy drift before sending', async ({ status, category, changed }) => {
+        { status: 'PENDING', category: 'UTILITY', changed: false, reason: 'status PENDING' },
+        { status: 'APPROVED', category: 'MARKETING', changed: false, reason: 'category MARKETING' },
+        { status: 'APPROVED', category: 'UTILITY', changed: true, reason: 'BODY text differs' },
+    ])('blocks $status/$category templates and copy drift before sending', async ({ status, category, changed, reason }) => {
         // Arrange
         const payload = whatsappTemplateMetaPayloadCreate(whatsappTemplateDefinitionFind(name), 'en', site);
         if (changed) payload.components[1]!.text = 'Different approved copy';
@@ -46,7 +46,7 @@ describe('whatsappCreate template approval checks', () => {
         // Act
         const result = provider().sendTemplate(sendArgs);
         // Assert
-        await expect(result).rejects.toThrow('not an approved, matching Utility template');
+        await expect(result).rejects.toThrow(`blocked: ${reason}`);
         expect(fetch).toHaveBeenCalledTimes(1);
         expect(String(fetch.mock.calls[0]![0])).toContain('/account-id/message_templates');
     });
@@ -76,5 +76,32 @@ describe('whatsappCreate template approval checks', () => {
             parameters: [{ type: 'text', text: 'ExampleWhatsAppLink01' }],
         });
         expect(sent.to).toBe('4915123456789');
+    });
+
+    it('sends when the approved button host is another environment on the same tracking path', async () => {
+        // Arrange
+        const payload = whatsappTemplateMetaPayloadCreate(whatsappTemplateDefinitionFind(name), 'en', 'https://people-eat.com');
+        const fetch = vi
+            .spyOn(globalThis, 'fetch')
+            .mockResolvedValueOnce(
+                new Response(JSON.stringify({ data: [{ ...payload, id: 'template-id', status: 'APPROVED', category: 'UTILITY' }] }), {
+                    status: 200,
+                }),
+            )
+            .mockResolvedValueOnce(new Response(JSON.stringify({ messages: [{ id: 'wamid.example' }] }), { status: 200 }));
+        const demo = whatsappCreate({
+            transport: 'meta',
+            accessToken: 'test-token',
+            phoneNumberId: 'phone-id',
+            businessAccountId: 'account-id',
+            appSecret: 'test-secret',
+            webPageUrl: 'https://demo.people-eat.com',
+            log,
+        });
+        // Act
+        const result = await demo.sendTemplate(sendArgs);
+        // Assert
+        expect(result.providerMessageId).toBe('wamid.example');
+        expect(fetch).toHaveBeenCalledTimes(2);
     });
 });

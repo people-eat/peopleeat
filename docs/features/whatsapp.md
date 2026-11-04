@@ -43,9 +43,11 @@ threads in the admin inbox, including media, quick-reply reactions, and emoji re
 
 ### Ops prerequisite
 
-Before Meta delivery: submit both DE and EN variants from the versioned project catalog as Utility and verify approval. The send path checks
-the registered category and exact wording, so pending, Marketing, rejected, and mismatched variants are not sent. There is no silent
-language or Marketing fallback. Email remains available. New buttons require the deployed tracking redirect and database migration.
+Before Meta delivery: submit both DE and EN variants from the versioned project catalog as Utility and verify approval. Active in WhatsApp
+Manager is the approval status. The send also requires category Utility and the catalog header, body, and button label. The button path must
+be `/api/whatsapp/links/{{1}}`; the host may be the origin registered on the shared account. A blocked send names the failed check
+(`status`, `category`, or the field). There is no silent language or Marketing fallback. Email remains available. New buttons require the
+deployed tracking redirect and database migration.
 
 Older templates remain available for history but are not mapped for new sends. The request-confirmation v1 drafts are superseded by v2,
 which restores peopleeat's conversational tone, emojis, and team sign-off. All current variants retain that personality while keeping the

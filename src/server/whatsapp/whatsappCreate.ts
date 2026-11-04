@@ -11,7 +11,7 @@ import type {
     WhatsAppTemplateSendArgs,
     WhatsAppTextSendArgs,
 } from './WhatsApp';
-import { whatsappTemplateMetaMatches, whatsappTemplatesMetaCreate } from './whatsappTemplatesMeta';
+import { whatsappTemplateBlockReason, whatsappTemplatesMetaCreate } from './whatsappTemplatesMeta';
 
 export type WhatsAppCreateOptions = {
     transport: 'meta' | 'console';
@@ -75,15 +75,13 @@ export function whatsappCreate(options: WhatsAppCreateOptions): WhatsApp {
                 args.templateName,
             );
             const template = templates.find((entry) => entry.name === args.templateName && entry.language === args.languageCode);
-            if (
-                !template ||
-                template.status !== 'APPROVED' ||
-                template.category !== 'UTILITY' ||
-                !whatsappTemplateMetaMatches(template, definition, args.languageCode, options.webPageUrl)
-            ) {
-                throw new Error(
-                    `WhatsApp template ${args.templateName}/${args.languageCode} is not an approved, matching Utility template`,
-                );
+            if (!template) {
+                const seen = templates.map((entry) => `${entry.language} ${entry.status} ${entry.category}`).join(', ') || 'none';
+                throw new Error(`WhatsApp template ${args.templateName}/${args.languageCode} was not returned by Meta (${seen})`);
+            }
+            const reason = whatsappTemplateBlockReason(template, definition, args.languageCode, options.webPageUrl);
+            if (reason) {
+                throw new Error(`WhatsApp template ${args.templateName}/${args.languageCode} blocked: ${reason}`);
             }
             const components: Array<Record<string, unknown>> = [];
             if (args.headerParameters && args.headerParameters.length > 0) {

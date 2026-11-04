@@ -47,6 +47,61 @@ export function whatsappTemplateMetaPayloadCreate(definition: WhatsAppTemplateDe
     };
 }
 
+/** The host is fixed when the template is approved. Demo and production share one account, so only the path is compared. */
+function trackingButtonUrlCanonical(url: string): string {
+    let decoded = url;
+    try {
+        decoded = decodeURIComponent(url);
+    } catch {
+        decoded = url;
+    }
+    const match = /^https:\/\/[^/?#]+(\/api\/whatsapp\/links\/\{\{1\}\})$/u.exec(decoded);
+    return match?.[1] ?? decoded;
+}
+
+type ComparableComponent = {
+    type: string;
+    text?: string;
+    format?: string;
+    buttons?: Array<{ type: string; text: string; url?: string }>;
+};
+
+function comparableComponents(components: MetaTemplate['components'] | undefined): ComparableComponent[] {
+    return (components ?? []).map((component) => ({
+        type: component.type.toUpperCase(),
+        ...(component.text !== undefined ? { text: component.text } : {}),
+        ...(component.format !== undefined ? { format: component.format.toUpperCase() } : {}),
+        ...(component.buttons
+            ? {
+                  buttons: component.buttons.map((button) => ({
+                      type: button.type.toUpperCase(),
+                      text: button.text,
+                      ...(button.url !== undefined ? { url: trackingButtonUrlCanonical(button.url) } : {}),
+                  })),
+              }
+            : {}),
+    }));
+}
+
+function componentDifference(expected: ComparableComponent, actual: ComparableComponent | undefined): string {
+    if (!actual) return `${expected.type} missing`;
+    if (expected.type !== actual.type) return `${expected.type} registered as ${actual.type}`;
+    if (expected.format !== actual.format)
+        return `${expected.type} format ${actual.format ?? 'none'}, catalog ${expected.format ?? 'none'}`;
+    if (expected.text !== actual.text) return `${expected.type} text differs`;
+    const expectedButtons = expected.buttons ?? [];
+    const actualButtons = actual.buttons ?? [];
+    if (expectedButtons.length !== actualButtons.length)
+        return `${expected.type} button count ${actualButtons.length}, catalog ${expectedButtons.length}`;
+    for (const [index, button] of expectedButtons.entries()) {
+        const registered = actualButtons[index];
+        if (!registered || button.type !== registered.type || button.text !== registered.text || button.url !== registered.url) {
+            return `${expected.type} button ${index + 1} is ${registered?.type ?? 'none'} "${registered?.text ?? ''}" ${registered?.url ?? ''}`.trim();
+        }
+    }
+    return `${expected.type} differs`;
+}
+
 export function whatsappTemplateMetaMatches(
     template: MetaTemplate,
     definition: WhatsAppTemplateDefinition,
@@ -54,26 +109,32 @@ export function whatsappTemplateMetaMatches(
     webPageUrl: string,
 ) {
     const expected = whatsappTemplateMetaPayloadCreate(definition, locale, webPageUrl);
-    const relevant = (components: MetaTemplate['components']) =>
-        components.map((component) => ({
-            type: component.type,
-            ...(component.text !== undefined ? { text: component.text } : {}),
-            ...(component.format !== undefined ? { format: component.format } : {}),
-            ...(component.buttons
-                ? {
-                      buttons: component.buttons.map((button) => ({
-                          type: button.type,
-                          text: button.text,
-                          ...(button.url !== undefined ? { url: button.url } : {}),
-                      })),
-                  }
-                : {}),
-        }));
     return (
         template.name === definition.name &&
         template.language === locale &&
-        JSON.stringify(relevant(template.components)) === JSON.stringify(relevant(expected.components))
+        JSON.stringify(comparableComponents(template.components)) === JSON.stringify(comparableComponents(expected.components))
     );
+}
+
+/** Null when this variant may be sent. Otherwise a short reason safe to put in the send log. */
+export function whatsappTemplateBlockReason(
+    template: MetaTemplate,
+    definition: WhatsAppTemplateDefinition,
+    locale: Locale,
+    webPageUrl: string,
+): string | null {
+    if (template.status.toUpperCase() !== 'APPROVED') return `status ${template.status}`;
+    if (template.category.toUpperCase() !== 'UTILITY') return `category ${template.category}`;
+    const expected = comparableComponents(whatsappTemplateMetaPayloadCreate(definition, locale, webPageUrl).components);
+    const actual = comparableComponents(template.components);
+    if (JSON.stringify(actual) === JSON.stringify(expected)) return null;
+    if (actual.length !== expected.length) {
+        return `components ${actual.map((component) => component.type).join(',') || 'none'}, catalog ${expected.map((component) => component.type).join(',')}`;
+    }
+    for (const [index, component] of expected.entries()) {
+        if (JSON.stringify(component) !== JSON.stringify(actual[index])) return componentDifference(component, actual[index]);
+    }
+    return 'copy differs';
 }
 
 type MetaGraphError = {

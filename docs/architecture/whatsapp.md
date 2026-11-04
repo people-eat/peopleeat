@@ -15,8 +15,10 @@ inbox must show what was actually sent, and template categorization must not sil
    The recipient is `customer`, `cook`, or `participant` for shared call notices. Versions advance per key when copy changes; languages
    share a key. `whatsappTemplateNameByPurpose` maps stable application purposes to catalog names.
 3. **Utility-only delivery.** Every new variant is submitted with `category: UTILITY`. Before each Meta send, read the registered variant
-   and require `APPROVED`, `UTILITY`, and matching header/body/buttons/URL. Pending, rejected, reclassified, or drifted variants fail
-   closed; never fall back to Marketing or an unrelated template. The token must permit reading templates for this WABA. This adds a
+   and require `APPROVED`, `UTILITY`, and the catalog header, body, and button label. A URL button must use https path
+   `/api/whatsapp/links/{{1}}`. The host is whatever was approved on the shared account, so demo can send a template registered for
+   production. Pending, rejected, reclassified, or drifted variants fail closed; never fall back to Marketing or an unrelated template. A
+   blocked send names the status, category, or field that failed. The token must permit reading templates for this WABA. This adds a
    management request per send. A rejected read is logged with Meta's message, code, and subcode. HTTP 400 code 100 on that read means
    `WHATSAPP_BUSINESS_ACCOUNT_ID` is not the WhatsApp Business Account (`asset_id` in the WhatsApp Manager URL; `business_id` there is the
    portfolio, and the phone number id is a third node), or the token lacks template-read access. Meta remains the approval/category
