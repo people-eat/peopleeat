@@ -1,9 +1,10 @@
 import { Link } from '@tanstack/react-router';
 import { ChevronLeftIcon, ChevronRightIcon, StarIcon } from 'lucide-react';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode, UIEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { formatDate } from '../../shared';
+import { useIsMobile } from '../hooks/use-mobile';
 import { useLocale } from '../hooks/useLocale';
 import { useTimeZone } from '../hooks/useTimeZone';
 import { cn } from '../utils/cn';
@@ -11,6 +12,7 @@ import { AppImage } from './AppImage';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
 import { Button } from './base/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './base/dialog';
+import { Sheet, SheetClose, SheetContent } from './base/sheet';
 
 export type PageTestimonialCardModel = {
     authorName: string;
@@ -192,10 +194,13 @@ function TestimonialGallery({
     imageUrls,
     index,
     onIndexChange,
+    bleed = false,
 }: {
     imageUrls: ReadonlyArray<string>;
     index: number;
     onIndexChange: (index: number) => void;
+    /** Full-bleed hero for the mobile sheet. Dialog keeps the rounded frame. */
+    bleed?: boolean;
 }) {
     const locale = useLocale();
     const scrollerRef = useRef<HTMLDivElement>(null);
@@ -227,8 +232,8 @@ function TestimonialGallery({
     };
 
     return (
-        <div className="flex min-h-0 flex-col gap-3">
-            <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-muted/60">
+        <div className={cn('flex min-h-0 flex-col', bleed ? 'gap-0' : 'gap-3')}>
+            <div className={cn('relative aspect-square w-full overflow-hidden bg-muted/60', bleed ? null : 'rounded-xl')}>
                 <div
                     ref={scrollerRef}
                     className="flex size-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain no-scrollbar"
@@ -283,7 +288,7 @@ function TestimonialGallery({
 
             {total > 1 ? (
                 <ul
-                    className="grid grid-cols-4 gap-1.5 @sm:grid-cols-5 @3xl:grid-cols-6"
+                    className={cn('grid grid-cols-4 gap-1.5 @sm:grid-cols-5 @3xl:grid-cols-6', bleed && 'px-4 pt-3')}
                     aria-label={{ de: 'Alle Fotos', en: 'All photos' }[locale]}
                 >
                     {imageUrls.map((url, thumbIndex) => {
@@ -428,7 +433,56 @@ export function PageTestimonialCardFace({
     );
 }
 
-/** Controlled public detail dialog (gallery + full copy). Used by public cards and admin preview. */
+function TestimonialDetailSheet({
+    testimonial,
+    open,
+    onOpenChange,
+    imageUrls,
+    imageIndex,
+    onImageIndexChange,
+    showBookingCta,
+}: {
+    testimonial: PageTestimonialCardModel;
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+    imageUrls: ReadonlyArray<string>;
+    imageIndex: number;
+    onImageIndexChange: (index: number) => void;
+    showBookingCta: boolean;
+}) {
+    const locale = useLocale();
+    const hasImages = imageUrls.length > 0;
+    const backLabel = { de: 'Zurück', en: 'Back' }[locale];
+
+    return (
+        <Sheet open={open} onOpenChange={onOpenChange}>
+            <SheetContent
+                side="right"
+                showCloseButton={false}
+                className="h-dvh w-full max-w-none gap-0 overflow-hidden border-0 p-0 sm:max-w-none"
+            >
+                <div className="flex shrink-0 items-center bg-background px-[max(0.75rem,env(safe-area-inset-left))] pt-[max(0.5rem,env(safe-area-inset-top))] pb-2">
+                    <SheetClose asChild>
+                        <Button type="button" variant="outline">
+                            <ChevronLeftIcon />
+                            {backLabel}
+                        </Button>
+                    </SheetClose>
+                </div>
+                <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+                    {hasImages ? (
+                        <TestimonialGallery imageUrls={imageUrls} index={imageIndex} onIndexChange={onImageIndexChange} bleed />
+                    ) : null}
+                    <div className="px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+                        <TestimonialDetailCopy testimonial={testimonial} showBookingCta={showBookingCta} />
+                    </div>
+                </div>
+            </SheetContent>
+        </Sheet>
+    );
+}
+
+/** Controlled public detail. Full-page sheet below `md`, centered dialog from `md` up. */
 export function PageTestimonialDetailDialog({
     testimonial,
     open,
@@ -446,6 +500,7 @@ export function PageTestimonialDetailDialog({
 }) {
     const imageUrls = testimonial.imageUrls ?? [];
     const hasImages = imageUrls.length > 0;
+    const isMobile = useIsMobile();
     const [imageIndex, setImageIndex] = useState(initialImageIndex);
 
     useEffect(() => {
@@ -467,6 +522,20 @@ export function PageTestimonialDetailDialog({
         return () => window.removeEventListener('keydown', onKeyDown);
     }, [open, imageUrls.length]);
 
+    if (isMobile) {
+        return (
+            <TestimonialDetailSheet
+                testimonial={testimonial}
+                open={open}
+                onOpenChange={onOpenChange}
+                imageUrls={imageUrls}
+                imageIndex={imageIndex}
+                onImageIndexChange={setImageIndex}
+                showBookingCta={showBookingCta}
+            />
+        );
+    }
+
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
@@ -476,7 +545,7 @@ export function PageTestimonialDetailDialog({
                 )}
             >
                 {hasImages ? (
-                    <div className="grid @3xl:grid-cols-[minmax(0,1.2fr)_minmax(17rem,0.8fr)]">
+                    <div className="grid @3xl:grid-cols-2">
                         <div className="bg-muted/30 p-4 @md:p-5 @3xl:max-h-[90vh] @3xl:overflow-y-auto">
                             <TestimonialGallery imageUrls={imageUrls} index={imageIndex} onIndexChange={setImageIndex} />
                         </div>

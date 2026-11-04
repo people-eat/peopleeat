@@ -62,14 +62,16 @@ existing follow-up answers unless the cook fills them again; dropping from 5 to 
 - City and partner pages: curated testimonial section after featured cooks; hidden when empty. Each tile (`PageTestimonialCard`) is fully
   clickable (hover wash + underline on “Bewertung ansehen” / “View review”) and shows the occasion as the card title (stars + numeric rating
   top-right), a 4-line clamped quote with the accent quote-line, a 4-column square photo strip (4th slot becomes “+N more” when there are
-  more than four), and author with written date only (city hidden on the tile). The detail dialog opens from the card, the view link, or a
-  photo thumb. With photos: gallery (horizontal snap-scroll so photos swipe on mobile; arrows and thumbnails too) on the left and copy on
-  the right at wider dialog widths; on desktop each column scrolls independently so the gallery stays visible while the copy scrolls. Detail
-  copy leads with “{name}'s experience at {occasion}” (`text-lg`, `text-2xl` from `@md` up), then rating and quote, then author below the
-  body (same footing as the card) with one meta line “{date} in {city}”. On content pages (`showBookingCta`), the booking ask (“Also looking
-  for a … experience?”) sits above the primary CTA into `/booking-request/form` with `occasion` prefilled (free, no obligation, centered
-  under the button), replacing a divider line. Booking request plan keeps testimonials proof-only (no CTA). Default grid is 3 columns; plan
-  uses 2 beside the sticky sidebar. Attachment downloads need a published `imageUrls` hit (public) or any testimonial hit for admins — see
+  more than four), and author with written date only (city hidden on the tile). The detail opens from the card, the view link, or a photo
+  thumb. Below `md` that detail is a full-page sheet sliding in from the right: a back control, one scroll, and an edge-to-edge photo when
+  there are images. From `md` up it stays a centered dialog. With photos, the gallery (horizontal snap-scroll so photos swipe on mobile;
+  arrows and thumbnails too) and the copy split that dialog evenly once it is wide enough (gallery left, copy right); each column scrolls
+  independently so the gallery stays visible while the copy scrolls. Detail copy leads with “{name}'s experience at {occasion}” (`text-lg`,
+  `text-2xl` from `@md` up), then rating and quote, then author below the body (same footing as the card) with one meta line “{date} in
+  {city}”. On content pages (`showBookingCta`), the booking ask (“Also looking for a … experience?”) sits above the primary CTA into
+  `/booking-request/form` with `occasion` prefilled (free, no obligation, centered under the button), replacing a divider line. Booking
+  request plan keeps testimonials proof-only (no CTA). Default grid is 3 columns; plan uses 2 beside the sticky sidebar. Attachment
+  downloads need a published `imageUrls` hit (public) or any testimonial hit for admins — see
   [file-storage.md](../architecture/file-storage.md).
 - Home: static marketing quotes in a marquee — [landing.md](./landing.md).
 - How to become a chef: static chef quotes (not database-driven).
@@ -110,8 +112,9 @@ Structural decisions: [architecture/testimonials.md](../architecture/testimonial
   `toolAdminTestimonialsFindMany` (customer + cook, in-process filters) → `admin.testimonialList` cards
 - Utils: publication from rating, offer fallbacks, image URLs from file uploads, junction cleanup
 - Public UI: `SectionCookHero` / `SectionCookTestimonials`, `SectionPageTestimonials` + `PageTestimonialCard` / `PageTestimonialCardFace` /
-  `PageTestimonialDetailDialog` (photo strip, split detail dialog with author avatar; content pages pass `showBookingCta` for occasion
-  question + form CTA; mobile always 1 column, `columns={2|3}` from `@md`), `ContentPageTestimonialsEditor`
+  `PageTestimonialDetailDialog` (photo strip; full-page right sheet below `md` via `useIsMobile`, split dialog from `md` up; content pages
+  pass `showBookingCta` for occasion question + form CTA; mobile always 1 column, `columns={2|3}` from `@md`),
+  `ContentPageTestimonialsEditor`
 - Admin UI: `AdminTestimonialsPage` card grid via `AdminTestimonialListCard` on unified `Admin.testimonials`; detail entry
   `AdminTestimonialPage` (kind `customer` | `cook`) with typed routes and kind modules (`AdminCustomerTestimonialPage` /
   `AdminCookTestimonialPage`) using `AdminPinnedFooterLayout` with read-only `AdminTestimonialDetailContent` +
