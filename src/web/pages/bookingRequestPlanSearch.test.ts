@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    bookingRequestPlanCreateInputFromValues,
     bookingRequestPlanResolveVenue,
     bookingRequestPlanSearchEqual,
     bookingRequestPlanSearchFromValues,
@@ -159,5 +160,63 @@ describe('bookingRequestPlanUsesDateChips', () => {
             ),
         ).toBe(false);
         expect(bookingRequestPlanUsesDateChips({ minDateTime: undefined, maxDateTime: undefined }, 0)).toBe(false);
+    });
+});
+
+describe('bookingRequestPlanCreateInputFromValues', () => {
+    const exactEventAddress = {
+        displayText: 'Kronstraße 30, Frankfurt',
+        latitude: 50.12,
+        longitude: 8.69,
+        addressLine1: 'Kronstraße 30',
+        addressLine2: '',
+        city: 'Frankfurt am Main',
+        postCode: '60323',
+        state: 'Hessen',
+        country: 'DE',
+    };
+
+    it('stores one named participant per guest', () => {
+        const input = bookingRequestPlanCreateInputFromValues(
+            {
+                adultCount: 2,
+                discountedCount: 1,
+                locationSearchText: exactEventAddress.displayText,
+                exactEventAddress,
+                dateTime: new Date('2027-06-12T17:00:00.000Z'),
+                cuisine: 'mediterranean',
+                priceClassType: 'MEDIUM',
+                originalMessage: 'Keine Nüsse',
+                redeemCode: '',
+                occasion: '',
+            },
+            'de',
+        );
+
+        expect(input?.participants).toEqual([
+            { type: 'ADULT', name: 'Erwachsener 1', restrictions: [] },
+            { type: 'ADULT', name: 'Erwachsener 2', restrictions: [] },
+            { type: 'DISCOUNTED', name: 'Kind 1', restrictions: [] },
+        ]);
+    });
+
+    it('uses English default names for the English locale', () => {
+        const input = bookingRequestPlanCreateInputFromValues(
+            {
+                adultCount: 1,
+                discountedCount: 1,
+                locationSearchText: exactEventAddress.displayText,
+                exactEventAddress,
+                dateTime: new Date('2027-06-12T17:00:00.000Z'),
+                cuisine: 'asian',
+                priceClassType: 'MEDIUM',
+                originalMessage: 'No nuts',
+                redeemCode: '',
+                occasion: '',
+            },
+            'en',
+        );
+
+        expect(input?.participants.map((participant) => participant.name)).toEqual(['Adult 1', 'Child 1']);
     });
 });

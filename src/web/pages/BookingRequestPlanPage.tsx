@@ -49,7 +49,6 @@ import { Reveal } from '../components/Reveal';
 import type {
     GqlCBookingRequestPlanPageQuery,
     GqlCLocationSuggestion,
-    GqlCUserBookingRequestCreate,
     GqlCUserBookingRequestExactEventAddressInput,
 } from '../graphql/generated';
 import { BookingRequestPlanCreateDocument, BookingRequestPlanLocationSuggestionsDocument } from '../graphql/generated';
@@ -73,9 +72,9 @@ import {
     bookingRequestFormHourOptions,
     bookingRequestFormMinuteOptions,
     bookingRequestPlanChefArrivalHint,
+    bookingRequestPlanCreateInputFromValues,
     bookingRequestPlanCuisineKeys,
     bookingRequestPlanCuisineLabel,
-    bookingRequestPlanCuisinePreference,
     bookingRequestPlanCuisineSubtitle,
     bookingRequestPlanSearchEqual,
     bookingRequestPlanSearchFromValues,
@@ -403,51 +402,6 @@ function sampleMenuCopy(cuisine: BookingRequestPlanCuisineKey, locale: 'de' | 'e
     };
 }
 
-function buildCreateMessage(values: BookingRequestPlanValues, locale: 'de' | 'en'): string | null {
-    const notes = values.originalMessage.trim();
-    if (notes.length === 0) return null;
-    const cuisine = bookingRequestPlanCuisineLabel(values.cuisine, locale);
-    return {
-        de: `Menürichtung: ${cuisine}.\n\n${notes}`,
-        en: `Cuisine direction: ${cuisine}.\n\n${notes}`,
-    }[locale];
-}
-
-function createInputFromValues(values: BookingRequestPlanValues, locale: 'de' | 'en'): GqlCUserBookingRequestCreate | null {
-    if (!values.exactEventAddress) return null;
-    if (values.adultCount < 1) return null;
-    const originalMessage = buildCreateMessage(values, locale);
-    if (!originalMessage) return null;
-    const occasion =
-        values.occasion.trim() ||
-        {
-            de: 'Familienfest',
-            en: 'Family Party',
-        }[locale];
-    const participants: GqlCUserBookingRequestCreate['participants'] = [
-        ...Array.from({ length: values.adultCount }, () => ({
-            type: 'ADULT' as const,
-            name: '',
-            restrictions: [] as string[],
-        })),
-        ...Array.from({ length: values.discountedCount }, () => ({
-            type: 'DISCOUNTED' as const,
-            name: '',
-            restrictions: [] as string[],
-        })),
-    ];
-    return {
-        occasion,
-        dateTime: values.dateTime.toISOString(),
-        exactEventAddress: values.exactEventAddress,
-        originalMessage,
-        preferences: [bookingRequestPlanCuisinePreference(values.cuisine, locale)],
-        participants,
-        priceClassType: values.priceClassType,
-        redeemCode: values.redeemCode.trim() || null,
-    };
-}
-
 function bookingRequestPlanDateChipRangeLabel(days: ReadonlyArray<Date>, fallback: Date, locale: 'de' | 'en'): string {
     const first = days[0] ?? fallback;
     const last = days[days.length - 1] ?? first;
@@ -747,7 +701,7 @@ export function BookingRequestPlanPage({
             toast.error({ de: 'Nachricht ist erforderlich.', en: 'Message is required.' }[locale]);
             return;
         }
-        const input = createInputFromValues(values, locale);
+        const input = bookingRequestPlanCreateInputFromValues(values, locale);
         if (!input) {
             toast.error(
                 {

@@ -1,6 +1,8 @@
 import { bookingRequestPriceClassTypes, defaultBookingRequestDateTime } from '../../shared/bookingRequestFormDefaults';
 import type { BookingRequestFormPriceClassType } from '../../shared/bookingRequestFormDefaults';
-import type { GqlCUserBookingRequestExactEventAddressInput } from '../graphql/generated';
+import { bookingRequestParticipantsFromCounts } from '../../shared/bookingRequestParticipants';
+import type { Locale } from '../../shared/locale';
+import type { GqlCUserBookingRequestCreate, GqlCUserBookingRequestExactEventAddressInput } from '../graphql/generated';
 import {
     bookingRequestFormClampDateTime,
     bookingRequestFormDateTimeBoundsFromSearch,
@@ -142,8 +144,48 @@ export function bookingRequestPlanCuisineSubtitle(key: BookingRequestPlanCuisine
     }[key][locale];
 }
 
-export function bookingRequestPlanCuisinePreference(key: BookingRequestPlanCuisineKey, locale: 'de' | 'en'): string {
+function bookingRequestPlanCuisinePreference(key: BookingRequestPlanCuisineKey, locale: 'de' | 'en'): string {
     return bookingRequestPlanCuisineLabel(key, locale);
+}
+
+function bookingRequestPlanCreateMessage(values: BookingRequestPlanValues, locale: Locale): string | null {
+    const notes = values.originalMessage.trim();
+    if (notes.length === 0) return null;
+    const cuisine = bookingRequestPlanCuisineLabel(values.cuisine, locale);
+    return {
+        de: `Menürichtung: ${cuisine}.\n\n${notes}`,
+        en: `Cuisine direction: ${cuisine}.\n\n${notes}`,
+    }[locale];
+}
+
+export function bookingRequestPlanCreateInputFromValues(
+    values: BookingRequestPlanValues,
+    locale: Locale,
+): GqlCUserBookingRequestCreate | null {
+    if (!values.exactEventAddress) return null;
+    if (values.adultCount < 1) return null;
+    const originalMessage = bookingRequestPlanCreateMessage(values, locale);
+    if (!originalMessage) return null;
+    const occasion =
+        values.occasion.trim() ||
+        {
+            de: 'Familienfest',
+            en: 'Family Party',
+        }[locale];
+    return {
+        occasion,
+        dateTime: values.dateTime.toISOString(),
+        exactEventAddress: values.exactEventAddress,
+        originalMessage,
+        preferences: [bookingRequestPlanCuisinePreference(values.cuisine, locale)],
+        participants: bookingRequestParticipantsFromCounts({
+            adultCount: values.adultCount,
+            discountedCount: values.discountedCount,
+            locale,
+        }),
+        priceClassType: values.priceClassType,
+        redeemCode: values.redeemCode.trim() || null,
+    };
 }
 
 export function parseBookingRequestPlanSearch(search: Record<string, unknown>): BookingRequestPlanSearch {
