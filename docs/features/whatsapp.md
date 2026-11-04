@@ -94,6 +94,7 @@ off for payment and closure events. Testimonial reminders are the explicit post-
 | Slack     | `src/server/slack/whatsappSlack.ts`, channel `whatsAppMessages`                                                                   |
 | Admin GQL | `whatsAppConversations*`, `whatsAppMessageCreate`, `whatsAppMessageReactionUpsert`, unread reset; `ChatMessageUser.reactions`     |
 | Admin UI  | `AdminWhatsAppChatsPage`, `AdminWhatsAppChatPage`, user tab, sidebar badge                                                        |
+| Logs      | Skips name the reason (invalid phone, or email-only with no template). Accepted sends are the audit row, not an application log.  |
 | Docs      | [architecture/whatsapp.md](../architecture/whatsapp.md)                                                                           |
 
 Registration, naming, exact-copy contracts, and redirect/analytics details: [architecture/whatsapp.md](../architecture/whatsapp.md).

@@ -43,9 +43,11 @@ inbox must show what was actually sent, and template categorization must not sil
    The explicit post-payment addition is testimonial memory/morning/evening reminders for both parties, with the same paid/accepted/
    canceled/already-reviewed gates as email. Phone delivery requires valid E.164 and ignores preferred-communication preference. Optional
    templates also respect `Users.notificationSettings` (missing means on). Payment and concierge replies are not gated. See
-   [notification-settings.md](../features/notification-settings.md). Call requests, confirmations, declines, cancellations, and reminders
-   have distinct event semantics. Duplicate legacy menu-update variants and the obsolete account-plus-booking welcome copy converge on one
-   current use case each; Meta's `hello_world` is not a business use case.
+   [notification-settings.md](../features/notification-settings.md). A skipped send is an info log that names the reason: the phone is
+   missing or not E.164, or the purpose is email-only because no template is mapped. An accepted send is not logged;
+   `OutboundWhatsAppMessages` is the record. Call requests, confirmations, declines, cancellations, and reminders have distinct event
+   semantics. Duplicate legacy menu-update variants and the obsolete account-plus-booking welcome copy converge on one current use case
+   each; Meta's `hello_world` is not a business use case.
 9. **Webhook/inbox.** `GET`/`POST /api/webhooks/whatsapp` retain challenge handling and app-secret signature checks. Conversation phone
    matching tolerates Meta digits-only values while users store E.164. Inbound media enters `FileUploads`; reactions overlay messages.
    Inbound messages refresh the 24h reply window and notify Slack. Current DE/EN feedback labels and historical reply labels are recognized.

@@ -18,6 +18,8 @@ describe('whatsappTemplateOutboundSend', () => {
         const { serverRuntime } = await commandSetup();
         const provider = providerCreate();
         // Act
+        const userId = idCreate();
+        const bookingRequestId = idCreate();
         const invalid = await whatsappTemplateOutboundSend(serverRuntime, provider, {
             purpose: 'BOOKING_REQUEST_CREATED',
             locale: 'de',
@@ -29,11 +31,19 @@ describe('whatsappTemplateOutboundSend', () => {
             locale: 'de',
             toPhoneNumber: phoneNumberCreate(),
             bodyParameters: [],
+            userId,
+            relatedEntity: { type: 'BOOKING_REQUEST', id: bookingRequestId },
         });
         // Assert
         expect(invalid).toBeNull();
         expect(emailOnly).toBeNull();
         expect(provider.sendTemplate).not.toHaveBeenCalled();
+        expect(console.info).toHaveBeenCalledWith(
+            `whatsappTemplateOutboundSend: skip purpose=BOOKING_REQUEST_CREATED (phone missing or not E.164; raw=${JSON.stringify('0151')})`,
+        );
+        expect(console.info).toHaveBeenCalledWith(
+            `whatsappTemplateOutboundSend: skip purpose=BOOKING_REQUEST_CANCELED user=${userId} related=BOOKING_REQUEST:${bookingRequestId} (email-only; no WhatsApp template)`,
+        );
     });
 
     it.each(['de', 'en'] as const)('persists the exact %s rendering and opaque URL sent to Meta', async (locale) => {
@@ -81,6 +91,7 @@ describe('whatsappTemplateOutboundSend', () => {
         expect(message?.templateSnapshot).toEqual(audit?.templateSnapshot);
         expect(message?.body).toBe(audit?.bodySnapshot);
         expect(serverRuntime.publish.adminUpdates).toHaveBeenCalled();
+        expect(console.info).not.toHaveBeenCalledWith(expect.stringContaining('whatsappTemplateOutboundSend: sent'));
     });
 
     it('rejects incorrect parameters before creating audit history or sending', async () => {

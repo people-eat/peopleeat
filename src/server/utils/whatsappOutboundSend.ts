@@ -77,6 +77,13 @@ async function conversationUpsert(
     return row.whatsAppConversationId;
 }
 
+function whatsappOutboundSkipDetail(args: WhatsAppTemplateOutboundArgs): string {
+    const parts = [`purpose=${args.purpose}`];
+    if (args.userId) parts.push(`user=${args.userId}`);
+    if (args.relatedEntity) parts.push(`related=${args.relatedEntity.type}:${args.relatedEntity.id}`);
+    return parts.join(' ');
+}
+
 /** Persist the exact catalog rendering sent to Meta, including its effective language and buttons. */
 export async function whatsappTemplateOutboundSend(
     serverRuntime: ServerRuntime,
@@ -84,9 +91,15 @@ export async function whatsappTemplateOutboundSend(
     args: WhatsAppTemplateOutboundArgs,
 ): Promise<{ outboundWhatsAppMessageId: string } | null> {
     const toPhoneNumber = whatsappPhoneNumberNormalize(args.toPhoneNumber);
+    if (!toPhoneNumber) {
+        serverRuntime.log.info(
+            `whatsappTemplateOutboundSend: skip ${whatsappOutboundSkipDetail(args)} (phone missing or not E.164; raw=${JSON.stringify(args.toPhoneNumber ?? null)})`,
+        );
+        return null;
+    }
     const templateName = whatsappTemplateNameByPurpose[args.purpose];
-    if (!toPhoneNumber || !templateName) {
-        serverRuntime.log.info(`whatsappTemplateOutboundSend: skipped purpose=${args.purpose} (phone or template unavailable)`);
+    if (!templateName) {
+        serverRuntime.log.info(`whatsappTemplateOutboundSend: skip ${whatsappOutboundSkipDetail(args)} (email-only; no WhatsApp template)`);
         return null;
     }
     const definition = whatsappTemplateDefinitionFind(templateName);
