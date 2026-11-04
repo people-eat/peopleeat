@@ -1632,6 +1632,13 @@ type PublicUser {
     profilePicture: FileUpload
 }
 
+# Published city landing linked from a public cook when the travel-origin city matches.
+type PublicCookCityPage {
+    pathName: String!
+    nameDe: String!
+    nameEn: String!
+}
+
 # Lean public cook profile — no street address, no Stripe. Nested on customer offers
 # and under `Query.publicCook` for the public chefs listing / detail pages.
 # See docs/features/public-chefs.md.
@@ -1650,6 +1657,9 @@ type PublicCook {
     cookingPhilosophy: String
     # City from travel origin only — never the full street address.
     city: String
+    # Published city page whose German name, English name, or path matches `city`
+    # (compared as slugs). Null when none match, or more than one match.
+    cityPage: PublicCookCityPage
     minimumPriceAmount: Int
     maximumPriceAmount: Int
     minimumParticipants: Int

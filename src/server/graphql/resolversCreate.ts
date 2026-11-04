@@ -374,6 +374,7 @@ import { publicBlogPostFindMany } from '../queries/publicBlogPostFindMany';
 import { publicBlogPostFindOneByPathName } from '../queries/publicBlogPostFindOneByPathName';
 import { publicCityFindMany } from '../queries/publicCityFindMany';
 import { publicCityFindOneByPathName } from '../queries/publicCityFindOneByPathName';
+import { publicCookCityPageFindOne } from '../queries/publicCookCityPageFindOne';
 import { publicCookCustomerTestimonialRatingSummary } from '../queries/publicCookCustomerTestimonialRatingSummary';
 import { publicCookCustomerTestimonialsFindMany } from '../queries/publicCookCustomerTestimonialsFindMany';
 import { publicCookFindMany } from '../queries/publicCookFindMany';
@@ -2768,6 +2769,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
         },
         PublicCook: {
+            cityPage(parent: GqlSPublicCook) {
+                return publicCookCityPageFindOne(parent.city, serverRuntime);
+            },
             logo(parent: GqlSPublicCook) {
                 return cookLogoFindOne(parent.cookId, serverRuntime);
             },

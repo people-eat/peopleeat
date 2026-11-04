@@ -8,8 +8,9 @@ Visitors browse `/blog-posts` and `/blog-posts/$pathName` (and English paths). U
 `publishedAt` is in the past (admins can schedule go-live).
 
 Articles use the same flexible content-section stack as cities and partners — headings, media, and body blocks in both languages with
-sensible fallbacks when one locale is empty. Blog detail uses an article hero (`SectionBlogHero`): bold title, lead paragraph, then a
-rounded featured image (not the full-bleed `SectionHero`). The list also hides hero thumbnails.
+sensible fallbacks when one locale is empty. Blog detail uses an article hero (`SectionBlogHero`): an “All articles” link, bold title, lead
+paragraph, then a rounded featured image (not the full-bleed `SectionHero`). The route emits `BlogPosting` JSON-LD (headline, lead, hero
+image, `publishedAt`, `updatedAt`) and a breadcrumb trail. The list also hides hero thumbnails.
 
 ## Decisions
 
@@ -28,12 +29,11 @@ Bilingual blog posts on the shared content-section stack — [content-sections.m
 
 - AI topic suggestion for authors.
 - Article visit tracking.
-- Richer article structured data beyond basic article SEO meta.
 
 ## Implementation
 
 - Tables / GraphQL / CQRS: `BlogPosts`, admin list and upsert/delete, `publicBlogPost`
 - Admin: `/admin/blog-posts` (shared admin list cards: title, path, draft/published badge, updated; debounced client search on title/path),
   `/admin/blog-posts/$blogPostId` (`?tab=preview` for full preview)
-- Public detail: `seoMeta({ type: 'article' })`; `ContentPageView` with `heroVariant: 'article'` → `SectionBlogHero`; sitemap
-  `/sitemap-blog-posts.xml`
+- Public detail: `seoMeta({ type: 'article' })` plus `BlogPosting` and breadcrumb JSON-LD; `ContentPageView` with `heroVariant: 'article'` →
+  `SectionBlogHero`; sitemap `/sitemap-blog-posts.xml`

@@ -21,6 +21,7 @@ export function toGqlPublicCook(
         cuisineStyle: cook.cuisineStyle ?? null,
         cookingPhilosophy: cook.cookingPhilosophy ?? null,
         city: cook.exactTravelOriginAddress?.city.trim() || cook.legacyCityName?.trim() || null,
+        cityPage: null,
         minimumPriceAmount: cook.minimumPriceAmount ?? null,
         maximumPriceAmount: cook.maximumPriceAmount ?? null,
         minimumParticipants: cook.minimumParticipants ?? null,

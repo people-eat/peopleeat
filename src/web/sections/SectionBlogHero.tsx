@@ -1,7 +1,9 @@
-import { ImageOffIcon } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { ArrowLeftIcon, ImageOffIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { AppImage } from '../components/AppImage';
+import type { ContentPageIndexLink } from '../components/contentPageIndexLink';
 import { cn } from '../utils/cn';
 
 export function SectionBlogHero({
@@ -10,6 +12,7 @@ export function SectionBlogHero({
     imageUrl,
     imageAlt,
     noMediaLabel,
+    indexLink,
     className,
 }: {
     headline?: ReactNode;
@@ -18,16 +21,27 @@ export function SectionBlogHero({
     imageAlt?: string;
     /** Shown with an icon when `imageUrl` is missing (e.g. admin preview). */
     noMediaLabel?: string;
+    indexLink?: ContentPageIndexLink;
     className?: string;
 }) {
     const hasHeadline = Boolean(headline);
     const hasLead = Boolean(lead);
     const hasImage = Boolean(imageUrl);
 
-    if (!hasHeadline && !hasLead && !hasImage && !noMediaLabel) return null;
+    if (!hasHeadline && !hasLead && !hasImage && !noMediaLabel && !indexLink) return null;
 
     return (
         <section className={cn('mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-12 pb-4 @lg:px-6', className)}>
+            {indexLink ? (
+                <Link
+                    to={indexLink.to}
+                    activeOptions={{ exact: true }}
+                    className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:underline"
+                >
+                    <ArrowLeftIcon aria-hidden className="size-4" />
+                    {indexLink.label}
+                </Link>
+            ) : null}
             {hasHeadline ? <h1 className="font-serif text-4xl font-bold tracking-tight text-foreground @md:text-5xl">{headline}</h1> : null}
             {hasLead ? <p className="text-base/relaxed text-foreground @md:text-lg/relaxed">{lead}</p> : null}
             {hasImage ? (

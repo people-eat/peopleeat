@@ -3,6 +3,11 @@ import { createFileRoute, notFound } from '@tanstack/react-router';
 import { ChefPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
 import { ChefPage } from '../../web/pages/ChefPage';
+import { chefsIndexLinkLabel } from '../../web/sections/SectionCookHero';
+import { publicFaqJsonLdEntries } from '../../web/sections/SectionQuestionsAndAnswers';
+import { chefPageCityLabel, chefPageDescription, chefPageTitle } from '../../web/seo/chefPageSeo';
+import { jsonLdBreadcrumbList, jsonLdFaqPage, jsonLdHeadScripts, jsonLdPerson } from '../../web/seo/jsonLd';
+import { SITE_NAME } from '../../web/seo/seoConstants';
 import { seoMeta } from '../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../web/utils/locale';
@@ -24,22 +29,49 @@ export const Route = createFileRoute('/{-$locale}/chefs_/$cookId')({
         if (!cook) {
             return {};
         }
+        const webPageUrl = webPageUrlGet();
         const name = cook.user.display;
-        const summary = cook.biographySummary.trim();
-        return seoMeta({
-            title: name,
-            description:
-                summary.length > 0
-                    ? summary
-                    : {
-                          de: `${name}, Privatkoch bei peopleeat.`,
-                          en: `${name}, private chef on peopleeat.`,
-                      }[locale],
-            path: `/chefs/${cook.cookId}`,
-            locale,
-            webPageUrl: webPageUrlGet(),
-            image: cook.user.profilePicture?.url ?? undefined,
+        const cityLabel = chefPageCityLabel(locale, cook.city, cook.cityPage);
+        const path = `/chefs/${cook.cookId}`;
+        const title = chefPageTitle(locale, name, cityLabel);
+        const description = chefPageDescription(locale, {
+            name,
+            city: cityLabel,
+            cuisineStyle: cook.cuisineStyle,
+            biographySummary: cook.biographySummary,
         });
+        const rating =
+            cook.rating.reviewCount > 0 && cook.rating.averageRating != null
+                ? { averageRating: cook.rating.averageRating, reviewCount: cook.rating.reviewCount }
+                : null;
+        return {
+            ...seoMeta({
+                title,
+                description,
+                path,
+                locale,
+                webPageUrl,
+                image: cook.user.profilePicture?.url ?? undefined,
+            }),
+            scripts: jsonLdHeadScripts([
+                jsonLdBreadcrumbList(webPageUrl, locale, [
+                    { name: SITE_NAME, path: '/' },
+                    { name: chefsIndexLinkLabel(locale), path: '/chefs' },
+                    { name, path },
+                ]),
+                jsonLdPerson({
+                    webPageUrl,
+                    locale,
+                    path,
+                    name,
+                    description,
+                    image: cook.user.profilePicture?.url,
+                    cityName: cityLabel,
+                    rating,
+                }),
+                jsonLdFaqPage(publicFaqJsonLdEntries(locale)),
+            ]),
+        };
     },
     component() {
         return <ChefPage data={Route.useLoaderData()} />;

@@ -1,8 +1,10 @@
-import { ImageOffIcon } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { ArrowLeftIcon, ImageOffIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { AppImage } from '../components/AppImage';
 import { AutoplayVideo } from '../components/AutoplayVideo';
+import type { ContentPageIndexLink } from '../components/contentPageIndexLink';
 import { cn } from '../utils/cn';
 
 export type SectionHeroMedia = {
@@ -18,6 +20,7 @@ export function SectionHero({
     media,
     noMediaLabel,
     imageOverlay = true,
+    indexLink,
     className,
 }: {
     headline?: ReactNode;
@@ -27,6 +30,7 @@ export function SectionHero({
     noMediaLabel?: string;
     /** Dark scrim over media for white headline contrast. Partners may turn off. */
     imageOverlay?: boolean;
+    indexLink?: ContentPageIndexLink;
     className?: string;
 }) {
     const hasHeadline = Boolean(headline);
@@ -53,8 +57,21 @@ export function SectionHero({
                     <p className="text-sm font-medium">{noMediaLabel}</p>
                 </div>
             ) : null}
-            {hasHeadline || hasSubheadline ? (
+            {hasHeadline || hasSubheadline || indexLink ? (
                 <div className="absolute inset-x-0 bottom-20 mx-auto flex max-w-7xl flex-col gap-2 p-8 @lg:bottom-36">
+                    {indexLink ? (
+                        <Link
+                            to={indexLink.to}
+                            activeOptions={{ exact: true }}
+                            className={cn(
+                                'inline-flex items-center gap-1.5 text-sm hover:underline',
+                                hasMedia ? 'text-white' : 'text-muted-foreground',
+                            )}
+                        >
+                            <ArrowLeftIcon aria-hidden className="size-4" />
+                            {indexLink.label}
+                        </Link>
+                    ) : null}
                     {hasHeadline ? (
                         <h1 className={cn('font-serif text-4xl font-light @md:text-7xl', hasMedia ? 'text-white' : 'text-foreground')}>
                             {headline}

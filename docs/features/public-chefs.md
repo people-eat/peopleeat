@@ -34,7 +34,14 @@ Shared profile layout (`ChefProfileView`, container-query driven):
 - **About** — full biography plus cook additional picture when uploaded, otherwise the bilingual peopleeat benefits list (taste / relaxed /
   secure booking); two columns from `@3xl`. Hidden when the cook has no biography.
 - **Testimonials** — published customer reviews; hidden when none — [testimonials.md](./testimonials.md). Grid 1 → 2 (`@2xl`) → 3 (`@5xl`).
-- **FAQ** — shared public booking FAQ.
+- **FAQ** — shared public booking FAQ. The same entries are emitted as `FAQPage` JSON-LD.
+
+The document title is “{name}, Privatkoch in {city}” (English: “private chef in {city}”), kept to 60 characters before the peopleeat suffix.
+The meta description uses the biography summary when it is at least 50 characters, otherwise a short factual sentence with cuisine when that
+is set. When the travel-origin city matches exactly one published city page (German name, English name, or path, compared as slugs), the pin
+links to that page and both the title and the pin use the page’s localized name. No match, or two matches, leaves the city as plain text.
+Cook self-preview does not resolve the city page, so its pin stays plain text. The route also emits `Person` and `BreadcrumbList` JSON-LD.
+`aggregateRating` is included only when the hero shows stars.
 
 Section padding matches other public bands (`px-4` → `@lg:px-6`).
 
@@ -95,7 +102,8 @@ ship.
 - Cook preview: `ProfileCookPublicPage` at `/profile/public` — Preview tab (default; Share / Copy / Open + static `PublicCookCard` + detail
   WYSIWYG) and Manage tab (`?tab=manage`; visibility + additional picture); both previews use `Cook.rating`; testimonials section still
   omitted on preview
-- Routes: `chefs.tsx`, `chefs_.$cookId.tsx`, `profile/public.tsx`
+- Routes: `chefs.tsx`, `chefs_.$cookId.tsx` (`chefPageSeo` title/description, `Person` + FAQ + breadcrumb JSON-LD), `profile/public.tsx`
+- City link: `PublicCook.cityPage`, matched in `publicCookCityPageMatch` from published city names
 - Sitemap: `/sitemap-chefs.xml` in index
 
 Hydration helpers for booking-offer nesting do not apply the public meal gate on nested cooks. `publicCooksByIdFindMany` loads cooks with

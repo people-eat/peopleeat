@@ -7,7 +7,9 @@ Admins publish bilingual city landing pages for local SEO; each page highlights 
 Admins create city pages with German and English names, URL slug, and a **mandatory map center** (latitude and longitude from place search).
 
 Public visitors browse `/cities` and `/cities/$pathName` (and English paths). Unpublished pages are hidden; slug changes redirect
-permanently to the current slug.
+permanently to the current slug. Detail shows an “All cities” link above the headline. The route emits `Service` JSON-LD (place name and the
+stored map center) and a breadcrumb trail. A public chef links here when their travel-origin city matches this page’s German name, English
+name, or path.
 
 Public city detail section order:
 

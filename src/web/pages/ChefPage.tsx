@@ -10,6 +10,7 @@ import { ShareButton } from '../components/ShareButton';
 import type { GqlCChefPageQuery } from '../graphql/generated';
 import { ChefsDiscoveryTrackDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
+import { chefPageCityLabel } from '../seo/chefPageSeo';
 import { publicChefUrl } from '../utils/webShare';
 
 export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
@@ -18,10 +19,12 @@ export function ChefPage({ data }: { data: GqlCChefPageQuery }) {
     const [, trackDiscovery] = useMutation(ChefsDiscoveryTrackDocument);
     const shareEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'COOK_PUBLIC_PROFILE_SHARE');
     const displayName = cook.user.display;
+    const cityLabel = chefPageCityLabel(locale, cook.city, cook.cityPage);
     const view: ChefProfileViewModel = {
         displayName,
         profilePictureUrl: cook.user.profilePicture?.url ?? null,
-        city: cook.city,
+        city: cityLabel,
+        cityPath: cook.cityPage?.pathName ?? null,
         cuisineStyle: cook.cuisineStyle,
         cookingPhilosophy: cook.cookingPhilosophy,
         biography: cook.biography,

@@ -74,8 +74,8 @@ describe('seoMeta', () => {
         const output = seoMeta({ ...baseInput, path: '/', locale: 'de' });
 
         // Assert
-        expect(output.meta).toContainEqual({ property: 'og:image:width', content: '512' });
-        expect(output.meta).toContainEqual({ property: 'og:image:height', content: '512' });
+        expect(output.meta).toContainEqual({ property: 'og:image:width', content: '1200' });
+        expect(output.meta).toContainEqual({ property: 'og:image:height', content: '630' });
     });
 
     it('emits caller-supplied image dimensions when an override image is passed with size', () => {
@@ -118,8 +118,8 @@ describe('seoMeta', () => {
         // Assert
         const ogImage = output.meta.find((entry) => 'property' in entry && entry.property === 'og:image');
         const twitterImage = output.meta.find((entry) => 'name' in entry && entry.name === 'twitter:image');
-        expect(ogImage).toEqual({ property: 'og:image', content: 'https://example.com/web-app-manifest-512x512.png' });
-        expect(twitterImage).toEqual({ name: 'twitter:image', content: 'https://example.com/web-app-manifest-512x512.png' });
+        expect(ogImage).toEqual({ property: 'og:image', content: 'https://example.com/seo/og-default.webp' });
+        expect(twitterImage).toEqual({ name: 'twitter:image', content: 'https://example.com/seo/og-default.webp' });
     });
 
     it('passes through an absolute image URL unchanged', () => {

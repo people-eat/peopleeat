@@ -16,6 +16,7 @@ import { SectionOccasionFormats } from '../sections/SectionOccasionFormats';
 import { SectionPageTestimonials } from '../sections/SectionPageTestimonials';
 import type { SectionPageTestimonial } from '../sections/SectionPageTestimonials';
 import { SectionPartnersExplore } from '../sections/SectionPartnersExplore';
+import type { ContentPageIndexLink } from './contentPageIndexLink';
 import { ContentSectionsRenderer } from './ContentSectionsRenderer';
 import { Footer } from './Footer';
 import { Header } from './Header';
@@ -72,6 +73,8 @@ export type ContentPageViewModel = {
     partnersExplore?: boolean;
     /** Press logos after the cities list (city detail + landing + partners). */
     knownFrom?: boolean;
+    /** Back link above the hero. Omitted on admin preview and pages that already have their own. */
+    indexLink?: ContentPageIndexLink;
 };
 
 export function ContentPageView({
@@ -112,6 +115,7 @@ export function ContentPageView({
                             imageUrl={heroSrc}
                             imageAlt={headline || undefined}
                             noMediaLabel={noMediaLabel}
+                            indexLink={page.indexLink}
                         />
                     ) : (
                         <SectionHero
@@ -120,6 +124,7 @@ export function ContentPageView({
                             media={fullBleedMedia}
                             noMediaLabel={noMediaLabel}
                             imageOverlay={page.heroImageOverlay}
+                            indexLink={page.indexLink}
                         />
                     )}
                 </div>

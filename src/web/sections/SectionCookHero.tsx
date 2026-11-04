@@ -7,16 +7,23 @@ import { Button } from '../components/base/button';
 import { CookProfileTags } from '../components/CookProfileTags';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
+import type { Locale } from '../utils/locale';
 
 type SectionCookHeroRating = {
     averageRating: number | null;
     reviewCount: number;
 };
 
+export function chefsIndexLinkLabel(locale: Locale): string {
+    return { de: 'Alle Köche', en: 'All chefs' }[locale];
+}
+
 export type SectionCookHeroCook = {
     displayName: string;
     profilePictureUrl: string | null;
     city: string | null;
+    /** Published city page path when the travel-origin city matches exactly one page. */
+    cityPath?: string | null;
     cuisineStyle: string | null;
     cookingPhilosophy: string | null;
     biographySummary: string;
@@ -81,7 +88,7 @@ export function SectionCookHero({
                         <Button asChild variant="link" className="h-auto gap-1.5 -mx-2 px-2 text-muted-foreground">
                             <Link to="/{-$locale}/chefs">
                                 <ArrowLeftIcon aria-hidden />
-                                {{ de: 'Alle Köche', en: 'All chefs' }[locale]}
+                                {chefsIndexLinkLabel(locale)}
                             </Link>
                         </Button>
                     ) : null}
@@ -111,7 +118,17 @@ export function SectionCookHero({
                     {cook.city != null && cook.city.trim().length > 0 ? (
                         <p className="flex items-center gap-1.5 text-muted-foreground">
                             <MapPinIcon aria-hidden className="size-4 shrink-0" />
-                            <span>{cook.city}</span>
+                            {cook.cityPath ? (
+                                <Link
+                                    to="/{-$locale}/cities/$pathName"
+                                    params={{ pathName: cook.cityPath }}
+                                    className="underline-offset-4 hover:underline"
+                                >
+                                    {cook.city}
+                                </Link>
+                            ) : (
+                                <span>{cook.city}</span>
+                            )}
                         </p>
                     ) : null}
 

@@ -3,7 +3,10 @@ import { createFileRoute, notFound, redirect } from '@tanstack/react-router';
 import { contentLocaleText } from '../../shared/contentSection';
 import { PublicCityPageDocument } from '../../web/graphql/generated';
 import { routeLoaderGraphqlClient } from '../../web/graphql/routeLoaderGraphqlClient';
-import { CityPage } from '../../web/pages/CityPage';
+import { cityIndexLinkLabel, CityPage } from '../../web/pages/CityPage';
+import { CITY_HERO_FALLBACK_IMAGE } from '../../web/pages/cityPageAssets';
+import { jsonLdBreadcrumbList, jsonLdCityService, jsonLdHeadScripts } from '../../web/seo/jsonLd';
+import { SITE_NAME } from '../../web/seo/seoConstants';
 import { seoMeta } from '../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../web/seo/webPageUrlGet';
 import { DEFAULT_LOCALE, localeFromParam } from '../../web/utils/locale';
@@ -31,14 +34,43 @@ export const Route = createFileRoute('/{-$locale}/cities_/$pathName')({
         if (!city) {
             return {};
         }
-        return seoMeta({
-            title: contentLocaleText(city.titleDe, city.titleEn, locale),
-            description: contentLocaleText(city.descriptionDe, city.descriptionEn, locale),
-            path: `/cities/${city.pathName}`,
-            locale,
-            webPageUrl: webPageUrlGet(),
-            image: city.heroImageUrl ?? undefined,
-        });
+        const webPageUrl = webPageUrlGet();
+        const path = `/cities/${city.pathName}`;
+        const title = contentLocaleText(city.titleDe, city.titleEn, locale);
+        const description = contentLocaleText(city.descriptionDe, city.descriptionEn, locale);
+        const headline = contentLocaleText(city.headlineDe, city.headlineEn, locale).trim();
+        const subheadline = contentLocaleText(city.subHeadlineDe, city.subHeadlineEn, locale).trim();
+        const cityName = contentLocaleText(city.nameDe, city.nameEn, locale);
+        const serviceName = headline || title;
+        const serviceDescription = subheadline || description;
+        return {
+            ...seoMeta({
+                title,
+                description,
+                path,
+                locale,
+                webPageUrl,
+                image: city.heroImageUrl ?? undefined,
+            }),
+            scripts: jsonLdHeadScripts([
+                jsonLdBreadcrumbList(webPageUrl, locale, [
+                    { name: SITE_NAME, path: '/' },
+                    { name: cityIndexLinkLabel(locale), path: '/cities' },
+                    { name: serviceName, path },
+                ]),
+                jsonLdCityService({
+                    webPageUrl,
+                    locale,
+                    path,
+                    name: serviceName,
+                    description: serviceDescription,
+                    cityName,
+                    latitude: city.latitude,
+                    longitude: city.longitude,
+                    image: city.heroImageUrl ?? CITY_HERO_FALLBACK_IMAGE,
+                }),
+            ]),
+        };
     },
     component() {
         return <CityPage data={Route.useLoaderData()} />;

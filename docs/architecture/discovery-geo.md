@@ -16,14 +16,14 @@ building blocks; this ADR covers the AI-search layer that sits beside them.
 Five optional layers cooperate. Each is small; together they cover the surface AI engines actually look at. A fork adopts the layers it
 needs — none are mandatory on day one of a blank template clone.
 
-| Layer                | Where (when adopted)                                                                        |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| Explicit bot policy  | `src/routes/robots[.]txt.ts` — major AI crawlers enumerated with `Allow: /`                 |
-| LLM-native index     | `src/routes/llms[.]txt.ts` — markdown summary at `/llms.txt` per the `llmstxt.org` proposal |
-| Entity grounding     | `src/web/seo/jsonLd.ts` — `WebSite` + `Organization` (+ optional `FAQPage`)                 |
-| Verbatim Q&A         | Visible FAQ block mirrored into `FAQPage` JSON-LD via `jsonLdFaqPage()`                     |
-| Freshness signal     | Build-injected `__SITE_LAST_MODIFIED__` (git commit ISO) → `dateModified` on JSON-LD        |
-| Conversational entry | Optional deep-link (e.g. `?ask=…`) that opens a chat surface preseeded                      |
+| Layer                | Where (when adopted)                                                                                                 |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Explicit bot policy  | `src/routes/robots[.]txt.ts` — major AI crawlers enumerated with `Allow: /`                                          |
+| LLM-native index     | `src/routes/llms[.]txt.ts` — markdown summary at `/llms.txt` per the `llmstxt.org` proposal                          |
+| Entity grounding     | `src/web/seo/jsonLd.ts` — `WebSite` + `Organization`, chef `Person`, city `Service`, `BlogPosting`, `BreadcrumbList` |
+| Verbatim Q&A         | Visible FAQ block mirrored into `FAQPage` JSON-LD via `jsonLdFaqPage()`                                              |
+| Freshness signal     | Build-injected `__SITE_LAST_MODIFIED__` (git commit ISO) → `dateModified` on JSON-LD                                 |
+| Conversational entry | Optional deep-link (e.g. `?ask=…`) that opens a chat surface preseeded                                               |
 
 ## Alternatives considered
 
@@ -75,14 +75,18 @@ Lives at `/llms.txt` (`src/routes/llms[.]txt.ts`). Format follows the `llmstxt.o
 blockquote summary, H2 sections of bulleted resource links). English-only is fine — the consumer is an LLM; linked pages cover locales via
 `hreflang`.
 
-The template ships a placeholder summary and bullets derived from `SITEMAP_PATHS` — replace the copy with product facts when forking. Keep
-the builder in sync with `SITEMAP_PATHS` whenever a new public page lands. Resource bullets: `[title](url): one-sentence description.`
+`src/web/seo/llmsTxtBuild.ts` writes the file. Static pages use a hand-written English sentence per `SITEMAP_PATHS` entry (a test fails when
+a path has no sentence). Cities, occasions, articles, and public chefs are one bullet each, the same rows as the content sitemaps, with
+English copy and `/en` URLs. Resource bullets: `[title](url): one-sentence description.`
 
 ## Structured data & FAQ
 
-- Prefer schema.org types that match the page (`WebSite`, `Organization`, `FAQPage`, later `Article` / `Person` if the product is a person).
-- Builders live in `src/web/seo/jsonLd.ts`: `jsonLdScripts(webPageUrl)` emits `WebSite` + `Organization`; `jsonLdFaqPage(entries)` emits
-  `FAQPage`. Wire them from a route's `head().scripts` when the page should expose structured data.
+- Prefer schema.org types that match the page (`WebSite`, `Organization`, `FAQPage`, `Person`, `Service`, `BlogPosting`, `BreadcrumbList`).
+- Builders live in `src/web/seo/jsonLd.ts`. `jsonLdScripts(webPageUrl)` emits `WebSite` + `Organization` (legal name, Frankfurt postal
+  address, contact email, Instagram / Facebook / LinkedIn `sameAs`). `jsonLdFaqPage(entries)` emits `FAQPage`. `jsonLdPerson` is the public
+  chef (aggregate rating only when the page shows reviews). `jsonLdCityService` is a city landing, with `GeoCoordinates` from the stored
+  center. `jsonLdBlogPosting` is an article, dated from `publishedAt` / `updatedAt`. `jsonLdBreadcrumbList` mirrors the header logo and the
+  page's index link. Wire them from a route's `head().scripts`. Canonical URLs come from `canonicalUrlBuild` in `seoMeta.ts`.
 - Carry `dateModified` from `__SITE_LAST_MODIFIED__` (declared in `src/vite-env.d.ts`, injected by Vite).
 - FAQ answers must stand alone (1–3 factual sentences). Avoid marketing prose; engines extract verbatim.
 - Schema content must match visible content.
@@ -90,5 +94,6 @@ the builder in sync with `SITEMAP_PATHS` whenever a new public page lands. Resou
 ## Maintenance
 
 - New AI bot announced → add to the robots user-agent list.
-- New public page → add a bullet to `/llms.txt` (mirror the sitemap change) and consider whether the page warrants structured data.
+- New public page → add an English sentence to `LLMS_PAGE_BLURBS` (the sitemap test covers the key) and consider whether the page warrants
+  structured data.
 - Identity / offering facts change → update the single content module those schemas read from.

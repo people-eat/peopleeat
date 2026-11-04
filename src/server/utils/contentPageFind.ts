@@ -56,6 +56,14 @@ export function contentIsPublished(publishedAt: Date | null, now = publishedNow(
     return publishedAt !== null && publishedAt <= now;
 }
 
+export async function publicPublishedCityNamesFindMany(db: Database): Promise<Array<Pick<City, 'pathName' | 'nameDe' | 'nameEn'>>> {
+    const now = publishedNow();
+    return db
+        .select({ pathName: cities.pathName, nameDe: cities.nameDe, nameEn: cities.nameEn })
+        .from(cities)
+        .where(and(isNotNull(cities.publishedAt), lte(cities.publishedAt, now)));
+}
+
 export async function publicPublishedCitiesFindMany(db: Database): Promise<City[]> {
     const now = publishedNow();
     return db

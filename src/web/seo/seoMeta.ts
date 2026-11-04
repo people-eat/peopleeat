@@ -102,7 +102,7 @@ export function seoMeta(input: SeoInput): SeoOutput {
     return { meta, links };
 }
 
-function canonicalUrlBuild(webPageUrl: string, locale: Locale, path: string): string {
+export function canonicalUrlBuild(webPageUrl: string, locale: Locale, path: string): string {
     const prefix = locale === DEFAULT_LOCALE ? '' : `/${locale}`;
     // path === '/' must collapse to no trailing slash on the prefix-only URL
     // (e.g. `https://example.com/en` not `https://example.com/en/`).
@@ -110,7 +110,7 @@ function canonicalUrlBuild(webPageUrl: string, locale: Locale, path: string): st
     return `${webPageUrl}${prefix}${suffix}` || webPageUrl;
 }
 
-function imageUrlAbsolute(webPageUrl: string, image: string): string {
+export function imageUrlAbsolute(webPageUrl: string, image: string): string {
     if (image.startsWith('http://') || image.startsWith('https://')) return image;
     return `${webPageUrl}${image.startsWith('/') ? '' : '/'}${image}`;
 }

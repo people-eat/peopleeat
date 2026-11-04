@@ -4353,6 +4353,7 @@ export interface GqlCPublicCook {
     callSchedulingEnabled: Scalars['Boolean']['output'];
     callSlots: Array<GqlCCookCallSlot>;
     city?: Maybe<Scalars['String']['output']>;
+    cityPage?: Maybe<GqlCPublicCookCityPage>;
     cookId: Scalars['ID']['output'];
     cookingPhilosophy?: Maybe<Scalars['String']['output']>;
     cuisineStyle?: Maybe<Scalars['String']['output']>;
@@ -4373,6 +4374,13 @@ export type GqlCPublicCookCallSlotsArgs = {
     from: Scalars['DateTime']['input'];
     to: Scalars['DateTime']['input'];
 };
+
+export interface GqlCPublicCookCityPage {
+    __typename?: 'PublicCookCityPage';
+    nameDe: Scalars['String']['output'];
+    nameEn: Scalars['String']['output'];
+    pathName: Scalars['String']['output'];
+}
 
 export type GqlCPublicCookFindManyCriterion = {
     geoCoordinates?: InputMaybe<GqlCGeoCoordinatesInput>;
@@ -8283,6 +8291,7 @@ export type GqlCChefPageQuery = {
             maximumParticipants: number | null;
             callSchedulingEnabled: boolean;
             logo: { url: string } | null;
+            cityPage: { pathName: string; nameDe: string; nameEn: string } | null;
             user: { display: string; profilePicture: { url: string } | null };
             meals: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
             testimonials: Array<{
@@ -40071,6 +40080,18 @@ export const ChefPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'cityPage' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'nameDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'nameEn' } },
+                                                    ],
+                                                },
+                                            },
                                             { kind: 'Field', name: { kind: 'Name', value: 'minimumPriceAmount' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'maximumPriceAmount' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'minimumParticipants' } },

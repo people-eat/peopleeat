@@ -12,15 +12,16 @@ export {
 } from '../../shared/siteBranding';
 
 // Default Open Graph / Twitter Card image. Root-relative so the `seoMeta()`
-// helper turns it into an absolute URL using `webPageUrl`. Uses the PWA
-// maskable mark until a dedicated 1200×630 share image exists.
-export const DEFAULT_SHARE_IMAGE = '/web-app-manifest-512x512.png';
+// helper turns it into an absolute URL using `webPageUrl`. 1200×630 link card
+// composed from the wordmark and a homepage still. Pages that pass their own
+// image omit width and height because uploads do not store pixel size.
+export const DEFAULT_SHARE_IMAGE = '/seo/og-default.webp';
 
 // Intrinsic dimensions of `DEFAULT_SHARE_IMAGE`. Emitted as
 // `og:image:width` / `og:image:height` so crawlers (Facebook, LinkedIn) can
 // render the share card without an extra probe request. Keep in sync with the
 // file in `public/`.
-export const DEFAULT_SHARE_IMAGE_DIMENSIONS = { width: 512, height: 512 } as const;
+export const DEFAULT_SHARE_IMAGE_DIMENSIONS = { width: 1200, height: 630 } as const;
 
 // Maps app locales to the IETF tags Open Graph expects. Add a new entry here
 // whenever you add a locale in `src/web/utils/locale.ts`.

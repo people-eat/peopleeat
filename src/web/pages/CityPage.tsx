@@ -1,9 +1,14 @@
 import { contentLocaleText } from '../../shared/contentSection';
+import type { Locale } from '../../shared/locale';
 import { ContentPageView } from '../components/ContentPageView';
 import { contentSectionsFromGql } from '../components/contentSectionsMap';
 import type { GqlCPublicCityPageQuery } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { CITY_CHEF_CTA_FALLBACK_IMAGE, CITY_HERO_FALLBACK_IMAGE } from './cityPageAssets';
+
+export function cityIndexLinkLabel(locale: Locale): string {
+    return { de: 'Alle Städte', en: 'All cities' }[locale];
+}
 
 export function CityPage({ data }: { data: GqlCPublicCityPageQuery }) {
     const locale = useLocale();
@@ -34,6 +39,7 @@ export function CityPage({ data }: { data: GqlCPublicCityPageQuery }) {
                 howItWorks: true,
                 cities: data.publicCity.findMany,
                 knownFrom: true,
+                indexLink: { to: '/{-$locale}/cities', label: cityIndexLinkLabel(locale) },
             }}
         />
     );

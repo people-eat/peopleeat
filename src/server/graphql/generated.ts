@@ -4350,6 +4350,7 @@ export interface GqlSPublicCook {
     callSchedulingEnabled: Scalars['Boolean']['output'];
     callSlots: Array<GqlSCookCallSlot>;
     city?: Maybe<Scalars['String']['output']>;
+    cityPage?: Maybe<GqlSPublicCookCityPage>;
     cookId: Scalars['ID']['output'];
     cookingPhilosophy?: Maybe<Scalars['String']['output']>;
     cuisineStyle?: Maybe<Scalars['String']['output']>;
@@ -4370,6 +4371,13 @@ export type GqlSPublicCookCallSlotsArgs = {
     from: Scalars['DateTime']['input'];
     to: Scalars['DateTime']['input'];
 };
+
+export interface GqlSPublicCookCityPage {
+    __typename?: 'PublicCookCityPage';
+    nameDe: Scalars['String']['output'];
+    nameEn: Scalars['String']['output'];
+    pathName: Scalars['String']['output'];
+}
 
 export type GqlSPublicCookFindManyCriterion = {
     geoCoordinates?: InputMaybe<GqlSGeoCoordinatesInput>;
@@ -5917,6 +5925,7 @@ export type GqlSResolversTypes = ResolversObject<{
         }
     >;
     PublicCook: ResolverTypeWrapper<GqlSPublicCook>;
+    PublicCookCityPage: ResolverTypeWrapper<GqlSPublicCookCityPage>;
     PublicCookFindManyCriterion: GqlSPublicCookFindManyCriterion;
     PublicCookMeal: ResolverTypeWrapper<GqlSPublicCookMeal>;
     PublicCookMenu: ResolverTypeWrapper<GqlSPublicCookMenu>;
@@ -6414,6 +6423,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
         findOneByPathName?: Maybe<GqlSResolversParentTypes['PublicCity']>;
     };
     PublicCook: GqlSPublicCook;
+    PublicCookCityPage: GqlSPublicCookCityPage;
     PublicCookFindManyCriterion: GqlSPublicCookFindManyCriterion;
     PublicCookMeal: GqlSPublicCookMeal;
     PublicCookMenu: GqlSPublicCookMenu;
@@ -10429,6 +10439,7 @@ export type GqlSPublicCookResolvers<
         RequireFields<GqlSPublicCookCallSlotsArgs, 'from' | 'to'>
     >;
     city?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    cityPage?: Resolver<Maybe<GqlSResolversTypes['PublicCookCityPage']>, ParentType, ContextType>;
     cookId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     cookingPhilosophy?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     cuisineStyle?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
@@ -10443,6 +10454,15 @@ export type GqlSPublicCookResolvers<
     stageName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     testimonials?: Resolver<Array<GqlSResolversTypes['CustomerTestimonial']>, ParentType, ContextType>;
     user?: Resolver<GqlSResolversTypes['PublicUser'], ParentType, ContextType>;
+}>;
+
+export type GqlSPublicCookCityPageResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['PublicCookCityPage'] = GqlSResolversParentTypes['PublicCookCityPage'],
+> = ResolversObject<{
+    nameDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    nameEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type GqlSPublicCookMealResolvers<
@@ -11552,6 +11572,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     PublicCity?: GqlSPublicCityResolvers<ContextType>;
     PublicCityQuery?: GqlSPublicCityQueryResolvers<ContextType>;
     PublicCook?: GqlSPublicCookResolvers<ContextType>;
+    PublicCookCityPage?: GqlSPublicCookCityPageResolvers<ContextType>;
     PublicCookMeal?: GqlSPublicCookMealResolvers<ContextType>;
     PublicCookMenu?: GqlSPublicCookMenuResolvers<ContextType>;
     PublicCookMenuCourse?: GqlSPublicCookMenuCourseResolvers<ContextType>;

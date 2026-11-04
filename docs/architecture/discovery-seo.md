@@ -23,11 +23,12 @@ The pieces:
 | Sitemap             | Index at `src/routes/sitemap[.]xml.ts`; static pages in `sitemap-pages[.]xml.ts` from `SITEMAP_PATHS`; shared builders in `sitemapXmlBuild.ts`                                     |
 | Robots              | Dynamic route `src/routes/robots[.]txt.ts` + `robotsTxtBuild.ts` — query-param Disallows, AI crawler groups (see [discovery-geo.md](./discovery-geo.md))                           |
 | LLM index           | Dynamic route `src/routes/llms[.]txt.ts` — see [discovery-geo.md](./discovery-geo.md)                                                                                              |
-| Structured data     | `src/web/seo/jsonLd.ts` — `WebSite` + `Organization` (+ optional `FAQPage`); wire via `head().scripts`                                                                             |
+| Structured data     | `src/web/seo/jsonLd.ts` — homepage `WebSite` + `Organization`, plus `FAQPage`, `BreadcrumbList`, chef `Person`, city `Service`, `BlogPosting`                                      |
 
-Optional structured data (JSON-LD) is available via `src/web/seo/jsonLd.ts` (`WebSite` + `Organization` with `logo`, optional `FAQPage`) —
-emit from a route's `head().scripts` when needed. AI-search / GEO layers (`/llms.txt`, AI crawler policy, freshness) live in
-[discovery-geo.md](./discovery-geo.md).
+Optional structured data (JSON-LD) is available via `src/web/seo/jsonLd.ts`. The homepage emits `WebSite` + `Organization` (legal name,
+postal address, contact email, and social `sameAs`) and `FAQPage`. Chef profiles emit `Person` (rating only when reviews are visible), the
+same FAQ, and `BreadcrumbList`. City pages emit `Service` with the stored map center. Articles emit `BlogPosting`. Wire them from a route's
+`head().scripts`. AI-search / GEO layers (`/llms.txt`, AI crawler policy, freshness) live in [discovery-geo.md](./discovery-geo.md).
 
 ## Alternatives considered
 
@@ -51,8 +52,8 @@ emit from a route's `head().scripts` when needed. AI-search / GEO layers (`/llms
 - Localized pages get `hreflang` alternates and an `x-default` automatically — no per-page bookkeeping.
 - `seoMeta()` **always** emits an explicit `<meta name="robots">` — `index,follow` by default, `noindex,nofollow` when `noindex: true` is
   passed. There is no implicit-default state; every public page declares its indexability.
-- Pages using a default share image should also set `og:image:width` / `og:image:height` (via `seoConstants` or per-call `imageWidth` /
-  `imageHeight`) so social crawlers do not guess dimensions.
+- The default share image is `public/seo/og-default.webp` (1200×630). `seoMeta()` emits `og:image:width` / `og:image:height` for that file.
+  A page that passes its own image omits dimensions, because uploads do not store pixel size.
 - Logged-in / transactional pages set `noindex: true` on `seoMeta()` and are omitted from `SITEMAP_PATHS`. The chat route is the canonical
   example.
 - The root route may emit site-wide fallbacks (OG/Twitter card, `theme-color`, etc.). Per-page `head()` overrides these for every indexable

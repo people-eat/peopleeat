@@ -1,69 +1,57 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { environmentVariables } from '../server/env/environmentVariablesCreate';
-import { SITE_NAME } from '../web/seo/seoConstants';
-import { SITEMAP_PATHS } from '../web/seo/sitemapRoutes';
 
-// Dynamic /llms.txt — emits a curated markdown index of the site for LLM
-// crawlers. Follows the llms.txt convention proposed by Jeremy Howard
-// (https://llmstxt.org): a single markdown file at the root with the H1 as
-// the site name, an optional blockquote summary, then H2 sections of
-// link-to-resource bullets. LLM-powered search engines (Perplexity,
-// ChatGPT Search, Claude, etc.) prefer this over scraping the rendered HTML
-// because it strips chrome, navigation, and tracking pixels.
-//
-// English-only on purpose: the file is consumed by LLMs whose pipelines are
-// overwhelmingly English-centric. Linked pages cover locales via `hreflang`.
-//
-// This is a template stub — replace the summary and resource bullets with
-// product-specific copy when forking. Keep the resource list in sync with
-// `SITEMAP_PATHS` whenever a new public page lands.
+import { db } from '../server/db';
+import { environmentVariables } from '../server/env/environmentVariablesCreate';
+import { publicCookLlmsEntriesFindMany } from '../server/queries/publicCookLlmsEntriesFindMany';
+import {
+    publicPublishedBlogPostsFindMany,
+    publicPublishedCitiesFindMany,
+    publicPublishedOccasionsFindMany,
+} from '../server/utils/contentPageFind';
+import { contentLocaleText } from '../shared/contentSection';
+import { llmsTxtBuild } from '../web/seo/llmsTxtBuild';
+
+// Dynamic /llms.txt — markdown index for LLM crawlers (https://llmstxt.org).
+// English URLs; linked pages cover the other locale via hreflang.
 // See docs/architecture/discovery-geo.md.
 
 export const Route = createFileRoute('/llms.txt')({
     server: {
         handlers: {
-            GET: () =>
-                new Response(llmsTxtBuild(environmentVariables.webPageUrl), {
+            GET: async () => {
+                const [cities, occasions, posts, chefs] = await Promise.all([
+                    publicPublishedCitiesFindMany(db),
+                    publicPublishedOccasionsFindMany(db),
+                    publicPublishedBlogPostsFindMany(db),
+                    publicCookLlmsEntriesFindMany(db),
+                ]);
+                const body = llmsTxtBuild({
+                    webPageUrl: environmentVariables.webPageUrl,
+                    cities: cities.map((city) => ({
+                        path: `/cities/${city.pathName}`,
+                        title: contentLocaleText(city.nameDe, city.nameEn, 'en'),
+                        description: contentLocaleText(city.descriptionDe, city.descriptionEn, 'en'),
+                    })),
+                    occasions: occasions.map((occasion) => ({
+                        path: `/occasions/${occasion.pathName}`,
+                        title: occasion.name,
+                        description: contentLocaleText(occasion.descriptionDe, occasion.descriptionEn, 'en'),
+                    })),
+                    posts: posts.map((post) => ({
+                        path: `/blog-posts/${post.pathName}`,
+                        title: contentLocaleText(post.titleDe, post.titleEn, 'en'),
+                        description: contentLocaleText(post.descriptionDe, post.descriptionEn, 'en'),
+                    })),
+                    chefs,
+                });
+                return new Response(body, {
                     status: 200,
                     headers: {
                         'Content-Type': 'text/plain; charset=utf-8',
                         'Cache-Control': 'public, max-age=3600',
                     },
-                }),
+                });
+            },
         },
     },
 });
-
-function llmsTxtBuild(webPageUrl: string): string {
-    const resourceBullets = SITEMAP_PATHS.map(({ path }) => {
-        const url = path === '/' ? webPageUrl : `${webPageUrl}${path}`;
-        const enUrl = path === '/' ? `${webPageUrl}/en` : `${webPageUrl}/en${path}`;
-        const title = path === '/' ? 'Home' : path.replace(/^\//, '');
-        return `- [${title}](${enUrl}): Public page at ${url}.`;
-    }).join('\n');
-
-    return `# ${SITE_NAME}
-
-> ${SITE_NAME} is a private-chef booking platform. Customers send booking requests; cooks respond with offers and attach configurable menus.
-
-## Pages
-
-${resourceBullets}
-
-## Localized versions
-
-- German (default): [${webPageUrl}/](${webPageUrl}/)
-- English: [${webPageUrl}/en](${webPageUrl}/en)
-
-## Optional
-
-- [Sitemap](${webPageUrl}/sitemap.xml): Sitemap index pointing at pages + content child sitemaps.
-- [Pages sitemap](${webPageUrl}/sitemap-pages.xml): Static / chrome indexable pages with hreflang alternates.
-- [Cities sitemap](${webPageUrl}/sitemap-cities.xml): Published city landing pages.
-- [Partners sitemap](${webPageUrl}/sitemap-partners.xml): Published partner landing pages.
-- [Occasions sitemap](${webPageUrl}/sitemap-occasions.xml): Published occasion landing pages.
-- [Blog sitemap](${webPageUrl}/sitemap-blog-posts.xml): Published blog posts.
-- [Chefs sitemap](${webPageUrl}/sitemap-chefs.xml): Public chef profile pages.
-- [Robots](${webPageUrl}/robots.txt): Crawler policy. AI crawlers (GPTBot, ClaudeBot, PerplexityBot, OAI-SearchBot, etc.) are allowed.
-`;
-}
