@@ -44,8 +44,22 @@ destination charge, a later pull, and price changes.
 
 ## Next steps
 
-- Sequential invoice numbers and credit notes if peopleeat later issues real invoices.
-- Self-billing statements if cooks should stop writing their own guest invoices.
+Accountant guidance (November 2026). The courtesy PDFs above stay labeled as not an invoice. Real invoices are a separate trail, and
+automatic generation waits on invoice numbers.
+
+Three invoices per held event:
+
+1. The cook invoices the guest for menu and travel, the amount the completed offer already shows the cook.
+2. peopleeat invoices the cook for the peopleeat fee withheld from the payout.
+3. peopleeat invoices the guest for the peopleeat fee plus the card-processing fee, as one sum with no fee breakdown. Menu and travel stay
+   off that invoice.
+
+First build, before any invoice numbers:
+
+1. Collect a billing address from each cook, separate from the travel origin, as a popup.
+2. Let an admin upload the peopleeat-to-cook invoice PDF on each event that took place. The cook can download that file on the offer.
+
+The peopleeat-to-guest invoice is the same kind of file later. Sequential invoice numbers and credit notes come after these two steps.
 
 ## Implementation
 
