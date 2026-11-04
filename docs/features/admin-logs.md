@@ -14,8 +14,8 @@ to the list. Distribution cards deep-link into the list with `level` preselected
 ### List — `/admin/logs/list`
 
 Search message text. Tabs filter by level. Sortable table (default created desc) with pinned bottom pagination (`page` / `pageSize`; default
-25). Level badges and optional user from linked session for at-a-glance attribution. Row or chevron → detail; in-cell user links do not
-trigger row navigation.
+25). Level badges use the shared status tones (error, warning, info); debug is a neutral muted pill. Optional user from the linked session
+for at-a-glance attribution. Row or chevron → detail; in-cell user links do not trigger row navigation.
 
 ### Detail — `/admin/logs/<logId>`
 

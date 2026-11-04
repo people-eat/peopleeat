@@ -7,7 +7,7 @@ import { Separator } from '../../components/base/separator';
 import type { GqlCAdminOutboundEmailPageQuery } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
-import { adminOutboundEmailPurposeLabel } from './adminOutboundEmailsColumns';
+import { adminOutboundEmailMetaBadgeClassName, adminOutboundEmailPurposeLabel } from './adminOutboundEmailsColumns';
 
 export const adminOutboundEmailPageTitle = { de: 'E-Mail', en: 'Email' } as const;
 export const adminOutboundEmailPageDescription = {
@@ -58,7 +58,9 @@ function AdminOutboundEmailDetailFields({ email }: { email: AdminOutboundEmailDe
                     {{ de: 'Zweck', en: 'Purpose' }[locale]}
                 </dt>
                 <dd>
-                    <Badge variant="secondary">{adminOutboundEmailPurposeLabel(email.purpose, locale)}</Badge>
+                    <Badge variant="outline" className={adminOutboundEmailMetaBadgeClassName}>
+                        {adminOutboundEmailPurposeLabel(email.purpose, locale)}
+                    </Badge>
                 </dd>
             </div>
             <Separator />

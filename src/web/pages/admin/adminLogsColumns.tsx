@@ -4,6 +4,7 @@ import { createColumnHelper } from '@tanstack/react-table';
 import { formatDateTime, userDisplayName } from '../../../shared';
 import type { Locale } from '../../../shared/locale';
 import { Badge } from '../../components/base/badge';
+import { statusBadgeToneClass } from '../../components/base/status';
 import type { GqlCAdminLogLevel } from '../../graphql/generated';
 import { AdminDataTableSortHeader } from './AdminDataTableSortHeader';
 import type { AdminLogsDataTableFeatures } from './adminLogsDataTableFeatures';
@@ -34,14 +35,16 @@ export function adminLogLevelLabel(level: GqlCAdminLogLevel, locale: Locale) {
     }[level][locale];
 }
 
-function adminLogLevelBadgeVariant(level: GqlCAdminLogLevel): 'destructive' | 'outline' | 'secondary' {
+export function adminLogLevelBadgeClassName(level: GqlCAdminLogLevel) {
     switch (level) {
         case 'error':
-            return 'destructive';
+            return statusBadgeToneClass.error;
         case 'warn':
-            return 'outline';
-        default:
-            return 'secondary';
+            return statusBadgeToneClass.warning;
+        case 'info':
+            return statusBadgeToneClass.info;
+        case 'debug':
+            return 'border-border bg-muted text-foreground';
     }
 }
 
@@ -67,7 +70,9 @@ export function adminLogsColumns(locale: Locale, timeZone: string) {
         columnHelper.accessor('level', {
             header: () => ({ de: 'Level', en: 'Level' })[locale],
             cell: ({ row }) => (
-                <Badge variant={adminLogLevelBadgeVariant(row.original.level)}>{adminLogLevelLabel(row.original.level, locale)}</Badge>
+                <Badge variant="outline" className={adminLogLevelBadgeClassName(row.original.level)}>
+                    {adminLogLevelLabel(row.original.level, locale)}
+                </Badge>
             ),
             enableSorting: false,
         }),

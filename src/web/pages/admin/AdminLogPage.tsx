@@ -4,10 +4,10 @@ import { formatDateTime, userDisplayName } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { Badge } from '../../components/base/badge';
 import { Separator } from '../../components/base/separator';
-import type { GqlCAdminLogLevel, GqlCAdminLogPageQuery } from '../../graphql/generated';
+import type { GqlCAdminLogPageQuery } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
-import { adminLogLevelLabel } from './adminLogsColumns';
+import { adminLogLevelBadgeClassName, adminLogLevelLabel } from './adminLogsColumns';
 
 export const adminLogPageTitle = { de: 'Log', en: 'Log' } as const;
 export const adminLogPageDescription = {
@@ -59,7 +59,9 @@ function AdminLogDetailFields({ log }: { log: AdminLogDetail }) {
                     {{ de: 'Level', en: 'Level' }[locale]}
                 </dt>
                 <dd>
-                    <Badge variant={adminLogLevelBadgeVariant(log.level)}>{adminLogLevelLabel(log.level, locale)}</Badge>
+                    <Badge variant="outline" className={adminLogLevelBadgeClassName(log.level)}>
+                        {adminLogLevelLabel(log.level, locale)}
+                    </Badge>
                 </dd>
             </div>
             <Separator />
@@ -122,17 +124,6 @@ function AdminLogDetailFields({ log }: { log: AdminLogDetail }) {
             </div>
         </dl>
     );
-}
-
-function adminLogLevelBadgeVariant(level: GqlCAdminLogLevel): 'destructive' | 'outline' | 'secondary' {
-    switch (level) {
-        case 'error':
-            return 'destructive';
-        case 'warn':
-            return 'outline';
-        default:
-            return 'secondary';
-    }
 }
 
 function formatLogCreatedAt(value: string, locale: ReturnType<typeof useLocale>, timeZone: string) {

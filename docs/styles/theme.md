@@ -27,7 +27,9 @@ Status banners, badges, and icons follow [`status-messaging.md`](./status-messag
 
 Cook cuisine style / cooking philosophy chips use `CookProfileTags` (`bg-muted` fill). Do not use `Badge variant="secondary"` for those —
 `--secondary` is white, so secondary badges disappear on `bg-card` / white surfaces. Same rule for meal/menu draft/published meta: use
-`Badge variant="outline"` (border) on cards and detail pages.
+`Badge variant="outline"` (border) on cards and detail pages. Admin table meta that is not a status (outbound-email purpose, sent) uses
+`Badge variant="outline"` plus `bg-muted`, because those tables sit on white (`bg-secondary`) and an outline-only pill is too faint. Log
+severity uses the status badge tones (error / warning / info); debug stays on that muted outline pill.
 
 ## Workspace chrome density
 

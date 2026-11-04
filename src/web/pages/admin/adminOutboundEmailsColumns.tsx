@@ -86,6 +86,9 @@ export function adminOutboundEmailPurposeLabel(purpose: GqlCAdminOutboundEmailPu
     }[purpose][locale];
 }
 
+/** Muted fill so category pills stay visible on the white admin table. */
+export const adminOutboundEmailMetaBadgeClassName = 'bg-muted';
+
 function formatOutboundEmailCreatedAt(value: string, locale: Locale, timeZone: string) {
     return formatDateTime(value, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' });
 }
@@ -108,7 +111,11 @@ function AdminOutboundEmailStatusBadges({
     return (
         <div className="flex flex-wrap gap-1">
             {failedAt ? <Badge variant="destructive">{{ de: 'Fehlgeschlagen', en: 'Failed' }[locale]}</Badge> : null}
-            {sentAt && !failedAt ? <Badge variant="secondary">{{ de: 'Gesendet', en: 'Sent' }[locale]}</Badge> : null}
+            {sentAt && !failedAt ? (
+                <Badge variant="outline" className={adminOutboundEmailMetaBadgeClassName}>
+                    {{ de: 'Gesendet', en: 'Sent' }[locale]}
+                </Badge>
+            ) : null}
             {openedAt ? <Badge>{{ de: 'Geöffnet', en: 'Opened' }[locale]}</Badge> : null}
         </div>
     );
@@ -128,7 +135,11 @@ export function adminOutboundEmailsColumns(locale: Locale, timeZone: string) {
         }),
         columnHelper.accessor('purpose', {
             header: () => ({ de: 'Zweck', en: 'Purpose' })[locale],
-            cell: ({ row }) => <Badge variant="secondary">{adminOutboundEmailPurposeLabel(row.original.purpose, locale)}</Badge>,
+            cell: ({ row }) => (
+                <Badge variant="outline" className={adminOutboundEmailMetaBadgeClassName}>
+                    {adminOutboundEmailPurposeLabel(row.original.purpose, locale)}
+                </Badge>
+            ),
             enableSorting: false,
         }),
         columnHelper.accessor('toEmail', {

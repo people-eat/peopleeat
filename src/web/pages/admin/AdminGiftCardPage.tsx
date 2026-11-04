@@ -13,7 +13,7 @@ import { AdminGiftCardPdfsRegenerateDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
 import { adminGiftCardPaymentStatusLabel } from './adminGiftCardsColumns';
-import { adminOutboundEmailPurposeLabel } from './adminOutboundEmailsColumns';
+import { adminOutboundEmailMetaBadgeClassName, adminOutboundEmailPurposeLabel } from './adminOutboundEmailsColumns';
 
 export const adminGiftCardPageTitle = { de: 'Gutschein', en: 'Gift card' } as const;
 export const adminGiftCardPageDescription = {
@@ -273,7 +273,9 @@ function AdminGiftCardEmailsSection({ emails }: { emails: AdminGiftCardOutboundE
                                 {email.subject || email.outboundEmailId}
                             </Link>
                             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                                <Badge variant="secondary">{adminOutboundEmailPurposeLabel(email.purpose, locale)}</Badge>
+                                <Badge variant="outline" className={adminOutboundEmailMetaBadgeClassName}>
+                                    {adminOutboundEmailPurposeLabel(email.purpose, locale)}
+                                </Badge>
                                 <span>{email.toEmail}</span>
                                 <span className="tabular-nums">
                                     {formatDate(email.createdAt, { locale, timeZone, dateStyle: 'medium' })}

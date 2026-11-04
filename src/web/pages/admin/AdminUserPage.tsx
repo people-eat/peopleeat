@@ -70,7 +70,7 @@ import {
     parseAdminListPageSize,
 } from './adminListPaginationSearch';
 import type { AdminListPageSize } from './adminListPaginationSearch';
-import { adminOutboundEmailPurposeLabel } from './adminOutboundEmailsColumns';
+import { adminOutboundEmailMetaBadgeClassName, adminOutboundEmailPurposeLabel } from './adminOutboundEmailsColumns';
 import { AdminUserCookProfileSection } from './AdminUserCookProfileSection';
 import { AdminUserFeatureTogglesSection } from './AdminUserFeatureTogglesSection';
 import { AdminUserGeneralSection } from './AdminUserGeneralSection';
@@ -1045,7 +1045,9 @@ function AdminUserEmailsSection({ emails }: { emails: AdminUserOutboundEmail[] }
                     <div className="grid min-w-0 gap-0.5">
                         <p className="truncate text-sm font-medium text-foreground">{email.subject || email.outboundEmailId}</p>
                         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                            <Badge variant="outline">{adminOutboundEmailPurposeLabel(email.purpose, locale)}</Badge>
+                            <Badge variant="outline" className={adminOutboundEmailMetaBadgeClassName}>
+                                {adminOutboundEmailPurposeLabel(email.purpose, locale)}
+                            </Badge>
                             <span className="truncate">{email.toEmail}</span>
                             <span className="tabular-nums">{formatDate(email.createdAt, { locale, timeZone, dateStyle: 'medium' })}</span>
                         </div>

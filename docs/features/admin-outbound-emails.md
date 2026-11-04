@@ -22,7 +22,8 @@ Admins inspect outbound email under `/admin/outbound-emails` (overview + list + 
 
 Search recipient or subject. Tabs filter by delivery lifecycle (failed / opened / bounced / pending; omit = all) and by purpose (gift card
 purchased, auth OTP, email-address update confirm; omit purpose tab = all). Sortable table, pinned bottom pagination (`page` / `pageSize`;
-default 25). Status badges from lifecycle (failed / sent / opened / pending). Row or chevron → detail.
+default 25). Purpose is a muted outline badge. Status badges from lifecycle (failed / sent / opened / pending); sent uses the same muted
+fill so it stays visible on the white table. Row or chevron → detail.
 
 ### Detail — `/admin/outbound-emails/<id>`
 
