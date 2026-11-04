@@ -14,8 +14,10 @@ import type { CustomerNavSlug } from '../pages/profile/customerCatalog';
 import { SITE_LOGO, SITE_LOGO_DISPLAY, SITE_LOGO_SRC_SET, SITE_NAME } from '../seo/seoConstants';
 import { DEFAULT_LOCALE } from '../utils/locale';
 import type { Locale } from '../utils/locale';
+import { useSessionImpersonation } from '../hooks/useSessionImpersonation';
 import { AppImage } from './AppImage';
 import { NotificationBadge } from './base/notification-badge';
+import { SessionImpersonationReturnSidebarItem } from './SessionImpersonationReturnButton';
 import {
     Sidebar,
     SidebarContent,
@@ -55,6 +57,7 @@ export function CustomerSidebar({
     const path = pathWithoutLocale(pathname, locale);
     const { setOpenMobile } = useSidebar();
     const client = useClient();
+    const { active: impersonating } = useSessionImpersonation();
     const [supportUnreadCount, setSupportUnreadCount] = useState(supportUnreadCountSeed);
 
     useEffect(() => {
@@ -153,7 +156,9 @@ export function CustomerSidebar({
             <SidebarSeparator />
             <SidebarFooter>
                 <SidebarMenu>
-                    {isAdmin ? (
+                    {impersonating ? (
+                        <SessionImpersonationReturnSidebarItem />
+                    ) : isAdmin ? (
                         <SidebarMenuItem>
                             <SidebarMenuButton asChild size="sm">
                                 <Link to="/{-$locale}/admin">

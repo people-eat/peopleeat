@@ -2,13 +2,16 @@ import { Link } from '@tanstack/react-router';
 import { UserIcon, UserStarIcon } from 'lucide-react';
 import type { Locale } from '../../shared/locale';
 import { useLocale } from '../hooks/useLocale';
+import { useSessionImpersonation } from '../hooks/useSessionImpersonation';
 import { Tooltip, TooltipContent, TooltipTrigger } from './base/tooltip';
 import type { PublicHeaderUser } from './Header';
 import { HeaderButton } from './HeaderButton';
+import { SessionImpersonationReturnHeaderButton } from './SessionImpersonationReturnButton';
 
 export function PublicSessionNav({ user, locale: localeProp }: { user: PublicHeaderUser; locale?: Locale }) {
     const routeLocale = useLocale();
     const locale = localeProp ?? routeLocale;
+    const { active: impersonating } = useSessionImpersonation();
 
     if (!user) {
         return (
@@ -33,7 +36,9 @@ export function PublicSessionNav({ user, locale: localeProp }: { user: PublicHea
                 </TooltipTrigger>
                 <TooltipContent>{profileLabel}</TooltipContent>
             </Tooltip>
-            {user.admin ? (
+            {impersonating ? (
+                <SessionImpersonationReturnHeaderButton />
+            ) : user.admin ? (
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <HeaderButton asChild size="icon" aria-label={administrationLabel}>

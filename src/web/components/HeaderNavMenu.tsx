@@ -2,14 +2,17 @@ import { Link } from '@tanstack/react-router';
 import { LogInIcon, MenuIcon, UserIcon, UserStarIcon } from 'lucide-react';
 import type { Locale } from '../../shared/locale';
 import { useLocale } from '../hooks/useLocale';
+import { useSessionImpersonation } from '../hooks/useSessionImpersonation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from './base/dropdown-menu';
 import type { PublicHeaderUser } from './Header';
 import { HeaderButton } from './HeaderButton';
 import { HEADER_NAV_ITEMS } from './HeaderNav';
+import { SessionImpersonationReturnMenuItem } from './SessionImpersonationReturnButton';
 
 export function HeaderNavMenu({ user, locale: localeProp }: { user: PublicHeaderUser; locale?: Locale }) {
     const routeLocale = useLocale();
     const locale = localeProp ?? routeLocale;
+    const { active: impersonating } = useSessionImpersonation();
     const menuLabel = { de: 'Menü', en: 'Menu' }[locale];
 
     return (
@@ -44,7 +47,9 @@ export function HeaderNavMenu({ user, locale: localeProp }: { user: PublicHeader
                                 {{ de: 'Profil', en: 'Profile' }[locale]}
                             </Link>
                         </DropdownMenuItem>
-                        {user.admin ? (
+                        {impersonating ? (
+                            <SessionImpersonationReturnMenuItem />
+                        ) : user.admin ? (
                             <DropdownMenuItem asChild>
                                 <Link to="/{-$locale}/admin">
                                     <UserStarIcon aria-hidden />

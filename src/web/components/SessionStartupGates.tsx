@@ -13,7 +13,6 @@ import { CookieBanner } from './CookieBanner';
 import { CookieConsentProvider } from './CookieConsentContext';
 import { LegalAcceptanceGate } from './LegalAcceptanceGate';
 import { LocaleMismatchGate } from './LocaleMismatchGate';
-import { SessionImpersonationBanner } from './SessionImpersonationBanner';
 import { SessionWebPageVisitTracker } from './SessionWebPageVisitTracker';
 
 type ActiveGate = 'locale' | 'legal' | 'cookie' | null;
@@ -59,11 +58,8 @@ export function SessionStartupGates({ children, enableCookieShell }: PropsWithCh
     const googleAnalyticsEnabled = cookieSetting?.googleAnalytics === true;
     const clarityEnabled = cookieSetting?.clarity === true && !isAdminPath(pathname);
 
-    const showImpersonationBanner = Boolean(enableCookieShell && session?.impersonation?.active);
-
     const content = (
         <TimeZoneProvider timeZone={profileTimeZone}>
-            {showImpersonationBanner ? <SessionImpersonationBanner user={session?.user} /> : null}
             {children}
             {enableCookieShell ? (
                 <>
