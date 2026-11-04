@@ -1,6 +1,7 @@
 import { DEFAULT_TIME_ZONE, formatCountryName, formatCurrency, formatDate, formatTime } from '../../shared';
 import type { Locale } from '../../shared/locale';
 import { GIFT_CARD_RECEIPT_ISSUER_LINES } from '../../shared/siteBranding';
+import { cn } from '../utils/cn';
 
 // PDF capture surfaces for Playwright. Courtesy documents, not tax invoices.
 // The cook still invoices the guest for menu and travel.
@@ -94,8 +95,8 @@ export function BookingRequestOfferPaymentDocumentPage(props: BookingRequestOffe
                 </address>
             </header>
 
-            <section className="grid gap-6 py-8">
-                <dl className="grid gap-6">
+            <section className="grid gap-5 py-6">
+                <dl className="grid gap-2">
                     <DocumentRow label={{ de: 'Datum', en: 'Date' }[locale]} value={paidAt} />
                     <DocumentRow label={{ de: 'Anlass', en: 'Occasion' }[locale]} value={props.occasion} />
                     <DocumentRow label={{ de: 'Termin', en: 'Event' }[locale]} value={eventAt} />
@@ -105,11 +106,11 @@ export function BookingRequestOfferPaymentDocumentPage(props: BookingRequestOffe
                     />
                     <DocumentRow label={{ de: 'Buchungsnummer', en: 'Booking number' }[locale]} value={props.bookingRequestId} mono />
                 </dl>
-                <dl className="grid gap-4 border-t border-neutral-200 pt-6">
+                <dl className="grid gap-2 border-t border-neutral-200 pt-4">
                     {lines.map((line) => (
                         <DocumentRow key={line.label} label={line.label} value={formatCurrency(line.amountCents, { locale })} />
                     ))}
-                    <DocumentRow label={totalLabel} value={formatCurrency(totalCents, { locale })} />
+                    <DocumentRow label={totalLabel} value={formatCurrency(totalCents, { locale })} emphasis />
                 </dl>
             </section>
 
@@ -193,11 +194,15 @@ function AddressBlock({ locale, address }: { locale: Locale; address: BookingReq
     );
 }
 
-function DocumentRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function DocumentRow({ label, value, mono, emphasis }: { label: string; value: string; mono?: boolean; emphasis?: boolean }) {
     return (
-        <div className="grid gap-1 sm:grid-cols-[12rem_1fr] sm:items-baseline sm:gap-4">
-            <dt className="text-xs font-medium tracking-wide text-neutral-500 uppercase">{label}</dt>
-            <dd className={mono ? 'font-mono text-sm break-all' : 'text-sm'}>{value}</dd>
+        <div className={cn('grid gap-1 sm:grid-cols-[12rem_1fr] sm:items-baseline sm:gap-4', emphasis && 'mt-3')}>
+            <dt
+                className={cn('text-xs font-medium tracking-wide text-neutral-500 uppercase', emphasis && 'font-semibold text-neutral-900')}
+            >
+                {label}
+            </dt>
+            <dd className={cn(mono ? 'font-mono text-sm break-all' : 'text-sm', emphasis && 'text-base font-semibold')}>{value}</dd>
         </div>
     );
 }
