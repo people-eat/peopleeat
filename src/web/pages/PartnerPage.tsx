@@ -1,3 +1,4 @@
+import { featureToggleIsActive } from '../../shared/featureToggle';
 import { ContentPageView } from '../components/ContentPageView';
 import { contentSectionsFromGql } from '../components/contentSectionsMap';
 import type { GqlCPublicPartnerPageQuery } from '../graphql/generated';
@@ -6,6 +7,7 @@ import { useLocale } from '../hooks/useLocale';
 export function PartnerPage({ data }: { data: GqlCPublicPartnerPageQuery }) {
     const locale = useLocale();
     const partner = data.publicPartner.findOneByPathName!;
+    const partnersExploreEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'PARTNER_PAGE_PARTNERS_EXPLORE');
 
     return (
         <ContentPageView
@@ -36,7 +38,7 @@ export function PartnerPage({ data }: { data: GqlCPublicPartnerPageQuery }) {
                 howItWorks: true,
                 howItWorksHideCta: true,
                 howItWorksAlternativeMedia: partner.howItWorksAlternativeMedia,
-                partnersExplore: true,
+                partnersExplore: partnersExploreEnabled,
                 knownFrom: true,
             }}
         />

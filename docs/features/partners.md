@@ -20,7 +20,9 @@ Public partner detail section order:
 5. **How it works** — same chrome as the landing page, CTA hidden. Admins may enable alternative media (`howItWorksAlternativeMedia`) for
    partner-specific footage (step 1 video + step 3 still, DE headline tweak).
 6. **Dynamic content sections** — free-form shared section stack.
-7. **Partners explore** — CTA to `/partners` (“discover more of our partners”) so visitors can browse other collaborations.
+7. **Partners explore** — CTA to `/partners` (“discover more of our partners”) so visitors can browse other collaborations. Hidden unless
+   `PARTNER_PAGE_PARTNERS_EXPLORE` is on (missing DB row = off; see [admin-feature-toggles.md](./admin-feature-toggles.md)). Admin partner
+   preview keeps the section visible for ops.
 8. **Known from** — press logos (same as landing).
 
 Assigned cooks who fail the public listing gate drop off the public page but stay in admin. Banned cooks get a **banned-specific** warning
@@ -102,8 +104,8 @@ Direction: self-serve builder on the public partners surface, admins remain sole
   uploads mark the page dirty so the partner subscription does not reset unsaved form fields; hero/first-section image updates merge via
   functional setState so a completing upload cannot clobber newer edits)
 - Public / admin preview: list + detail via `ContentPageView` (hero overlay, ChefForAnyOccasion, featured cooks, testimonials via
-  `contentPageTestimonialsForPreview`, HowItWorks with `hideCta` / alternative media, sections, `SectionPartnersExplore` → `/partners`,
-  KnownFrom); sitemap `/sitemap-partners.xml`
+  `contentPageTestimonialsForPreview`, HowItWorks with `hideCta` / alternative media, sections, `SectionPartnersExplore` → `/partners`
+  (gated by `PARTNER_PAGE_PARTNERS_EXPLORE` on the public page; admin preview always shows it), KnownFrom); sitemap `/sitemap-partners.xml`
 - Alternative HowItWorks assets: `public/home/how-it-works-section/*.alternative.*`
 - Draft flag: unified `publishedAt` (null = draft)
 - Separate admin vs public GraphQL shapes (same pattern as other content pages)

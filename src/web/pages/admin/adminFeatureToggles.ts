@@ -37,6 +37,10 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
         de: 'Startseite: So buchst du deinen Privatkoch',
         en: 'Landing: how booking works',
     },
+    PARTNER_PAGE_PARTNERS_EXPLORE: {
+        de: 'Partnerseite: Entdecke mehr unserer Partner',
+        en: 'Partner page: discover more partners',
+    },
 };
 
 const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, string>> = {
@@ -107,6 +111,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     LANDING_BOOKING_HOW_IT_WORKS: {
         de: 'Zeigt den Buchungsablauf mit Stumm-Loops und dem 60-Sekunden-Film auf der Startseite.',
         en: 'Shows the booking-flow section with muted loops and the 60-second film on the landing page.',
+    },
+    PARTNER_PAGE_PARTNERS_EXPLORE: {
+        de: 'Zeigt den CTA „Entdecke mehr unserer Partner“ auf öffentlichen Partnerseiten (/partners/…).',
+        en: 'Shows the “Discover more of our partners” CTA on public partner pages (/partners/…).',
     },
 };
 

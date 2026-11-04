@@ -1,5 +1,6 @@
 query PublicPartnerPage($pathName: String!) {
     currentSession {
+        activeFeatureToggleKeys
         user {
             ...PublicHeaderUser
         }

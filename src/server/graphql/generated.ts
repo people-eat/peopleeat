@@ -4020,6 +4020,7 @@ export type GqlSFeatureToggleKey =
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
+    | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS';
 
@@ -12408,6 +12409,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
+    | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS',
     | 'AI_BOOKING_REQUEST_MESSAGE'
@@ -12425,6 +12427,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
+    | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
 > = z.enum([
@@ -12443,6 +12446,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'COOK_PUBLIC_PROFILE_SHARE',
     'COOK_WALLET_STRIPE_BALANCE',
     'LANDING_BOOKING_HOW_IT_WORKS',
+    'PARTNER_PAGE_PARTNERS_EXPLORE',
     'PUBLICATION_MEALS',
     'PUBLICATION_MENUS',
 ]);
@@ -12717,7 +12721,7 @@ export function GqlSAdminBookingRequestUpdateSchema(): z.ZodObject<Properties<Gq
         adjustedMessage: z.string().nullish(),
         createdAt: z.date().nullish(),
         dateTime: z.date().nullish(),
-        exactEventAddress: GqlSAdminBookingRequestExactEventAddressInputSchema().nullish(),
+        exactEventAddress: z.lazy(() => GqlSAdminBookingRequestExactEventAddressInputSchema().nullish()),
         expiresAt: z.date().nullish(),
         occasion: z.string().nullish(),
         originalMessage: z.string().nullish(),

@@ -4023,6 +4023,7 @@ export type GqlCFeatureToggleKey =
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
+    | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS';
 
@@ -9000,7 +9001,10 @@ export type GqlCPublicPartnerPageQueryVariables = Exact<{
 }>;
 
 export type GqlCPublicPartnerPageQuery = {
-    currentSession: { user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null };
+    currentSession: {
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
+        user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null;
+    };
     publicPartner: {
         findOneByPathName: {
             partnerId: string;
@@ -43013,6 +43017,7 @@ export const PublicPartnerPageDocument = {
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'user' },
