@@ -2,7 +2,8 @@
 
 ## Deployment
 
-This project is deployed via **Coolify** as a **Docker** container.
+This project is deployed via **Coolify** as a **Docker** container. Where that container sits among browsers, Postgres, and outside
+services: [system-architecture.md](./architecture/system-architecture.md).
 
 ### Docker Build
 

@@ -10,6 +10,7 @@ docs/
 ├── conventions.md                # How to work in this repo
 ├── infrastructure.md             # Deployment and CI
 ├── architecture/                 # Architectural decision records
+│   ├── system-architecture.md    # Overview sketch (one Node process, Postgres, outside services)
 │   ├── agent-delegation.md       # Orchestrator + in-process domain sub-agents
 │   ├── api-layer.md              # Type-safe client-server API (GraphQL, route-loader SSR)
 │   ├── authentication.md         # Session-based auth design
@@ -98,7 +99,9 @@ docs/
 │   ├── cook-menus.md             # Cook menu list/create/edit + admin menus
 │   ├── customer-shell.md         # Floating sidebar customer profile chrome
 │   └── …
-└── assets/                       # Diagrams, images, and other media (may be empty)
+└── assets/                       # Diagrams and other media referenced from docs
+    ├── .gitkeep
+    └── system-architecture.png   # Sketch embedded by architecture/system-architecture.md
 ```
 
 ## What Goes Where
@@ -196,5 +199,6 @@ Deployment pipeline, CI configuration, environment setup. Update it when the dep
 
 ### `assets/`
 
-Supporting media referenced from other docs (diagrams, screenshots). Name files to match the doc they support (e.g., `state-sync-flow.png`
-for `architecture/state-synchronization.md`). The folder may be empty until diagrams exist.
+Supporting media referenced from other docs (diagrams, screenshots). Name files to match the doc they support (e.g.,
+`system-architecture.png` for [`architecture/system-architecture.md`](./architecture/system-architecture.md)). Put the picture here and
+embed it from that doc. Do not leave diagrams loose under `architecture/` or the docs root.

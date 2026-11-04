@@ -72,6 +72,7 @@ in `docs/styles/`.
 
 | Concern                               | Doc                                                                        |
 | ------------------------------------- | -------------------------------------------------------------------------- |
+| System map                            | [`system-architecture.md`](./docs/architecture/system-architecture.md)     |
 | Server-side structure                 | [`server-architecture.md`](./docs/architecture/server-architecture.md)     |
 | Dependency injection                  | [`dependency-injection.md`](./docs/architecture/dependency-injection.md)   |
 | Environment variables                 | [`environment.md`](./docs/architecture/environment.md)                     |

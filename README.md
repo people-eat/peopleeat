@@ -71,14 +71,15 @@ See [`docs/features/product-overview.md`](./docs/features/product-overview.md).
 
 ## Documentation map
 
-| Read first                                           | When                                                                   |
-| ---------------------------------------------------- | ---------------------------------------------------------------------- |
-| [`docs/conventions.md`](./docs/conventions.md)       | Always. Naming, two-phase commands, generated files, testing patterns. |
-| [`docs/documentation.md`](./docs/documentation.md)   | Before adding a doc — so you put it in the right place.                |
-| [`docs/infrastructure.md`](./docs/infrastructure.md) | Touching deploy, CI, Dockerfile, env vars.                             |
-| `docs/architecture/*.md`                             | Working in that area (api-layer, jobs, chat, auth, file-storage, …).   |
-| `docs/styles/*.md`                                   | Presentation rules (theme, fonts, motion, chat, navigation-progress).  |
-| `docs/features/*.md`                                 | Working on a shipped (or planned) feature.                             |
+| Read first                                                                               | When                                                                   |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`docs/architecture/system-architecture.md`](./docs/architecture/system-architecture.md) | How the process, database, and outside services fit together.          |
+| [`docs/conventions.md`](./docs/conventions.md)                                           | Always. Naming, two-phase commands, generated files, testing patterns. |
+| [`docs/documentation.md`](./docs/documentation.md)                                       | Before adding a doc — so you put it in the right place.                |
+| [`docs/infrastructure.md`](./docs/infrastructure.md)                                     | Touching deploy, CI, Dockerfile, env vars.                             |
+| `docs/architecture/*.md`                                                                 | Working in that area (api-layer, jobs, chat, auth, file-storage, …).   |
+| `docs/styles/*.md`                                                                       | Presentation rules (theme, fonts, motion, chat, navigation-progress).  |
+| `docs/features/*.md`                                                                     | Working on a shipped (or planned) feature.                             |
 
 ---
 
