@@ -1027,6 +1027,7 @@ export interface GqlCAdminCook {
     maximumTravelDistance?: Maybe<Scalars['Int']['output']>;
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
+    presenceLinks?: Maybe<GqlCCookPresenceLinks>;
     rating: GqlCPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountActive: Scalars['Boolean']['output'];
@@ -1460,6 +1461,7 @@ export interface GqlCAdminMutation {
     cookMenuCopy: GqlCMutationResult;
     cookMenuDelete: GqlCMutationResult;
     cookMenuUpsert: GqlCMutationResult;
+    cookPresenceLinksReplace: GqlCMutationResult;
     cookTestimonialDelete: GqlCMutationResult;
     cookTestimonialImageUpdate: GqlCMutationResult;
     cookTestimonialPublish: GqlCMutationResult;
@@ -1690,6 +1692,11 @@ export type GqlCAdminMutationCookMenuDeleteArgs = {
 
 export type GqlCAdminMutationCookMenuUpsertArgs = {
     menu: GqlCAdminCookMenuUpsert;
+};
+
+export type GqlCAdminMutationCookPresenceLinksReplaceArgs = {
+    cookId: Scalars['ID']['input'];
+    input: GqlCCookPresenceLinksUpdate;
 };
 
 export type GqlCAdminMutationCookTestimonialDeleteArgs = {
@@ -3139,6 +3146,7 @@ export interface GqlCCook {
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
     offerMenus: Array<GqlCCookMenu>;
     onboardingSteps: Array<GqlCCookOnboardingStep>;
+    presenceLinks?: Maybe<GqlCCookPresenceLinks>;
     rating: GqlCPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountDetails?: Maybe<GqlCCookStripeAccountDetails>;
@@ -3640,6 +3648,7 @@ export interface GqlCCookMutation {
     menuSyncToTemplate: GqlCMutationResult;
     menuTitleDescriptionSuggest: GqlCCookMenuSuggestion;
     menuUpsert: GqlCMutationResult;
+    presenceLinksReplace: GqlCMutationResult;
     stripeDashboardUrlCreate: GqlCCookStripeDashboardResult;
     stripeOnboardingStart: GqlCCookStripeOnboardingResult;
     stripeStatusSync: GqlCMutationResult;
@@ -3805,6 +3814,10 @@ export type GqlCCookMutationMenuUpsertArgs = {
     menu?: InputMaybe<GqlCCookMenuUpsert>;
 };
 
+export type GqlCCookMutationPresenceLinksReplaceArgs = {
+    input: GqlCCookPresenceLinksUpdate;
+};
+
 export type GqlCCookMutationStripeOnboardingStartArgs = {
     refreshUrl: Scalars['String']['input'];
     returnUrl: Scalars['String']['input'];
@@ -3815,6 +3828,38 @@ export type GqlCCookMutationUpdateArgs = {
 };
 
 export type GqlCCookOnboardingStep = 'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
+
+export interface GqlCCookPresenceLinks {
+    __typename?: 'CookPresenceLinks';
+    googleProfileUrl?: Maybe<Scalars['String']['output']>;
+    instagramUrl?: Maybe<Scalars['String']['output']>;
+    otherProfiles: Array<GqlCCookPresenceOtherProfile>;
+    takeAChefUrl?: Maybe<Scalars['String']['output']>;
+    websiteUrl?: Maybe<Scalars['String']['output']>;
+}
+
+export type GqlCCookPresenceLinksUpdate = {
+    googleProfileUrl?: InputMaybe<Scalars['String']['input']>;
+    instagramUrl?: InputMaybe<Scalars['String']['input']>;
+    otherProfiles: Array<GqlCCookPresenceOtherProfileInput>;
+    takeAChefUrl?: InputMaybe<Scalars['String']['input']>;
+    websiteUrl?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type GqlCCookPresenceOtherPlatform = 'CHEF_MAISON' | 'COZYMEAL' | 'EATWITH' | 'OTHER' | 'YHUNGRY';
+
+export interface GqlCCookPresenceOtherProfile {
+    __typename?: 'CookPresenceOtherProfile';
+    label?: Maybe<Scalars['String']['output']>;
+    platform: GqlCCookPresenceOtherPlatform;
+    url: Scalars['String']['output'];
+}
+
+export type GqlCCookPresenceOtherProfileInput = {
+    label?: InputMaybe<Scalars['String']['input']>;
+    platform: GqlCCookPresenceOtherPlatform;
+    url: Scalars['String']['input'];
+};
 
 export interface GqlCCookStripeAccountDetails {
     __typename?: 'CookStripeAccountDetails';
@@ -3974,6 +4019,7 @@ export type GqlCFeatureToggleKey =
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
+    | 'COOK_PRESENCE_LINKS'
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
@@ -16049,6 +16095,13 @@ export type GqlCAdminUserCookProfileEditCookFragment = {
     travelExpensesAmount: number;
     maximumTravelDistance: number | null;
     logo: { fileUploadId: string; url: string } | null;
+    presenceLinks: {
+        websiteUrl: string | null;
+        instagramUrl: string | null;
+        googleProfileUrl: string | null;
+        takeAChefUrl: string | null;
+        otherProfiles: Array<{ platform: Schema.GqlCCookPresenceOtherPlatform; label: string | null; url: string }>;
+    } | null;
     exactTravelOriginAddress: {
         displayText: string;
         latitude: number;
@@ -16085,6 +16138,13 @@ export type GqlCAdminUserCookProfileEditPageQuery = {
                         travelExpensesAmount: number;
                         maximumTravelDistance: number | null;
                         logo: { fileUploadId: string; url: string } | null;
+                        presenceLinks: {
+                            websiteUrl: string | null;
+                            instagramUrl: string | null;
+                            googleProfileUrl: string | null;
+                            takeAChefUrl: string | null;
+                            otherProfiles: Array<{ platform: Schema.GqlCCookPresenceOtherPlatform; label: string | null; url: string }>;
+                        } | null;
                         exactTravelOriginAddress: {
                             displayText: string;
                             latitude: number;
@@ -16109,6 +16169,15 @@ export type GqlCAdminUserCookProfileEditUpdateMutationVariables = Exact<{
 }>;
 
 export type GqlCAdminUserCookProfileEditUpdateMutation = { admin: { cookUpdate: { success: boolean; referenceId: string | null } } };
+
+export type GqlCAdminUserCookPresenceLinksReplaceMutationVariables = Exact<{
+    cookId: string;
+    input: Schema.GqlCCookPresenceLinksUpdate;
+}>;
+
+export type GqlCAdminUserCookPresenceLinksReplaceMutation = {
+    admin: { cookPresenceLinksReplace: { success: boolean; referenceId: string | null } };
+};
 
 export type GqlCAdminUserCookProfileEditBiographySuggestMutationVariables = Exact<{
     cookId: string;
@@ -16190,6 +16259,13 @@ export type GqlCAdminUserCookFragment = {
         country: string;
     } | null;
     logo: { fileUploadId: string; url: string } | null;
+    presenceLinks: {
+        websiteUrl: string | null;
+        instagramUrl: string | null;
+        googleProfileUrl: string | null;
+        takeAChefUrl: string | null;
+        otherProfiles: Array<{ platform: Schema.GqlCCookPresenceOtherPlatform; label: string | null; url: string }>;
+    } | null;
     rating: { averageRating: number | null; reviewCount: number };
     callAvailabilityRules: Array<{
         cookCallAvailabilityRuleId: string;
@@ -16322,6 +16398,13 @@ export type GqlCAdminUserPageQuery = {
                             country: string;
                         } | null;
                         logo: { fileUploadId: string; url: string } | null;
+                        presenceLinks: {
+                            websiteUrl: string | null;
+                            instagramUrl: string | null;
+                            googleProfileUrl: string | null;
+                            takeAChefUrl: string | null;
+                            otherProfiles: Array<{ platform: Schema.GqlCCookPresenceOtherPlatform; label: string | null; url: string }>;
+                        } | null;
                         rating: { averageRating: number | null; reviewCount: number };
                         callAvailabilityRules: Array<{
                             cookCallAvailabilityRuleId: string;
@@ -19165,6 +19248,13 @@ export type GqlCProfileCookChefProfileCookFragment = {
     biographySummaryGenerating: boolean;
     cuisineStyle: string | null;
     cookingPhilosophy: string | null;
+    presenceLinks: {
+        websiteUrl: string | null;
+        instagramUrl: string | null;
+        googleProfileUrl: string | null;
+        takeAChefUrl: string | null;
+        otherProfiles: Array<{ platform: Schema.GqlCCookPresenceOtherPlatform; label: string | null; url: string }>;
+    } | null;
 };
 
 export type GqlCProfileCookChefProfileUserFragment = {
@@ -19179,6 +19269,13 @@ export type GqlCProfileCookChefProfileUserFragment = {
         biographySummaryGenerating: boolean;
         cuisineStyle: string | null;
         cookingPhilosophy: string | null;
+        presenceLinks: {
+            websiteUrl: string | null;
+            instagramUrl: string | null;
+            googleProfileUrl: string | null;
+            takeAChefUrl: string | null;
+            otherProfiles: Array<{ platform: Schema.GqlCCookPresenceOtherPlatform; label: string | null; url: string }>;
+        } | null;
     } | null;
 };
 
@@ -19199,6 +19296,13 @@ export type GqlCProfileCookChefProfilePageQuery = {
                 biographySummaryGenerating: boolean;
                 cuisineStyle: string | null;
                 cookingPhilosophy: string | null;
+                presenceLinks: {
+                    websiteUrl: string | null;
+                    instagramUrl: string | null;
+                    googleProfileUrl: string | null;
+                    takeAChefUrl: string | null;
+                    otherProfiles: Array<{ platform: Schema.GqlCCookPresenceOtherPlatform; label: string | null; url: string }>;
+                } | null;
             } | null;
         } | null;
     };
@@ -19219,6 +19323,13 @@ export type GqlCProfileCookChefProfilePageUpdatesSubscription = {
             biographySummaryGenerating: boolean;
             cuisineStyle: string | null;
             cookingPhilosophy: string | null;
+            presenceLinks: {
+                websiteUrl: string | null;
+                instagramUrl: string | null;
+                googleProfileUrl: string | null;
+                takeAChefUrl: string | null;
+                otherProfiles: Array<{ platform: Schema.GqlCCookPresenceOtherPlatform; label: string | null; url: string }>;
+            } | null;
         } | null;
     };
 };
@@ -19228,6 +19339,14 @@ export type GqlCProfileCookUpdateMutationVariables = Exact<{
 }>;
 
 export type GqlCProfileCookUpdateMutation = { user: { cook: { update: { success: boolean; referenceId: string | null } } } };
+
+export type GqlCProfileCookPresenceLinksReplaceMutationVariables = Exact<{
+    input: Schema.GqlCCookPresenceLinksUpdate;
+}>;
+
+export type GqlCProfileCookPresenceLinksReplaceMutation = {
+    user: { cook: { presenceLinksReplace: { success: boolean; referenceId: string | null } } };
+};
 
 export type GqlCProfileCookBiographySuggestMutationVariables = Exact<{
     currentBiography: string;
@@ -29438,6 +29557,31 @@ export const AdminUserCookProfileEditCookFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'presenceLinks' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'websiteUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'instagramUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'googleProfileUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'takeAChefUrl' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'otherProfiles' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platform' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'exactTravelOriginAddress' },
                         selectionSet: {
                             kind: 'SelectionSet',
@@ -29515,6 +29659,31 @@ export const AdminUserCookFragmentDoc = {
                     },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'presenceLinks' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'websiteUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'instagramUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'googleProfileUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'takeAChefUrl' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'otherProfiles' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platform' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'rating' },
@@ -32188,6 +32357,31 @@ export const ProfileCookChefProfileCookFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'presenceLinks' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'websiteUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'instagramUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'googleProfileUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'takeAChefUrl' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'otherProfiles' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platform' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                 ],
             },
         },
@@ -32241,6 +32435,31 @@ export const ProfileCookChefProfileUserFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'presenceLinks' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'websiteUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'instagramUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'googleProfileUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'takeAChefUrl' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'otherProfiles' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platform' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                 ],
             },
         },
@@ -66298,6 +66517,31 @@ export const AdminUserCookProfileEditPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'presenceLinks' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'websiteUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'instagramUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'googleProfileUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'takeAChefUrl' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'otherProfiles' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platform' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'exactTravelOriginAddress' },
                         selectionSet: {
                             kind: 'SelectionSet',
@@ -66380,6 +66624,65 @@ export const AdminUserCookProfileEditUpdateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminUserCookProfileEditUpdateMutation, GqlCAdminUserCookProfileEditUpdateMutationVariables>;
+export const AdminUserCookPresenceLinksReplaceDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminUserCookPresenceLinksReplace' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookPresenceLinksUpdate' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cookPresenceLinksReplace' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'cookId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminUserCookPresenceLinksReplaceMutation, GqlCAdminUserCookPresenceLinksReplaceMutationVariables>;
 export const AdminUserCookProfileEditBiographySuggestDocument = {
     kind: 'Document',
     definitions: [
@@ -68322,6 +68625,31 @@ export const AdminUserPageDocument = {
                     },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'presenceLinks' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'websiteUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'instagramUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'googleProfileUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'takeAChefUrl' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'otherProfiles' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platform' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'rating' },
@@ -76851,6 +77179,31 @@ export const ProfileCookChefProfilePageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'presenceLinks' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'websiteUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'instagramUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'googleProfileUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'takeAChefUrl' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'otherProfiles' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platform' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                 ],
             },
         },
@@ -76922,6 +77275,31 @@ export const ProfileCookChefProfilePageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'presenceLinks' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'websiteUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'instagramUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'googleProfileUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'takeAChefUrl' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'otherProfiles' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platform' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'label' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                 ],
             },
         },
@@ -77017,6 +77395,64 @@ export const ProfileCookUpdateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookUpdateMutation, GqlCProfileCookUpdateMutationVariables>;
+export const ProfileCookPresenceLinksReplaceDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookPresenceLinksReplace' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookPresenceLinksUpdate' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'presenceLinksReplace' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'input' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookPresenceLinksReplaceMutation, GqlCProfileCookPresenceLinksReplaceMutationVariables>;
 export const ProfileCookBiographySuggestDocument = {
     kind: 'Document',
     definitions: [

@@ -1,3 +1,4 @@
+import { cookPresenceLinksFromStored } from '../../shared/cookPresenceLinks';
 import type { Cook } from '../db/schema';
 import type { BookingRequestExactEventAddress } from '../domain/bookingRequest';
 import { cookCanCreateOffersDerive, cookStripeStatusDerive } from '../domain/cook';
@@ -70,6 +71,8 @@ export function toGqlCook(row: Cook, userStatus: UserStatus): GqlSCook {
         logo: null,
         cuisineStyle: row.cuisineStyle ?? null,
         cookingPhilosophy: row.cookingPhilosophy ?? null,
+        // Field resolver hides this when COOK_PRESENCE_LINKS is off.
+        presenceLinks: cookPresenceLinksFromStored(row.presenceLinks),
         // Field resolver populates from published customer testimonials.
         rating: undefined as unknown as GqlSPublicCookRating,
         travelExpensesAmount: row.travelExpensesAmount,

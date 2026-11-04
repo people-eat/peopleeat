@@ -22,6 +22,7 @@ import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { Switch } from '../../components/base/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
+import { CookPresenceLinksReadout } from '../../components/CookPresenceLinksEditor';
 import { CookProfileTags } from '../../components/CookProfileTags';
 import { TestimonialRatingStars } from '../../components/TestimonialRatingStars';
 import type { GqlCAdminCookFeaturedLandingKind, GqlCAdminUserPageQuery } from '../../graphql/generated';
@@ -485,6 +486,23 @@ function AdminUserCookProfileBody({
                     </dd>
                 </div>
             </dl>
+
+            <section className="grid gap-3">
+                <div className="grid gap-1">
+                    <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                        {{ de: 'Weitere Profile', en: 'Other profiles' }[locale]}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Nur für die Prüfung. Kunden sehen diese Links nicht.',
+                                en: 'For review only. Customers do not see these links.',
+                            }[locale]
+                        }
+                    </p>
+                </div>
+                <CookPresenceLinksReadout links={cook.presenceLinks} />
+            </section>
 
             <AdminCookStripeFinances
                 stripeStatus={cook.stripeStatus}

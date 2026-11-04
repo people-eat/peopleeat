@@ -6,6 +6,13 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { userDisplayName } from '../../../shared';
+import {
+    cookPresenceLinksEqual,
+    cookPresenceLinksFormFrom,
+    cookPresenceLinksFromStored,
+    cookPresenceLinksInputFrom,
+    cookPresenceLinksNormalize,
+} from '../../../shared/cookPresenceLinks';
 import { COOKING_PHILOSOPHIES, CUISINE_STYLES } from '../../../shared/cookProfile';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
@@ -13,6 +20,7 @@ import { Skeleton } from '../../components/base/skeleton';
 import { Spinner } from '../../components/base/spinner';
 import { Textarea } from '../../components/base/textarea';
 import { BiographySuggestionReview } from '../../components/BiographySuggestionReview';
+import { CookPresenceLinksFields, cookPresenceLinksIssueMessage } from '../../components/CookPresenceLinksEditor';
 import { ProfilePictureEditor } from '../../components/ProfilePictureEditor';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
 import type { GqlCProfileCookChefProfileCookFragment, GqlCProfileCookChefProfilePageQuery } from '../../graphql/generated';
@@ -20,6 +28,7 @@ import {
     ProfileCookBiographySuggestDocument,
     ProfileCookChefProfilePageUpdatesDocument,
     ProfileCookChefProfileUserUpdateDocument,
+    ProfileCookPresenceLinksReplaceDocument,
     ProfileCookUpdateDocument,
 } from '../../graphql/generated';
 import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
@@ -41,6 +50,7 @@ type ChefProfileFormValues = {
     biography: string;
     cuisineStyle: string;
     cookingPhilosophy: string;
+    presenceLinks: ReturnType<typeof cookPresenceLinksFormFrom>;
 };
 
 function formFromCook(next: GqlCProfileCookChefProfileCookFragment): ChefProfileFormValues {
@@ -48,6 +58,7 @@ function formFromCook(next: GqlCProfileCookChefProfileCookFragment): ChefProfile
         biography: next.biography,
         cuisineStyle: next.cuisineStyle ?? '',
         cookingPhilosophy: next.cookingPhilosophy ?? '',
+        presenceLinks: cookPresenceLinksFormFrom(next.presenceLinks),
     };
 }
 
@@ -57,9 +68,11 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
     const seedUser = data.currentSession.user ?? null;
     const user = useUserUpdatesSeed(seedUser, ProfileCookChefProfilePageUpdatesDocument);
     const [, updateCook] = useMutation(ProfileCookUpdateDocument);
+    const [, replacePresenceLinks] = useMutation(ProfileCookPresenceLinksReplaceDocument);
     const [{ fetching: biographySuggestFetching }, biographySuggest] = useMutation(ProfileCookBiographySuggestDocument);
     const [, userUpdate] = useMutation(ProfileCookChefProfileUserUpdateDocument);
     const biographyAiWriteEnabled = useFeatureToggleActive('COOK_BIOGRAPHY_AI_WRITE');
+    const presenceLinksEnabled = useFeatureToggleActive('COOK_PRESENCE_LINKS');
     const [profilePictureBusy, setProfilePictureBusy] = useState(false);
     const [biographySuggestion, setBiographySuggestion] = useState<string | null>(null);
     const [summaryRefreshPending, setSummaryRefreshPending] = useState(false);
@@ -73,6 +86,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                   biography: '',
                   cuisineStyle: '',
                   cookingPhilosophy: '',
+                  presenceLinks: cookPresenceLinksFormFrom(null),
               },
         onSubmit: async ({ value }) => {
             if (!cook) return;
@@ -80,6 +94,24 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
             const nextCuisine = value.cuisineStyle.trim();
             const nextPhilosophy = value.cookingPhilosophy.trim();
             const biographyChanged = value.biography !== cook.biography;
+
+            if (presenceLinksEnabled) {
+                const normalized = cookPresenceLinksNormalize(cookPresenceLinksInputFrom(value.presenceLinks));
+                if (!normalized.ok) {
+                    toast.error(cookPresenceLinksIssueMessage(normalized.issue, locale));
+                    return;
+                }
+                const current = cookPresenceLinksFromStored(cook.presenceLinks);
+                if (!cookPresenceLinksEqual(current, normalized.value)) {
+                    const presenceResult = await replacePresenceLinks({
+                        input: cookPresenceLinksInputFrom(value.presenceLinks),
+                    });
+                    if (presenceResult.error || !presenceResult.data?.user.cook.presenceLinksReplace.success) {
+                        toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                        return;
+                    }
+                }
+            }
 
             const result = await updateCook({
                 input: {
@@ -97,6 +129,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                 biography: value.biography,
                 cuisineStyle: nextCuisine,
                 cookingPhilosophy: nextPhilosophy,
+                presenceLinks: value.presenceLinks,
             });
 
             if (biographyChanged) {
@@ -344,6 +377,34 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                         </form.Field>
                     </div>
                 </section>
+
+                {presenceLinksEnabled ? (
+                    <section className="grid min-w-0 gap-4">
+                        <div className="grid gap-1">
+                            <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                                {{ de: 'Weitere Profile', en: 'Other profiles' }[locale]}
+                            </h2>
+                            <p className="text-sm text-muted-foreground">
+                                {
+                                    {
+                                        de: 'Nur das peopleeat-Team sieht diese Links, um dein Profil zu prüfen. Kunden sehen sie nicht.',
+                                        en: 'Only the peopleeat team sees these links, to review your profile. Customers do not see them.',
+                                    }[locale]
+                                }
+                            </p>
+                        </div>
+                        <form.Field name="presenceLinks">
+                            {(field) => (
+                                <CookPresenceLinksFields
+                                    idPrefix="chef-presence"
+                                    value={field.state.value}
+                                    disabled={formBusy}
+                                    onChange={field.handleChange}
+                                />
+                            )}
+                        </form.Field>
+                    </section>
+                ) : null}
             </form>
         </ProfilePinnedFooterLayout>
     );

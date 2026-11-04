@@ -25,7 +25,11 @@ Signed-in cooks manage these areas under `/profile/*`:
    the read-only view. Clearing the biography clears the summary and cancels any pending summary job. Public surfaces keep showing the last
    good summary until the job finishes. Admins edit both fields and regenerate the summary on demand; admin enhance uses the same
    review/accept-into-form pattern (no auto summary) and is gated by the same toggle on the server — see [admin-users.md](./admin-users.md)
-   and [admin-feature-toggles.md](./admin-feature-toggles.md).
+   and [admin-feature-toggles.md](./admin-feature-toggles.md). When `COOK_PRESENCE_LINKS` is on, the same view and edit page include **Other
+   profiles** (website, Instagram, Google profile, Take a Chef, and up to five more: Yhangry, Cozymeal, Eatwith, ChefMaison, or a named
+   platform). The copy says the peopleeat team uses the links to review the profile and customers never see them. Blank fields clear the
+   document. The cook mutation rejects when the toggle is off for that cook. Admins always see and edit the same links on the user
+   cook-profile tab, including while the toggle is off. Nothing is copied onto the public chef page.
 3. **Travel settings** (`/profile/travel`) shows travel origin, max distance, and €/km expenses. **Edit** opens the travel form. Customers
    only see the **city** from the travel origin — never the full street address. Overview and the booking request pool deep-link here when
    travel origin is missing.
@@ -132,6 +136,10 @@ changes. Customers still only see city, never the pin or street.
 - Additional picture (API: logo): `Cook.logo` / `PublicCook.logo` (`FileUpload`); `CookUpdate.logoFileUploadId` (null clears); public GET
   when referenced as current cook picture; UI `CookLogoEditor` on `/profile/public` (beside visibility; copy: Zusätzliches Bild / Additional
   picture) + `CookAboutBenefitsFallback` on About when unset; crop `IMAGE_CROP_ASPECT.logo` = 16/9
+- Private review links: `Cooks.presenceLinks` JSON (`src/shared/cookPresenceLinks.ts`); `Cook.presenceLinks` is null when
+  `COOK_PRESENCE_LINKS` is off; `AdminCook.presenceLinks` is always loaded; `CookMutation.presenceLinksReplace` /
+  `AdminMutation.cookPresenceLinksReplace`; UI `CookPresenceLinksFields` / `CookPresenceLinksReadout` on chef profile and admin cook
+  profile. Not on `PublicCook`
 - Catalogs: `src/shared/cookProfile.ts` — validated in `cookUpdate`
 - Display pills: `CookProfileTags` / `CookProfileTag` in `src/web/components/CookProfileTags.tsx` — shared muted chips for cuisine style +
   cooking philosophy on chef-profile read, public/hero/offer/featured surfaces (not `Badge secondary`, which is white-on-card)

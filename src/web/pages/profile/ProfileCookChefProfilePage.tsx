@@ -2,10 +2,12 @@ import { Link } from '@tanstack/react-router';
 
 import { Button } from '../../components/base/button';
 import { Skeleton } from '../../components/base/skeleton';
+import { CookPresenceLinksReadout } from '../../components/CookPresenceLinksEditor';
 import { cookProfileTagLabels, CookProfileTags } from '../../components/CookProfileTags';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
 import type { GqlCProfileCookChefProfilePageQuery } from '../../graphql/generated';
 import { ProfileCookChefProfilePageUpdatesDocument } from '../../graphql/generated';
+import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { cookNavRouteBySlug } from './cookCatalog';
@@ -25,6 +27,7 @@ function DetailField({ label, value }: { label: string; value: string }) {
 
 export function ProfileCookChefProfilePage({ data }: { data: GqlCProfileCookChefProfilePageQuery }) {
     const locale = useLocale();
+    const presenceLinksEnabled = useFeatureToggleActive('COOK_PRESENCE_LINKS');
     const seedUser = data.currentSession.user ?? null;
     const user = useUserUpdatesSeed(seedUser, ProfileCookChefProfilePageUpdatesDocument);
     const cook = user?.cook ?? null;
@@ -91,6 +94,25 @@ export function ProfileCookChefProfilePage({ data }: { data: GqlCProfileCookChef
                     </div>
                 </dl>
             </section>
+
+            {presenceLinksEnabled ? (
+                <section className="grid min-w-0 gap-3">
+                    <div className="grid gap-1">
+                        <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                            {{ de: 'Weitere Profile', en: 'Other profiles' }[locale]}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                            {
+                                {
+                                    de: 'Nur das peopleeat-Team sieht diese Links, um dein Profil zu prüfen. Kunden sehen sie nicht.',
+                                    en: 'Only the peopleeat team sees these links, to review your profile. Customers do not see them.',
+                                }[locale]
+                            }
+                        </p>
+                    </div>
+                    <CookPresenceLinksReadout links={cook.presenceLinks} />
+                </section>
+            ) : null}
         </ProfilePinnedFooterLayout>
     );
 }

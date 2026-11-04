@@ -46,6 +46,11 @@ source = source.replaceAll(
     'courses: z.array(GqlSCookMenuCourseInputSchema()).nullish(),',
 );
 
+source = source.replaceAll(
+    'otherProfiles: z.array(z.lazy(() => GqlSCookPresenceOtherProfileInputSchema())),',
+    'otherProfiles: z.array(GqlSCookPresenceOtherProfileInputSchema()),',
+);
+
 source = source.replace(
     'meals: z.array(z.lazy(() => GqlSBookingRequestOfferConfiguredMenuMealInputSchema())),',
     'meals: z.array(GqlSBookingRequestOfferConfiguredMenuMealInputSchema()),',
@@ -88,6 +93,8 @@ for (const name of [
     'GqlSContentSectionInput',
     'GqlSCookMenuUpdate',
     'GqlSCookMenuUpsert',
+    'GqlSCookPresenceLinksUpdate',
+    'GqlSCookPresenceOtherProfileInput',
     'GqlSAdminCookMenuUpsert',
     'GqlSBookingRequestOfferConfiguredMenuCourseInput',
     'GqlSBookingRequestOfferConfiguredMenuInput',

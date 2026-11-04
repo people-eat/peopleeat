@@ -828,6 +828,9 @@ type Cook {
     logo: FileUpload
     cuisineStyle: String
     cookingPhilosophy: String
+    # Private review links. Null when `COOK_PRESENCE_LINKS` is off for this cook,
+    # or when nothing is saved. Never exposed on `PublicCook`.
+    presenceLinks: CookPresenceLinks
     # Same aggregate as `PublicCook.rating` — published customer reviews on completed offers.
     # Used for cook self-preview of listing cards; `reviewCount: 0` when none.
     rating: PublicCookRating!
@@ -886,6 +889,45 @@ type Cook {
     # Remaining setup steps in display order; empty once the cook is set up.
     onboardingSteps: [CookOnboardingStep!]!
     lastModifiedAt: DateTime!
+}
+
+enum CookPresenceOtherPlatform {
+    YHUNGRY
+    COZYMEAL
+    EATWITH
+    CHEF_MAISON
+    OTHER
+}
+
+type CookPresenceOtherProfile {
+    platform: CookPresenceOtherPlatform!
+    # Set when `platform` is `OTHER`.
+    label: String
+    url: String!
+}
+
+# Website, Instagram, Google profile, Take a Chef, and up to five other public profiles.
+# Stored as one JSON document on the cook. Empty input clears it.
+type CookPresenceLinks {
+    websiteUrl: String
+    instagramUrl: String
+    googleProfileUrl: String
+    takeAChefUrl: String
+    otherProfiles: [CookPresenceOtherProfile!]!
+}
+
+input CookPresenceOtherProfileInput {
+    platform: CookPresenceOtherPlatform!
+    label: String
+    url: String!
+}
+
+input CookPresenceLinksUpdate {
+    websiteUrl: String
+    instagramUrl: String
+    googleProfileUrl: String
+    takeAChefUrl: String
+    otherProfiles: [CookPresenceOtherProfileInput!]!
 }
 
 enum CookAttentionKind {
@@ -1233,6 +1275,9 @@ type CookMutation {
     # client shows a side-by-side review; Accept fills the form; Save via
     # `update` queues biography-summary regeneration.
     biographySuggest(currentBiography: String!): String!
+    # Replace private review links. Gated by `COOK_PRESENCE_LINKS` for this cook.
+    # Blank fields clear. Returns `cookId` as `referenceId`.
+    presenceLinksReplace(input: CookPresenceLinksUpdate!): MutationResult!
     # Weekly call windows — max 3 per cook. Returns rule id as `referenceId`.
     callAvailabilityRuleCreate(rule: CookCallAvailabilityRuleCreate!): MutationResult!
     callAvailabilityRuleDelete(cookCallAvailabilityRuleId: ID!): MutationResult!
@@ -3136,6 +3181,9 @@ type AdminCook {
     logo: FileUpload
     cuisineStyle: String
     cookingPhilosophy: String
+    # Private review links. Always returned for admins (not gated by `COOK_PRESENCE_LINKS`).
+    # Null when nothing is saved.
+    presenceLinks: CookPresenceLinks
     # Same aggregate as `PublicCook.rating` — published customer reviews on completed offers.
     rating: PublicCookRating!
     travelExpensesAmount: Int!
@@ -4504,6 +4552,9 @@ type AdminMutation {
     # Patch cook profile fields for any cook (same shape as `CookUpdate`).
     # Returns `cookId` as `referenceId`. Does not auto-regenerate biographySummary.
     cookUpdate(cookId: ID!, input: CookUpdate!): MutationResult!
+    # Replace a cook's private review links. Not gated by `COOK_PRESENCE_LINKS`.
+    # Blank fields clear. Returns `cookId` as `referenceId`.
+    cookPresenceLinksReplace(cookId: ID!, input: CookPresenceLinksUpdate!): MutationResult!
     # AI: generate or expand a cook's first-person biography. Returns suggestion only.
     cookBiographySuggest(cookId: ID!, currentBiography: String!): String!
     # AI: generate a third-person biography summary from the given biography text.
@@ -5622,6 +5673,7 @@ enum FeatureToggleKey {
     COOK_WALLET_STRIPE_BALANCE
     COOK_ANALYTICS
     COOK_PUBLIC_PROFILE_SHARE
+    COOK_PRESENCE_LINKS
     BOOKING_REQUEST_RESTRICTIONS
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS
     BOOKING_REQUEST_OFFER_AMENDMENT

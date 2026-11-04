@@ -1,4 +1,5 @@
 import { stripeDashboardConnectAccountUrl, stripeDashboardIsTestMode } from '../../shared';
+import { cookPresenceLinksFromStored } from '../../shared/cookPresenceLinks';
 import type { Cook } from '../db/schema';
 import { cookCanCreateOffersDerive, cookStripeStatusDerive } from '../domain/cook';
 import type { UserStatus } from '../domain/user';
@@ -33,6 +34,7 @@ export function toGqlAdminCook(row: Cook, userStatus: UserStatus): GqlSAdminCook
         logo: null,
         cuisineStyle: row.cuisineStyle ?? null,
         cookingPhilosophy: row.cookingPhilosophy ?? null,
+        presenceLinks: cookPresenceLinksFromStored(row.presenceLinks),
         // Field resolver populates from published customer testimonials.
         rating: undefined as unknown as GqlSPublicCookRating,
         travelExpensesAmount: row.travelExpensesAmount,

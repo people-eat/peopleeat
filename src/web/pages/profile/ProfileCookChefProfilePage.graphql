@@ -8,6 +8,17 @@ fragment ProfileCookChefProfileCook on Cook {
     biographySummaryGenerating
     cuisineStyle
     cookingPhilosophy
+    presenceLinks {
+        websiteUrl
+        instagramUrl
+        googleProfileUrl
+        takeAChefUrl
+        otherProfiles {
+            platform
+            label
+            url
+        }
+    }
 }
 
 fragment ProfileCookChefProfileUser on User {
@@ -42,6 +53,17 @@ mutation ProfileCookUpdate($input: CookUpdate!) {
     user {
         cook {
             update(input: $input) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookPresenceLinksReplace($input: CookPresenceLinksUpdate!) {
+    user {
+        cook {
+            presenceLinksReplace(input: $input) {
                 success
                 referenceId
             }

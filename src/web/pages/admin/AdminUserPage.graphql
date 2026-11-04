@@ -37,6 +37,17 @@ fragment AdminUserCook on AdminCook {
     }
     cuisineStyle
     cookingPhilosophy
+    presenceLinks {
+        websiteUrl
+        instagramUrl
+        googleProfileUrl
+        takeAChefUrl
+        otherProfiles {
+            platform
+            label
+            url
+        }
+    }
     rating {
         averageRating
         reviewCount

@@ -19,6 +19,7 @@ import {
     varchar,
 } from 'drizzle-orm/pg-core';
 
+import type { CookPresenceLinks } from '../../shared/cookPresenceLinks';
 import type { ContentSection } from '../../shared/contentSection';
 import type { FeatureToggleKey } from '../../shared/featureToggle';
 import { NANO_ID_LENGTH } from '../../shared/idCreate';
@@ -450,6 +451,9 @@ export const cooks = pgTable(
         }),
         cuisineStyle: varchar(),
         cookingPhilosophy: varchar(),
+        // Private review links (website, Instagram, Google, other platforms).
+        // Null when the cook has saved nothing. Never copied onto PublicCook.
+        presenceLinks: jsonb().$type<CookPresenceLinks | null>(),
         travelExpensesAmount: integer().notNull().default(25),
         maximumTravelDistance: integer(),
         minimumPriceAmount: integer(),

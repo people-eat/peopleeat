@@ -18,6 +18,7 @@ Keys today:
 - Cook biography AI writing (Write / Improve with AI; short summary generation stays always on)
 - Cook wallet Stripe balance (live Connect balance + recent transactions on `/profile/wallet`)
 - Cook analytics (overview KPIs + `/profile/analytics`; see [cook-analytics.md](./cook-analytics.md))
+- Cook other profiles (website, Instagram, Google, Take a Chef, and other platforms on the chef profile; admin review stays available)
 - Booking request restrictions
 - Offer chat emoji reactions
 - Offer participant and venue amendment after accept (cook-gated propose / accept)
@@ -119,6 +120,9 @@ Wired today:
 - **Cook public profile share** (`COOK_PUBLIC_PROFILE_SHARE`) — shows Share on `/chefs/$cookId` (top bar) and on `/profile/public` Preview;
   missing row stays off. Public detail reads `Session.activeFeatureToggleKeys`; cook Preview uses the profile shell provider. See
   [public-chefs.md](./public-chefs.md) and [cook-profile.md](./cook-profile.md)
+- **Cook other profiles** (`COOK_PRESENCE_LINKS`) — shows website, Instagram, Google, Take a Chef, and other platform links on
+  `/profile/chef-profile` (view and edit). `Cook.presenceLinks` is null and `presenceLinksReplace` rejects when off for the cook `userId`.
+  Admin cook-profile view and edit always show and save the links. Customers never see them. See [cook-profile.md](./cook-profile.md)
 - **AI menu evaluation** (`AI_MENU_EVALUATION`) — cook open / refresh / apply gates use the cook `userId`
 - **Landing booking how-it-works** (`LANDING_BOOKING_HOW_IT_WORKS`) — shows `SectionBookingHowItWorks` on the home page when on; missing row
   stays off. Public home reads `Session.activeFeatureToggleKeys` (global + signed-in override). See [landing.md](./landing.md)

@@ -62,19 +62,21 @@ return session was terminated). Impersonation sessions are excluded from product
 Already-anonymized users cannot be edited, banned, or impersonated. Same scrub as self-serve delete — see [account.md](./account.md).
 
 **Cook profile** defaults to a read-only detail: approval/visibility/Stripe-active badges, optional rating summary, stage name, travel,
-Stripe account + Dashboard link, call scheduling + weekly windows, About logo, tags, biography/summary (with generating hint), public chef
-link when approved + visible, featured city/partner/occasion landings, and created/last-modified timestamps; then a **Finances** block with
-live Stripe requirements checklist + Connect available/pending balance and recent balance transactions (same data as the cook wallet page
-when `COOK_WALLET_STRIPE_BALANCE` is on — admin always loads it, not gated by that toggle; fetched only on this tab). Confirm-gated
-approve/revoke and public-visibility actions sit at the bottom. Legacy price/participant columns stay on `AdminCook` / `CookUpdate` but are
-not shown here (unused in product matching). **Edit** in the pinned footer opens `/admin/users/<userId>/cook-profile/edit`, where admins
-patch stage name, biography, biography summary, cuisine/philosophy catalogs, and travel fields via `AdminMutation.cookUpdate` (legal
-acceptance asserted on the admin, not the cook). The About logo uses `CookLogoEditor` and saves immediately via `logoFileUploadId`. Admin
-can edit biography and summary manually. **Write with AI / Improve with AI** opens a side-by-side review; **Accept** fills the biography
-field (save still required; no auto summary job). The suggest mutation is gated by `COOK_BIOGRAPHY_AI_WRITE` (admin UI stays visible for
-ops; server rejects when off). **Generate summary** fills the summary field via AI without persisting until Save and is **not**
-feature-toggled. Unlike cook self-serve saves, admin biography saves do **not** auto-regenerate the summary. **Cancel** / successful
-**Save** return to the cook-profile tab.
+Stripe account + Dashboard link, call scheduling + weekly windows, About logo, tags, biography/summary (with generating hint), other public
+profiles for review (website, Instagram, Google, Take a Chef, and named platforms; always visible to admins, not gated by
+`COOK_PRESENCE_LINKS`), public chef link when approved + visible, featured city/partner/occasion landings, and created/last-modified
+timestamps; then a **Finances** block with live Stripe requirements checklist + Connect available/pending balance and recent balance
+transactions (same data as the cook wallet page when `COOK_WALLET_STRIPE_BALANCE` is on — admin always loads it, not gated by that toggle;
+fetched only on this tab). Confirm-gated approve/revoke and public-visibility actions sit at the bottom. Legacy price/participant columns
+stay on `AdminCook` / `CookUpdate` but are not shown here (unused in product matching). **Edit** in the pinned footer opens
+`/admin/users/<userId>/cook-profile/edit`, where admins patch stage name, biography, biography summary, cuisine/philosophy catalogs, and
+travel fields via `AdminMutation.cookUpdate`, and other public profiles via `AdminMutation.cookPresenceLinksReplace` (legal acceptance
+asserted on the admin, not the cook). The About logo uses `CookLogoEditor` and saves immediately via `logoFileUploadId`. Admin can edit
+biography and summary manually. **Write with AI / Improve with AI** opens a side-by-side review; **Accept** fills the biography field (save
+still required; no auto summary job). The suggest mutation is gated by `COOK_BIOGRAPHY_AI_WRITE` (admin UI stays visible for ops; server
+rejects when off). **Generate summary** fills the summary field via AI without persisting until Save and is **not** feature-toggled. Unlike
+cook self-serve saves, admin biography saves do **not** auto-regenerate the summary. **Cancel** / successful **Save** return to the
+cook-profile tab.
 
 Non-admins never reach admin routes; the layout gates on admin membership.
 

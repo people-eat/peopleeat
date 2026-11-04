@@ -6,6 +6,13 @@ import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
 import { userDisplayName } from '../../../shared';
+import {
+    cookPresenceLinksEqual,
+    cookPresenceLinksFormFrom,
+    cookPresenceLinksFromStored,
+    cookPresenceLinksInputFrom,
+    cookPresenceLinksNormalize,
+} from '../../../shared/cookPresenceLinks';
 import { COOKING_PHILOSOPHIES, CUISINE_STYLES } from '../../../shared/cookProfile';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -18,8 +25,10 @@ import { Spinner } from '../../components/base/spinner';
 import { Textarea } from '../../components/base/textarea';
 import { BiographySuggestionReview } from '../../components/BiographySuggestionReview';
 import { CookLogoEditor } from '../../components/CookLogoEditor';
+import { CookPresenceLinksFields, cookPresenceLinksIssueMessage } from '../../components/CookPresenceLinksEditor';
 import type { GqlCAdminUserCookProfileEditPageQuery, GqlCLocationSuggestion } from '../../graphql/generated';
 import {
+    AdminUserCookPresenceLinksReplaceDocument,
     AdminUserCookProfileEditBiographySuggestDocument,
     AdminUserCookProfileEditBiographySummarySuggestDocument,
     AdminUserCookProfileEditLocationSuggestionsDocument,
@@ -33,8 +42,8 @@ export const adminUserCookProfileEditPageTitle = {
     en: 'Edit cook profile',
 } as const;
 export const adminUserCookProfileEditPageDescription = {
-    de: 'Biografie, Künstlername, About-Bild, Tags und Reiseeinstellungen eines Kochs bearbeiten.',
-    en: 'Edit a cook biography, stage name, About picture, tags, and travel settings.',
+    de: 'Biografie, Künstlername, About-Bild, Tags, Reiseeinstellungen und weitere Profile eines Kochs bearbeiten.',
+    en: 'Edit a cook biography, stage name, About picture, tags, travel settings, and other profiles.',
 } as const;
 
 export function adminUserCookProfileEditPageVariables(userId: string) {
@@ -60,6 +69,7 @@ type CookFormValues = {
     selectedLocation: GqlCLocationSuggestion | null;
     travelExpensesText: string;
     maximumTravelDistanceText: string;
+    presenceLinks: ReturnType<typeof cookPresenceLinksFormFrom>;
 };
 
 function centsToEuroText(cents: number): string {
@@ -93,6 +103,7 @@ function formFromCook(cook: AdminCookRow): CookFormValues {
             : null,
         travelExpensesText: centsToEuroText(cook.travelExpensesAmount),
         maximumTravelDistanceText: String(cook.maximumTravelDistance ?? 100),
+        presenceLinks: cookPresenceLinksFormFrom(cook.presenceLinks),
     };
 }
 
@@ -159,6 +170,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
     const cookId = cook.cookId;
 
     const [, cookUpdate] = useMutation(AdminUserCookProfileEditUpdateDocument);
+    const [, replacePresenceLinks] = useMutation(AdminUserCookPresenceLinksReplaceDocument);
     const [{ fetching: biographySuggestFetching }, biographySuggest] = useMutation(AdminUserCookProfileEditBiographySuggestDocument);
     const [{ fetching: summarySuggestFetching }, summarySuggest] = useMutation(AdminUserCookProfileEditBiographySummarySuggestDocument);
     const [biographySuggestion, setBiographySuggestion] = useState<string | null>(null);
@@ -187,6 +199,23 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                     }[locale],
                 );
                 return;
+            }
+
+            const normalized = cookPresenceLinksNormalize(cookPresenceLinksInputFrom(value.presenceLinks));
+            if (!normalized.ok) {
+                toast.error(cookPresenceLinksIssueMessage(normalized.issue, locale));
+                return;
+            }
+            const current = cookPresenceLinksFromStored(cook.presenceLinks);
+            if (!cookPresenceLinksEqual(current, normalized.value)) {
+                const presenceResult = await replacePresenceLinks({
+                    cookId,
+                    input: cookPresenceLinksInputFrom(value.presenceLinks),
+                });
+                if (presenceResult.error || !presenceResult.data?.admin.cookPresenceLinksReplace.success) {
+                    toast.error({ de: 'Speichern fehlgeschlagen.', en: 'Could not save.' }[locale]);
+                    return;
+                }
             }
 
             const result = await cookUpdate({
@@ -501,6 +530,32 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                             )}
                         </form.Field>
                     </div>
+
+                    <Separator />
+
+                    <section className="grid gap-4">
+                        <div className="grid gap-1">
+                            <h2 className="text-sm font-medium">{{ de: 'Weitere Profile', en: 'Other profiles' }[locale]}</h2>
+                            <p className="text-sm text-muted-foreground">
+                                {
+                                    {
+                                        de: 'Nur für die Prüfung. Kunden sehen diese Links nicht.',
+                                        en: 'For review only. Customers do not see these links.',
+                                    }[locale]
+                                }
+                            </p>
+                        </div>
+                        <form.Field name="presenceLinks">
+                            {(field) => (
+                                <CookPresenceLinksFields
+                                    idPrefix="admin-cook-presence"
+                                    value={field.state.value}
+                                    disabled={formBusy}
+                                    onChange={field.handleChange}
+                                />
+                            )}
+                        </form.Field>
+                    </section>
 
                     <Separator />
 

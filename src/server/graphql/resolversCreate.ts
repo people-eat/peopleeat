@@ -50,6 +50,7 @@ import { adminCookMealUpsert } from '../commands/adminCookMealUpsert';
 import { adminCookMenuCopy } from '../commands/adminCookMenuCopy';
 import { adminCookMenuDelete } from '../commands/adminCookMenuDelete';
 import { adminCookMenuUpsert } from '../commands/adminCookMenuUpsert';
+import { adminCookPresenceLinksReplace } from '../commands/adminCookPresenceLinksReplace';
 import { adminCookTestimonialDelete } from '../commands/adminCookTestimonialDelete';
 import { adminCookTestimonialImageUpdate } from '../commands/adminCookTestimonialImageUpdate';
 import { adminCookTestimonialPublish } from '../commands/adminCookTestimonialPublish';
@@ -148,6 +149,7 @@ import { cookMenuSuggestionFromText } from '../commands/cookMenuSuggestionFromTe
 import { cookMenuSyncToTemplate } from '../commands/cookMenuSyncToTemplate';
 import { cookMenuTitleDescriptionSuggest } from '../commands/cookMenuTitleDescriptionSuggest';
 import { cookMenuUpsert } from '../commands/cookMenuUpsert';
+import { cookPresenceLinksReplace } from '../commands/cookPresenceLinksReplace';
 import { cookStripeDashboardUrlCreate } from '../commands/cookStripeDashboardUrlCreate';
 import { cookStripeOnboardingStart } from '../commands/cookStripeOnboardingStart';
 import { cookStripeStatusSync } from '../commands/cookStripeStatusSync';
@@ -361,6 +363,7 @@ import { cookMenuFindOne } from '../queries/cookMenuFindOne';
 import { cookMenuTemplateFindOne } from '../queries/cookMenuTemplateFindOne';
 import { cookOfferMenuFindMany } from '../queries/cookOfferMenuFindMany';
 import { cookOnboardingStepsFindMany } from '../queries/cookOnboardingStepsFindMany';
+import { cookPresenceLinksFindOne } from '../queries/cookPresenceLinksFindOne';
 import { cookStripeAccountDetailsFindOne } from '../queries/cookStripeAccountDetailsFindOne';
 import { cookStripeWalletFindOne } from '../queries/cookStripeWalletFindOne';
 import { giftCardFileUploadFindOne } from '../queries/giftCardFileUploadFindOne';
@@ -538,6 +541,7 @@ import type {
     GqlSAdminMutationCookMenuCopyArgs,
     GqlSAdminMutationCookMenuDeleteArgs,
     GqlSAdminMutationCookMenuUpsertArgs,
+    GqlSAdminMutationCookPresenceLinksReplaceArgs,
     GqlSAdminMutationCookTestimonialDeleteArgs,
     GqlSAdminMutationCookTestimonialImageUpdateArgs,
     GqlSAdminMutationCookTestimonialPublishArgs,
@@ -680,6 +684,7 @@ import type {
     GqlSCookMutationMenuSyncToTemplateArgs,
     GqlSCookMutationMenuTitleDescriptionSuggestArgs,
     GqlSCookMutationMenuUpsertArgs,
+    GqlSCookMutationPresenceLinksReplaceArgs,
     GqlSCookMutationStripeOnboardingStartArgs,
     GqlSCookMutationUpdateArgs,
     GqlSCookTestimonial,
@@ -1569,6 +1574,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             stripeWallet(parent: GqlSCook, _: unknown, requestingSession: GqlSSession) {
                 return cookStripeWalletFindOne(parent, requestingSession, serverRuntime);
             },
+            presenceLinks(parent: GqlSCook) {
+                return cookPresenceLinksFindOne(parent, serverRuntime);
+            },
             callAvailabilityRules(parent: GqlSCook, _: unknown, requestingSession: GqlSSession) {
                 return cookCallAvailabilityRuleFindMany(parent, requestingSession, serverRuntime);
             },
@@ -1713,6 +1721,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             biographySuggest(parent: GqlSCookMutation, args: GqlSCookMutationBiographySuggestArgs, requestingSession: GqlSSession) {
                 return cookBiographySuggest(parent, args, requestingSession, serverRuntime);
+            },
+            presenceLinksReplace(parent: GqlSCookMutation, args: GqlSCookMutationPresenceLinksReplaceArgs, requestingSession: GqlSSession) {
+                return cookPresenceLinksReplace(parent, args, requestingSession, serverRuntime);
             },
             callAvailabilityRuleCreate(
                 parent: GqlSCookMutation,
@@ -1980,6 +1991,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             cookUpdate(parent: GqlSAdminMutation, args: GqlSAdminMutationCookUpdateArgs, requestingSession: GqlSSession) {
                 return adminCookUpdate(parent, args, requestingSession, serverRuntime);
+            },
+            cookPresenceLinksReplace(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationCookPresenceLinksReplaceArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminCookPresenceLinksReplace(parent, args, requestingSession, serverRuntime);
             },
             cookBiographySuggest(
                 parent: GqlSAdminMutation,

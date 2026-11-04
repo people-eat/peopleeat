@@ -1024,6 +1024,7 @@ export interface GqlSAdminCook {
     maximumTravelDistance?: Maybe<Scalars['Int']['output']>;
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
+    presenceLinks?: Maybe<GqlSCookPresenceLinks>;
     rating: GqlSPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountActive: Scalars['Boolean']['output'];
@@ -1457,6 +1458,7 @@ export interface GqlSAdminMutation {
     cookMenuCopy: GqlSMutationResult;
     cookMenuDelete: GqlSMutationResult;
     cookMenuUpsert: GqlSMutationResult;
+    cookPresenceLinksReplace: GqlSMutationResult;
     cookTestimonialDelete: GqlSMutationResult;
     cookTestimonialImageUpdate: GqlSMutationResult;
     cookTestimonialPublish: GqlSMutationResult;
@@ -1687,6 +1689,11 @@ export type GqlSAdminMutationCookMenuDeleteArgs = {
 
 export type GqlSAdminMutationCookMenuUpsertArgs = {
     menu: GqlSAdminCookMenuUpsert;
+};
+
+export type GqlSAdminMutationCookPresenceLinksReplaceArgs = {
+    cookId: Scalars['ID']['input'];
+    input: GqlSCookPresenceLinksUpdate;
 };
 
 export type GqlSAdminMutationCookTestimonialDeleteArgs = {
@@ -3136,6 +3143,7 @@ export interface GqlSCook {
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
     offerMenus: Array<GqlSCookMenu>;
     onboardingSteps: Array<GqlSCookOnboardingStep>;
+    presenceLinks?: Maybe<GqlSCookPresenceLinks>;
     rating: GqlSPublicCookRating;
     stageName?: Maybe<Scalars['String']['output']>;
     stripeAccountDetails?: Maybe<GqlSCookStripeAccountDetails>;
@@ -3637,6 +3645,7 @@ export interface GqlSCookMutation {
     menuSyncToTemplate: GqlSMutationResult;
     menuTitleDescriptionSuggest: GqlSCookMenuSuggestion;
     menuUpsert: GqlSMutationResult;
+    presenceLinksReplace: GqlSMutationResult;
     stripeDashboardUrlCreate: GqlSCookStripeDashboardResult;
     stripeOnboardingStart: GqlSCookStripeOnboardingResult;
     stripeStatusSync: GqlSMutationResult;
@@ -3802,6 +3811,10 @@ export type GqlSCookMutationMenuUpsertArgs = {
     menu?: InputMaybe<GqlSCookMenuUpsert>;
 };
 
+export type GqlSCookMutationPresenceLinksReplaceArgs = {
+    input: GqlSCookPresenceLinksUpdate;
+};
+
 export type GqlSCookMutationStripeOnboardingStartArgs = {
     refreshUrl: Scalars['String']['input'];
     returnUrl: Scalars['String']['input'];
@@ -3812,6 +3825,38 @@ export type GqlSCookMutationUpdateArgs = {
 };
 
 export type GqlSCookOnboardingStep = 'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
+
+export interface GqlSCookPresenceLinks {
+    __typename?: 'CookPresenceLinks';
+    googleProfileUrl?: Maybe<Scalars['String']['output']>;
+    instagramUrl?: Maybe<Scalars['String']['output']>;
+    otherProfiles: Array<GqlSCookPresenceOtherProfile>;
+    takeAChefUrl?: Maybe<Scalars['String']['output']>;
+    websiteUrl?: Maybe<Scalars['String']['output']>;
+}
+
+export type GqlSCookPresenceLinksUpdate = {
+    googleProfileUrl?: InputMaybe<Scalars['String']['input']>;
+    instagramUrl?: InputMaybe<Scalars['String']['input']>;
+    otherProfiles: Array<GqlSCookPresenceOtherProfileInput>;
+    takeAChefUrl?: InputMaybe<Scalars['String']['input']>;
+    websiteUrl?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type GqlSCookPresenceOtherPlatform = 'CHEF_MAISON' | 'COZYMEAL' | 'EATWITH' | 'OTHER' | 'YHUNGRY';
+
+export interface GqlSCookPresenceOtherProfile {
+    __typename?: 'CookPresenceOtherProfile';
+    label?: Maybe<Scalars['String']['output']>;
+    platform: GqlSCookPresenceOtherPlatform;
+    url: Scalars['String']['output'];
+}
+
+export type GqlSCookPresenceOtherProfileInput = {
+    label?: InputMaybe<Scalars['String']['input']>;
+    platform: GqlSCookPresenceOtherPlatform;
+    url: Scalars['String']['input'];
+};
 
 export interface GqlSCookStripeAccountDetails {
     __typename?: 'CookStripeAccountDetails';
@@ -3971,6 +4016,7 @@ export type GqlSFeatureToggleKey =
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
+    | 'COOK_PRESENCE_LINKS'
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
@@ -5847,6 +5893,11 @@ export type GqlSResolversTypes = ResolversObject<{
     CookMenuUpsert: GqlSCookMenuUpsert;
     CookMutation: ResolverTypeWrapper<GqlSCookMutation>;
     CookOnboardingStep: GqlSCookOnboardingStep;
+    CookPresenceLinks: ResolverTypeWrapper<GqlSCookPresenceLinks>;
+    CookPresenceLinksUpdate: GqlSCookPresenceLinksUpdate;
+    CookPresenceOtherPlatform: GqlSCookPresenceOtherPlatform;
+    CookPresenceOtherProfile: ResolverTypeWrapper<GqlSCookPresenceOtherProfile>;
+    CookPresenceOtherProfileInput: GqlSCookPresenceOtherProfileInput;
     CookStripeAccountDetails: ResolverTypeWrapper<GqlSCookStripeAccountDetails>;
     CookStripeBalanceTransaction: ResolverTypeWrapper<GqlSCookStripeBalanceTransaction>;
     CookStripeBalanceTransactionKind: GqlSCookStripeBalanceTransactionKind;
@@ -6362,6 +6413,10 @@ export type GqlSResolversParentTypes = ResolversObject<{
     CookMenuSuggestion: GqlSCookMenuSuggestion;
     CookMenuUpsert: GqlSCookMenuUpsert;
     CookMutation: GqlSCookMutation;
+    CookPresenceLinks: GqlSCookPresenceLinks;
+    CookPresenceLinksUpdate: GqlSCookPresenceLinksUpdate;
+    CookPresenceOtherProfile: GqlSCookPresenceOtherProfile;
+    CookPresenceOtherProfileInput: GqlSCookPresenceOtherProfileInput;
     CookStripeAccountDetails: GqlSCookStripeAccountDetails;
     CookStripeBalanceTransaction: GqlSCookStripeBalanceTransaction;
     CookStripeDashboardResult: GqlSCookStripeDashboardResult;
@@ -7419,6 +7474,7 @@ export type GqlSAdminCookResolvers<
     maximumTravelDistance?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     minimumParticipants?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     minimumPriceAmount?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
+    presenceLinks?: Resolver<Maybe<GqlSResolversTypes['CookPresenceLinks']>, ParentType, ContextType>;
     rating?: Resolver<GqlSResolversTypes['PublicCookRating'], ParentType, ContextType>;
     stageName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     stripeAccountActive?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
@@ -8003,6 +8059,12 @@ export type GqlSAdminMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationCookMenuUpsertArgs, 'menu'>
+    >;
+    cookPresenceLinksReplace?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationCookPresenceLinksReplaceArgs, 'cookId' | 'input'>
     >;
     cookTestimonialDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -9346,6 +9408,7 @@ export type GqlSCookResolvers<
     minimumPriceAmount?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     offerMenus?: Resolver<Array<GqlSResolversTypes['CookMenu']>, ParentType, ContextType>;
     onboardingSteps?: Resolver<Array<GqlSResolversTypes['CookOnboardingStep']>, ParentType, ContextType>;
+    presenceLinks?: Resolver<Maybe<GqlSResolversTypes['CookPresenceLinks']>, ParentType, ContextType>;
     rating?: Resolver<GqlSResolversTypes['PublicCookRating'], ParentType, ContextType>;
     stageName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     stripeAccountDetails?: Resolver<Maybe<GqlSResolversTypes['CookStripeAccountDetails']>, ParentType, ContextType>;
@@ -9955,6 +10018,12 @@ export type GqlSCookMutationResolvers<
         RequireFields<GqlSCookMutationMenuTitleDescriptionSuggestArgs, 'courses'>
     >;
     menuUpsert?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType, Partial<GqlSCookMutationMenuUpsertArgs>>;
+    presenceLinksReplace?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationPresenceLinksReplaceArgs, 'input'>
+    >;
     stripeDashboardUrlCreate?: Resolver<GqlSResolversTypes['CookStripeDashboardResult'], ParentType, ContextType>;
     stripeOnboardingStart?: Resolver<
         GqlSResolversTypes['CookStripeOnboardingResult'],
@@ -9964,6 +10033,26 @@ export type GqlSCookMutationResolvers<
     >;
     stripeStatusSync?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
     update?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType, RequireFields<GqlSCookMutationUpdateArgs, 'input'>>;
+}>;
+
+export type GqlSCookPresenceLinksResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookPresenceLinks'] = GqlSResolversParentTypes['CookPresenceLinks'],
+> = ResolversObject<{
+    googleProfileUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    instagramUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    otherProfiles?: Resolver<Array<GqlSResolversTypes['CookPresenceOtherProfile']>, ParentType, ContextType>;
+    takeAChefUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    websiteUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type GqlSCookPresenceOtherProfileResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookPresenceOtherProfile'] = GqlSResolversParentTypes['CookPresenceOtherProfile'],
+> = ResolversObject<{
+    label?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    platform?: Resolver<GqlSResolversTypes['CookPresenceOtherPlatform'], ParentType, ContextType>;
+    url?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type GqlSCookStripeAccountDetailsResolvers<
@@ -11534,6 +11623,8 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     CookMenuOfferContext?: GqlSCookMenuOfferContextResolvers<ContextType>;
     CookMenuSuggestion?: GqlSCookMenuSuggestionResolvers<ContextType>;
     CookMutation?: GqlSCookMutationResolvers<ContextType>;
+    CookPresenceLinks?: GqlSCookPresenceLinksResolvers<ContextType>;
+    CookPresenceOtherProfile?: GqlSCookPresenceOtherProfileResolvers<ContextType>;
     CookStripeAccountDetails?: GqlSCookStripeAccountDetailsResolvers<ContextType>;
     CookStripeBalanceTransaction?: GqlSCookStripeBalanceTransactionResolvers<ContextType>;
     CookStripeDashboardResult?: GqlSCookStripeDashboardResultResolvers<ContextType>;
@@ -12266,6 +12357,11 @@ export const GqlSCookOnboardingStepSchema: z.ZodType<
     'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET'
 > = z.enum(['CHEF_PROFILE', 'FIRST_MEAL', 'FIRST_MENU', 'FIRST_OFFER', 'PROFILE_PICTURE', 'TRAVEL', 'WALLET']);
 
+export const GqlSCookPresenceOtherPlatformSchema: z.ZodType<
+    'CHEF_MAISON' | 'COZYMEAL' | 'EATWITH' | 'OTHER' | 'YHUNGRY',
+    'CHEF_MAISON' | 'COZYMEAL' | 'EATWITH' | 'OTHER' | 'YHUNGRY'
+> = z.enum(['CHEF_MAISON', 'COZYMEAL', 'EATWITH', 'OTHER', 'YHUNGRY']);
+
 export const GqlSCookStripeBalanceTransactionKindSchema: z.ZodType<
     'ADJUSTMENT' | 'FEE' | 'OTHER' | 'PAYMENT' | 'PAYOUT' | 'TRANSFER',
     'ADJUSTMENT' | 'FEE' | 'OTHER' | 'PAYMENT' | 'PAYOUT' | 'TRANSFER'
@@ -12308,6 +12404,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
+    | 'COOK_PRESENCE_LINKS'
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
@@ -12324,6 +12421,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'BOOKING_REQUEST_RESTRICTIONS'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
+    | 'COOK_PRESENCE_LINKS'
     | 'COOK_PUBLIC_PROFILE_SHARE'
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
@@ -12341,6 +12439,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'BOOKING_REQUEST_RESTRICTIONS',
     'COOK_ANALYTICS',
     'COOK_BIOGRAPHY_AI_WRITE',
+    'COOK_PRESENCE_LINKS',
     'COOK_PUBLIC_PROFILE_SHARE',
     'COOK_WALLET_STRIPE_BALANCE',
     'LANDING_BOOKING_HOW_IT_WORKS',
@@ -12618,7 +12717,7 @@ export function GqlSAdminBookingRequestUpdateSchema(): z.ZodObject<Properties<Gq
         adjustedMessage: z.string().nullish(),
         createdAt: z.date().nullish(),
         dateTime: z.date().nullish(),
-        exactEventAddress: z.lazy(() => GqlSAdminBookingRequestExactEventAddressInputSchema().nullish()),
+        exactEventAddress: GqlSAdminBookingRequestExactEventAddressInputSchema().nullish(),
         expiresAt: z.date().nullish(),
         occasion: z.string().nullish(),
         originalMessage: z.string().nullish(),
@@ -13153,6 +13252,24 @@ export function GqlSCookMenuUpsertSchema(): z.ZodObject<Properties<GqlSCookMenuU
         publishedAt: z.date().nullish(),
         title: z.string().nullish(),
     }) as z.ZodObject<Properties<GqlSCookMenuUpsert>>;
+}
+
+export function GqlSCookPresenceLinksUpdateSchema(): z.ZodObject<Properties<GqlSCookPresenceLinksUpdate>> {
+    return z.object({
+        googleProfileUrl: z.string().nullish(),
+        instagramUrl: z.string().nullish(),
+        otherProfiles: z.array(GqlSCookPresenceOtherProfileInputSchema()),
+        takeAChefUrl: z.string().nullish(),
+        websiteUrl: z.string().nullish(),
+    }) as z.ZodObject<Properties<GqlSCookPresenceLinksUpdate>>;
+}
+
+export function GqlSCookPresenceOtherProfileInputSchema(): z.ZodObject<Properties<GqlSCookPresenceOtherProfileInput>> {
+    return z.object({
+        label: z.string().nullish(),
+        platform: GqlSCookPresenceOtherPlatformSchema,
+        url: z.string(),
+    }) as z.ZodObject<Properties<GqlSCookPresenceOtherProfileInput>>;
 }
 
 export function GqlSCookTestimonialLowRatingAnswersInputSchema(): z.ZodObject<Properties<GqlSCookTestimonialLowRatingAnswersInput>> {

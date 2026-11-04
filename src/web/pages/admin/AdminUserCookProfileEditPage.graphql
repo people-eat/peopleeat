@@ -13,6 +13,17 @@ fragment AdminUserCookProfileEditCook on AdminCook {
     }
     cuisineStyle
     cookingPhilosophy
+    presenceLinks {
+        websiteUrl
+        instagramUrl
+        googleProfileUrl
+        takeAChefUrl
+        otherProfiles {
+            platform
+            label
+            url
+        }
+    }
     exactTravelOriginAddress {
         displayText
         latitude
@@ -49,6 +60,15 @@ query AdminUserCookProfileEditPage($userId: ID!) {
 mutation AdminUserCookProfileEditUpdate($cookId: ID!, $input: CookUpdate!) {
     admin {
         cookUpdate(cookId: $cookId, input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserCookPresenceLinksReplace($cookId: ID!, $input: CookPresenceLinksUpdate!) {
+    admin {
+        cookPresenceLinksReplace(cookId: $cookId, input: $input) {
             success
             referenceId
         }

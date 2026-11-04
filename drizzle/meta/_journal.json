@@ -162,6 +162,13 @@
             "when": 1793742482992,
             "tag": "0022_lethal_weapon_omega",
             "breakpoints": true
+        },
+        {
+            "idx": 23,
+            "version": "7",
+            "when": 1793781572812,
+            "tag": "0023_moaning_bloodstrike",
+            "breakpoints": true
         }
     ]
 }
