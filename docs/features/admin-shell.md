@@ -45,7 +45,8 @@ Home aggregates urgent queues and jump-off search — detail work stays on dedic
 **Action queues (today):**
 
 - Pending cook approvals → user cook-profile tab; “View all” → filtered users list. See [cook-profile.md](./cook-profile.md).
-- Booking requests blocked for admin review → request detail; “View all” → booking list.
+- Booking requests blocked for admin review and still open (waiting for offers, or offers already in review; expired and canceled stay off)
+  → request detail; “View all” → booking list with the same filters.
 - Due cook payouts → offer detail (payment tab).
 - Open support requests → support detail. See [support-requests.md](./support-requests.md).
 - Offer chats awaiting admin review → review pipeline. See [admin-offer-chat-review.md](./admin-offer-chat-review.md).
@@ -125,9 +126,10 @@ Stub catalog shared until real pages land.
   applicable) + detail routes; sidebar sub-links from catalog helpers.
 - Sidebar order/groups: `ADMIN_NAV_GROUPS` (+ `ADMIN_STUB_ROUTES` in matching sequence) in `adminCatalog.ts`; `AdminSidebar` maps groups to
   `SidebarGroup` / `SidebarGroupLabel`.
-- Overview: KPI strip + conditional queue lists (pending cooks, blocked publications, due payouts, open support, offer-chat reviews; each
-  list capped at 5); `AdminOverviewStatCard` attention tone when count > 0. `AdminSidebarNavFilter` is sticky in `SidebarHeader`;
-  `AdminPagesCommandDialog` handles ⌘K/Ctrl+K. A floating scroll-to-top control appears when the nav scrollport is scrolled down.
+- Overview: KPI strip + conditional queue lists (pending cooks, still-open blocked publications, due payouts, open support, offer-chat
+  reviews; each list capped at 5); `AdminOverviewStatCard` attention tone when count > 0. `AdminSidebarNavFilter` is sticky in
+  `SidebarHeader`; `AdminPagesCommandDialog` handles ⌘K/Ctrl+K. A floating scroll-to-top control appears when the nav scrollport is scrolled
+  down.
 - Header assistant control: `AssistantTriggerButton` (accent pill + mount orbit) from `AdminPageChrome`.
 - Key files: `AdminLayout.tsx`, `AdminSidebar.tsx`, `AdminSidebarNavFilter.tsx`, `AdminPagesCommandDialog.tsx`, `AdminPageChrome.tsx`,
   `AdminPinnedFooterLayout.tsx`, `AdminListPaginationBar.tsx`, `adminListPaginationSearch.ts`, `AssistantTriggerButton.tsx`,

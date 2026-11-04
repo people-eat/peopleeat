@@ -4,7 +4,7 @@ import { LayoutGridIcon, ListIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { userDisplayName } from '../../../shared';
-import { bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
+import { bookingRequestPublicationReviewQueueStatuses, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import { AdminBookingRequestListCard } from '../../components/AdminBookingRequestListCard';
 import { AdminListPaginationBar } from '../../components/AdminListPaginationBar';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
@@ -68,10 +68,13 @@ const STATUS_SET = new Set<string>(ADMIN_BOOKING_REQUEST_STATUSES);
 
 export type AdminBookingRequestsView = 'grid' | 'list';
 
+const OPEN_FOR_REVIEW_STATUS_VALUE = '__open_review__';
+
 export type AdminBookingRequestsSearch = {
     q?: string;
     publicationStatus?: GqlCBookingRequestPublicationStatus;
     status?: GqlCBookingRequestStatus;
+    statuses?: GqlCBookingRequestStatus[];
     page?: number;
     pageSize?: AdminListPageSize;
     sort?: AdminBookingRequestsSortField;
@@ -89,6 +92,25 @@ const GRID_SORT_OPTIONS = [
     { value: 'occasion:desc', sort: 'occasion' as const, dir: 'desc' as const },
 ] as const;
 
+function parseBookingRequestStatusList(value: unknown): GqlCBookingRequestStatus[] | undefined {
+    const raw = Array.isArray(value) ? value : typeof value === 'string' ? value.split(',') : [];
+    const statuses = [
+        ...new Set(
+            raw
+                .filter((item): item is string => typeof item === 'string')
+                .map((item) => item.trim())
+                .filter((item): item is GqlCBookingRequestStatus => STATUS_SET.has(item)),
+        ),
+    ];
+    return statuses.length > 0 ? statuses : undefined;
+}
+
+function isOpenForReviewStatuses(statuses: readonly string[] | undefined): boolean {
+    if (!statuses || statuses.length !== bookingRequestPublicationReviewQueueStatuses.length) return false;
+    const selected = new Set(statuses);
+    return bookingRequestPublicationReviewQueueStatuses.every((status) => selected.has(status));
+}
+
 function parseAdminBookingRequestsView(value: unknown): AdminBookingRequestsView | undefined {
     if (value === 'list') return 'list';
     if (value === 'grid') return 'grid';
@@ -101,13 +123,16 @@ export function parseAdminBookingRequestsSearch(search: Record<string, unknown>)
         typeof search.publicationStatus === 'string' && PUBLICATION_STATUS_SET.has(search.publicationStatus)
             ? (search.publicationStatus as GqlCBookingRequestPublicationStatus)
             : undefined;
-    const status =
+    const statusList = parseBookingRequestStatusList(search.statuses);
+    const singleStatus =
         typeof search.status === 'string' && STATUS_SET.has(search.status) ? (search.status as GqlCBookingRequestStatus) : undefined;
+    const statuses = statusList && statusList.length > 1 ? statusList : undefined;
+    const status = statuses ? undefined : (singleStatus ?? statusList?.[0]);
     const page = parseAdminListPage(search);
     const pageSize = parseAdminListPageSize(search);
     const { sort, dir } = parseAdminListSortSearch(search, ADMIN_BOOKING_REQUESTS_SORT_FIELDS);
     const view = parseAdminBookingRequestsView(search.view);
-    return { q, publicationStatus, status, page, pageSize, sort, dir, view };
+    return { q, publicationStatus, status, statuses, page, pageSize, sort, dir, view };
 }
 
 export function adminBookingRequestsPageVariables(search: AdminBookingRequestsSearch) {
@@ -116,7 +141,7 @@ export function adminBookingRequestsPageVariables(search: AdminBookingRequestsSe
             ...adminListSkipTake(search),
             searchText: search.q,
             publicationStatuses: search.publicationStatus ? [search.publicationStatus] : undefined,
-            statuses: search.status ? [search.status] : undefined,
+            statuses: search.statuses ?? (search.status ? [search.status] : undefined),
             ...adminListSortToCriterion(search),
         },
     };
@@ -141,6 +166,7 @@ function adminBookingRequestsSearchForUrl(search: AdminBookingRequestsSearch) {
         q: search.q,
         publicationStatus: search.publicationStatus,
         status: search.status,
+        statuses: search.statuses,
         ...adminListPaginationForUrl(search),
         ...adminListSortSearchForUrl(search),
         ...adminBookingRequestsViewForUrl(search.view),
@@ -148,7 +174,7 @@ function adminBookingRequestsSearchForUrl(search: AdminBookingRequestsSearch) {
 }
 
 function adminBookingRequestsHasActiveFilters(search: AdminBookingRequestsSearch): boolean {
-    return Boolean(search.q || search.publicationStatus || search.status);
+    return Boolean(search.q || search.publicationStatus || search.status || search.statuses);
 }
 
 export function AdminBookingRequestsPage({
@@ -240,6 +266,7 @@ export function AdminBookingRequestsPage({
             q: undefined,
             publicationStatus: undefined,
             status: undefined,
+            statuses: undefined,
             page: undefined,
         });
     }
@@ -330,12 +357,28 @@ export function AdminBookingRequestsPage({
                     <label className="flex items-center gap-2 text-sm">
                         <span className="text-muted-foreground">{{ de: 'Status', en: 'Status' }[locale]}</span>
                         <Select
-                            value={search.status ?? '__all__'}
+                            value={
+                                isOpenForReviewStatuses(search.statuses)
+                                    ? OPEN_FOR_REVIEW_STATUS_VALUE
+                                    : search.statuses && search.statuses.length > 1
+                                      ? '__statuses__'
+                                      : (search.status ?? '__all__')
+                            }
                             onValueChange={(value) => {
+                                if (value === OPEN_FOR_REVIEW_STATUS_VALUE) {
+                                    updateSearch({
+                                        ...search,
+                                        page: undefined,
+                                        status: undefined,
+                                        statuses: [...bookingRequestPublicationReviewQueueStatuses],
+                                    });
+                                    return;
+                                }
                                 updateSearch({
                                     ...search,
                                     page: undefined,
                                     status: value != null && STATUS_SET.has(value) ? (value as GqlCBookingRequestStatus) : undefined,
+                                    statuses: undefined,
                                 });
                             }}
                         >
@@ -344,6 +387,14 @@ export function AdminBookingRequestsPage({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="__all__">{{ de: 'Alle Status', en: 'All statuses' }[locale]}</SelectItem>
+                                <SelectItem value={OPEN_FOR_REVIEW_STATUS_VALUE}>
+                                    {{ de: 'Offen zur Prüfung', en: 'Open for review' }[locale]}
+                                </SelectItem>
+                                {search.statuses && search.statuses.length > 1 && !isOpenForReviewStatuses(search.statuses) ? (
+                                    <SelectItem value="__statuses__">
+                                        {search.statuses.map((status) => bookingRequestStatusLabel(status, locale, 'admin')).join(', ')}
+                                    </SelectItem>
+                                ) : null}
                                 {ADMIN_BOOKING_REQUEST_STATUSES.map((status) => (
                                     <SelectItem key={status} value={status}>
                                         {bookingRequestStatusLabel(status, locale, 'admin')}

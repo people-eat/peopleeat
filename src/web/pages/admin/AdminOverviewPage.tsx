@@ -6,6 +6,7 @@ import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { formatCurrency, formatDate, formatDateTime, userDisplayName } from '../../../shared';
+import { bookingRequestPublicationReviewQueueStatuses } from '../../../shared/bookingRequestStatus';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { StatusAlert } from '../../components/base/status-alert';
 import type {
@@ -29,6 +30,11 @@ const DUE_PAYOUT_OFFERS_TAKE = 5;
 const OPEN_SUPPORT_REQUESTS_TAKE = 5;
 const PENDING_OFFER_CHAT_REVIEWS_TAKE = 5;
 
+const blockedBookingRequestsListSearch = {
+    publicationStatus: 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW' as const,
+    statuses: [...bookingRequestPublicationReviewQueueStatuses],
+};
+
 export function adminOverviewPageVariables() {
     return {
         pendingCooks: {
@@ -41,6 +47,7 @@ export function adminOverviewPageVariables() {
             skip: 0,
             take: BLOCKED_BOOKING_REQUESTS_TAKE,
             publicationStatuses: ['PUBLICATION_BLOCKED_BY_ADMIN_REVIEW' as const],
+            statuses: [...bookingRequestPublicationReviewQueueStatuses],
         },
         duePayoutOffers: {
             skip: 0,
@@ -189,7 +196,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                             value={blockedBookingRequestsCount}
                             attention={blockedBookingRequestsCount > 0}
                             to="/{-$locale}/admin/booking-requests/list"
-                            search={{ publicationStatus: 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW' }}
+                            search={blockedBookingRequestsListSearch}
                         />
                         <AdminOverviewStatCard
                             label={{ de: 'Auszahlungen', en: 'Due payouts' }[locale]}
@@ -263,7 +270,7 @@ export function AdminOverviewPage({ data }: { data: GqlCAdminOverviewPageQuery }
                                     blockedBookingRequestsCount > BLOCKED_BOOKING_REQUESTS_TAKE ? (
                                         <Link
                                             to="/{-$locale}/admin/booking-requests/list"
-                                            search={{ publicationStatus: 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW' }}
+                                            search={blockedBookingRequestsListSearch}
                                             className={viewAllClassName}
                                         >
                                             {{ de: 'Alle anzeigen', en: 'View all' }[locale]}

@@ -2536,9 +2536,11 @@ enum AdminBookingRequestSortField {
 # order (case-insensitive contains). Optional `userIds` scopes to those
 # customers (`IN`); omit or empty = no user filter (user-detail tab passes one
 # id; list multi-select can pass many). Optional `publicationStatuses` scopes
-# to those values (`IN`); omit or empty = no publication filter (overview
-# queue passes blocked-for-review). Optional `statuses` scopes to derived
-# lifecycle values (`IN`); omit or empty = no status filter. SQL mirrors
+# to those values (`IN`); omit or empty = no publication filter. The admin
+# home queue passes blocked-for-review plus open lifecycle statuses, so
+# expired and canceled requests stay off that queue. Optional `statuses`
+# scopes to derived lifecycle values (`IN`); omit or empty = no status
+# filter. SQL mirrors
 # `bookingRequestStatusDerive` (canceledAt, expiry, offer count, dual-accepted
 # payment status, event date vs now). Optional `createdAtFrom` / `createdAtTo`
 # bound `BookingRequests.createdAt` (`>=` / `<=`); omit either end for an open

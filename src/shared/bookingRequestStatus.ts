@@ -14,6 +14,15 @@ export type BookingRequestStatus =
 
 export type BookingRequestStatusAudience = 'admin' | 'customer';
 
+/**
+ * Statuses where an admin can still publish a blocked request.
+ * Expired and canceled requests stay out of the admin home review queue.
+ */
+export const bookingRequestPublicationReviewQueueStatuses = [
+    'WAITING_FOR_OFFERS',
+    'OFFERS_WAITING_FOR_REVIEW',
+] as const satisfies readonly BookingRequestStatus[];
+
 export function bookingRequestStatusHue(status: BookingRequestStatus): BookingLifecycleHue {
     switch (status) {
         case 'WAITING_FOR_OFFERS':

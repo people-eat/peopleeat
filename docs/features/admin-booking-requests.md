@@ -5,7 +5,8 @@ Operators browse, create, approve, notify cooks on, and resolve booking requests
 ## Behavior
 
 Admins manage marketplace booking requests under `/admin/booking-requests` (hub + list + create + detail), with related **calls** hub at
-`/admin/calls`. The admin home overview also surfaces requests blocked for review and due cook payouts as action queues.
+`/admin/calls`. The admin home overview also surfaces requests blocked for review that are still open (not expired or canceled) and due cook
+payouts as action queues.
 
 ### Overview — `/admin/booking-requests`
 
@@ -21,12 +22,14 @@ preselected (Total clears the filter). Cook rows deep-link to the admin user det
 
 Search by occasion, message, venue text, or customer email/name (first, last, or full name in either order). Tabs filter publication status
 (admin review / auto-approved / admin-approved; omit = all). A **Status** select filters derived lifecycle (`WAITING_FOR_OFFERS` …
-`CANCELED`; omit = all) via `AdminBookingRequestCriterion.statuses`. Sort select is always available (grid and list); list column headers
-remain sortable too. **Clear filters** appears when search, publication, or status is set. **Card grid is default** (`view=grid` or omit);
-`view=list` shows a sortable table. Grid cards show occasion, customer link, status and publication badges, event date, location,
-participants, created date, and offer chips deep-linking to offer detail (unread accent, accepted-path ring). Sort and pinned bottom
-pagination (page + per-page size; default 25) via URL. Status uses derived booking request status with **booking lifecycle pills**;
-blocked-for-review also shows a publication badge. Exact event time is reserved for detail pages.
+`CANCELED`; omit = all) via `AdminBookingRequestCriterion.statuses`. **Open for review** keeps waiting-for-offers and offers-in-review. The
+admin home booking-review queue uses that pair together with the admin-review publication tab, and its links open this list with both
+filters set. Sort select is always available (grid and list); list column headers remain sortable too. **Clear filters** appears when
+search, publication, or status is set. **Card grid is default** (`view=grid` or omit); `view=list` shows a sortable table. Grid cards show
+occasion, customer link, status and publication badges, event date, location, participants, created date, and offer chips deep-linking to
+offer detail (unread accent, accepted-path ring). Sort and pinned bottom pagination (page + per-page size; default 25) via URL. Status uses
+derived booking request status with **booking lifecycle pills**; blocked-for-review also shows a publication badge. Exact event time is
+reserved for detail pages.
 
 ### Create — `/admin/booking-requests/create`
 
@@ -180,10 +183,11 @@ GraphQL (admin): `bookingRequests` / counts / creations / occasion stats / creat
 approve; cooks notify; payout mutations; `calls`, `callTraffic`, slot/room creations, cook stats. Overview rankings omit chart `range` for
 all-time (same pattern as gift-card overview). Economics averages and all-time paid totals ignore `range`; optional `range` scopes
 `rangeTotalPaid*` by payment time. Paid revenue uses `PAYED` / `TRANSFERRED` / `PAYED_OUT_OF_SYSTEM`. Conversions are dual-accepted offers.
-`AdminBookingRequest` exposes applied `promoCode` / `giftCard` snapshots. `AdminBookingRequestCriterion` supports optional `statuses`
-(derived lifecycle SQL, same rules as `bookingRequestStatusDerive`), `createdAtFrom` / `createdAtTo` (used by the admin assistant “past X
-days” list tool and available to the list API), and `bookingRequestIds` (`IN`; omit or empty = no id filter — admin assistant drill-in on
-the same list tool).
+`AdminBookingRequest` exposes applied `promoCode` / `giftCard` snapshots. The admin home review queue (and the daily Slack snapshot) passes
+`PUBLICATION_BLOCKED_BY_ADMIN_REVIEW` plus `bookingRequestPublicationReviewQueueStatuses` (`WAITING_FOR_OFFERS`,
+`OFFERS_WAITING_FOR_REVIEW`). `AdminBookingRequestCriterion` supports optional `statuses` (derived lifecycle SQL, same rules as
+`bookingRequestStatusDerive`), `createdAtFrom` / `createdAtTo` (used by the admin assistant “past X days” list tool and available to the
+list API), and `bookingRequestIds` (`IN`; omit or empty = no id filter — admin assistant drill-in on the same list tool).
 
 UI building blocks: `AdminBookingRequestListCard` (list page + admin user detail booking-requests tab + admin assistant chat via
 `admin.bookingRequestList` data parts), `AdminBookingRequestOfferCard` (request-detail offers funnel + admin user detail cook offers tab:

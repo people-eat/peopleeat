@@ -211,6 +211,65 @@ describe('adminActionItemsSnapshot', () => {
         ).toBe(3);
     });
 
+    it('omits expired and canceled requests from the blocked booking review queue', async () => {
+        const { serverRuntime } = await commandSetup();
+        const token = idCreate().slice(0, 8);
+        const customer = await commandSetup.withUser({
+            firstName: `Review-${token}`,
+            lastName: 'Host',
+        });
+        const now = new Date('2026-06-15T12:00:00.000Z');
+
+        const openBookingRequestId = idCreate();
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId: openBookingRequestId,
+            userId: customer.user.userId,
+            occasion: `Open-${token}`,
+            dateTime: new Date('2026-07-01T18:00:00.000Z'),
+            exactEventAddress: berlin,
+            priceClassType: 'MEDIUM',
+            originalMessage: 'Hi',
+            publicationStatus: 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW',
+            preferences: [],
+            expiresAt: new Date('2026-07-01T23:59:59.999Z'),
+        });
+
+        const expiredBookingRequestId = idCreate();
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId: expiredBookingRequestId,
+            userId: customer.user.userId,
+            occasion: `Expired-${token}`,
+            dateTime: new Date('2026-06-01T18:00:00.000Z'),
+            exactEventAddress: berlin,
+            priceClassType: 'MEDIUM',
+            originalMessage: 'Hi',
+            publicationStatus: 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW',
+            preferences: [],
+            expiresAt: new Date('2026-06-01T23:59:59.999Z'),
+        });
+
+        const canceledBookingRequestId = idCreate();
+        await testDb.insert(bookingRequests).values({
+            bookingRequestId: canceledBookingRequestId,
+            userId: customer.user.userId,
+            occasion: `Canceled-${token}`,
+            dateTime: new Date('2026-07-01T18:00:00.000Z'),
+            exactEventAddress: berlin,
+            priceClassType: 'MEDIUM',
+            originalMessage: 'Hi',
+            publicationStatus: 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW',
+            preferences: [],
+            expiresAt: new Date('2026-07-01T23:59:59.999Z'),
+            canceledAt: new Date('2026-06-10T12:00:00.000Z'),
+        });
+
+        const snapshot = await adminActionItemsSnapshot(serverRuntime, { now, take: 100 });
+
+        expect(snapshot.blockedBookingRequests.items.some((item) => item.bookingRequestId === openBookingRequestId)).toBe(true);
+        expect(snapshot.blockedBookingRequests.items.some((item) => item.bookingRequestId === expiredBookingRequestId)).toBe(false);
+        expect(snapshot.blockedBookingRequests.items.some((item) => item.bookingRequestId === canceledBookingRequestId)).toBe(false);
+    });
+
     it('caps listed items at take while reporting full count', async () => {
         const { serverRuntime } = await commandSetup();
         const token = idCreate().slice(0, 8);

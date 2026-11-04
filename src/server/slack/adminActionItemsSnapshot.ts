@@ -1,6 +1,7 @@
 import { asc, count, desc, eq, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 
+import { bookingRequestPublicationReviewQueueStatuses } from '../../shared/bookingRequestStatus';
 import { bookingRequestOffers, bookingRequests, cooks, supportRequests, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminCookPayoutBlockedReason } from '../graphql/generated';
@@ -94,6 +95,7 @@ export async function adminActionItemsSnapshot(
         skip: 0,
         take,
         publicationStatuses: ['PUBLICATION_BLOCKED_BY_ADMIN_REVIEW' as const],
+        statuses: [...bookingRequestPublicationReviewQueueStatuses],
     };
     const duePayoutCriterion = {
         skip: 0,
@@ -113,7 +115,7 @@ export async function adminActionItemsSnapshot(
     };
 
     const pendingCookWhere = adminUserCriterionWhere(pendingCookCriterion, serverRuntime.db);
-    const blockedBookingWhere = adminBookingRequestCriterionWhere(blockedBookingCriterion, serverRuntime.db);
+    const blockedBookingWhere = adminBookingRequestCriterionWhere(blockedBookingCriterion, serverRuntime.db, now);
     const duePayoutWhere = adminBookingRequestOfferCriterionWhere(duePayoutCriterion);
     const openSupportWhere = adminSupportRequestCriterionWhere(openSupportCriterion, serverRuntime.db);
     const pendingOfferChatReviewWhere = adminBookingRequestOfferCriterionWhere(pendingOfferChatReviewCriterion);
