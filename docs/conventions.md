@@ -756,6 +756,25 @@ Required cases by query kind:
 The canonical query test (see `src/server/queries/adminUserFindOne.test.ts` / `adminUserFindMany.test.ts`) follows the same shape as command
 tests — no `beforeAll`, no `beforeEach`, no shared runtime; each `it` arranges what it needs.
 
+### Guard tests
+
+Every guard under `src/server/guards/` (including `assertLegalAcceptanceCurrent`) must have a colocated `.test.ts`. Hit the real database
+via `commandSetup` / `testDb`. Never mock Drizzle. Stub `serverRuntime.subscribe.to` when the guard opens a channel, and assert it was not
+called when the guard rejects first.
+
+| Guard                          | Required cases                                                                                            |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `guardUserMutation`            | Anonymous session throws `Unauthorized`; signed-in session returns `{ userId }`                           |
+| `guardUserSubscription`        | Anonymous throws and does not subscribe; signed-in session subscribes to `userId`                         |
+| `guardSessionSubscription`     | Subscribes to `session-updates:${sessionId}` with no signed-in user required                              |
+| `guardCookMutation`            | Anonymous throws; signed-in non-cook throws; non-`ACTIVE` cook throws; `ACTIVE` cook returns `{ cookId }` |
+| `guardAdminMutation`           | Anonymous throws; non-admin throws; admin returns `{ adminId }`                                           |
+| `guardAdminSubscription`       | Anonymous throws (no subscribe); non-admin throws (no subscribe); admin subscribes to `admin-updates`     |
+| `assertLegalAcceptanceCurrent` | Current acceptance resolves; stale acceptance throws `Unauthorized`; missing user throws `Unauthorized`   |
+
+Keep any inserted legal rows at a `publishedAt` before `commandSetup`'s default acceptance (`9999-12-31`) and delete them in a `finally`,
+the same way `publicLegalFind.test.ts` does. A later `publishedAt` makes unrelated command tests fail the legal gate under parallel workers.
+
 ### Job handler tests
 
 Every job under `src/server/jobs/handlers/` must have a colocated `.test.ts` that calls `definition.handler({ data, serverRuntime })` (or an
