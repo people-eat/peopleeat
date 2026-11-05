@@ -20,6 +20,7 @@ describe('adminFeatureToggleUpsert', () => {
 
         expect(result.success).toBe(true);
         expect(result.referenceId).toBe('ASSISTANT_CUSTOMER');
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         const [row] = await testDb.select().from(featureToggles).where(eq(featureToggles.featureToggleKey, 'ASSISTANT_CUSTOMER'));
         expect(row?.enabled).toBe(true);
     });
@@ -41,6 +42,7 @@ describe('adminFeatureToggleUpsert', () => {
         );
 
         expect(result.success).toBe(true);
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         const [row] = await testDb.select().from(featureToggles).where(eq(featureToggles.featureToggleKey, 'PUBLICATION_MEALS'));
         expect(row?.enabled).toBe(false);
     });

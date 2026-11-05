@@ -109,7 +109,7 @@ async function seedOfferWithPendingAmendment(paymentStatus: 'EMPTY' | 'SETUP' | 
 
 describe('bookingRequestOfferParticipantAmendmentApply', () => {
     it('EMPTY cancels open PI and re-prepares payment', async () => {
-        const { cook, bookingRequestOfferId } = await seedOfferWithPendingAmendment('EMPTY');
+        const { cook, customer, bookingRequestOfferId } = await seedOfferWithPendingAmendment('EMPTY');
         vi.mocked(cook.serverRuntime.stripe.paymentIntentCancel).mockResolvedValue(undefined);
         vi.mocked(cook.serverRuntime.stripe.setupIntentCreate).mockResolvedValue({
             setupIntentId: 'seti_new',
@@ -123,6 +123,9 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
             cook.serverRuntime,
         );
         expect(accepted.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         expect(cook.serverRuntime.stripe.paymentIntentCancel).toHaveBeenCalledWith('pi_open');
 
         const [offer] = await testDb
@@ -135,7 +138,7 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
     });
 
     it('PAYED decrease refunds from newest amendment PaymentIntent first and chunks cook reverse', async () => {
-        const { cook, bookingRequestOfferId } = await seedOfferWithPendingAmendment('PAYED');
+        const { cook, customer, bookingRequestOfferId } = await seedOfferWithPendingAmendment('PAYED');
         vi.mocked(cook.serverRuntime.stripe.paymentIntentRefundableCentsFindOne).mockImplementation(async (id) =>
             id === 'pi_amend_prior' ? 50_000 : 100_000,
         );
@@ -153,6 +156,9 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
             cook.serverRuntime,
         );
         expect(accepted.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         expect(cook.serverRuntime.stripe.paymentIntentRefund).toHaveBeenCalled();
         const refundCall = vi.mocked(cook.serverRuntime.stripe.paymentIntentRefund).mock.calls[0];
         expect(refundCall?.[0]).toBe('pi_amend_prior');
@@ -162,7 +168,7 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
     });
 
     it('PAYED increase without PM creates on-session pending delta with cook payout delta', async () => {
-        const { cook, bookingRequestId, bookingRequestOfferId } = await seedOfferWithPendingAmendment('PAYED');
+        const { cook, customer, bookingRequestId, bookingRequestOfferId } = await seedOfferWithPendingAmendment('PAYED');
         await testDb.delete(bookingRequestParticipants).where(eq(bookingRequestParticipants.bookingRequestId, bookingRequestId));
         await testDb.insert(bookingRequestParticipants).values(
             [1, 2].map((n) => ({
@@ -207,6 +213,9 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
             cook.serverRuntime,
         );
         expect(accepted.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         expect(cook.serverRuntime.stripe.paymentIntentCreateWithSplit).toHaveBeenCalled();
 
         const [offer] = await testDb
@@ -221,7 +230,7 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
     });
 
     it('PAYED tiny venue increase charges Stripe minimum and parks surplus as customer platform fee', async () => {
-        const { cook, bookingRequestOfferId } = await seedOfferWithPendingAmendment('PAYED');
+        const { cook, customer, bookingRequestOfferId } = await seedOfferWithPendingAmendment('PAYED');
         // Fee-consistent before totals (menu 40_000 / travel 2_000 → host 44_289).
         const tinyVenueAmendment: BookingRequestOfferParticipantAmendment = {
             amendmentApplyId: idCreate(),
@@ -267,6 +276,9 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
             cook.serverRuntime,
         );
         expect(accepted.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const chargeCall = vi.mocked(cook.serverRuntime.stripe.paymentIntentCreateFromPaymentMethodWithSplit).mock.calls[0]?.[0];
         expect(chargeCall?.pullAmount).toBe(50);
@@ -332,6 +344,8 @@ describe('bookingRequestOfferParticipantAmendmentApply', () => {
                 cook.serverRuntime,
             ),
         ).rejects.toThrow('Amount must be at least €0.50 EUR');
+        expect(cook.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(cook.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
 
         const [offer] = await testDb
             .select()

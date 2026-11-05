@@ -70,7 +70,7 @@ describe('adminBookingRequestPublicationApprove', () => {
 
         const result = await adminBookingRequestPublicationApprove(
             adminMutationParent(admin.user.userId),
-            { bookingRequestId, cookIds: null },
+            { bookingRequestId, cookIds: [cook.user.userId] },
             admin.requestingSession,
             admin.serverRuntime,
         );

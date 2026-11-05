@@ -121,6 +121,9 @@ describe('userBookingRequestUpdate', () => {
             customer.serverRuntime,
         );
         expect(result.success).toBe(true);
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [request] = await testDb.select().from(bookingRequests).where(eq(bookingRequests.bookingRequestId, bookingRequestId));
         expect(request?.exactEventAddress.city).toBe('München');
@@ -169,6 +172,9 @@ describe('userBookingRequestUpdate', () => {
             customer.serverRuntime,
         );
         expect(result.success).toBe(true);
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [offer] = await testDb
             .select()
@@ -221,6 +227,9 @@ describe('userBookingRequestUpdate', () => {
             customer.serverRuntime,
         );
         expect(result.success).toBe(true);
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [offer] = await testDb
             .select()

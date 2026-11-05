@@ -135,6 +135,8 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
             customer.serverRuntime,
         );
         expect(result.success).toBe(false);
+        expect(customer.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(customer.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 
     it('stores a pending amendment and cook accept on SETUP only updates price columns', async () => {
@@ -153,6 +155,9 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
             customer.serverRuntime,
         );
         expect(created.success).toBe(true);
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [pending] = await testDb
             .select()
@@ -169,6 +174,9 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
             cook.serverRuntime,
         );
         expect(accepted.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [offer] = await testDb
             .select()
@@ -214,6 +222,12 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
             cook.serverRuntime,
         );
         expect(accepted.success).toBe(true);
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         expect(cook.serverRuntime.stripe.paymentIntentRefund).toHaveBeenCalled();
         expect(cook.serverRuntime.stripe.transferReverse).toHaveBeenCalled();
 
@@ -233,6 +247,9 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
             cook.serverRuntime,
         );
         expect(completed.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const created = await userBookingRequestOfferParticipantAmendmentCreate(
             userMutationParent(customer.user.userId),
@@ -247,10 +264,12 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
             customer.serverRuntime,
         );
         expect(created.success).toBe(false);
+        expect(customer.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(customer.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 
     it('persists venue-recomputed travelExpensesCentsAfter on the pending amendment', async () => {
-        const { customer, bookingRequestOfferId } = await seedDualAcceptedOffer('SETUP');
+        const { cook, customer, bookingRequestOfferId } = await seedDualAcceptedOffer('SETUP');
         vi.mocked(customer.serverRuntime.places.drivingDistanceKm).mockResolvedValue(10);
 
         const nearby = {
@@ -271,6 +290,9 @@ describe('userBookingRequestOfferParticipantAmendmentCreate', () => {
             customer.serverRuntime,
         );
         expect(created.success).toBe(true);
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [pending] = await testDb
             .select()

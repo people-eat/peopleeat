@@ -123,10 +123,12 @@ describe('bookingRequestOfferChatMessageCreate', () => {
 
     it('cook writes COOK_MESSAGE_SIMPLE and bumps user unread', async () => {
         const cook = await setupCookReadyToOffer();
-        const { bookingRequestId } = await insertCustomerBookingRequest();
+        const { customer, bookingRequestId } = await insertCustomerBookingRequest();
         const offerId = await createOffer(cook, bookingRequestId);
         mockChatMessageNotifyJobs(cook.serverRuntime, 'job_customer_notify_1');
         vi.mocked(cook.serverRuntime.jobs.enqueue).mockClear();
+        vi.mocked(cook.serverRuntime.publish.userUpdates).mockClear();
+        vi.mocked(cook.serverRuntime.publish.adminUpdates).mockClear();
 
         const [before] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
         const userUnreadBefore = before!.userUnreadNotificationCount;
@@ -139,6 +141,9 @@ describe('bookingRequestOfferChatMessageCreate', () => {
         );
 
         expect(result.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [event] = await testDb
             .select()
@@ -232,6 +237,8 @@ describe('bookingRequestOfferChatMessageCreate', () => {
             ),
         ).rejects.toThrow(/phone numbers are not allowed/);
 
+        vi.mocked(cook.serverRuntime.publish.userUpdates).mockClear();
+        vi.mocked(cook.serverRuntime.publish.adminUpdates).mockClear();
         await expect(
             cookBookingRequestOfferChatMessageCreate(
                 cookMutationParent(cook.user.userId),
@@ -240,6 +247,8 @@ describe('bookingRequestOfferChatMessageCreate', () => {
                 cook.serverRuntime,
             ),
         ).rejects.toThrow(/phone numbers are not allowed/);
+        expect(cook.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(cook.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
 
         await expect(
             adminBookingRequestOfferChatMessageCreate(
@@ -271,6 +280,8 @@ describe('bookingRequestOfferChatMessageCreate', () => {
         );
         expect(result.success).toBe(true);
 
+        vi.mocked(cook.serverRuntime.publish.userUpdates).mockClear();
+        vi.mocked(cook.serverRuntime.publish.adminUpdates).mockClear();
         const cookResult = await cookBookingRequestOfferChatMessageCreate(
             cookMutationParent(cook.user.userId),
             { bookingRequestOfferId: offerId, message: 'Looking forward to cooking' },
@@ -278,6 +289,9 @@ describe('bookingRequestOfferChatMessageCreate', () => {
             cook.serverRuntime,
         );
         expect(cookResult.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
     });
 
     it('rejects chat after decline', async () => {

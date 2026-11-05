@@ -32,6 +32,7 @@ describe('adminWebPageUpsert', () => {
 
         expect(result.success).toBe(true);
         expect(result.referenceId).toBe('ABOUT_US');
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         const [row] = await testDb.select().from(webPages).where(eq(webPages.webPageKey, 'ABOUT_US'));
         expect(row?.titleDe).toBe('Über peopleeat');
         expect(row?.titleEn).toBe('About peopleeat');
@@ -61,6 +62,7 @@ describe('adminWebPageUpsert', () => {
 
         expect(result.success).toBe(true);
         expect(result.referenceId).toBe('GIFT_CARD');
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         const [row] = await testDb.select().from(webPages).where(eq(webPages.webPageKey, 'GIFT_CARD'));
         expect(row).toMatchObject({
             titleDe: 'Geschenkkarte neu',
@@ -90,5 +92,6 @@ describe('adminWebPageUpsert', () => {
                 admin.serverRuntime,
             ),
         ).rejects.toThrow(/titleDe and descriptionDe must not be empty/);
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 });

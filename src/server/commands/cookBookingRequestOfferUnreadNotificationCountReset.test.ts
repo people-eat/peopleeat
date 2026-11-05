@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
 import type { BookingRequestCreate } from '../db/schema';
@@ -75,6 +75,8 @@ describe('cookBookingRequestOfferUnreadNotificationCountReset', () => {
             .update(bookingRequestOffers)
             .set({ userUnreadNotificationCount: 3, cookUnreadNotificationCount: 2 })
             .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        vi.mocked(cook.serverRuntime.publish.userUpdates).mockClear();
+        vi.mocked(cook.serverRuntime.publish.adminUpdates).mockClear();
 
         const result = await cookBookingRequestOfferUnreadNotificationCountReset(
             cookMutationParent(cook.user.userId),
@@ -83,6 +85,8 @@ describe('cookBookingRequestOfferUnreadNotificationCountReset', () => {
             cook.serverRuntime,
         );
         expect(result.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [offer] = await testDb
             .select()

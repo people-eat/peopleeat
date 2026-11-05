@@ -29,6 +29,7 @@ describe('adminPromoCodeCreate', () => {
 
         expect(result.success).toBe(true);
         expect(result.referenceId).toBeTruthy();
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         const [row] = await testDb.select().from(promoCodes).where(eq(promoCodes.promoCodeId, result.referenceId!));
         expect(row).toMatchObject({
             redeemCode,
@@ -56,6 +57,7 @@ describe('adminPromoCodeCreate', () => {
                 admin.serverRuntime,
             ),
         ).rejects.toThrow(/redeemCode must not be empty/);
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 
     it('rejects a past expiration', async () => {
@@ -76,5 +78,6 @@ describe('adminPromoCodeCreate', () => {
                 admin.serverRuntime,
             ),
         ).rejects.toThrow(/expiresAt must be in the future/);
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 });

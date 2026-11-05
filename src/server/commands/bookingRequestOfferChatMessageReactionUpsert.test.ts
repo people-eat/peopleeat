@@ -99,11 +99,13 @@ describe('bookingRequestOfferChatMessageReactionUpsert', () => {
                 customer.serverRuntime,
             ),
         ).rejects.toThrow(/feature is disabled/);
+        expect(customer.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(customer.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 
     it('upserts and clears a customer reaction when the toggle is on', async () => {
         await featureToggleSet(true);
-        const { customer, bookingRequestOfferId } = await offerFixture();
+        const { customer, cook, bookingRequestOfferId } = await offerFixture();
         const eventId = idCreate();
         await testDb.insert(bookingRequestOfferEvents).values({
             bookingRequestOfferEventId: eventId,
@@ -123,6 +125,9 @@ describe('bookingRequestOfferChatMessageReactionUpsert', () => {
             customer.serverRuntime,
         );
         expect(result).toEqual({ success: true, referenceId: eventId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [reaction] = await testDb
             .select()
@@ -171,5 +176,7 @@ describe('bookingRequestOfferChatMessageReactionUpsert', () => {
                 customer.serverRuntime,
             ),
         ).rejects.toThrow(/cannot react to a hidden message/);
+        expect(customer.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(customer.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 });

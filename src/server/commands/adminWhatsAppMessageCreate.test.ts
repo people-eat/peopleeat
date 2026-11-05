@@ -26,6 +26,7 @@ describe('adminWhatsAppMessageCreate', () => {
                 admin.serverRuntime,
             ),
         ).rejects.toThrow(/customer-service window is closed/);
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 
     it('sends a session reply when the window is open', async () => {
@@ -54,6 +55,7 @@ describe('adminWhatsAppMessageCreate', () => {
         );
 
         expect(result).toEqual({ success: true, referenceId: whatsAppMessageId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         expect(admin.serverRuntime.whatsapp.sendText).toHaveBeenCalledWith(
             expect.objectContaining({
                 purpose: 'CONCIERGE_SESSION_REPLY',

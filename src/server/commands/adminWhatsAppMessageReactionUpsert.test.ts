@@ -35,6 +35,7 @@ describe('adminWhatsAppMessageReactionUpsert', () => {
                 admin.serverRuntime,
             ),
         ).rejects.toThrow(/inbound customer messages/);
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 
     it('sends a reaction and persists the outbound row', async () => {
@@ -72,6 +73,7 @@ describe('adminWhatsAppMessageReactionUpsert', () => {
         );
 
         expect(result).toEqual({ success: true, referenceId: messageId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         expect(admin.serverRuntime.whatsapp.sendReaction).toHaveBeenCalledWith({
             toPhoneNumber: phone,
             providerMessageId: targetProviderMessageId,

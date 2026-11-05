@@ -160,7 +160,7 @@ async function seedSourceChat(bookingRequestOfferId: string, customerUserId: str
 
 describe('adminBookingRequestOfferHandover', () => {
     it('closes the old offer and creates a dual-accepted offer for the new cook', async () => {
-        const { admin, cookA, cookB, bookingRequestOfferId } = await setupHandoverFixture('PAYED_OUT_OF_SYSTEM');
+        const { admin, cookA, cookB, customer, bookingRequestOfferId } = await setupHandoverFixture('PAYED_OUT_OF_SYSTEM');
 
         const result = await adminBookingRequestOfferHandover(
             adminMutationParent(admin.user.userId),
@@ -249,6 +249,10 @@ describe('adminBookingRequestOfferHandover', () => {
             cookIdAfter: cookB.user.userId,
         });
         expect(openedEvents[0]?.payload).not.toHaveProperty('chatCopied');
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookA.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookB.user.userId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
     });
 
     it('blocks TRANSFERRED offers', async () => {
@@ -271,6 +275,8 @@ describe('adminBookingRequestOfferHandover', () => {
                 admin.serverRuntime,
             ),
         ).rejects.toThrow(/TRANSFERRED/);
+        expect(admin.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 
     it('requires confirmOutOfSystemMoneyHandled for PAYED_OUT_OF_SYSTEM', async () => {
@@ -293,10 +299,12 @@ describe('adminBookingRequestOfferHandover', () => {
                 admin.serverRuntime,
             ),
         ).rejects.toThrow(/confirmOutOfSystemMoneyHandled/);
+        expect(admin.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 
     it('reverses and re-transfers for PAYED offers', async () => {
-        const { admin, cookB, bookingRequestOfferId } = await setupHandoverFixture('PAYED');
+        const { admin, cookA, cookB, customer, bookingRequestOfferId } = await setupHandoverFixture('PAYED');
         vi.mocked(admin.serverRuntime.stripe.transferReverse).mockResolvedValue(undefined);
         vi.mocked(admin.serverRuntime.stripe.transferCreate).mockResolvedValue({ transferId: 'tr_new' });
 
@@ -335,6 +343,10 @@ describe('adminBookingRequestOfferHandover', () => {
             .where(eq(bookingRequestOffers.bookingRequestOfferId, result.referenceId!));
         expect(newOffer?.paymentStatus).toBe('PAYED');
         expect(newOffer?.paymentData).toMatchObject({ transferId: 'tr_new' });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookA.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookB.user.userId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
     });
 
     it('copies MESSAGE_SIMPLE events with cook provenance and attachment re-links when copyChatMessages is true', async () => {
@@ -453,10 +465,14 @@ describe('adminBookingRequestOfferHandover', () => {
             createdAt: t1,
         });
         expect(cookGql?.gqlTypeName === 'ChatMessageUser' && cookGql.author.display).not.toBe('Chef');
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookA.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookB.user.userId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
     });
 
     it('does not copy chat when copyChatMessages is false', async () => {
-        const { admin, cookB, customer, bookingRequestOfferId } = await setupHandoverFixture('PAYED_OUT_OF_SYSTEM');
+        const { admin, cookA, cookB, customer, bookingRequestOfferId } = await setupHandoverFixture('PAYED_OUT_OF_SYSTEM');
         await seedSourceChat(bookingRequestOfferId, customer.user.userId);
 
         const result = await adminBookingRequestOfferHandover(
@@ -491,6 +507,10 @@ describe('adminBookingRequestOfferHandover', () => {
         const userMessages = targetEvents.filter((event) => event.type === 'USER_MESSAGE_SIMPLE');
         expect(userMessages).toHaveLength(1);
         expect((userMessages[0]?.payload as { messageBody: string }).messageBody).toBe('Looking for a chef');
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookA.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookB.user.userId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
     });
 
     it('keeps copied chat as a contiguous block when upgrading an existing target offer', async () => {
@@ -589,5 +609,126 @@ describe('adminBookingRequestOfferHandover', () => {
                 ),
             );
         expect(sourceMessageIds).toHaveLength(3);
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookA.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cookB.user.userId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+    });
+
+    it('rejects a source offer that is not dual-accepted and leaves it unchanged', async () => {
+        // Arrange
+        const { admin, cookB, bookingRequestOfferId } = await setupHandoverFixture('PAYED_OUT_OF_SYSTEM');
+        await testDb
+            .update(bookingRequestOffers)
+            .set({ userAccepted: null })
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        const [before] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+        // Act
+        const act = adminBookingRequestOfferHandover(
+            adminMutationParent(admin.user.userId),
+            {
+                input: {
+                    bookingRequestOfferId,
+                    cookId: cookB.user.userId,
+                    copyPrice: true,
+                    copyConfiguredMenu: false,
+                    copyScheduleTimestamps: false,
+                    copyChatMessages: false,
+                    confirmOutOfSystemMoneyHandled: true,
+                },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        // Assert
+        await expect(act).rejects.toThrow(/source offer must be dual-accepted/);
+        const [after] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(after).toEqual(before);
+        expect(admin.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
+    });
+
+    it('rejects when the target cook row is missing and leaves the source offer unchanged', async () => {
+        // Arrange
+        const { admin, bookingRequestOfferId } = await setupHandoverFixture('PAYED_OUT_OF_SYSTEM');
+        const missingCook = await commandSetup.withUser({ firstName: 'Missing', lastName: 'Cook' });
+        const [before] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+        // Act
+        const act = adminBookingRequestOfferHandover(
+            adminMutationParent(admin.user.userId),
+            {
+                input: {
+                    bookingRequestOfferId,
+                    cookId: missingCook.user.userId,
+                    copyPrice: true,
+                    copyConfiguredMenu: false,
+                    copyScheduleTimestamps: false,
+                    copyChatMessages: false,
+                    confirmOutOfSystemMoneyHandled: true,
+                },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        // Assert
+        await expect(act).rejects.toThrow(/cook or customer not found/);
+        const [after] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(after).toEqual(before);
+        expect(admin.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
+    });
+
+    it('rejects when Stripe transfer reverse fails and leaves the PAYED offer unchanged', async () => {
+        // Arrange
+        const { admin, cookB, bookingRequestOfferId } = await setupHandoverFixture('PAYED');
+        vi.mocked(admin.serverRuntime.stripe.transferReverse).mockRejectedValue(new Error('stripe transfer reverse failed'));
+        const [before] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+
+        // Act
+        const act = adminBookingRequestOfferHandover(
+            adminMutationParent(admin.user.userId),
+            {
+                input: {
+                    bookingRequestOfferId,
+                    cookId: cookB.user.userId,
+                    copyPrice: true,
+                    copyConfiguredMenu: false,
+                    copyScheduleTimestamps: true,
+                    copyChatMessages: false,
+                },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        // Assert
+        await expect(act).rejects.toThrow(/stripe transfer reverse failed/);
+        const [after] = await testDb
+            .select()
+            .from(bookingRequestOffers)
+            .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
+        expect(after).toEqual(before);
+        expect(admin.serverRuntime.stripe.transferCreate).not.toHaveBeenCalled();
+        expect(admin.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 });

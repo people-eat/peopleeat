@@ -108,12 +108,17 @@ describe('adminBookingRequestOfferChatReviewAcknowledge', () => {
             customer.requestingSession,
             customer.serverRuntime,
         );
+        vi.mocked(cook.serverRuntime.publish.userUpdates).mockClear();
+        vi.mocked(cook.serverRuntime.publish.adminUpdates).mockClear();
         await cookBookingRequestOfferChatMessageCreate(
             cookMutationParent(cook.user.userId),
             { bookingRequestOfferId: offerA, message: 'Hello' },
             cook.requestingSession,
             cook.serverRuntime,
         );
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         await adminBookingRequestOfferChatMessageCreate(
             adminMutationParent(admin.user.userId),
             { bookingRequestOfferId: offerA, message: 'Concierge note' },
@@ -139,6 +144,7 @@ describe('adminBookingRequestOfferChatReviewAcknowledge', () => {
         );
 
         expect(result.acknowledgedOfferId).toBe(offerA);
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         // Shared test DB may have other pending offers ahead of offerB.
         if (result.nextOfferId != null) {
             const [next] = await testDb

@@ -76,6 +76,8 @@ async function seedPendingSlot(initiator: 'CUSTOMER' | 'COOK') {
         serverRuntime: adminSetup.serverRuntime,
         requestingSession: adminSetup.requestingSession,
         adminId: adminSetup.user.userId,
+        customerUserId: customerSetup.user.userId,
+        cookId: cookSetup.user.userId,
         bookingRequestOfferId,
         cookCallSlotBookingId,
     };
@@ -97,6 +99,9 @@ describe('adminBookingRequestOfferCallSlotDecline', () => {
         );
 
         expect(result.success).toBe(true);
+        expect(fixture.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: fixture.customerUserId });
+        expect(fixture.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: fixture.cookId });
+        expect(fixture.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [slot] = await testDb
             .select()
@@ -136,5 +141,7 @@ describe('adminBookingRequestOfferCallSlotDecline', () => {
                 fixture.serverRuntime,
             ),
         ).rejects.toThrow(/onBehalfOf must be CUSTOMER/);
+        expect(fixture.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(fixture.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 });

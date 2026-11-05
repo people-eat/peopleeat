@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
 import { admins, sessions } from '../db/schema';
@@ -23,10 +23,14 @@ describe('sessionImpersonationEnd', () => {
 
         const [impersonationRow] = await testDb.select().from(sessions).where(eq(sessions.sessionId, start.referenceId!));
         const impersonationSession = toGqlSession(impersonationRow!);
+        vi.mocked(admin.serverRuntime.publish.adminUpdates).mockClear();
+        vi.mocked(admin.serverRuntime.publish.sessionUpdates).mockClear();
 
         const result = await sessionImpersonationEnd(impersonationSession, admin.serverRuntime);
 
         expect(result).toEqual({ success: true, referenceId: admin.requestingSession.sessionId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(admin.serverRuntime.publish.sessionUpdates).toHaveBeenCalledWith({ sessionId: impersonationSession.sessionId });
         expect(impersonationSession.pendingSessionCookieId).toBe(admin.requestingSession.sessionId);
 
         const [ended] = await testDb.select().from(sessions).where(eq(sessions.sessionId, start.referenceId!));
@@ -54,10 +58,14 @@ describe('sessionImpersonationEnd', () => {
 
         const [impersonationRow] = await testDb.select().from(sessions).where(eq(sessions.sessionId, start.referenceId!));
         const impersonationSession = toGqlSession(impersonationRow!);
+        vi.mocked(admin.serverRuntime.publish.adminUpdates).mockClear();
+        vi.mocked(admin.serverRuntime.publish.sessionUpdates).mockClear();
 
         const result = await sessionImpersonationEnd(impersonationSession, admin.serverRuntime);
 
         expect(result.success).toBe(true);
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
+        expect(admin.serverRuntime.publish.sessionUpdates).toHaveBeenCalledWith({ sessionId: impersonationSession.sessionId });
         expect(result.referenceId).toBeTruthy();
         expect(result.referenceId).not.toBe(admin.requestingSession.sessionId);
         expect(impersonationSession.pendingSessionCookieId).toBe(result.referenceId);
@@ -72,6 +80,8 @@ describe('sessionImpersonationEnd', () => {
         const anonymous = await commandSetup();
 
         await expect(sessionImpersonationEnd(anonymous.requestingSession, anonymous.serverRuntime)).rejects.toThrow(/not impersonating/);
+        expect(anonymous.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
+        expect(anonymous.serverRuntime.publish.sessionUpdates).not.toHaveBeenCalled();
     });
 
     it('rejects when the return user is no longer an admin', async () => {
@@ -90,8 +100,12 @@ describe('sessionImpersonationEnd', () => {
 
         const [impersonationRow] = await testDb.select().from(sessions).where(eq(sessions.sessionId, start.referenceId!));
         const impersonationSession = toGqlSession(impersonationRow!);
+        vi.mocked(admin.serverRuntime.publish.adminUpdates).mockClear();
+        vi.mocked(admin.serverRuntime.publish.sessionUpdates).mockClear();
 
         await expect(sessionImpersonationEnd(impersonationSession, admin.serverRuntime)).rejects.toThrow(/no longer an admin/);
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
+        expect(admin.serverRuntime.publish.sessionUpdates).not.toHaveBeenCalled();
     });
 
     it('rejects when the return session row is missing', async () => {
@@ -101,5 +115,7 @@ describe('sessionImpersonationEnd', () => {
         await expect(sessionImpersonationEnd(anonymous.requestingSession, anonymous.serverRuntime)).rejects.toThrow(
             /return session missing admin user/,
         );
+        expect(anonymous.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
+        expect(anonymous.serverRuntime.publish.sessionUpdates).not.toHaveBeenCalled();
     });
 });

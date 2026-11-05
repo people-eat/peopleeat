@@ -93,7 +93,7 @@ async function seedDualAcceptedOffer(paymentStatus: 'EMPTY' | 'SETUP' | 'PAYED' 
 
 describe('adminBookingRequestOfferAmendmentCreate', () => {
     it('proposes absolute menu/travel without feature toggle and without Stripe calls', async () => {
-        const { admin, bookingRequestOfferId } = await seedDualAcceptedOffer('EMPTY');
+        const { admin, cook, customer, bookingRequestOfferId } = await seedDualAcceptedOffer('EMPTY');
 
         const result = await adminBookingRequestOfferAmendmentCreate(
             adminMutationParent(admin.user.userId),
@@ -106,6 +106,9 @@ describe('adminBookingRequestOfferAmendmentCreate', () => {
         );
 
         expect(result).toEqual({ success: true, referenceId: bookingRequestOfferId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         expect(admin.serverRuntime.stripe.paymentIntentCancel).not.toHaveBeenCalled();
 
         const [offer] = await testDb
@@ -124,7 +127,7 @@ describe('adminBookingRequestOfferAmendmentCreate', () => {
     });
 
     it('persists venue-recomputed travelExpensesCentsAfter without an absolute travel override', async () => {
-        const { admin, bookingRequestOfferId } = await seedDualAcceptedOffer('EMPTY');
+        const { admin, cook, customer, bookingRequestOfferId } = await seedDualAcceptedOffer('EMPTY');
         vi.mocked(admin.serverRuntime.places.drivingDistanceKm).mockResolvedValue(10);
 
         const nearby = {
@@ -146,6 +149,9 @@ describe('adminBookingRequestOfferAmendmentCreate', () => {
         );
 
         expect(result).toEqual({ success: true, referenceId: bookingRequestOfferId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [offer] = await testDb
             .select()
@@ -175,10 +181,12 @@ describe('adminBookingRequestOfferAmendmentCreate', () => {
                 admin.serverRuntime,
             ),
         ).rejects.toThrow(/preparations are locked/);
+        expect(admin.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 
     it('replaces an unclaimed pending amendment', async () => {
-        const { admin, bookingRequestOfferId } = await seedDualAcceptedOffer('EMPTY');
+        const { admin, cook, customer, bookingRequestOfferId } = await seedDualAcceptedOffer('EMPTY');
 
         await adminBookingRequestOfferAmendmentCreate(
             adminMutationParent(admin.user.userId),
@@ -206,12 +214,15 @@ describe('adminBookingRequestOfferAmendmentCreate', () => {
             .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
         expect(offer?.participantAmendment?.menuPriceCentsAfter).toBe(62_000);
         expect(offer?.participantAmendment?.claimedAt).toBeUndefined();
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
     });
 });
 
 describe('adminBookingRequestOfferAmendmentApply', () => {
     it('EMPTY cancel and re-prepare applies menu override immediately', async () => {
-        const { admin, bookingRequestOfferId } = await seedDualAcceptedOffer('EMPTY');
+        const { admin, cook, customer, bookingRequestOfferId } = await seedDualAcceptedOffer('EMPTY');
         vi.mocked(admin.serverRuntime.stripe.paymentIntentCancel).mockResolvedValue(undefined);
         vi.mocked(admin.serverRuntime.stripe.setupIntentCreate).mockResolvedValue({
             setupIntentId: 'seti_fresh',
@@ -229,6 +240,9 @@ describe('adminBookingRequestOfferAmendmentApply', () => {
         );
 
         expect(result.success).toBe(true);
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         expect(admin.serverRuntime.stripe.paymentIntentCancel).toHaveBeenCalledWith('pi_admin_open');
 
         const [offer] = await testDb
@@ -246,7 +260,7 @@ describe('adminBookingRequestOfferAmendmentApply', () => {
     });
 
     it('SETUP updates columns only', async () => {
-        const { admin, bookingRequestOfferId } = await seedDualAcceptedOffer('SETUP');
+        const { admin, cook, customer, bookingRequestOfferId } = await seedDualAcceptedOffer('SETUP');
 
         await adminBookingRequestOfferAmendmentApply(
             adminMutationParent(admin.user.userId),
@@ -258,6 +272,9 @@ describe('adminBookingRequestOfferAmendmentApply', () => {
             admin.serverRuntime,
         );
 
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         expect(admin.serverRuntime.stripe.paymentIntentCancel).not.toHaveBeenCalled();
         expect(admin.serverRuntime.stripe.setupIntentCancel).not.toHaveBeenCalled();
 
@@ -271,7 +288,7 @@ describe('adminBookingRequestOfferAmendmentApply', () => {
     });
 
     it('PAYED decrease refunds customer delta', async () => {
-        const { admin, bookingRequestOfferId } = await seedDualAcceptedOffer('PAYED');
+        const { admin, cook, customer, bookingRequestOfferId } = await seedDualAcceptedOffer('PAYED');
         vi.mocked(admin.serverRuntime.stripe.paymentIntentRefundableCentsFindOne).mockResolvedValue(100_000);
         vi.mocked(admin.serverRuntime.stripe.paymentIntentRefund).mockResolvedValue({ refundId: 're_admin' });
         vi.mocked(admin.serverRuntime.stripe.transferReversibleCentsFindOne).mockResolvedValue(100_000);
@@ -289,6 +306,9 @@ describe('adminBookingRequestOfferAmendmentApply', () => {
         );
 
         expect(admin.serverRuntime.stripe.paymentIntentRefund).toHaveBeenCalled();
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(admin.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         const [offer] = await testDb
             .select()
             .from(bookingRequestOffers)
@@ -299,7 +319,7 @@ describe('adminBookingRequestOfferAmendmentApply', () => {
 
 describe('cook accept of admin price-override amendment', () => {
     it('applies absolute menu override from pending admin proposal', async () => {
-        const { admin, cook, bookingRequestOfferId } = await seedDualAcceptedOffer('SETUP');
+        const { admin, cook, customer, bookingRequestOfferId } = await seedDualAcceptedOffer('SETUP');
 
         await adminBookingRequestOfferAmendmentCreate(
             adminMutationParent(admin.user.userId),
@@ -318,6 +338,9 @@ describe('cook accept of admin price-override amendment', () => {
             cook.serverRuntime,
         );
         expect(accepted.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [offer] = await testDb
             .select()

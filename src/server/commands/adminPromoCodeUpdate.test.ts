@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
 import { admins, promoCodes } from '../db/schema';
@@ -25,6 +25,7 @@ describe('adminPromoCodeUpdate', () => {
         );
         const promoCodeId = created.referenceId!;
         const expiresAt = new Date(Date.now() - 1000);
+        vi.mocked(admin.serverRuntime.publish.adminUpdates).mockClear();
 
         const result = await adminPromoCodeUpdate(
             adminMutationParent(admin.user.userId),
@@ -35,6 +36,7 @@ describe('adminPromoCodeUpdate', () => {
 
         expect(result.success).toBe(true);
         expect(result.referenceId).toBe(promoCodeId);
+        expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
         const [row] = await testDb.select().from(promoCodes).where(eq(promoCodes.promoCodeId, promoCodeId));
         expect(row?.expiresAt.getTime()).toBe(expiresAt.getTime());
     });
@@ -56,5 +58,6 @@ describe('adminPromoCodeUpdate', () => {
                 admin.serverRuntime,
             ),
         ).rejects.toThrow(/promo code not found/);
+        expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
     });
 });

@@ -83,6 +83,8 @@ describe('userBookingRequestOfferUnreadNotificationCountReset', () => {
             customer.serverRuntime,
         );
         expect(result.success).toBe(true);
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [offer] = await testDb
             .select()

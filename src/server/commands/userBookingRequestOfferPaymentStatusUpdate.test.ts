@@ -101,12 +101,14 @@ async function dualAcceptWithPaymentIntent(eventOffsetDays: number) {
 
 describe('userBookingRequestOfferPaymentStatusUpdate', () => {
     it('marks PaymentIntent offers PAYED after Stripe success', async () => {
-        const { customer, offerId } = await dualAcceptWithPaymentIntent(7);
+        const { cook, customer, offerId } = await dualAcceptWithPaymentIntent(7);
 
         vi.mocked(customer.serverRuntime.stripe.paymentIntentSucceededCheck).mockResolvedValue(true);
         vi.mocked(customer.serverRuntime.stripe.customerUpdate).mockResolvedValue(undefined);
         vi.mocked(customer.serverRuntime.stripe.paymentIntentDestinationTransferIdFindOne).mockResolvedValue('tr_test');
         vi.mocked(customer.serverRuntime.jobs.enqueue).mockResolvedValue('job_testimonial');
+        vi.mocked(customer.serverRuntime.publish.userUpdates).mockClear();
+        vi.mocked(customer.serverRuntime.publish.adminUpdates).mockClear();
 
         const result = await userBookingRequestOfferPaymentStatusUpdate(
             userMutationParent(customer.user.userId),
@@ -115,6 +117,9 @@ describe('userBookingRequestOfferPaymentStatusUpdate', () => {
             customer.serverRuntime,
         );
         expect(result.success).toBe(true);
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [offer] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
         expect(offer!.paymentStatus).toBe('PAYED');
@@ -125,11 +130,13 @@ describe('userBookingRequestOfferPaymentStatusUpdate', () => {
     });
 
     it('marks SetupIntent offers SETUP and enqueues pull jobs', async () => {
-        const { customer, offerId } = await dualAcceptWithPaymentIntent(30);
+        const { cook, customer, offerId } = await dualAcceptWithPaymentIntent(30);
 
         vi.mocked(customer.serverRuntime.stripe.setupIntentSucceededCheck).mockResolvedValue(true);
         vi.mocked(customer.serverRuntime.stripe.customerUpdate).mockResolvedValue(undefined);
         vi.mocked(customer.serverRuntime.jobs.enqueue).mockResolvedValue('job_pull');
+        vi.mocked(customer.serverRuntime.publish.userUpdates).mockClear();
+        vi.mocked(customer.serverRuntime.publish.adminUpdates).mockClear();
 
         const result = await userBookingRequestOfferPaymentStatusUpdate(
             userMutationParent(customer.user.userId),
@@ -138,6 +145,9 @@ describe('userBookingRequestOfferPaymentStatusUpdate', () => {
             customer.serverRuntime,
         );
         expect(result.success).toBe(true);
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [offer] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
         expect(offer!.paymentStatus).toBe('SETUP');

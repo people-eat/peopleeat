@@ -91,6 +91,9 @@ describe('booking offer negotiation (phase A)', () => {
             customer.serverRuntime,
         );
         expect(declined.success).toBe(true);
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [offer] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
         expect(offer!.userAccepted).toBe(false);
@@ -123,12 +126,17 @@ describe('booking offer negotiation (phase A)', () => {
             customer.requestingSession,
             customer.serverRuntime,
         );
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [afterUpdate] = await testDb
             .select()
             .from(bookingRequestOffers)
             .where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
         expect(afterUpdate!.cookAccepted).toBeNull();
+        vi.mocked(cook.serverRuntime.publish.userUpdates).mockClear();
+        vi.mocked(cook.serverRuntime.publish.adminUpdates).mockClear();
 
         const accepted = await cookBookingRequestOfferAccept(
             cookMutationParent(cook.user.userId),
@@ -137,6 +145,9 @@ describe('booking offer negotiation (phase A)', () => {
             cook.serverRuntime,
         );
         expect(accepted.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [afterAccept] = await testDb
             .select()
@@ -149,6 +160,8 @@ describe('booking offer negotiation (phase A)', () => {
         const cook = await setupCookReadyToOffer();
         const { customer, bookingRequestId } = await insertCustomerBookingRequest();
         const offerId = await createOffer(cook, bookingRequestId);
+        vi.mocked(cook.serverRuntime.publish.userUpdates).mockClear();
+        vi.mocked(cook.serverRuntime.publish.adminUpdates).mockClear();
 
         const priced = await cookBookingRequestOfferPriceUpdate(
             cookMutationParent(cook.user.userId),
@@ -157,6 +170,9 @@ describe('booking offer negotiation (phase A)', () => {
             cook.serverRuntime,
         );
         expect(priced.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [pricedOffer] = await testDb
             .select()
@@ -176,6 +192,9 @@ describe('booking offer negotiation (phase A)', () => {
             customer.serverRuntime,
         );
         expect(accepted.success).toBe(true);
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(customer.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(customer.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [[offer], [request]] = await Promise.all([
             testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId)),
@@ -198,8 +217,10 @@ describe('booking offer negotiation (phase A)', () => {
 
     it('cook can withdraw an open offer', async () => {
         const cook = await setupCookReadyToOffer();
-        const { bookingRequestId } = await insertCustomerBookingRequest();
+        const { customer, bookingRequestId } = await insertCustomerBookingRequest();
         const offerId = await createOffer(cook, bookingRequestId);
+        vi.mocked(cook.serverRuntime.publish.userUpdates).mockClear();
+        vi.mocked(cook.serverRuntime.publish.adminUpdates).mockClear();
 
         const declined = await cookBookingRequestOfferDecline(
             cookMutationParent(cook.user.userId),
@@ -208,6 +229,9 @@ describe('booking offer negotiation (phase A)', () => {
             cook.serverRuntime,
         );
         expect(declined.success).toBe(true);
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: cook.user.userId });
+        expect(cook.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: customer.user.userId });
+        expect(cook.serverRuntime.publish.adminUpdates).toHaveBeenCalledWith();
 
         const [offer] = await testDb.select().from(bookingRequestOffers).where(eq(bookingRequestOffers.bookingRequestOfferId, offerId));
         expect(offer!.cookAccepted).toBe(false);
