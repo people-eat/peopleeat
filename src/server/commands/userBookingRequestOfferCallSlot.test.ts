@@ -143,7 +143,7 @@ function expectPartiesPublished(serverRuntime: Runtime, customerUserId: string, 
 describe('userBookingRequestOfferCallSlotRequest', () => {
     it('rejects when privacy policy acceptance is stale', async () => {
         // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ lastAcceptedPrivacyPolicy: null });
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance();
 
         // Act + Assert
         await expect(
@@ -450,7 +450,7 @@ describe('userBookingRequestOfferCallSlotRequest', () => {
 describe('userBookingRequestOfferCallSlotConfirm', () => {
     it('rejects when privacy policy acceptance is stale', async () => {
         // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ lastAcceptedPrivacyPolicy: null });
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance();
 
         // Act + Assert
         await expect(
@@ -727,7 +727,7 @@ describe('userBookingRequestOfferCallSlotConfirm', () => {
 describe('userBookingRequestOfferCallSlotDecline', () => {
     it('rejects when privacy policy acceptance is stale', async () => {
         // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ lastAcceptedPrivacyPolicy: null });
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance();
 
         // Act + Assert
         await expect(
@@ -976,7 +976,7 @@ describe('userBookingRequestOfferCallSlotDecline', () => {
 describe('userBookingRequestOfferCallSlotCancel', () => {
     it('rejects when privacy policy acceptance is stale', async () => {
         // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ lastAcceptedPrivacyPolicy: null });
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance();
 
         // Act + Assert
         await expect(

@@ -315,7 +315,7 @@ describe('cookBookingRequestOfferParticipantAmendmentDecline', () => {
 
     it('returns failure when the offer belongs to another cook and leaves the amendment', async () => {
         // Arrange
-        const { customer, bookingRequestId, bookingRequestOfferId } = await seedDeclineOffer();
+        const { bookingRequestId, bookingRequestOfferId } = await seedDeclineOffer();
         const other = await commandSetup.withUser({ firstName: 'Other', lastName: 'Cook' });
         await testDb.insert(cooks).values({ cookId: other.user.userId });
         const before = await readState(bookingRequestOfferId, bookingRequestId);

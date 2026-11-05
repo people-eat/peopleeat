@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { idCreate } from '../../shared/idCreate';
 import type { Log, User, UserCreate } from '../db/schema';
 import * as schema from '../db/schema';
-import { logs, sessions, users } from '../db/schema';
+import { adminLegalPrivacyPolicies, logs, sessions, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminMutation, GqlSCookMutation, GqlSSession, GqlSUserMutation } from '../graphql/generated';
 import type { Klaviyo } from '../klaviyo/Klaviyo';
@@ -311,8 +311,9 @@ async function commandSetupWithUser(overrides: Partial<UserCreate> = {}): Promis
 
     // `sessions.userId` references `users.userId`, so the user has to land
     // before the session — Postgres checks the FK at statement time. The two
-    // writes can't run in parallel. Pass `lastAcceptedPrivacyPolicy` /
-    // `lastAcceptedTerms: null` (or a past date) when a test needs stale acceptance.
+    // writes can't run in parallel. Null / past acceptance alone is not stale:
+    // use `commandSetup.withStaleLegalAcceptance` so a published privacy row
+    // exists for `assertLegalAcceptanceCurrent` to reject against.
     const [user] = await testDb
         .insert(users)
         .values({
@@ -336,10 +337,31 @@ async function commandSetupWithUser(overrides: Partial<UserCreate> = {}): Promis
     return { serverRuntime: serverRuntimeStubCreate(), requestingSession, user };
 }
 
+// Null acceptance is only "stale" when a published privacy (or terms) row
+// exists — otherwise `userLegalAcceptanceCompute` has nothing pending.
+async function commandSetupWithStaleLegalAcceptance(overrides: Partial<UserCreate> = {}): Promise<CommandSetupWithUser> {
+    const setup = await commandSetupWithUser({
+        lastAcceptedPrivacyPolicy: null,
+        lastAcceptedTerms: null,
+        ...overrides,
+    });
+    await testDb.insert(adminLegalPrivacyPolicies).values({
+        privacyPolicyId: idCreate(),
+        bodyDe: 'Privacy',
+        changeSummaryDe: 'Published',
+        publishedAt: new Date('2000-01-01T00:00:00.000Z'),
+    });
+    return setup;
+}
+
 export const commandSetup: {
     (): Promise<CommandSetup>;
     withUser: (overrides?: Partial<UserCreate>) => Promise<CommandSetupWithUser>;
-} = Object.assign(commandSetupBase, { withUser: commandSetupWithUser });
+    withStaleLegalAcceptance: (overrides?: Partial<UserCreate>) => Promise<CommandSetupWithUser>;
+} = Object.assign(commandSetupBase, {
+    withUser: commandSetupWithUser,
+    withStaleLegalAcceptance: commandSetupWithStaleLegalAcceptance,
+});
 
 // `testLog` writes are dispatched async via `loggerCreate`'s pending queue.
 // We drain before reading; otherwise the SELECT can race the INSERT and

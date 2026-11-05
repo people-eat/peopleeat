@@ -203,7 +203,10 @@ async function seedTraffic() {
 }
 
 function idsOf(
-    items: { callRoom: { bookingRequestOfferCallRoomId: string } | null; callSlotBooking: { cookCallSlotBookingId: string } | null }[],
+    items: Array<{
+        callRoom?: { bookingRequestOfferCallRoomId: string } | null;
+        callSlotBooking?: { cookCallSlotBookingId: string } | null;
+    }>,
 ) {
     return items.map((item) => item.callRoom?.bookingRequestOfferCallRoomId ?? item.callSlotBooking?.cookCallSlotBookingId);
 }
@@ -342,11 +345,11 @@ describe('adminCallTrafficFindMany', () => {
         const fixture = await seedTraffic();
         const session = fixture.cookSetup.requestingSession;
         const runtime = fixture.cookSetup.serverRuntime;
-        const pendingAsc = {
+        const pendingAsc: GqlSAdminCallTrafficCriterion = {
             cookIds: [fixture.cookId],
-            kinds: ['PENDING'] as const,
-            sortField: 'occurredAt' as const,
-            sortDirection: 'ASC' as const,
+            kinds: ['PENDING'],
+            sortField: 'occurredAt',
+            sortDirection: 'ASC',
         };
 
         // Act

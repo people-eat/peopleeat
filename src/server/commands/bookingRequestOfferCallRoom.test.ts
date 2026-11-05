@@ -164,7 +164,7 @@ function expectPartiesPublished(serverRuntime: Runtime, customerUserId: string, 
 describe('cookBookingRequestOfferCallCreate', () => {
     it('rejects when privacy policy acceptance is stale', async () => {
         // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ lastAcceptedPrivacyPolicy: null });
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance();
 
         // Act + Assert
         await expect(
@@ -295,7 +295,7 @@ describe('cookBookingRequestOfferCallCreate', () => {
 describe('cookBookingRequestOfferCallJoin', () => {
     it('rejects when privacy policy acceptance is stale', async () => {
         // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ lastAcceptedPrivacyPolicy: null });
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance();
 
         // Act + Assert
         await expect(
@@ -429,7 +429,7 @@ describe('cookBookingRequestOfferCallJoin', () => {
 describe('cookBookingRequestOfferCallLeave', () => {
     it('rejects when privacy policy acceptance is stale', async () => {
         // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ lastAcceptedPrivacyPolicy: null });
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance();
 
         // Act + Assert
         await expect(
@@ -618,7 +618,7 @@ describe('cookBookingRequestOfferCallLeave', () => {
 describe('userBookingRequestOfferCallCreate', () => {
     it('rejects when privacy policy acceptance is stale', async () => {
         // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ lastAcceptedPrivacyPolicy: null });
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance();
 
         // Act + Assert
         await expect(
@@ -732,7 +732,7 @@ describe('userBookingRequestOfferCallCreate', () => {
 describe('userBookingRequestOfferCallJoin', () => {
     it('rejects when privacy policy acceptance is stale', async () => {
         // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ lastAcceptedPrivacyPolicy: null });
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance();
 
         // Act + Assert
         await expect(
@@ -823,7 +823,7 @@ describe('userBookingRequestOfferCallJoin', () => {
 describe('userBookingRequestOfferCallLeave', () => {
     it('rejects when privacy policy acceptance is stale', async () => {
         // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ lastAcceptedPrivacyPolicy: null });
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance();
 
         // Act + Assert
         await expect(

@@ -11,7 +11,6 @@ import {
     cooks,
     featureToggles,
     featureToggleUserOverrides,
-    users,
 } from '../db/schema';
 import type { BookingRequestOfferParticipantAmendment } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';

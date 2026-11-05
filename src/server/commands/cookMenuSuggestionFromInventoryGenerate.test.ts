@@ -143,7 +143,7 @@ describe('cookMenuSuggestionFromInventoryGenerate', () => {
 
     it('includes the booking request and the cook brief in the prompt', async () => {
         // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Dora', lastName: 'Brief' });
+        const { serverRuntime, user } = await commandSetup.withUser({ firstName: 'Dora', lastName: 'Brief' });
         await testDb.insert(cooks).values({ cookId: user.userId });
         await testDb.insert(meals).values({
             mealId: idCreate(),

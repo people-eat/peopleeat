@@ -466,7 +466,7 @@ describe('chatTurnsFindMany', () => {
                 chatTurnId,
                 role: 'user',
                 status: 'complete',
-                body: { id: userMessageId, role: 'user', parts: 'bad' } as ChatMessageBody,
+                body: { id: userMessageId, role: 'user', parts: 'bad' } as unknown as ChatMessageBody,
             },
             {
                 chatMessageId: assistantMessageId,
