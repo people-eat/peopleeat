@@ -14,6 +14,11 @@ After configuration, checkout opens on a dedicated full-page Stripe flow. Succes
 printable voucher and a purchase receipt as PDFs, and emails the redeem code with both attachments. PDF generation is best-effort per file.
 Email still sends if one capture fails.
 
+Checkout and the Stripe `payment_intent.succeeded` / `payment_intent.processing` webhook share one finalize. The client sends the billing
+address from the Address Element. If the tab closes after Stripe has confirmed, the webhook mints the code from the PaymentIntent id and
+copies billing details off the latest charge (company name stays empty on that path; the receipt still generates when the address is
+complete). Only the first claim sends the email. A repeat event is a no-op.
+
 The receipt is a purchase record, not an invoice. It shows the payment date (`payedAt`, or `createdAt` when a card was paid before that
 timestamp existed), the gift-card id, the amount, the billing address with a localized country name, and the issuer (PeopleEat UG,
 Montgolfier-Allee 24, 60486 Frankfurt am Main, contact@people-eat.com). The redeem code stays on the voucher and in the purchase email. The
@@ -52,21 +57,16 @@ Voucher validity is three years from create or update.
 - Explicit locale on create, persisted for the pay email.
 - Both voucher (no billing block) and receipt PDFs via headless capture, soft-fail per PDF. The receipt omits the redeem code.
 
-## Next steps
-
-Stripe webhooks for payment success are not wired yet; checkout finalizes when the client confirms pay after Elements. Webhooks should reuse
-the same finalize path as pay so abandoned tabs still mint codes. See [architecture/stripe-payment.md](../architecture/stripe-payment.md).
-
 ## Implementation
 
 | Piece     | Location                                                                                                                                                                                                                                                |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Table     | `giftCards` in `src/server/db/schema.ts` (`payedAt`, `invoiceFileUploadId`, `voucherFileUploadId` → `FileUploads`)                                                                                                                                      |
-| Commands  | `giftCardCreate`, `giftCardPay`, `giftCardPdfsRegenerate` under `UserMutation`; admin `giftCardPdfsRegenerate`                                                                                                                                          |
+| Commands  | `giftCardCreate`, `giftCardPay`, `giftCardPdfsRegenerate` under `UserMutation`; admin `giftCardPdfsRegenerate`. Pay and `giftCardPaymentIntentSucceededApply` share `giftCardPayFinalize`                                                               |
 | PDF utils | `giftCardPdfsCreate` / `giftCardPdfsRegenerateForPayedCard` in `src/server/utils/giftCardPdfsCreate.ts`                                                                                                                                                 |
 | Queries   | `sessionGiftCardFindOne`, `sessionGiftCardPurchaseErrorFindOne`, `userGiftCardFindMany`, `adminGiftCardFindMany`, `adminGiftCardCounts`, `adminGiftCardCreationsFindMany`, `adminGiftCardOccasionStatsFindMany`, `adminGiftCardSalesMonthStatsFindMany` |
 | Mappers   | `toGqlGiftCard`, `toGqlUserGiftCard`, `toGqlAdminGiftCard`, `toGqlInvoiceAddress`, `toGqlFileUpload`                                                                                                                                                    |
-| Utils     | `redeemCodeCreate`, `verifyRecaptchaV3`, `adminGiftCardCriterionWhere`, `createServerToken`, `giftCardFileUploadFindOne`                                                                                                                                |
+| Utils     | `giftCardPayFinalize`, `redeemCodeCreate`, `verifyRecaptchaV3`, `adminGiftCardCriterionWhere`, `createServerToken`, `giftCardFileUploadFindOne`                                                                                                         |
 | Job       | `giftCardPreparedExpire`                                                                                                                                                                                                                                |
 | Email     | `GiftCardPayForCustomerEmail` + voucher + receipt PDF attachments ([styles/emails.md](../styles/emails.md))                                                                                                                                             |
 | Receipt   | `/server/gift-cards/$giftCardId/receipt` + `GiftCardReceiptPage`                                                                                                                                                                                        |

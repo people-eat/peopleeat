@@ -9,8 +9,8 @@ import type {
     GqlSUserMutationBookingRequestOfferUnreadNotificationCountResetArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestOfferChatMessageNotifyCancel } from '../utils/bookingRequestOfferChatMessageNotifySchedule';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function userBookingRequestOfferUnreadNotificationCountReset(
     { userId }: GqlSUserMutation,

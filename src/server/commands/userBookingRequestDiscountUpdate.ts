@@ -6,8 +6,8 @@ import type {
     GqlSUserMutationBookingRequestDiscountUpdateArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { applyDiscountToBookingRequest, clearDiscountOnBookingRequest } from '../utils/applyDiscountToBookingRequest';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function userBookingRequestDiscountUpdate(
     { userId }: GqlSUserMutation,

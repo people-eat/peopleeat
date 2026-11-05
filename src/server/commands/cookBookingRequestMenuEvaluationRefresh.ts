@@ -9,9 +9,9 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { cookBookingRequestMenuEvaluationSchedule } from '../utils/cookBookingRequestMenuEvaluationSchedule';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 /** Explicit re-run of AI menu evaluation + inventory generation (lazy refresh). */
 export async function cookBookingRequestMenuEvaluationRefresh(

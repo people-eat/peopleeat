@@ -147,22 +147,24 @@ HTTP route: `POST /api/webhooks/stripe` (`src/routes/api/webhooks/stripe.ts`).
 `webhookEventConstruct` verifies the Stripe-Signature header against the raw body and returns `{ id, type, dataObject }`. Dispatch lives in
 `stripeWebhookApply`. Happy-path applies and subscribed ack-only types are silent (HTTP 200, no DB write for ack-only). `log.warn` for
 unexpected/unhandled inputs (missing/invalid signature, handled event missing object `id`, event type outside the handle + ack-only
-catalog); `log.error` when the handler throws. Gift-card checkout still finalizes via client `giftCardPay`.
+catalog); `log.error` when the handler throws. Gift-card checkout and `payment_intent.succeeded` / `processing` share `giftCardPayFinalize`
+(see [gift-card-purchase.md](../features/gift-card-purchase.md)). A PaymentIntent that matches a booking offer is handled there first; gift
+cards run only when no offer claims the id.
 
 #### Events we subscribe to
 
 **Handle (side effects):**
 
-| Event                           | Behavior                                                                                                                                                                                                                         |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `payment_intent.succeeded`      | Finalize matching offer → `PAYED`, or clear `pendingDeltaPayment` + cook top-up (`bookingRequestOfferPaymentIntentSucceededApply`). Shared helper claims status once (checkout mutation may race); only the winner Slack/emails. |
-| `payment_intent.processing`     | Same (async methods such as SEPA)                                                                                                                                                                                                |
-| `payment_intent.payment_failed` | Mark matching offer `FAILED` if not already paid/transferred; Slack fail notify                                                                                                                                                  |
-| `payment_intent.canceled`       | Same as payment_failed                                                                                                                                                                                                           |
-| `setup_intent.succeeded`        | Finalize matching offer → `SETUP` (`bookingRequestOfferSetupIntentSucceededApply`); same single-winner claim as PI success                                                                                                       |
-| `setup_intent.setup_failed`     | Mark matching offer `FAILED` if not terminal-paid                                                                                                                                                                                |
-| `setup_intent.canceled`         | Same as setup_failed                                                                                                                                                                                                             |
-| `account.updated`               | Lookup cook by `stripeAccountId`; sync `stripeAccountActive` / `stripeAccountActiveWasReset` via `cookStripeAccountStatusApply` (no wallet visit required)                                                                       |
+| Event                           | Behavior                                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `payment_intent.succeeded`      | Finalize matching offer → `PAYED`, or clear `pendingDeltaPayment` + cook top-up (`bookingRequestOfferPaymentIntentSucceededApply`). Shared helper claims status once (checkout mutation may race); only the winner Slack/emails. If no offer matches, finalize a gift card with that PaymentIntent id (`giftCardPaymentIntentSucceededApply` → `giftCardPayFinalize`). |
+| `payment_intent.processing`     | Same as succeeded (async methods such as SEPA, and gift cards)                                                                                                                                                                                                                                                                                                         |
+| `payment_intent.payment_failed` | Mark matching offer `FAILED` if not already paid/transferred; Slack fail notify                                                                                                                                                                                                                                                                                        |
+| `payment_intent.canceled`       | Same as payment_failed                                                                                                                                                                                                                                                                                                                                                 |
+| `setup_intent.succeeded`        | Finalize matching offer → `SETUP` (`bookingRequestOfferSetupIntentSucceededApply`); same single-winner claim as PI success                                                                                                                                                                                                                                             |
+| `setup_intent.setup_failed`     | Mark matching offer `FAILED` if not terminal-paid                                                                                                                                                                                                                                                                                                                      |
+| `setup_intent.canceled`         | Same as setup_failed                                                                                                                                                                                                                                                                                                                                                   |
+| `account.updated`               | Lookup cook by `stripeAccountId`; sync `stripeAccountActive` / `stripeAccountActiveWasReset` via `cookStripeAccountStatusApply` (no wallet visit required)                                                                                                                                                                                                             |
 
 **Subscribe, ack only** (no DB write — unused product paths: no manual capture, no `customer_balance`):
 
@@ -201,7 +203,8 @@ Attention lane — see [cook-profile.md](../features/cook-profile.md).
 ## Key files
 
 - `src/server/stripe/StripePayment.ts` — interface + input/result types
-- `src/server/stripe/stripePaymentCreate.ts` — Stripe SDK adapter
+- `src/server/stripe/stripePaymentCreate.ts` — Stripe SDK adapter. The CI placeholder key `sk_test_ci_placeholder` returns
+  `stripePaymentFixtureCreate` instead of the SDK (in-memory intents; success checks return true). Any other key uses Stripe.
 - `src/server/stripe/stripeAccountOnboardingComplete.ts` — Express readiness check
 - `src/server/stripe/stripeInvalidPhoneError.ts` — detect Stripe `individual.phone` rejection for prefill retry
 - `src/server/stripe/stripeIdempotencyMismatchError.ts` — detect idempotency key / parameter mismatch for Connect create recovery
@@ -212,7 +215,9 @@ Attention lane — see [cook-profile.md](../features/cook-profile.md).
 - `src/routes/api/webhooks/stripe.ts` — HTTP entry (signature verify + dispatch)
 - `src/server/commands/stripeWebhookApply.ts` — event type dispatch
 - `src/server/commands/cookStripeAccountStatusApply.ts` — shared Connect flag sync (mutation + webhook)
-- `src/server/commands/bookingRequestOfferPaymentIntentSucceededApply.ts` — PI success finalize
+- `src/server/commands/bookingRequestOfferPaymentIntentSucceededApply.ts` — booking PI success finalize
+- `src/server/commands/giftCardPaymentIntentSucceededApply.ts` — gift-card PI success finalize
+- `src/server/utils/giftCardPayFinalize.ts` — shared gift-card pay claim (client + webhook)
 - `src/server/commands/bookingRequestOfferSetupIntentSucceededApply.ts` — SI success finalize
 - `src/server/utils/bookingRequestOfferPaymentFinalize.ts` — shared SI/PI finalize; atomic `paymentStatus` claim; mismatch Slack warn
 - `src/server/commands/bookingRequestOfferPaymentFailedApply.ts` — PI/SI fail or cancel → `FAILED`
@@ -239,8 +244,8 @@ Attention lane — see [cook-profile.md](../features/cook-profile.md).
 - **Same lazy pattern for other heavy UI:** LiveKit (`BookingRequestOfferCallPanel`) loads only after a call session starts;
   `ImageCropDialog` (`react-easy-crop`) mounts only when a crop is open. See
   [conventions.md](../conventions.md#client-bundle--code-splitting).
-- **Webhooks:** `POST /api/webhooks/stripe` handles booking PI/SI success and failure plus Connect `account.updated` (see Webhooks setup
-  above). Gift cards still finalize via `giftCardPay` after Elements confirms.
+- **Webhooks:** `POST /api/webhooks/stripe` handles booking PI/SI success and failure, gift-card PI success, and Connect `account.updated`
+  (see Webhooks setup above). Gift-card Elements confirm still calls `giftCardPay`; the webhook covers a closed tab.
 - Booking checkout mounts lazy `StripePaymentPanel` on `/profile/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId/checkout`
   when `offer.payment` is present (`USER_NEEDS_DEPOSIT_PAYMENT`). The offer page surfaces a pending-payment attention banner (and offer-tab
   alert) that links to that route; accept navigates there once payment is ready. After Elements confirm,

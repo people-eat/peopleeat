@@ -97,8 +97,8 @@ the only runtime paths. We **keep** the column so email+password can be re-enabl
 2. At most one pending OTP is exposed on `Session.authEmailOtp` (never the hash/ciphertext) so the log-on UI can survive reloads. A request
    for the **same** email reuses that row and sends the **same** code again after a 60s send cooldown (so late-arriving mail never
    invalidates an earlier code). A request for a **different** email replaces any prior unconsumed OTP for the session. Newly **issued**
-   codes for one address are also capped at five per hour across sessions, so minting a fresh anonymous session does not reset the limit.
-   Resends of an existing row stay on the 60s cooldown and do not count toward that cap.
+   codes for one address are also capped at five per hour across sessions, so minting a fresh anonymous session does not reset the limit. A
+   repeat send of an existing row stays on the 60s cooldown and does not count toward that cap.
 3. Mutations publish `sessionUpdates` on channel `session-updates:{sessionId}`; the UI seeds from `currentSession` and replaces state from
    the subscription (commands do not drive popup open/close). Because mobile browsers drop the SSE stream while the user fetches the code
    from their mail app, `AuthIdentityGate` also re-reads `currentSession` after each of its own mutations and re-subscribes when the tab

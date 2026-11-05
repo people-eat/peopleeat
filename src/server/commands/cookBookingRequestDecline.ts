@@ -4,8 +4,8 @@ import { bookingRequestCooks, bookingRequests, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookMutation, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { slackNotifyCookRequestDecline } from '../slack/slackNotifyBooking';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function cookBookingRequestDecline(
     { cookId }: GqlSCookMutation,

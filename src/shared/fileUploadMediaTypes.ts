@@ -3,9 +3,9 @@
 // HTML, SVG, and XML stay off this list: the download route serves bytes
 // from the app origin, and those types execute when opened in a tab.
 
-export const FILE_UPLOAD_IMAGE_MEDIA_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const;
+const FILE_UPLOAD_IMAGE_MEDIA_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const;
 
-export const FILE_UPLOAD_AUDIO_MEDIA_TYPES = [
+const FILE_UPLOAD_AUDIO_MEDIA_TYPES = [
     'audio/webm',
     'audio/ogg',
     'audio/mpeg',
@@ -15,7 +15,7 @@ export const FILE_UPLOAD_AUDIO_MEDIA_TYPES = [
     'audio/x-m4a',
 ] as const;
 
-export const FILE_UPLOAD_MEDIA_TYPES = [...FILE_UPLOAD_IMAGE_MEDIA_TYPES, 'application/pdf', ...FILE_UPLOAD_AUDIO_MEDIA_TYPES] as const;
+const FILE_UPLOAD_MEDIA_TYPES = [...FILE_UPLOAD_IMAGE_MEDIA_TYPES, 'application/pdf', ...FILE_UPLOAD_AUDIO_MEDIA_TYPES] as const;
 
 const ALLOWED = new Set<string>(FILE_UPLOAD_MEDIA_TYPES);
 const INLINE = new Set<string>([...FILE_UPLOAD_IMAGE_MEDIA_TYPES, ...FILE_UPLOAD_AUDIO_MEDIA_TYPES]);
@@ -25,7 +25,7 @@ const ACTIVE_DOCUMENT_MEDIA_TYPES = new Set(['text/html', 'application/xhtml+xml
 
 export const FILE_UPLOAD_ACCEPT = FILE_UPLOAD_MEDIA_TYPES.join(',');
 
-export function fileUploadMediaTypeNormalize(mediaType: string): string {
+function fileUploadMediaTypeNormalize(mediaType: string): string {
     return mediaType.toLowerCase().split(';')[0]?.trim() ?? '';
 }
 

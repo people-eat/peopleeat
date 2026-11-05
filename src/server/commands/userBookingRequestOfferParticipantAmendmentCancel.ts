@@ -10,9 +10,9 @@ import type {
     GqlSUserMutationBookingRequestOfferParticipantAmendmentCancelArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestOfferIsDualAccepted } from '../utils/bookingRequestOfferParticipantAmendmentGates';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function userBookingRequestOfferParticipantAmendmentCancel(
     { userId }: GqlSUserMutation,

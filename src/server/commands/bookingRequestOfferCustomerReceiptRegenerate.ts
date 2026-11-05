@@ -10,9 +10,9 @@ import type {
     GqlSUserMutationBookingRequestOfferCustomerReceiptRegenerateArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestOfferPaymentPdfsCreate } from '../utils/bookingRequestOfferPaymentPdfsCreate';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function bookingRequestOfferCustomerReceiptRegenerate(
     { userId }: GqlSUserMutation,

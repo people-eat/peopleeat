@@ -193,6 +193,7 @@
         "neighbouring",
         "NEXTAUTH",
         "nocaptcha",
+        "nosniff",
         "nondeterministically",
         "nvmrc",
         "offcanvas",

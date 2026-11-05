@@ -95,7 +95,8 @@ request left the open pool and the stale pool deep-link shows “You already cre
 **Offer accept** (`booking-offer-accept.spec.ts`): seed a cook-accepted offer (event ≥15 days out so accept uses SetupIntent) plus a second
 in-radius cook with no offer. Customer accepts via the offer UI; assert checkout / payment status for the customer and “Confirmed” for the
 chosen cook. Assert the other cook loses the pool row and gets a Taken deep-link (“Another chef was chosen”) with no request PII / winning
-cook name. Skips when `STRIPE_SECRET_KEY` is unset (CI without a Stripe test secret).
+cook name. Skips only when `STRIPE_SECRET_KEY` is unset. CI’s `sk_test_ci_placeholder` uses the in-memory Stripe fixture
+(`stripePaymentFixtureCreate`) so SetupIntent create does not call Stripe. A real test key still uses the SDK.
 
 **Pool visibility + cancel** (`booking-request-pool.spec.ts`): in-radius vs out-of-radius list/deep-link (out-of-radius deep-link = generic
 Page not found). After customer cancel (churn → confirm), in-radius deep-link explains “Request withdrawn” without cancel-reason text;

@@ -304,7 +304,8 @@ jobs:
       SERVER_TOKEN_SECRET: test-server-token-secret
       GOOGLE_GENERATIVE_AI_API_KEY: test-google-generative-ai-key
       GOOGLE_PLACES_API_KEY: test-google-places-key
-      # Dual-accept e2e skips when this is the CI placeholder (needs a real test secret).
+      # Placeholder selects the in-memory Stripe fixture (dual-accept e2e). A real
+      # test secret, when present, talks to Stripe instead.
       STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY || 'sk_test_ci_placeholder' }}
       STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
       STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY || 'pk_test_ci' }}

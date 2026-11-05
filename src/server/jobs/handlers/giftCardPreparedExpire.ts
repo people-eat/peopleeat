@@ -8,8 +8,9 @@ interface GiftCardPreparedExpireData {
 }
 
 // Deletes unpaid `PREPARED` gift cards ~15 minutes after create/update so
-// abandoned Stripe PaymentIntents do not linger. Cancelled when `giftCardPay`
-// succeeds. See `docs/features/gift-card-purchase.md`.
+// abandoned Stripe PaymentIntents do not linger. Cancelled when pay finalizes
+// (client `giftCardPay` or the payment-intent webhook). See
+// `docs/features/gift-card-purchase.md`.
 export const giftCardPreparedExpire: QueuedJobDefinition<GiftCardPreparedExpireData> = {
     kind: 'queued',
     name: 'gift-card-prepared-expire',

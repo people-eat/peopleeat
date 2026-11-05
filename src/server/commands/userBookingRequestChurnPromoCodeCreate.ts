@@ -11,8 +11,8 @@ import type {
     GqlSUserMutationBookingRequestChurnPromoCodeCreateArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { redeemCodeCreate } from '../utils/redeemCodeCreate';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { userBookingRequestOwnedFindOne } from '../utils/userBookingRequestOwnedFindOne';
 
 const CHURN_AMOUNT_CENTS = 5000;

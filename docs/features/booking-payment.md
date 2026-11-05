@@ -40,8 +40,9 @@ percents per offer, sticky on that offer): [architecture/stripe-payment.md](../a
 ### Chosen
 
 Checkout after dual accept (SetupIntent / PaymentIntent / €0), shared finalize with Stripe webhooks (PI success/processing/fail/cancel and
-SI success/fail/cancel), pull-payment announcement emails, and admin-gated cook payout after `plannedPayoutDateTime`. Gift cards still
-finalize via client `giftCardPay` (not the booking webhook path).
+SI success/fail/cancel), pull-payment announcement emails, and admin-gated cook payout after `plannedPayoutDateTime`. Gift cards use the
+same webhook endpoint but their own finalize (`giftCardPayFinalize`), not the booking payment helper. See
+[gift-card-purchase.md](./gift-card-purchase.md).
 
 ## Next steps
 

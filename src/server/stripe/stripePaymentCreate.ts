@@ -29,6 +29,7 @@ import type {
     StripeWebhookEvent,
     StripeWebhookEventConstruct,
 } from './StripePayment';
+import { STRIPE_SECRET_KEY_CI_FIXTURE, stripePaymentFixtureCreate } from './stripePaymentFixtureCreate';
 import { stripePaymentMethodOwnedCustomerId } from './stripePaymentMethodOwnedCustomerId';
 import { stripePayoutStatusFromStripe } from './stripePayoutStatus';
 import { stripeDisabledReasonFromStripe, stripeRequirementCategoriesFromKeys } from './stripeRequirementCategories';
@@ -66,6 +67,10 @@ export function stripePaymentCreate({
     businessProfileUrl,
     currency = 'eur',
 }: StripePaymentCreateOptions): StripePayment {
+    if (secretKey === STRIPE_SECRET_KEY_CI_FIXTURE) {
+        return stripePaymentFixtureCreate();
+    }
+
     let client: Stripe | undefined;
 
     function clientRequire(): Stripe {
@@ -320,6 +325,28 @@ export function stripePaymentCreate({
             // `processing` counts as success for async methods (SEPA, …) so
             // booking confirmation can proceed while settlement finishes.
             return status === 'succeeded' || status === 'processing';
+        },
+
+        async paymentIntentBillingAddressFindOne(paymentIntentId) {
+            const stripe = clientRequire();
+            const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
+                expand: ['latest_charge'],
+            });
+            const latestCharge = paymentIntent.latest_charge;
+            if (!latestCharge || typeof latestCharge === 'string') return undefined;
+            const billing = latestCharge.billing_details;
+            return {
+                name: billing.name,
+                address: billing.address
+                    ? {
+                          country: billing.address.country,
+                          city: billing.address.city,
+                          postalCode: billing.address.postal_code,
+                          line1: billing.address.line1,
+                          line2: billing.address.line2,
+                      }
+                    : null,
+            };
         },
 
         async paymentIntentCancel(paymentIntentId) {

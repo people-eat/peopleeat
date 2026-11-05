@@ -14,9 +14,9 @@ import type {
     GqlSUserMutationBookingRequestOfferTestimonialUpsertArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { publicationStatusFromRating } from '../utils/publicationStatusFromRating';
 import { testimonialImageUrlsFromFileUploadIds } from '../utils/testimonialImageUrlsFromFileUploadIds';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 /**
  * Customer review upsert for a completed offer. Inserts when missing (requires

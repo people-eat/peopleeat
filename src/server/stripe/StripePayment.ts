@@ -186,6 +186,17 @@ export interface StripeWebhookEventConstruct {
     signatureHeader: string;
 }
 
+export interface StripePaymentIntentBillingAddress {
+    name: string | null;
+    address: {
+        country: string | null;
+        city: string | null;
+        postalCode: string | null;
+        line1: string | null;
+        line2: string | null;
+    } | null;
+}
+
 export interface StripeWebhookEvent {
     id: string;
     type: string;
@@ -208,6 +219,8 @@ export interface StripePayment {
         options: StripePaymentIntentCreateFromPaymentMethodWithSplit,
     ) => Promise<StripePaymentIntentCreateResult>;
     paymentIntentSucceededCheck: (paymentIntentId: string) => Promise<boolean>;
+    /** Billing details Stripe stored on the latest charge (Address Element). Undefined when no charge yet. */
+    paymentIntentBillingAddressFindOne: (paymentIntentId: string) => Promise<StripePaymentIntentBillingAddress | undefined>;
     paymentIntentCancel: (paymentIntentId: string) => Promise<void>;
     paymentIntentRefund: (paymentIntentId: string, amount?: number, options?: { idempotencyKey?: string }) => Promise<{ refundId: string }>;
     /** Cents still refundable on the PaymentIntent (amount_received minus charge refunds). */

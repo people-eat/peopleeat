@@ -9,8 +9,8 @@ import type {
     GqlSUserMutationBookingRequestRequestRecallArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { slackNotifyBookingRequestRecall } from '../slack/slackNotifyBooking';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { userBookingRequestOwnedFindOne } from '../utils/userBookingRequestOwnedFindOne';
 
 /**

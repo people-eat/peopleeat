@@ -4,6 +4,7 @@ import { bookingRequestOfferPaymentFailedApply } from './bookingRequestOfferPaym
 import { bookingRequestOfferPaymentIntentSucceededApply } from './bookingRequestOfferPaymentIntentSucceededApply';
 import { bookingRequestOfferSetupIntentSucceededApply } from './bookingRequestOfferSetupIntentSucceededApply';
 import { cookStripeAccountStatusApply } from './cookStripeAccountStatusApply';
+import { giftCardPaymentIntentSucceededApply } from './giftCardPaymentIntentSucceededApply';
 
 /** Subscribed Dashboard events we ack without a DB write (see stripe-payment.md). */
 const STRIPE_WEBHOOK_ACK_ONLY_TYPES = new Set([
@@ -38,7 +39,10 @@ export async function stripeWebhookApply(event: StripeWebhookEvent, serverRuntim
                 serverRuntime.log.warn(`stripeWebhookApply: missing object id for type=${event.type}`);
                 return;
             }
-            await bookingRequestOfferPaymentIntentSucceededApply(id, serverRuntime);
+            const bookingApplied = await bookingRequestOfferPaymentIntentSucceededApply(id, serverRuntime);
+            if (!bookingApplied) {
+                await giftCardPaymentIntentSucceededApply(id, serverRuntime);
+            }
             return;
         }
         case 'payment_intent.payment_failed':

@@ -4,9 +4,9 @@ import { bookingRequestOffers } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationBookingRequestCancelArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestCancelApply } from '../utils/bookingRequestCancelApply';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { userBookingRequestOwnedFindOne } from '../utils/userBookingRequestOwnedFindOne';
 
 export async function userBookingRequestCancel(

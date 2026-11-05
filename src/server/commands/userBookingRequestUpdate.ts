@@ -17,7 +17,6 @@ import { bookingRequestOfferPaymentIsPaid, bookingRequestStatusDerive } from '..
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationBookingRequestUpdateArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { slackFormatDateTime, slackFormatParticipants } from '../slack/slackFormat';
 import { slackNotifyBookingRequestFieldChange } from '../slack/slackNotifyBooking';
 import { bookingRequestCookTravelDistanceKmClear } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
@@ -30,6 +29,7 @@ import { bookingRequestParticipantsPrepareForWrite } from '../utils/bookingReque
 import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
 import { scheduleTestimonialReminderJobs } from '../utils/scheduleTestimonialReminderJobs';
 import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { userBookingRequestOwnedFindOne } from '../utils/userBookingRequestOwnedFindOne';
 
 const UPDATABLE_STATUSES = new Set(['WAITING_FOR_OFFERS', 'OFFERS_WAITING_FOR_REVIEW']);

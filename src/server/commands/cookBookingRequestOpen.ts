@@ -4,10 +4,10 @@ import { bookingRequestCooks, bookingRequests, cooks } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookMutation, GqlSCookMutationBookingRequestOpenArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestCookTravelDistanceKmEnsure } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
 import { cookBookingRequestMenuEvaluationSchedule } from '../utils/cookBookingRequestMenuEvaluationSchedule';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 /** Stamps `firstOpenedAt` when a cook opens a pool request; may schedule AI menu evaluation. */
 export async function cookBookingRequestOpen(

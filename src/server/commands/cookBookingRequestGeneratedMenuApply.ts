@@ -15,9 +15,9 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { cookMenuSuggestionDraftMaterialize } from '../utils/cookMenuSuggestionDraftMaterialize';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 function appliedRecommendationEvaluationSummary(locale: Locale): string {
     return {

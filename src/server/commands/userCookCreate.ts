@@ -4,9 +4,9 @@ import { cooks, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationCookCreateArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { cookCreatePayloadBuild } from '../utils/cookCreatePayloadBuild';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function userCookCreate(
     { userId }: GqlSUserMutation,

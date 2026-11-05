@@ -10,11 +10,11 @@ import type {
     GqlSUserMutationBookingRequestOfferCallSlotDeclineArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { slackNotifyCallSlotEvent } from '../slack/slackNotifyCallSlot';
 import { bookingRequestOfferCallSlotDeclineEmailSend } from '../utils/bookingRequestOfferCallSlotEmails';
 import { bookingRequestOfferCallSlotsCompleteCancel } from '../utils/bookingRequestOfferCallSlotsCompleteSchedule';
 import { bookingRequestOfferCallWritableAssert } from '../utils/bookingRequestOfferCallWritableAssert';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 export async function userBookingRequestOfferCallSlotDecline(
     { userId }: GqlSUserMutation,

@@ -241,6 +241,7 @@ function stripePaymentStubCreate(): StripePayment {
         paymentIntentCreateWithSplit: vi.fn(unused('paymentIntentCreateWithSplit')),
         paymentIntentCreateFromPaymentMethodWithSplit: vi.fn(unused('paymentIntentCreateFromPaymentMethodWithSplit')),
         paymentIntentSucceededCheck: vi.fn(unused('paymentIntentSucceededCheck')),
+        paymentIntentBillingAddressFindOne: vi.fn(unused('paymentIntentBillingAddressFindOne')),
         paymentIntentCancel: vi.fn(unused('paymentIntentCancel')),
         paymentIntentRefund: vi.fn(unused('paymentIntentRefund')),
         paymentIntentRefundableCentsFindOne: vi.fn(unused('paymentIntentRefundableCentsFindOne')),

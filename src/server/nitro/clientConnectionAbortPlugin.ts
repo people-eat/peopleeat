@@ -42,7 +42,7 @@ function attachClientAbortHandlers(req: IncomingMessage, res: ServerResponse): v
     res.on('error', onRequestStreamError);
 
     const originalWriteHead = res.writeHead;
-    res.writeHead = function writeHeadWithSecurityHeaders(...args: Parameters<ServerResponse['writeHead']>) {
+    res.writeHead = function writeHeadWithSecurityHeaders(this: ServerResponse, ...args: Parameters<ServerResponse['writeHead']>) {
         securityResponseHeadersApply(
             (name) => headerValue(res, name),
             (name, value) => {

@@ -3,9 +3,9 @@ import { and, count, eq, gt, lt, sql } from 'drizzle-orm';
 import type { Database, DatabaseTransaction } from '../db';
 import { authEmailOtps } from '../db/schema';
 
-export const AUTH_EMAIL_OTP_MAX_ATTEMPTS = 5;
-export const AUTH_EMAIL_OTP_ISSUED_CAP = 5;
-export const AUTH_EMAIL_OTP_ISSUED_WINDOW_MS = 60 * 60 * 1000;
+const AUTH_EMAIL_OTP_MAX_ATTEMPTS = 5;
+const AUTH_EMAIL_OTP_ISSUED_CAP = 5;
+const AUTH_EMAIL_OTP_ISSUED_WINDOW_MS = 60 * 60 * 1000;
 
 type OtpDb = Database | DatabaseTransaction;
 
@@ -20,8 +20,8 @@ export async function authEmailOtpAttemptTake(db: OtpDb, authEmailOtpId: string)
     return Boolean(row);
 }
 
-// Newly issued codes for one address, across sessions. Resends of an existing
-// row do not count. Stops a caller from minting a fresh session to get a new code.
+// Newly issued codes for one address, across sessions. A repeat send of an
+// existing row does not count. Stops a caller from minting a fresh session to get a new code.
 export async function authEmailOtpIssueCapReached(db: OtpDb, emailAddress: string, now: Date): Promise<boolean> {
     const since = new Date(now.getTime() - AUTH_EMAIL_OTP_ISSUED_WINDOW_MS);
     const [row] = await db

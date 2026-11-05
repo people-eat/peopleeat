@@ -21,7 +21,6 @@ import type {
     GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
-import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestOfferParticipantAmendmentCreateEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestOfferCanRequestParticipantAmendment } from '../utils/bookingRequestOfferParticipantAmendmentGates';
 import { bookingRequestOfferParticipantAmendmentPriceCalculate } from '../utils/bookingRequestOfferParticipantAmendmentPrice';
@@ -29,6 +28,7 @@ import { bookingRequestParticipantsPrepareForWrite } from '../utils/bookingReque
 import { emailAddressPresent } from '../utils/emailAddressPresent';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 function exactEventAddressEqual(a: BookingRequestExactEventAddress, b: BookingRequestExactEventAddress): boolean {
     return (

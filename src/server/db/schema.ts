@@ -217,8 +217,9 @@ export type SessionEventCreate = typeof sessionEvents.$inferInsert;
 export type SessionEvent = typeof sessionEvents.$inferSelect;
 
 // Session-owned gift-card purchases. One `PREPARED` row per session is upserted
-// by `giftCardCreate`; `giftCardPay` flips it to `PAYED`. Unpaid rows are
-// removed by the `giftCardPreparedExpire` job (+15 min). See
+// by `giftCardCreate`. `giftCardPay` and the Stripe `payment_intent.succeeded`
+// webhook share `giftCardPayFinalize`, which flips the row to `PAYED` once.
+// Unpaid rows are removed by the `giftCardPreparedExpire` job (+15 min). See
 // `docs/features/gift-card-purchase.md`.
 export const giftCards = pgTable(
     'GiftCards',

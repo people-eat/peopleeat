@@ -5,7 +5,7 @@ import {
     fileUploadContentDispositionFilename,
     fileUploadMediaTypeAllowed,
     fileUploadResponseContentType,
-} from '../../shared/fileUploadMediaTypes';
+} from './fileUploadMediaTypes';
 
 describe('fileUploadMediaTypes', () => {
     it('allows chat images, pdf, and audio', () => {

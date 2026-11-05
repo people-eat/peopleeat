@@ -1,4 +1,4 @@
-export const SECURITY_RESPONSE_HEADERS = {
+const SECURITY_RESPONSE_HEADERS = {
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Content-Security-Policy': "frame-ancestors 'self'",

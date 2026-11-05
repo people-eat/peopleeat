@@ -313,7 +313,8 @@ branch-protection check (shard jobs use distinct names `Test (1/2)` / `Test (2/2
 runner, Postgres, Chromium cache restore, and Vite `webServer` — one browser worker per process, because concurrent browsers against a
 shared `vite dev` overlay clicks (`vite-error-overlay`). Specs still isolate via nanoIds (no truncate) — see
 [e2e.md](./architecture/e2e.md). Env mirrors `.env.test.example` (console email/Slack/WhatsApp transports) so `serverRuntimeCreate` can
-boot. Dual-accept e2e that needs live Stripe still uses real test keys when provided.
+boot. `STRIPE_SECRET_KEY=sk_test_ci_placeholder` selects an in-memory Stripe fixture so dual-accept e2e prepares a SetupIntent without a
+live secret. A repository secret, when set, uses the real Stripe SDK instead. Do not deploy the placeholder key.
 
 **e2e-gate** (check name `End to end tests`) — always runs. Docs-only: exits 0. Code: fails unless every Playwright shard succeeded.
 Required branch-protection check (shard jobs use distinct names `End to end tests (1/2)` / `(2/2)`).

@@ -7,17 +7,15 @@ import { clickUntil } from './fixtures/ui';
 
 /**
  * Customer dual-accepts a cook-accepted offer through the offer UI. Accept
- * prepares Stripe (SetupIntent when the event is ≥15 days out), so this spec
- * skips when STRIPE_SECRET_KEY is the CI placeholder (no real test secret).
+ * prepares Stripe (SetupIntent when the event is ≥15 days out). CI uses the
+ * in-memory Stripe fixture for `sk_test_ci_placeholder`; a real test key still
+ * talks to Stripe.
  *
  * A second in-radius cook (no offer) sees the request leave the pool and gets
  * a Taken deep-link explanation with no request PII.
  */
 test('customer accepts offer via UI; cook sees confirmed; other cook sees taken', async ({ browser }) => {
-    test.skip(
-        !process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_ci_placeholder',
-        'Real STRIPE_SECRET_KEY required for dual-accept (SetupIntent)',
-    );
+    test.skip(!process.env.STRIPE_SECRET_KEY, 'STRIPE_SECRET_KEY required for dual-accept (SetupIntent)');
 
     // Arrange — seed cook-accepted offer; event far enough for SetupIntent
     const token = idCreate().slice(0, 8);
