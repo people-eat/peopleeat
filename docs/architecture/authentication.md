@@ -147,8 +147,13 @@ accepts a 6-digit TOTP or an unused recovery code, clears the pending fields, th
 | --------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | `UserMutation.authTotpEnrollStart` / `authTotpEnrollConfirm` / `authTotpEnrollCancel` / `authTotpDisable` | Signed-in account                        |
 | `authTotpVerify` / `authTotpChallengeDelete`                                                              | Anonymous session with pending challenge |
+| `AdminMutation.userPasskeyDelete` / `userTotpDelete`                                                      | Admin user detail, no user code          |
 
-Own-user read: `User.timeBasedOneTimePassword` (`confirmedAt`, `recoveryCodesRemaining` — never the secret).
+`userTotpDelete` removes a pending or confirmed authenticator and clears `Sessions.pendingTotpUserId` for that user. `userPasskeyDelete`
+removes one passkey. Neither returns secret material.
+
+Own-user read: `User.timeBasedOneTimePassword` (`confirmedAt`, `recoveryCodesRemaining` — never the secret). Admin detail uses the same
+summary on `AdminUser`.
 
 ### Env
 

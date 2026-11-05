@@ -3148,10 +3148,17 @@ type AdminUser {
     phoneNumber: PhoneNumber
     birthDate: Date
     preferredCommunication: UserPreferredCommunication
+    # Resolved with defaults (missing means on). Same shape as `User.notificationSettings`.
+    notificationSettings: UserNotificationSettings!
     # Profile language — same as public `User.locale`.
     locale: Locale!
     # IANA zone — same as public `User.timeZone`.
     timeZone: TimeZone!
+    # Registered passkeys. Never exposes credential material.
+    passkeys: [AuthPasskey!]!
+    # Authenticator-app 2FA when enrolled (pending or confirmed). Null when none.
+    # Never exposes the secret or recovery plaintext.
+    timeBasedOneTimePassword: AuthTimeBasedOneTimePassword
     # Current profile picture. Same bytes as public `User.profilePicture`.
     profilePicture: FileUpload
     # Operator-only free-text note. Never exposed on the public `User` type.
@@ -4547,10 +4554,18 @@ type AdminMutation {
     userCreate(input: AdminUserCreate!): MutationResult!
     # Updates `Users.adminNote` for the given user. Returns `userId` as `referenceId`.
     userAdminNoteUpdate(userId: ID!, adminNote: String!): MutationResult!
-    # Patch account fields for any user (same shape as `UserUpdate`). Profile
-    # picture uploads must be owned by the admin session user and are reassigned
-    # to the target. Returns `userId` as `referenceId`.
+    # Patch account fields for any user (same shape as `UserUpdate`, including
+    # locale and notificationSettings). Profile picture uploads must be owned by
+    # the admin session user and are reassigned to the target. Returns `userId`
+    # as `referenceId`.
     userUpdate(userId: ID!, user: UserUpdate!): MutationResult!
+    # Remove one passkey. Returns `authPasskeyId` as `referenceId`. Rejects
+    # anonymized users and passkeys that belong to someone else.
+    userPasskeyDelete(userId: ID!, authPasskeyId: ID!): MutationResult!
+    # Remove authenticator-app 2FA (pending or confirmed) without the user's
+    # code, and clear in-progress second-factor sign-in for that user. Returns
+    # the deleted id as `referenceId`.
+    userTotpDelete(userId: ID!): MutationResult!
     # Direct email change (no OTP). Archives the previous address. Returns
     # `userId` as `referenceId`.
     userEmailAddressUpdate(userId: ID!, emailAddress: EmailAddress!): MutationResult!

@@ -61,7 +61,7 @@ channels go quiet. Defaults stay on.
 - Send checks live in the lifecycle email and WhatsApp helpers, cook notify, offer-chat email, call-slot email and WhatsApp, the call-slot
   reminder job, and the testimonial reminder job. Auth OTP, email change, account deletion, gift card, support, cook approval, payment mail,
   and concierge WhatsApp replies are not gated.
-- UI: `AccountNotificationSettings` on `AccountPage`. Immediate save. WhatsApp switches render off and disabled without a phone and do not
-  write `false`.
+- UI: `AccountNotificationSettings` on `AccountPage` (second person) and on the admin user general tab (`voice="operator"`). Immediate save.
+  Admin saves go through `AdminMutation.userUpdate`. WhatsApp switches render off and disabled without a phone and do not write `false`.
 
 See [account.md](./account.md), [outbound-email.md](../architecture/outbound-email.md), [whatsapp.md](../architecture/whatsapp.md).

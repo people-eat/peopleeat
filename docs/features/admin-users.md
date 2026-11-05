@@ -49,15 +49,28 @@ grow footers over time.
 a detail-field grid (2 cols from `@2xl`, 3 from `@6xl`). Email and phone offer copy plus `mailto:` / `tel:` when set; user id has copy. At
 the bottom (view-only; hidden while editing): **Ban** / **Unban** (`AdminMutation.userStatusUpdate`, `ACTIVE` ↔ `BANNED` only) and
 **Anonymize** side by side from `@2xl`. **Edit** / **Cancel** / **Save** and a quieter **Sign in as** live in the pinned footer. **Edit**
-switches into a form for first/last name, email (direct, no OTP), phone, birth date, preferred communication, time zone, and profile picture
-(`AdminMutation.userUpdate` / `userEmailAddressUpdate`); **Cancel** or successful **Save** returns to view. Ban keeps sessions bound so the
-private profile restriction banner can appear live; open cook offers are auto-declined; public cook listing already excludes non-`ACTIVE`.
-**Sign in as** mints a **new** cookie session bound to that ACTIVE account (`AdminMutation.sessionUserBind`), leaving the admin session
-intact. The new session stores `Sessions.impersonationReturnSessionId` pointing at the admin session. The client then hits
-`GET /api/session/switch?toSessionId=…&redirect=…` so **Set-Cookie and the redirect are the same response** (mutation `Set-Cookie` then
-`location.assign` can race and leave the admin cookie in place). Redirect lands on `/profile` (or `/en/profile`) after setting the locale
-cookie to that user’s `Users.locale` so the locale-mismatch gate does not open on the way in. **Return to administration** lives in the
-header session nav (and profile sidebar footer) in place of the normal Administration entry (`Session.impersonation` +
+switches into a form for first/last name, email (direct, no OTP), phone, birth date, language, preferred communication, time zone, and
+profile picture (`AdminMutation.userUpdate` / `userEmailAddressUpdate`). The form stays in a readable column (`max-w-3xl`): short fields sit
+in two columns from `@2xl`, and preferred communication is its own row so the four choices are not squeezed beside the birth date. Language
+is `Users.locale` (Deutsch / English) and applies to that account’s interface, emails, and WhatsApp. Saving it does not change the admin’s
+locale cookie. **Cancel** or successful **Save** returns to view.
+
+**Notifications** sit under the profile fields in both view and edit. Same topics as the account page (email and WhatsApp per topic; cook
+topics only when the account has a cook profile). Switches save immediately via `AdminMutation.userUpdate` and do not wait for profile
+**Save**. With no phone number, WhatsApp stays off and the hint opens the phone field. Anonymized accounts show that no messages are sent.
+See [notification-settings.md](./notification-settings.md).
+
+**Sign-in** lists passkeys and authenticator-app two-factor (pending enrollment or confirmed, plus recovery codes left). **Remove**
+confirms, then `AdminMutation.userPasskeyDelete` or `userTotpDelete`. Removing two-factor does not ask for the user’s code, and it clears an
+in-progress second-factor sign-in. Email sign-in stays. Admins cannot add a passkey or enroll an authenticator for someone else.
+
+Ban keeps sessions bound so the private profile restriction banner can appear live; open cook offers are auto-declined; public cook listing
+already excludes non-`ACTIVE`. **Sign in as** mints a **new** cookie session bound to that ACTIVE account (`AdminMutation.sessionUserBind`),
+leaving the admin session intact. The new session stores `Sessions.impersonationReturnSessionId` pointing at the admin session. The client
+then hits `GET /api/session/switch?toSessionId=…&redirect=…` so **Set-Cookie and the redirect are the same response** (mutation `Set-Cookie`
+then `location.assign` can race and leave the admin cookie in place). Redirect lands on `/profile` (or `/en/profile`) after setting the
+locale cookie to that user’s `Users.locale` so the locale-mismatch gate does not open on the way in. **Return to administration** lives in
+the header session nav (and profile sidebar footer) in place of the normal Administration entry (`Session.impersonation` +
 `sessionImpersonationEnd` + the same switch URL); it restores the admin cookie (or mints a fresh admin session if the return session was
 terminated). Impersonation sessions are excluded from product funnels and badged on admin timelines / session lists. Already-anonymized
 users cannot be edited, banned, or impersonated. Same scrub as self-serve delete — see [account.md](./account.md).
@@ -104,17 +117,18 @@ detail with URL tabs; manual create with optional admin and cook payloads.
 - SDL: `AdminUser`, types, criterion, registrations, `AdminUserInsights` / upcoming birthday types, create, admin note update in
   `schema.graphqls`
 - Queries: `adminUserFindMany`, `adminUserCounts`, `adminUserRegistrationsFindMany`, `adminUserInsightsFindOne`,
-  `adminUserUpcomingBirthdaysFindMany`, `adminUserFindOne`; criterion helpers
-- Commands: `adminUserCreate` (transaction when membership rows); `adminUserAdminNoteUpdate`; `adminUserUpdate`;
-  `adminUserEmailAddressUpdate`; `adminUserStatusUpdate`; `adminSessionUserBind`; `sessionImpersonationEnd`; `adminUserAnonymize`;
-  `adminSessionTerminateMany`; `adminCookUpdate`; `adminCookBiographySuggest`; `adminCookBiographySummarySuggest`; `adminCookMealUpsert`;
-  `adminCookMenuUpsert`
+  `adminUserUpcomingBirthdaysFindMany`, `adminUserFindOne`; `adminUserPasskeysFindMany` and `adminUserTimeBasedOneTimePasswordFindOne` on
+  `AdminUser` (skipped unless the selection asks for them); criterion helpers
+- Commands: `adminUserCreate` (transaction when membership rows); `adminUserAdminNoteUpdate`; `adminUserUpdate` (includes locale and
+  notification settings); `adminUserEmailAddressUpdate`; `adminUserPasskeyDelete`; `adminUserTotpDelete`; `adminUserStatusUpdate`;
+  `adminSessionUserBind`; `sessionImpersonationEnd`; `adminUserAnonymize`; `adminSessionTerminateMany`; `adminCookUpdate`;
+  `adminCookBiographySuggest`; `adminCookBiographySummarySuggest`; `adminCookMealUpsert`; `adminCookMenuUpsert`
 - Mapper: `toGqlAdminUser` (`profilePicture` resolved like public `User`)
 - Resolvers under `Admin` / `AdminMutation`
 - UI: overview with stat cards, insights breakdowns, upcoming birthdays, + chart; list with tabs, data table, and pinned
   `AdminListPaginationBar`; create form; detail with `@include` per tab; session-events tab uses `Admin.sessionEvents` +
-  `Admin.sessionEventsCounts` with pinned `AdminListPaginationBar`; `AdminUserGeneralSection`, `AdminUserCookProfileSection`,
-  `AdminUserCookProfileEditPage`; booking-requests / pool / offers tabs reuse `AdminBookingRequestListCard` /
+  `Admin.sessionEventsCounts` with pinned `AdminListPaginationBar`; `AdminUserGeneralSection`, `AdminUserSignInSection`,
+  `AdminUserCookProfileSection`, `AdminUserCookProfileEditPage`; booking-requests / pool / offers tabs reuse `AdminBookingRequestListCard` /
   `AdminBookingRequestOfferCard`; testimonials tab reuses `AdminTestimonialListCard`; calls tab uses a compact `callTraffic` list
 - `AdminCook` field resolvers: `logo`, `rating`, `callAvailabilityRules`, `featuredOn` (city/partner/occasion reverse index),
   `stripeAccountDetails` / `stripeWallet` (live Stripe; admin loaders, not cook ownership / balance toggle)
@@ -126,9 +140,9 @@ detail with URL tabs; manual create with optional admin and cook payloads.
 GraphQL: `users(criterion)` / `userCounts(criteria)` — search (email / first / last / full name either order), types filter, optional
 `status`, optional `userIds` (`IN`; omit or empty = no id filter — admin assistant drill-in), sort, paginate; `userRegistrations(range)`;
 `userInsights`; `upcomingBirthdays(take)`; `user(id)`; `userCreate`, `userUpdate`, `userEmailAddressUpdate`, `userAdminNoteUpdate`,
-`userStatusUpdate`, `sessionUserBind`, `userAnonymize`, `terminateSessions`, `cookUpdate`, `cookBiographySuggest`,
-`cookBiographySummarySuggest`, `cookMealUpsert`, `cookMenuUpsert`. Type labels: admin (admins row), cook (cooks row), customer (no cook
-row); combinations allowed. `AdminUser.status` exposes `UserStatus`.
+`userStatusUpdate`, `userPasskeyDelete`, `userTotpDelete`, `sessionUserBind`, `userAnonymize`, `terminateSessions`, `cookUpdate`,
+`cookBiographySuggest`, `cookBiographySummarySuggest`, `cookMealUpsert`, `cookMenuUpsert`. Type labels: admin (admins row), cook (cooks
+row), customer (no cook row); combinations allowed. `AdminUser.status` exposes `UserStatus`.
 
 Gate: [authorization-admin.md](../architecture/authorization-admin.md).
 

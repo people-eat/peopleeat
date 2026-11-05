@@ -43,6 +43,28 @@ describe('adminUserUpdate', () => {
         expect(row?.timeZone).toBe('America/New_York');
     });
 
+    it('merges notification settings without turning other channels off', async () => {
+        const admin = await commandSetup.withUser({ firstName: 'Ops', lastName: 'Admin' });
+        await testDb.insert(admins).values({ adminId: admin.user.userId });
+        const target = await commandSetup.withUser();
+
+        const result = await adminUserUpdate(
+            adminMutationParent(admin.user.userId),
+            {
+                userId: target.user.userId,
+                user: { notificationSettings: { customerBooking: { email: false, whatsApp: true } } },
+            },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        expect(result).toEqual({ success: true, referenceId: target.user.userId });
+        const [row] = await testDb.select().from(users).where(eq(users.userId, target.user.userId));
+        expect(row?.notificationSettings?.customerBooking).toEqual({ email: false, whatsApp: true });
+        expect(row?.notificationSettings?.cookNewRequest).toEqual({ email: true, whatsApp: true });
+        expect(row?.notificationSettings?.customerChat?.whatsApp).toBe(true);
+    });
+
     it('rejects empty firstName', async () => {
         const admin = await commandSetup.withUser({ firstName: 'Ops', lastName: 'Admin' });
         await testDb.insert(admins).values({ adminId: admin.user.userId });

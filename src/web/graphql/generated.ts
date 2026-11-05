@@ -1502,7 +1502,9 @@ export interface GqlCAdminMutation {
     userAnonymize: GqlCMutationResult;
     userCreate: GqlCMutationResult;
     userEmailAddressUpdate: GqlCMutationResult;
+    userPasskeyDelete: GqlCMutationResult;
     userStatusUpdate: GqlCMutationResult;
+    userTotpDelete: GqlCMutationResult;
     userUpdate: GqlCMutationResult;
     webPageUpsert: GqlCMutationResult;
     whatsAppConversationUnreadCountReset: GqlCMutationResult;
@@ -1869,8 +1871,17 @@ export type GqlCAdminMutationUserEmailAddressUpdateArgs = {
     userId: Scalars['ID']['input'];
 };
 
+export type GqlCAdminMutationUserPasskeyDeleteArgs = {
+    authPasskeyId: Scalars['ID']['input'];
+    userId: Scalars['ID']['input'];
+};
+
 export type GqlCAdminMutationUserStatusUpdateArgs = {
     status: GqlCUserStatus;
+    userId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationUserTotpDeleteArgs = {
     userId: Scalars['ID']['input'];
 };
 
@@ -2287,11 +2298,14 @@ export interface GqlCAdminUser {
     firstName: Scalars['String']['output'];
     lastName: Scalars['String']['output'];
     locale: GqlCLocale;
+    notificationSettings: GqlCUserNotificationSettings;
+    passkeys: Array<GqlCAuthPasskey>;
     phoneNumber?: Maybe<Scalars['PhoneNumber']['output']>;
     preferredCommunication?: Maybe<GqlCUserPreferredCommunication>;
     previousEmailAddresses: Array<Scalars['EmailAddress']['output']>;
     profilePicture?: Maybe<GqlCFileUpload>;
     status: GqlCUserStatus;
+    timeBasedOneTimePassword?: Maybe<GqlCAuthTimeBasedOneTimePassword>;
     timeZone: Scalars['TimeZone']['output'];
     types: Array<GqlCAdminUserType>;
     userId: Scalars['ID']['output'];
@@ -16379,6 +16393,22 @@ export type GqlCAdminUserPageQuery = {
                     adminNote: string;
                     types: Array<Schema.GqlCAdminUserType>;
                     createdAt: string;
+                    notificationSettings: {
+                        customerBooking: { email: boolean; whatsApp: boolean };
+                        customerChat: { email: boolean; whatsApp: boolean };
+                        customerReview: { email: boolean; whatsApp: boolean };
+                        cookNewRequest: { email: boolean; whatsApp: boolean };
+                        cookOffer: { email: boolean; whatsApp: boolean };
+                        cookChat: { email: boolean; whatsApp: boolean };
+                        cookReview: { email: boolean; whatsApp: boolean };
+                    };
+                    passkeys: Array<{ authPasskeyId: string; deviceType: string | null; backedUp: boolean; createdAt: string }>;
+                    timeBasedOneTimePassword: {
+                        authTimeBasedOneTimePasswordId: string;
+                        confirmedAt: string | null;
+                        recoveryCodesRemaining: number;
+                        createdAt: string;
+                    } | null;
                     profilePicture: { fileUploadId: string; url: string } | null;
                     featureToggleOverrides?: Array<{
                         userId: string;
@@ -16720,6 +16750,19 @@ export type GqlCAdminUserUpdateMutationVariables = Exact<{
 }>;
 
 export type GqlCAdminUserUpdateMutation = { admin: { userUpdate: { success: boolean; referenceId: string | null } } };
+
+export type GqlCAdminUserPasskeyDeleteMutationVariables = Exact<{
+    userId: string;
+    authPasskeyId: string;
+}>;
+
+export type GqlCAdminUserPasskeyDeleteMutation = { admin: { userPasskeyDelete: { success: boolean; referenceId: string | null } } };
+
+export type GqlCAdminUserTotpDeleteMutationVariables = Exact<{
+    userId: string;
+}>;
+
+export type GqlCAdminUserTotpDeleteMutation = { admin: { userTotpDelete: { success: boolean; referenceId: string | null } } };
 
 export type GqlCAdminUserEmailAddressUpdateMutationVariables = Exact<{
     userId: string;
@@ -67386,8 +67429,189 @@ export const AdminUserPageDocument = {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'preferredCommunication' },
                                                                     },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'notificationSettings' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'customerBooking' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'email' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'whatsApp' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'customerChat' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'email' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'whatsApp' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'customerReview' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'email' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'whatsApp' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'cookNewRequest' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'email' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'whatsApp' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'cookOffer' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'email' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'whatsApp' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'cookChat' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'email' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'whatsApp' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'cookReview' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'email' },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'whatsApp' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'locale' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'timeZone' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'passkeys' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'authPasskeyId' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'deviceType' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'backedUp' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'createdAt' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'timeBasedOneTimePassword' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'authTimeBasedOneTimePasswordId',
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'confirmedAt' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'recoveryCodesRemaining' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'createdAt' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                     {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'profilePicture' },
@@ -69304,6 +69528,114 @@ export const AdminUserUpdateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminUserUpdateMutation, GqlCAdminUserUpdateMutationVariables>;
+export const AdminUserPasskeyDeleteDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminUserPasskeyDelete' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'userId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'authPasskeyId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'userPasskeyDelete' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'userId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'userId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'authPasskeyId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'authPasskeyId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminUserPasskeyDeleteMutation, GqlCAdminUserPasskeyDeleteMutationVariables>;
+export const AdminUserTotpDeleteDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminUserTotpDelete' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'userId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'userTotpDelete' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'userId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'userId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminUserTotpDeleteMutation, GqlCAdminUserTotpDeleteMutationVariables>;
 export const AdminUserEmailAddressUpdateDocument = {
     kind: 'Document',
     definitions: [

@@ -87,7 +87,9 @@ import { adminUserAdminNoteUpdate } from '../commands/adminUserAdminNoteUpdate';
 import { adminUserAnonymize } from '../commands/adminUserAnonymize';
 import { adminUserCreate } from '../commands/adminUserCreate';
 import { adminUserEmailAddressUpdate } from '../commands/adminUserEmailAddressUpdate';
+import { adminUserPasskeyDelete } from '../commands/adminUserPasskeyDelete';
 import { adminUserStatusUpdate } from '../commands/adminUserStatusUpdate';
+import { adminUserTotpDelete } from '../commands/adminUserTotpDelete';
 import { adminUserUpdate } from '../commands/adminUserUpdate';
 import { adminWebPageUpsert } from '../commands/adminWebPageUpsert';
 import { adminWhatsAppConversationUnreadCountReset } from '../commands/adminWhatsAppConversationUnreadCountReset';
@@ -328,7 +330,9 @@ import { adminUserCounts } from '../queries/adminUserCounts';
 import { adminUserFindMany } from '../queries/adminUserFindMany';
 import { adminUserFindOne } from '../queries/adminUserFindOne';
 import { adminUserInsightsFindOne } from '../queries/adminUserInsightsFindOne';
+import { adminUserPasskeysFindMany } from '../queries/adminUserPasskeysFindMany';
 import { adminUserRegistrationsFindMany } from '../queries/adminUserRegistrationsFindMany';
+import { adminUserTimeBasedOneTimePasswordFindOne } from '../queries/adminUserTimeBasedOneTimePasswordFindOne';
 import { adminUserUpcomingBirthdaysFindMany } from '../queries/adminUserUpcomingBirthdaysFindMany';
 import { adminWebPageFindMany } from '../queries/adminWebPageFindMany';
 import { adminWebPageFindOne } from '../queries/adminWebPageFindOne';
@@ -581,7 +585,9 @@ import type {
     GqlSAdminMutationUserAnonymizeArgs,
     GqlSAdminMutationUserCreateArgs,
     GqlSAdminMutationUserEmailAddressUpdateArgs,
+    GqlSAdminMutationUserPasskeyDeleteArgs,
     GqlSAdminMutationUserStatusUpdateArgs,
+    GqlSAdminMutationUserTotpDeleteArgs,
     GqlSAdminMutationUserUpdateArgs,
     GqlSAdminMutationWebPageUpsertArgs,
     GqlSAdminMutationWhatsAppConversationUnreadCountResetArgs,
@@ -1946,6 +1952,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
         },
         AdminUser: {
+            passkeys(parentUser: GqlSAdminUser) {
+                return adminUserPasskeysFindMany(parentUser, serverRuntime);
+            },
+            timeBasedOneTimePassword(parentUser: GqlSAdminUser) {
+                return adminUserTimeBasedOneTimePasswordFindOne(parentUser, serverRuntime);
+            },
             profilePicture(parentUser: GqlSAdminUser) {
                 return userProfilePictureFindOne(parentUser, serverRuntime);
             },
@@ -1991,6 +2003,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             userUpdate(parent: GqlSAdminMutation, args: GqlSAdminMutationUserUpdateArgs, requestingSession: GqlSSession) {
                 return adminUserUpdate(parent, args, requestingSession, serverRuntime);
+            },
+            userPasskeyDelete(parent: GqlSAdminMutation, args: GqlSAdminMutationUserPasskeyDeleteArgs, requestingSession: GqlSSession) {
+                return adminUserPasskeyDelete(parent, args, requestingSession, serverRuntime);
+            },
+            userTotpDelete(parent: GqlSAdminMutation, args: GqlSAdminMutationUserTotpDeleteArgs, requestingSession: GqlSSession) {
+                return adminUserTotpDelete(parent, args, requestingSession, serverRuntime);
             },
             userEmailAddressUpdate(
                 parent: GqlSAdminMutation,

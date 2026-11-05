@@ -5,6 +5,8 @@ import { phoneNumberAssert } from '../../shared/phoneNumber';
 import { textNormalizeTitled } from '../../shared/textNormalize';
 import { userBirthDateAssertMinimumAge } from '../../shared/userBirthDate';
 import { fileUploads, users } from '../db/schema';
+import { notificationSettingsMerge, notificationSettingsPatchHasDomain } from '../domain/notificationSettings';
+import type { UserNotificationSettings } from '../domain/notificationSettings';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { UserPreferredCommunication } from '../domain/user';
 import type { GqlSAdminMutation, GqlSAdminMutationUserUpdateArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
@@ -32,6 +34,7 @@ export async function adminUserUpdate(
         const hasLocale = user.locale !== undefined && user.locale !== null;
         const hasTimeZone = user.timeZone !== undefined && user.timeZone !== null;
         const hasProfilePicture = user.profilePictureFileUploadId !== undefined;
+        const hasNotificationSettings = notificationSettingsPatchHasDomain(user.notificationSettings);
         if (
             !hasFirstName &&
             !hasLastName &&
@@ -40,7 +43,8 @@ export async function adminUserUpdate(
             !hasPreferredCommunication &&
             !hasLocale &&
             !hasTimeZone &&
-            !hasProfilePicture
+            !hasProfilePicture &&
+            !hasNotificationSettings
         ) {
             throw new Error('adminUserUpdate: at least one field is required');
         }
@@ -50,6 +54,7 @@ export async function adminUserUpdate(
                 userId: users.userId,
                 status: users.status,
                 profilePictureFileUploadId: users.profilePictureFileUploadId,
+                notificationSettings: users.notificationSettings,
             })
             .from(users)
             .where(eq(users.userId, userId))
@@ -70,6 +75,7 @@ export async function adminUserUpdate(
             locale?: Locale;
             timeZone?: string;
             profilePictureFileUploadId?: string | null;
+            notificationSettings?: UserNotificationSettings;
         } = {};
 
         if (hasFirstName) {
@@ -120,6 +126,10 @@ export async function adminUserUpdate(
                 throw new Error('adminUserUpdate: timeZone must not be empty');
             }
             set.timeZone = timeZone;
+        }
+
+        if (hasNotificationSettings) {
+            set.notificationSettings = notificationSettingsMerge(target.notificationSettings, user.notificationSettings ?? {});
         }
 
         if (hasProfilePicture) {

@@ -124,8 +124,50 @@ query AdminUserPage(
                     phoneNumber
                     birthDate
                     preferredCommunication
+                    notificationSettings {
+                        customerBooking {
+                            email
+                            whatsApp
+                        }
+                        customerChat {
+                            email
+                            whatsApp
+                        }
+                        customerReview {
+                            email
+                            whatsApp
+                        }
+                        cookNewRequest {
+                            email
+                            whatsApp
+                        }
+                        cookOffer {
+                            email
+                            whatsApp
+                        }
+                        cookChat {
+                            email
+                            whatsApp
+                        }
+                        cookReview {
+                            email
+                            whatsApp
+                        }
+                    }
                     locale
                     timeZone
+                    passkeys {
+                        authPasskeyId
+                        deviceType
+                        backedUp
+                        createdAt
+                    }
+                    timeBasedOneTimePassword {
+                        authTimeBasedOneTimePasswordId
+                        confirmedAt
+                        recoveryCodesRemaining
+                        createdAt
+                    }
                     profilePicture {
                         fileUploadId
                         url
@@ -479,6 +521,24 @@ mutation AdminUserSessionUserBind($userId: ID!) {
 mutation AdminUserUpdate($userId: ID!, $user: UserUpdate!) {
     admin {
         userUpdate(userId: $userId, user: $user) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserPasskeyDelete($userId: ID!, $authPasskeyId: ID!) {
+    admin {
+        userPasskeyDelete(userId: $userId, authPasskeyId: $authPasskeyId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminUserTotpDelete($userId: ID!) {
+    admin {
+        userTotpDelete(userId: $userId) {
             success
             referenceId
         }

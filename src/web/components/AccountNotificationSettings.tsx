@@ -18,12 +18,18 @@ import { Switch } from './base/switch';
 type NotificationDomain = keyof GqlCUserNotificationSettingsInput;
 type NotificationChannel = 'email' | 'whatsApp';
 
+type Copy = { de: string; en: string };
+
 type NotificationRow = {
     domain: NotificationDomain;
     confirmLastChannel: boolean;
-    title: { de: string; en: string };
-    description: { de: string; en: string };
+    title: Copy;
+    description: Copy;
+    operatorTitle?: Copy;
+    operatorDescription?: Copy;
 };
+
+export type AccountNotificationVoice = 'account' | 'operator';
 
 const customerRows: NotificationRow[] = [
     {
@@ -39,6 +45,7 @@ const customerRows: NotificationRow[] = [
         domain: 'customerChat',
         confirmLastChannel: false,
         title: { de: 'Nachrichten deines Kochs', en: 'Messages from your cook' },
+        operatorTitle: { de: 'Nachrichten des Kochs', en: 'Messages from the cook' },
         description: { de: 'Wenn eine Nachricht noch ungelesen ist.', en: 'When a message is still unread.' },
     },
     {
@@ -54,12 +61,14 @@ const cookRows: NotificationRow[] = [
         domain: 'cookNewRequest',
         confirmLastChannel: false,
         title: { de: 'Neue Anfragen in deiner Nähe', en: 'New requests near you' },
+        operatorTitle: { de: 'Neue Anfragen in der Nähe', en: 'New requests nearby' },
         description: { de: 'Kann häufig kommen.', en: 'These can come often.' },
     },
     {
         domain: 'cookOffer',
         confirmLastChannel: true,
         title: { de: 'Deine Angebote', en: 'Your offers' },
+        operatorTitle: { de: 'Angebote', en: 'Offers' },
         description: {
             de: 'Änderungen, Zu- und Absagen, Menü, Gästezahl und Gespräche.',
             en: 'Changes, accepted or declined, menu, guest count, and calls.',
@@ -69,6 +78,7 @@ const cookRows: NotificationRow[] = [
         domain: 'cookChat',
         confirmLastChannel: false,
         title: { de: 'Nachrichten deiner Gäste', en: 'Messages from your guests' },
+        operatorTitle: { de: 'Nachrichten der Gäste', en: 'Messages from guests' },
         description: { de: 'Wenn eine Nachricht noch ungelesen ist.', en: 'When a message is still unread.' },
     },
     {
@@ -76,11 +86,24 @@ const cookRows: NotificationRow[] = [
         confirmLastChannel: false,
         title: { de: 'Nach dem Abend', en: 'After the evening' },
         description: { de: 'Erinnerungen zur Bewertung deiner Gäste.', en: "Reminders about your guests' reviews." },
+        operatorDescription: { de: 'Erinnerungen zur Bewertung der Gäste.', en: "Reminders about guests' reviews." },
     },
 ];
 
-function channelToast(row: NotificationRow, channel: NotificationChannel, enabled: boolean, locale: 'de' | 'en'): string {
-    const title = row.title[locale];
+function notificationCopy(
+    row: NotificationRow,
+    voice: AccountNotificationVoice,
+    part: 'title' | 'description',
+    locale: 'de' | 'en',
+): string {
+    if (voice === 'operator') {
+        const override = part === 'title' ? row.operatorTitle : row.operatorDescription;
+        if (override) return override[locale];
+    }
+    return row[part][locale];
+}
+
+function channelToast(title: string, channel: NotificationChannel, enabled: boolean, locale: 'de' | 'en'): string {
     if (channel === 'email') {
         return enabled
             ? { de: `${title} per E-Mail an.`, en: `${title} by email turned on.` }[locale]
@@ -129,6 +152,7 @@ export function AccountNotificationSettings({
     disabled,
     onAddPhone,
     onSave,
+    voice = 'account',
 }: {
     value: GqlCUserNotificationSettings;
     hasPhoneNumber: boolean;
@@ -136,6 +160,7 @@ export function AccountNotificationSettings({
     disabled: boolean;
     onAddPhone: () => void;
     onSave: (patch: GqlCUserNotificationSettingsInput) => Promise<void>;
+    voice?: AccountNotificationVoice;
 }) {
     const locale = useLocale();
     const [settings, setSettings] = useState(value);
@@ -162,7 +187,7 @@ export function AccountNotificationSettings({
             await onSave({ [domain]: next[domain] });
             const row = [...customerRows, ...cookRows].find((item) => item.domain === domain);
             if (row) {
-                toast.success(channelToast(row, channel, next[domain][channel], locale));
+                toast.success(channelToast(notificationCopy(row, voice, 'title', locale), channel, next[domain][channel], locale));
             }
         } catch {
             setSettings(previous);
@@ -214,7 +239,8 @@ export function AccountNotificationSettings({
             {hasPhoneNumber ? null : (
                 <button
                     type="button"
-                    className="w-fit text-left text-sm text-foreground underline-offset-4 hover:underline"
+                    disabled={disabled}
+                    className="w-fit text-left text-sm text-foreground underline-offset-4 hover:underline disabled:pointer-events-none disabled:opacity-50"
                     onClick={onAddPhone}
                 >
                     {
@@ -226,8 +252,13 @@ export function AccountNotificationSettings({
                 </button>
             )}
             <NotificationGroup
-                heading={{ de: 'Für deine Abende', en: 'Evenings you book' }[locale]}
+                heading={
+                    voice === 'operator'
+                        ? { de: 'Gebuchte Abende', en: 'Booked evenings' }[locale]
+                        : { de: 'Für deine Abende', en: 'Evenings you book' }[locale]
+                }
                 rows={customerRows}
+                voice={voice}
                 settings={settings}
                 hasPhoneNumber={hasPhoneNumber}
                 disabled={disabled}
@@ -235,8 +266,13 @@ export function AccountNotificationSettings({
             />
             {isCook ? (
                 <NotificationGroup
-                    heading={{ de: 'Wenn du kochst', en: 'When you cook' }[locale]}
+                    heading={
+                        voice === 'operator'
+                            ? { de: 'Als Koch', en: 'As a cook' }[locale]
+                            : { de: 'Wenn du kochst', en: 'When you cook' }[locale]
+                    }
                     rows={cookRows}
+                    voice={voice}
                     settings={settings}
                     hasPhoneNumber={hasPhoneNumber}
                     disabled={disabled}
@@ -260,12 +296,15 @@ export function AccountNotificationSettings({
                             }
                         </AlertDialogTitle>
                         <AlertDialogDescription>
-                            {
-                                {
-                                    de: 'Du bekommst dann keine E-Mail und kein WhatsApp, wenn sich der Abend ändert oder abgesagt wird. In der App siehst du es weiterhin.',
-                                    en: 'You will not get an email or a WhatsApp if this evening changes or is cancelled. You can still see it in the app.',
-                                }[locale]
-                            }
+                            {voice === 'operator'
+                                ? {
+                                      de: 'Diese Person bekommt dann keine E-Mail und kein WhatsApp, wenn sich der Abend ändert oder abgesagt wird. In der App bleibt es sichtbar.',
+                                      en: 'This person will not get an email or a WhatsApp if the evening changes or is cancelled. It still shows in the app.',
+                                  }[locale]
+                                : {
+                                      de: 'Du bekommst dann keine E-Mail und kein WhatsApp, wenn sich der Abend ändert oder abgesagt wird. In der App siehst du es weiterhin.',
+                                      en: 'You will not get an email or a WhatsApp if this evening changes or is cancelled. You can still see it in the app.',
+                                  }[locale]}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -289,6 +328,7 @@ export function AccountNotificationSettings({
 function NotificationGroup({
     heading,
     rows,
+    voice,
     settings,
     hasPhoneNumber,
     disabled,
@@ -296,6 +336,7 @@ function NotificationGroup({
 }: {
     heading: string;
     rows: NotificationRow[];
+    voice: AccountNotificationVoice;
     settings: GqlCUserNotificationSettings;
     hasPhoneNumber: boolean;
     disabled: boolean;
@@ -309,8 +350,8 @@ function NotificationGroup({
             {rows.map((row) => (
                 <div key={row.domain} className="grid gap-3">
                     <div className="grid gap-0.5">
-                        <p className="text-sm font-medium text-foreground">{row.title[locale]}</p>
-                        <p className="text-sm text-muted-foreground">{row.description[locale]}</p>
+                        <p className="text-sm font-medium text-foreground">{notificationCopy(row, voice, 'title', locale)}</p>
+                        <p className="text-sm text-muted-foreground">{notificationCopy(row, voice, 'description', locale)}</p>
                     </div>
                     <div className="flex flex-wrap gap-x-6 gap-y-2">
                         <ChannelSwitch

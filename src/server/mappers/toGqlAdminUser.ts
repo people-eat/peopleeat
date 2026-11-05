@@ -1,4 +1,5 @@
 import type { User } from '../db/schema';
+import { notificationSettingsResolve } from '../domain/notificationSettings';
 import type { GqlSAdminUser, GqlSAdminUserType } from '../graphql/generated';
 
 export function toGqlAdminUser(user: User, types: GqlSAdminUserType[]): GqlSAdminUser {
@@ -12,6 +13,7 @@ export function toGqlAdminUser(user: User, types: GqlSAdminUserType[]): GqlSAdmi
         phoneNumber: user.phoneNumber ?? null,
         birthDate: user.birthDate ?? null,
         preferredCommunication: user.preferredCommunication ?? null,
+        notificationSettings: notificationSettingsResolve(user.notificationSettings),
         locale: user.locale,
         timeZone: user.timeZone,
         adminNote: user.adminNote,
@@ -19,6 +21,8 @@ export function toGqlAdminUser(user: User, types: GqlSAdminUserType[]): GqlSAdmi
         createdAt: user.createdAt,
 
         // resolved fields
+        passkeys: [],
+        timeBasedOneTimePassword: null,
         profilePicture: null,
         cook: null,
         featureToggleOverrides: [],

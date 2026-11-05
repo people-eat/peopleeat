@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
 import { formatDate, userBirthDatePickerBounds, userDisplayName } from '../../../shared';
+import { AccountNotificationSettings } from '../../components/AccountNotificationSettings';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -25,11 +26,13 @@ import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { DatePicker } from '../../components/base/date-picker';
 import { Input } from '../../components/base/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
+import { Separator } from '../../components/base/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
 import { PreferredCommunicationField } from '../../components/PreferredCommunicationField';
 import { ProfilePictureEditor } from '../../components/ProfilePictureEditor';
 import { TimeZoneField } from '../../components/TimeZoneField';
-import type { GqlCAdminUserPageQuery, GqlCUserPreferredCommunication, GqlCUserStatus } from '../../graphql/generated';
+import type { GqlCAdminUserPageQuery, GqlCLocale, GqlCUserPreferredCommunication, GqlCUserStatus } from '../../graphql/generated';
 import {
     AdminUserAnonymizeDocument,
     AdminUserEmailAddressUpdateDocument,
@@ -43,6 +46,7 @@ import { DEFAULT_LOCALE, localePath, LOCALES, setLocaleCookie } from '../../util
 import type { Locale } from '../../utils/locale';
 import { sessionSwitchUrl } from '../../utils/sessionSwitchUrl';
 import { adminUserTypeLabel } from './adminUsersColumns';
+import { AdminUserSignInSection } from './AdminUserSignInSection';
 
 type AdminUserRow = NonNullable<NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['user']>;
 
@@ -53,6 +57,7 @@ type GeneralFormValues = {
     birthDate: Date | undefined;
     preferredCommunication: GqlCUserPreferredCommunication | '';
     emailAddress: string;
+    locale: GqlCLocale;
     timeZone: string;
 };
 
@@ -66,6 +71,7 @@ function formFromUser(user: AdminUserRow): GeneralFormValues {
         birthDate: user.birthDate ? new Date(`${user.birthDate}T00:00:00`) : undefined,
         preferredCommunication: user.preferredCommunication ?? '',
         emailAddress: user.emailAddress ?? '',
+        locale: user.locale,
         timeZone: user.timeZone,
     };
 }
@@ -81,6 +87,12 @@ function adminUserStatusLabel(status: GqlCUserStatus, locale: Locale): string {
 function adminUserStatusBadgeVariant(status: GqlCUserStatus): 'default' | 'destructive' {
     if (status === 'ANONYMIZED' || status === 'BANNED') return 'destructive';
     return 'default';
+}
+
+function localeLabel(value: string): string {
+    if (value === 'de') return 'Deutsch';
+    if (value === 'en') return 'English';
+    return value;
 }
 
 function preferredCommunicationLabel(value: GqlCUserPreferredCommunication | null | undefined, locale: Locale): string {
@@ -238,6 +250,7 @@ export function AdminUserGeneralSection({
                     phoneNumber: value.phoneNumber.trim() || undefined,
                     birthDate: value.birthDate ? format(value.birthDate, 'yyyy-MM-dd') : undefined,
                     preferredCommunication: value.preferredCommunication || undefined,
+                    locale: value.locale,
                     timeZone: value.timeZone,
                 },
             });
@@ -364,6 +377,16 @@ export function AdminUserGeneralSection({
         setEditing(false);
     }
 
+    function onAddPhone() {
+        if (alreadyAnonymized) return;
+        if (!editing) onStartEdit();
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                document.getElementById('admin-user-phone')?.focus();
+            });
+        });
+    }
+
     const formBusy = isSubmitting || profilePictureBusy || alreadyAnonymized;
     const profilePictureUrl = user.profilePicture?.url ?? null;
 
@@ -473,7 +496,7 @@ export function AdminUserGeneralSection({
             {editing ? (
                 <form
                     id={GENERAL_FORM_ID}
-                    className="grid gap-6"
+                    className="grid max-w-3xl gap-6"
                     onSubmit={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -579,17 +602,50 @@ export function AdminUserGeneralSection({
                             )}
                         </form.Field>
 
-                        <form.Field name="preferredCommunication">
+                        <form.Field name="locale">
                             {(field) => (
-                                <PreferredCommunicationField
-                                    value={field.state.value}
-                                    onValueChange={(next) => field.handleChange(next)}
-                                    disabled={formBusy}
-                                    showTitle
-                                />
+                                <div className="grid gap-2">
+                                    <label htmlFor="admin-user-locale" className="text-sm font-medium">
+                                        {{ de: 'Sprache', en: 'Language' }[locale]}
+                                    </label>
+                                    <Select
+                                        value={field.state.value}
+                                        onValueChange={(next) => {
+                                            if (next === 'de' || next === 'en') field.handleChange(next);
+                                        }}
+                                        disabled={formBusy}
+                                    >
+                                        <SelectTrigger id="admin-user-locale" className="w-full">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="de">Deutsch</SelectItem>
+                                            <SelectItem value="en">English</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-xs text-muted-foreground">
+                                        {
+                                            {
+                                                de: 'Oberfläche, E-Mails und WhatsApp dieser Person.',
+                                                en: "This person's interface, emails, and WhatsApp.",
+                                            }[locale]
+                                        }
+                                    </p>
+                                </div>
                             )}
                         </form.Field>
                     </div>
+
+                    <form.Field name="preferredCommunication">
+                        {(field) => (
+                            <PreferredCommunicationField
+                                value={field.state.value}
+                                onValueChange={(next) => field.handleChange(next)}
+                                disabled={formBusy}
+                                showTitle
+                            />
+                        )}
+                    </form.Field>
 
                     <form.Field name="timeZone">
                         {(field) => (
@@ -647,10 +703,56 @@ export function AdminUserGeneralSection({
                         label={{ de: 'Bevorzugte Erreichbarkeit', en: 'Preferred contact' }[locale]}
                         value={preferredCommunicationLabel(user.preferredCommunication, locale)}
                     />
+                    <DetailField label={{ de: 'Sprache', en: 'Language' }[locale]} value={localeLabel(user.locale)} />
                     <DetailField label={{ de: 'Zeitzone', en: 'Time zone' }[locale]} value={user.timeZone} />
                     <DetailField label={{ de: 'Nutzer-ID', en: 'User ID' }[locale]} value={user.userId} mono copyText={user.userId} />
                 </dl>
             )}
+
+            <Separator />
+
+            <section className="grid max-w-3xl gap-4">
+                <div className="grid gap-1">
+                    <h3 className="text-sm font-medium text-foreground">{{ de: 'Benachrichtigungen', en: 'Notifications' }[locale]}</h3>
+                    <p className="text-sm text-muted-foreground">
+                        {alreadyAnonymized
+                            ? {
+                                  de: 'Dieses Konto ist anonymisiert. Es gehen keine Nachrichten mehr raus.',
+                                  en: 'This account is anonymized. No messages are sent.',
+                              }[locale]
+                            : {
+                                  de: 'Wobei wir dieser Person schreiben. In der App bleibt alles sichtbar. Anmeldecodes, Zahlungen und Support gehen immer an die E-Mail.',
+                                  en: 'What we write to this person about. Everything still shows in the app. Sign-in codes, payments, and support always go to the email.',
+                              }[locale]}
+                    </p>
+                </div>
+                {alreadyAnonymized ? null : (
+                    <AccountNotificationSettings
+                        value={user.notificationSettings}
+                        hasPhoneNumber={Boolean(user.phoneNumber?.trim())}
+                        isCook={user.cook != null}
+                        disabled={formBusy}
+                        voice="operator"
+                        onAddPhone={onAddPhone}
+                        onSave={async (notificationSettings) => {
+                            const result = await updateUser({ userId: user.userId, user: { notificationSettings } });
+                            if (result.error || !result.data?.admin.userUpdate.success) {
+                                throw result.error ?? new Error('Could not save.');
+                            }
+                            await router.invalidate();
+                        }}
+                    />
+                )}
+            </section>
+
+            <Separator />
+
+            <AdminUserSignInSection
+                userId={user.userId}
+                passkeys={user.passkeys}
+                totp={user.timeBasedOneTimePassword}
+                disabled={alreadyAnonymized}
+            />
 
             {!editing ? (
                 <div className="grid gap-4 @2xl:grid-cols-2">

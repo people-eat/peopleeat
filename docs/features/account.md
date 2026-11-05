@@ -48,7 +48,8 @@ by `userId`) stays joinable for chefs and operations.
 Self-serve deletion is two steps. **Send code** emails a one-time code to the current address (`userAnonymizeOtpRequest`). **Delete
 account** checks that code and then anonymizes (`userAnonymize(code)`). Closing the dialog before the code is entered leaves the code
 unused. Admin deletion stays `AdminMutation.userAnonymize(userId)` without the email step. Success toasts, then hard-navigates via
-`redirectAfterSignOut`.
+`redirectAfterSignOut`. On the user detail general tab, admins can also see and remove that account’s passkeys and authenticator
+(`userPasskeyDelete`, `userTotpDelete`) and edit notification settings. See [admin-users.md](./admin-users.md).
 
 On success the command:
 

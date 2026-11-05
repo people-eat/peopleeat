@@ -1499,7 +1499,9 @@ export interface GqlSAdminMutation {
     userAnonymize: GqlSMutationResult;
     userCreate: GqlSMutationResult;
     userEmailAddressUpdate: GqlSMutationResult;
+    userPasskeyDelete: GqlSMutationResult;
     userStatusUpdate: GqlSMutationResult;
+    userTotpDelete: GqlSMutationResult;
     userUpdate: GqlSMutationResult;
     webPageUpsert: GqlSMutationResult;
     whatsAppConversationUnreadCountReset: GqlSMutationResult;
@@ -1866,8 +1868,17 @@ export type GqlSAdminMutationUserEmailAddressUpdateArgs = {
     userId: Scalars['ID']['input'];
 };
 
+export type GqlSAdminMutationUserPasskeyDeleteArgs = {
+    authPasskeyId: Scalars['ID']['input'];
+    userId: Scalars['ID']['input'];
+};
+
 export type GqlSAdminMutationUserStatusUpdateArgs = {
     status: GqlSUserStatus;
+    userId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationUserTotpDeleteArgs = {
     userId: Scalars['ID']['input'];
 };
 
@@ -2284,11 +2295,14 @@ export interface GqlSAdminUser {
     firstName: Scalars['String']['output'];
     lastName: Scalars['String']['output'];
     locale: GqlSLocale;
+    notificationSettings: GqlSUserNotificationSettings;
+    passkeys: Array<GqlSAuthPasskey>;
     phoneNumber?: Maybe<Scalars['PhoneNumber']['output']>;
     preferredCommunication?: Maybe<GqlSUserPreferredCommunication>;
     previousEmailAddresses: Array<Scalars['EmailAddress']['output']>;
     profilePicture?: Maybe<GqlSFileUpload>;
     status: GqlSUserStatus;
+    timeBasedOneTimePassword?: Maybe<GqlSAuthTimeBasedOneTimePassword>;
     timeZone: Scalars['TimeZone']['output'];
     types: Array<GqlSAdminUserType>;
     userId: Scalars['ID']['output'];
@@ -8313,11 +8327,23 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationUserEmailAddressUpdateArgs, 'emailAddress' | 'userId'>
     >;
+    userPasskeyDelete?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationUserPasskeyDeleteArgs, 'authPasskeyId' | 'userId'>
+    >;
     userStatusUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationUserStatusUpdateArgs, 'status' | 'userId'>
+    >;
+    userTotpDelete?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationUserTotpDeleteArgs, 'userId'>
     >;
     userUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -8647,11 +8673,14 @@ export type GqlSAdminUserResolvers<
     firstName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     lastName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     locale?: Resolver<GqlSResolversTypes['Locale'], ParentType, ContextType>;
+    notificationSettings?: Resolver<GqlSResolversTypes['UserNotificationSettings'], ParentType, ContextType>;
+    passkeys?: Resolver<Array<GqlSResolversTypes['AuthPasskey']>, ParentType, ContextType>;
     phoneNumber?: Resolver<Maybe<GqlSResolversTypes['PhoneNumber']>, ParentType, ContextType>;
     preferredCommunication?: Resolver<Maybe<GqlSResolversTypes['UserPreferredCommunication']>, ParentType, ContextType>;
     previousEmailAddresses?: Resolver<Array<GqlSResolversTypes['EmailAddress']>, ParentType, ContextType>;
     profilePicture?: Resolver<Maybe<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['UserStatus'], ParentType, ContextType>;
+    timeBasedOneTimePassword?: Resolver<Maybe<GqlSResolversTypes['AuthTimeBasedOneTimePassword']>, ParentType, ContextType>;
     timeZone?: Resolver<GqlSResolversTypes['TimeZone'], ParentType, ContextType>;
     types?: Resolver<Array<GqlSResolversTypes['AdminUserType']>, ParentType, ContextType>;
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
