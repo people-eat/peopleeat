@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { cooks } from '../db/schema';
 import type { CookCreate, UserCreate } from '../db/schema';
+import { environmentVariables } from '../env/environmentVariablesCreate';
 import { commandSetup, cookMutationParent, findLogsForSession, testDb } from '../test/commandTestUtils';
 import { phoneNumberCreate } from '../test/phoneNumberCreate';
 import { cookStripeOnboardingStart } from './cookStripeOnboardingStart';
@@ -33,8 +34,8 @@ async function setupCook(
 }
 
 const urls = {
-    returnUrl: 'https://peopleeat.com/profile/wallet?return=1',
-    refreshUrl: 'https://peopleeat.com/profile/wallet?refresh=1',
+    returnUrl: `${environmentVariables.webPageUrl}/profile/wallet?return=1`,
+    refreshUrl: `${environmentVariables.webPageUrl}/profile/wallet?refresh=1`,
 };
 
 describe('cookStripeOnboardingStart', () => {
@@ -265,5 +266,24 @@ describe('cookStripeOnboardingStart', () => {
         const logRows = await findLogsForSession(requestingSession.sessionId);
         expect(logRows.some((row) => row.level === 'error' && /cook not found/.test(row.message))).toBe(true);
         expect(serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+    });
+
+    it('rejects a return URL on another origin', async () => {
+        const { serverRuntime, requestingSession, user } = await setupCook({
+            isApprovedByAdmin: true,
+            stripeAccountId: 'acct_existing',
+            stripeAccountActive: false,
+        });
+
+        await expect(
+            cookStripeOnboardingStart(
+                cookMutationParent(user.userId),
+                { returnUrl: 'https://evil.example/phish', refreshUrl: urls.refreshUrl },
+                requestingSession,
+                serverRuntime,
+            ),
+        ).rejects.toThrow(/returnUrl origin is not allowed/);
+
+        expect(serverRuntime.stripe.accountOnboardingUrlCreate).not.toHaveBeenCalled();
     });
 });

@@ -469,4 +469,23 @@ describe('authEmailOtp', () => {
         expect(rows[0]?.authEmailOtpId).toBe(second.referenceId);
         expect(rows[0]?.emailAddress).toBe('two@example.com');
     });
+
+    it('stops issuing new codes for an address after the hourly cap', async () => {
+        const email = `capped-${idCreate().toLowerCase()}@example.com`;
+        vi.spyOn(authOtpUtils, 'authOtpCodeGenerate').mockReturnValue('121212');
+
+        for (let index = 0; index < 5; index += 1) {
+            const { serverRuntime, requestingSession } = await commandSetup();
+            vi.mocked(serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
+            const issued = await authEmailOtpRequest({ email, locale: 'en' }, requestingSession, serverRuntime);
+            expect(issued.success).toBe(true);
+        }
+
+        const blocked = await commandSetup();
+        vi.mocked(blocked.serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
+        const result = await authEmailOtpRequest({ email, locale: 'en' }, blocked.requestingSession, blocked.serverRuntime);
+
+        expect(result).toEqual({ success: false });
+        expect(blocked.serverRuntime.email.send).not.toHaveBeenCalled();
+    });
 });

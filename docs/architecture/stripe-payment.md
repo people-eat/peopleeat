@@ -39,7 +39,8 @@ Expose a domain-facing `StripePayment` interface on `ServerRuntime.stripe`, impl
   Stripe’s “same idempotency key, different parameters” error while `Cooks.stripeAccountId` is still null. Phone prefill: if Stripe rejects
   `individual.phone`, retry the update without phone (no second create key). On idempotency parameter mismatch (legacy create bodies that
   included KYC fields), recover by bounded `accounts.list` scan for `metadata.cookId`, else create under
-  `cook-express-account:{cookId}:stable`. Existing Connect accounts are not retroactively updated outside this first-create path.
+  `cook-express-account:{cookId}:stable`. Existing Connect accounts are not retroactively updated outside this first-create path. Account
+  Link `returnUrl` and `refreshUrl` must share the `WEB_PAGE_URL` origin.
 
 ### Charge pattern
 

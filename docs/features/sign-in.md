@@ -8,7 +8,8 @@ redirecting there.
 1. Open `/log-on` (or `/en/log-on`), enter an email, and receive a six-digit code.
 2. The OTP dialog reflects server state — reloading keeps it open while the code is valid. Closing the dialog soft-dismisses the pending OTP
    so it does not reopen; requesting the same email again sends the **same** code again (60s send cooldown) so a slow first delivery cannot
-   be invalidated by a retry. An info `StatusAlert` reminds users to also check spam/junk if the email is missing.
+   be invalidated by a retry. A new code for the same address is limited to five per hour across sessions. An info `StatusAlert` reminds
+   users to also check spam/junk if the email is missing.
 3. **Existing email:** verifying the code binds the session to that user.
 4. **New email:** verification marks the email as verified (~30 minutes) without creating a user yet. The UI shows the verified email (with
    discard) and a separate profile section. Submitting creates the account (name required; phone, birth date, and preferred communication

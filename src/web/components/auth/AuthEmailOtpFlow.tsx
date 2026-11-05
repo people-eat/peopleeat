@@ -65,7 +65,7 @@ export function AuthEmailOtpFlow({
             setBusy(true);
             try {
                 const result = await requestOtp({ email: submittedEmail, locale });
-                if (result.error) {
+                if (result.error || !result.data?.authEmailOtpRequest.success) {
                     toast.error({ de: 'Code konnte nicht gesendet werden.', en: 'Could not send the code.' }[locale]);
                 }
                 await sessionRefresh();

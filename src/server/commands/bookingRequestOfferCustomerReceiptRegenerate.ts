@@ -10,6 +10,7 @@ import type {
     GqlSUserMutationBookingRequestOfferCustomerReceiptRegenerateArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestOfferPaymentPdfsCreate } from '../utils/bookingRequestOfferPaymentPdfsCreate';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 
@@ -20,6 +21,7 @@ export async function bookingRequestOfferCustomerReceiptRegenerate(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'bookingRequestOfferCustomerReceiptRegenerate');
 
     try {
         const [row] = await serverRuntime.db

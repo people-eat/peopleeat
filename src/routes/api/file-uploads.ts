@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { fileUploadMediaTypeAllowed } from '../../shared/fileUploadMediaTypes';
 import { fileUploadCreate } from '../../server/commands/fileUploadCreate';
 import { db } from '../../server/db';
 import { environmentVariables } from '../../server/env/environmentVariablesCreate';
@@ -26,7 +27,8 @@ const FILE_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
 // bytes onto the consumer's row inside the same transaction.
 //
 // Auth: the session cookie must already resolve to a user. Anonymous sessions
-// can't upload — they have no user to own the row.
+// can't upload — they have no user to own the row. Media types are limited to
+// images, PDF, and audio (`fileUploadMediaTypeAllowed`).
 export const Route = createFileRoute('/api/file-uploads')({
     server: {
         handlers: {
@@ -84,6 +86,14 @@ export const Route = createFileRoute('/api/file-uploads')({
                         });
                     }
 
+                    const mediaType = file.type || 'application/octet-stream';
+                    if (!fileUploadMediaTypeAllowed(mediaType)) {
+                        return new Response(JSON.stringify({ error: 'File type is not allowed' }), {
+                            status: 415,
+                            headers: { 'Content-Type': 'application/json', 'Set-Cookie': setCookie },
+                        });
+                    }
+
                     if (file.size > FILE_UPLOAD_MAX_BYTES) {
                         return new Response(
                             JSON.stringify({ error: `File too large: ${file.size} bytes exceeds ${FILE_UPLOAD_MAX_BYTES}-byte limit` }),
@@ -105,7 +115,7 @@ export const Route = createFileRoute('/api/file-uploads')({
                             // unknown extensions — fall back to a generic so
                             // downstream code doesn't have to special-case the
                             // empty string.
-                            mediaType: file.type || 'application/octet-stream',
+                            mediaType,
                             bytes,
                         });
 

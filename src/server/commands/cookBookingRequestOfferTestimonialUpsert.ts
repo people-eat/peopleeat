@@ -15,6 +15,7 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { publicationStatusFromRating } from '../utils/publicationStatusFromRating';
 import { testimonialImageUrlsFromFileUploadIds } from '../utils/testimonialImageUrlsFromFileUploadIds';
 
@@ -33,6 +34,7 @@ export async function cookBookingRequestOfferTestimonialUpsert(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await userActiveStatusAssert(cookId, serverRuntime, 'cookBookingRequestOfferTestimonialUpsert');
 
     const body = input.body == null ? null : textNormalizeProseTitled(input.body) || null;
     const rating = testimonialRatingAssertRequired(input.rating, 'cookBookingRequestOfferTestimonialUpsert');

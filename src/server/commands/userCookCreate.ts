@@ -4,6 +4,7 @@ import { cooks, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationCookCreateArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { cookCreatePayloadBuild } from '../utils/cookCreatePayloadBuild';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 
@@ -14,6 +15,7 @@ export async function userCookCreate(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userCookCreate');
 
     try {
         const [user] = await serverRuntime.db.select().from(users).where(eq(users.userId, userId)).limit(1);

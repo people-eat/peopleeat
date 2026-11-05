@@ -10,6 +10,7 @@ import type {
     GqlSUserMutationBookingRequestOfferCallSlotConfirmArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { slackNotifyCallSlotEvent } from '../slack/slackNotifyCallSlot';
 import { bookingRequestOfferCallSlotConfirmEmailSend } from '../utils/bookingRequestOfferCallSlotEmails';
 import { bookingRequestOfferCallSlotReminderSchedule } from '../utils/bookingRequestOfferCallSlotReminderSchedule';
@@ -26,6 +27,7 @@ export async function userBookingRequestOfferCallSlotConfirm(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestOfferCallSlotConfirm');
 
     const { cookCallSlotBookingId } = args;
     const bookingRequestOfferEventId = idCreate();

@@ -17,6 +17,7 @@ import { bookingRequestOfferPaymentIsPaid, bookingRequestStatusDerive } from '..
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationBookingRequestUpdateArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { slackFormatDateTime, slackFormatParticipants } from '../slack/slackFormat';
 import { slackNotifyBookingRequestFieldChange } from '../slack/slackNotifyBooking';
 import { bookingRequestCookTravelDistanceKmClear } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
@@ -79,6 +80,7 @@ export async function userBookingRequestUpdate(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestUpdate');
 
     const { bookingRequestId, occasion, dateTime, preferences, exactEventAddress: exactEventAddressArg } = args;
 

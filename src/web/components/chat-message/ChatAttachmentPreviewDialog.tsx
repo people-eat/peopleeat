@@ -169,10 +169,9 @@ export function ChatAttachmentPreviewDialog({ open, onOpenChange, attachments, i
                         </a>
                     </Button>
                     <Button asChild variant="default" size="sm">
-                        {/* `download` triggers a save-as with the persisted
-                            filename — the GET route serves
-                            `Content-Disposition: inline`, so the attribute
-                            is what flips the browser to "save" mode. */}
+                        {/* `download` asks the browser to save the file. PDF and
+                            other non-image types are already served as
+                            `Content-Disposition: attachment`. */}
                         <a href={current.url} download={current.filename}>
                             <DownloadIcon />
                             {{ de: 'Herunterladen', en: 'Download' }[locale]}

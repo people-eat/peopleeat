@@ -4,6 +4,7 @@ import { bookingRequestCooks, bookingRequests, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookMutation, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { slackNotifyCookRequestDecline } from '../slack/slackNotifyBooking';
 
 export async function cookBookingRequestDecline(
@@ -13,6 +14,7 @@ export async function cookBookingRequestDecline(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await userActiveStatusAssert(cookId, serverRuntime, 'cookBookingRequestDecline');
 
     try {
         const reason = input.reason.trim();

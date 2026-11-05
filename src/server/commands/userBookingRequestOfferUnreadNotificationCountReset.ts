@@ -9,6 +9,7 @@ import type {
     GqlSUserMutationBookingRequestOfferUnreadNotificationCountResetArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestOfferChatMessageNotifyCancel } from '../utils/bookingRequestOfferChatMessageNotifySchedule';
 
 export async function userBookingRequestOfferUnreadNotificationCountReset(
@@ -18,6 +19,7 @@ export async function userBookingRequestOfferUnreadNotificationCountReset(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestOfferUnreadNotificationCountReset');
 
     const { bookingRequestOfferId } = args;
 

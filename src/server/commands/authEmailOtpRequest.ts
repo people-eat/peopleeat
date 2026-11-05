@@ -10,6 +10,7 @@ import {
 } from '../email/templates/AuthEmailOtpRequestForUserEmail';
 import { environmentVariables } from '../env/environmentVariablesCreate';
 import type { GqlSMutationAuthEmailOtpRequestArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
+import { authEmailOtpIssueCapReached } from '../utils/authEmailOtpLimits';
 import {
     authOtpCodeDecrypt,
     authOtpCodeEncrypt,
@@ -104,6 +105,11 @@ export async function authEmailOtpRequest(
 
             await serverRuntime.publish.sessionUpdates({ sessionId: requestingSession.sessionId });
             return { success: true, referenceId: reusable.authEmailOtpId };
+        }
+
+        if (await authEmailOtpIssueCapReached(serverRuntime.db, email, now)) {
+            serverRuntime.log.warn('authEmailOtpRequest: issue cap reached', requestingSession);
+            return { success: false };
         }
 
         // Phase 1 — Payload construction (pure, no DB calls)

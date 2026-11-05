@@ -9,6 +9,7 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { cookBookingRequestMenuEvaluationSchedule } from '../utils/cookBookingRequestMenuEvaluationSchedule';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 
@@ -20,6 +21,7 @@ export async function cookBookingRequestMenuEvaluationRefresh(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await userActiveStatusAssert(cookId, serverRuntime, 'cookBookingRequestMenuEvaluationRefresh');
 
     try {
         const enabled = await featureToggleIsEnabled('AI_MENU_EVALUATION', serverRuntime, cookId);

@@ -10,6 +10,7 @@ import type {
     GqlSUserMutationBookingRequestOfferCallSlotCancelArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { slackNotifyCallSlotEvent } from '../slack/slackNotifyCallSlot';
 import { bookingRequestOfferCallSlotCancelEmailSend } from '../utils/bookingRequestOfferCallSlotEmails';
 import { bookingRequestOfferCallSlotsCompleteCancel } from '../utils/bookingRequestOfferCallSlotsCompleteSchedule';
@@ -22,6 +23,7 @@ export async function userBookingRequestOfferCallSlotCancel(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestOfferCallSlotCancel');
 
     const { cookCallSlotBookingId } = args;
     const reason = args.reason?.trim() || undefined;

@@ -44,3 +44,7 @@ Guard files follow the pattern `guard{Entity}{Context}`:
 - Authorization logic is explicit and co-located with the resolver wiring
 - Each guard is independently testable
 - Adding a new protected operation requires importing and calling the guard in `resolversCreate.ts`
+- Cook writes (`UserMutation.cook`, `guardCookMutation`) require an `ACTIVE` account. Customer marketplace commands call
+  `userActiveStatusAssert` the same way. Account commands on `UserMutation` (profile, passkeys, TOTP, email change, account deletion, legal
+  acceptance, session revoke) stay available to a banned user so the restriction banner and account recovery still work. Support requests
+  stay available too. See [account.md](../features/account.md).

@@ -5,6 +5,7 @@ import { PaperclipIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { useMutation } from 'urql';
 
+import { FILE_UPLOAD_ACCEPT } from '../../shared/fileUploadMediaTypes';
 import { useComposerFileAttachments } from '../chat/useComposerFileAttachments';
 import { ProfileSupportRequestCreateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
@@ -174,6 +175,7 @@ export function SupportRequestCreateForm({
                             <input
                                 ref={fileInputRef}
                                 type="file"
+                                accept={FILE_UPLOAD_ACCEPT}
                                 className="hidden"
                                 multiple
                                 onChange={(event) => {

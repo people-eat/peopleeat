@@ -4,10 +4,10 @@ import { authEmailOtps, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationUserAnonymizeArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { authEmailOtpAttemptTake } from '../utils/authEmailOtpLimits';
 import { authOtpCodeMatches, authOtpPepperRequire } from '../utils/authOtpUtils';
 import { userAnonymizeApply } from './userAnonymizeApply';
 
-const MAX_ATTEMPTS = 5;
 const PURPOSE = 'ACCOUNT_DELETE';
 
 /**
@@ -41,14 +41,11 @@ export async function userAnonymize(
         if (!otp || otp.expiresAt.getTime() <= now.getTime() || otp.verifiedAt != null) {
             throw new Error('userAnonymize: invalid or expired code');
         }
-        if (otp.attemptCount >= MAX_ATTEMPTS) {
+        const attemptTaken = await authEmailOtpAttemptTake(serverRuntime.db, otp.authEmailOtpId);
+        if (!attemptTaken) {
             throw new Error('userAnonymize: too many attemptCount');
         }
         if (!authOtpCodeMatches(args.code.trim(), otp.codeHash, pepper)) {
-            await serverRuntime.db
-                .update(authEmailOtps)
-                .set({ attemptCount: otp.attemptCount + 1 })
-                .where(eq(authEmailOtps.authEmailOtpId, otp.authEmailOtpId));
             throw new Error('userAnonymize: invalid or expired code');
         }
 

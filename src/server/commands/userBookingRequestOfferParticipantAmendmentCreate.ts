@@ -21,6 +21,7 @@ import type {
     GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestOfferParticipantAmendmentCreateEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestOfferCanRequestParticipantAmendment } from '../utils/bookingRequestOfferParticipantAmendmentGates';
 import { bookingRequestOfferParticipantAmendmentPriceCalculate } from '../utils/bookingRequestOfferParticipantAmendmentPrice';
@@ -70,6 +71,7 @@ export async function userBookingRequestOfferParticipantAmendmentCreate(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestOfferParticipantAmendmentCreate');
 
     const { bookingRequestOfferId } = args;
 

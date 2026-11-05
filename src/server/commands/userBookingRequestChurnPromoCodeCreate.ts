@@ -11,6 +11,7 @@ import type {
     GqlSUserMutationBookingRequestChurnPromoCodeCreateArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { redeemCodeCreate } from '../utils/redeemCodeCreate';
 import { userBookingRequestOwnedFindOne } from '../utils/userBookingRequestOwnedFindOne';
 
@@ -24,6 +25,7 @@ export async function userBookingRequestChurnPromoCodeCreate(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestChurnPromoCodeCreate');
 
     const { bookingRequestId } = args;
 

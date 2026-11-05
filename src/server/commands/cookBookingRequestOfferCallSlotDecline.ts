@@ -10,6 +10,7 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { slackNotifyCallSlotEvent } from '../slack/slackNotifyCallSlot';
 import { bookingRequestOfferCallSlotDeclineEmailSend } from '../utils/bookingRequestOfferCallSlotEmails';
 import { bookingRequestOfferCallSlotsCompleteCancel } from '../utils/bookingRequestOfferCallSlotsCompleteSchedule';
@@ -22,6 +23,7 @@ export async function cookBookingRequestOfferCallSlotDecline(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await userActiveStatusAssert(cookId, serverRuntime, 'cookBookingRequestOfferCallSlotDecline');
 
     const { cookCallSlotBookingId } = args;
     const declineReason = args.reason?.trim() || undefined;

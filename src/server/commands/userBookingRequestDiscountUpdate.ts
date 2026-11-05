@@ -6,6 +6,7 @@ import type {
     GqlSUserMutationBookingRequestDiscountUpdateArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { applyDiscountToBookingRequest, clearDiscountOnBookingRequest } from '../utils/applyDiscountToBookingRequest';
 
 export async function userBookingRequestDiscountUpdate(
@@ -15,6 +16,7 @@ export async function userBookingRequestDiscountUpdate(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestDiscountUpdate');
 
     const bookingRequestId = args.bookingRequestId;
     const redeemCode = args.redeemCode?.trim() || null;

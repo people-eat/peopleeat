@@ -112,7 +112,7 @@ describe('createSetSessionCookie', () => {
         expect(result).toContain('Expires=');
     });
 
-    it('uses Secure and SameSite=None when env.secure is true', () => {
+    it('uses Secure and SameSite=Lax when env.secure is true', () => {
         const session = {
             authEmailOtp: null,
             sessionId: 'session-1',
@@ -123,7 +123,8 @@ describe('createSetSessionCookie', () => {
         const result = sessionUtils.createSetSessionCookie({ ...sessionCookieConfig, secure: true }, session);
 
         expect(result).toContain('Secure');
-        expect(result).toContain('SameSite=None');
+        expect(result).toContain('SameSite=Lax');
+        expect(result).not.toContain('SameSite=None');
     });
 
     it('includes Domain when env.domainScope is set', () => {

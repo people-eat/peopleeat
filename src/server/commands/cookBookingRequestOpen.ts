@@ -4,6 +4,7 @@ import { bookingRequestCooks, bookingRequests, cooks } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookMutation, GqlSCookMutationBookingRequestOpenArgs, GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestCookTravelDistanceKmEnsure } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
 import { cookBookingRequestMenuEvaluationSchedule } from '../utils/cookBookingRequestMenuEvaluationSchedule';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
@@ -16,6 +17,7 @@ export async function cookBookingRequestOpen(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await userActiveStatusAssert(cookId, serverRuntime, 'cookBookingRequestOpen');
 
     try {
         const [[bookingRequest], [cook]] = await Promise.all([

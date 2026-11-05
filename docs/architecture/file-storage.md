@@ -2,8 +2,8 @@
 
 ## Context
 
-The template needs a place to put user-uploaded files (today: chat attachments — images, PDFs, arbitrary documents) and a posture for any
-future binary payload that isn't a row of structured data. The decision touches deployment shape, backup strategy, request paths, and the
+The template needs a place to put user-uploaded files (today: chat attachments — images, PDFs, and audio) and a posture for any future
+binary payload that isn't a row of structured data. The decision touches deployment shape, backup strategy, request paths, and the
 authorization model: where the bytes live changes how every other system around them behaves.
 
 Three broad options are on the table:
@@ -48,8 +48,11 @@ domain-specific blob table is the exception, not the default.
 
 The upload and download routes are likewise consumer-agnostic:
 
-- `POST /api/file-uploads` — multipart upload, returns `{ fileUploadId, filename, mediaType, size }`.
-- `GET /api/file-uploads/:fileUploadId` — streams the bytes back. Authorization:
+- `POST /api/file-uploads` — multipart upload, returns `{ fileUploadId, filename, mediaType, size }`. The signed-in user may store jpeg,
+  png, webp, gif, PDF, and the audio types in `src/shared/fileUploadMediaTypes.ts`. HTML, SVG, and other active types are rejected (`415`).
+- `GET /api/file-uploads/:fileUploadId` — streams the bytes back with `X-Content-Type-Options: nosniff`. Bitmap images and audio are
+  `Content-Disposition: inline`. Everything else, including PDF and any older HTML or SVG row, is `attachment`. HTML, SVG, and XML are
+  served as `application/octet-stream` so the browser cannot render them on this origin. Authorization:
   1. the session user owns the upload, or
   2. the upload is any user’s **current profile picture** (`Users.profilePictureFileUploadId`) — public, no session required, or
   3. the upload is any cook’s **current logo** (`Cooks.logoFileUploadId`) — public, no session required (see

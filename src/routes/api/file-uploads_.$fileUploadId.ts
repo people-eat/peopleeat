@@ -1,4 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
+import {
+    fileUploadContentDisposition,
+    fileUploadContentDispositionFilename,
+    fileUploadResponseContentType,
+} from '../../shared/fileUploadMediaTypes';
 import { db } from '../../server/db';
 import { fileUploadLoad } from '../../server/db/fileUploadLoad';
 import { environmentVariables } from '../../server/env/environmentVariablesCreate';
@@ -114,16 +119,18 @@ export const Route = createFileRoute('/api/file-uploads_/$fileUploadId')({
                     });
                 }
 
-                const safeFilename = fileUpload.filename.replace(/"/g, '');
+                const safeFilename = fileUploadContentDispositionFilename(fileUpload.filename);
                 const body = new ArrayBuffer(fileUpload.bytes.byteLength);
                 new Uint8Array(body).set(fileUpload.bytes);
                 const privateCache = (isOwner || isChatPeerAccess) && !isPublicCachedAsset;
+                const disposition = fileUploadContentDisposition(fileUpload.mediaType);
                 return new Response(body, {
                     status: 200,
                     headers: {
-                        'Content-Type': fileUpload.mediaType,
+                        'Content-Type': fileUploadResponseContentType(fileUpload.mediaType),
                         'Content-Length': String(fileUpload.size),
-                        'Content-Disposition': `inline; filename="${safeFilename}"`,
+                        'Content-Disposition': `${disposition}; filename="${safeFilename}"`,
+                        'X-Content-Type-Options': 'nosniff',
                         'Cache-Control': privateCache ? 'private, max-age=86400' : 'public, max-age=86400',
                         'Set-Cookie': setCookie,
                     },

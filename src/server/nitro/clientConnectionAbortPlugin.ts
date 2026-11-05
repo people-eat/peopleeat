@@ -5,6 +5,7 @@ import https from 'node:https';
 import { definePlugin } from 'nitro';
 
 import { isClientConnectionAbortError } from '../utils/isClientConnectionAbortError';
+import { securityResponseHeadersApply } from '../utils/securityResponseHeaders';
 
 const HTTP_SERVER_PATCHED = Symbol.for('peopleeat.httpServerClientAbortPatched');
 const CONSOLE_FILTER_INSTALLED = Symbol.for('peopleeat.clientAbortConsoleFilter');
@@ -28,9 +29,28 @@ function onRequestStreamError(error: Error): void {
     console.error(error);
 }
 
+function headerValue(res: ServerResponse, name: string): string | undefined {
+    const current = res.getHeader(name);
+    if (typeof current === 'string') return current;
+    if (Array.isArray(current)) return current.join(', ');
+    if (typeof current === 'number') return String(current);
+    return undefined;
+}
+
 function attachClientAbortHandlers(req: IncomingMessage, res: ServerResponse): void {
     req.on('error', onRequestStreamError);
     res.on('error', onRequestStreamError);
+
+    const originalWriteHead = res.writeHead;
+    res.writeHead = function writeHeadWithSecurityHeaders(...args: Parameters<ServerResponse['writeHead']>) {
+        securityResponseHeadersApply(
+            (name) => headerValue(res, name),
+            (name, value) => {
+                res.setHeader(name, value);
+            },
+        );
+        return originalWriteHead.apply(this, args);
+    } as typeof res.writeHead;
 }
 
 function patchServerPrototype(Server: typeof http.Server): void {

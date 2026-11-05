@@ -63,8 +63,10 @@ On success the command:
 `Users.emailAddress` is nullable for this reason: null is the explicit “do not email” signal so lifecycle jobs and outbound mail skip the
 row instead of sending to a placeholder. GraphQL `User.emailAddress` / `AdminUser.emailAddress` are nullable accordingly. Auth (email OTP
 verify, passkey authenticate, TOTP complete) rejects `ANONYMIZED` users and allows `ACTIVE` and `BANNED`. Banned users may sign in and see a
-private profile restriction banner; marketplace writes (booking requests, offers, payments) require `ACTIVE`. Admin impersonation stays
-ACTIVE-only. Ban/unban is `AdminMutation.userStatusUpdate` — see [admin-users.md](./admin-users.md).
+private profile restriction banner; marketplace writes (booking requests, offers, payments, calls) require `ACTIVE`. That check lives on
+`guardCookMutation` for every cook write and on the customer marketplace commands via `userActiveStatusAssert`. Account settings, support
+requests, and assistant chat stay available. Admin impersonation stays ACTIVE-only. Ban/unban is `AdminMutation.userStatusUpdate` — see
+[admin-users.md](./admin-users.md).
 
 | Section                                            | Status |
 | -------------------------------------------------- | ------ |

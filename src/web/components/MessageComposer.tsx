@@ -1,6 +1,8 @@
 import { PaperclipIcon } from 'lucide-react';
 import type { KeyboardEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
+
+import { FILE_UPLOAD_ACCEPT } from '../../shared/fileUploadMediaTypes';
 import { useIsMobile } from '../hooks/use-mobile';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
@@ -38,7 +40,7 @@ export function MessageComposer({
     attachments,
     onAttachmentsAdd,
     onAttachmentRemove,
-    accept,
+    accept = FILE_UPLOAD_ACCEPT,
     multipleAttachments = true,
     name = 'message',
     autoFocus = false,

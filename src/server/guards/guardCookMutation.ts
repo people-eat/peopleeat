@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { cooks } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookMutation, GqlSSession } from '../graphql/generated';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 // Gates the cook write namespace (`UserMutation.cook`). Throws when the session
 // user has no `Cooks` row. Stamps `cookId` (= `userId`) onto the parent via
@@ -20,5 +21,8 @@ export async function guardCookMutation(requestingSession: GqlSSession, serverRu
     if (!row) {
         throw new Error('Unauthorized');
     }
+    // Account commands stay on UserMutation. Every cook write (offers, calls,
+    // profile, Stripe) requires an ACTIVE account.
+    await userActiveStatusAssert(requestingSession.userId, serverRuntime, 'guardCookMutation');
     return { cookId: requestingSession.userId } as GqlSCookMutation;
 }

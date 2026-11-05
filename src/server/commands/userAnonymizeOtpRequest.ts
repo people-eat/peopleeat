@@ -11,6 +11,7 @@ import {
 import { environmentVariables } from '../env/environmentVariablesCreate';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationUserAnonymizeOtpRequestArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { authEmailOtpIssueCapReached } from '../utils/authEmailOtpLimits';
 import {
     authOtpCodeDecrypt,
     authOtpCodeEncrypt,
@@ -103,6 +104,11 @@ export async function userAnonymizeOtpRequest(
                 userId,
             });
             return { success: true, referenceId: reusable.authEmailOtpId };
+        }
+
+        if (await authEmailOtpIssueCapReached(serverRuntime.db, email, now)) {
+            serverRuntime.log.warn('userAnonymizeOtpRequest: issue cap reached', requestingSession);
+            return { success: false };
         }
 
         const pepper = authOtpPepperRequire();

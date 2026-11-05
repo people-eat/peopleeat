@@ -17,10 +17,12 @@ Cookie-based session management with automatic session creation on every GraphQL
 3. If a valid session exists (not terminated), it updates `lastInteractionAt` and returns the session
 4. If no session exists or the session was terminated, a new session is created with `crypto.randomUUID()`
 5. The response includes a `Set-Cookie` header to persist the session ID in the browser. The cookie is set `HttpOnly` so the session ID is
-   not readable from JavaScript (mitigating XSS exfiltration), along with `Secure` + `SameSite=None` when `sessionCookieSecure=true`
-   (production) and `SameSite=Lax` otherwise — see `createSetSessionCookie` in `src/server/utils/sessionUtils.ts`. SSR must forward the
-   incoming cookie to `/api/graphql` over the public HTTPS origin (not `request.url`'s possibly-`http` value behind Coolify) or every
-   document load mints a new session — see [api-layer.md](./api-layer.md#session--cookie-handover).
+   not readable from JavaScript (mitigating XSS exfiltration), along with `Secure` when `sessionCookieSecure=true` (production) and
+   `SameSite=Lax` in every environment — see `createSetSessionCookie` in `src/server/utils/sessionUtils.ts`. The app and `/api/graphql` are
+   the same site, so Lax still sends the cookie on document navigations and same-site API calls, and it does not attach the cookie to
+   cross-site requests. SSR must forward the incoming cookie to `/api/graphql` over the public HTTPS origin (not `request.url`'s
+   possibly-`http` value behind Coolify) or every document load mints a new session — see
+   [api-layer.md](./api-layer.md#session--cookie-handover).
 
 Marketing / analytics consent is separate: a `CookieSettings` row keyed by `sessionId` gates Google Analytics and Microsoft Clarity. That
 consent is not the HttpOnly session cookie — see [cookie-consent.md](../features/cookie-consent.md).
@@ -47,7 +49,8 @@ consent is not the HttpOnly session cookie — see [cookie-consent.md](../featur
 ### Key Files
 
 - `src/server/utils/sessionUpsert.ts` — session creation and update logic
-- `src/server/utils/clientIpFromRequest.ts` — client IP from `x-forwarded-for` / `x-real-ip`
+- `src/server/utils/clientIpFromRequest.ts` — client IP from the last `x-forwarded-for` hop (the address the reverse proxy appended) or
+  `x-real-ip`
 - `src/server/utils/sessionUtils.ts` — cookie reading/writing helpers
 - `src/server/db/schema.ts` — `Sessions` table definition
 - `src/routes/api/graphql.ts` — session context wiring for queries and mutations
@@ -93,14 +96,17 @@ the only runtime paths. We **keep** the column so email+password can be re-enabl
    `AUTH_OTP_PEPPER`) and sends the plaintext code via Resend + React Email.
 2. At most one pending OTP is exposed on `Session.authEmailOtp` (never the hash/ciphertext) so the log-on UI can survive reloads. A request
    for the **same** email reuses that row and sends the **same** code again after a 60s send cooldown (so late-arriving mail never
-   invalidates an earlier code). A request for a **different** email replaces any prior unconsumed OTP for the session.
+   invalidates an earlier code). A request for a **different** email replaces any prior unconsumed OTP for the session. Newly **issued**
+   codes for one address are also capped at five per hour across sessions, so minting a fresh anonymous session does not reset the limit.
+   Resends of an existing row stay on the 60s cooldown and do not count toward that cap.
 3. Mutations publish `sessionUpdates` on channel `session-updates:{sessionId}`; the UI seeds from `currentSession` and replaces state from
    the subscription (commands do not drive popup open/close). Because mobile browsers drop the SSE stream while the user fetches the code
    from their mail app, `AuthIdentityGate` also re-reads `currentSession` after each of its own mutations and re-subscribes when the tab
    becomes visible again — see [state-synchronization.md](./state-synchronization.md#session-owned-auth-ui).
 4. Close / dismiss of an unverified OTP calls `authEmailOtpDelete`, which soft-dismisses (`dismissedAt`) so the dialog stays closed but a
    retry can still resend the same code. Discarding a verified registration ticket hard-deletes the row.
-5. `authEmailOtpVerify` checks the hash:
+5. `authEmailOtpVerify` checks the hash. A wrong code consumes one of five attempts in a single `UPDATE … WHERE attemptCount < 5`, so
+   parallel requests cannot all pass a prior read of the counter:
    - **Existing user** — consume OTP (`consumedAt`), `sessionUserBind`.
    - **New email** — set `verifiedAt`, extend `expiresAt` (~30m registration ticket); **do not** create a `Users` row.
 6. On the register step, discard (with confirmation) calls `authEmailOtpDelete` so a different email can be requested — same mutation as

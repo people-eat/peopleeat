@@ -7,6 +7,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession } from '../graphql/generated';
 import { bookingRequestOfferChatWritableAssert } from '../utils/bookingRequestOfferChatWritableAssert';
 import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 
 const EMOJI_MAX_LENGTH = 16;
 
@@ -35,6 +36,9 @@ export async function bookingRequestOfferChatMessageReactionUpsert(
     const enabled = await featureToggleIsEnabled('BOOKING_REQUEST_OFFER_CHAT_REACTIONS', serverRuntime, input.reactorUserId);
     if (!enabled) {
         throw new Error('bookingRequestOfferChatMessageReactionUpsert: feature is disabled');
+    }
+    if (input.reactorRole !== 'ADMIN') {
+        await userActiveStatusAssert(input.reactorUserId, serverRuntime, 'bookingRequestOfferChatMessageReactionUpsert');
     }
 
     try {

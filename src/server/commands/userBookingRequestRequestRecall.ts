@@ -9,6 +9,7 @@ import type {
     GqlSUserMutationBookingRequestRequestRecallArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { slackNotifyBookingRequestRecall } from '../slack/slackNotifyBooking';
 import { userBookingRequestOwnedFindOne } from '../utils/userBookingRequestOwnedFindOne';
 
@@ -23,6 +24,7 @@ export async function userBookingRequestRequestRecall(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestRequestRecall');
 
     const { bookingRequestId } = args;
 

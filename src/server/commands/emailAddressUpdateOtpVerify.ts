@@ -10,9 +10,8 @@ import type {
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import { userKlaviyoProfileSync } from '../jobs/handlers/userKlaviyoProfileSync';
+import { authEmailOtpAttemptTake } from '../utils/authEmailOtpLimits';
 import { authOtpCodeMatches, authOtpPepperRequire } from '../utils/authOtpUtils';
-
-const MAX_ATTEMPTS = 5;
 
 export async function emailAddressUpdateOtpVerify(
     { userId }: GqlSUserMutation,
@@ -47,15 +46,12 @@ export async function emailAddressUpdateOtpVerify(
             throw new Error('emailAddressUpdateOtpVerify: invalid or expired code');
         }
 
-        if (otp.attemptCount >= MAX_ATTEMPTS) {
+        const attemptTaken = await authEmailOtpAttemptTake(serverRuntime.db, otp.authEmailOtpId);
+        if (!attemptTaken) {
             throw new Error('emailAddressUpdateOtpVerify: too many attemptCount');
         }
 
         if (!authOtpCodeMatches(args.code.trim(), otp.codeHash, pepper)) {
-            await serverRuntime.db
-                .update(authEmailOtps)
-                .set({ attemptCount: otp.attemptCount + 1 })
-                .where(eq(authEmailOtps.authEmailOtpId, otp.authEmailOtpId));
             throw new Error('emailAddressUpdateOtpVerify: invalid or expired code');
         }
 

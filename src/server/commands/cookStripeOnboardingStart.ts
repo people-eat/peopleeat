@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { cooks, users } from '../db/schema';
 import type { CookTravelOriginAddress } from '../domain/cook';
 import type { ServerRuntime } from '../domain/ServerRuntime';
+import { environmentVariables } from '../env/environmentVariablesCreate';
 import type {
     GqlSCookMutation,
     GqlSCookMutationStripeOnboardingStartArgs,
@@ -11,6 +12,20 @@ import type {
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 import type { StripeAccountCreate } from '../stripe/StripePayment';
+
+function stripeOnboardingUrlAssert(raw: string, label: 'returnUrl' | 'refreshUrl'): URL {
+    let url: URL;
+    try {
+        url = new URL(raw);
+    } catch {
+        throw new Error(`cookStripeOnboardingStart: ${label} is invalid`);
+    }
+    const allowed = new URL(environmentVariables.webPageUrl);
+    if (url.origin !== allowed.origin || (url.protocol !== 'https:' && url.protocol !== 'http:')) {
+        throw new Error(`cookStripeOnboardingStart: ${label} origin is not allowed`);
+    }
+    return url;
+}
 
 function stripeAccountDateOfBirthFromBirthDate(birthDate: string | null): StripeAccountCreate['dateOfBirth'] {
     if (!birthDate) return undefined;
@@ -124,7 +139,11 @@ export async function cookStripeOnboardingStart(
             }
         }
 
-        const onboardingUrl = await serverRuntime.stripe.accountOnboardingUrlCreate(accountId, new URL(refreshUrl), new URL(returnUrl));
+        const onboardingUrl = await serverRuntime.stripe.accountOnboardingUrlCreate(
+            accountId,
+            stripeOnboardingUrlAssert(refreshUrl, 'refreshUrl'),
+            stripeOnboardingUrlAssert(returnUrl, 'returnUrl'),
+        );
 
         return { kind: 'ONBOARDING_URL', url: onboardingUrl.href };
     } catch (error) {

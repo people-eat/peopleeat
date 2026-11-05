@@ -64,14 +64,26 @@ function createSetSessionCookie(sessionCookieConfig: SessionCookieConfiguration,
         value: session.sessionId,
         expires: new Date(Date.now() + sessionLifetimeMs),
         httpOnly: true,
-        sameSite: sessionCookieConfig.secure ? 'None' : 'Lax',
+        // The app and /api/graphql are the same site, so Lax still sends the
+        // cookie on navigations and same-site fetches. None would attach it
+        // to cross-site requests.
+        sameSite: 'Lax',
         secure: sessionCookieConfig.secure,
         domain: sessionCookieConfig.domainScope,
     });
 }
 
 function clearSessionCookie(env: SessionCookieConfiguration): string {
-    return `${env.name}=; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=0`;
+    const cleared = createSetCookieString({
+        name: env.name,
+        value: '',
+        expires: new Date(0),
+        httpOnly: true,
+        sameSite: 'Lax',
+        secure: env.secure,
+        domain: env.domainScope,
+    });
+    return `${cleared}; Max-Age=0`;
 }
 
 export const sessionUtils = {

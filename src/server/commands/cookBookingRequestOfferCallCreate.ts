@@ -9,6 +9,7 @@ import type {
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestOfferCallTokenIssue } from '../utils/bookingRequestOfferCallTokenIssue';
 
 export async function cookBookingRequestOfferCallCreate(
@@ -18,6 +19,7 @@ export async function cookBookingRequestOfferCallCreate(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSBookingRequestOfferCallTokenResult> {
     await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await userActiveStatusAssert(cookId, serverRuntime, 'cookBookingRequestOfferCallCreate');
 
     const { bookingRequestOfferId } = args;
 

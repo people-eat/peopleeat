@@ -14,6 +14,7 @@ import type {
     GqlSUserMutationBookingRequestOfferTestimonialUpsertArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { publicationStatusFromRating } from '../utils/publicationStatusFromRating';
 import { testimonialImageUrlsFromFileUploadIds } from '../utils/testimonialImageUrlsFromFileUploadIds';
 
@@ -30,6 +31,7 @@ export async function userBookingRequestOfferTestimonialUpsert(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestOfferTestimonialUpsert');
 
     const body = textNormalizeProseTitled(input.body);
     if (body.length === 0) {

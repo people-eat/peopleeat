@@ -4,6 +4,7 @@ import { bookingRequestOffers } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSSession, GqlSUserMutation, GqlSUserMutationBookingRequestCancelArgs } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestCancelApply } from '../utils/bookingRequestCancelApply';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 import { userBookingRequestOwnedFindOne } from '../utils/userBookingRequestOwnedFindOne';
@@ -15,6 +16,7 @@ export async function userBookingRequestCancel(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestCancel');
 
     const reason = args.reason.trim();
     if (reason.length === 0) {

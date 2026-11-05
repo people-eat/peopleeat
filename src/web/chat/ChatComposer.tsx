@@ -1,6 +1,7 @@
 import { EllipsisVerticalIcon, PaperclipIcon } from 'lucide-react';
 import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
 import { useMutation } from 'urql';
+import { FILE_UPLOAD_ACCEPT } from '../../shared/fileUploadMediaTypes';
 import { idCreate } from '../../shared/idCreate';
 import {
     DropdownMenu,
@@ -175,6 +176,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
                     <input
                         ref={fileInputRef}
                         type="file"
+                        accept={FILE_UPLOAD_ACCEPT}
                         multiple
                         className="hidden"
                         disabled={inputsLocked}

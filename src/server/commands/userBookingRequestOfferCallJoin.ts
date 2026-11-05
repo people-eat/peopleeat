@@ -9,6 +9,7 @@ import type {
     GqlSUserMutationBookingRequestOfferCallJoinArgs,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
+import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 import { bookingRequestOfferCallTokenIssue } from '../utils/bookingRequestOfferCallTokenIssue';
 
 export async function userBookingRequestOfferCallJoin(
@@ -18,6 +19,7 @@ export async function userBookingRequestOfferCallJoin(
     serverRuntime: ServerRuntime,
 ): Promise<GqlSBookingRequestOfferCallTokenResult> {
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestOfferCallJoin');
 
     const { bookingRequestOfferId } = args;
 
