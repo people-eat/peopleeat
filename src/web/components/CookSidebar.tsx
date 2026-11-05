@@ -1,24 +1,23 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import { SummaryIcon, UserCogIcon, UserStarIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import type { ComponentProps, ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { createRequest, useClient } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
 import { CookSidebarNavBadgesUpdatesDocument } from '../graphql/generated';
 import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import { useLocale } from '../hooks/useLocale';
+import { useSessionImpersonation } from '../hooks/useSessionImpersonation';
 import { accountPageTitle } from '../pages/accountLabels';
 import { adminPageTitle } from '../pages/admin/adminShellLabels';
-import { COOK_NAV_ROUTES } from '../pages/profile/cookCatalog';
 import type { CookNavSlug } from '../pages/profile/cookCatalog';
+import { COOK_NAV_ROUTES } from '../pages/profile/cookCatalog';
 import { SITE_LOGO, SITE_LOGO_DISPLAY, SITE_LOGO_SRC_SET, SITE_NAME } from '../seo/seoConstants';
-import { DEFAULT_LOCALE } from '../utils/locale';
 import type { Locale } from '../utils/locale';
-import { useSessionImpersonation } from '../hooks/useSessionImpersonation';
+import { DEFAULT_LOCALE } from '../utils/locale';
 import { AppImage } from './AppImage';
 import { NotificationBadge } from './base/notification-badge';
-import { SessionImpersonationReturnSidebarItem } from './SessionImpersonationReturnButton';
 import {
     Sidebar,
     SidebarContent,
@@ -33,6 +32,7 @@ import {
     useSidebar,
 } from './base/sidebar';
 import { StatusBadge } from './base/status-badge';
+import { SessionImpersonationReturnSidebarItem } from './SessionImpersonationReturnButton';
 
 function pathWithoutLocale(pathname: string, locale: Locale): string {
     if (locale !== DEFAULT_LOCALE && pathname.startsWith(`/${locale}/`)) {
