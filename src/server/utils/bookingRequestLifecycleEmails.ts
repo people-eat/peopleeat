@@ -1,6 +1,5 @@
 import { eq, inArray } from 'drizzle-orm';
 
-import { formatCurrency } from '../../shared';
 import { bookingRequestPriceClassLabel } from '../../shared/bookingRequestFormDefaults';
 import type { Locale } from '../../shared/locale';
 import { bookingRequestOffers, bookingRequestParticipants, bookingRequests, users } from '../db/schema';
@@ -85,15 +84,10 @@ import {
 import { environmentVariables } from '../env/environmentVariablesCreate';
 import { bookingEventCalendarAttachment } from './bookingEventCalendarFile';
 import {
-    bookingRequestOfferPaymentConfirmedWhatsAppSend,
-    bookingRequestOfferPullPaymentAnnouncementWhatsAppSend,
     cookBookingRequestOfferCreateWhatsAppSend,
     cookBookingRequestOfferSuggestedMenusUpdateWhatsAppSend,
-    userBookingRequestCancelCookWhatsAppSend,
-    userBookingRequestCancelWhatsAppSend,
     userBookingRequestCreateWhatsAppSend,
     userBookingRequestOfferAcceptCookWhatsAppSend,
-    userBookingRequestOfferAcceptWhatsAppSend,
     userBookingRequestUpdateCookWhatsAppSend,
 } from './bookingRequestLifecycleWhatsApp';
 import { bookingRequestOfferPaymentPdfFilenames, bookingRequestOfferPaymentPdfsCreate } from './bookingRequestOfferPaymentPdfsCreate';
@@ -340,10 +334,6 @@ export async function userBookingRequestCancelEmailSend(
                         userId: customer.userId,
                     }),
             ),
-            userBookingRequestCancelWhatsAppSend(serverRuntime, {
-                bookingRequestId: args.bookingRequestId,
-                customerUserId: args.customerUserId,
-            }),
         );
     }
 
@@ -376,11 +366,6 @@ export async function userBookingRequestCancelEmailSend(
                         userId: cook.userId,
                     }),
             ),
-            userBookingRequestCancelCookWhatsAppSend(serverRuntime, {
-                bookingRequestId: args.bookingRequestId,
-                cookUserId: cookId,
-                customerFirstName: customer?.firstName ?? 'Customer',
-            }),
         );
     }
 
@@ -620,12 +605,6 @@ export async function userBookingRequestOfferAcceptEmailSend(
 
     await Promise.all([
         ...tasks,
-        userBookingRequestOfferAcceptWhatsAppSend(serverRuntime, {
-            bookingRequestOfferId: args.bookingRequestOfferId,
-            bookingRequestId: args.bookingRequestId,
-            customerUserId: args.customerUserId,
-            cookFirstName: cook.firstName,
-        }),
         userBookingRequestOfferAcceptCookWhatsAppSend(serverRuntime, {
             bookingRequestOfferId: args.bookingRequestOfferId,
             bookingRequestId: args.bookingRequestId,
@@ -955,12 +934,6 @@ export async function bookingRequestOfferPaymentConfirmedEmailSend(
                       }),
               )
             : Promise.resolve(),
-        bookingRequestOfferPaymentConfirmedWhatsAppSend(serverRuntime, {
-            bookingRequestOfferId: args.offer.bookingRequestOfferId,
-            bookingRequestId: args.bookingRequest.bookingRequestId,
-            customerUserId: args.bookingRequest.userId,
-            cookFirstName: cook.firstName,
-        }),
     ]);
 }
 
@@ -986,43 +959,33 @@ export async function bookingRequestOfferPullPaymentAnnouncementEmailSend(
     const locale = customer.locale;
     const webPageUrl = environmentVariables.webPageUrl;
 
-    const totalLabel = formatCurrency(args.totalCentsCustomer, { locale });
-
-    await Promise.all([
-        sendUserEmail(
-            serverRuntime,
-            'bookingRequestOfferPullPaymentAnnouncementEmailSend',
-            args.bookingRequestOfferId,
-            customer,
-            'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
-            undefined,
-            () =>
-                serverRuntime.email.send({
-                    to: customer.emailAddress,
-                    subject: bookingRequestOfferPullPaymentAnnouncementForCustomerEmailSubject(locale),
-                    react: BookingRequestOfferPullPaymentAnnouncementForCustomerEmail({
-                        locale,
-                        timeZone: customer.timeZone,
-                        webPageUrl,
-                        recipientFirstName: customer.firstName,
-                        bookingRequestId: args.bookingRequestId,
-                        totalCentsCustomer: args.totalCentsCustomer,
-                        pullPaymentDate: args.pullPaymentDate,
-                        requestUrl: bookingRequestEmailCustomerRequestUrl(webPageUrl, args.bookingRequestId),
-                    }),
-                    purpose: 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
+    await sendUserEmail(
+        serverRuntime,
+        'bookingRequestOfferPullPaymentAnnouncementEmailSend',
+        args.bookingRequestOfferId,
+        customer,
+        'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
+        undefined,
+        () =>
+            serverRuntime.email.send({
+                to: customer.emailAddress,
+                subject: bookingRequestOfferPullPaymentAnnouncementForCustomerEmailSubject(locale),
+                react: BookingRequestOfferPullPaymentAnnouncementForCustomerEmail({
                     locale,
-                    relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-                    userId: customer.userId,
+                    timeZone: customer.timeZone,
+                    webPageUrl,
+                    recipientFirstName: customer.firstName,
+                    bookingRequestId: args.bookingRequestId,
+                    totalCentsCustomer: args.totalCentsCustomer,
+                    pullPaymentDate: args.pullPaymentDate,
+                    requestUrl: bookingRequestEmailCustomerRequestUrl(webPageUrl, args.bookingRequestId),
                 }),
-        ),
-        bookingRequestOfferPullPaymentAnnouncementWhatsAppSend(serverRuntime, {
-            bookingRequestOfferId: args.bookingRequestOfferId,
-            bookingRequestId: args.bookingRequestId,
-            customerUserId: args.customerUserId,
-            totalLabel,
-        }),
-    ]);
+                purpose: 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
+                locale,
+                relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
+                userId: customer.userId,
+            }),
+    );
 }
 
 export async function bookingRequestOfferParticipantAmendmentCreateEmailSend(

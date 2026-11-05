@@ -1,4 +1,5 @@
 import { phoneNumberForWhatsAppApi, phoneNumberNormalize } from '../../shared/phoneNumber';
+import { whatsappTemplateDefinitionFind } from './whatsappTemplates';
 
 export type OutboundWhatsAppProvider = 'meta' | 'console';
 
@@ -73,8 +74,11 @@ export const whatsappTemplateNameByPurpose: Record<Exclude<OutboundWhatsAppPurpo
     TESTIMONIAL_REMINDER_EVENING_COOK: 'booking_review_evening_cook_v1',
 };
 
-/** Current DE/EN replies and historical labels still arriving on older messages. */
+const reactionReminderTemplate = whatsappTemplateDefinitionFind(whatsappTemplateNameByPurpose.BOOKING_REQUEST_REACTION_REMINDER!);
+
+/** Historical labels remain valid because recipients can still answer older messages. */
 export const WHATSAPP_BOOKING_REQUEST_REACTION_LABELS = new Set([
+    ...(['de', 'en'] as const).flatMap((locale) => reactionReminderTemplate[locale].quickReplies ?? []),
     'Ich hatte ein niedrigeres Budget erwartet',
     'Ich hatte andere Menüs erwartet',
     'Ich habe die Angebote noch nicht gesehen',
@@ -83,16 +87,6 @@ export const WHATSAPP_BOOKING_REQUEST_REACTION_LABELS = new Set([
     'Angebote noch nicht gesehen',
     'Niedrigeres Budget erwartet',
     'Andere Menüs erwartet',
-    'Ich brauche mehr Zeit',
-    'Noch nicht angesehen',
-    'Budget passt nicht',
-    'Menü passt nicht',
-    'Kein Interesse mehr',
-    'I need more time',
-    'Not viewed yet',
-    'Budget does not fit',
-    'Menu does not fit',
-    'No longer interested',
 ]);
 
 /** Customer-service window length after an inbound message (Meta). */

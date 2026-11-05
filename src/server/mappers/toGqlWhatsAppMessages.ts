@@ -1,7 +1,6 @@
 import type { FileUploadMetadata } from '../db/fileUploadMetadata';
 import type { WhatsAppMessage, WhatsAppMessageReaction } from '../db/schema';
 import type { GqlSChatMessageDeliveryStatus, GqlSChatMessageReaction, GqlSHumanChatMessage, GqlSPublicUser } from '../graphql/generated';
-import { whatsappMessageText } from '../utils/whatsappMessageText';
 import { toGqlFileUpload } from './toGqlFileUpload';
 
 const ADMIN_PUBLIC_USER: GqlSPublicUser = {
@@ -50,7 +49,7 @@ export function toGqlWhatsAppMessages(input: {
             collapseLongBody: false,
             hiddenByAdmin: false,
             canHardDelete: false,
-            body: whatsappMessageText(message),
+            body: message.body,
             linkClickedAt: message.linkClickedAt,
             attachments,
             deliveryStatus: deliveryStatusResolve(message),

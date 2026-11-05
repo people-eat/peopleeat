@@ -122,11 +122,10 @@ describe('bookingRequestSlackDigest', () => {
         serverRuntime.slack.channels.bookingRequestReports = 'C_REPORTS';
         vi.mocked(serverRuntime.slack.postMessage).mockResolvedValue({ ts: '9.9' });
 
-        // Unique event times per run so parallel workers / shared-DB leftovers stay hidden.
-        // nanoId tokens are not hex — derive ms from char codes instead of parseInt(..., 16).
-        const tokenMs = (slice: string) => [...slice].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 1000;
-        const waitingOffersAt = new Date(Date.UTC(2099, 5, 1, 12, 0, 0, tokenMs(token.slice(0, 4))));
-        const waitingReviewAt = new Date(Date.UTC(2099, 5, 2, 12, 0, 0, tokenMs(token.slice(4, 8))));
+        // Spread event times over years; millisecond-only buckets collide with shared-DB leftovers.
+        const tokenMs = [...token].reduce((value, ch) => (value * 128 + ch.charCodeAt(0)) % 1_000_000_000_000, 0);
+        const waitingOffersAt = new Date(Date.UTC(2099, 5, 1, 12) + tokenMs);
+        const waitingReviewAt = new Date(waitingOffersAt.getTime() + 24 * hourMs);
         const realDerive = deriveState.impl;
         if (!realDerive) {
             throw new Error('bookingRequestStatusDerive mock was not initialized');

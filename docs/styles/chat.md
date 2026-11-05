@@ -417,5 +417,6 @@ Surfaces: `BookingRequestOfferChat`, `SupportRequestChat`, `WhatsAppConversation
 | Foundation / persistence         | `docs/architecture/chat.md`, `chat-persistence.md` |
 | Chat surfaces index              | `docs/features/chat.md`                            |
 
-WhatsApp Concierge template rows render the immutable sent snapshot, including headers and action labels/destinations. An unverified legacy
-template marker replaces guessed historical wording. The first recorded link-open time is separate from delivery/read ticks.
+WhatsApp Concierge messages and previews render stored plain text. New template bodies include headers and action labels/destinations saved
+at send time. Historical rows keep their existing text even without a structured template snapshot; generic warnings must not replace the
+message body. The first recorded link-open time is separate from delivery/read ticks.

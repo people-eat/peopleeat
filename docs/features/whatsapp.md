@@ -34,32 +34,19 @@ threads in the admin inbox, including media, quick-reply reactions, and emoji re
   transcript owns the pane scroll under `AdminPinnedFooterLayout` `contentScroll={false}` (chrome breakout so the scrollbar sits on the pane
   edge). Caption-less audio/voice ingest stores body `Sprachnachricht` for inbox / Slack preview.
 - User detail **WhatsApp** tab lists that user’s conversations.
-- New template messages show their complete saved wording and action destinations. Historical template messages without verified original
-  copy are clearly marked instead of displaying invented summaries.
+- Messages and inbox previews show the text saved when sent or received, including historical template rows. New template messages include
+  their complete wording and action destinations. Template edits do not change earlier messages. Some older records contain only the shorter
+  text saved at the time; recovering the full wording requires original send data or a chat export.
 - Outbound messages show the first recorded link-open time separately from delivery/read ticks. Known previews are excluded; link-open
   tracking does not prove who opened a forwarded link.
 - Inbound Slack mirror on `SLACK_CHANNEL_WHATSAPP_MESSAGES`; known reaction quick-replies also post on the booking Slack thread. Customer
   emoji reactions (Meta `type: reaction`) do not Slack-notify; they bump unread, refresh the 24h window, and overlay the target message.
 
-### Ops prerequisite
+### Template delivery
 
-Before Meta delivery: submit both DE and EN variants from the versioned project catalog as Utility and verify approval. Active in WhatsApp
-Manager is the approval status. The send also requires category Utility and the catalog header, body, and button label. The button path must
-be `/api/whatsapp/links/{{1}}`; the host may be the origin registered on the shared account. A blocked send names the failed check
-(`status`, `category`, or the field). There is no silent language or Marketing fallback. Email remains available. New buttons require the
-deployed tracking redirect and database migration.
-
-Older templates remain available for history but are not mapped for new sends. The request-confirmation v1 drafts are superseded by v2,
-which restores peopleeat's conversational tone, emojis, and team sign-off. All current variants retain that personality while keeping the
-message about the specific booking or conversation.
-
-A template read that fails before send is logged as `Meta template management failed`, including Meta's message. HTTP 400 code 100 means
-`WHATSAPP_BUSINESS_ACCOUNT_ID` is not the WhatsApp Business Account id. That id is `asset_id` in the WhatsApp Manager URL. `business_id` in
-the same URL is the portfolio, and the phone number id is separate. A token without template-read access on that account fails the same way.
-
-Webhook signature validation (`X-Hub-Signature-256`) is always on when `WHATSAPP_TRANSPORT=meta`. If `WHATSAPP_APP_SECRET` does not match
-the Meta app secret, Meta POSTs return `400` and inbound never lands in admin (look for
-`whatsapp webhook: POST rejected (invalid signature…)` in Admin Logs / Coolify logs).
+Lifecycle messages use the recipient's language and the approved Utility wording, including peopleeat's conversational tone, emojis, and
+team sign-off. A variant that is pending, rejected, reclassified, or differs from the registered wording cannot send. Email remains
+available independently.
 
 ## Decisions
 
@@ -104,6 +91,24 @@ off for payment and closure events. Testimonial reminders are the explicit post-
 | Docs      | [architecture/whatsapp.md](../architecture/whatsapp.md)                                                                           |
 
 Registration, naming, exact-copy contracts, and redirect/analytics details: [architecture/whatsapp.md](../architecture/whatsapp.md).
+
+### Operations
+
+The 21-key DE/EN catalog is live in production. The sender still requires approval, Utility category, and matching header, body, and button
+label. The button path must be `/api/whatsapp/links/{{1}}`; its host may be the origin registered on the shared account. A blocked send
+names the failed check (`status`, `category`, or field). Email-only lifecycle events have no WhatsApp dispatch; null purpose mappings also
+guard direct calls. Registration/export tooling remains available for future versions.
+
+Retired Meta definitions are not used to render chat history. Keep sent snapshots, original database bodies, and historical feedback reply
+labels when retiring remote templates. See [architecture/whatsapp.md](../architecture/whatsapp.md#catalog-maintenance).
+
+A template read that fails before send is logged as `Meta template management failed`, including Meta's message. HTTP 400 code 100 means
+`WHATSAPP_BUSINESS_ACCOUNT_ID` is not the WhatsApp Business Account id. That id is `asset_id` in the WhatsApp Manager URL. `business_id` in
+the same URL is the portfolio, and the phone number id is separate. A token without template-read access on that account fails the same way.
+
+Webhook signature validation (`X-Hub-Signature-256`) is always on when `WHATSAPP_TRANSPORT=meta`. If `WHATSAPP_APP_SECRET` does not match
+the Meta app secret, Meta POSTs return `400` and inbound never lands in admin (look for
+`whatsapp webhook: POST rejected (invalid signature…)` in Admin Logs / Coolify logs).
 
 See [admin-shell.md](./admin-shell.md), [admin-users.md](./admin-users.md), [booking-request-create.md](./booking-request-create.md),
 [slack-notifications.md](./slack-notifications.md), [styles/chat.md](../styles/chat.md).

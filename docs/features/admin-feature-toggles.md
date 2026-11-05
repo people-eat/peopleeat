@@ -29,12 +29,11 @@ Keys today:
 - Cook assistant
 - Meal publication
 - Menu publication
-- WhatsApp English templates (when off, EN recipients get DE Meta template language codes)
 - Landing booking how-it-works section (muted loops + 60s film on `/` and `/en/`)
 - Landing testimonial cards (shared review card on `/` and `/en/` instead of the scrolling quote marquee)
 - Partner page partners-explore CTA (“Entdecke mehr unserer Partner” on `/partners/$pathName`)
 
-Calls, scheduling, and WhatsApp webhook signature validation stay always on and are not toggles.
+Calls, scheduling, WhatsApp recipient language, and WhatsApp webhook signature validation stay always on and are not toggles.
 
 ### Resolution (global + per-user)
 

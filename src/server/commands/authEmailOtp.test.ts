@@ -9,6 +9,9 @@ import { authEmailOtpDelete } from './authEmailOtpDelete';
 import { authEmailOtpRequest } from './authEmailOtpRequest';
 import { authEmailOtpVerify } from './authEmailOtpVerify';
 
+// Fixed addresses share the hourly issue cap across repeated runs of the test database.
+const emailRunId = idCreate().toLowerCase();
+
 describe('authEmailOtp', () => {
     afterEach(() => {
         vi.spyOn(authOtpUtils, 'authOtpCodeGenerate').mockRestore();
@@ -19,7 +22,11 @@ describe('authEmailOtp', () => {
         vi.spyOn(authOtpUtils, 'authOtpCodeGenerate').mockReturnValue('654321');
         vi.mocked(serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
 
-        const result = await authEmailOtpRequest({ email: 'Ada@Example.com', locale: 'en' }, requestingSession, serverRuntime);
+        const result = await authEmailOtpRequest(
+            { email: `Ada-${emailRunId}@Example.com`, locale: 'en' },
+            requestingSession,
+            serverRuntime,
+        );
 
         expect(result.success).toBe(true);
         expect(result.referenceId).toBeTruthy();
@@ -29,7 +36,7 @@ describe('authEmailOtp', () => {
         });
 
         const [row] = await testDb.select().from(authEmailOtps).where(eq(authEmailOtps.sessionId, requestingSession.sessionId));
-        expect(row?.emailAddress).toBe('ada@example.com');
+        expect(row?.emailAddress).toBe(`ada-${emailRunId}@example.com`);
         expect(row?.codeHash).toBe(authOtpUtils.authOtpCodeHash('654321', authOtpUtils.authOtpPepperRequire()));
         expect(row?.consumedAt).toBeNull();
     });
@@ -66,10 +73,18 @@ describe('authEmailOtp', () => {
         codeGenerate.mockReturnValueOnce('222222');
         vi.mocked(serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
 
-        const first = await authEmailOtpRequest({ email: 'cooldown@example.com', locale: 'en' }, requestingSession, serverRuntime);
+        const first = await authEmailOtpRequest(
+            { email: `cooldown-${emailRunId}@example.com`, locale: 'en' },
+            requestingSession,
+            serverRuntime,
+        );
 
         // Act — same email + session within 60s.
-        const second = await authEmailOtpRequest({ email: 'cooldown@example.com', locale: 'en' }, requestingSession, serverRuntime);
+        const second = await authEmailOtpRequest(
+            { email: `cooldown-${emailRunId}@example.com`, locale: 'en' },
+            requestingSession,
+            serverRuntime,
+        );
 
         // Assert — cooldown short-circuits: no new row, no second email; republish so the client can open the dialog.
         expect(first.referenceId).toBeTruthy();
@@ -90,13 +105,21 @@ describe('authEmailOtp', () => {
         codeGenerate.mockReturnValueOnce('222222');
         vi.mocked(serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
 
-        const first = await authEmailOtpRequest({ email: 'resend@example.com', locale: 'en' }, requestingSession, serverRuntime);
+        const first = await authEmailOtpRequest(
+            { email: `resend-${emailRunId}@example.com`, locale: 'en' },
+            requestingSession,
+            serverRuntime,
+        );
         await testDb
             .update(authEmailOtps)
             .set({ lastSentAt: new Date(Date.now() - 61_000) })
             .where(eq(authEmailOtps.authEmailOtpId, first.referenceId!));
 
-        const second = await authEmailOtpRequest({ email: 'resend@example.com', locale: 'en' }, requestingSession, serverRuntime);
+        const second = await authEmailOtpRequest(
+            { email: `resend-${emailRunId}@example.com`, locale: 'en' },
+            requestingSession,
+            serverRuntime,
+        );
 
         expect(second).toEqual({ success: true, referenceId: first.referenceId });
         expect(serverRuntime.email.send).toHaveBeenCalledTimes(2);
@@ -118,7 +141,11 @@ describe('authEmailOtp', () => {
         codeGenerate.mockReturnValueOnce('444444');
         vi.mocked(serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
 
-        const first = await authEmailOtpRequest({ email: 'dismiss-retry@example.com', locale: 'en' }, requestingSession, serverRuntime);
+        const first = await authEmailOtpRequest(
+            { email: `dismiss-retry-${emailRunId}@example.com`, locale: 'en' },
+            requestingSession,
+            serverRuntime,
+        );
         await authEmailOtpDelete({ authEmailOtpId: first.referenceId! }, requestingSession, serverRuntime);
 
         const [dismissed] = await testDb.select().from(authEmailOtps).where(eq(authEmailOtps.authEmailOtpId, first.referenceId!));
@@ -129,7 +156,11 @@ describe('authEmailOtp', () => {
             .set({ lastSentAt: new Date(Date.now() - 61_000) })
             .where(eq(authEmailOtps.authEmailOtpId, first.referenceId!));
 
-        const second = await authEmailOtpRequest({ email: 'dismiss-retry@example.com', locale: 'en' }, requestingSession, serverRuntime);
+        const second = await authEmailOtpRequest(
+            { email: `dismiss-retry-${emailRunId}@example.com`, locale: 'en' },
+            requestingSession,
+            serverRuntime,
+        );
 
         expect(second.referenceId).toBe(first.referenceId);
         expect(codeGenerate).toHaveBeenCalledTimes(1);
@@ -147,10 +178,18 @@ describe('authEmailOtp', () => {
         codeGenerate.mockReturnValueOnce('222222');
         vi.mocked(serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
 
-        const first = await authEmailOtpRequest({ email: 'after-totp@example.com', locale: 'en' }, requestingSession, serverRuntime);
+        const first = await authEmailOtpRequest(
+            { email: `after-totp-${emailRunId}@example.com`, locale: 'en' },
+            requestingSession,
+            serverRuntime,
+        );
         await testDb.update(authEmailOtps).set({ consumedAt: new Date() }).where(eq(authEmailOtps.authEmailOtpId, first.referenceId!));
 
-        const second = await authEmailOtpRequest({ email: 'after-totp@example.com', locale: 'en' }, requestingSession, serverRuntime);
+        const second = await authEmailOtpRequest(
+            { email: `after-totp-${emailRunId}@example.com`, locale: 'en' },
+            requestingSession,
+            serverRuntime,
+        );
 
         expect(second.success).toBe(true);
         expect(second.referenceId).toBeTruthy();
@@ -282,12 +321,12 @@ describe('authEmailOtp', () => {
         const { serverRuntime, requestingSession } = await commandSetup();
         vi.spyOn(authOtpUtils, 'authOtpCodeGenerate').mockReturnValue('555666');
         vi.mocked(serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
-        await authEmailOtpRequest({ email: 'wrong@example.com', locale: 'en' }, requestingSession, serverRuntime);
+        await authEmailOtpRequest({ email: `wrong-${emailRunId}@example.com`, locale: 'en' }, requestingSession, serverRuntime);
 
         // Act + Assert
-        await expect(authEmailOtpVerify({ email: 'wrong@example.com', code: '000000' }, requestingSession, serverRuntime)).rejects.toThrow(
-            /authEmailOtpVerify: invalid or expired code/,
-        );
+        await expect(
+            authEmailOtpVerify({ email: `wrong-${emailRunId}@example.com`, code: '000000' }, requestingSession, serverRuntime),
+        ).rejects.toThrow(/authEmailOtpVerify: invalid or expired code/);
 
         const [row, logRows, session] = await Promise.all([
             testDb
@@ -316,7 +355,7 @@ describe('authEmailOtp', () => {
         await testDb.insert(authEmailOtps).values({
             authEmailOtpId,
             sessionId: requestingSession.sessionId,
-            emailAddress: 'expired@example.com',
+            emailAddress: `expired-${emailRunId}@example.com`,
             codeHash: authOtpUtils.authOtpCodeHash('777888', pepper),
             codeEncrypted: authOtpUtils.authOtpCodeEncrypt('777888', pepper),
             expiresAt: new Date(Date.now() - 1_000),
@@ -325,7 +364,7 @@ describe('authEmailOtp', () => {
 
         // Act + Assert
         await expect(
-            authEmailOtpVerify({ email: 'expired@example.com', code: '777888' }, requestingSession, serverRuntime),
+            authEmailOtpVerify({ email: `expired-${emailRunId}@example.com`, code: '777888' }, requestingSession, serverRuntime),
         ).rejects.toThrow(/authEmailOtpVerify: invalid or expired code/);
 
         const [row] = await testDb.select().from(authEmailOtps).where(eq(authEmailOtps.authEmailOtpId, authEmailOtpId));
@@ -342,7 +381,7 @@ describe('authEmailOtp', () => {
         await testDb.insert(authEmailOtps).values({
             authEmailOtpId,
             sessionId: requestingSession.sessionId,
-            emailAddress: 'locked@example.com',
+            emailAddress: `locked-${emailRunId}@example.com`,
             codeHash: authOtpUtils.authOtpCodeHash('999000', pepper),
             codeEncrypted: authOtpUtils.authOtpCodeEncrypt('999000', pepper),
             expiresAt: new Date(Date.now() + 10 * 60 * 1000),
@@ -350,9 +389,9 @@ describe('authEmailOtp', () => {
         });
 
         // Act + Assert
-        await expect(authEmailOtpVerify({ email: 'locked@example.com', code: '999000' }, requestingSession, serverRuntime)).rejects.toThrow(
-            /authEmailOtpVerify: too many attemptCount/,
-        );
+        await expect(
+            authEmailOtpVerify({ email: `locked-${emailRunId}@example.com`, code: '999000' }, requestingSession, serverRuntime),
+        ).rejects.toThrow(/authEmailOtpVerify: too many attemptCount/);
 
         const [row, logRows] = await Promise.all([
             testDb
@@ -395,7 +434,11 @@ describe('authEmailOtp', () => {
         vi.spyOn(authOtpUtils, 'authOtpCodeGenerate').mockReturnValue('999888');
         vi.mocked(serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
 
-        const created = await authEmailOtpRequest({ email: 'delete-me@example.com', locale: 'en' }, requestingSession, serverRuntime);
+        const created = await authEmailOtpRequest(
+            { email: `delete-me-${emailRunId}@example.com`, locale: 'en' },
+            requestingSession,
+            serverRuntime,
+        );
         const result = await authEmailOtpDelete({ authEmailOtpId: created.referenceId! }, requestingSession, serverRuntime);
 
         expect(result.success).toBe(true);
@@ -411,7 +454,7 @@ describe('authEmailOtp', () => {
         vi.mocked(serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
 
         const created = await authEmailOtpRequest(
-            { email: 'verified-discard@example.com', locale: 'en' },
+            { email: `verified-discard-${emailRunId}@example.com`, locale: 'en' },
             requestingSession,
             serverRuntime,
         );
@@ -431,7 +474,7 @@ describe('authEmailOtp', () => {
         vi.spyOn(authOtpUtils, 'authOtpCodeGenerate').mockReturnValue('888777');
         vi.mocked(owner.serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
         const created = await authEmailOtpRequest(
-            { email: 'other-session@example.com', locale: 'en' },
+            { email: `other-session-${emailRunId}@example.com`, locale: 'en' },
             owner.requestingSession,
             owner.serverRuntime,
         );
@@ -457,8 +500,12 @@ describe('authEmailOtp', () => {
         codeGenerate.mockReturnValueOnce('222222');
         vi.mocked(serverRuntime.email.send).mockResolvedValue({ outboundEmailId: 'outbound-email-test' });
 
-        const first = await authEmailOtpRequest({ email: 'one@example.com', locale: 'en' }, requestingSession, serverRuntime);
-        const second = await authEmailOtpRequest({ email: 'two@example.com', locale: 'en' }, requestingSession, serverRuntime);
+        const first = await authEmailOtpRequest({ email: `one-${emailRunId}@example.com`, locale: 'en' }, requestingSession, serverRuntime);
+        const second = await authEmailOtpRequest(
+            { email: `two-${emailRunId}@example.com`, locale: 'en' },
+            requestingSession,
+            serverRuntime,
+        );
 
         expect(first.referenceId).toBeTruthy();
         expect(second.referenceId).toBeTruthy();
@@ -467,7 +514,7 @@ describe('authEmailOtp', () => {
         const rows = await testDb.select().from(authEmailOtps).where(eq(authEmailOtps.sessionId, requestingSession.sessionId));
         expect(rows).toHaveLength(1);
         expect(rows[0]?.authEmailOtpId).toBe(second.referenceId);
-        expect(rows[0]?.emailAddress).toBe('two@example.com');
+        expect(rows[0]?.emailAddress).toBe(`two-${emailRunId}@example.com`);
     });
 
     it('stops issuing new codes for an address after the hourly cap', async () => {

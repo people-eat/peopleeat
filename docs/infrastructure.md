@@ -505,11 +505,12 @@ Instagram assets resolve against the test site. Local `npm run email:dev` still 
 5. Set GitHub secrets `COOLIFY_APPLICATION_UUID_STORYBOOK` and `COOLIFY_APPLICATION_UUID_EMAIL` (reuse `COOLIFY_URL` + `COOLIFY_API_TOKEN`)
 6. Disable GitHub Pages for this repo if it was still serving the old Storybook
 
-### WhatsApp template rollout
+### WhatsApp template maintenance
 
-Run the generated migration before deploying code that reads template snapshots or link-click stamps. New URL buttons point to
-`/api/whatsapp/links/{opaque-id}` on `WEB_PAGE_URL`; deploy that route before sending them. Register the catalog in both languages, as
-Utility, using `scripts/whatsappTemplatesSync.ts` or WhatsApp Manager. The provider blocks pending, reclassified, or drifted variants rather
+The bilingual Utility catalog, snapshot migration, and tracked redirects are deployed and tested in production. For future revisions,
+register both languages as Utility using `scripts/whatsappTemplatesSync.ts` or WhatsApp Manager before switching the purpose mapping. URL
+buttons use `/api/whatsapp/links/{opaque-id}` on the approved origin. Keep the snapshot/link columns and applied migrations; template
+retirement does not remove message history or tracking. The provider continues to block pending, reclassified, or drifted variants rather
 than sending at Marketing pricing. The Meta token must allow reading templates for `WHATSAPP_BUSINESS_ACCOUNT_ID` as well as sending
 messages. Copy it from `asset_id` in the WhatsApp Manager URL. `business_id` in that URL is the Meta business portfolio, and
 `WHATSAPP_PHONE_NUMBER_ID` is the phone number. A read rejected with HTTP 400 code 100 is one of those other ids, or a token without

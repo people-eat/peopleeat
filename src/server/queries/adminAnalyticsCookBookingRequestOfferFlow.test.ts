@@ -56,7 +56,7 @@ describe('adminAnalyticsCookBookingRequestOfferFlow', () => {
 
         // Act
         const flow = await adminAnalyticsCookBookingRequestOfferFlow(
-            { startDateTime: new Date(startMs), endDateTime: new Date(startMs + 86_400_000) },
+            { startDateTime: notifiedAt, endDateTime: new Date(notifiedAt.getTime() + 1) },
             admin.requestingSession,
             admin.serverRuntime,
         );
@@ -133,7 +133,7 @@ describe('adminAnalyticsCookBookingRequestOfferFlow', () => {
 
         // Act
         const flow = await adminAnalyticsCookBookingRequestOfferFlow(
-            { startDateTime: new Date(startMs), endDateTime: new Date(startMs + 86_400_000) },
+            { startDateTime: notifiedAt, endDateTime: new Date(notifiedAt.getTime() + 1) },
             admin.requestingSession,
             admin.serverRuntime,
         );

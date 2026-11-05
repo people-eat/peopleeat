@@ -191,20 +191,6 @@ export async function cookBookingRequestOfferSuggestedMenusUpdateWhatsAppSend(
     });
 }
 
-export async function userBookingRequestOfferAcceptWhatsAppSend(
-    serverRuntime: ServerRuntime,
-    args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; cookFirstName: string },
-): Promise<void> {
-    await templateSend(serverRuntime, {
-        label: 'userBookingRequestOfferAcceptWhatsAppSend',
-        entityId: args.bookingRequestOfferId,
-        recipientUserId: args.customerUserId,
-        purpose: 'BOOKING_REQUEST_OFFER_ACCEPTED',
-        relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        bodyParameters: (customer) => [customer.firstName, args.cookFirstName],
-    });
-}
-
 export async function userBookingRequestOfferAcceptCookWhatsAppSend(
     serverRuntime: ServerRuntime,
     args: {
@@ -229,62 +215,6 @@ export async function userBookingRequestOfferAcceptCookWhatsAppSend(
         purpose: 'BOOKING_REQUEST_OFFER_ACCEPTED_COOK',
         relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
         bodyParameters: (cook) => [cook.firstName, args.customerFirstName, eventDateLabel(dateTime, cook)],
-    });
-}
-
-export async function bookingRequestOfferPaymentConfirmedWhatsAppSend(
-    serverRuntime: ServerRuntime,
-    args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; cookFirstName: string },
-): Promise<void> {
-    await templateSend(serverRuntime, {
-        label: 'bookingRequestOfferPaymentConfirmedWhatsAppSend',
-        entityId: args.bookingRequestOfferId,
-        recipientUserId: args.customerUserId,
-        purpose: 'BOOKING_REQUEST_OFFER_PAYMENT_CONFIRMED',
-        relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        bodyParameters: (customer) => [customer.firstName, args.cookFirstName],
-    });
-}
-
-export async function bookingRequestOfferPullPaymentAnnouncementWhatsAppSend(
-    serverRuntime: ServerRuntime,
-    args: { bookingRequestOfferId: string; bookingRequestId: string; customerUserId: string; totalLabel: string },
-): Promise<void> {
-    await templateSend(serverRuntime, {
-        label: 'bookingRequestOfferPullPaymentAnnouncementWhatsAppSend',
-        entityId: args.bookingRequestOfferId,
-        recipientUserId: args.customerUserId,
-        purpose: 'BOOKING_REQUEST_OFFER_PULL_PAYMENT_ANNOUNCEMENT',
-        relatedEntity: { type: 'BOOKING_REQUEST_OFFER', id: args.bookingRequestOfferId },
-        bodyParameters: (customer) => [customer.firstName, args.totalLabel],
-    });
-}
-
-export async function userBookingRequestCancelWhatsAppSend(
-    serverRuntime: ServerRuntime,
-    args: { bookingRequestId: string; customerUserId: string },
-): Promise<void> {
-    await templateSend(serverRuntime, {
-        label: 'userBookingRequestCancelWhatsAppSend',
-        entityId: args.bookingRequestId,
-        recipientUserId: args.customerUserId,
-        purpose: 'BOOKING_REQUEST_CANCELED',
-        relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-        bodyParameters: (customer) => [customer.firstName],
-    });
-}
-
-export async function userBookingRequestCancelCookWhatsAppSend(
-    serverRuntime: ServerRuntime,
-    args: { bookingRequestId: string; cookUserId: string; customerFirstName: string },
-): Promise<void> {
-    await templateSend(serverRuntime, {
-        label: 'userBookingRequestCancelCookWhatsAppSend',
-        entityId: args.bookingRequestId,
-        recipientUserId: args.cookUserId,
-        purpose: 'BOOKING_REQUEST_CANCELED_COOK',
-        relatedEntity: { type: 'BOOKING_REQUEST', id: args.bookingRequestId },
-        bodyParameters: (cook) => [cook.firstName, args.customerFirstName],
     });
 }
 

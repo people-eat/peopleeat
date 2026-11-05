@@ -2,7 +2,6 @@ import { desc, inArray } from 'drizzle-orm';
 
 import { whatsAppMessages } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import { whatsappMessageText } from './whatsappMessageText';
 
 /** Latest message body per conversation (PostgreSQL `DISTINCT ON`). */
 export async function whatsAppConversationLastMessagePreviewsFindMany(
@@ -18,16 +17,13 @@ export async function whatsAppConversationLastMessagePreviewsFindMany(
         .selectDistinctOn([whatsAppMessages.whatsAppConversationId], {
             whatsAppConversationId: whatsAppMessages.whatsAppConversationId,
             body: whatsAppMessages.body,
-            direction: whatsAppMessages.direction,
-            messageKind: whatsAppMessages.messageKind,
-            templateSnapshot: whatsAppMessages.templateSnapshot,
         })
         .from(whatsAppMessages)
         .where(inArray(whatsAppMessages.whatsAppConversationId, [...whatsAppConversationIds]))
         .orderBy(whatsAppMessages.whatsAppConversationId, desc(whatsAppMessages.createdAt));
 
     for (const row of rows) {
-        previews.set(row.whatsAppConversationId, whatsappMessageText(row).trim());
+        previews.set(row.whatsAppConversationId, row.body.trim());
     }
     return previews;
 }

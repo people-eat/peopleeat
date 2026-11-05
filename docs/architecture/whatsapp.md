@@ -23,17 +23,20 @@ inbox must show what was actually sent, and template categorization must not sil
    `WHATSAPP_BUSINESS_ACCOUNT_ID` is not the WhatsApp Business Account (`asset_id` in the WhatsApp Manager URL; `business_id` there is the
    portfolio, and the phone number id is a third node), or the token lacks template-read access. Meta remains the approval/category
    authority; requested category alone does not mean approval.
-4. **Exact language and snapshots.** Send the recipient locale, never silently substitute German for English. Render the transcript from the
-   same definition and normalized parameter values used for the send. Persist an immutable `templateSnapshot` on both
+4. **Exact language and snapshots.** Send the recipient locale, never silently substitute German for English. Render plain text once at send
+   time using the same definition and normalized parameter values sent to Meta. Persist an immutable `templateSnapshot` on both
    `OutboundWhatsAppMessages` and `WhatsAppMessages`, including effective language, header, rendered body, parameters, and rendered buttons.
-   Later catalog changes cannot rewrite history. Audit `bodySnapshot` and transcript `body` retain the complete text projection. After the
-   provider succeeds, conversation/transcript/audit persistence is transactional. Provider failures leave a failed audit, not a fictitious
-   sent message. An audit/transcript persistence failure after provider acceptance retains acceptance evidence when possible and needs
+   Audit `bodySnapshot` and transcript `body` retain the complete text projection. Transcript and inbox reads use stored `body` directly;
+   they never render the current catalog or reformat the structured snapshot. Incoming webhook messages store their received text, and
+   delivery-status webhooks only update lifecycle metadata. Later catalog or formatter changes cannot rewrite history. After the provider
+   succeeds, conversation/transcript/audit persistence is transactional. Provider failures leave a failed audit, not a fictitious sent
+   message. An audit/transcript persistence failure after provider acceptance retains acceptance evidence when possible and needs
    operational reconciliation before retrying; an admin refresh failure does not mark delivery failed.
-5. **Historical uncertainty.** Old template rows without a verified snapshot display an explicit unverified-wording marker. Preserve their
-   raw stored bodies in the database, but do not present abbreviated summaries as the actual sent text or reconstruct names/dates from
-   today's mutable booking records. Only original send parameters and the corresponding historical template revision can establish an exact
-   historical rendering. Inbound and free-form text remain verbatim.
+5. **Historical text.** Preserve and display existing stored bodies even when `templateSnapshot` is null. Do not replace them with a generic
+   warning. Earlier senders sometimes saved abbreviated summaries, so a stored legacy body may not contain the complete sent wording.
+   Recovering exact text requires original send parameters with the corresponding template revision, or an original chat export. Any
+   evidence-based repair is a separate explicit data operation; never infer historical names/dates from today's mutable records or apply
+   today's template on read. Inbound and free-form text remain verbatim.
 6. **One-suffix deep links.** Every new URL button uses `{WEB_PAGE_URL}/api/whatsapp/links/{{1}}`. Its only dynamic suffix is the send's
    random 20-character outbound audit id. Store the allowlisted relative destination in `OutboundWhatsAppMessages.linkPath`. No reversible
    hash, encryption secret, embedded personal data, or new link table is needed. Destinations include locale, the correct customer's offer
@@ -45,7 +48,8 @@ inbox must show what was actually sent, and template categorization must not sil
    scanners, forwarded links, and missing user agents limit attribution. Clicks are independent of Meta delivery/read receipts. Admin chat
    exposes the timestamp separately.
 8. **Send policy.** Email remains available independently. Existing payment and selected closure purposes remain email-only (`null` names).
-   The explicit post-payment addition is testimonial memory/morning/evening reminders for both parties, with the same paid/accepted/
+   Email-only lifecycle events do not invoke WhatsApp helpers; their null mappings still enforce the policy for direct callers. The explicit
+   post-payment addition is testimonial memory/morning/evening reminders for both parties, with the same paid/accepted/
    canceled/already-reviewed gates as email. Phone delivery requires valid E.164 and ignores preferred-communication preference. Optional
    templates also respect `Users.notificationSettings` (missing means on). Payment and concierge replies are not gated. See
    [notification-settings.md](../features/notification-settings.md). A skipped send is an info log that names the reason: the phone is
@@ -55,10 +59,11 @@ inbox must show what was actually sent, and template categorization must not sil
    each; Meta's `hello_world` is not a business use case.
 9. **Webhook/inbox.** `GET`/`POST /api/webhooks/whatsapp` retain challenge handling and app-secret signature checks. Conversation phone
    matching tolerates Meta digits-only values while users store E.164. Inbound media enters `FileUploads`; reactions overlay messages.
-   Inbound messages refresh the 24h reply window and notify Slack. Current DE/EN feedback labels and historical reply labels are recognized.
-   Admin free-form replies stay text-only and limited to the customer-service window; business reactions target inbound messages.
+   Inbound messages refresh the 24h reply window and notify Slack. Current DE/EN feedback labels come from the template catalog; historical
+   reply labels remain recognized because recipients can still answer older messages. Admin free-form replies stay text-only and limited to
+   the customer-service window; business reactions target inbound messages.
 
-## Registration and rollout
+## Catalog maintenance
 
 `node --import tsx scripts/whatsappTemplatesSync.ts --base-url https://people-eat.com --offline --manifest /tmp/templates.json` exports the
 exact registration payloads. Without `--offline`, pass `--account-id` matching `WHATSAPP_BUSINESS_ACCOUNT_ID` to inspect the account. Add
@@ -66,10 +71,13 @@ exact registration payloads. Without `--offline`, pass `--account-id` matching `
 create a new version. No messages are sent by this script. Credentials are read through the environment configuration module and never
 printed. Signed-in WhatsApp Manager is also a supported registration path, using exactly the catalog content.
 
-Generate/apply the additive migration and deploy the redirect route before using the new buttons. Submit both languages, verify exact copy
-and Utility approval, and leave older template definitions available for historical records until migration is reviewed. The first dry
-request-confirmation drafts (`booking_request_received_customer_v1`) were superseded by personality-preserving `_v2` variants; only `_v2` is
-mapped for sends. The obsolete English-language feature toggle is removed: per-variant approval now controls readiness.
+For future revisions, register both languages under a new version and verify exact copy and Utility approval before changing the purpose
+mapping. The registration/export script remains the maintenance tool; it is not needed at runtime.
+
+Retired Meta definitions can be removed once all senders and scheduled work use the current catalog. Remote definitions are not a history
+store: immutable sent snapshots, original database bodies, historical reply labels, and applied migrations must remain. Removing a remote
+definition does not recover unverified legacy wording. The request-confirmation key remains `_v2`; versions are never reset or reused after
+approval.
 
 ## Alternatives considered
 

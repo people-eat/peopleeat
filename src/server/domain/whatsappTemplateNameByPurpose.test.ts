@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { whatsappTemplateNameByPurpose } from './whatsapp';
+import { WHATSAPP_BOOKING_REQUEST_REACTION_LABELS, whatsappTemplateNameByPurpose } from './whatsapp';
 import { whatsappTemplateDefinitionFind, whatsappTemplateDefinitions, whatsappTemplateSnapshotCreate } from './whatsappTemplates';
 
 describe('WhatsApp template catalog', () => {
@@ -59,5 +59,19 @@ describe('WhatsApp template catalog', () => {
         // Assert
         expect(snapshot.body).toContain('*Hello {{2}},*');
         expect(snapshot.body).toContain('from Michael');
+    });
+
+    it('recognizes catalog feedback replies and replies to historical messages', () => {
+        // Arrange
+        const definition = whatsappTemplateDefinitionFind(whatsappTemplateNameByPurpose.BOOKING_REQUEST_REACTION_REMINDER!);
+        const currentLabels = (['de', 'en'] as const).flatMap((locale) => definition[locale].quickReplies ?? []);
+        // Act
+        const recognized = currentLabels.map((label) => WHATSAPP_BOOKING_REQUEST_REACTION_LABELS.has(label));
+        // Assert
+        expect(currentLabels).toHaveLength(10);
+        expect(recognized).toEqual(currentLabels.map(() => true));
+        expect(WHATSAPP_BOOKING_REQUEST_REACTION_LABELS.has('Ich brauche noch etwas Zeit')).toBe(true);
+        expect(WHATSAPP_BOOKING_REQUEST_REACTION_LABELS.has('Andere Menüs erwartet')).toBe(true);
+        expect(WHATSAPP_BOOKING_REQUEST_REACTION_LABELS.has('An unrelated message')).toBe(false);
     });
 });
