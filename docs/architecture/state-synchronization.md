@@ -128,7 +128,8 @@ For any page that displays owned data kept fresh via `userUpdates` (or a similar
 6. Parametric detail/edit routes remount on entity id change (`key={mealId}` / `key={menuId}` / … on the page component) so seed cannot
    stick across A→B navigation before the next push.
 7. **Edit forms:** subscription may refresh catalog slices (e.g. `cook.meals` for a meal picker). Do **not** `form.reset` while the form is
-   dirty. Reset only when `!isDirty`, or navigate away when the owned entity becomes null (deleted).
+   dirty. Reset only when `!isDirty` (or `!hasUnsavedChanges` when local edit state such as participants or kitchen details lives outside
+   the form), or navigate away when the owned entity becomes null (deleted).
 8. Mutations call the server and return. They do **not** call `router.invalidate()`, refetch, or optimistically patch owned state (no local
    `onMealCreated` appends, no mutation-response `setState` for catalog rows). Commands that own the data publish
    `serverRuntime.publish.userUpdates({ userId })` after commit — the subscription closes the loop **on the subscribed page**.

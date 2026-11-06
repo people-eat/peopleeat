@@ -426,13 +426,13 @@ row — that is the “sticky footer” pattern in product language, **not** CSS
 `padding-bottom` when the overflow scroller is itself `display: grid` / `flex` (same class of bug as `workspace-inset-scroll`). For
 equal-width paired actions on narrow panes, put `flex-1 md:flex-initial` on each footer button (footer row is `w-full`).
 
-**Dirty Save gating (cook edit forms):** when the footer’s primary action is Save, show Save only while the form (or local edit state) is
-dirty. When clean, replace Cancel+Save with a single back/view CTA (e.g. “Back to profile”). Applies to chef-profile, travel, meal, menu,
-and offer price/menus edit under the cook shell.
+**Dirty Save gating:** when the footer’s primary action is Save, show Save only while the form (or local edit state) is dirty. When clean,
+replace Cancel+Save with a single back/view CTA (e.g. “Back to profile”). Applies to chef-profile, travel, meal, menu, and offer price/menus
+edit under the cook shell, and to customer booking-request edit (`hasUnsavedChanges` ORs TanStack `isDirty` with participants/restrictions
+and kitchen details that live outside the form).
 
 Do **not** put `sticky bottom-0` action bars on pages that scroll with the cook/customer shell inset; short content leaves the bar mid-pane.
-Customer booking-request edit keeps Cancel+Save always visible in the pinned footer (participants/restrictions live outside the TanStack
-form dirty flag). Chat composers follow [`docs/styles/chat.md`](./styles/chat.md), not this wrapper. See also
+Chat composers follow [`docs/styles/chat.md`](./styles/chat.md), not this wrapper. See also
 [`docs/features/cook-shell.md`](./features/cook-shell.md) and [`docs/features/customer-shell.md`](./features/customer-shell.md).
 
 **Nested scrollports clip paint outside the box.** `overflow-y-auto` / `overflow-hidden` (including the layout’s outer `overflow-hidden` and

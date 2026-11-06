@@ -62,9 +62,9 @@ export function ProfileCustomerBookingRequestsPage({ data }: { data: GqlCProfile
                             }[locale]
                         }
                     </StatusAlert>
-                    <ul className="grid grid-cols-1 gap-4 @md:grid-cols-2 @2xl:grid-cols-3 @5xl:grid-cols-4 @7xl:grid-cols-5 @8xl:grid-cols-6">
+                    <ul className="grid auto-rows-fr grid-cols-1 items-stretch gap-4 @md:grid-cols-2 @2xl:grid-cols-3 @5xl:grid-cols-4 @7xl:grid-cols-5 @8xl:grid-cols-6">
                         {requests.map((request) => (
-                            <li key={request.bookingRequestId} className="min-w-0">
+                            <li key={request.bookingRequestId} className="grid min-h-0 min-w-0">
                                 <CustomerBookingRequestCard request={request} />
                             </li>
                         ))}

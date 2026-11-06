@@ -85,8 +85,8 @@ booking requests (full subtree), gift cards, and support. Other `/profile/*` pat
   [theme.md — Route scroll reset](../styles/theme.md#route-scroll-reset). Offer chat fills the pane with overflow breakout so its composer
   stays pinned to the shell bottom ([styles/chat.md](../styles/chat.md)).
 - **Pinned action footers:** booking-request detail uses `ProfilePinnedFooterLayout` for edit (or **Change participants** after dual accept
-  when the amendment toggle is on) / cancel; booking-request edit uses it for Cancel / Save; customer offer detail uses it for Accept on the
-  Offer tab (same pattern as cook meal/menu view). Do not use CSS sticky for shell action bars — see
+  when the amendment toggle is on) / cancel; booking-request edit uses it with dirty Save gating (clean → **Back to request**); customer
+  offer detail uses it for Accept on the Offer tab (same pattern as cook meal/menu view). Do not use CSS sticky for shell action bars — see
   [conventions](../conventions.md#profile-pinned-action-footers).
 - Admin footer link: `isAdmin` from the profile loader.
 - Support nav badge: `CustomerSidebar.graphql` → `User.attentionCounts.supportRequestUnreadCount` (`userAttentionCountsFindOne`), live via

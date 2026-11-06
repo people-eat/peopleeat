@@ -13,7 +13,7 @@ import {
     defaultBookingRequestPreferences,
     textNormalizeTitled,
 } from '../../../shared';
-import type { BookingRequestParticipantDraft, BookingRequestSettingChoice } from '../../../shared';
+import type { BookingRequestKitchenDetailsDraft, BookingRequestParticipantDraft, BookingRequestSettingChoice } from '../../../shared';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { DateTimePicker } from '../../components/base/date-time-picker';
@@ -154,6 +154,42 @@ function exactEventAddressEqual(a: GqlCUserBookingRequestExactEventAddressInput,
     );
 }
 
+function participantsFromRequest(
+    request: NonNullable<GqlCProfileCustomerBookingRequestPageUserFragment['bookingRequest']>,
+): BookingRequestParticipantDraft[] {
+    return request.participants.map((participant) => ({
+        type: participant.type,
+        name: participant.name,
+        restrictions: [...participant.restrictions],
+    }));
+}
+
+function participantsEqual(a: BookingRequestParticipantDraft[], b: BookingRequestParticipantDraft[]): boolean {
+    if (a.length !== b.length) return false;
+    return a.every((participant, index) => {
+        const other = b[index];
+        if (other == null) return false;
+        if (participant.type !== other.type || participant.name !== other.name) return false;
+        if (participant.restrictions.length !== other.restrictions.length) return false;
+        return participant.restrictions.every((restriction, restrictionIndex) => restriction === other.restrictions[restrictionIndex]);
+    });
+}
+
+function kitchenDraftEqual(a: BookingRequestKitchenDetailsDraft, b: BookingRequestKitchenDetailsDraft): boolean {
+    return (
+        a.availability === b.availability &&
+        a.fridgeSpace === b.fridgeSpace &&
+        a.platingSpace === b.platingSpace &&
+        a.guestTableware === b.guestTableware &&
+        a.notes === b.notes
+    );
+}
+
+function kitchenPhotosEqual(a: readonly BookingRequestKitchenDetailsPhoto[], b: readonly BookingRequestKitchenDetailsPhoto[]): boolean {
+    if (a.length !== b.length) return false;
+    return a.every((photo, index) => photo.fileUploadId === b[index]?.fileUploadId);
+}
+
 export function ProfileCustomerBookingRequestEditPage({
     data,
     bookingRequestId,
@@ -195,13 +231,7 @@ export function ProfileCustomerBookingRequestEditPage({
     const [kitchenPhotos, setKitchenPhotos] = useState<BookingRequestKitchenDetailsPhoto[]>(() =>
         bookingRequestKitchenDetailsPhotosFromGql(seedRequest.kitchenDetails?.photos),
     );
-    const [participants, setParticipants] = useState<BookingRequestParticipantDraft[]>(() =>
-        seedRequest.participants.map((participant) => ({
-            type: participant.type,
-            name: participant.name,
-            restrictions: [...participant.restrictions],
-        })),
-    );
+    const [participants, setParticipants] = useState<BookingRequestParticipantDraft[]>(() => participantsFromRequest(seedRequest));
 
     const form = useForm({
         defaultValues: formFromRequest(seedRequest),
@@ -335,6 +365,14 @@ export function ProfileCustomerBookingRequestEditPage({
     const exactEventAddress = useSelector(form.store, (state) => state.values.exactEventAddress);
     const adultCount = useSelector(form.store, (state) => state.values.adultCount);
     const childCount = useSelector(form.store, (state) => state.values.childCount);
+    const comparisonRequest = request ?? seedRequest;
+    const participantsDirty = !participantsEqual(participants, participantsFromRequest(comparisonRequest));
+    const kitchenDirty =
+        kitchenEnabled &&
+        !isParticipantAmendmentMode &&
+        (!kitchenDraftEqual(kitchenDraft, bookingRequestKitchenDetailsDraftFromGql(comparisonRequest.kitchenDetails)) ||
+            !kitchenPhotosEqual(kitchenPhotos, bookingRequestKitchenDetailsPhotosFromGql(comparisonRequest.kitchenDetails?.photos)));
+    const hasUnsavedChanges = isDirty || participantsDirty || kitchenDirty;
 
     const defaultPreferences = defaultBookingRequestPreferences(locale);
     const preferenceOptionsCustom = preferences.filter((preference) => !defaultPreferences.includes(preference));
@@ -395,54 +433,58 @@ export function ProfileCustomerBookingRequestEditPage({
             });
             return;
         }
-        if (!isDirty) {
+        if (!hasUnsavedChanges) {
             form.reset(formFromRequest(request));
             setLocationSearchText(request.exactEventAddress.displayText);
-            setParticipants(
-                request.participants.map((participant) => ({
-                    type: participant.type,
-                    name: participant.name,
-                    restrictions: [...participant.restrictions],
-                })),
-            );
+            setParticipants(participantsFromRequest(request));
             setKitchenDraft(bookingRequestKitchenDetailsDraftFromGql(request.kitchenDetails));
             setKitchenPhotos(bookingRequestKitchenDetailsPhotosFromGql(request.kitchenDetails?.photos));
         }
-    }, [bookingRequestId, canStayOnEdit, form, isDirty, navigate, request, user]);
+    }, [bookingRequestId, canStayOnEdit, form, hasUnsavedChanges, navigate, request, user]);
 
     if (request == null || !canStayOnEdit) {
         return null;
     }
 
     const pendingAmendment = pendingAmendmentOffer?.participantAmendment ?? null;
-    const amendmentSubmitDisabled = isParticipantAmendmentMode && (pendingAmendment != null || amendableOffer == null || isSubmitting);
+    const amendmentSubmitDisabled =
+        isParticipantAmendmentMode && (pendingAmendment != null || amendableOffer == null || isSubmitting || !hasUnsavedChanges);
     const fullSubmitDisabled =
-        !isParticipantAmendmentMode && (isSubmitting || occasion.trim().length === 0 || exactEventAddress.displayText.trim().length === 0);
+        !isParticipantAmendmentMode &&
+        (isSubmitting || !hasUnsavedChanges || occasion.trim().length === 0 || exactEventAddress.displayText.trim().length === 0);
 
     return (
         <ProfilePinnedFooterLayout
             contentClassName="grid max-w-xl content-start gap-8"
             footer={
-                <>
-                    <Button type="button" variant="outline" disabled={isSubmitting} asChild>
+                hasUnsavedChanges ? (
+                    <>
+                        <Button type="button" variant="outline" disabled={isSubmitting} asChild>
+                            <Link to="/{-$locale}/profile/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
+                                {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                            </Link>
+                        </Button>
+                        {pendingAmendment == null ? (
+                            <Button
+                                type="submit"
+                                form="booking-request-edit-form"
+                                disabled={isParticipantAmendmentMode ? amendmentSubmitDisabled : fullSubmitDisabled}
+                            >
+                                {isSubmitting
+                                    ? { de: 'Senden…', en: 'Sending…' }[locale]
+                                    : isParticipantAmendmentMode
+                                      ? { de: 'Änderungen anfragen', en: 'Request changes' }[locale]
+                                      : { de: 'Speichern', en: 'Save' }[locale]}
+                            </Button>
+                        ) : null}
+                    </>
+                ) : (
+                    <Button type="button" disabled={isSubmitting} asChild>
                         <Link to="/{-$locale}/profile/booking-requests/$bookingRequestId" params={{ bookingRequestId }}>
-                            {{ de: 'Abbrechen', en: 'Cancel' }[locale]}
+                            {{ de: 'Zur Anfrage', en: 'Back to request' }[locale]}
                         </Link>
                     </Button>
-                    {pendingAmendment == null ? (
-                        <Button
-                            type="submit"
-                            form="booking-request-edit-form"
-                            disabled={isParticipantAmendmentMode ? amendmentSubmitDisabled : fullSubmitDisabled}
-                        >
-                            {isSubmitting
-                                ? { de: 'Senden…', en: 'Sending…' }[locale]
-                                : isParticipantAmendmentMode
-                                  ? { de: 'Änderungen anfragen', en: 'Request changes' }[locale]
-                                  : { de: 'Speichern', en: 'Save' }[locale]}
-                        </Button>
-                    ) : null}
-                </>
+                )
             }
         >
             {isParticipantAmendmentMode ? (
