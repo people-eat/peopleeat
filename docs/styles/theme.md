@@ -4,26 +4,39 @@ peopleeat is **light-only**. There is no dark mode, theme toggle, or `next-theme
 
 ## Palette
 
-| Token        | Hex       | Role                                    |
-| ------------ | --------- | --------------------------------------- |
-| `text`       | `#040316` | Foreground / body copy                  |
-| `background` | `#fffdf9` | Page canvas                             |
-| `primary`    | `#404040` | Primary actions, strong UI chrome       |
-| `secondary`  | `#ffffff` | Cards, popovers, elevated surfaces      |
-| `accent`     | `#ff8a05` | Highlights, focus rings, brand emphasis |
-| `muted`      | derived   | Subtle surfaces and neutral hover fills |
-| `success`    | derived   | Positive accents (charts, misc.)        |
-| `info`       | derived   | Neutral accents (charts, misc.)         |
-| `warning`    | = accent  | Alias of brand accent (not status UI)   |
+| Token         | Hex       | Role                                                         |
+| ------------- | --------- | ------------------------------------------------------------ |
+| `text`        | `#040316` | Foreground / body copy                                       |
+| `background`  | `#fffdf9` | Page canvas                                                  |
+| `primary`     | `#404040` | Primary actions, strong UI chrome                            |
+| `secondary`   | `#ffffff` | Cards, popovers, elevated surfaces                           |
+| `accent`      | `#ff8a05` | Highlights, focus rings, brand emphasis                      |
+| `muted`       | derived   | Subtle surfaces and neutral hover fills                      |
+| `destructive` | derived   | Destructive actions, form field errors, negative money lines |
 
 These map onto shadcn CSS variables in `src/styles.css` (`--foreground`, `--background`, `--primary`, `--secondary`, `--accent`,
-`--success`, `--info`, `--warning`, plus derived muted/border/ring/sidebar tokens).
+`--destructive`, plus derived muted/border/ring/sidebar tokens).
+
+`src/styles.css` also defines `--success`, `--info`, and `--warning` (warning aliases accent) for charts and other non-status accents.
+Do **not** use those for banners, badges, or icons — status messaging owns its own palette.
+
+### Status tones (not brand tokens)
+
+Attention, confirmation, and guidance use the four tones in [`status-messaging.md`](./status-messaging.md) — shared Tailwind maps in
+`status.ts`, not the CSS variables above:
+
+| Tone      | Hue    |
+| --------- | ------ |
+| `info`    | blue   |
+| `success` | green  |
+| `warning` | yellow |
+| `error`   | red    |
+
+Booking lifecycle pills use a related soft palette documented there. Do not invent one-off status colours outside those maps, and do not
+remap status through brand `--accent` / `--info` / `--success` / `--warning`.
 
 `src/styles.css` excludes `docs/` from Tailwind's class scanner (`@source not "../docs"`) so editing these docs — which mention utility
 names like `bg-primary` — does not rebuild CSS or trigger Vite HMR. `vite.config.ts` also ignores `**/docs/**` in `server.watch`.
-
-Status banners, badges, and icons follow [`status-messaging.md`](./status-messaging.md) (shared blue / green / yellow / red maps in
-`status.ts`). Booking lifecycle pills use a related soft palette documented there — do not invent one-off status colours outside those maps.
 
 Cook cuisine style / cooking philosophy chips use `CookProfileTags` (`bg-muted` fill). Do not use `Badge variant="secondary"` for those —
 `--secondary` is white, so secondary badges disappear on `bg-card` / white surfaces. Same rule for meal/menu draft/published meta: use

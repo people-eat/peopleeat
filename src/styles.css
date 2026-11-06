@@ -58,8 +58,9 @@
     --accent-foreground: oklch(0.118 0.046 280.7);
     --destructive: oklch(0.549 0.174 30.5);
     --destructive-foreground: oklch(1 0 0);
-    /* Status messaging — see docs/styles/status-messaging.md.
-       Warning reuses brand accent (attention = orange). */
+    /* Non-status accents (charts, misc.). Status banners / badges / icons
+       use the Tailwind maps in status.ts — see docs/styles/status-messaging.md.
+       `--warning` aliases brand accent; status warning stays yellow. */
     --success: oklch(0.52 0.11 155);
     --success-foreground: oklch(0.99 0.01 155);
     --info: oklch(0.52 0.1 250);
