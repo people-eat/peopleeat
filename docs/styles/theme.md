@@ -40,9 +40,11 @@ names like `bg-primary` — does not rebuild CSS or trigger Vite HMR. `vite.conf
 
 Cook cuisine style / cooking philosophy chips use `CookProfileTags` (`bg-muted` fill). Do not use `Badge variant="secondary"` for those —
 `--secondary` is white, so secondary badges disappear on `bg-card` / white surfaces. Same rule for meal/menu draft/published meta: use
-`Badge variant="outline"` (border) on cards and detail pages. Admin table meta that is not a status (outbound-email purpose, sent) uses
-`Badge variant="outline"` plus `bg-muted`, because those tables sit on white (`bg-secondary`) and an outline-only pill is too faint. Log
-severity uses the status badge tones (error / warning / info); debug stays on that muted outline pill.
+`Badge variant="outline"` (border) on cards and detail pages. Count badges on `TabsList variant="line"` (meals, menus, pool, offers, public
+profile) use `Badge variant="outline"` plus `bg-muted`: line tabs sit on the warm page canvas, so a white secondary pill has no edge. Admin
+table meta that is not a status (outbound-email purpose, sent) uses the same outline-plus-muted pill, because those tables sit on white
+(`bg-secondary`) and an outline-only pill is too faint. Log severity uses the status badge tones (error / warning / info); debug stays on
+that muted outline pill.
 
 ## Workspace chrome density
 

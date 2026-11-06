@@ -53,9 +53,10 @@ future surfaces can stay in sync. The `StatusTone` type itself lives in `src/sha
    `bookingRequestOfferStatusHue(status)` plus the audience-aware label helpers. Do not remap these through `StatusTone`.
 
 `Badge` (neutral meta: draft/published, non-unread counts) stays for non-status labels. Use `variant="outline"` for draft/published on cards
-and detail pages — `variant="secondary"` is white (`--secondary`) and disappears on `bg-card`. On white admin tables, add `bg-muted` to
-those outline badges (email purpose, sent). Log severity uses the status tones above; debug stays a muted outline pill. Do not stretch
-`Badge variant="destructive"` or brand `--accent` into unread bubbles — use `NotificationBadge`.
+and detail pages — `variant="secondary"` is white (`--secondary`) and disappears on `bg-card`. Count badges on line tabs and meta on white
+admin tables add `bg-muted` to that outline pill (email purpose, sent; meals/menus/pool/offers tab counts). Log severity uses the status
+tones above; debug stays a muted outline pill. Do not stretch `Badge variant="destructive"` or brand `--accent` into unread bubbles — use
+`NotificationBadge`.
 
 ## Rules
 

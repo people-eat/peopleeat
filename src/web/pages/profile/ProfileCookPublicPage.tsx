@@ -195,7 +195,7 @@ export function ProfileCookPublicPage({ data, search }: { data: GqlCProfileCookP
                             <Settings2Icon aria-hidden />
                             {{ de: 'Verwalten', en: 'Manage' }[locale]}
                             {publishedWithoutImageCount > 0 ? (
-                                <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-[10px] font-medium">
+                                <Badge variant="outline" className="ml-1 bg-muted px-1.5 py-0 text-[10px] font-medium">
                                     {publishedWithoutImageCount}
                                 </Badge>
                             ) : null}

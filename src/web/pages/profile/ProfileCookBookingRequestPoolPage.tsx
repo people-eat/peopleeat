@@ -59,11 +59,15 @@ export function ProfileCookBookingRequestPoolPage({
                 <TabsList variant="line" aria-label={{ de: 'Anfragen-Status', en: 'Request status' }[locale]}>
                     <TabsTrigger value="open">
                         {{ de: 'Offen', en: 'Open' }[locale]}
-                        <Badge variant="secondary">{openRequests.length}</Badge>
+                        <Badge variant="outline" className="bg-muted">
+                            {openRequests.length}
+                        </Badge>
                     </TabsTrigger>
                     <TabsTrigger value="declined">
                         {{ de: 'Ausgeblendet', en: 'Declined' }[locale]}
-                        <Badge variant="secondary">{declinedRequests.length}</Badge>
+                        <Badge variant="outline" className="bg-muted">
+                            {declinedRequests.length}
+                        </Badge>
                     </TabsTrigger>
                 </TabsList>
             </Tabs>

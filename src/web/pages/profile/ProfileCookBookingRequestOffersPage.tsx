@@ -61,15 +61,21 @@ export function ProfileCookBookingRequestOffersPage({
                 <TabsList variant="line" aria-label={{ de: 'Angebots-Status', en: 'Offer status' }[locale]}>
                     <TabsTrigger value="active">
                         {{ de: 'Aktiv', en: 'Active' }[locale]}
-                        <Badge variant="secondary">{activeOffers.length}</Badge>
+                        <Badge variant="outline" className="bg-muted">
+                            {activeOffers.length}
+                        </Badge>
                     </TabsTrigger>
                     <TabsTrigger value="completed">
                         {{ de: 'Stattgefunden', en: 'Completed' }[locale]}
-                        <Badge variant="secondary">{completedOffers.length}</Badge>
+                        <Badge variant="outline" className="bg-muted">
+                            {completedOffers.length}
+                        </Badge>
                     </TabsTrigger>
                     <TabsTrigger value="archived">
                         {{ de: 'Archiv', en: 'Archive' }[locale]}
-                        <Badge variant="secondary">{archivedOffers.length}</Badge>
+                        <Badge variant="outline" className="bg-muted">
+                            {archivedOffers.length}
+                        </Badge>
                     </TabsTrigger>
                 </TabsList>
             </Tabs>

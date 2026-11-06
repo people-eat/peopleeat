@@ -169,7 +169,9 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                     {scopeTabs.map((tab) => (
                         <TabsTrigger key={tab.value} value={tab.value}>
                             {tab.label}
-                            <Badge variant="secondary">{tab.count}</Badge>
+                            <Badge variant="outline" className="bg-muted">
+                                {tab.count}
+                            </Badge>
                         </TabsTrigger>
                     ))}
                 </TabsList>
