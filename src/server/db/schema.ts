@@ -29,6 +29,7 @@ import { occasionFormatsSectionEmpty } from '../../shared/occasionFormatsSection
 import type { OccasionFormatsSection } from '../../shared/occasionFormatsSection';
 import type { WebPageKey } from '../../shared/webPage';
 import type { AiGenerationKind } from '../domain/aiGeneration';
+import type { AuthOauthProvider } from '../domain/authOauth';
 import type {
     BookingRequestCookMenuEvaluation,
     BookingRequestExactEventAddress,
@@ -1157,6 +1158,93 @@ export const authTimeBasedOneTimePasswords = pgTable(
 
 export type AuthTimeBasedOneTimePassword = typeof authTimeBasedOneTimePasswords.$inferSelect;
 export type AuthTimeBasedOneTimePasswordCreate = typeof authTimeBasedOneTimePasswords.$inferInsert;
+
+// Google (and later Apple) OAuth layered on cookie sessions. States are PKCE
+// CSRF for the redirect; tickets are registration proofs for new emails;
+// identities stably link a provider subject to a Users row. See
+// docs/architecture/authentication.md and docs/features/sign-in.md.
+
+export const authOauthStates = pgTable(
+    'AuthOauthStates',
+    {
+        authOauthStateId: nanoId().primaryKey(),
+        sessionId: nanoId().notNull(),
+        state: varchar().notNull(),
+        codeVerifier: varchar().notNull(),
+        nonce: varchar().notNull(),
+        returnTo: varchar().notNull(),
+        expiresAt: timestamp({ withTimezone: true }).notNull(),
+        createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.sessionId],
+            foreignColumns: [sessions.sessionId],
+        })
+            .onUpdate('cascade')
+            .onDelete('cascade'),
+        uniqueIndex('AuthOauthStates_state_uidx').on(table.state),
+        index('AuthOauthStates_sessionId_idx').on(table.sessionId),
+    ],
+);
+
+export type AuthOauthState = typeof authOauthStates.$inferSelect;
+export type AuthOauthStateCreate = typeof authOauthStates.$inferInsert;
+
+export const authOauthTickets = pgTable(
+    'AuthOauthTickets',
+    {
+        authOauthTicketId: nanoId().primaryKey(),
+        sessionId: nanoId().notNull(),
+        provider: varchar().$type<AuthOauthProvider>().notNull(),
+        subject: varchar().notNull(),
+        emailAddress: varchar().notNull(),
+        firstName: varchar(),
+        lastName: varchar(),
+        phoneNumber: varchar(),
+        birthDate: date({ mode: 'string' }),
+        verifiedAt: timestamp({ withTimezone: true }).notNull(),
+        consumedAt: timestamp({ withTimezone: true }),
+        expiresAt: timestamp({ withTimezone: true }).notNull(),
+        createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.sessionId],
+            foreignColumns: [sessions.sessionId],
+        })
+            .onUpdate('cascade')
+            .onDelete('cascade'),
+        index('AuthOauthTickets_sessionId_idx').on(table.sessionId),
+    ],
+);
+
+export type AuthOauthTicket = typeof authOauthTickets.$inferSelect;
+export type AuthOauthTicketCreate = typeof authOauthTickets.$inferInsert;
+
+export const authOauthIdentities = pgTable(
+    'AuthOauthIdentities',
+    {
+        authOauthIdentityId: nanoId().primaryKey(),
+        userId: nanoId().notNull(),
+        provider: varchar().$type<AuthOauthProvider>().notNull(),
+        subject: varchar().notNull(),
+        createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.userId],
+            foreignColumns: [users.userId],
+        })
+            .onUpdate('cascade')
+            .onDelete('cascade'),
+        uniqueIndex('AuthOauthIdentities_provider_subject_uidx').on(table.provider, table.subject),
+        index('AuthOauthIdentities_userId_idx').on(table.userId),
+    ],
+);
+
+export type AuthOauthIdentity = typeof authOauthIdentities.$inferSelect;
+export type AuthOauthIdentityCreate = typeof authOauthIdentities.$inferInsert;
 
 // --- Outbound emails ----------------------------------------------------------
 //

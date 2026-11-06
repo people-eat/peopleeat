@@ -153,6 +153,10 @@ Wired today:
 - **Partner page partners explore** (`PARTNER_PAGE_PARTNERS_EXPLORE`) — shows `SectionPartnersExplore` on public partner detail pages when
   on; missing row stays off. Public partner page reads `Session.activeFeatureToggleKeys` (global + signed-in override). Admin partner
   preview keeps the section for ops. See [partners.md](./partners.md)
+- **Sign-in: Google** (`SIGN_IN_GOOGLE`) — shows Continue with Google on identity gates; start and callback reject when the effective toggle
+  is off (anonymous uses the global row; after Google identity resolve, a per-user override can still deny). Missing row stays off. Confirm
+  the Google consent screen (test users or verified People scopes) before enabling in an environment with real users. See
+  [sign-in.md](./sign-in.md)
 
 ## Decisions
 

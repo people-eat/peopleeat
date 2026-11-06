@@ -10,7 +10,7 @@ import { formatCurrency } from '../../shared';
 import { giftCardFunnelArea } from '../../shared/giftCardFunnel';
 import type { GiftCardFunnelClientStep } from '../../shared/giftCardFunnel';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
-import { AuthPasskeyLogOn } from '../components/auth/AuthPasskeyLogOn';
+import { AuthIdentityGateLogOnFooter } from '../components/auth/AuthIdentityGateLogOnFooter';
 import { sessionAuthPhase } from '../components/auth/sessionAuthPhase';
 import { Button } from '../components/base/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../components/base/dialog';
@@ -301,12 +301,15 @@ function GiftCardPageInner({
                                               }
                                             : null,
                                         authEmailOtp: authSession.authEmailOtp,
+                                        authOauthTicket: authSession.authOauthTicket,
                                     }));
                                 }}
                                 onReady={() => {
                                     void createAndGoToCheckout(values);
                                 }}
-                                footer={(_session, sessionRefresh) => <AuthPasskeyLogOn onSuccess={sessionRefresh} />}
+                                footer={(gateSession, sessionRefresh) => (
+                                    <AuthIdentityGateLogOnFooter session={gateSession} sessionRefresh={sessionRefresh} />
+                                )}
                             />
                             <Button type="button" variant="ghost" onClick={() => setStep('configure')} disabled={busy}>
                                 {{ de: 'Zurück', en: 'Back' }[locale]}

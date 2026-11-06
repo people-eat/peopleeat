@@ -23,6 +23,7 @@ export function toGqlAdminUser(user: User, types: GqlSAdminUserType[]): GqlSAdmi
         // resolved fields
         passkeys: [],
         timeBasedOneTimePassword: null,
+        oauthIdentities: [],
         profilePicture: null,
         cook: null,
         featureToggleOverrides: [],

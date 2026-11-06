@@ -1,7 +1,7 @@
 # Admin analytics
 
 Operators inspect first-party product analytics: booking-form, gift-card, booking-checkout, chef sign-up, and cook offer creation funnels,
-plus page-visit time series.
+sign-in method usage, plus page-visit time series.
 
 ## Behavior
 
@@ -33,8 +33,11 @@ plus page-visit time series.
    - **Drop-off %** — vs the graph parent (`declined` and `offer_create` both vs `opened`), not vs the previous table row. Negative values
      meant the UI was wrongly comparing the offer branch to the decline branch.
    - **Sankey** — forward-only edges on that per-row sequence (decline branches off opened).
-9. **Visit charts** — zero-filled day buckets of `WEB_PAGE_VISITED` for `BOOKING_REQUEST_FORM`, `LANDING`, `CHEFS`, and `GIFT_CARD` (all
-   sessions; not filtered to non-admin/non-cook).
+9. **Sign-in methods** — human non-impersonation sessions in range (cooks included, bots and admin impersonation excluded). Per-method table
+   for Email OTP, Passkey, and Google: sign-ins, registration tickets, accounts created, failures. Daily grouped bar chart of sign-ins.
+   Google account creates are `AUTH_OAUTH_ACCOUNT_CREATED`; email account creates are `USER_CREATE_SUCCESSFUL` minus those Google creates.
+10. **Visit charts** — zero-filled day buckets of `WEB_PAGE_VISITED` for `BOOKING_REQUEST_FORM`, `LANDING`, `CHEFS`, and `GIFT_CARD` (all
+    sessions; not filtered to non-admin/non-cook).
 
 ### Funnel filters and empty states
 
@@ -79,12 +82,12 @@ In-app overview with KPIs, step table, Sankey + visit buckets; event store docum
 ## Implementation
 
 - SDL: `AdminSessionEvent`, `AdminAnalyticsBookingRequestFormFlow`, `AdminAnalyticsSessionFunnelFlow`,
-  `AdminAnalyticsCookBookingRequestOfferFlow`, `AdminAnalyticsFunnelStepStats`, `Admin.bookingRequestFormFlow`, `Admin.giftCardFlow`,
-  `Admin.bookingRequestCheckoutFlow`, `Admin.chefSignUpFlow`, `Admin.cookBookingRequestOfferFlow`,
-  `Admin.sessionEventWebPageVisitCreations`, `Admin.sessionEvents`, `Admin.sessionEventsCounts`
+  `AdminAnalyticsCookBookingRequestOfferFlow`, `AdminAnalyticsFunnelStepStats`, `AdminSignInMethodStats`, `Admin.bookingRequestFormFlow`,
+  `Admin.giftCardFlow`, `Admin.bookingRequestCheckoutFlow`, `Admin.chefSignUpFlow`, `Admin.cookBookingRequestOfferFlow`,
+  `Admin.signInMethodStats`, `Admin.sessionEventWebPageVisitCreations`, `Admin.sessionEvents`, `Admin.sessionEventsCounts`
 - Queries: `adminAnalyticsBookingRequestFormFlow`, `adminAnalyticsGiftCardFlow`, `adminAnalyticsBookingRequestCheckoutFlow`,
-  `adminAnalyticsChefSignUpFlow`, `adminAnalyticsCookBookingRequestOfferFlow`, `adminSessionEventWebPageVisitCreationsFindMany`,
-  `adminSessionEventFindMany`
+  `adminAnalyticsChefSignUpFlow`, `adminAnalyticsCookBookingRequestOfferFlow`, `adminAnalyticsSignInMethodStats`,
+  `adminSessionEventWebPageVisitCreationsFindMany`, `adminSessionEventFindMany`
 - Mapper: `toGqlAdminSessionEvent`
 - Shared steps: `src/shared/bookingRequestFormFunnel.ts`, `src/shared/cookBookingRequestOfferFunnel.ts`, `src/shared/giftCardFunnel.ts`,
   `src/shared/chefSignUpFunnel.ts`, `src/shared/bookingRequestCheckoutFunnel.ts`, `src/shared/chefsDiscovery.ts`

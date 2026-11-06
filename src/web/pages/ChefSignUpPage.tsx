@@ -7,6 +7,7 @@ import { useMutation, useQuery } from 'urql';
 import { chefSignUpFunnelArea } from '../../shared/chefSignUpFunnel';
 import type { ChefSignUpFunnelClientStep } from '../../shared/chefSignUpFunnel';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
+import { AuthIdentityGateLogOnFooter } from '../components/auth/AuthIdentityGateLogOnFooter';
 import { Button } from '../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../components/base/combobox';
 import { Input } from '../components/base/input';
@@ -199,6 +200,9 @@ export function ChefSignUpPage({ loaderData }: { loaderData: GqlCChefSignUpPageQ
                     <AuthIdentityGate
                         initialSession={session}
                         includeCook
+                        footer={(gateSession, sessionRefresh) => (
+                            <AuthIdentityGateLogOnFooter session={gateSession} sessionRefresh={sessionRefresh} />
+                        )}
                         onSessionChange={(next) => {
                             setSession(next);
                             if (next.user?.cook) {

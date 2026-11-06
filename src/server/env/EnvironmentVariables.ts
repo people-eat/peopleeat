@@ -15,6 +15,13 @@ export interface EnvironmentVariables {
     webPageUrl: string;
     googleGenerativeAiApiKey: string;
     googlePlacesApiKey: string;
+    // Google OAuth client for social log-on. Redirect URI is
+    // `${webPageUrl}/api/auth/google/callback`. See docs/architecture/authentication.md.
+    googleOauthClientId: string;
+    googleOauthClientSecret: string;
+    // When true, the authorize URL also requests People API phone + birthday
+    // scopes (Google-sensitive; production needs consent-screen verification).
+    googleOauthPeopleScopes: boolean;
     // HMAC secret for short-lived tokens that authenticate server-side renders
     // against `/server/*` routes. See `docs/architecture/browser-capture.md`.
     serverTokenSecret: string;

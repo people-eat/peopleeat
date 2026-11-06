@@ -33,7 +33,7 @@ import {
 } from '../../shared';
 import { AppImage } from '../components/AppImage';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
-import { AuthPasskeyLogOn } from '../components/auth/AuthPasskeyLogOn';
+import { AuthIdentityGateLogOnFooter } from '../components/auth/AuthIdentityGateLogOnFooter';
 import { sessionAuthPhase } from '../components/auth/sessionAuthPhase';
 import { Badge } from '../components/base/badge';
 import { Button } from '../components/base/button';
@@ -1596,7 +1596,9 @@ export function BookingRequestPlanPage({
                                                 onReady={() => {
                                                     void submitBooking();
                                                 }}
-                                                footer={(_session, sessionRefresh) => <AuthPasskeyLogOn onSuccess={sessionRefresh} />}
+                                                footer={(gateSession, sessionRefresh) => (
+                                                    <AuthIdentityGateLogOnFooter session={gateSession} sessionRefresh={sessionRefresh} />
+                                                )}
                                             />
                                         </div>
                                     ) : null}

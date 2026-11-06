@@ -25,6 +25,7 @@ import type { Locale } from '../../utils/locale';
 type AdminUserRow = NonNullable<NonNullable<NonNullable<GqlCAdminUserPageQuery['currentSession']['user']>['admin']>['user']>;
 type AdminPasskey = AdminUserRow['passkeys'][number];
 type AdminTotp = AdminUserRow['timeBasedOneTimePassword'];
+type AdminOauthIdentity = AdminUserRow['oauthIdentities'][number];
 
 function passkeyDeviceLabel(deviceType: string | null | undefined, locale: Locale): string {
     if (deviceType === 'multiDevice') return { de: 'Synchronisierter Passkey', en: 'Synced passkey' }[locale];
@@ -43,11 +44,13 @@ export function AdminUserSignInSection({
     userId,
     passkeys,
     totp,
+    oauthIdentities,
     disabled,
 }: {
     userId: string;
     passkeys: AdminPasskey[];
     totp: AdminTotp;
+    oauthIdentities: AdminOauthIdentity[];
     disabled: boolean;
 }) {
     const locale = useLocale();
@@ -97,11 +100,33 @@ export function AdminUserSignInSection({
                 <p className="text-sm text-muted-foreground">
                     {
                         {
-                            de: 'Passkeys und Authenticator-App. Entfernen gilt sofort. Die Anmeldung per E-Mail-Code bleibt.',
-                            en: 'Passkeys and the authenticator app. Removal applies immediately. Sign-in with an email code stays available.',
+                            de: 'Passkeys, Authenticator-App und verbundene Social-Logins. Entfernen gilt sofort. Die Anmeldung per E-Mail-Code bleibt.',
+                            en: 'Passkeys, the authenticator app, and linked social logins. Removal applies immediately. Sign-in with an email code stays available.',
                         }[locale]
                     }
                 </p>
+            </div>
+
+            <div className="grid gap-3">
+                <h4 className="text-sm font-medium text-foreground">{{ de: 'Google', en: 'Google' }[locale]}</h4>
+                {oauthIdentities.filter((identity) => identity.provider === 'GOOGLE').length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                        {{ de: 'Kein Google-Konto verbunden.', en: 'No Google account linked.' }[locale]}
+                    </p>
+                ) : (
+                    <ul className="divide-y divide-border overflow-hidden rounded-xl border bg-card">
+                        {oauthIdentities
+                            .filter((identity) => identity.provider === 'GOOGLE')
+                            .map((identity) => (
+                                <li key={`${identity.provider}-${identity.createdAt}`} className="grid gap-0.5 bg-card px-4 py-3">
+                                    <p className="text-sm text-foreground">{{ de: 'Google verbunden', en: 'Google linked' }[locale]}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {formatDate(identity.createdAt, { locale, timeZone, dateStyle: 'medium' })}
+                                    </p>
+                                </li>
+                            ))}
+                    </ul>
+                )}
             </div>
 
             <div className="grid gap-3">

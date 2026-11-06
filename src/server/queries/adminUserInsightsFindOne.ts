@@ -1,6 +1,6 @@
-import { and, count, desc, isNotNull, ne, sql } from 'drizzle-orm';
+import { and, count, desc, eq, isNotNull, ne, sql } from 'drizzle-orm';
 
-import { users } from '../db/schema';
+import { authOauthIdentities, authPasskeys, authTimeBasedOneTimePasswords, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminUserInsights, GqlSSession } from '../graphql/generated';
 
@@ -20,52 +20,71 @@ export async function adminUserInsightsFindOne(
     try {
         const notAnonymized = ne(users.status, 'ANONYMIZED');
 
-        const [accountRow, ageRow, preferredCommunicationRows, localeRows, timeZoneRows] = await Promise.all([
-            serverRuntime.db
-                .select({ value: count() })
-                .from(users)
-                .where(notAnonymized)
-                .then((rows) => rows[0]),
-            serverRuntime.db
-                .select({
-                    medianAge: sql<
-                        string | number | null
-                    >`PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY DATE_PART('year', AGE(CURRENT_DATE, ${users.birthDate})))`,
-                    averageAge: sql<string | number | null>`AVG(DATE_PART('year', AGE(CURRENT_DATE, ${users.birthDate})))`,
-                    birthDateSampleSize: count(),
-                })
-                .from(users)
-                .where(and(notAnonymized, isNotNull(users.birthDate)))
-                .then((rows) => rows[0]),
-            serverRuntime.db
-                .select({
-                    preferredCommunication: users.preferredCommunication,
-                    value: count(),
-                })
-                .from(users)
-                .where(notAnonymized)
-                .groupBy(users.preferredCommunication)
-                .orderBy(desc(count())),
-            serverRuntime.db
-                .select({
-                    locale: users.locale,
-                    value: count(),
-                })
-                .from(users)
-                .where(notAnonymized)
-                .groupBy(users.locale)
-                .orderBy(desc(count()), users.locale),
-            serverRuntime.db
-                .select({
-                    timeZone: users.timeZone,
-                    value: count(),
-                })
-                .from(users)
-                .where(notAnonymized)
-                .groupBy(users.timeZone)
-                .orderBy(desc(count()), users.timeZone)
-                .limit(TIME_ZONE_STATS_TAKE),
-        ]);
+        const [accountRow, ageRow, preferredCommunicationRows, localeRows, timeZoneRows, googleLinkedRow, passkeyRow, totpRow] =
+            await Promise.all([
+                serverRuntime.db
+                    .select({ value: count() })
+                    .from(users)
+                    .where(notAnonymized)
+                    .then((rows) => rows[0]),
+                serverRuntime.db
+                    .select({
+                        medianAge: sql<
+                            string | number | null
+                        >`PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY DATE_PART('year', AGE(CURRENT_DATE, ${users.birthDate})))`,
+                        averageAge: sql<string | number | null>`AVG(DATE_PART('year', AGE(CURRENT_DATE, ${users.birthDate})))`,
+                        birthDateSampleSize: count(),
+                    })
+                    .from(users)
+                    .where(and(notAnonymized, isNotNull(users.birthDate)))
+                    .then((rows) => rows[0]),
+                serverRuntime.db
+                    .select({
+                        preferredCommunication: users.preferredCommunication,
+                        value: count(),
+                    })
+                    .from(users)
+                    .where(notAnonymized)
+                    .groupBy(users.preferredCommunication)
+                    .orderBy(desc(count())),
+                serverRuntime.db
+                    .select({
+                        locale: users.locale,
+                        value: count(),
+                    })
+                    .from(users)
+                    .where(notAnonymized)
+                    .groupBy(users.locale)
+                    .orderBy(desc(count()), users.locale),
+                serverRuntime.db
+                    .select({
+                        timeZone: users.timeZone,
+                        value: count(),
+                    })
+                    .from(users)
+                    .where(notAnonymized)
+                    .groupBy(users.timeZone)
+                    .orderBy(desc(count()), users.timeZone)
+                    .limit(TIME_ZONE_STATS_TAKE),
+                serverRuntime.db
+                    .select({ value: count() })
+                    .from(authOauthIdentities)
+                    .innerJoin(users, eq(users.userId, authOauthIdentities.userId))
+                    .where(and(notAnonymized, eq(authOauthIdentities.provider, 'GOOGLE')))
+                    .then((rows) => rows[0]),
+                serverRuntime.db
+                    .select({ value: sql<number>`count(distinct ${authPasskeys.userId})` })
+                    .from(authPasskeys)
+                    .innerJoin(users, eq(users.userId, authPasskeys.userId))
+                    .where(notAnonymized)
+                    .then((rows) => rows[0]),
+                serverRuntime.db
+                    .select({ value: count() })
+                    .from(authTimeBasedOneTimePasswords)
+                    .innerJoin(users, eq(users.userId, authTimeBasedOneTimePasswords.userId))
+                    .where(and(notAnonymized, isNotNull(authTimeBasedOneTimePasswords.confirmedAt)))
+                    .then((rows) => rows[0]),
+            ]);
 
         const medianAge = parseNullableNumber(ageRow?.medianAge);
         const averageAge = parseNullableNumber(ageRow?.averageAge);
@@ -87,6 +106,9 @@ export async function adminUserInsightsFindOne(
                 timeZone: row.timeZone,
                 count: row.value,
             })),
+            googleLinkedAccountCount: Number(googleLinkedRow?.value ?? 0),
+            passkeyAccountCount: Number(passkeyRow?.value ?? 0),
+            totpAccountCount: Number(totpRow?.value ?? 0),
         };
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);

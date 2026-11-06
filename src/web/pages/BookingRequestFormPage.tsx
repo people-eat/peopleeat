@@ -48,7 +48,7 @@ import {
 } from '../../shared';
 import { AppImage } from '../components/AppImage';
 import { AUTH_USER_PROFILE_FORM_ID, AuthIdentityGate } from '../components/auth/AuthIdentityGate';
-import { AuthPasskeyLogOn } from '../components/auth/AuthPasskeyLogOn';
+import { AuthIdentityGateLogOnFooter } from '../components/auth/AuthIdentityGateLogOnFooter';
 import { sessionAuthPhase } from '../components/auth/sessionAuthPhase';
 import { Badge } from '../components/base/badge';
 import { Button } from '../components/base/button';
@@ -1228,7 +1228,9 @@ export function BookingRequestFormPage({
                                         onReady={() => {
                                             trySubmit();
                                         }}
-                                        footer={(_session, sessionRefresh) => <AuthPasskeyLogOn onSuccess={sessionRefresh} />}
+                                        footer={(gateSession, sessionRefresh) => (
+                                            <AuthIdentityGateLogOnFooter session={gateSession} sessionRefresh={sessionRefresh} />
+                                        )}
                                     />
                                 </div>
                             ) : null}

@@ -8,7 +8,7 @@ import { AuthPasskeyAuthenticateOptionsDocument, AuthPasskeyAuthenticateVerifyDo
 import { useLocale } from '../../hooks/useLocale';
 import { Button } from '../base/button';
 
-export function AuthPasskeyLogOn({ onSuccess }: { onSuccess?: () => Promise<unknown> | void }) {
+export function AuthPasskeyLogOn({ onSuccess, hideDivider = false }: { onSuccess?: () => Promise<unknown> | void; hideDivider?: boolean }) {
     const locale = useLocale();
     const [busy, setBusy] = useState(false);
     const [, passkeyAuthOptions] = useMutation(AuthPasskeyAuthenticateOptionsDocument);
@@ -56,9 +56,11 @@ export function AuthPasskeyLogOn({ onSuccess }: { onSuccess?: () => Promise<unkn
 
     return (
         <div className="grid gap-3">
-            <div className="relative text-center text-sm text-muted-foreground">
-                <span>{{ de: 'oder', en: 'or' }[locale]}</span>
-            </div>
+            {hideDivider ? null : (
+                <div className="relative text-center text-sm text-muted-foreground">
+                    <span>{{ de: 'oder', en: 'or' }[locale]}</span>
+                </div>
+            )}
             <Button type="button" variant="outline" onClick={() => void onPasskeyLogOn()} disabled={busy}>
                 {{ de: 'Mit Passkey anmelden', en: 'Log on with passkey' }[locale]}
             </Button>

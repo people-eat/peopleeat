@@ -5,7 +5,7 @@ import { phoneNumberAssert } from '../../shared/phoneNumber';
 import { textNormalizeTitled } from '../../shared/textNormalize';
 import { userBirthDateAssertMinimumAge } from '../../shared/userBirthDate';
 import type { UserCreate } from '../db/schema';
-import { authEmailOtps, cooks, users } from '../db/schema';
+import { authEmailOtps, authOauthIdentities, authOauthTickets, cooks, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSMutationResult, GqlSMutationUserCreateArgs, GqlSSession } from '../graphql/generated';
 import { userKlaviyoProfileSync } from '../jobs/handlers/userKlaviyoProfileSync';
@@ -55,20 +55,32 @@ export async function userCreate(
             : undefined;
 
         const created = await serverRuntime.db.transaction(async (transaction) => {
-            const [otp] = await transaction
+            const [oauthTicket] = await transaction
                 .select()
-                .from(authEmailOtps)
-                .where(
-                    and(
-                        eq(authEmailOtps.sessionId, requestingSession.sessionId),
-                        isNull(authEmailOtps.consumedAt),
-                        isNotNull(authEmailOtps.verifiedAt),
-                    ),
-                )
-                .orderBy(desc(authEmailOtps.createdAt))
+                .from(authOauthTickets)
+                .where(and(eq(authOauthTickets.sessionId, requestingSession.sessionId), isNull(authOauthTickets.consumedAt)))
+                .orderBy(desc(authOauthTickets.createdAt))
                 .limit(1);
 
-            if (!otp || otp.expiresAt.getTime() <= now.getTime()) {
+            const oauthTicketValid = oauthTicket && oauthTicket.expiresAt.getTime() > now.getTime();
+
+            const [otp] = oauthTicketValid
+                ? [undefined]
+                : await transaction
+                      .select()
+                      .from(authEmailOtps)
+                      .where(
+                          and(
+                              eq(authEmailOtps.sessionId, requestingSession.sessionId),
+                              isNull(authEmailOtps.consumedAt),
+                              isNotNull(authEmailOtps.verifiedAt),
+                          ),
+                      )
+                      .orderBy(desc(authEmailOtps.createdAt))
+                      .limit(1);
+
+            const emailAddress = oauthTicketValid ? oauthTicket.emailAddress : otp?.emailAddress;
+            if (!emailAddress || (!oauthTicketValid && (!otp || otp.expiresAt.getTime() <= now.getTime()))) {
                 await sessionEventCreate(serverRuntime, {
                     sessionId: requestingSession.sessionId,
                     type: 'USER_CREATE_FAILED',
@@ -80,7 +92,7 @@ export async function userCreate(
             const [existingEmail] = await transaction
                 .select({ userId: users.userId })
                 .from(users)
-                .where(eq(users.emailAddress, otp.emailAddress))
+                .where(eq(users.emailAddress, emailAddress))
                 .limit(1);
             if (existingEmail) {
                 await sessionEventCreate(serverRuntime, {
@@ -110,7 +122,7 @@ export async function userCreate(
             const newUserId = idCreate();
             const userInsert: UserCreate = {
                 userId: newUserId,
-                emailAddress: otp.emailAddress,
+                emailAddress,
                 firstName,
                 lastName,
                 phoneNumber,
@@ -127,12 +139,32 @@ export async function userCreate(
                 await transaction.insert(cooks).values({ cookId: newUserId, ...cookPayload });
             }
             await outboundEmailsUserIdBackfillByToEmail(transaction, {
-                toEmail: otp.emailAddress,
+                toEmail: emailAddress,
                 userId: newUserId,
             });
-            await transaction.update(authEmailOtps).set({ consumedAt: now }).where(eq(authEmailOtps.authEmailOtpId, otp.authEmailOtpId));
+            if (oauthTicketValid) {
+                const consumed = await transaction
+                    .update(authOauthTickets)
+                    .set({ consumedAt: now })
+                    .where(and(eq(authOauthTickets.authOauthTicketId, oauthTicket.authOauthTicketId), isNull(authOauthTickets.consumedAt)))
+                    .returning({ authOauthTicketId: authOauthTickets.authOauthTicketId });
+                if (consumed.length === 0) {
+                    throw new Error('userCreate: verified email required');
+                }
+                await transaction.insert(authOauthIdentities).values({
+                    authOauthIdentityId: idCreate(),
+                    userId: newUserId,
+                    provider: oauthTicket.provider,
+                    subject: oauthTicket.subject,
+                });
+            } else if (otp) {
+                await transaction
+                    .update(authEmailOtps)
+                    .set({ consumedAt: now })
+                    .where(eq(authEmailOtps.authEmailOtpId, otp.authEmailOtpId));
+            }
 
-            return { userId: newUserId, emailAddress: otp.emailAddress };
+            return { userId: newUserId, emailAddress, oauthProvider: oauthTicketValid ? oauthTicket.provider : null };
         });
 
         await sessionUserBind(requestingSession.sessionId, created.userId, requestingSession, serverRuntime);
@@ -141,6 +173,13 @@ export async function userCreate(
             type: 'USER_CREATE_SUCCESSFUL',
             payload: {},
         });
+        if (created.oauthProvider) {
+            await sessionEventCreate(serverRuntime, {
+                sessionId: requestingSession.sessionId,
+                type: 'AUTH_OAUTH_ACCOUNT_CREATED',
+                payload: { provider: created.oauthProvider },
+            });
+        }
 
         try {
             await serverRuntime.jobs.enqueue(userKlaviyoProfileSync, { userId: created.userId });

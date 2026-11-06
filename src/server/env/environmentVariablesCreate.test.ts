@@ -27,6 +27,9 @@ describe('environmentVariablesCreate', () => {
             buildSha: 'abc123',
             webPageUrl: 'https://example.com',
             googleGenerativeAiApiKey: 'test-google-ai',
+            googleOauthClientId: 'test-google-oauth-client-id',
+            googleOauthClientSecret: 'test-google-oauth-client-secret',
+            googleOauthPeopleScopes: false,
             googlePlacesApiKey: 'test-google-places',
             serverTokenSecret: 'test-server-token-secret',
             visitorIpHashSalt: 'test-salt',
@@ -220,6 +223,13 @@ describe('environmentVariablesCreate', () => {
     it('treats sessionCookieSecure other than "true" as false', () => {
         const environmentVariables = environmentVariablesCreate(environmentVariablesTestSource());
         expect(environmentVariables.sessionCookie.secure).toBe(false);
+    });
+
+    it('parses GOOGLE_OAUTH_PEOPLE_SCOPES', () => {
+        expect(environmentVariablesCreate(environmentVariablesTestSource()).googleOauthPeopleScopes).toBe(false);
+        expect(
+            environmentVariablesCreate(environmentVariablesTestSource({ GOOGLE_OAUTH_PEOPLE_SCOPES: 'true' })).googleOauthPeopleScopes,
+        ).toBe(true);
     });
 
     it('defaults buildSha to "unknown" when BUILD_SHA is not set', () => {

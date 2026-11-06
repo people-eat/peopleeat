@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { authEmailOtps, cooks, outboundEmails, sessions, users } from '../db/schema';
+import { authEmailOtps, authOauthIdentities, authOauthTickets, cooks, outboundEmails, sessions, users } from '../db/schema';
 import { userKlaviyoProfileSync } from '../jobs/handlers/userKlaviyoProfileSync';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { phoneNumberCreate } from '../test/phoneNumberCreate';
@@ -251,6 +251,117 @@ describe('userCreate', () => {
         expect(user?.phoneNumber).toBeNull();
         expect(user?.birthDate).toBeNull();
         expect(user?.preferredCommunication).toBeNull();
+    });
+
+    it('creates a user from a verified OAuth ticket and writes the identity', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const email = `google-register-${idCreate().toLowerCase()}@example.com`;
+        const subject = `sub-${idCreate()}`;
+        const ticketPhone = phoneNumberCreate();
+        await testDb.insert(authOauthTickets).values({
+            authOauthTicketId: idCreate(),
+            sessionId: requestingSession.sessionId,
+            provider: 'GOOGLE',
+            subject,
+            emailAddress: email,
+            firstName: 'Ada',
+            lastName: 'Lovelace',
+            phoneNumber: ticketPhone,
+            birthDate: '1990-01-15',
+            verifiedAt: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+        });
+
+        const result = await userCreate(
+            {
+                input: {
+                    firstName: 'Ada',
+                    lastName: 'Lovelace',
+                    phoneNumber: ticketPhone,
+                    birthDate: '1990-01-15',
+                    preferredCommunication: 'E_MAIL',
+                    locale: 'en',
+                    timeZone: 'Europe/Berlin',
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        const [user] = await testDb.select().from(users).where(eq(users.emailAddress, email));
+        expect(user?.firstName).toBe('Ada');
+        const identities = await testDb.select().from(authOauthIdentities).where(eq(authOauthIdentities.userId, user!.userId));
+        expect(identities).toHaveLength(1);
+        expect(identities[0]?.subject).toBe(subject);
+        const [ticket] = await testDb.select().from(authOauthTickets).where(eq(authOauthTickets.sessionId, requestingSession.sessionId));
+        expect(ticket?.consumedAt).toBeInstanceOf(Date);
+    });
+
+    it('does not persist hidden Google phone or birth date on the gift-card path', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        const email = `google-gift-${idCreate().toLowerCase()}@example.com`;
+        await testDb.insert(authOauthTickets).values({
+            authOauthTicketId: idCreate(),
+            sessionId: requestingSession.sessionId,
+            provider: 'GOOGLE',
+            subject: `sub-${idCreate()}`,
+            emailAddress: email,
+            firstName: 'Ada',
+            lastName: 'Lovelace',
+            phoneNumber: phoneNumberCreate(),
+            birthDate: '1990-01-15',
+            verifiedAt: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+        });
+
+        const result = await userCreate(
+            {
+                input: {
+                    firstName: 'Ada',
+                    lastName: 'Lovelace',
+                    locale: 'en',
+                    timeZone: 'Europe/Berlin',
+                },
+            },
+            requestingSession,
+            serverRuntime,
+        );
+
+        expect(result.success).toBe(true);
+        const [user] = await testDb.select().from(users).where(eq(users.emailAddress, email));
+        expect(user?.phoneNumber).toBeNull();
+        expect(user?.birthDate).toBeNull();
+    });
+
+    it('rejects an OAuth registration with an empty last name', async () => {
+        const { serverRuntime, requestingSession } = await commandSetup();
+        await testDb.insert(authOauthTickets).values({
+            authOauthTicketId: idCreate(),
+            sessionId: requestingSession.sessionId,
+            provider: 'GOOGLE',
+            subject: `sub-${idCreate()}`,
+            emailAddress: `google-empty-last-${idCreate().toLowerCase()}@example.com`,
+            firstName: 'Ada',
+            lastName: null,
+            verifiedAt: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 60 * 1000),
+        });
+
+        await expect(
+            userCreate(
+                {
+                    input: {
+                        firstName: 'Ada',
+                        lastName: '',
+                        locale: 'en',
+                        timeZone: 'Europe/Berlin',
+                    },
+                },
+                requestingSession,
+                serverRuntime,
+            ),
+        ).rejects.toThrow(/lastName must not be empty/);
     });
 
     it('rejects registration without a verified OTP', async () => {

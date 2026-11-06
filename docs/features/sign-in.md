@@ -1,7 +1,7 @@
 # Sign-in
 
-Passwordless email OTP and passkeys establish a cookie session; the public entry is `/log-on` (sign-in and sign-up), with `/sign-in`
-redirecting there.
+Passwordless email OTP, optional Google, and passkeys establish a cookie session; the public entry is `/log-on` (sign-in and sign-up), with
+`/sign-in` redirecting there.
 
 ## Behavior
 
@@ -17,45 +17,53 @@ redirecting there.
    create cook membership in the same step; existing customers upgrade via cook create. Discarding the verified ticket returns to the email
    step. Successful registration also enqueues a Klaviyo marketing profile sync (Resend remains the transactional mail path) — see
    [klaviyo-profile-sync.md](./klaviyo-profile-sync.md).
-5. **Passkeys** sign in existing users only; after log-on, users may register additional passkeys on the account page. The shared
-   `AuthPasskeyLogOn` control (log-on, booking form, gift-card purchase) shows helper copy that passkeys are not for first-time users, and
-   failure toasts point them back to email OTP.
-6. **TOTP (optional):** when the account has a confirmed authenticator, email OTP or passkey verify leaves the session unbound and opens the
-   TOTP challenge (`Session.authTotpChallenge`). A valid app code or unused recovery code binds the session. Enable/disable is on the
-   account page — see [account.md](./account.md) and [authentication.md](../architecture/authentication.md).
-7. Signed-in visits redirect to a safe `returnTo` relative path when present, otherwise `/profile`.
+5. **Google** (`SIGN_IN_GOOGLE`, missing row = off) sits in the shared gate footer above passkey on log-on, booking form, booking plan,
+   gift-card, and chef sign-up. Clicking redirects to Google OIDC (`openid email profile`; People phone/birthday scopes only when
+   `GOOGLE_OAUTH_PEOPLE_SCOPES=true`). Existing Google `sub` or verified email binds like OTP (TOTP still applies; `ANONYMIZED` is refused).
+   New email writes a 30-minute `AuthOauthTicket` and prefills the register form (names always; phone and birth date only when those fields
+   are visible). Gift-card (`requireProfileDetails={false}`) prefills names only and does not persist hidden Google phone or birth date.
+   Returning Google sign-in never overwrites an existing profile. Failures toast once (`authError=google`) and mention Safari or Chrome when
+   an in-app browser may have blocked Google.
+6. **Passkeys** sign in existing users only; after log-on, users may register additional passkeys on the account page. The shared
+   `AuthPasskeyLogOn` control shows helper copy that passkeys are not for first-time users, and failure toasts point them back to email OTP.
+7. **TOTP (optional):** when the account has a confirmed authenticator, email OTP, Google, or passkey verify leaves the session unbound and
+   opens the TOTP challenge (`Session.authTotpChallenge`). A valid app code or unused recovery code binds the session. Enable/disable is on
+   the account page — see [account.md](./account.md) and [authentication.md](../architecture/authentication.md).
+8. Signed-in visits redirect to a safe `returnTo` relative path when present, otherwise `/profile`.
 
-Booking request form and chef sign-up reuse the shared identity gate (email → OTP → register). The booking form and gift-card purchase also
-offer passkey log-on via the gate footer (same control as `/log-on`); existing users with a passkey skip OTP. Chef sign-up includes travel
-cook fields. Gift-card purchase registers with name only.
+Booking request form and chef sign-up reuse the shared identity gate (email → OTP or Google → register). The booking form, booking plan,
+gift-card purchase, and chef sign-up also offer Google (when the toggle is on) and passkey log-on via the gate footer. Chef sign-up includes
+travel cook fields. Gift-card purchase registers with name only.
 
 ## Decisions
 
 ### Alternatives considered
 
-| Option                               | Notes                                                                                       |
-| ------------------------------------ | ------------------------------------------------------------------------------------------- |
-| Email + password                     | Rejected — forgotten-password / reset complexity; credential reuse risk; see auth ADR below |
-| Third-party auth libraries           | Extra layer on existing cookie sessions; OAuth can layer later (Google / Apple next steps)  |
-| Auto-create user on OTP verify       | Placeholders and incomplete profiles                                                        |
-| Verified email stored on session row | Duplicates OTP session state                                                                |
-| Custom GraphQL + email + WebAuthn    | Fits existing session binding                                                               |
+| Option                               | Notes                                                                                         |
+| ------------------------------------ | --------------------------------------------------------------------------------------------- |
+| Email + password                     | Rejected — forgotten-password / reset complexity; credential reuse risk; see auth ADR below   |
+| Third-party auth libraries           | Extra layer on existing cookie sessions; Google is implemented with fetch + PKCE, not Auth.js |
+| Auto-create user on OTP verify       | Placeholders and incomplete profiles                                                          |
+| Verified email stored on session row | Duplicates OTP session state                                                                  |
+| Custom GraphQL + email + WebAuthn    | Fits existing session binding                                                                 |
 
 ### Chosen
 
-Custom GraphQL mutations, transactional email, and SimpleWebAuthn on the existing session model — no separate auth framework. Passwordless
-email OTP is the primary path; passkeys for returning users; optional TOTP. Full rationale (including unused imported password hashes):
+Custom GraphQL mutations, transactional email, SimpleWebAuthn, and Google OAuth (authorization-code + PKCE) on the existing session model,
+no separate auth framework. Passwordless email OTP is the primary path; Google for new and returning users when `SIGN_IN_GOOGLE` is on;
+passkeys for returning users; optional TOTP. Full rationale (including unused imported password hashes):
 [architecture/authentication.md](../architecture/authentication.md#why-passwordless-not-email--password).
 
 ## Next steps
 
-| Capability             | Intent                                                                      |
-| ---------------------- | --------------------------------------------------------------------------- |
-| OTP expires-in display | Show remaining validity in the OTP dialog                                   |
-| Sign in with Google    | OAuth; existing email binds; new email still completes profile via register |
-| Sign in with Apple     | Same pattern; handle private-relay emails carefully                         |
+| Capability             | Intent                                                                   |
+| ---------------------- | ------------------------------------------------------------------------ |
+| OTP expires-in display | Show remaining validity in the OTP dialog                                |
+| Sign in with Apple     | Same OAuth tables and event shape; handle private-relay emails carefully |
 
-Keep identity keyed by email; layer OAuth on the current model. TOTP 2FA is live.
+Keep identity keyed by email. TOTP 2FA and Google are live. Enabling Google in production means the published privacy policy must mention
+Google as a sign-in / profile-prefill processor. People phone and birthday scopes stay off (`GOOGLE_OAUTH_PEOPLE_SCOPES=false`) until the
+Google Cloud consent screen is verified.
 
 ## Implementation
 
@@ -69,11 +77,15 @@ Keep identity keyed by email; layer OAuth on the current model. TOTP 2FA is live
   `phoneNumberAssert`. Log-on, booking, and chef sign-up collect them via `AuthIdentityGate` / `UserProfileForm` (`requireProfileDetails`,
   default true). Gift card omits them. Admin create requires full profile. Optional nested cook create or `UserMutation.cookCreate`. Minimum
   age **18** when birth date present (`src/shared/userBirthDate.ts`).
-- Shared UI: `src/web/components/auth/` (`AuthIdentityGate`, `AuthEmailOtpFlow`, `AuthEmailOtpSpamHint`, `AuthPasskeyLogOn`,
-  `AuthTotpChallenge`, `UserProfileForm`, `sessionAuthPhase`). `PreferredCommunicationField` on account. Terms + privacy checkboxes required
-  on register. Email step uses TanStack Form with `z.email()`; OTP dialog supports Enter, paste, and auto-submit at six digits, with a
-  shared spam/junk `StatusAlert`. Passkey log-on is the gate `footer` on `/log-on`, the booking form auth step, and gift-card purchase.
-  `sessionAuthPhase` includes `totpPending` after primary auth when TOTP is enabled.
+- Shared UI: `src/web/components/auth/` (`AuthIdentityGate`, `AuthEmailOtpFlow`, `AuthEmailOtpSpamHint`, `AuthGoogleLogOn`,
+  `AuthIdentityGateLogOnFooter`, `AuthPasskeyLogOn`, `AuthTotpChallenge`, `UserProfileForm`, `sessionAuthPhase`).
+  `PreferredCommunicationField` on account. Terms + privacy checkboxes required on register. Email step uses TanStack Form with `z.email()`;
+  OTP dialog supports Enter, paste, and auto-submit at six digits, with a shared spam/junk `StatusAlert`. Google (toggle-gated) then passkey
+  sit in the gate `footer` on `/log-on`, booking form, booking plan, gift-card, and chef sign-up. `sessionAuthPhase` is `register` when OTP
+  **or** an OAuth ticket has `verifiedAt`, and `totpPending` after primary auth when TOTP is enabled.
+- Google HTTP: `GET /api/auth/google` and `/api/auth/google/callback` (PKCE, restore session from `AuthOauthStates`, Set-Cookie on
+  callback). GraphQL: `Session.authOauthTicket`, `authOauthTicketDelete`. Tables: `AuthOauthStates`, `AuthOauthTickets`,
+  `AuthOauthIdentities`. Feature toggle `SIGN_IN_GOOGLE`. Admin usage on `/admin/analytics`; linked-method stock on `/admin/users`.
 - Page: `src/web/pages/LogOnPage.tsx`, route `src/routes/{-$locale}/log-on.tsx` (noindex). `/sign-in` → `/log-on`.
 - Transport and WebAuthn: [architecture/authentication.md](../architecture/authentication.md). Passkey verify returns `{ success: false }`
   for routine denials; log-on toasts on failure.

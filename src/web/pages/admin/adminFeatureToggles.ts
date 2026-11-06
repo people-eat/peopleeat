@@ -55,6 +55,7 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
         de: 'Partnerseite: Entdecke mehr unserer Partner',
         en: 'Partner page: discover more partners',
     },
+    SIGN_IN_GOOGLE: { de: 'Anmeldung: Google', en: 'Sign-in: Google' },
 };
 
 const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, string>> = {
@@ -149,6 +150,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     PARTNER_PAGE_PARTNERS_EXPLORE: {
         de: 'Zeigt den CTA „Entdecke mehr unserer Partner“ auf öffentlichen Partnerseiten (/partners/…).',
         en: 'Shows the “Discover more of our partners” CTA on public partner pages (/partners/…).',
+    },
+    SIGN_IN_GOOGLE: {
+        de: 'Zeigt „Mit Google anmelden“ an den Anmeldemasken. Vor dem Einschalten in Produktion den Google-Consent-Screen prüfen (Testnutzer oder verifizierte People-Scopes).',
+        en: 'Shows Continue with Google on sign-in gates. Before enabling in production, confirm the Google consent screen (test users or verified People scopes).',
     },
 };
 

@@ -57,8 +57,8 @@ function AdminAnalyticsSankeyNode({
 
 export const adminAnalyticsPageTitle = { de: 'Analysen', en: 'Analytics' } as const;
 export const adminAnalyticsPageDescription = {
-    de: 'Buchungsformular-, Geschenkkarten-, Checkout- und Koch-Funnels sowie Seitenbesuche.',
-    en: 'Booking form, gift card, checkout, and chef funnels, plus page visits.',
+    de: 'Buchungsformular-, Geschenkkarten-, Checkout- und Koch-Funnels, Anmeldemethoden und Seitenbesuche.',
+    en: 'Booking form, gift card, checkout, and chef funnels, sign-in methods, and page visits.',
 } as const;
 
 export function adminAnalyticsPageVariables(search: AdminOverviewRangeSearch = {}) {
@@ -141,6 +141,30 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
     const landingVisits = admin?.landingVisits ?? [];
     const chefsVisits = admin?.chefsVisits ?? [];
     const giftCardVisits = admin?.giftCardVisits ?? [];
+    const signInMethodStats = admin?.signInMethodStats;
+    const signInMethods = signInMethodStats?.methods ?? [];
+    const signInBucketsByDate = new Map<string, { bucketStart: string; EMAIL_OTP: number; PASSKEY: number; GOOGLE: number }>();
+    for (const bucket of signInMethodStats?.buckets ?? []) {
+        const row = signInBucketsByDate.get(bucket.date) ?? {
+            bucketStart: bucket.date,
+            EMAIL_OTP: 0,
+            PASSKEY: 0,
+            GOOGLE: 0,
+        };
+        row[bucket.method] = bucket.signInCount;
+        signInBucketsByDate.set(bucket.date, row);
+    }
+    const signInChartData = Array.from(signInBucketsByDate.values());
+
+    function signInMethodLabel(method: string): string {
+        return (
+            {
+                EMAIL_OTP: { de: 'E-Mail-Code', en: 'Email code' },
+                PASSKEY: { de: 'Passkey', en: 'Passkey' },
+                GOOGLE: { de: 'Google', en: 'Google' },
+            }[method]?.[locale] ?? method
+        );
+    }
 
     const formVisitCount = formVisits.reduce((sum, bucket) => sum + bucket.count, 0);
     const sessionsWithCompletion = flow?.sessionsWithCompletion ?? 0;
@@ -274,6 +298,51 @@ export function AdminAnalyticsPage({ data, search }: { data: GqlCAdminAnalyticsP
                             }
                         </p>
                     ) : null}
+                </section>
+
+                <section className="grid gap-3">
+                    <h2 className="font-serif text-2xl text-foreground">{{ de: 'Anmeldemethoden', en: 'Sign-in methods' }[locale]}</h2>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Menschliche Sitzungen ohne Impersonation (Köche eingeschlossen). Anmelden = bestehendes Konto, Registrierung = neues E-Mail-Ticket, Konto erstellt = abgeschlossene Registrierung über diesen Nachweis.',
+                                en: 'Human sessions without impersonation (cooks included). Sign-ins = existing account, registration = new-email ticket, accounts created = completed registration via that proof.',
+                            }[locale]
+                        }
+                    </p>
+                    <Table aria-label={{ de: 'Anmeldemethoden', en: 'Sign-in methods' }[locale]}>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>{{ de: 'Methode', en: 'Method' }[locale]}</TableHead>
+                                <TableHead className="text-right">{{ de: 'Anmeldungen', en: 'Sign-ins' }[locale]}</TableHead>
+                                <TableHead className="text-right">{{ de: 'Registrierungen', en: 'Registrations' }[locale]}</TableHead>
+                                <TableHead className="text-right">{{ de: 'Konten erstellt', en: 'Accounts created' }[locale]}</TableHead>
+                                <TableHead className="text-right">{{ de: 'Fehler', en: 'Failures' }[locale]}</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {signInMethods.map((row) => (
+                                <TableRow key={row.method}>
+                                    <TableCell className="font-medium">{signInMethodLabel(row.method)}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{row.signInCount}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{row.registrationTicketCount}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{row.accountCreatedCount}</TableCell>
+                                    <TableCell className="text-right tabular-nums">{row.failedCount}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                    <AdminOverviewBarChart
+                        data={signInChartData}
+                        locale={locale}
+                        timeZone={timeZone}
+                        ariaLabel={{ de: 'Anmeldungen nach Methode', en: 'Sign-ins by method' }[locale]}
+                        series={[
+                            { dataKey: 'EMAIL_OTP', label: signInMethodLabel('EMAIL_OTP'), color: 'var(--chart-2)' },
+                            { dataKey: 'PASSKEY', label: signInMethodLabel('PASSKEY'), color: 'var(--chart-3)' },
+                            { dataKey: 'GOOGLE', label: signInMethodLabel('GOOGLE'), color: 'var(--chart-1)' },
+                        ]}
+                    />
                 </section>
 
                 <section className="grid gap-3">

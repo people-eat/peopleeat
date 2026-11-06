@@ -4,6 +4,7 @@ import type { ChefSignUpFunnelInteraction } from '../../shared/chefSignUpFunnel'
 import type { CookBookingRequestOfferFunnelInteraction } from '../../shared/cookBookingRequestOfferFunnel';
 import type { GiftCardFunnelInteraction } from '../../shared/giftCardFunnel';
 import type { WebPageKey } from '../../shared/webPage';
+import type { AuthOauthProvider, AuthOauthSignInFailReason } from './authOauth';
 
 export type SessionEventWebPageVisitedPayload = {
     webPageKey: WebPageKey;
@@ -62,6 +63,20 @@ type SessionEventAuthEmailOtpVerifySucceededPayload = {
 
 type SessionEventAuthTotpVerifySucceededPayload = {
     via: 'code' | 'recovery';
+};
+
+type SessionEventAuthOauthSignInSucceededPayload = {
+    provider: AuthOauthProvider;
+    outcome: 'sign_in' | 'registration_ticket';
+};
+
+type SessionEventAuthOauthSignInFailedPayload = {
+    provider: AuthOauthProvider;
+    reason: AuthOauthSignInFailReason;
+};
+
+type SessionEventAuthOauthAccountCreatedPayload = {
+    provider: AuthOauthProvider;
 };
 
 type SessionEventEmptyPayload = Record<string, never>;
@@ -134,6 +149,9 @@ const sessionEventKeyDataMap = {
     AUTH_TOTP_CHALLENGE_PENDING: {} as SessionEventEmptyPayload,
     AUTH_TOTP_VERIFY_SUCCEEDED: {} as SessionEventAuthTotpVerifySucceededPayload,
     AUTH_TOTP_VERIFY_FAILED: {} as SessionEventEmptyPayload,
+    AUTH_OAUTH_SIGN_IN_SUCCEEDED: {} as SessionEventAuthOauthSignInSucceededPayload,
+    AUTH_OAUTH_SIGN_IN_FAILED: {} as SessionEventAuthOauthSignInFailedPayload,
+    AUTH_OAUTH_ACCOUNT_CREATED: {} as SessionEventAuthOauthAccountCreatedPayload,
 
     SIGN_IN_FAILED: {} as SessionEventEmptyPayload,
     SIGN_IN_NO_USER_FOR_EMAIL_ADDRESS: {} as SessionEventEmptyPayload,

@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { describe, expect, it, vi } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { authPasskeys, authTimeBasedOneTimePasswords, cooks, sessions, users } from '../db/schema';
+import { authOauthIdentities, authPasskeys, authTimeBasedOneTimePasswords, cooks, sessions, users } from '../db/schema';
 import { adminMutationParent, commandSetup, findLogsForSession, testDb, userMutationParent } from '../test/commandTestUtils';
 import { phoneNumberCreate } from '../test/phoneNumberCreate';
 import * as authOtpUtils from '../utils/authOtpUtils';
@@ -63,6 +63,13 @@ describe('userAnonymize', () => {
         await testDb.insert(cooks).values({ cookId: user.userId, isVisible: true, isApprovedByAdmin: true });
         const passkeyId = await passkeyInsert(user.userId);
         const totpId = await totpInsert(user.userId);
+        const oauthIdentityId = idCreate();
+        await testDb.insert(authOauthIdentities).values({
+            authOauthIdentityId: oauthIdentityId,
+            userId: user.userId,
+            provider: 'GOOGLE',
+            subject: `sub-${user.userId}`,
+        });
 
         const otherSessionId = idCreate();
         await testDb.insert(sessions).values({ sessionId: otherSessionId, userId: user.userId });
@@ -94,6 +101,11 @@ describe('userAnonymize', () => {
             .from(authTimeBasedOneTimePasswords)
             .where(eq(authTimeBasedOneTimePasswords.authTimeBasedOneTimePasswordId, totpId));
         expect(totpRows).toHaveLength(0);
+        const oauthRows = await testDb
+            .select()
+            .from(authOauthIdentities)
+            .where(eq(authOauthIdentities.authOauthIdentityId, oauthIdentityId));
+        expect(oauthRows).toHaveLength(0);
 
         const [cook] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
         expect(cook?.isVisible).toBe(false);

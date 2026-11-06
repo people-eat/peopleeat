@@ -26,6 +26,7 @@ export const featureToggleKeys = [
     'LANDING_BOOKING_HOW_IT_WORKS',
     'LANDING_TESTIMONIAL_CARDS',
     'PARTNER_PAGE_PARTNERS_EXPLORE',
+    'SIGN_IN_GOOGLE',
 ] as const;
 
 export type FeatureToggleKey = (typeof featureToggleKeys)[number];

@@ -751,6 +751,7 @@ export function AdminUserGeneralSection({
                 userId={user.userId}
                 passkeys={user.passkeys}
                 totp={user.timeBasedOneTimePassword}
+                oauthIdentities={user.oauthIdentities}
                 disabled={alreadyAnonymized}
             />
 

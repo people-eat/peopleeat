@@ -150,6 +150,20 @@ query AdminAnalyticsPage(
                     bucketStart
                     count
                 }
+                signInMethodStats(range: $range) {
+                    methods {
+                        method
+                        signInCount
+                        registrationTicketCount
+                        accountCreatedCount
+                        failedCount
+                    }
+                    buckets {
+                        date
+                        method
+                        signInCount
+                    }
+                }
             }
         }
     }

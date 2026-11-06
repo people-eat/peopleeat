@@ -6,34 +6,53 @@ import { Card, CardContent } from '../../components/base/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../components/base/chart';
 import type { ChartConfig } from '../../components/base/chart';
 
-export type AdminOverviewBarChartPoint = {
-    bucketStart: string | Date;
-    count: number;
+export type AdminOverviewBarChartSeries = {
+    dataKey: string;
+    label: string;
+    color: string;
 };
 
-const chartConfig = {
-    count: {
+export type AdminOverviewBarChartPoint = {
+    bucketStart: string | Date;
+    count?: number;
+    [key: string]: string | Date | number | undefined;
+};
+
+const defaultSeries: AdminOverviewBarChartSeries[] = [
+    {
+        dataKey: 'count',
         label: 'Count',
         color: 'var(--foreground)',
     },
-} satisfies ChartConfig;
+];
 
 export function AdminOverviewBarChart({
     data,
     locale,
     timeZone,
     ariaLabel,
+    series = defaultSeries,
 }: {
     data: readonly AdminOverviewBarChartPoint[];
     locale: Locale;
     timeZone: string;
     ariaLabel: string;
+    series?: readonly AdminOverviewBarChartSeries[];
 }) {
-    const chartData = data.map((point) => ({
-        bucketStart: point.bucketStart,
-        label: formatDate(point.bucketStart, { locale, timeZone, dateStyle: 'short' }),
-        count: point.count,
-    }));
+    const chartConfig = Object.fromEntries(
+        series.map((entry) => [entry.dataKey, { label: entry.label, color: entry.color }]),
+    ) as ChartConfig;
+    const chartData = data.map((point) => {
+        const row: Record<string, string | Date | number | undefined> = {
+            bucketStart: point.bucketStart,
+            label: formatDate(point.bucketStart, { locale, timeZone, dateStyle: 'short' }),
+        };
+        for (const entry of series) {
+            const value = point[entry.dataKey];
+            row[entry.dataKey] = typeof value === 'number' ? value : 0;
+        }
+        return row;
+    });
 
     return (
         <Card>
@@ -52,7 +71,9 @@ export function AdminOverviewBarChart({
                                 />
                             }
                         />
-                        <Bar dataKey="count" fill="var(--color-count)" radius={2} />
+                        {series.map((entry) => (
+                            <Bar key={entry.dataKey} dataKey={entry.dataKey} fill={`var(--color-${entry.dataKey})`} radius={2} />
+                        ))}
                     </BarChart>
                 </ChartContainer>
             </CardContent>

@@ -169,6 +169,10 @@ query AdminUserPage(
                         recoveryCodesRemaining
                         createdAt
                     }
+                    oauthIdentities {
+                        provider
+                        createdAt
+                    }
                     profilePicture {
                         fileUploadId
                         url

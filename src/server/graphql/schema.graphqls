@@ -2818,6 +2818,53 @@ type AuthEmailOtp {
     createdAt: DateTime!
 }
 
+enum AuthOauthProvider {
+    GOOGLE
+}
+
+# Session-owned Google (later Apple) registration ticket. Profile snapshot is
+# prefill only; the user still submits `userCreate`. Never exposes `subject`.
+type AuthOauthTicket {
+    authOauthTicketId: ID!
+    emailAddress: EmailAddress!
+    expiresAt: DateTime!
+    verifiedAt: DateTime!
+    firstName: String
+    lastName: String
+    phoneNumber: PhoneNumber
+    birthDate: Date
+}
+
+type AdminAuthOauthIdentity {
+    provider: AuthOauthProvider!
+    createdAt: DateTime!
+}
+
+enum AdminSignInMethod {
+    EMAIL_OTP
+    PASSKEY
+    GOOGLE
+}
+
+type AdminSignInMethodStat {
+    method: AdminSignInMethod!
+    signInCount: Int!
+    registrationTicketCount: Int!
+    accountCreatedCount: Int!
+    failedCount: Int!
+}
+
+type AdminSignInMethodBucket {
+    date: Date!
+    method: AdminSignInMethod!
+    signInCount: Int!
+}
+
+type AdminSignInMethodStats {
+    methods: [AdminSignInMethodStat!]!
+    buckets: [AdminSignInMethodBucket!]!
+}
+
 enum GiftCardPaymentStatus {
     PREPARED
     PAYED
@@ -2941,6 +2988,8 @@ type Session {
     sessionId: ID!
     user: User
     authEmailOtp: AuthEmailOtp
+    # Verified Google (later Apple) registration ticket for a new email.
+    authOauthTicket: AuthOauthTicket
     # Non-null while primary auth succeeded but TOTP/recovery is still required.
     authTotpChallenge: AuthTotpChallenge
     giftCard: GiftCard
@@ -3207,9 +3256,13 @@ type Mutation {
     authEmailOtpRequest(email: EmailAddress!, locale: Locale!): MutationResult!
     authEmailOtpVerify(email: EmailAddress!, code: String!): MutationResult!
     authEmailOtpDelete(authEmailOtpId: ID!): MutationResult!
-    # After OTP verify for a new email (`AuthEmailOtp.verifiedAt` set). Creates
-    # the Users row from the verified OTP email + profile input, then binds
-    # session. Optional `input.cook` creates cook membership in the same write.
+    # Discard a verified Google registration ticket so the visitor can use a
+    # different sign-in method.
+    authOauthTicketDelete(authOauthTicketId: ID!): MutationResult!
+    # After OTP verify for a new email (`AuthEmailOtp.verifiedAt` set) or a
+    # verified Google ticket. Creates the Users row from the verified email +
+    # profile input, then binds session. Optional `input.cook` creates cook
+    # membership in the same write.
     userCreate(input: UserCreate!): MutationResult!
     authPasskeyAuthenticateOptions: JSON!
     authPasskeyAuthenticateVerify(response: JSON!): MutationResult!
@@ -3329,6 +3382,10 @@ type AdminUserInsights {
     locales: [AdminUserLocaleStat!]!
     # Sorted by count descending. Cap is applied in the query (top zones).
     timeZones: [AdminUserTimeZoneStat!]!
+    # Overlapping linked-method counts among non-anonymized accounts.
+    googleLinkedAccountCount: Int!
+    passkeyAccountCount: Int!
+    totpAccountCount: Int!
 }
 
 # Upcoming birthday row for the users overview list.
@@ -3371,6 +3428,8 @@ type AdminUser {
     # Authenticator-app 2FA when enrolled (pending or confirmed). Null when none.
     # Never exposes the secret or recovery plaintext.
     timeBasedOneTimePassword: AuthTimeBasedOneTimePassword
+    # Linked social log-on providers. Never exposes the provider subject.
+    oauthIdentities: [AdminAuthOauthIdentity!]!
     # Current profile picture. Same bytes as public `User.profilePicture`.
     profilePicture: FileUpload
     # Operator-only free-text note. Never exposed on the public `User` type.
@@ -4007,7 +4066,7 @@ type Admin {
     # 366 days.
     userRegistrations(range: DateTimeRange!, granularity: AdminTimeBucketGranularity! = day): [AdminTimeBucket!]!
     # Demographic / preference aggregates for the users overview (age, locale,
-    # time zone, preferred communication). Independent of the chart range.
+    # time zone, preferred communication, linked sign-in methods). Independent of the chart range.
     userInsights: AdminUserInsights!
     # Next birthdays among non-anonymized users with a birth date. Sorted by
     # soonest `nextBirthday`. Default / max via `findManyTake`.
@@ -4060,6 +4119,9 @@ type Admin {
     bookingRequestCheckoutFlow(range: DateTimeRange!): AdminAnalyticsSessionFunnelFlow!
     # Cook × booking-request offer funnel for cooks notified in `range`.
     cookBookingRequestOfferFlow(range: DateTimeRange!): AdminAnalyticsCookBookingRequestOfferFlow!
+    # Primary-auth method mix for human non-impersonation sessions in `range`.
+    # Cooks included; bots and admin impersonation excluded.
+    signInMethodStats(range: DateTimeRange!): AdminSignInMethodStats!
     # WEB_PAGE_VISITED time series for a fixed WebPageKey. Same bucket rules as
     # other admin creations queries.
     sessionEventWebPageVisitCreations(
@@ -5963,6 +6025,8 @@ enum FeatureToggleKey {
     # Home testimonials section uses the shared public review card instead of the scrolling quote marquee.
     LANDING_TESTIMONIAL_CARDS
     PARTNER_PAGE_PARTNERS_EXPLORE
+    # Google social log-on on AuthIdentityGate. Missing row is off.
+    SIGN_IN_GOOGLE
 }
 
 type AdminFeatureToggle {

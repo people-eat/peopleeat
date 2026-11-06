@@ -23,6 +23,16 @@ fragment AuthSessionFields on Session {
         verifiedAt
         createdAt
     }
+    authOauthTicket {
+        authOauthTicketId
+        emailAddress
+        expiresAt
+        verifiedAt
+        firstName
+        lastName
+        phoneNumber
+        birthDate
+    }
     authTotpChallenge {
         expiresAt
     }
@@ -70,6 +80,13 @@ mutation AuthEmailOtpVerify($email: EmailAddress!, $code: String!) {
 
 mutation AuthEmailOtpDelete($authEmailOtpId: ID!) {
     authEmailOtpDelete(authEmailOtpId: $authEmailOtpId) {
+        success
+        referenceId
+    }
+}
+
+mutation AuthOauthTicketDelete($authOauthTicketId: ID!) {
+    authOauthTicketDelete(authOauthTicketId: $authOauthTicketId) {
         success
         referenceId
     }

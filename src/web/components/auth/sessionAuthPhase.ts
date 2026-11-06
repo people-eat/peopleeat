@@ -2,6 +2,10 @@ export type SessionAuthOtp = {
     verifiedAt?: string | Date | null;
 };
 
+export type SessionAuthOauthTicket = {
+    verifiedAt?: string | Date | null;
+} | null;
+
 export type SessionAuthTotpChallenge = {
     expiresAt?: string | Date | null;
 } | null;
@@ -12,6 +16,7 @@ export type SessionAuthPhase = 'anonymous' | 'otpPending' | 'register' | 'totpPe
 export function sessionAuthPhase(session: {
     user: { userId: string } | null | undefined;
     authEmailOtp: SessionAuthOtp | null | undefined;
+    authOauthTicket?: SessionAuthOauthTicket;
     authTotpChallenge?: SessionAuthTotpChallenge;
 }): SessionAuthPhase {
     if (session.user) {
@@ -20,7 +25,7 @@ export function sessionAuthPhase(session: {
     if (session.authTotpChallenge) {
         return 'totpPending';
     }
-    if (session.authEmailOtp?.verifiedAt) {
+    if (session.authEmailOtp?.verifiedAt || session.authOauthTicket?.verifiedAt) {
         return 'register';
     }
     if (session.authEmailOtp) {

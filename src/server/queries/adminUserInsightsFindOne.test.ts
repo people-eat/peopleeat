@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { cooks, users } from '../db/schema';
+import { authOauthIdentities, authPasskeys, authTimeBasedOneTimePasswords, cooks, users } from '../db/schema';
 import { commandSetup, testDb } from '../test/commandTestUtils';
 import { adminUserInsightsFindOne } from './adminUserInsightsFindOne';
 import { adminUserUpcomingBirthdaysFindMany } from './adminUserUpcomingBirthdaysFindMany';
@@ -77,6 +77,39 @@ describe('adminUserInsightsFindOne', () => {
         // Anonymized Honolulu row must not appear as a time-zone bucket from this seed.
         // Other tests may have seeded Honolulu; only assert our non-anon zones are present.
         expect(insights.timeZones.some((row) => row.timeZone === 'America/New_York')).toBe(true);
+    });
+
+    it('counts overlapping Google, passkey, and authenticator-app links', async () => {
+        const admin = await commandSetup.withUser();
+        await testDb.insert(authOauthIdentities).values({
+            authOauthIdentityId: idCreate(),
+            userId: admin.user.userId,
+            provider: 'GOOGLE',
+            subject: `sub-${admin.user.userId}`,
+        });
+        await testDb.insert(authPasskeys).values({
+            authPasskeyId: idCreate(),
+            userId: admin.user.userId,
+            credentialId: `cred-${admin.user.userId}`,
+            publicKey: Buffer.from([1, 2, 3, 4]),
+            counter: 0,
+            transports: ['internal'],
+            deviceType: 'singleDevice',
+            backedUp: false,
+        });
+        await testDb.insert(authTimeBasedOneTimePasswords).values({
+            authTimeBasedOneTimePasswordId: idCreate(),
+            userId: admin.user.userId,
+            secretEncrypted: 'test-secret',
+            confirmedAt: new Date(),
+            recoveryCodes: [],
+        });
+
+        const insights = await adminUserInsightsFindOne(admin.requestingSession, admin.serverRuntime);
+
+        expect(insights.googleLinkedAccountCount).toBeGreaterThanOrEqual(1);
+        expect(insights.passkeyAccountCount).toBeGreaterThanOrEqual(1);
+        expect(insights.totpAccountCount).toBeGreaterThanOrEqual(1);
     });
 });
 

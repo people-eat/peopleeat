@@ -111,6 +111,7 @@ export interface GqlSAdmin {
     sessionEvents: Array<GqlSAdminSessionEvent>;
     sessionEventsCounts: Array<Scalars['Int']['output']>;
     sessions: Array<GqlSAdminSession>;
+    signInMethodStats: GqlSAdminSignInMethodStats;
     supportRequest?: Maybe<GqlSAdminSupportRequest>;
     supportRequests: Array<GqlSAdminSupportRequest>;
     supportRequestsCounts: Array<Scalars['Int']['output']>;
@@ -439,6 +440,10 @@ export type GqlSAdminSessionsArgs = {
     criterion: GqlSAdminSessionCriterion;
 };
 
+export type GqlSAdminSignInMethodStatsArgs = {
+    range: GqlSDateTimeRange;
+};
+
 export type GqlSAdminSupportRequestArgs = {
     supportRequestId: Scalars['ID']['input'];
 };
@@ -607,6 +612,12 @@ export type GqlSAdminAssistantChatCriterion = {
     take?: Scalars['Int']['input'];
     userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
+
+export interface GqlSAdminAuthOauthIdentity {
+    __typename?: 'AdminAuthOauthIdentity';
+    createdAt: Scalars['DateTime']['output'];
+    provider: GqlSAuthOauthProvider;
+}
 
 export interface GqlSAdminBlogPost {
     __typename?: 'AdminBlogPost';
@@ -2270,6 +2281,30 @@ export type GqlSAdminSessionKind = 'bot' | 'human';
 
 export type GqlSAdminSessionSortField = 'createdAt' | 'lastInteractionAt' | 'user' | 'userAgent';
 
+export type GqlSAdminSignInMethod = 'EMAIL_OTP' | 'GOOGLE' | 'PASSKEY';
+
+export interface GqlSAdminSignInMethodBucket {
+    __typename?: 'AdminSignInMethodBucket';
+    date: Scalars['Date']['output'];
+    method: GqlSAdminSignInMethod;
+    signInCount: Scalars['Int']['output'];
+}
+
+export interface GqlSAdminSignInMethodStat {
+    __typename?: 'AdminSignInMethodStat';
+    accountCreatedCount: Scalars['Int']['output'];
+    failedCount: Scalars['Int']['output'];
+    method: GqlSAdminSignInMethod;
+    registrationTicketCount: Scalars['Int']['output'];
+    signInCount: Scalars['Int']['output'];
+}
+
+export interface GqlSAdminSignInMethodStats {
+    __typename?: 'AdminSignInMethodStats';
+    buckets: Array<GqlSAdminSignInMethodBucket>;
+    methods: Array<GqlSAdminSignInMethodStat>;
+}
+
 export interface GqlSAdminSupportRequest {
     __typename?: 'AdminSupportRequest';
     adminUnreadNotificationCount: Scalars['Int']['output'];
@@ -2338,6 +2373,7 @@ export interface GqlSAdminUser {
     lastName: Scalars['String']['output'];
     locale: GqlSLocale;
     notificationSettings: GqlSUserNotificationSettings;
+    oauthIdentities: Array<GqlSAdminAuthOauthIdentity>;
     passkeys: Array<GqlSAuthPasskey>;
     phoneNumber?: Maybe<Scalars['PhoneNumber']['output']>;
     preferredCommunication?: Maybe<GqlSUserPreferredCommunication>;
@@ -2380,10 +2416,13 @@ export interface GqlSAdminUserInsights {
     accountCount: Scalars['Int']['output'];
     averageAge?: Maybe<Scalars['Float']['output']>;
     birthDateSampleSize: Scalars['Int']['output'];
+    googleLinkedAccountCount: Scalars['Int']['output'];
     locales: Array<GqlSAdminUserLocaleStat>;
     medianAge?: Maybe<Scalars['Float']['output']>;
+    passkeyAccountCount: Scalars['Int']['output'];
     preferredCommunication: Array<GqlSAdminUserPreferredCommunicationStat>;
     timeZones: Array<GqlSAdminUserTimeZoneStat>;
+    totpAccountCount: Scalars['Int']['output'];
 }
 
 export interface GqlSAdminUserLocaleStat {
@@ -2466,6 +2505,20 @@ export interface GqlSAuthEmailOtp {
     emailAddress: Scalars['EmailAddress']['output'];
     expiresAt: Scalars['DateTime']['output'];
     verifiedAt?: Maybe<Scalars['DateTime']['output']>;
+}
+
+export type GqlSAuthOauthProvider = 'GOOGLE';
+
+export interface GqlSAuthOauthTicket {
+    __typename?: 'AuthOauthTicket';
+    authOauthTicketId: Scalars['ID']['output'];
+    birthDate?: Maybe<Scalars['Date']['output']>;
+    emailAddress: Scalars['EmailAddress']['output'];
+    expiresAt: Scalars['DateTime']['output'];
+    firstName?: Maybe<Scalars['String']['output']>;
+    lastName?: Maybe<Scalars['String']['output']>;
+    phoneNumber?: Maybe<Scalars['PhoneNumber']['output']>;
+    verifiedAt: Scalars['DateTime']['output'];
 }
 
 export interface GqlSAuthPasskey {
@@ -4204,7 +4257,8 @@ export type GqlSFeatureToggleKey =
     | 'LANDING_TESTIMONIAL_CARDS'
     | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
-    | 'PUBLICATION_MENUS';
+    | 'PUBLICATION_MENUS'
+    | 'SIGN_IN_GOOGLE';
 
 export interface GqlSFileUpload {
     __typename?: 'FileUpload';
@@ -4315,6 +4369,7 @@ export interface GqlSMutation {
     authEmailOtpDelete: GqlSMutationResult;
     authEmailOtpRequest: GqlSMutationResult;
     authEmailOtpVerify: GqlSMutationResult;
+    authOauthTicketDelete: GqlSMutationResult;
     authPasskeyAuthenticateOptions: Scalars['JSON']['output'];
     authPasskeyAuthenticateVerify: GqlSMutationResult;
     authTotpChallengeDelete: GqlSMutationResult;
@@ -4342,6 +4397,10 @@ export type GqlSMutationAuthEmailOtpRequestArgs = {
 export type GqlSMutationAuthEmailOtpVerifyArgs = {
     code: Scalars['String']['input'];
     email: Scalars['EmailAddress']['input'];
+};
+
+export type GqlSMutationAuthOauthTicketDeleteArgs = {
+    authOauthTicketId: Scalars['ID']['input'];
 };
 
 export type GqlSMutationAuthPasskeyAuthenticateVerifyArgs = {
@@ -4866,6 +4925,7 @@ export interface GqlSSession {
     __typename?: 'Session';
     activeFeatureToggleKeys: Array<GqlSFeatureToggleKey>;
     authEmailOtp?: Maybe<GqlSAuthEmailOtp>;
+    authOauthTicket?: Maybe<GqlSAuthOauthTicket>;
     authTotpChallenge?: Maybe<GqlSAuthTotpChallenge>;
     cookieSetting?: Maybe<GqlSSessionCookieSetting>;
     discount?: Maybe<GqlSSessionDiscount>;
@@ -5809,6 +5869,7 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminAnalyticsSessionFunnelFlow: ResolverTypeWrapper<GqlSAdminAnalyticsSessionFunnelFlow>;
     AdminAssistantChat: ResolverTypeWrapper<Omit<GqlSAdminAssistantChat, 'turns'> & { turns: Array<GqlSResolversTypes['ChatTurn']> }>;
     AdminAssistantChatCriterion: GqlSAdminAssistantChatCriterion;
+    AdminAuthOauthIdentity: ResolverTypeWrapper<GqlSAdminAuthOauthIdentity>;
     AdminBlogPost: ResolverTypeWrapper<Omit<GqlSAdminBlogPost, 'sections'> & { sections: Array<GqlSResolversTypes['ContentSection']> }>;
     AdminBookingRequest: ResolverTypeWrapper<
         Omit<GqlSAdminBookingRequest, 'cooksInTravelRadius' | 'offers'> & {
@@ -5948,6 +6009,10 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminSessionEventCriterion: GqlSAdminSessionEventCriterion;
     AdminSessionKind: GqlSAdminSessionKind;
     AdminSessionSortField: GqlSAdminSessionSortField;
+    AdminSignInMethod: GqlSAdminSignInMethod;
+    AdminSignInMethodBucket: ResolverTypeWrapper<GqlSAdminSignInMethodBucket>;
+    AdminSignInMethodStat: ResolverTypeWrapper<GqlSAdminSignInMethodStat>;
+    AdminSignInMethodStats: ResolverTypeWrapper<GqlSAdminSignInMethodStats>;
     AdminSupportRequest: ResolverTypeWrapper<
         Omit<GqlSAdminSupportRequest, 'bookingRequest' | 'messages'> & {
             bookingRequest?: Maybe<GqlSResolversTypes['SupportRequestBookingRequestSummary']>;
@@ -5979,6 +6044,8 @@ export type GqlSResolversTypes = ResolversObject<{
     >;
     AdminWhatsAppConversationCriterion: GqlSAdminWhatsAppConversationCriterion;
     AuthEmailOtp: ResolverTypeWrapper<GqlSAuthEmailOtp>;
+    AuthOauthProvider: GqlSAuthOauthProvider;
+    AuthOauthTicket: ResolverTypeWrapper<GqlSAuthOauthTicket>;
     AuthPasskey: ResolverTypeWrapper<GqlSAuthPasskey>;
     AuthTimeBasedOneTimePassword: ResolverTypeWrapper<GqlSAuthTimeBasedOneTimePassword>;
     AuthTotpChallenge: ResolverTypeWrapper<GqlSAuthTotpChallenge>;
@@ -6427,6 +6494,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminAnalyticsSessionFunnelFlow: GqlSAdminAnalyticsSessionFunnelFlow;
     AdminAssistantChat: Omit<GqlSAdminAssistantChat, 'turns'> & { turns: Array<GqlSResolversParentTypes['ChatTurn']> };
     AdminAssistantChatCriterion: GqlSAdminAssistantChatCriterion;
+    AdminAuthOauthIdentity: GqlSAdminAuthOauthIdentity;
     AdminBlogPost: Omit<GqlSAdminBlogPost, 'sections'> & { sections: Array<GqlSResolversParentTypes['ContentSection']> };
     AdminBookingRequest: Omit<GqlSAdminBookingRequest, 'cooksInTravelRadius' | 'offers'> & {
         cooksInTravelRadius: Array<GqlSResolversParentTypes['AdminBookingRequestCookInTravelRadius']>;
@@ -6530,6 +6598,9 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminSessionCriterion: GqlSAdminSessionCriterion;
     AdminSessionEvent: GqlSAdminSessionEvent;
     AdminSessionEventCriterion: GqlSAdminSessionEventCriterion;
+    AdminSignInMethodBucket: GqlSAdminSignInMethodBucket;
+    AdminSignInMethodStat: GqlSAdminSignInMethodStat;
+    AdminSignInMethodStats: GqlSAdminSignInMethodStats;
     AdminSupportRequest: Omit<GqlSAdminSupportRequest, 'bookingRequest' | 'messages'> & {
         bookingRequest?: Maybe<GqlSResolversParentTypes['SupportRequestBookingRequestSummary']>;
         messages: Array<GqlSResolversParentTypes['HumanChatMessage']>;
@@ -6554,6 +6625,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     };
     AdminWhatsAppConversationCriterion: GqlSAdminWhatsAppConversationCriterion;
     AuthEmailOtp: GqlSAuthEmailOtp;
+    AuthOauthTicket: GqlSAuthOauthTicket;
     AuthPasskey: GqlSAuthPasskey;
     AuthTimeBasedOneTimePassword: GqlSAuthTimeBasedOneTimePassword;
     AuthTotpChallenge: GqlSAuthTotpChallenge;
@@ -7278,6 +7350,12 @@ export type GqlSAdminResolvers<
         ContextType,
         RequireFields<GqlSAdminSessionsArgs, 'criterion'>
     >;
+    signInMethodStats?: Resolver<
+        GqlSResolversTypes['AdminSignInMethodStats'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminSignInMethodStatsArgs, 'range'>
+    >;
     supportRequest?: Resolver<
         Maybe<GqlSResolversTypes['AdminSupportRequest']>,
         ParentType,
@@ -7439,6 +7517,14 @@ export type GqlSAdminAssistantChatResolvers<
     turns?: Resolver<Array<GqlSResolversTypes['ChatTurn']>, ParentType, ContextType>;
     user?: Resolver<GqlSResolversTypes['AdminUser'], ParentType, ContextType>;
     userId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminAuthOauthIdentityResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminAuthOauthIdentity'] = GqlSResolversParentTypes['AdminAuthOauthIdentity'],
+> = ResolversObject<{
+    createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    provider?: Resolver<GqlSResolversTypes['AuthOauthProvider'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminBlogPostResolvers<
@@ -8894,6 +8980,34 @@ export type GqlSAdminSessionEventResolvers<
     type?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type GqlSAdminSignInMethodBucketResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminSignInMethodBucket'] = GqlSResolversParentTypes['AdminSignInMethodBucket'],
+> = ResolversObject<{
+    date?: Resolver<GqlSResolversTypes['Date'], ParentType, ContextType>;
+    method?: Resolver<GqlSResolversTypes['AdminSignInMethod'], ParentType, ContextType>;
+    signInCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminSignInMethodStatResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminSignInMethodStat'] = GqlSResolversParentTypes['AdminSignInMethodStat'],
+> = ResolversObject<{
+    accountCreatedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    failedCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    method?: Resolver<GqlSResolversTypes['AdminSignInMethod'], ParentType, ContextType>;
+    registrationTicketCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    signInCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminSignInMethodStatsResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminSignInMethodStats'] = GqlSResolversParentTypes['AdminSignInMethodStats'],
+> = ResolversObject<{
+    buckets?: Resolver<Array<GqlSResolversTypes['AdminSignInMethodBucket']>, ParentType, ContextType>;
+    methods?: Resolver<Array<GqlSResolversTypes['AdminSignInMethodStat']>, ParentType, ContextType>;
+}>;
+
 export type GqlSAdminSupportRequestResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['AdminSupportRequest'] = GqlSResolversParentTypes['AdminSupportRequest'],
@@ -8952,6 +9066,7 @@ export type GqlSAdminUserResolvers<
     lastName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     locale?: Resolver<GqlSResolversTypes['Locale'], ParentType, ContextType>;
     notificationSettings?: Resolver<GqlSResolversTypes['UserNotificationSettings'], ParentType, ContextType>;
+    oauthIdentities?: Resolver<Array<GqlSResolversTypes['AdminAuthOauthIdentity']>, ParentType, ContextType>;
     passkeys?: Resolver<Array<GqlSResolversTypes['AuthPasskey']>, ParentType, ContextType>;
     phoneNumber?: Resolver<Maybe<GqlSResolversTypes['PhoneNumber']>, ParentType, ContextType>;
     preferredCommunication?: Resolver<Maybe<GqlSResolversTypes['UserPreferredCommunication']>, ParentType, ContextType>;
@@ -8971,10 +9086,13 @@ export type GqlSAdminUserInsightsResolvers<
     accountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     averageAge?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
     birthDateSampleSize?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    googleLinkedAccountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     locales?: Resolver<Array<GqlSResolversTypes['AdminUserLocaleStat']>, ParentType, ContextType>;
     medianAge?: Resolver<Maybe<GqlSResolversTypes['Float']>, ParentType, ContextType>;
+    passkeyAccountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     preferredCommunication?: Resolver<Array<GqlSResolversTypes['AdminUserPreferredCommunicationStat']>, ParentType, ContextType>;
     timeZones?: Resolver<Array<GqlSResolversTypes['AdminUserTimeZoneStat']>, ParentType, ContextType>;
+    totpAccountCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminUserLocaleStatResolvers<
@@ -9053,6 +9171,20 @@ export type GqlSAuthEmailOtpResolvers<
     emailAddress?: Resolver<GqlSResolversTypes['EmailAddress'], ParentType, ContextType>;
     expiresAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     verifiedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
+}>;
+
+export type GqlSAuthOauthTicketResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AuthOauthTicket'] = GqlSResolversParentTypes['AuthOauthTicket'],
+> = ResolversObject<{
+    authOauthTicketId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    birthDate?: Resolver<Maybe<GqlSResolversTypes['Date']>, ParentType, ContextType>;
+    emailAddress?: Resolver<GqlSResolversTypes['EmailAddress'], ParentType, ContextType>;
+    expiresAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    firstName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    lastName?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    phoneNumber?: Resolver<Maybe<GqlSResolversTypes['PhoneNumber']>, ParentType, ContextType>;
+    verifiedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
 
 export type GqlSAuthPasskeyResolvers<
@@ -10737,6 +10869,12 @@ export type GqlSMutationResolvers<
         ContextType,
         RequireFields<GqlSMutationAuthEmailOtpVerifyArgs, 'code' | 'email'>
     >;
+    authOauthTicketDelete?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSMutationAuthOauthTicketDeleteArgs, 'authOauthTicketId'>
+    >;
     authPasskeyAuthenticateOptions?: Resolver<GqlSResolversTypes['JSON'], ParentType, ContextType>;
     authPasskeyAuthenticateVerify?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -11255,6 +11393,7 @@ export type GqlSSessionResolvers<
 > = ResolversObject<{
     activeFeatureToggleKeys?: Resolver<Array<GqlSResolversTypes['FeatureToggleKey']>, ParentType, ContextType>;
     authEmailOtp?: Resolver<Maybe<GqlSResolversTypes['AuthEmailOtp']>, ParentType, ContextType>;
+    authOauthTicket?: Resolver<Maybe<GqlSResolversTypes['AuthOauthTicket']>, ParentType, ContextType>;
     authTotpChallenge?: Resolver<Maybe<GqlSResolversTypes['AuthTotpChallenge']>, ParentType, ContextType>;
     cookieSetting?: Resolver<Maybe<GqlSResolversTypes['SessionCookieSetting']>, ParentType, ContextType>;
     discount?: Resolver<
@@ -11948,6 +12087,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminAnalyticsSankeyNode?: GqlSAdminAnalyticsSankeyNodeResolvers<ContextType>;
     AdminAnalyticsSessionFunnelFlow?: GqlSAdminAnalyticsSessionFunnelFlowResolvers<ContextType>;
     AdminAssistantChat?: GqlSAdminAssistantChatResolvers<ContextType>;
+    AdminAuthOauthIdentity?: GqlSAdminAuthOauthIdentityResolvers<ContextType>;
     AdminBlogPost?: GqlSAdminBlogPostResolvers<ContextType>;
     AdminBookingRequest?: GqlSAdminBookingRequestResolvers<ContextType>;
     AdminBookingRequestCookInTravelRadius?: GqlSAdminBookingRequestCookInTravelRadiusResolvers<ContextType>;
@@ -12002,6 +12142,9 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminResendUsage?: GqlSAdminResendUsageResolvers<ContextType>;
     AdminSession?: GqlSAdminSessionResolvers<ContextType>;
     AdminSessionEvent?: GqlSAdminSessionEventResolvers<ContextType>;
+    AdminSignInMethodBucket?: GqlSAdminSignInMethodBucketResolvers<ContextType>;
+    AdminSignInMethodStat?: GqlSAdminSignInMethodStatResolvers<ContextType>;
+    AdminSignInMethodStats?: GqlSAdminSignInMethodStatsResolvers<ContextType>;
     AdminSupportRequest?: GqlSAdminSupportRequestResolvers<ContextType>;
     AdminTestimonial?: GqlSAdminTestimonialResolvers<ContextType>;
     AdminTestimonialPublicPagePlacement?: GqlSAdminTestimonialPublicPagePlacementResolvers<ContextType>;
@@ -12015,6 +12158,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminWebPage?: GqlSAdminWebPageResolvers<ContextType>;
     AdminWhatsAppConversation?: GqlSAdminWhatsAppConversationResolvers<ContextType>;
     AuthEmailOtp?: GqlSAuthEmailOtpResolvers<ContextType>;
+    AuthOauthTicket?: GqlSAuthOauthTicketResolvers<ContextType>;
     AuthPasskey?: GqlSAuthPasskeyResolvers<ContextType>;
     AuthTimeBasedOneTimePassword?: GqlSAuthTimeBasedOneTimePasswordResolvers<ContextType>;
     AuthTotpChallenge?: GqlSAuthTotpChallengeResolvers<ContextType>;
@@ -12460,6 +12604,12 @@ export const GqlSAdminSessionSortFieldSchema: z.ZodType<
     'createdAt' | 'lastInteractionAt' | 'user' | 'userAgent'
 > = z.enum(['createdAt', 'lastInteractionAt', 'user', 'userAgent']);
 
+export const GqlSAdminSignInMethodSchema: z.ZodType<'EMAIL_OTP' | 'GOOGLE' | 'PASSKEY', 'EMAIL_OTP' | 'GOOGLE' | 'PASSKEY'> = z.enum([
+    'EMAIL_OTP',
+    'GOOGLE',
+    'PASSKEY',
+]);
+
 export const GqlSAdminSupportRequestSortFieldSchema: z.ZodType<
     'bookingDateTime' | 'createdAt' | 'lastMessageAt',
     'bookingDateTime' | 'createdAt' | 'lastMessageAt'
@@ -12486,6 +12636,8 @@ export const GqlSAdminUserTypeSchema: z.ZodType<'admin' | 'cook' | 'customer', '
     'cook',
     'customer',
 ]);
+
+export const GqlSAuthOauthProviderSchema: z.ZodType<'GOOGLE', 'GOOGLE'> = z.enum(['GOOGLE']);
 
 export const GqlSBookingRequestKitchenDetailsAvailabilitySchema: z.ZodType<
     'FULL' | 'LIMITED' | 'NONE' | 'UNKNOWN',
@@ -12924,7 +13076,8 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'LANDING_TESTIMONIAL_CARDS'
     | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
-    | 'PUBLICATION_MENUS',
+    | 'PUBLICATION_MENUS'
+    | 'SIGN_IN_GOOGLE',
     | 'AI_BOOKING_REQUEST_MESSAGE'
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
@@ -12948,6 +13101,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
+    | 'SIGN_IN_GOOGLE'
 > = z.enum([
     'AI_BOOKING_REQUEST_MESSAGE',
     'AI_MENU_EVALUATION',
@@ -12972,6 +13126,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'PARTNER_PAGE_PARTNERS_EXPLORE',
     'PUBLICATION_MEALS',
     'PUBLICATION_MENUS',
+    'SIGN_IN_GOOGLE',
 ]);
 
 export const GqlSGiftCardPaymentStatusSchema: z.ZodType<'PAYED' | 'PREPARED', 'PAYED' | 'PREPARED'> = z.enum(['PAYED', 'PREPARED']);

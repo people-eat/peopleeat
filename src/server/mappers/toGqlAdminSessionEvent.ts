@@ -37,6 +37,9 @@ const STATIC_DESCRIPTIONS = {
     AUTH_EMAIL_OTP_VERIFY_SUCCEEDED: { de: 'E-Mail-OTP bestätigt', en: 'Email OTP verified' },
     AUTH_PASSKEY_SIGN_IN_SUCCEEDED: { de: 'Passkey-Anmeldung erfolgreich', en: 'Passkey sign-in succeeded' },
     AUTH_PASSKEY_SIGN_IN_FAILED: { de: 'Passkey-Anmeldung fehlgeschlagen', en: 'Passkey sign-in failed' },
+    AUTH_OAUTH_SIGN_IN_SUCCEEDED: { de: 'Social-Login erfolgreich', en: 'Social sign-in succeeded' },
+    AUTH_OAUTH_SIGN_IN_FAILED: { de: 'Social-Login fehlgeschlagen', en: 'Social sign-in failed' },
+    AUTH_OAUTH_ACCOUNT_CREATED: { de: 'Konto über Social-Login erstellt', en: 'Account created via social sign-in' },
     AUTH_TOTP_CHALLENGE_PENDING: { de: 'TOTP-Prüfung ausstehend', en: 'TOTP challenge pending' },
     AUTH_TOTP_VERIFY_SUCCEEDED: { de: 'TOTP bestätigt', en: 'TOTP verified' },
     AUTH_TOTP_VERIFY_FAILED: { de: 'TOTP-Prüfung fehlgeschlagen', en: 'TOTP verification failed' },
@@ -246,6 +249,43 @@ function giftCardPayedDescription(payload: SessionEventPayload<'GIFT_CARD_PAYED'
     };
 }
 
+function oauthProviderLabel(provider: SessionEventPayload<'AUTH_OAUTH_SIGN_IN_SUCCEEDED'>['provider']): string {
+    return { GOOGLE: 'Google' }[provider];
+}
+
+function authOauthSignInSucceededDescription(payload: SessionEventPayload<'AUTH_OAUTH_SIGN_IN_SUCCEEDED'>): {
+    de: string;
+    en: string;
+} {
+    const provider = oauthProviderLabel(payload.provider);
+    if (payload.outcome === 'registration_ticket') {
+        return {
+            de: `${provider}-Anmeldung bestätigt (Registrierung)`,
+            en: `${provider} sign-in verified (registration)`,
+        };
+    }
+    return {
+        de: `${provider}-Anmeldung erfolgreich`,
+        en: `${provider} sign-in succeeded`,
+    };
+}
+
+function authOauthSignInFailedDescription(payload: SessionEventPayload<'AUTH_OAUTH_SIGN_IN_FAILED'>): { de: string; en: string } {
+    const provider = oauthProviderLabel(payload.provider);
+    return {
+        de: `${provider}-Anmeldung fehlgeschlagen (${payload.reason})`,
+        en: `${provider} sign-in failed (${payload.reason})`,
+    };
+}
+
+function authOauthAccountCreatedDescription(payload: SessionEventPayload<'AUTH_OAUTH_ACCOUNT_CREATED'>): { de: string; en: string } {
+    const provider = oauthProviderLabel(payload.provider);
+    return {
+        de: `Konto über ${provider} erstellt`,
+        en: `Account created via ${provider}`,
+    };
+}
+
 function authEmailOtpVerifyDescription(payload: SessionEventPayload<'AUTH_EMAIL_OTP_VERIFY_SUCCEEDED'>): {
     de: string;
     en: string;
@@ -372,6 +412,24 @@ export function toGqlAdminSessionEvent(event: SessionEvent, isImpersonation = fa
             }
             case 'AUTH_EMAIL_OTP_VERIFY_SUCCEEDED': {
                 const copy = authEmailOtpVerifyDescription(event.payload as SessionEventPayload<'AUTH_EMAIL_OTP_VERIFY_SUCCEEDED'>);
+                descriptionDe = copy.de;
+                descriptionEn = copy.en;
+                break;
+            }
+            case 'AUTH_OAUTH_SIGN_IN_SUCCEEDED': {
+                const copy = authOauthSignInSucceededDescription(event.payload as SessionEventPayload<'AUTH_OAUTH_SIGN_IN_SUCCEEDED'>);
+                descriptionDe = copy.de;
+                descriptionEn = copy.en;
+                break;
+            }
+            case 'AUTH_OAUTH_SIGN_IN_FAILED': {
+                const copy = authOauthSignInFailedDescription(event.payload as SessionEventPayload<'AUTH_OAUTH_SIGN_IN_FAILED'>);
+                descriptionDe = copy.de;
+                descriptionEn = copy.en;
+                break;
+            }
+            case 'AUTH_OAUTH_ACCOUNT_CREATED': {
+                const copy = authOauthAccountCreatedDescription(event.payload as SessionEventPayload<'AUTH_OAUTH_ACCOUNT_CREATED'>);
                 descriptionDe = copy.de;
                 descriptionEn = copy.en;
                 break;

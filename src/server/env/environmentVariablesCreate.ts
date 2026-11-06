@@ -7,6 +7,9 @@ const alwaysRequiredEnvironmentVariables = [
     'VISITOR_IP_HASH_SALT',
     'GOOGLE_GENERATIVE_AI_API_KEY',
     'GOOGLE_PLACES_API_KEY',
+    'GOOGLE_OAUTH_CLIENT_ID',
+    'GOOGLE_OAUTH_CLIENT_SECRET',
+    'GOOGLE_OAUTH_PEOPLE_SCOPES',
     'SERVER_TOKEN_SECRET',
     'AUTH_OTP_PEPPER',
     'AUTH_TOTP_ENCRYPTION_KEY',
@@ -108,6 +111,12 @@ function otelTransportParse(raw: string | undefined): OtelTransport {
     return value as OtelTransport;
 }
 
+function trueFalseParse(raw: string | undefined, name: string): boolean {
+    if (raw === 'true') return true;
+    if (raw === 'false') return false;
+    throw new Error(`Invalid ${name} "${raw ?? ''}". Expected true or false`);
+}
+
 function observabilityEnvironmentParse(raw: string | undefined, nodeEnv: string | undefined): string {
     if (raw?.trim()) {
         return raw.trim();
@@ -168,6 +177,9 @@ export function environmentVariablesCreate(source: NodeJS.ProcessEnv = process.e
         webPageUrl: source.WEB_PAGE_URL!.replace(/\/$/, ''),
         googleGenerativeAiApiKey: source.GOOGLE_GENERATIVE_AI_API_KEY!,
         googlePlacesApiKey: source.GOOGLE_PLACES_API_KEY!,
+        googleOauthClientId: source.GOOGLE_OAUTH_CLIENT_ID!,
+        googleOauthClientSecret: source.GOOGLE_OAUTH_CLIENT_SECRET!,
+        googleOauthPeopleScopes: trueFalseParse(source.GOOGLE_OAUTH_PEOPLE_SCOPES, 'GOOGLE_OAUTH_PEOPLE_SCOPES'),
         serverTokenSecret: source.SERVER_TOKEN_SECRET!,
         visitorIpHashSalt: source.VISITOR_IP_HASH_SALT!,
         emailTransport,

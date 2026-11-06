@@ -36,6 +36,9 @@ query AdminUsersOverviewPage(
                         timeZone
                         count
                     }
+                    googleLinkedAccountCount
+                    passkeyAccountCount
+                    totpAccountCount
                 }
                 upcomingBirthdays(take: $upcomingBirthdaysTake) {
                     userId

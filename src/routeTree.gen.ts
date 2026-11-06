@@ -41,6 +41,7 @@ import { Route as Char123LocaleChar125PrivacyPolicyRouteImport } from './routes/
 import { Route as Char123LocaleChar125ProfileRouteImport } from './routes/{-$locale}/profile'
 import { Route as Char123LocaleChar125SignInRouteImport } from './routes/{-$locale}/sign-in'
 import { Route as Char123LocaleChar125TermsAndConditionsRouteImport } from './routes/{-$locale}/terms-and-conditions'
+import { Route as ApiAuthGoogleRouteImport } from './routes/api/auth/google'
 import { Route as ApiFileUploadsFileUploadIdRouteImport } from './routes/api/file-uploads_.$fileUploadId'
 import { Route as ApiSessionSwitchRouteImport } from './routes/api/session.switch'
 import { Route as ApiWebhooksResendRouteImport } from './routes/api/webhooks/resend'
@@ -105,6 +106,7 @@ import { Route as Char123LocaleChar125ProfilePublicRouteImport } from './routes/
 import { Route as Char123LocaleChar125ProfileSupportRequestsRouteImport } from './routes/{-$locale}/profile/support-requests'
 import { Route as Char123LocaleChar125ProfileTravelRouteImport } from './routes/{-$locale}/profile/travel'
 import { Route as Char123LocaleChar125ProfileWalletRouteImport } from './routes/{-$locale}/profile/wallet'
+import { Route as ApiAuthGoogleCallbackRouteImport } from './routes/api/auth/google.callback'
 import { Route as ApiWhatsappLinksTokenRouteImport } from './routes/api/whatsapp/links/$token'
 import { Route as ServerBookingRequestOffersBookingRequestOfferIdCookStatementRouteImport } from './routes/server.booking-request-offers.$bookingRequestOfferId.cook-statement'
 import { Route as ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRouteImport } from './routes/server.booking-request-offers.$bookingRequestOfferId.customer-receipt'
@@ -359,6 +361,11 @@ const Char123LocaleChar125TermsAndConditionsRoute =
     path: '/terms-and-conditions',
     getParentRoute: () => Char123LocaleChar125Route,
   } as any)
+const ApiAuthGoogleRoute = ApiAuthGoogleRouteImport.update({
+  id: '/api/auth/google',
+  path: '/api/auth/google',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiFileUploadsFileUploadIdRoute =
   ApiFileUploadsFileUploadIdRouteImport.update({
     id: '/api/file-uploads_/$fileUploadId',
@@ -738,6 +745,11 @@ const Char123LocaleChar125ProfileWalletRoute =
     path: '/wallet',
     getParentRoute: () => Char123LocaleChar125ProfileRoute,
   } as any)
+const ApiAuthGoogleCallbackRoute = ApiAuthGoogleCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => ApiAuthGoogleRoute,
+} as any)
 const ApiWhatsappLinksTokenRoute = ApiWhatsappLinksTokenRouteImport.update({
   id: '/api/whatsapp/links/$token',
   path: '/api/whatsapp/links/$token',
@@ -1265,6 +1277,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/sign-in': typeof Char123LocaleChar125SignInRoute
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
+  '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/file-uploads/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
   '/api/session/switch': typeof ApiSessionSwitchRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
@@ -1329,6 +1342,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/profile/wallet': typeof Char123LocaleChar125ProfileWalletRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile/': typeof Char123LocaleChar125ProfileIndexRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
   '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
   '/server/booking-request-offers/$bookingRequestOfferId/cook-statement': typeof ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute
   '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt': typeof ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRoute
@@ -1435,6 +1449,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/sign-in': typeof Char123LocaleChar125SignInRoute
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
   '/{-$locale}': typeof Char123LocaleChar125IndexRoute
+  '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/file-uploads/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
   '/api/session/switch': typeof ApiSessionSwitchRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
@@ -1499,6 +1514,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/profile/wallet': typeof Char123LocaleChar125ProfileWalletRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile': typeof Char123LocaleChar125ProfileIndexRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
   '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
   '/server/booking-request-offers/$bookingRequestOfferId/cook-statement': typeof ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute
   '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt': typeof ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRoute
@@ -1609,6 +1625,7 @@ export interface FileRoutesById {
   '/{-$locale}/sign-in': typeof Char123LocaleChar125SignInRoute
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
+  '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/file-uploads_/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
   '/api/session/switch': typeof ApiSessionSwitchRoute
   '/api/webhooks/resend': typeof ApiWebhooksResendRoute
@@ -1673,6 +1690,7 @@ export interface FileRoutesById {
   '/{-$locale}/profile/wallet': typeof Char123LocaleChar125ProfileWalletRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile/': typeof Char123LocaleChar125ProfileIndexRoute
+  '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
   '/api/whatsapp/links/$token': typeof ApiWhatsappLinksTokenRoute
   '/server/booking-request-offers/$bookingRequestOfferId/cook-statement': typeof ServerBookingRequestOffersBookingRequestOfferIdCookStatementRoute
   '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt': typeof ServerBookingRequestOffersBookingRequestOfferIdCustomerReceiptRoute
@@ -1784,6 +1802,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/sign-in'
     | '/{-$locale}/terms-and-conditions'
     | '/{-$locale}/'
+    | '/api/auth/google'
     | '/api/file-uploads/$fileUploadId'
     | '/api/session/switch'
     | '/api/webhooks/resend'
@@ -1848,6 +1867,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/wallet'
     | '/{-$locale}/admin/'
     | '/{-$locale}/profile/'
+    | '/api/auth/google/callback'
     | '/api/whatsapp/links/$token'
     | '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
     | '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt'
@@ -1954,6 +1974,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/sign-in'
     | '/{-$locale}/terms-and-conditions'
     | '/{-$locale}'
+    | '/api/auth/google'
     | '/api/file-uploads/$fileUploadId'
     | '/api/session/switch'
     | '/api/webhooks/resend'
@@ -2018,6 +2039,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/wallet'
     | '/{-$locale}/admin'
     | '/{-$locale}/profile'
+    | '/api/auth/google/callback'
     | '/api/whatsapp/links/$token'
     | '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
     | '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt'
@@ -2127,6 +2149,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/sign-in'
     | '/{-$locale}/terms-and-conditions'
     | '/{-$locale}/'
+    | '/api/auth/google'
     | '/api/file-uploads_/$fileUploadId'
     | '/api/session/switch'
     | '/api/webhooks/resend'
@@ -2191,6 +2214,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/wallet'
     | '/{-$locale}/admin/'
     | '/{-$locale}/profile/'
+    | '/api/auth/google/callback'
     | '/api/whatsapp/links/$token'
     | '/server/booking-request-offers/$bookingRequestOfferId/cook-statement'
     | '/server/booking-request-offers/$bookingRequestOfferId/customer-receipt'
@@ -2283,6 +2307,7 @@ export interface RootRouteChildren {
   ApiGraphqlRoute: typeof ApiGraphqlRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiStreamRoute: typeof ApiStreamRoute
+  ApiAuthGoogleRoute: typeof ApiAuthGoogleRouteWithChildren
   ApiFileUploadsFileUploadIdRoute: typeof ApiFileUploadsFileUploadIdRoute
   ApiSessionSwitchRoute: typeof ApiSessionSwitchRoute
   ApiWebhooksResendRoute: typeof ApiWebhooksResendRoute
@@ -2522,6 +2547,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/{-$locale}/terms-and-conditions'
       preLoaderRoute: typeof Char123LocaleChar125TermsAndConditionsRouteImport
       parentRoute: typeof Char123LocaleChar125Route
+    }
+    '/api/auth/google': {
+      id: '/api/auth/google'
+      path: '/api/auth/google'
+      fullPath: '/api/auth/google'
+      preLoaderRoute: typeof ApiAuthGoogleRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/file-uploads_/$fileUploadId': {
       id: '/api/file-uploads_/$fileUploadId'
@@ -2970,6 +3002,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/{-$locale}/profile/wallet'
       preLoaderRoute: typeof Char123LocaleChar125ProfileWalletRouteImport
       parentRoute: typeof Char123LocaleChar125ProfileRoute
+    }
+    '/api/auth/google/callback': {
+      id: '/api/auth/google/callback'
+      path: '/callback'
+      fullPath: '/api/auth/google/callback'
+      preLoaderRoute: typeof ApiAuthGoogleCallbackRouteImport
+      parentRoute: typeof ApiAuthGoogleRoute
     }
     '/api/whatsapp/links/$token': {
       id: '/api/whatsapp/links/$token'
@@ -3942,6 +3981,18 @@ const Char123LocaleChar125RouteChildren: Char123LocaleChar125RouteChildren = {
 const Char123LocaleChar125RouteWithChildren =
   Char123LocaleChar125Route._addFileChildren(Char123LocaleChar125RouteChildren)
 
+interface ApiAuthGoogleRouteChildren {
+  ApiAuthGoogleCallbackRoute: typeof ApiAuthGoogleCallbackRoute
+}
+
+const ApiAuthGoogleRouteChildren: ApiAuthGoogleRouteChildren = {
+  ApiAuthGoogleCallbackRoute: ApiAuthGoogleCallbackRoute,
+}
+
+const ApiAuthGoogleRouteWithChildren = ApiAuthGoogleRoute._addFileChildren(
+  ApiAuthGoogleRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   LlmsDottxtRoute: LlmsDottxtRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
@@ -3957,6 +4008,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGraphqlRoute: ApiGraphqlRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiStreamRoute: ApiStreamRoute,
+  ApiAuthGoogleRoute: ApiAuthGoogleRouteWithChildren,
   ApiFileUploadsFileUploadIdRoute: ApiFileUploadsFileUploadIdRoute,
   ApiSessionSwitchRoute: ApiSessionSwitchRoute,
   ApiWebhooksResendRoute: ApiWebhooksResendRoute,

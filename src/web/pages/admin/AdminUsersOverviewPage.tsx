@@ -325,6 +325,51 @@ export function AdminUsersOverviewPage({ data, search }: { data: GqlCAdminUsersO
                             )}
                         </div>
                     </div>
+                    <div className="grid gap-3">
+                        <h3 className="text-base font-medium">{{ de: 'Anmeldemethoden', en: 'Sign-in methods' }[locale]}</h3>
+                        <p className="text-sm text-muted-foreground">
+                            {
+                                {
+                                    de: 'Überlappend: ein Konto kann Google und einen Passkey haben.',
+                                    en: 'Overlapping: one account can have Google and a passkey.',
+                                }[locale]
+                            }
+                        </p>
+                        <ul className="grid gap-2 sm:grid-cols-3">
+                            {(
+                                [
+                                    {
+                                        key: 'google',
+                                        label: { de: 'Google verbunden', en: 'Google linked' }[locale],
+                                        count: insights?.googleLinkedAccountCount ?? 0,
+                                    },
+                                    {
+                                        key: 'passkey',
+                                        label: { de: 'Passkey hinterlegt', en: 'Passkey present' }[locale],
+                                        count: insights?.passkeyAccountCount ?? 0,
+                                    },
+                                    {
+                                        key: 'totp',
+                                        label: { de: 'Authenticator-App', en: 'Authenticator app' }[locale],
+                                        count: insights?.totpAccountCount ?? 0,
+                                    },
+                                ] as const
+                            ).map((stat) => (
+                                <li key={stat.key}>
+                                    <div
+                                        className={adminOverviewLinkCardClassName(
+                                            'flex flex-wrap items-center justify-between gap-3 px-4 py-3',
+                                        )}
+                                    >
+                                        <span className="font-medium text-foreground">{stat.label}</span>
+                                        <span className="text-sm text-muted-foreground tabular-nums">
+                                            {countShareLabel(stat.count, accountCount, locale)}
+                                        </span>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 </section>
 
                 <section className="grid gap-3">

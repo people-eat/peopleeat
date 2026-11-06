@@ -6,6 +6,7 @@ import { pipe, subscribe } from 'wonka';
 
 import {
     AuthEmailOtpDeleteDocument,
+    AuthOauthTicketDeleteDocument,
     AuthSessionDocument,
     AuthSessionUpdatesDocument,
     AuthUserCreateDocument,
@@ -36,6 +37,24 @@ export type AuthSession = GqlCAuthSessionFieldsFragment;
 export type AuthSessionRefresh = () => Promise<AuthSession | null>;
 
 export const AUTH_USER_PROFILE_FORM_ID = 'auth-user-profile';
+
+const googleAuthErrorCopy = {
+    de: 'Google-Anmeldung fehlgeschlagen. Bitte in Safari oder Chrome erneut versuchen, nicht in der In-App-Ansicht von Instagram oder Facebook.',
+    en: 'Google sign-in failed. Please try again in Safari or Chrome, not in an Instagram or Facebook in-app browser.',
+} as const;
+
+function profileInitialValuesFromOauthTicket(
+    ticket: AuthSession['authOauthTicket'],
+    requireProfileDetails: boolean,
+): Partial<UserProfileFormValues> {
+    if (!ticket) return {};
+    return {
+        ...(ticket.firstName ? { firstName: ticket.firstName } : {}),
+        ...(ticket.lastName ? { lastName: ticket.lastName } : {}),
+        ...(requireProfileDetails && ticket.phoneNumber ? { phoneNumber: ticket.phoneNumber } : {}),
+        ...(requireProfileDetails && ticket.birthDate ? { birthDate: ticket.birthDate } : {}),
+    };
+}
 
 export function AuthIdentityGate({
     initialSession,
@@ -92,6 +111,7 @@ export function AuthIdentityGate({
     const [session, setSession] = useState(initialSession);
     const [busy, setBusyState] = useState(false);
     const readyNotified = useRef(false);
+    const googleAuthErrorToasted = useRef(false);
     const onReadyRef = useRef(onReady);
     onReadyRef.current = onReady;
     const onSessionChangeRef = useRef(onSessionChange);
@@ -105,6 +125,7 @@ export function AuthIdentityGate({
     }
     const [, createUser] = useMutation(AuthUserCreateDocument);
     const [, deleteOtp] = useMutation(AuthEmailOtpDeleteDocument);
+    const [, deleteOauthTicket] = useMutation(AuthOauthTicketDeleteDocument);
 
     function applySession(next: AuthSession) {
         setSession(next);
@@ -121,6 +142,17 @@ export function AuthIdentityGate({
         }
         return next;
     }
+
+    useEffect(() => {
+        if (googleAuthErrorToasted.current || typeof window === 'undefined') return;
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('authError') !== 'google') return;
+        googleAuthErrorToasted.current = true;
+        toast.error(googleAuthErrorCopy[locale]);
+        url.searchParams.delete('authError');
+        const next = `${url.pathname}${url.search}${url.hash}`;
+        window.history.replaceState(window.history.state, '', next);
+    }, [locale]);
 
     useEffect(() => {
         let unsubscribe: (() => void) | undefined;
@@ -196,18 +228,31 @@ export function AuthIdentityGate({
     }
 
     async function onDiscardVerifiedEmail() {
+        const oauthTicket = session.authOauthTicket;
         const otp = session.authEmailOtp;
-        if (!otp || busy) return;
+        if (busy) return;
         setBusy(true);
         try {
-            const result = await deleteOtp({ authEmailOtpId: otp.authEmailOtpId });
-            if (result.error || !result.data?.authEmailOtpDelete.success) {
-                toast.error(
-                    {
-                        de: 'Bestätigte E-Mail konnte nicht verworfen werden.',
-                        en: 'Could not discard the verified email.',
-                    }[locale],
-                );
+            if (oauthTicket) {
+                const result = await deleteOauthTicket({ authOauthTicketId: oauthTicket.authOauthTicketId });
+                if (result.error || !result.data?.authOauthTicketDelete.success) {
+                    toast.error(
+                        {
+                            de: 'Bestätigte Anmeldung konnte nicht verworfen werden.',
+                            en: 'Could not discard the verified sign-in.',
+                        }[locale],
+                    );
+                }
+            } else if (otp) {
+                const result = await deleteOtp({ authEmailOtpId: otp.authEmailOtpId });
+                if (result.error || !result.data?.authEmailOtpDelete.success) {
+                    toast.error(
+                        {
+                            de: 'Bestätigte E-Mail konnte nicht verworfen werden.',
+                            en: 'Could not discard the verified email.',
+                        }[locale],
+                    );
+                }
             }
             await sessionRefresh();
         } finally {
@@ -224,7 +269,9 @@ export function AuthIdentityGate({
     }
 
     if (phase === 'register') {
-        const verifiedEmail = session.authEmailOtp?.emailAddress ?? '';
+        const oauthTicket = session.authOauthTicket;
+        const verifiedEmail = oauthTicket?.emailAddress ?? session.authEmailOtp?.emailAddress ?? '';
+        const oauthRegister = Boolean(oauthTicket?.verifiedAt);
         return (
             <div className="grid gap-8">
                 <div className="grid gap-3">
@@ -235,20 +282,33 @@ export function AuthIdentityGate({
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <Button type="button" variant="outline" size="sm" className="w-fit" disabled={busy}>
-                                {{ de: 'Andere E-Mail verwenden', en: 'Use a different email' }[locale]}
+                                {
+                                    (oauthRegister
+                                        ? { de: 'Andere Anmeldung verwenden', en: 'Use a different sign-in method' }
+                                        : { de: 'Andere E-Mail verwenden', en: 'Use a different email' })[locale]
+                                }
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                    {{ de: 'Bestätigte E-Mail verwerfen?', en: 'Discard verified email?' }[locale]}
+                                    {
+                                        (oauthRegister
+                                            ? { de: 'Bestätigte Anmeldung verwerfen?', en: 'Discard verified sign-in?' }
+                                            : { de: 'Bestätigte E-Mail verwerfen?', en: 'Discard verified email?' })[locale]
+                                    }
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
                                     {
-                                        {
-                                            de: `${verifiedEmail} ist bereits bestätigt. Wenn du sie verwirfst, musst du den Code an eine neue Adresse erneut anfordern.`,
-                                            en: `${verifiedEmail} is already verified. Discarding it means you'll need to request a new code for a different address.`,
-                                        }[locale]
+                                        (oauthRegister
+                                            ? {
+                                                  de: `${verifiedEmail} ist bereits bestätigt. Wenn du sie verwirfst, musst du dich erneut anmelden.`,
+                                                  en: `${verifiedEmail} is already verified. Discarding it means you will need to sign in again.`,
+                                              }
+                                            : {
+                                                  de: `${verifiedEmail} ist bereits bestätigt. Wenn du sie verwirfst, musst du den Code an eine neue Adresse erneut anfordern.`,
+                                                  en: `${verifiedEmail} is already verified. Discarding it means you'll need to request a new code for a different address.`,
+                                              })[locale]
                                     }
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
@@ -272,7 +332,10 @@ export function AuthIdentityGate({
                         busy={busy}
                         includeCook={includeCook}
                         requireProfileDetails={requireProfileDetails}
-                        initialValues={profileInitialValues}
+                        initialValues={{
+                            ...profileInitialValuesFromOauthTicket(oauthTicket, requireProfileDetails),
+                            ...profileInitialValues,
+                        }}
                         submitLabel={
                             submitLabel ??
                             (includeCook

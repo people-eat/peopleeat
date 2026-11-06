@@ -5,8 +5,9 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
+import { featureToggleIsActive } from '../../shared/featureToggle';
 import { AuthIdentityGate } from '../components/auth/AuthIdentityGate';
-import { AuthPasskeyLogOn } from '../components/auth/AuthPasskeyLogOn';
+import { AuthIdentityGateLogOnFooter } from '../components/auth/AuthIdentityGateLogOnFooter';
 import { Button } from '../components/base/button';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
@@ -19,6 +20,10 @@ const logOnPageTitle = { de: 'Anmelden', en: 'Log on' } as const;
 const logOnPageDescription = {
     de: 'Melde dich mit E-Mail-Code oder Passkey an. Neue Konten werden hier ebenfalls erstellt.',
     en: 'Log on with an email code or a passkey. New accounts are created here too.',
+} as const;
+const logOnPageDescriptionWithGoogle = {
+    de: 'Melde dich mit E-Mail-Code, Google oder Passkey an. Neue Konten werden hier ebenfalls erstellt.',
+    en: 'Log on with an email code, Google, or a passkey. New accounts are created here too.',
 } as const;
 
 export function LogOnPage({ loaderData, returnTo }: { loaderData: GqlCLogOnPageQuery; returnTo?: string }) {
@@ -68,7 +73,13 @@ export function LogOnPage({ loaderData, returnTo }: { loaderData: GqlCLogOnPageQ
             <div className="mx-auto grid w-full max-w-md flex-1 content-start gap-8 p-8">
                 <div className="grid gap-2">
                     <h1 className="font-serif text-3xl tracking-tight">{logOnPageTitle[locale]}</h1>
-                    <p className="text-muted-foreground">{logOnPageDescription[locale]}</p>
+                    <p className="text-muted-foreground">
+                        {
+                            (featureToggleIsActive(session.activeFeatureToggleKeys, 'SIGN_IN_GOOGLE')
+                                ? logOnPageDescriptionWithGoogle
+                                : logOnPageDescription)[locale]
+                        }
+                    </p>
                 </div>
 
                 <AuthIdentityGate
@@ -78,7 +89,9 @@ export function LogOnPage({ loaderData, returnTo }: { loaderData: GqlCLogOnPageQ
                         toast.success({ de: 'Angemeldet.', en: 'Logged on.' }[locale]);
                         navigateAfterLogOn();
                     }}
-                    footer={(_session, sessionRefresh) => <AuthPasskeyLogOn onSuccess={sessionRefresh} />}
+                    footer={(gateSession, sessionRefresh) => (
+                        <AuthIdentityGateLogOnFooter session={gateSession} sessionRefresh={sessionRefresh} />
+                    )}
                 >
                     {(nextSession: GqlCAuthSessionFieldsFragment) => (
                         <div className="grid gap-4">

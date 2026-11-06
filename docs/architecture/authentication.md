@@ -60,8 +60,8 @@ consent is not the HttpOnly session cookie — see [cookie-consent.md](../featur
 ## Alternatives Considered
 
 - **JWT tokens**: Stateless but harder to revoke, no server-side session state for real-time tracking
-- **Third-party auth (OAuth providers)**: Adds external dependency; can be layered on top of sessions later (Google / Apple on the product
-  roadmap)
+- **Third-party auth (OAuth providers)**: Adds a second session model. Google is layered on the existing cookie session with fetch + PKCE
+  (no Auth.js / arctic). Apple can reuse the same tables later.
 - **Email + password**: Rejected for runtime log-on — see [Why passwordless](#why-passwordless-not-email--password)
 
 ## Consequences
@@ -70,14 +70,14 @@ consent is not the HttpOnly session cookie — see [cookie-consent.md](../featur
 - Sessions start anonymous, so user identity requires a separate linking step
 - Soft-delete means the sessions table grows over time — may need a cleanup job eventually
 
-## User sign-in (email OTP + passkeys)
+## User sign-in (email OTP + Google + passkeys)
 
 Anonymous sessions become authenticated when a sign-in mutation binds `Sessions.userId`.
 
 ### Why passwordless (not email + password)
 
-We previously supported email + password (with reset and confirmation edge cases). Runtime log-on is now **email OTP**, plus **passkeys**
-for returning users and optional **TOTP** as a second factor.
+We previously supported email + password (with reset and confirmation edge cases). Runtime log-on is now **email OTP**, optional **Google**,
+plus **passkeys** for returning users and optional **TOTP** as a second factor.
 
 | Why we switched                   | Detail                                                                                         |
 | --------------------------------- | ---------------------------------------------------------------------------------------------- |
@@ -86,9 +86,9 @@ for returning users and optional **TOTP** as a second factor.
 | Same session model                | Bind `Sessions.userId` after verify; no separate password credential store on the hot path     |
 | Better fit for marketplace embeds | Booking form, gift-card purchase, and chef sign-up reuse one identity gate without password UI |
 
-Imported accounts may still carry `Users.legacyPasswordHash` (bcrypt). That column is **not** verified at log-on — OTP / passkeys / TOTP are
-the only runtime paths. We **keep** the column so email+password can be re-enabled later without another data recovery. Product surface:
-[sign-in.md](../features/sign-in.md).
+Imported accounts may still carry `Users.legacyPasswordHash` (bcrypt). That column is **not** verified at log-on — OTP / Google / passkeys /
+TOTP are the only runtime paths. We **keep** the column so email+password can be re-enabled later without another data recovery. Product
+surface: [sign-in.md](../features/sign-in.md).
 
 ### Email OTP (passwordless)
 
@@ -111,13 +111,13 @@ the only runtime paths. We **keep** the column so email+password can be re-enabl
    - **New email** — set `verifiedAt`, extend `expiresAt` (~30m registration ticket); **do not** create a `Users` row.
 6. On the register step, discard (with confirmation) calls `authEmailOtpDelete` so a different email can be requested — same mutation as
    dismissing an unverified OTP.
-7. `userCreate(input)` requires a verified, unconsumed session OTP; creates the user with name (phone, birthDate, and preferredCommunication
-   optional on `UserCreate`; most public UIs still send them), stamps legal acceptance, binds the session, consumes the OTP. Optional
-   `input.cook` (`CookCreate`) inserts cook membership in the same transaction. When provided, `birthDate` must meet the platform minimum
-   age of 18 (`src/shared/userBirthDate.ts`). Admin `userCreate` still requires the full profile including an adult birth date (legal still
-   accepted on first log-on); optional `AdminUserCreate.cook` uses the same `CookCreate` shape. After bind, `userCreate` enqueues
-   `userKlaviyoProfileSync` so the marketing audience stays current — see [klaviyo-profile-sync.md](../features/klaviyo-profile-sync.md).
-   Transactional OTP mail remains on Resend.
+7. `userCreate(input)` requires a verified, unconsumed session OTP **or** OAuth ticket; creates the user with name (phone, birthDate, and
+   preferredCommunication optional on `UserCreate`; most public UIs still send them), stamps legal acceptance, binds the session, consumes
+   the proof. The OAuth path also inserts `AuthOauthIdentities` in the same transaction. Optional `input.cook` (`CookCreate`) inserts cook
+   membership in the same transaction. When provided, `birthDate` must meet the platform minimum age of 18 (`src/shared/userBirthDate.ts`).
+   Admin `userCreate` still requires the full profile including an adult birth date (legal still accepted on first log-on); optional
+   `AdminUserCreate.cook` uses the same `CookCreate` shape. After bind, `userCreate` enqueues `userKlaviyoProfileSync` so the marketing
+   audience stays current — see [klaviyo-profile-sync.md](../features/klaviyo-profile-sync.md). Transactional OTP mail remains on Resend.
 
 Public surface: `/log-on` (`/sign-in` redirects there for old bookmarks). Shared client gate: `src/web/components/auth/AuthIdentityGate`
 (`requireProfileDetails` defaults true; gift-card purchase sets false).
@@ -163,18 +163,24 @@ summary on `AdminUser`.
 
 ### Env
 
-| Variable                   | Used by                                                                                        |
-| -------------------------- | ---------------------------------------------------------------------------------------------- |
-| `EMAIL_TRANSPORT`          | `serverRuntime.email.send` — `resend` (default) or `console` (dev: log plaintext to terminal)  |
-| `RESEND_API_KEY`           | Required at boot when `EMAIL_TRANSPORT=resend`                                                 |
-| `RESEND_FROM_EMAIL`        | Required at boot when `EMAIL_TRANSPORT=resend` (display name = `SITE_NAME`)                    |
-| `RESEND_WEBHOOK_SECRET`    | Required at boot when `EMAIL_TRANSPORT=resend`                                                 |
-| `AUTH_OTP_PEPPER`          | OTP hash / verify; encrypt/decrypt for OTP reuse; TOTP recovery-code hashes — required at boot |
-| `AUTH_TOTP_ENCRYPTION_KEY` | AES-256-GCM key (64 hex chars) for TOTP secrets — required at boot                             |
+| Variable                     | Used by                                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- |
+| `EMAIL_TRANSPORT`            | `serverRuntime.email.send` — `resend` (default) or `console` (dev: log plaintext to terminal)  |
+| `RESEND_API_KEY`             | Required at boot when `EMAIL_TRANSPORT=resend`                                                 |
+| `RESEND_FROM_EMAIL`          | Required at boot when `EMAIL_TRANSPORT=resend` (display name = `SITE_NAME`)                    |
+| `RESEND_WEBHOOK_SECRET`      | Required at boot when `EMAIL_TRANSPORT=resend`                                                 |
+| `AUTH_OTP_PEPPER`            | OTP hash / verify; encrypt/decrypt for OTP reuse; TOTP recovery-code hashes — required at boot |
+| `AUTH_TOTP_ENCRYPTION_KEY`   | AES-256-GCM key (64 hex chars) for TOTP secrets — required at boot                             |
+| `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth client id — required at boot. Product switch is `SIGN_IN_GOOGLE`, not missing env |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth client secret — required at boot                                                  |
+| `GOOGLE_OAUTH_PEOPLE_SCOPES` | `true` / `false`. When true, authorize also requests People phone + birthday scopes            |
 
 ### Key files
 
-- `src/server/commands/authEmailOtpRequest.ts` / `authEmailOtpVerify.ts` / `authEmailOtpDelete.ts` / `userCreate.ts`
+- `src/server/commands/authEmailOtpRequest.ts` / `authEmailOtpVerify.ts` / `authEmailOtpDelete.ts` / `authGoogleStart.ts` /
+  `authGoogleCallback.ts` / `authOauthTicketDelete.ts` / `userCreate.ts`
+- `src/server/utils/authGoogleOauth.ts` — PKCE, token exchange, userinfo, People, profile merge
+- `src/routes/api/auth/google.ts` / `src/routes/api/auth/google.callback.ts`
 - `src/server/email/templates/AuthEmailOtpRequestForUserEmail.tsx` (React Email template; bilingual + component previews via
   `npm run email:dev` — see [`docs/styles/emails.md`](../styles/emails.md))
 - `src/server/commands/authPasskeyRegisterOptions.ts` / `authPasskeyRegisterVerify.ts` / `authPasskeyAuthenticateOptions.ts` /
@@ -187,8 +193,8 @@ summary on `AdminUser`.
 - `src/routes/api/session.switch.ts` — cookie swap + redirect after Sign in as / Return to admin
 - `src/web/pages/LogOnPage.tsx` (route: `src/routes/{-$locale}/log-on.tsx`; `/sign-in` redirects)
 - `src/web/components/auth/` — shared email/OTP/profile gate used by log-on, booking form, chef sign-up, gift-card purchase;
-  `AuthEmailOtpSpamHint` on email OTP dialogs; `AuthPasskeyLogOn` as gate footer on log-on, booking form, and gift-card purchase (existing
-  users only); `AuthTotpChallenge` when `sessionAuthPhase === 'totpPending'`; `AuthTotpAccountSection` on the account page
+  `AuthEmailOtpSpamHint` on email OTP dialogs; `AuthIdentityGateLogOnFooter` (Google then passkey) on log-on, booking form, booking plan,
+  gift-card, and chef sign-up; `AuthTotpChallenge` when `sessionAuthPhase === 'totpPending'`; `AuthTotpAccountSection` on the account page
 - `src/web/pages/AccountPage.tsx` (routes: `profile/account.tsx`, `admin/account.tsx`) — profile fields, phone number, passkeys, TOTP,
   email-address change (OTP), session revoke / sign-out, account deletion (OTP to the current address)
 - `docs/features/sign-in.md` / `docs/features/account.md`
@@ -203,7 +209,17 @@ summary on `AdminUser`.
    `Users.previousEmailAddresses` (exposed only on `AdminUser`), and consumes the OTP. Log-on `authEmailOtpVerify` rejects when the session
    is already signed in.
 
+### Google OAuth
+
+`GET /api/auth/google?returnTo=` stores PKCE state on `AuthOauthStates` (about 10 minutes) and 302s to Google. The callback looks up
+`state`, **Set-Cookie**s that row’s `sessionId` (so bounce-tracking browsers that dropped the Lax cookie still resume), exchanges the code,
+validates `id_token` (`aud` / `iss` / `exp` / `nonce` / `email_verified`), fetches userinfo, and optionally People. Tokens are not stored.
+`sessionPrimaryAuthComplete` binds existing users (TOTP still applies). New emails get `AuthOauthTickets` (about 30 minutes) exposed as
+`Session.authOauthTicket` without the Google `sub`. Identity vs email conflict is refused. Starting Google dismisses pending OTP and vice
+versa. Feature toggle `SIGN_IN_GOOGLE` gates the button, start, and callback (per-user override after identity resolve). Redirect URI is
+`${WEB_PAGE_URL}/api/auth/google/callback`.
+
 ### Planned next
 
-OTP dialog “expires in …” countdown from `AuthEmailOtp.expiresAt` (not shipped yet), and Google and Apple sign-in (OAuth/OIDC → bind
-existing or registration ticket for new emails). Product detail: [features/sign-in.md — Next steps](../features/sign-in.md#next-steps).
+OTP dialog “expires in …” countdown from `AuthEmailOtp.expiresAt` (not shipped yet), and Sign in with Apple on the same OAuth tables.
+Product detail: [features/sign-in.md — Next steps](../features/sign-in.md#next-steps).

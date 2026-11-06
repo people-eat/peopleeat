@@ -1,6 +1,14 @@
 import { eq, or } from 'drizzle-orm';
 
-import { authPasskeys, authTimeBasedOneTimePasswords, authWebAuthnChallenges, cooks, sessions, users } from '../db/schema';
+import {
+    authOauthIdentities,
+    authPasskeys,
+    authTimeBasedOneTimePasswords,
+    authWebAuthnChallenges,
+    cooks,
+    sessions,
+    users,
+} from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 
 /**
@@ -50,6 +58,7 @@ export async function userAnonymizeApply(userId: string, serverRuntime: ServerRu
         await transaction.delete(authPasskeys).where(eq(authPasskeys.userId, userId));
         await transaction.delete(authTimeBasedOneTimePasswords).where(eq(authTimeBasedOneTimePasswords.userId, userId));
         await transaction.delete(authWebAuthnChallenges).where(eq(authWebAuthnChallenges.userId, userId));
+        await transaction.delete(authOauthIdentities).where(eq(authOauthIdentities.userId, userId));
 
         await transaction.update(cooks).set({ isVisible: false, lastModifiedAt: new Date() }).where(eq(cooks.cookId, userId));
     });

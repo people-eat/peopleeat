@@ -38,4 +38,14 @@ describe('sessionAuthPhase', () => {
             }),
         ).toBe('signedIn');
     });
+
+    it('detects register from a verified oauth ticket', () => {
+        expect(
+            sessionAuthPhase({
+                user: null,
+                authEmailOtp: null,
+                authOauthTicket: { verifiedAt: '2026-01-01T00:00:00.000Z' },
+            }),
+        ).toBe('register');
+    });
 });

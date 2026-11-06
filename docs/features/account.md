@@ -56,7 +56,7 @@ On success the command:
 1. Sets `Users.status = ANONYMIZED`, nulls `emailAddress`, clears `previousEmailAddresses`, blanks names, clears phone / birth date /
    preferred communication / notification settings / profile picture.
 2. Terminates all sessions for the user (and clears pending TOTP session state).
-3. Deletes passkeys, TOTP secrets, and WebAuthn challenges.
+3. Deletes passkeys, TOTP secrets, WebAuthn challenges, and linked OAuth identities (`AuthOauthIdentities`).
 4. Sets `Cooks.isVisible = false` when a cook row exists (biography, travel address, Stripe ids retained for now).
 5. Publishes `userUpdates` + `adminUpdates` (self-serve also refreshes the current session).
 

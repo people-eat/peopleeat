@@ -114,6 +114,7 @@ export interface GqlCAdmin {
     sessionEvents: Array<GqlCAdminSessionEvent>;
     sessionEventsCounts: Array<Scalars['Int']['output']>;
     sessions: Array<GqlCAdminSession>;
+    signInMethodStats: GqlCAdminSignInMethodStats;
     supportRequest?: Maybe<GqlCAdminSupportRequest>;
     supportRequests: Array<GqlCAdminSupportRequest>;
     supportRequestsCounts: Array<Scalars['Int']['output']>;
@@ -442,6 +443,10 @@ export type GqlCAdminSessionsArgs = {
     criterion: GqlCAdminSessionCriterion;
 };
 
+export type GqlCAdminSignInMethodStatsArgs = {
+    range: GqlCDateTimeRange;
+};
+
 export type GqlCAdminSupportRequestArgs = {
     supportRequestId: Scalars['ID']['input'];
 };
@@ -610,6 +615,12 @@ export type GqlCAdminAssistantChatCriterion = {
     take?: Scalars['Int']['input'];
     userIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
+
+export interface GqlCAdminAuthOauthIdentity {
+    __typename?: 'AdminAuthOauthIdentity';
+    createdAt: Scalars['DateTime']['output'];
+    provider: GqlCAuthOauthProvider;
+}
 
 export interface GqlCAdminBlogPost {
     __typename?: 'AdminBlogPost';
@@ -2273,6 +2284,30 @@ export type GqlCAdminSessionKind = 'bot' | 'human';
 
 export type GqlCAdminSessionSortField = 'createdAt' | 'lastInteractionAt' | 'user' | 'userAgent';
 
+export type GqlCAdminSignInMethod = 'EMAIL_OTP' | 'GOOGLE' | 'PASSKEY';
+
+export interface GqlCAdminSignInMethodBucket {
+    __typename?: 'AdminSignInMethodBucket';
+    date: Scalars['Date']['output'];
+    method: GqlCAdminSignInMethod;
+    signInCount: Scalars['Int']['output'];
+}
+
+export interface GqlCAdminSignInMethodStat {
+    __typename?: 'AdminSignInMethodStat';
+    accountCreatedCount: Scalars['Int']['output'];
+    failedCount: Scalars['Int']['output'];
+    method: GqlCAdminSignInMethod;
+    registrationTicketCount: Scalars['Int']['output'];
+    signInCount: Scalars['Int']['output'];
+}
+
+export interface GqlCAdminSignInMethodStats {
+    __typename?: 'AdminSignInMethodStats';
+    buckets: Array<GqlCAdminSignInMethodBucket>;
+    methods: Array<GqlCAdminSignInMethodStat>;
+}
+
 export interface GqlCAdminSupportRequest {
     __typename?: 'AdminSupportRequest';
     adminUnreadNotificationCount: Scalars['Int']['output'];
@@ -2341,6 +2376,7 @@ export interface GqlCAdminUser {
     lastName: Scalars['String']['output'];
     locale: GqlCLocale;
     notificationSettings: GqlCUserNotificationSettings;
+    oauthIdentities: Array<GqlCAdminAuthOauthIdentity>;
     passkeys: Array<GqlCAuthPasskey>;
     phoneNumber?: Maybe<Scalars['PhoneNumber']['output']>;
     preferredCommunication?: Maybe<GqlCUserPreferredCommunication>;
@@ -2383,10 +2419,13 @@ export interface GqlCAdminUserInsights {
     accountCount: Scalars['Int']['output'];
     averageAge?: Maybe<Scalars['Float']['output']>;
     birthDateSampleSize: Scalars['Int']['output'];
+    googleLinkedAccountCount: Scalars['Int']['output'];
     locales: Array<GqlCAdminUserLocaleStat>;
     medianAge?: Maybe<Scalars['Float']['output']>;
+    passkeyAccountCount: Scalars['Int']['output'];
     preferredCommunication: Array<GqlCAdminUserPreferredCommunicationStat>;
     timeZones: Array<GqlCAdminUserTimeZoneStat>;
+    totpAccountCount: Scalars['Int']['output'];
 }
 
 export interface GqlCAdminUserLocaleStat {
@@ -2469,6 +2508,20 @@ export interface GqlCAuthEmailOtp {
     emailAddress: Scalars['EmailAddress']['output'];
     expiresAt: Scalars['DateTime']['output'];
     verifiedAt?: Maybe<Scalars['DateTime']['output']>;
+}
+
+export type GqlCAuthOauthProvider = 'GOOGLE';
+
+export interface GqlCAuthOauthTicket {
+    __typename?: 'AuthOauthTicket';
+    authOauthTicketId: Scalars['ID']['output'];
+    birthDate?: Maybe<Scalars['Date']['output']>;
+    emailAddress: Scalars['EmailAddress']['output'];
+    expiresAt: Scalars['DateTime']['output'];
+    firstName?: Maybe<Scalars['String']['output']>;
+    lastName?: Maybe<Scalars['String']['output']>;
+    phoneNumber?: Maybe<Scalars['PhoneNumber']['output']>;
+    verifiedAt: Scalars['DateTime']['output'];
 }
 
 export interface GqlCAuthPasskey {
@@ -4207,7 +4260,8 @@ export type GqlCFeatureToggleKey =
     | 'LANDING_TESTIMONIAL_CARDS'
     | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
-    | 'PUBLICATION_MENUS';
+    | 'PUBLICATION_MENUS'
+    | 'SIGN_IN_GOOGLE';
 
 export interface GqlCFileUpload {
     __typename?: 'FileUpload';
@@ -4318,6 +4372,7 @@ export interface GqlCMutation {
     authEmailOtpDelete: GqlCMutationResult;
     authEmailOtpRequest: GqlCMutationResult;
     authEmailOtpVerify: GqlCMutationResult;
+    authOauthTicketDelete: GqlCMutationResult;
     authPasskeyAuthenticateOptions: Scalars['JSON']['output'];
     authPasskeyAuthenticateVerify: GqlCMutationResult;
     authTotpChallengeDelete: GqlCMutationResult;
@@ -4345,6 +4400,10 @@ export type GqlCMutationAuthEmailOtpRequestArgs = {
 export type GqlCMutationAuthEmailOtpVerifyArgs = {
     code: Scalars['String']['input'];
     email: Scalars['EmailAddress']['input'];
+};
+
+export type GqlCMutationAuthOauthTicketDeleteArgs = {
+    authOauthTicketId: Scalars['ID']['input'];
 };
 
 export type GqlCMutationAuthPasskeyAuthenticateVerifyArgs = {
@@ -4869,6 +4928,7 @@ export interface GqlCSession {
     __typename?: 'Session';
     activeFeatureToggleKeys: Array<GqlCFeatureToggleKey>;
     authEmailOtp?: Maybe<GqlCAuthEmailOtp>;
+    authOauthTicket?: Maybe<GqlCAuthOauthTicket>;
     authTotpChallenge?: Maybe<GqlCAuthTotpChallenge>;
     cookieSetting?: Maybe<GqlCSessionCookieSetting>;
     discount?: Maybe<GqlCSessionDiscount>;
@@ -7723,6 +7783,16 @@ export type GqlCAuthSessionFieldsFragment = {
         cook: { cookId: string } | null;
     } | null;
     authEmailOtp: { authEmailOtpId: string; emailAddress: string; expiresAt: string; verifiedAt: string | null; createdAt: string } | null;
+    authOauthTicket: {
+        authOauthTicketId: string;
+        emailAddress: string;
+        expiresAt: string;
+        verifiedAt: string;
+        firstName: string | null;
+        lastName: string | null;
+        phoneNumber: string | null;
+        birthDate: string | null;
+    } | null;
     authTotpChallenge: { expiresAt: string } | null;
 };
 
@@ -7760,6 +7830,16 @@ export type GqlCAuthSessionQuery = {
             verifiedAt: string | null;
             createdAt: string;
         } | null;
+        authOauthTicket: {
+            authOauthTicketId: string;
+            emailAddress: string;
+            expiresAt: string;
+            verifiedAt: string;
+            firstName: string | null;
+            lastName: string | null;
+            phoneNumber: string | null;
+            birthDate: string | null;
+        } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
 };
@@ -7788,6 +7868,16 @@ export type GqlCAuthSessionUpdatesSubscription = {
             verifiedAt: string | null;
             createdAt: string;
         } | null;
+        authOauthTicket: {
+            authOauthTicketId: string;
+            emailAddress: string;
+            expiresAt: string;
+            verifiedAt: string;
+            firstName: string | null;
+            lastName: string | null;
+            phoneNumber: string | null;
+            birthDate: string | null;
+        } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
 };
@@ -7811,6 +7901,12 @@ export type GqlCAuthEmailOtpDeleteMutationVariables = Exact<{
 }>;
 
 export type GqlCAuthEmailOtpDeleteMutation = { authEmailOtpDelete: { success: boolean; referenceId: string | null } };
+
+export type GqlCAuthOauthTicketDeleteMutationVariables = Exact<{
+    authOauthTicketId: string;
+}>;
+
+export type GqlCAuthOauthTicketDeleteMutation = { authOauthTicketDelete: { success: boolean; referenceId: string | null } };
 
 export type GqlCAuthUserCreateMutationVariables = Exact<{
     input: Schema.GqlCUserCreate;
@@ -8308,6 +8404,16 @@ export type GqlCBookingRequestFormPageQuery = {
             verifiedAt: string | null;
             createdAt: string;
         } | null;
+        authOauthTicket: {
+            authOauthTicketId: string;
+            emailAddress: string;
+            expiresAt: string;
+            verifiedAt: string;
+            firstName: string | null;
+            lastName: string | null;
+            phoneNumber: string | null;
+            birthDate: string | null;
+        } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
     publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
@@ -8386,6 +8492,16 @@ export type GqlCBookingRequestPlanPageQuery = {
             expiresAt: string;
             verifiedAt: string | null;
             createdAt: string;
+        } | null;
+        authOauthTicket: {
+            authOauthTicketId: string;
+            emailAddress: string;
+            expiresAt: string;
+            verifiedAt: string;
+            firstName: string | null;
+            lastName: string | null;
+            phoneNumber: string | null;
+            birthDate: string | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -8663,6 +8779,16 @@ export type GqlCChefSignUpPageQuery = {
             expiresAt: string;
             verifiedAt: string | null;
             createdAt: string;
+        } | null;
+        authOauthTicket: {
+            authOauthTicketId: string;
+            emailAddress: string;
+            expiresAt: string;
+            verifiedAt: string;
+            firstName: string | null;
+            lastName: string | null;
+            phoneNumber: string | null;
+            birthDate: string | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -8986,6 +9112,16 @@ export type GqlCGiftCardPageQuery = {
             verifiedAt: string | null;
             createdAt: string;
         } | null;
+        authOauthTicket: {
+            authOauthTicketId: string;
+            emailAddress: string;
+            expiresAt: string;
+            verifiedAt: string;
+            firstName: string | null;
+            lastName: string | null;
+            phoneNumber: string | null;
+            birthDate: string | null;
+        } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
     publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
@@ -9039,6 +9175,16 @@ export type GqlCGiftCardSessionUpdatesSubscription = {
             expiresAt: string;
             verifiedAt: string | null;
             createdAt: string;
+        } | null;
+        authOauthTicket: {
+            authOauthTicketId: string;
+            emailAddress: string;
+            expiresAt: string;
+            verifiedAt: string;
+            firstName: string | null;
+            lastName: string | null;
+            phoneNumber: string | null;
+            birthDate: string | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -9104,6 +9250,16 @@ export type GqlCLogOnPageQuery = {
             expiresAt: string;
             verifiedAt: string | null;
             createdAt: string;
+        } | null;
+        authOauthTicket: {
+            authOauthTicketId: string;
+            emailAddress: string;
+            expiresAt: string;
+            verifiedAt: string;
+            firstName: string | null;
+            lastName: string | null;
+            phoneNumber: string | null;
+            birthDate: string | null;
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
@@ -9798,6 +9954,16 @@ export type GqlCAdminAnalyticsPageQuery = {
                 landingVisits: Array<{ bucketStart: string; count: number }>;
                 chefsVisits: Array<{ bucketStart: string; count: number }>;
                 giftCardVisits: Array<{ bucketStart: string; count: number }>;
+                signInMethodStats: {
+                    methods: Array<{
+                        method: Schema.GqlCAdminSignInMethod;
+                        signInCount: number;
+                        registrationTicketCount: number;
+                        accountCreatedCount: number;
+                        failedCount: number;
+                    }>;
+                    buckets: Array<{ date: string; method: Schema.GqlCAdminSignInMethod; signInCount: number }>;
+                };
             } | null;
         } | null;
     };
@@ -16841,6 +17007,7 @@ export type GqlCAdminUserPageQuery = {
                         recoveryCodesRemaining: number;
                         createdAt: string;
                     } | null;
+                    oauthIdentities: Array<{ provider: Schema.GqlCAuthOauthProvider; createdAt: string }>;
                     profilePicture: { fileUploadId: string; url: string } | null;
                     featureToggleOverrides?: Array<{
                         userId: string;
@@ -17265,6 +17432,9 @@ export type GqlCAdminUsersOverviewPageQuery = {
                     medianAge: number | null;
                     averageAge: number | null;
                     birthDateSampleSize: number;
+                    googleLinkedAccountCount: number;
+                    passkeyAccountCount: number;
+                    totpAccountCount: number;
                     preferredCommunication: Array<{ preferredCommunication: Schema.GqlCUserPreferredCommunication | null; count: number }>;
                     locales: Array<{ locale: Schema.GqlCLocale; count: number }>;
                     timeZones: Array<{ timeZone: string; count: number }>;
@@ -26447,6 +26617,23 @@ export const AuthSessionFieldsFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authOauthTicket' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'authOauthTicketId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                             ],
                         },
                     },
@@ -38319,6 +38506,23 @@ export const AuthSessionDocument = {
                     },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'authOauthTicket' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'authOauthTicketId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'authTotpChallenge' },
                         selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } }] },
                     },
@@ -38400,6 +38604,23 @@ export const AuthSessionUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authOauthTicket' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'authOauthTicketId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                             ],
                         },
                     },
@@ -38553,6 +38774,46 @@ export const AuthEmailOtpDeleteDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAuthEmailOtpDeleteMutation, GqlCAuthEmailOtpDeleteMutationVariables>;
+export const AuthOauthTicketDeleteDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AuthOauthTicketDelete' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'authOauthTicketId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authOauthTicketDelete' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'authOauthTicketId' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'authOauthTicketId' } },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAuthOauthTicketDeleteMutation, GqlCAuthOauthTicketDeleteMutationVariables>;
 export const AuthUserCreateDocument = {
     kind: 'Document',
     definitions: [
@@ -40632,6 +40893,23 @@ export const BookingRequestFormPageDocument = {
                     },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'authOauthTicket' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'authOauthTicketId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'authTotpChallenge' },
                         selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } }] },
                     },
@@ -41273,6 +41551,23 @@ export const BookingRequestPlanPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authOauthTicket' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'authOauthTicketId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                             ],
                         },
                     },
@@ -42038,6 +42333,23 @@ export const ChefSignUpPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authOauthTicket' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'authOauthTicketId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                             ],
                         },
                     },
@@ -43296,6 +43608,23 @@ export const GiftCardPageDocument = {
                     },
                     {
                         kind: 'Field',
+                        name: { kind: 'Name', value: 'authOauthTicket' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'authOauthTicketId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
                         name: { kind: 'Name', value: 'authTotpChallenge' },
                         selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } }] },
                     },
@@ -43470,6 +43799,23 @@ export const GiftCardSessionUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authOauthTicket' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'authOauthTicketId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                             ],
                         },
                     },
@@ -43893,6 +44239,23 @@ export const LogOnPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authOauthTicket' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'authOauthTicketId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'emailAddress' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'expiresAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'verifiedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'firstName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'lastName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'phoneNumber' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'birthDate' } },
                             ],
                         },
                     },
@@ -46561,6 +46924,66 @@ export const AdminAnalyticsPageDocument = {
                                                                 selections: [
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'bucketStart' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'count' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'signInMethodStats' },
+                                                            arguments: [
+                                                                {
+                                                                    kind: 'Argument',
+                                                                    name: { kind: 'Name', value: 'range' },
+                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'range' } },
+                                                                },
+                                                            ],
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'methods' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'method' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'signInCount' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: {
+                                                                                        kind: 'Name',
+                                                                                        value: 'registrationTicketCount',
+                                                                                    },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'accountCreatedCount' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'failedCount' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'buckets' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'date' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'method' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'signInCount' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                 ],
                                                             },
                                                         },
@@ -69438,6 +69861,23 @@ export const AdminUserPageDocument = {
                                                                     },
                                                                     {
                                                                         kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'oauthIdentities' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'provider' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'createdAt' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    {
+                                                                        kind: 'Field',
                                                                         name: { kind: 'Name', value: 'profilePicture' },
                                                                         selectionSet: {
                                                                             kind: 'SelectionSet',
@@ -71958,6 +72398,12 @@ export const AdminUsersOverviewPageDocument = {
                                                                             ],
                                                                         },
                                                                     },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'googleLinkedAccountCount' },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'passkeyAccountCount' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'totpAccountCount' } },
                                                                 ],
                                                             },
                                                         },

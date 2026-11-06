@@ -1,7 +1,7 @@
 import { and, desc, eq, gt, isNull, sql } from 'drizzle-orm';
 
 import { idCreate } from '../../shared/idCreate';
-import { authEmailOtps, users } from '../db/schema';
+import { authEmailOtps, authOauthTickets, users } from '../db/schema';
 import type { AuthEmailOtpCreate } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import {
@@ -131,6 +131,7 @@ export async function authEmailOtpRequest(
             await transaction
                 .delete(authEmailOtps)
                 .where(and(eq(authEmailOtps.sessionId, requestingSession.sessionId), isNull(authEmailOtps.consumedAt)));
+            await transaction.delete(authOauthTickets).where(eq(authOauthTickets.sessionId, requestingSession.sessionId));
             await transaction.insert(authEmailOtps).values(authEmailOtpInsert);
         });
 

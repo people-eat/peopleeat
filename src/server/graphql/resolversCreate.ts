@@ -100,6 +100,7 @@ import { adminWhatsAppMessageReactionUpsert } from '../commands/adminWhatsAppMes
 import { authEmailOtpDelete } from '../commands/authEmailOtpDelete';
 import { authEmailOtpRequest } from '../commands/authEmailOtpRequest';
 import { authEmailOtpVerify } from '../commands/authEmailOtpVerify';
+import { authOauthTicketDelete } from '../commands/authOauthTicketDelete';
 import { authPasskeyAuthenticateOptions } from '../commands/authPasskeyAuthenticateOptions';
 import { authPasskeyAuthenticateVerify } from '../commands/authPasskeyAuthenticateVerify';
 import { authPasskeyDelete } from '../commands/authPasskeyDelete';
@@ -228,6 +229,7 @@ import { adminAnalyticsBookingRequestFormFlow } from '../queries/adminAnalyticsB
 import { adminAnalyticsChefSignUpFlow } from '../queries/adminAnalyticsChefSignUpFlow';
 import { adminAnalyticsCookBookingRequestOfferFlow } from '../queries/adminAnalyticsCookBookingRequestOfferFlow';
 import { adminAnalyticsGiftCardFlow } from '../queries/adminAnalyticsGiftCardFlow';
+import { adminAnalyticsSignInMethodStats } from '../queries/adminAnalyticsSignInMethodStats';
 import { adminAssistantChatCreationsFindMany } from '../queries/adminAssistantChatCreationsFindMany';
 import { adminAssistantChatFindMany } from '../queries/adminAssistantChatFindMany';
 import { adminAssistantChatFindOne } from '../queries/adminAssistantChatFindOne';
@@ -340,6 +342,7 @@ import { adminUserCounts } from '../queries/adminUserCounts';
 import { adminUserFindMany } from '../queries/adminUserFindMany';
 import { adminUserFindOne } from '../queries/adminUserFindOne';
 import { adminUserInsightsFindOne } from '../queries/adminUserInsightsFindOne';
+import { adminUserOauthIdentitiesFindMany } from '../queries/adminUserOauthIdentitiesFindMany';
 import { adminUserPasskeysFindMany } from '../queries/adminUserPasskeysFindMany';
 import { adminUserRegistrationsFindMany } from '../queries/adminUserRegistrationsFindMany';
 import { adminUserTimeBasedOneTimePasswordFindOne } from '../queries/adminUserTimeBasedOneTimePasswordFindOne';
@@ -411,6 +414,7 @@ import { publicPartnerFindOne } from '../queries/publicPartnerFindOne';
 import { publicPartnerFindOneByPathName } from '../queries/publicPartnerFindOneByPathName';
 import { publicWebPageFindOne } from '../queries/publicWebPageFindOne';
 import { sessionAuthEmailOtpFindOne } from '../queries/sessionAuthEmailOtpFindOne';
+import { sessionAuthOauthTicketFindOne } from '../queries/sessionAuthOauthTicketFindOne';
 import { sessionAuthTotpChallengeFindOne } from '../queries/sessionAuthTotpChallengeFindOne';
 import { sessionCookieSettingFindOne } from '../queries/sessionCookieSettingFindOne';
 import { sessionDiscount } from '../queries/sessionDiscount';
@@ -633,6 +637,7 @@ import type {
     GqlSAdminSessionEventsCountsArgs,
     GqlSAdminSessionEventWebPageVisitCreationsArgs,
     GqlSAdminSessionsArgs,
+    GqlSAdminSignInMethodStatsArgs,
     GqlSAdminSupportRequest,
     GqlSAdminSupportRequestArgs,
     GqlSAdminSupportRequestsArgs,
@@ -725,6 +730,7 @@ import type {
     GqlSMutationAuthEmailOtpDeleteArgs,
     GqlSMutationAuthEmailOtpRequestArgs,
     GqlSMutationAuthEmailOtpVerifyArgs,
+    GqlSMutationAuthOauthTicketDeleteArgs,
     GqlSMutationAuthPasskeyAuthenticateVerifyArgs,
     GqlSMutationAuthTotpVerifyArgs,
     GqlSMutationClientObservabilityReportArgs,
@@ -939,6 +945,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             authEmailOtp(_session: GqlSSession, __: unknown, requestingSession: GqlSSession) {
                 return sessionAuthEmailOtpFindOne(requestingSession, serverRuntime);
+            },
+            authOauthTicket(_session: GqlSSession, __: unknown, requestingSession: GqlSSession) {
+                return sessionAuthOauthTicketFindOne(requestingSession, serverRuntime);
             },
             authTotpChallenge(_session: GqlSSession, __: unknown, requestingSession: GqlSSession) {
                 return sessionAuthTotpChallengeFindOne(requestingSession, serverRuntime);
@@ -1209,6 +1218,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return adminAnalyticsCookBookingRequestOfferFlow(args.range, requestingSession, serverRuntime);
+            },
+            signInMethodStats(_parent: GqlSAdmin, args: GqlSAdminSignInMethodStatsArgs, requestingSession: GqlSSession) {
+                return adminAnalyticsSignInMethodStats(args.range, requestingSession, serverRuntime);
             },
             sessionEventWebPageVisitCreations(
                 _parent: GqlSAdmin,
@@ -2012,6 +2024,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
         AdminUser: {
             passkeys(parentUser: GqlSAdminUser) {
                 return adminUserPasskeysFindMany(parentUser, serverRuntime);
+            },
+            oauthIdentities(parentUser: GqlSAdminUser) {
+                return adminUserOauthIdentitiesFindMany(parentUser, serverRuntime);
             },
             timeBasedOneTimePassword(parentUser: GqlSAdminUser) {
                 return adminUserTimeBasedOneTimePasswordFindOne(parentUser, serverRuntime);
@@ -2967,6 +2982,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             authEmailOtpDelete(_parent: unknown, args: GqlSMutationAuthEmailOtpDeleteArgs, requestingSession: GqlSSession) {
                 return authEmailOtpDelete(args, requestingSession, serverRuntime);
+            },
+            authOauthTicketDelete(_parent: unknown, args: GqlSMutationAuthOauthTicketDeleteArgs, requestingSession: GqlSSession) {
+                return authOauthTicketDelete(args, requestingSession, serverRuntime);
             },
             userCreate(_parent: unknown, args: GqlSMutationUserCreateArgs, requestingSession: GqlSSession) {
                 return userCreate(args, requestingSession, serverRuntime);
