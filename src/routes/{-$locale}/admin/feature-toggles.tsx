@@ -6,12 +6,14 @@ import {
     AdminFeatureTogglesPage,
     adminFeatureTogglesPageDescription,
     adminFeatureTogglesPageTitle,
+    parseAdminFeatureTogglesSearch,
 } from '../../../web/pages/admin/AdminFeatureTogglesPage';
 import { seoMeta } from '../../../web/seo/seoMeta';
 import { webPageUrlGet } from '../../../web/seo/webPageUrlGet';
 import { localeFromParam } from '../../../web/utils/locale';
 
 export const Route = createFileRoute('/{-$locale}/admin/feature-toggles')({
+    validateSearch: (search: Record<string, unknown>) => parseAdminFeatureTogglesSearch(search),
     loader: routeLoaderGraphqlClient(AdminFeatureTogglesPageDocument),
     staleTime: 0,
     head: ({ params }) => {
@@ -26,6 +28,6 @@ export const Route = createFileRoute('/{-$locale}/admin/feature-toggles')({
         });
     },
     component() {
-        return <AdminFeatureTogglesPage data={Route.useLoaderData()} />;
+        return <AdminFeatureTogglesPage data={Route.useLoaderData()} search={Route.useSearch()} />;
     },
 });

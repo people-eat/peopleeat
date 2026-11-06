@@ -55,11 +55,16 @@ global on/off switch, and a user-plus control to add overrides. Toggling the glo
 feature does and that per-user overrides still win. Existing **user overrides** for a key appear on the card only when at least one is set.
 Live updates via admin updates seed-and-subscribe.
 
-Toolbar (client-side):
+Toolbar (client-side, stored in the URL so reload / share / back keep the lens). Defaults omit the key:
 
-- search by bilingual label or enum key
-- filter by status (enabled / disabled), configuration (configured / not configured), and whether overrides exist
-- sort by name, key, recently updated, most overrides, or enabled first
+- `q`: search by bilingual label or enum key
+- `status`: `enabled` / `disabled`
+- `config`: `configured` / `not-configured`
+- `overrides`: `with-overrides` / `without-overrides`
+- `sort`: `key-asc`, `updated-desc`, `overrides-desc`, or `enabled-first` (name A to Z is the omitted default)
+
+The page has no in-body title (admin chrome breadcrumbs identify it). On wide panes the filters sit on the same row as the search field; on
+a narrow pane the search takes a full row and the filters wrap underneath.
 
 Per key, operators can:
 
@@ -187,7 +192,8 @@ present.
   `adminFeatureToggleUserOverrideFindManyByKey`, `adminFeatureToggleUserOverrideUpsert`, `adminFeatureToggleUserOverrideDelete`,
   `sessionFeatureToggleFindActive` (user-aware), `featureToggleIsEnabled` (user-aware), `toGqlAdminFeatureToggle`,
   `toGqlAdminFeatureToggleUserOverride`
-- Admin UI: `AdminFeatureTogglesPage` (global + per-key overrides, enable/disable confirm with feature description);
-  `AdminUserFeatureTogglesSection` on user Feature toggles tab; labels/descriptions/helpers in `adminFeatureToggles.ts`
+- Admin UI: `AdminFeatureTogglesPage` (global + per-key overrides, enable/disable confirm with feature description, list filters in URL `q`
+  / `status` / `config` / `overrides` / `sort`); `AdminUserFeatureTogglesSection` on user Feature toggles tab; labels/descriptions/helpers
+  in `adminFeatureToggles.ts`
 
 See [admin-shell.md](./admin-shell.md).

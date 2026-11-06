@@ -1,6 +1,6 @@
-import { Link } from '@tanstack/react-router';
-import { ToggleRightIcon, UserPlusIcon, XIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Link, useNavigate } from '@tanstack/react-router';
+import { UserPlusIcon, XIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation, useQuery } from 'urql';
 import { pipe, subscribe } from 'wonka';
@@ -66,6 +66,48 @@ type StatusFilter = 'all' | 'enabled' | 'disabled';
 type ConfigFilter = 'all' | 'configured' | 'not-configured';
 type OverrideFilter = 'all' | 'with-overrides' | 'without-overrides';
 type SortOption = 'label-asc' | 'key-asc' | 'updated-desc' | 'overrides-desc' | 'enabled-first';
+
+const ADMIN_FEATURE_TOGGLE_STATUS_VALUES = ['enabled', 'disabled'] as const;
+const ADMIN_FEATURE_TOGGLE_CONFIG_VALUES = ['configured', 'not-configured'] as const;
+const ADMIN_FEATURE_TOGGLE_OVERRIDE_VALUES = ['with-overrides', 'without-overrides'] as const;
+const ADMIN_FEATURE_TOGGLE_SORT_VALUES = ['key-asc', 'updated-desc', 'overrides-desc', 'enabled-first'] as const;
+
+export type AdminFeatureTogglesSearch = {
+    q?: string;
+    status?: (typeof ADMIN_FEATURE_TOGGLE_STATUS_VALUES)[number];
+    config?: (typeof ADMIN_FEATURE_TOGGLE_CONFIG_VALUES)[number];
+    overrides?: (typeof ADMIN_FEATURE_TOGGLE_OVERRIDE_VALUES)[number];
+    sort?: (typeof ADMIN_FEATURE_TOGGLE_SORT_VALUES)[number];
+};
+
+function parseAdminFeatureTogglesSearchValue<T extends string>(value: unknown, allowed: readonly T[]): T | undefined {
+    return typeof value === 'string' && (allowed as readonly string[]).includes(value) ? (value as T) : undefined;
+}
+
+export function parseAdminFeatureTogglesSearch(search: Record<string, unknown>): AdminFeatureTogglesSearch {
+    const q = typeof search.q === 'string' && search.q.trim().length > 0 ? search.q.trim() : undefined;
+    return {
+        q,
+        status: parseAdminFeatureTogglesSearchValue(search.status, ADMIN_FEATURE_TOGGLE_STATUS_VALUES),
+        config: parseAdminFeatureTogglesSearchValue(search.config, ADMIN_FEATURE_TOGGLE_CONFIG_VALUES),
+        overrides: parseAdminFeatureTogglesSearchValue(search.overrides, ADMIN_FEATURE_TOGGLE_OVERRIDE_VALUES),
+        sort: parseAdminFeatureTogglesSearchValue(search.sort, ADMIN_FEATURE_TOGGLE_SORT_VALUES),
+    };
+}
+
+export function adminFeatureTogglesSearchForUrl(search: AdminFeatureTogglesSearch): AdminFeatureTogglesSearch {
+    return {
+        q: search.q,
+        status: search.status,
+        config: search.config,
+        overrides: search.overrides,
+        sort: search.sort,
+    };
+}
+
+function adminFeatureTogglesHasActiveFilters(search: AdminFeatureTogglesSearch): boolean {
+    return search.q != null || search.status != null || search.config != null || search.overrides != null || search.sort != null;
+}
 
 function userOptionLabel(user: UserOption): string {
     return user.emailAddress ? `${userDisplayName(user)} · ${user.emailAddress}` : userDisplayName(user);
@@ -433,21 +475,18 @@ function featureToggleMatchesSearch(featureToggle: FeatureToggleRow, query: stri
 
 function featureTogglesFilteredSorted({
     featureToggles,
-    searchQuery,
-    statusFilter,
-    configFilter,
-    overrideFilter,
-    sort,
+    search,
     locale,
 }: {
     featureToggles: FeatureToggleRow[];
-    searchQuery: string;
-    statusFilter: StatusFilter;
-    configFilter: ConfigFilter;
-    overrideFilter: OverrideFilter;
-    sort: SortOption;
+    search: AdminFeatureTogglesSearch;
     locale: 'de' | 'en';
 }): FeatureToggleRow[] {
+    const searchQuery = (search.q ?? '').toLowerCase();
+    const statusFilter: StatusFilter = search.status ?? 'all';
+    const configFilter: ConfigFilter = search.config ?? 'all';
+    const overrideFilter: OverrideFilter = search.overrides ?? 'all';
+    const sort: SortOption = search.sort ?? 'label-asc';
     const filtered = featureToggles.filter((featureToggle) => {
         if (!featureToggleMatchesSearch(featureToggle, searchQuery, locale)) return false;
         if (statusFilter === 'enabled' && !featureToggle.enabled) return false;
@@ -496,19 +535,18 @@ function featureTogglesFilteredSorted({
     return sorted;
 }
 
-export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureTogglesPageQuery }) {
+export function AdminFeatureTogglesPage({ data, search }: { data: GqlCAdminFeatureTogglesPageQuery; search: AdminFeatureTogglesSearch }) {
     const locale = useLocale();
+    const navigate = useNavigate({ from: '/{-$locale}/admin/feature-toggles' });
     const client = useClient();
     const seed = data.currentSession.user?.admin ?? null;
     const [admin, setAdmin] = useState(seed);
     const [busyKey, setBusyKey] = useState<GqlCFeatureToggleKey | null>(null);
     const [busyUserKey, setBusyUserKey] = useState<string | null>(null);
-    const [draftSearch, setDraftSearch] = useState('');
-    const debouncedSearch = useDebouncedValue(draftSearch, 200);
-    const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-    const [configFilter, setConfigFilter] = useState<ConfigFilter>('all');
-    const [overrideFilter, setOverrideFilter] = useState<OverrideFilter>('all');
-    const [sort, setSort] = useState<SortOption>('label-asc');
+    const [draftQ, setDraftQ] = useState(search.q ?? '');
+    const debouncedQ = useDebouncedValue(draftQ, 300);
+    const searchRef = useRef(search);
+    searchRef.current = search;
     const [, featureToggleUpsert] = useMutation(AdminFeatureToggleUpsertDocument);
     const [, upsertOverride] = useMutation(AdminFeatureToggleUserOverrideUpsertDocument);
     const [, deleteOverride] = useMutation(AdminFeatureToggleUserOverrideDeleteDocument);
@@ -525,30 +563,41 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
         return unsubscribe;
     }, [client, seed]);
 
+    useEffect(() => {
+        setDraftQ(search.q ?? '');
+    }, [search.q]);
+
+    useEffect(() => {
+        const current = searchRef.current;
+        const nextQ = debouncedQ.trim() || undefined;
+        if (nextQ === current.q) return;
+        void navigate({
+            search: adminFeatureTogglesSearchForUrl({
+                ...current,
+                q: nextQ,
+            }),
+            replace: true,
+        });
+    }, [debouncedQ, navigate]);
+
     const featureToggles = admin?.featureToggles ?? [];
-    const searchQuery = debouncedSearch.trim().toLowerCase();
-    const hasActiveFilters =
-        draftSearch.trim().length > 0 ||
-        statusFilter !== 'all' ||
-        configFilter !== 'all' ||
-        overrideFilter !== 'all' ||
-        sort !== 'label-asc';
+    const hasActiveFilters = adminFeatureTogglesHasActiveFilters(search) || draftQ.trim().length > 0;
     const visibleFeatureToggles = featureTogglesFilteredSorted({
         featureToggles,
-        searchQuery,
-        statusFilter,
-        configFilter,
-        overrideFilter,
-        sort,
+        search,
         locale,
     });
 
+    function updateSearch(next: AdminFeatureTogglesSearch) {
+        void navigate({
+            search: adminFeatureTogglesSearchForUrl(next),
+            replace: true,
+        });
+    }
+
     function clearFilters() {
-        setDraftSearch('');
-        setStatusFilter('all');
-        setConfigFilter('all');
-        setOverrideFilter('all');
-        setSort('label-asc');
+        setDraftQ('');
+        updateSearch({});
     }
 
     async function onToggle(featureToggleKey: GqlCFeatureToggleKey, enabled: boolean) {
@@ -616,35 +665,31 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
 
     return (
         <AdminPathPageChrome>
-            <main id="main-content" className="grid w-full content-start gap-8">
-                <h1 className="flex items-center gap-3 font-serif text-4xl/tight text-foreground">
-                    <ToggleRightIcon className="size-8 text-muted-foreground" aria-hidden />
-                    {adminFeatureTogglesPageTitle[locale]}
-                </h1>
-
-                <div className="grid gap-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <Input
-                            type="search"
-                            value={draftSearch}
-                            onChange={(event) => setDraftSearch(event.target.value)}
-                            placeholder={{ de: 'Name oder Key suchen…', en: 'Search name or key…' }[locale]}
-                            aria-label={{ de: 'Feature Toggles suchen', en: 'Search feature toggles' }[locale]}
-                            className="max-w-sm"
-                        />
-                        <p className="text-sm text-muted-foreground tabular-nums">
-                            {
-                                {
-                                    de: `${visibleFeatureToggles.length} von ${featureToggles.length}`,
-                                    en: `${visibleFeatureToggles.length} of ${featureToggles.length}`,
-                                }[locale]
+            <main id="main-content" className="@container grid w-full content-start gap-6">
+                <div className="flex flex-wrap items-center gap-3">
+                    <Input
+                        type="search"
+                        value={draftQ}
+                        onChange={(event) => setDraftQ(event.target.value)}
+                        placeholder={{ de: 'Name oder Key suchen…', en: 'Search name or key…' }[locale]}
+                        aria-label={{ de: 'Feature Toggles suchen', en: 'Search feature toggles' }[locale]}
+                        className="w-full min-w-0 basis-full @5xl:max-w-sm @5xl:flex-1 @5xl:basis-56"
+                    />
+                    <div className="flex w-full min-w-0 flex-wrap items-center gap-3 @5xl:w-auto @5xl:flex-1">
+                        <Select
+                            value={search.status ?? 'all'}
+                            onValueChange={(value) =>
+                                updateSearch({
+                                    ...search,
+                                    status: value === 'enabled' || value === 'disabled' ? value : undefined,
+                                })
                             }
-                        </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                        <Select value={statusFilter} onValueChange={(value) => setStatusFilter((value as StatusFilter) ?? 'all')}>
-                            <SelectTrigger size="sm" aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}>
+                        >
+                            <SelectTrigger
+                                size="sm"
+                                className="w-auto shrink-0"
+                                aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}
+                            >
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -654,8 +699,20 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
                             </SelectContent>
                         </Select>
 
-                        <Select value={configFilter} onValueChange={(value) => setConfigFilter((value as ConfigFilter) ?? 'all')}>
-                            <SelectTrigger size="sm" aria-label={{ de: 'Konfiguration filtern', en: 'Filter by configuration' }[locale]}>
+                        <Select
+                            value={search.config ?? 'all'}
+                            onValueChange={(value) =>
+                                updateSearch({
+                                    ...search,
+                                    config: value === 'configured' || value === 'not-configured' ? value : undefined,
+                                })
+                            }
+                        >
+                            <SelectTrigger
+                                size="sm"
+                                className="w-auto shrink-0"
+                                aria-label={{ de: 'Konfiguration filtern', en: 'Filter by configuration' }[locale]}
+                            >
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -665,8 +722,20 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
                             </SelectContent>
                         </Select>
 
-                        <Select value={overrideFilter} onValueChange={(value) => setOverrideFilter((value as OverrideFilter) ?? 'all')}>
-                            <SelectTrigger size="sm" aria-label={{ de: 'Ausnahmen filtern', en: 'Filter by overrides' }[locale]}>
+                        <Select
+                            value={search.overrides ?? 'all'}
+                            onValueChange={(value) =>
+                                updateSearch({
+                                    ...search,
+                                    overrides: value === 'with-overrides' || value === 'without-overrides' ? value : undefined,
+                                })
+                            }
+                        >
+                            <SelectTrigger
+                                size="sm"
+                                className="w-auto shrink-0"
+                                aria-label={{ de: 'Ausnahmen filtern', en: 'Filter by overrides' }[locale]}
+                            >
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -678,8 +747,22 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
                             </SelectContent>
                         </Select>
 
-                        <Select value={sort} onValueChange={(value) => setSort((value as SortOption) ?? 'label-asc')}>
-                            <SelectTrigger size="sm" aria-label={{ de: 'Sortierung', en: 'Sort' }[locale]}>
+                        <Select
+                            value={search.sort ?? 'label-asc'}
+                            onValueChange={(value) =>
+                                updateSearch({
+                                    ...search,
+                                    sort:
+                                        value === 'key-asc' ||
+                                        value === 'updated-desc' ||
+                                        value === 'overrides-desc' ||
+                                        value === 'enabled-first'
+                                            ? value
+                                            : undefined,
+                                })
+                            }
+                        >
+                            <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={{ de: 'Sortierung', en: 'Sort' }[locale]}>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -697,12 +780,21 @@ export function AdminFeatureTogglesPage({ data }: { data: GqlCAdminFeatureToggle
                             <Button
                                 type="button"
                                 variant="link"
-                                className="h-auto p-0 text-sm text-muted-foreground"
+                                className="h-auto shrink-0 p-0 text-sm text-muted-foreground"
                                 onClick={clearFilters}
                             >
                                 {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
                             </Button>
                         ) : null}
+
+                        <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
+                            {
+                                {
+                                    de: `${visibleFeatureToggles.length} von ${featureToggles.length}`,
+                                    en: `${visibleFeatureToggles.length} of ${featureToggles.length}`,
+                                }[locale]
+                            }
+                        </p>
                     </div>
                 </div>
 
