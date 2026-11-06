@@ -31,6 +31,8 @@ Rules:
   `cookIsEligibleForBookingRequestPool` rule as the pool list (skipping users the caller already published).
 - Rules run in `src/server/domain/` as pure functions over plain inputs; queries only load rows and reuse the existing status derivations
   (`bookingRequestStatusDerive`, `bookingRequestOfferStatusDerive`, `cookStripeStatusDerive`), so attention and lists agree on status.
+  Customer `KITCHEN_DETAILS_MISSING` applies when `BOOKING_REQUEST_KITCHEN_DETAILS` is on, the request is still open (`WAITING_FOR_OFFERS` /
+  `OFFERS_WAITING_FOR_REVIEW`), and `kitchenDetails` plus photos are empty; it routes to the request, not a second email.
 - Fields are additive and named by meaning (`bookingRequestOfferUnreadCount`), not by UI (`sidebarBadge`), so native app-icon badges and
   push can reuse them.
 

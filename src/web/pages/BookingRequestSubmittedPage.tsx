@@ -1,10 +1,22 @@
 import { Link } from '@tanstack/react-router';
 import { XIcon } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { useMutation } from 'urql';
 
+import { bookingRequestKitchenDetailsDraftEmpty, bookingRequestKitchenDetailsDraftIsEmpty, featureToggleIsActive } from '../../shared';
 import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
 import { StatusAlert } from '../components/base/status-alert';
+import {
+    bookingRequestKitchenDetailsDraftFromGql,
+    bookingRequestKitchenDetailsInputFromDraft,
+    bookingRequestKitchenDetailsPhotosFromGql,
+    BookingRequestKitchenDetailsSaveCard,
+} from '../components/BookingRequestKitchenDetailsFields';
+import type { BookingRequestKitchenDetailsPhoto } from '../components/BookingRequestKitchenDetailsFields';
 import type { GqlCBookingRequestSubmittedPageQuery } from '../graphql/generated';
+import { BookingRequestSubmittedKitchenDetailsUpdateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
 import { SITE_LOGO, SITE_LOGO_DISPLAY, SITE_LOGO_SRC_SET, SITE_NAME } from '../seo/seoConstants';
 import { cn } from '../utils/cn';
@@ -93,10 +105,28 @@ export function BookingRequestSubmittedPage({
     const locale = useLocale();
     const bookingRequest = data.currentSession.user?.bookingRequest;
     const steps = nextSteps(locale);
+    const kitchenEnabled = featureToggleIsActive(data.currentSession.activeFeatureToggleKeys, 'BOOKING_REQUEST_KITCHEN_DETAILS');
+    const [, updateKitchenDetails] = useMutation(BookingRequestSubmittedKitchenDetailsUpdateDocument);
+    const [kitchenDraft, setKitchenDraft] = useState(() => {
+        const existing = data.currentSession.user?.bookingRequest?.kitchenDetails;
+        return existing == null ? bookingRequestKitchenDetailsDraftEmpty : bookingRequestKitchenDetailsDraftFromGql(existing);
+    });
+    const [kitchenPhotos, setKitchenPhotos] = useState<BookingRequestKitchenDetailsPhoto[]>(() =>
+        bookingRequestKitchenDetailsPhotosFromGql(data.currentSession.user?.bookingRequest?.kitchenDetails?.photos),
+    );
+    const [kitchenBusy, setKitchenBusy] = useState(false);
+    const [kitchenError, setKitchenError] = useState<string | null>(null);
+    const [kitchenSaved, setKitchenSaved] = useState(false);
 
     if (!bookingRequest) {
         return null;
     }
+
+    const kitchenEmpty = bookingRequestKitchenDetailsDraftIsEmpty(
+        bookingRequestKitchenDetailsDraftFromGql(bookingRequest.kitchenDetails),
+        bookingRequest.kitchenDetails?.photos.length ?? 0,
+    );
+    const showKitchenCard = kitchenEnabled && kitchenEmpty && !kitchenSaved;
 
     return (
         <main id="main-content" className="flex h-dvh flex-col">
@@ -124,6 +154,48 @@ export function BookingRequestSubmittedPage({
 
             <div data-scroll-restoration-id="booking-form" className="min-h-0 flex-1 overflow-y-auto pt-14 scrollbar-gutter-stable">
                 <div className="mx-auto grid w-full max-w-3xl gap-10 p-4 lg:mt-12 lg:gap-14">
+                    {showKitchenCard ? (
+                        <BookingRequestKitchenDetailsSaveCard
+                            locale={locale}
+                            value={kitchenDraft}
+                            photos={kitchenPhotos}
+                            busy={kitchenBusy}
+                            error={kitchenError}
+                            onChange={setKitchenDraft}
+                            onPhotosChange={setKitchenPhotos}
+                            onSave={async () => {
+                                if (bookingRequestKitchenDetailsDraftIsEmpty(kitchenDraft, kitchenPhotos.length)) return;
+                                setKitchenBusy(true);
+                                setKitchenError(null);
+                                try {
+                                    const result = await updateKitchenDetails({
+                                        bookingRequestId,
+                                        kitchenDetails: bookingRequestKitchenDetailsInputFromDraft(kitchenDraft),
+                                        photoFileUploadIds: kitchenPhotos.map((photo) => photo.fileUploadId),
+                                    });
+                                    if (result.error || !result.data?.user.bookingRequestKitchenDetailsUpdate.success) {
+                                        throw new Error('kitchen details update failed');
+                                    }
+                                    setKitchenSaved(true);
+                                    toast.success(
+                                        {
+                                            de: 'Küchendetails gespeichert.',
+                                            en: 'Kitchen details saved.',
+                                        }[locale],
+                                    );
+                                } catch {
+                                    setKitchenError(
+                                        {
+                                            de: 'Küchendetails konnten nicht gespeichert werden.',
+                                            en: 'Could not save kitchen details.',
+                                        }[locale],
+                                    );
+                                } finally {
+                                    setKitchenBusy(false);
+                                }
+                            }}
+                        />
+                    ) : null}
                     <section className="grid gap-8 lg:gap-10">
                         <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">
                             {{ de: 'Wie geht es weiter?', en: 'What happens next?' }[locale]}

@@ -22,12 +22,21 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useClient, useMutation, useQuery } from 'urql';
 
-import type { BookingRequestFormFunnelStep, BookingRequestFormPriceClassType, BookingRequestParticipantDraft, Locale } from '../../shared';
+import type {
+    BookingRequestFormFunnelStep,
+    BookingRequestFormLocationSettingChoice,
+    BookingRequestFormPriceClassType,
+    BookingRequestParticipantDraft,
+    BookingRequestSettingChoice,
+    Locale,
+} from '../../shared';
 import {
     bookingRequestFormFunnelArea,
     bookingRequestParticipantsFromCounts,
     bookingRequestPriceClassInfo,
     bookingRequestPriceClassTypes,
+    bookingRequestSettingFromChoice,
+    bookingRequestSettingLabel,
     dateDistanceInDaysToToday,
     defaultBookingRequestOccasions,
     defaultBookingRequestPreferences,
@@ -52,6 +61,7 @@ import { Textarea } from '../components/base/textarea';
 import { TimePicker } from '../components/base/time-picker';
 import { BookingRequestFormBackNext, BookingRequestFormStepLayout } from '../components/BookingRequestFormStepLayout';
 import { BookingRequestParticipantsRestrictionsEditor } from '../components/BookingRequestParticipantsRestrictionsEditor';
+import { BookingRequestSettingPicker } from '../components/BookingRequestSettingPicker';
 import { SelectableChip } from '../components/SelectableChip';
 import type {
     GqlCAuthSessionFieldsFragment,
@@ -100,6 +110,7 @@ type BookingFormValues = {
     preferences: string[];
     originalMessage: string;
     redeemCode: string;
+    settingChoice: BookingRequestSettingChoice;
 };
 
 const occasionIcons = [
@@ -240,6 +251,7 @@ function createInputFromValues(
     values: BookingFormValues,
     participants: readonly BookingRequestParticipantDraft[],
     confirmedDiscount: ConfirmedDiscount | null,
+    settingEnabled: boolean,
 ): GqlCUserBookingRequestCreate | null {
     if (!values.exactEventAddress || !values.priceClassType) return null;
     if (values.adultCount < 1) return null;
@@ -257,6 +269,7 @@ function createInputFromValues(
         })),
         priceClassType: values.priceClassType,
         redeemCode: confirmedDiscount?.redeemCode ?? null,
+        setting: settingEnabled ? bookingRequestSettingFromChoice(values.settingChoice) : null,
     };
 }
 
@@ -284,6 +297,7 @@ export function BookingRequestFormPage({
     const [session, setSession] = useState<GqlCAuthSessionFieldsFragment>(loaderData.currentSession);
     const signedIn = sessionAuthPhase(session) === 'signedIn';
     const restrictionsEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_RESTRICTIONS');
+    const settingEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_SETTING');
     const contentSteps = bookingRequestFormContentSteps(restrictionsEnabled);
     const [step, setStep] = useState<FormStep>(() => initialStepFromSearch(search, signedIn, contentSteps));
     const [busy, setBusy] = useState(false);
@@ -319,6 +333,7 @@ export function BookingRequestFormPage({
             preferences: seededValues.preferences,
             originalMessage: seededValues.originalMessage,
             redeemCode: seededValues.redeemCode,
+            settingChoice: seededValues.settingChoice,
         } satisfies BookingFormValues,
     });
 
@@ -378,6 +393,7 @@ export function BookingRequestFormPage({
         preferences: values.preferences,
         originalMessage: values.originalMessage,
         redeemCode: values.redeemCode,
+        settingChoice: values.settingChoice,
         step,
     });
     const debouncedDraftKey = useDebouncedValue(draftKey, 300);
@@ -400,6 +416,7 @@ export function BookingRequestFormPage({
             preferences: string[];
             originalMessage: string;
             redeemCode: string;
+            settingChoice: BookingRequestSettingChoice;
             step: FormStep;
         };
         const nextSearch = bookingRequestFormSearchFromValues({
@@ -414,6 +431,7 @@ export function BookingRequestFormPage({
                 preferences: draft.preferences,
                 originalMessage: draft.originalMessage,
                 redeemCode: draft.redeemCode,
+                settingChoice: settingEnabled ? draft.settingChoice : null,
             },
             step: draft.step,
             minDateTime: search.minDateTime,
@@ -421,7 +439,7 @@ export function BookingRequestFormPage({
         });
         if (bookingRequestFormSearchEqual(nextSearch, search)) return;
         void navigate({ search: nextSearch, replace: true });
-    }, [debouncedDraftKey, navigate, search]);
+    }, [debouncedDraftKey, navigate, search, settingEnabled]);
 
     const stepList: FormStep[] = signedIn ? [...contentSteps] : [...contentSteps, 'auth'];
     const contentStepIndex = contentSteps.indexOf(step as ContentStep);
@@ -460,7 +478,7 @@ export function BookingRequestFormPage({
             );
             return;
         }
-        const input = createInputFromValues(values, participants, confirmedDiscount);
+        const input = createInputFromValues(values, participants, confirmedDiscount, settingEnabled);
         if (!input) {
             toast.error(
                 {
@@ -526,7 +544,21 @@ export function BookingRequestFormPage({
             return;
         }
         if (step === 'auth') return;
-        trackFunnelStep('step_completed', step);
+        if (step === 'location' && settingEnabled) {
+            const setting: BookingRequestFormLocationSettingChoice =
+                values.settingChoice === 'INDOOR' || values.settingChoice === 'OUTDOOR' || values.settingChoice === 'LATER'
+                    ? values.settingChoice
+                    : 'skipped';
+            void trackFunnelInteraction({
+                input: {
+                    webPageKey: 'BOOKING_REQUEST_FORM',
+                    area: bookingRequestFormFunnelArea,
+                    interaction: { type: 'step_completed', step: 'location', setting },
+                },
+            });
+        } else {
+            trackFunnelStep('step_completed', step);
+        }
         const index = contentSteps.indexOf(step);
         const next = contentSteps[index + 1];
         if (next) setStep(next);
@@ -806,6 +838,18 @@ export function BookingRequestFormPage({
                                                             {values.exactEventAddress.displayText}
                                                         </span>
                                                     </StatusAlert>
+                                                ) : null}
+                                                {settingEnabled && values.exactEventAddress ? (
+                                                    <form.Field name="settingChoice">
+                                                        {(settingField) => (
+                                                            <BookingRequestSettingPicker
+                                                                locale={locale}
+                                                                value={settingField.state.value}
+                                                                disabled={busy}
+                                                                onChange={(next) => settingField.handleChange(next)}
+                                                            />
+                                                        )}
+                                                    </form.Field>
                                                 ) : null}
                                             </div>
                                         );
@@ -1256,8 +1300,14 @@ function completedStepSummary(
                 title: sideBarTitle,
                 summary: formatParticipants({ adultCount: values.adultCount, discountedCount: values.discountedCount }, { locale }),
             };
-        case 'location':
-            return { title: sideBarTitle, summary: values.exactEventAddress?.displayText ?? values.locationSearchText };
+        case 'location': {
+            const address = values.exactEventAddress?.displayText ?? values.locationSearchText;
+            const settingLabel =
+                values.settingChoice === 'INDOOR' || values.settingChoice === 'OUTDOOR'
+                    ? bookingRequestSettingLabel(values.settingChoice, locale)
+                    : null;
+            return { title: sideBarTitle, summary: settingLabel ? `${address} · ${settingLabel}` : address };
+        }
         case 'dateTime':
             return {
                 title: sideBarTitle,

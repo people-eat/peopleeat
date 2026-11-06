@@ -1,5 +1,7 @@
 import { bookingRequestPriceClassTypes, defaultBookingRequestDateTime } from '../../shared/bookingRequestFormDefaults';
 import type { BookingRequestFormPriceClassType } from '../../shared/bookingRequestFormDefaults';
+import type { BookingRequestSettingChoice } from '../../shared/bookingRequestSetting';
+import { bookingRequestSettingChoiceParse } from '../../shared/bookingRequestSetting';
 import type { GqlCUserBookingRequestExactEventAddressInput } from '../graphql/generated';
 
 const BASE_CONTENT_STEPS = ['occasion', 'participants', 'location', 'dateTime', 'priceClass', 'preferences', 'message'] as const;
@@ -42,6 +44,8 @@ export type BookingRequestFormSearch = {
     postCode?: string;
     state?: string;
     country?: string;
+    /** Indoor / outdoor / later. Omitted when skipped or the toggle is off. */
+    setting?: Exclude<BookingRequestSettingChoice, null>;
     step?: BookingRequestFormStep;
 };
 
@@ -176,6 +180,7 @@ export function parseBookingRequestFormSearch(search: Record<string, unknown>): 
     const postCode = typeof search.postCode === 'string' && search.postCode.trim().length > 0 ? search.postCode : undefined;
     const state = typeof search.state === 'string' && search.state.trim().length > 0 ? search.state : undefined;
     const country = typeof search.country === 'string' && search.country.trim().length > 0 ? search.country : undefined;
+    const setting = bookingRequestSettingChoiceParse(search.setting);
     const step = isFormStep(search.step) ? search.step : undefined;
 
     const bounds = bookingRequestFormDateTimeBoundsFromSearch({ minDateTime, maxDateTime });
@@ -200,6 +205,7 @@ export function parseBookingRequestFormSearch(search: Record<string, unknown>): 
         postCode,
         state,
         country,
+        setting,
         step,
     };
 }
@@ -249,6 +255,7 @@ export function bookingRequestFormValuesFromSearch(search: BookingRequestFormSea
         preferences: search.preferences ?? [],
         originalMessage: search.message ?? '',
         redeemCode: search.redeemCode ?? '',
+        settingChoice: search.setting ?? null,
     };
 }
 
@@ -264,6 +271,7 @@ export function bookingRequestFormSearchFromValues(input: {
         preferences: string[];
         originalMessage: string;
         redeemCode: string;
+        settingChoice: BookingRequestSettingChoice;
     };
     step: BookingRequestFormStep;
     minDateTime?: string;
@@ -291,6 +299,7 @@ export function bookingRequestFormSearchFromValues(input: {
         postCode: address?.postCode || undefined,
         state: address?.state || undefined,
         country: address?.country || undefined,
+        setting: values.settingChoice ?? undefined,
         step: step === 'occasion' ? undefined : step,
     };
 }
@@ -321,6 +330,7 @@ export function bookingRequestFormSearchEqual(a: BookingRequestFormSearch, b: Bo
         a.postCode === b.postCode &&
         a.state === b.state &&
         a.country === b.country &&
+        a.setting === b.setting &&
         a.step === b.step
     );
 }

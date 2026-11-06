@@ -23,6 +23,7 @@ function requestFixture(overrides: Partial<UserAttentionRequest> = {}): UserAtte
         status: 'WAITING_FOR_OFFERS',
         occasion: 'Birthday',
         dateTime: new Date('2026-12-01T18:00:00.000Z'),
+        kitchenDetailsMissing: false,
         offers: [],
         ...overrides,
     };
@@ -203,6 +204,31 @@ describe('userAttentionDerive', () => {
                 bookingRequestId: 'req-recent',
                 bookingRequestOfferId: 'offer-recent',
                 occasion: 'Past dinner',
+                callStartAt: null,
+                callEndAt: null,
+            },
+        ]);
+    });
+
+    it('surfaces missing kitchen details on open requests after calls and before reviews', () => {
+        const requests = [
+            requestFixture({
+                bookingRequestId: 'req-kitchen',
+                status: 'WAITING_FOR_OFFERS',
+                occasion: 'Garden party',
+                kitchenDetailsMissing: true,
+            }),
+        ];
+
+        const items = userAttentionDerive(requests);
+
+        expect(items).toEqual([
+            {
+                kind: 'KITCHEN_DETAILS_MISSING',
+                count: 1,
+                bookingRequestId: 'req-kitchen',
+                bookingRequestOfferId: null,
+                occasion: 'Garden party',
                 callStartAt: null,
                 callEndAt: null,
             },

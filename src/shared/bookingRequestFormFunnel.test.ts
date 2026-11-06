@@ -14,4 +14,9 @@ describe('bookingRequestFormFunnel', () => {
         expect(isBookingRequestFormFunnelStep('created')).toBe(true);
         expect(isBookingRequestFormFunnelStep('unknown')).toBe(false);
     });
+
+    it('does not add a dedicated setting funnel step', () => {
+        expect(bookingRequestFormFunnelSteps).not.toContain('setting');
+        expect(isBookingRequestFormFunnelStep('setting')).toBe(false);
+    });
 });

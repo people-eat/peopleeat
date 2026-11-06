@@ -5,6 +5,8 @@ import type { Database } from '../db';
 import {
     admins,
     blogPosts,
+    bookingRequestCooks,
+    bookingRequestKitchenDetailsPhotos,
     bookingRequestOfferEventAttachments,
     bookingRequestOfferEvents,
     bookingRequestOffers,
@@ -380,4 +382,45 @@ export async function fileUploadAccessibleViaSupportRequest(db: Database, fileUp
 export async function userIsAdmin(db: Database, userId: string): Promise<boolean> {
     const [row] = await db.select({ adminId: admins.adminId }).from(admins).where(eq(admins.adminId, userId)).limit(1);
     return Boolean(row);
+}
+
+/**
+ * True when `userId` may download a kitchen-details photo: the request owner,
+ * a cook with pool affinity or an offer on that request, or any admin.
+ */
+export async function fileUploadAccessibleViaBookingRequestKitchenDetails(
+    db: Database,
+    fileUploadId: string,
+    userId: string,
+): Promise<boolean> {
+    if (await userIsAdmin(db, userId)) {
+        const [hit] = await db
+            .select({ bookingRequestId: bookingRequestKitchenDetailsPhotos.bookingRequestId })
+            .from(bookingRequestKitchenDetailsPhotos)
+            .where(eq(bookingRequestKitchenDetailsPhotos.fileUploadId, fileUploadId))
+            .limit(1);
+        return Boolean(hit);
+    }
+
+    const [ownerHit] = await db
+        .select({ bookingRequestId: bookingRequestKitchenDetailsPhotos.bookingRequestId })
+        .from(bookingRequestKitchenDetailsPhotos)
+        .innerJoin(bookingRequests, eq(bookingRequests.bookingRequestId, bookingRequestKitchenDetailsPhotos.bookingRequestId))
+        .where(and(eq(bookingRequestKitchenDetailsPhotos.fileUploadId, fileUploadId), eq(bookingRequests.userId, userId)))
+        .limit(1);
+    if (ownerHit) return true;
+
+    const [cookHit] = await db
+        .select({ bookingRequestId: bookingRequestKitchenDetailsPhotos.bookingRequestId })
+        .from(bookingRequestKitchenDetailsPhotos)
+        .leftJoin(bookingRequestCooks, eq(bookingRequestCooks.bookingRequestId, bookingRequestKitchenDetailsPhotos.bookingRequestId))
+        .leftJoin(bookingRequestOffers, eq(bookingRequestOffers.bookingRequestId, bookingRequestKitchenDetailsPhotos.bookingRequestId))
+        .where(
+            and(
+                eq(bookingRequestKitchenDetailsPhotos.fileUploadId, fileUploadId),
+                or(eq(bookingRequestCooks.cookId, userId), eq(bookingRequestOffers.cookId, userId)),
+            ),
+        )
+        .limit(1);
+    return Boolean(cookHit);
 }

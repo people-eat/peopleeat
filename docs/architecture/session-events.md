@@ -53,13 +53,15 @@ are **never** accepted by `sessionEventCreate` (password sign-in, phone confirm,
 | `NEWSLETTER_SUBSCRIPTION_ALREADY_EXISTS`             | `sessionNewsletterSubscriptionCreate`                                | empty                                                                       |
 
 Booking-form funnel interactions use stable step ids from `src/shared/bookingRequestFormFunnel.ts` (`step_entered` / `step_completed`), not
-UI label strings. Cook offer create-UI steps use `src/shared/cookBookingRequestOfferFunnel.ts` (`area: cook_booking_request_offer`, client
-steps `offer_create` / `menus` / `price` / `message`) and require `bookingRequestId` on the payload for cook × request aggregation.
-Gift-card funnel: `src/shared/giftCardFunnel.ts` (`area: gift_card`, client steps `configure` / `auth` / `checkout`; terminals `created` /
-`paid` from lifecycle events). Chef sign-up funnel: `src/shared/chefSignUpFunnel.ts` (`area: chef_sign_up`, client steps `auth` / `profile`;
-terminal `created` from `COOK_CREATED`). Booking checkout funnel: `src/shared/bookingRequestCheckoutFunnel.ts`
-(`area: booking_request_checkout`, client step `checkout`; terminal `paid` from `BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED`). Discovery
-interactions on chefs pages use `area: chefs` with `change` (`searchText`) and `click` (`book_cta`, `share`).
+UI label strings. Indoor/outdoor is not a funnel step. When `BOOKING_REQUEST_SETTING` is on, `location` `step_completed` carries `setting`:
+`INDOOR` | `OUTDOOR` | `LATER` | `skipped` so form conversion can be compared with the toggle off. Cook offer create-UI steps use
+`src/shared/cookBookingRequestOfferFunnel.ts` (`area: cook_booking_request_offer`, client steps `offer_create` / `menus` / `price` /
+`message`) and require `bookingRequestId` on the payload for cook × request aggregation. Gift-card funnel: `src/shared/giftCardFunnel.ts`
+(`area: gift_card`, client steps `configure` / `auth` / `checkout`; terminals `created` / `paid` from lifecycle events). Chef sign-up
+funnel: `src/shared/chefSignUpFunnel.ts` (`area: chef_sign_up`, client steps `auth` / `profile`; terminal `created` from `COOK_CREATED`).
+Booking checkout funnel: `src/shared/bookingRequestCheckoutFunnel.ts` (`area: booking_request_checkout`, client step `checkout`; terminal
+`paid` from `BOOKING_REQUEST_OFFER_PAYMENT_SUCCEEDED`). Discovery interactions on chefs pages use `area: chefs` with `change` (`searchText`)
+and `click` (`book_cta`, `share`).
 
 ### Historical (imported only; no longer produced)
 

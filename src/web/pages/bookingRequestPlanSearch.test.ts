@@ -189,6 +189,7 @@ describe('bookingRequestPlanCreateInputFromValues', () => {
                 originalMessage: 'Keine Nüsse',
                 redeemCode: '',
                 occasion: '',
+                settingChoice: null,
             },
             'de',
         );
@@ -213,6 +214,7 @@ describe('bookingRequestPlanCreateInputFromValues', () => {
                 originalMessage: 'No nuts',
                 redeemCode: '',
                 occasion: '',
+                settingChoice: null,
             },
             'en',
         );

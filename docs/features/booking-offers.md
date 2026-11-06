@@ -8,19 +8,20 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
 
 1. **Cook** sees published requests in `/profile/booking-request-pool` (open / declined tabs; list cards show event date only, exact time is
    on the request detail). Open pool cards show an approximate cook payout row (**Verdiene ca.** / **Make about**) from
-   `estimatedCookPayoutCents`. Pool detail shows venue as post code, city, and country only (not the street), with a quiet hint that the
-   exact address is shared after mutual accept and is already used for travel expense calculations. The pinned footer repeats the same
-   approximate payout (soft suggested price × paid participants, travel, cook platform fee — same breakdown as offer create). Footer stacks
-   payout above equal-width decline / make-offer on narrow panes; from `@md` payout sits left of the button pair. Opening a request marks it
-   viewed (which stamps Google Routes travel distance onto `BookingRequestCooks` so estimated travel expenses match offer create); they may
-   decline with a reason, or start **Make offer** when Stripe Connect and travel origin are ready. After decline, if more open requests
-   remain they return to the open pool (Tinder-style review); if that was the last open request, decline lands on the declined tab, never an
-   empty open pool. After offer create, a non-dismissible success alert confirms the guest was notified and offers **Go to offer**; when
-   more open pool items remain it also offers **Review more requests** (opens the open pool). Stale notify-email deep links use
-   `Cook.bookingRequestLookup`: pool-eligible cooks (auto-approved + in radius, or admin-approved + `notifiedAt`) get a differentiated
-   unavailable state (canceled / taken / expired / already offered) with **no** request PII; every other denial is identical not-found (no
-   existence oracle). Admin analytics tracks this path as a cook × request funnel (notified → opened → declined or offer create → menus →
-   price → message → created); see [admin-analytics.md](./admin-analytics.md).
+   `estimatedCookPayoutCents`. Pool detail shows venue as post code, city, and country only (not the street), plus kitchen details then
+   indoor/outdoor as soon as they exist (not dual-accept gated), with a quiet hint that the exact address is shared after mutual accept and
+   is already used for travel expense calculations. The pinned footer repeats the same approximate payout (soft suggested price × paid
+   participants, travel, cook platform fee — same breakdown as offer create). Footer stacks payout above equal-width decline / make-offer on
+   narrow panes; from `@md` payout sits left of the button pair. Opening a request marks it viewed (which stamps Google Routes travel
+   distance onto `BookingRequestCooks` so estimated travel expenses match offer create); they may decline with a reason, or start **Make
+   offer** when Stripe Connect and travel origin are ready. After decline, if more open requests remain they return to the open pool
+   (Tinder-style review); if that was the last open request, decline lands on the declined tab, never an empty open pool. After offer
+   create, a non-dismissible success alert confirms the guest was notified and offers **Go to offer**; when more open pool items remain it
+   also offers **Review more requests** (opens the open pool). Stale notify-email deep links use `Cook.bookingRequestLookup`: pool-eligible
+   cooks (auto-approved + in radius, or admin-approved + `notifiedAt`) get a differentiated unavailable state (canceled / taken / expired /
+   already offered) with **no** request PII; every other denial is identical not-found (no existence oracle). Admin analytics tracks this
+   path as a cook × request funnel (notified → opened → declined or offer create → menus → price → message → created); see
+   [admin-analytics.md](./admin-analytics.md).
 2. Offer create (`/profile/booking-request-pool/$id/create`): no request summary (pool detail already covered that). Three steps with a thin
    progress bar (same visual as the public booking-request form) and concise step headers (**Suggest menus** / **Choose your price** /
    **Personal note**): (1) pick menus (or **New menu** / **Edit** → `/profile/menus/$menuId/edit` with safe `returnTo`), then **Continue**;
@@ -56,12 +57,12 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    **Auftragswert** / **Order value** from `totalWithoutDiscountsCentsCustomer`; after mutual accept, **Auszahlungsbetrag** / **Payout
    amount** from `payoutCentsCook`. Detail stays at `/profile/booking-request-offers/$offerId` (tabs: offer / chat / request / call; default
    Offer) regardless of list tab. The **Request** tab reuses the pool-detail summary card (occasion, participants / restrictions, date with
-   relative day, preferences, venue, estimated travel distance / expenses, and invoice address after checkout) without the guest’s initial
-   message; venue is post code, city, and country while negotiating and the exact address after mutual accept; invoice address appears once
-   the offer is dual-accepted and the customer has paid (same reveal gate as the street). On the Offer tab while negotiating, end-aligned
-   **Suggest another menu** / **Adjust price** buttons sit under the menu grid and the readonly cost overview
-   (`BookingRequestOfferCostOverviewPanel`, same expandable cook payout / host price cards as edit-price) and link to `/edit-menus` and
-   `/edit-price` (view-first; Discard / Save on each edit page; edit-menus uses the same incomplete-menu picker rule and **New menu** /
+   relative day, preferences, venue, kitchen details then indoor/outdoor, estimated travel distance / expenses, and invoice address after
+   checkout) without the guest’s initial message; venue is post code, city, and country while negotiating and the exact address after mutual
+   accept; invoice address appears once the offer is dual-accepted and the customer has paid (same reveal gate as the street). On the Offer
+   tab while negotiating, end-aligned **Suggest another menu** / **Adjust price** buttons sit under the menu grid and the readonly cost
+   overview (`BookingRequestOfferCostOverviewPanel`, same expandable cook payout / host price cards as edit-price) and link to `/edit-menus`
+   and `/edit-price` (view-first; Discard / Save on each edit page; edit-menus uses the same incomplete-menu picker rule and **New menu** /
    **Edit** → menu edit + `returnTo` loop as offer create, with `?menus=` for the selection draft). Suggested menus use a 1–2 column
    `CookMenuCard` grid that opens `/profile/menus/$menuId` (view-first detail with edit). Auto-adjusted prices show an info banner above the
    cost overview (copy distinguishes guest-count vs travel vs both via `priceAutoAdjustReason`). After the event (`COMPLETED`), an info

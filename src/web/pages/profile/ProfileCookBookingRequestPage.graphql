@@ -27,6 +27,18 @@ fragment ProfileCookBookingRequestPageUser on User {
                         postCode
                         country
                     }
+                    setting
+                    kitchenDetails {
+                        availability
+                        fridgeSpace
+                        platingSpace
+                        guestTableware
+                        notes
+                        photos {
+                            fileUploadId
+                            url
+                        }
+                    }
                     participants {
                         bookingRequestParticipantId
                         type

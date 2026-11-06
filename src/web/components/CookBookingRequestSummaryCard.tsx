@@ -1,9 +1,12 @@
 import type { ReactNode } from 'react';
 
-import { formatCurrency, formatDateTime, formatParticipants, languageTagFromLocale } from '../../shared';
+import { bookingRequestSettingLabel, formatCurrency, formatDateTime, formatParticipants, languageTagFromLocale } from '../../shared';
+import type { BookingRequestSetting } from '../../shared';
 import { cn } from '../utils/cn';
 import type { Locale } from '../utils/locale';
 import { Avatar, AvatarFallback, AvatarImage } from './base/avatar';
+import { BookingRequestKitchenDetailsFactContent, bookingRequestKitchenDetailsHasFacts } from './BookingRequestVenueConditionsFacts';
+import type { BookingRequestVenueKitchenDetailsFact } from './BookingRequestVenueConditionsFacts';
 
 export type CookBookingRequestSummaryCardParticipant = {
     bookingRequestParticipantId: string;
@@ -68,6 +71,8 @@ export function CookBookingRequestSummaryCard({
     invoiceAddress,
     message,
     dateTimeAction,
+    setting,
+    kitchenDetails,
 }: {
     locale: Locale;
     timeZone: string;
@@ -82,10 +87,13 @@ export function CookBookingRequestSummaryCard({
     invoiceAddress?: CookBookingRequestSummaryCardInvoiceAddress | null;
     message?: CookBookingRequestSummaryCardMessage | null;
     dateTimeAction?: (whenLabel: string) => ReactNode;
+    setting?: BookingRequestSetting | null;
+    kitchenDetails?: BookingRequestVenueKitchenDetailsFact | null;
 }) {
     const hasMessage = message != null && message.text.trim().length > 0;
     const participantsWithRestrictions = participants.filter((participant) => participant.restrictions.length > 0);
     const whenLabel = `${formatDateTime(dateTime, { locale, timeZone, dateStyle: 'full' })} (${formatRelativeDays(dateTime, locale)})`;
+    const kitchenHasFacts = bookingRequestKitchenDetailsHasFacts(kitchenDetails, locale);
 
     return (
         <div
@@ -127,6 +135,19 @@ export function CookBookingRequestSummaryCard({
                     value={eventLocation}
                     hint={eventLocationHint}
                 />
+                {kitchenHasFacts ? (
+                    <DetailField
+                        className={(kitchenDetails?.photos?.length ?? 0) > 0 ? '@md:col-span-2' : undefined}
+                        label={{ de: 'Über die Küche', en: 'About the kitchen' }[locale]}
+                        value={<BookingRequestKitchenDetailsFactContent details={kitchenDetails} locale={locale} />}
+                    />
+                ) : null}
+                {setting != null ? (
+                    <DetailField
+                        label={{ de: 'Wo sitzt ihr', en: 'Where you dine' }[locale]}
+                        value={bookingRequestSettingLabel(setting, locale)}
+                    />
+                ) : null}
                 <DetailField
                     label={{ de: 'Geschätzte Reiseentfernung', en: 'Estimated travel distance' }[locale]}
                     value={estimatedTravelDistanceKm != null ? `${estimatedTravelDistanceKm.toFixed(1)} km` : '—'}

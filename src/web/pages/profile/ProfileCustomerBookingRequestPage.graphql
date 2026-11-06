@@ -23,6 +23,18 @@ fragment ProfileCustomerBookingRequestPageUser on User {
             state
             country
         }
+        setting
+        kitchenDetails {
+            availability
+            fridgeSpace
+            platingSpace
+            guestTableware
+            notes
+            photos {
+                fileUploadId
+                url
+            }
+        }
         originalMessage
         preferences
         canceledAt
@@ -175,6 +187,7 @@ mutation ProfileBookingRequestUpdate(
     $preferences: [String!]
     $participants: [UserBookingRequestParticipantCreate!]!
     $exactEventAddress: UserBookingRequestExactEventAddressInput
+    $setting: BookingRequestSetting
 ) {
     user {
         bookingRequestUpdate(
@@ -184,6 +197,24 @@ mutation ProfileBookingRequestUpdate(
             preferences: $preferences
             participants: $participants
             exactEventAddress: $exactEventAddress
+            setting: $setting
+        ) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestKitchenDetailsUpdate(
+    $bookingRequestId: ID!
+    $kitchenDetails: BookingRequestKitchenDetailsInput
+    $photoFileUploadIds: [ID!]
+) {
+    user {
+        bookingRequestKitchenDetailsUpdate(
+            bookingRequestId: $bookingRequestId
+            kitchenDetails: $kitchenDetails
+            photoFileUploadIds: $photoFileUploadIds
         ) {
             success
             referenceId

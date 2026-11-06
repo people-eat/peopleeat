@@ -545,6 +545,8 @@ enum UserAttentionKind {
     CALL_CONFIRMED
     # Most recent completed dinner without a customer review.
     TESTIMONIAL_MISSING
+    # Open request still missing kitchen conditions for the cook.
+    KITCHEN_DETAILS_MISSING
 }
 
 type UserAttentionItem {
@@ -1927,6 +1929,8 @@ type CookBookingRequestOfferContext {
     occasion: String!
     dateTime: DateTime!
     exactEventAddress: CookTravelOriginAddress!
+    setting: BookingRequestSetting
+    kitchenDetails: BookingRequestKitchenDetails
     priceClassType: BookingRequestPriceClassType
     # Soft guidance (travel-adjusted at 0 km here; offer UI may recompute with stored travel).
     suggestedOfferAmountCents: Int!
@@ -2150,6 +2154,47 @@ type UserBookingRequestOfferPriceImpact {
     payoutCentsCookAfter: Int!
 }
 
+enum BookingRequestSetting {
+    INDOOR
+    OUTDOOR
+}
+
+enum BookingRequestKitchenDetailsAvailability {
+    FULL
+    LIMITED
+    NONE
+    UNKNOWN
+}
+
+enum BookingRequestKitchenDetailsSpace {
+    YES
+    LIMITED
+    NO
+}
+
+enum BookingRequestKitchenDetailsGuestTableware {
+    PROVIDED
+    COOK_BRINGS
+    MIXED
+}
+
+type BookingRequestKitchenDetails {
+    availability: BookingRequestKitchenDetailsAvailability
+    fridgeSpace: BookingRequestKitchenDetailsSpace
+    platingSpace: BookingRequestKitchenDetailsSpace
+    guestTableware: BookingRequestKitchenDetailsGuestTableware
+    notes: String
+    photos: [FileUpload!]!
+}
+
+input BookingRequestKitchenDetailsInput {
+    availability: BookingRequestKitchenDetailsAvailability
+    fridgeSpace: BookingRequestKitchenDetailsSpace
+    platingSpace: BookingRequestKitchenDetailsSpace
+    guestTableware: BookingRequestKitchenDetailsGuestTableware
+    notes: String
+}
+
 type UserBookingRequest {
     bookingRequestId: ID!
     userId: ID!
@@ -2157,6 +2202,9 @@ type UserBookingRequest {
     occasion: String!
     dateTime: DateTime!
     exactEventAddress: CookTravelOriginAddress!
+    # Where guests dine. Null when unknown.
+    setting: BookingRequestSetting
+    kitchenDetails: BookingRequestKitchenDetails
     priceClassType: BookingRequestPriceClassType
     originalMessage: String!
     adjustedMessage: String
@@ -2289,6 +2337,8 @@ type CookBookingRequest {
     occasion: String!
     dateTime: DateTime!
     exactEventAddress: CookTravelOriginAddress!
+    setting: BookingRequestSetting
+    kitchenDetails: BookingRequestKitchenDetails
     priceClassType: BookingRequestPriceClassType
     # Soft price-class guidance (cents per person). Soft min/max are UX-only;
     # hard min is a promo customer-total floor. See bookingRequestOfferPriceGuidance.
@@ -2341,6 +2391,8 @@ type AdminBookingRequest {
     occasion: String!
     dateTime: DateTime!
     exactEventAddress: CookTravelOriginAddress!
+    setting: BookingRequestSetting
+    kitchenDetails: BookingRequestKitchenDetails
     priceClassType: BookingRequestPriceClassType
     # Soft price-class guidance (cents per person). Travel adjustment uses 0 km
     # here; admin offer UI recomputes with the selected cook's travel estimate.
@@ -2807,6 +2859,8 @@ input UserBookingRequestCreate {
     preferences: [String!]!
     participants: [UserBookingRequestParticipantCreate!]!
     priceClassType: BookingRequestPriceClassType!
+    # Optional indoor/outdoor. Null/omit when unknown. Stripped when BOOKING_REQUEST_SETTING is off.
+    setting: BookingRequestSetting
     # Optional promo / gift-card code applied on create (invalid code fails create).
     redeemCode: String
 }
@@ -2865,6 +2919,14 @@ type UserMutation {
         preferences: [String!]
         participants: [UserBookingRequestParticipantCreate!]!
         exactEventAddress: UserBookingRequestExactEventAddressInput
+        setting: BookingRequestSetting
+    ): MutationResult!
+    # Kitchen conditions + optional photos after create. Omit `photoFileUploadIds`
+    # to leave photos unchanged; pass [] to clear. Gated by BOOKING_REQUEST_KITCHEN_DETAILS.
+    bookingRequestKitchenDetailsUpdate(
+        bookingRequestId: ID!
+        kitchenDetails: BookingRequestKitchenDetailsInput
+        photoFileUploadIds: [ID!]
     ): MutationResult!
     # Dual-accept an offer and prepare Stripe (SetupIntent / PaymentIntent / €0 transfer).
     bookingRequestOfferAccept(bookingRequestOfferId: ID!): MutationResult!
@@ -4828,6 +4890,7 @@ input AdminBookingRequestCreate {
     originalMessage: String!
     preferences: [String!]!
     participants: [UserBookingRequestParticipantCreate!]!
+    setting: BookingRequestSetting
     # Cooks to notify on create (UI selection). Intersected with offer-capable
     # cooks in travel radius; empty = publish without notifying anyone.
     cookIds: [ID!]!
@@ -4851,6 +4914,10 @@ input AdminBookingRequestUpdate {
     exactEventAddress: AdminBookingRequestExactEventAddressInput
     preferences: [String!]
     participants: [UserBookingRequestParticipantCreate!]
+    setting: BookingRequestSetting
+    kitchenDetails: BookingRequestKitchenDetailsInput
+    # Omit to leave photos unchanged; pass [] to clear.
+    kitchenDetailsPhotoFileUploadIds: [ID!]
 }
 
 # Admin offer create — formula inputs (menu + travel + optional fee %).
@@ -5715,6 +5782,8 @@ enum FeatureToggleKey {
     COOK_PUBLIC_PROFILE_SHARE
     COOK_PRESENCE_LINKS
     BOOKING_REQUEST_RESTRICTIONS
+    BOOKING_REQUEST_SETTING
+    BOOKING_REQUEST_KITCHEN_DETAILS
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS
     BOOKING_REQUEST_OFFER_AMENDMENT
     BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW

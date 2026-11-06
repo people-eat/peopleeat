@@ -148,6 +148,18 @@ fragment ProfileCookBookingRequestOfferPageUser on User {
                     state
                     country
                 }
+                setting
+                kitchenDetails {
+                    availability
+                    fridgeSpace
+                    platingSpace
+                    guestTableware
+                    notes
+                    photos {
+                        fileUploadId
+                        url
+                    }
+                }
                 invoiceAddress {
                     companyName
                     firstName

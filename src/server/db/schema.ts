@@ -33,6 +33,7 @@ import type {
     BookingRequestCookMenuEvaluation,
     BookingRequestExactEventAddress,
     BookingRequestInvoiceAddress,
+    BookingRequestKitchenDetails,
     BookingRequestOfferCallRecordingStatus,
     BookingRequestOfferCallRoomStatus,
     BookingRequestOfferCallTranscriptSegment,
@@ -48,6 +49,7 @@ import type {
     BookingRequestPriceClassType,
     BookingRequestPublicationStatus,
     BookingRequestReferences,
+    BookingRequestSetting,
     CookCallSlotBookingActor,
     CookCallSlotBookingStatus,
 } from '../domain/bookingRequest';
@@ -1516,6 +1518,10 @@ export const bookingRequests = pgTable(
         dateTime: timestamp({ withTimezone: true }).notNull(),
         // Sole location store — no separate approx lat/lng / locationName.
         exactEventAddress: jsonb().$type<BookingRequestExactEventAddress>().notNull(),
+        // Where guests dine. Null = unknown (legacy, Later, skipped, or toggle off).
+        setting: varchar().$type<BookingRequestSetting>(),
+        // Kitchen conditions for the cook. Null when empty. Photos are a join table.
+        kitchenDetails: jsonb().$type<BookingRequestKitchenDetails>(),
         priceClassType: varchar().$type<BookingRequestPriceClassType>(),
         originalMessage: text().notNull(),
         adjustedMessage: text(),
@@ -1565,6 +1571,36 @@ export const bookingRequests = pgTable(
 
 export type BookingRequest = typeof bookingRequests.$inferSelect;
 export type BookingRequestCreate = typeof bookingRequests.$inferInsert;
+
+export const bookingRequestKitchenDetailsPhotos = pgTable(
+    'BookingRequestKitchenDetailsPhotos',
+    {
+        bookingRequestId: nanoId().notNull(),
+        fileUploadId: nanoId().notNull(),
+        position: integer().notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.bookingRequestId],
+            foreignColumns: [bookingRequests.bookingRequestId],
+        })
+            .onUpdate('cascade')
+            .onDelete('cascade'),
+        foreignKey({
+            columns: [table.fileUploadId],
+            foreignColumns: [fileUploads.fileUploadId],
+        })
+            .onUpdate('cascade')
+            .onDelete('cascade'),
+        uniqueIndex('BookingRequestKitchenDetailsPhotos_pk').on(table.bookingRequestId, table.fileUploadId),
+        uniqueIndex('BookingRequestKitchenDetailsPhotos_position_uidx').on(table.bookingRequestId, table.position),
+        index('BookingRequestKitchenDetailsPhotos_bookingRequestId_idx').on(table.bookingRequestId),
+        index('BookingRequestKitchenDetailsPhotos_fileUploadId_idx').on(table.fileUploadId),
+    ],
+);
+
+export type BookingRequestKitchenDetailsPhoto = typeof bookingRequestKitchenDetailsPhotos.$inferSelect;
+export type BookingRequestKitchenDetailsPhotoCreate = typeof bookingRequestKitchenDetailsPhotos.$inferInsert;
 
 export const bookingRequestParticipants = pgTable(
     'BookingRequestParticipants',

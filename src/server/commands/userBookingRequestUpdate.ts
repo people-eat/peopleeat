@@ -12,6 +12,7 @@ import type {
     BookingRequestExactEventAddress,
     BookingRequestOfferPriceAutoAdjustReason,
     BookingRequestParticipantType,
+    BookingRequestSetting,
 } from '../domain/bookingRequest';
 import { bookingRequestOfferPaymentIsPaid, bookingRequestStatusDerive } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -27,6 +28,7 @@ import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/booking
 import { bookingRequestOfferPriceSnapshot } from '../utils/bookingRequestOfferPriceSnapshot';
 import { bookingRequestParticipantsPrepareForWrite } from '../utils/bookingRequestParticipantsPrepareForWrite';
 import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
+import { bookingRequestSettingPrepareForWrite } from '../utils/bookingRequestSettingPrepareForWrite';
 import { scheduleTestimonialReminderJobs } from '../utils/scheduleTestimonialReminderJobs';
 import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
 import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
@@ -82,7 +84,7 @@ export async function userBookingRequestUpdate(
     await assertLegalAcceptanceCurrent(userId, serverRuntime);
     await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestUpdate');
 
-    const { bookingRequestId, occasion, dateTime, preferences, exactEventAddress: exactEventAddressArg } = args;
+    const { bookingRequestId, occasion, dateTime, preferences, exactEventAddress: exactEventAddressArg, setting: settingArg } = args;
 
     try {
         const bookingRequest = await userBookingRequestOwnedFindOne(serverRuntime, userId, bookingRequestId);
@@ -127,6 +129,7 @@ export async function userBookingRequestUpdate(
             expiresAt?: Date;
             preferences?: string[];
             exactEventAddress?: BookingRequestExactEventAddress;
+            setting?: BookingRequestSetting | null;
         } = {};
 
         type OfferEventInsert = {
@@ -245,6 +248,11 @@ export async function userBookingRequestUpdate(
                     });
                 }
             }
+        }
+
+        const nextSetting = await bookingRequestSettingPrepareForWrite(settingArg, serverRuntime, userId, 'update');
+        if (nextSetting !== undefined && nextSetting !== (bookingRequest.setting ?? null)) {
+            requestPatch.setting = nextSetting;
         }
 
         if (exactEventAddressArg != null) {

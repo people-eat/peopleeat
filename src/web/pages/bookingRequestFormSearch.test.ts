@@ -45,6 +45,7 @@ describe('parseBookingRequestFormSearch', () => {
             postCode: undefined,
             state: undefined,
             country: undefined,
+            setting: undefined,
             step: 'message',
         });
     });
@@ -115,6 +116,23 @@ describe('parseBookingRequestFormSearch', () => {
         expect(next.step).toBe('auth');
         expect(next.city).toBe('Berlin');
         expect(next.lat).toBe(52.52);
+        expect(next.setting).toBeUndefined();
+    });
+
+    it('round-trips indoor/outdoor choice through search', () => {
+        const search = parseBookingRequestFormSearch({ setting: 'OUTDOOR' });
+        expect(search.setting).toBe('OUTDOOR');
+        const values = bookingRequestFormValuesFromSearch(search);
+        expect(values.settingChoice).toBe('OUTDOOR');
+        const next = bookingRequestFormSearchFromValues({ values, step: 'location' });
+        expect(next.setting).toBe('OUTDOOR');
+    });
+
+    it('treats Later as a UI skip, not a stored enum', () => {
+        const search = parseBookingRequestFormSearch({ setting: 'LATER' });
+        expect(search.setting).toBe('LATER');
+        expect(bookingRequestFormValuesFromSearch(search).settingChoice).toBe('LATER');
+        expect(parseBookingRequestFormSearch({ setting: 'UNSPECIFIED' }).setting).toBeUndefined();
     });
 
     it('treats equal search snapshots as equal', () => {

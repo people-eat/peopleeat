@@ -17,8 +17,8 @@ peopleeat is **light-only**. There is no dark mode, theme toggle, or `next-theme
 These map onto shadcn CSS variables in `src/styles.css` (`--foreground`, `--background`, `--primary`, `--secondary`, `--accent`,
 `--destructive`, plus derived muted/border/ring/sidebar tokens).
 
-`src/styles.css` also defines `--success`, `--info`, and `--warning` (warning aliases accent) for charts and other non-status accents.
-Do **not** use those for banners, badges, or icons — status messaging owns its own palette.
+`src/styles.css` also defines `--success`, `--info`, and `--warning` (warning aliases accent) for charts and other non-status accents. Do
+**not** use those for banners, badges, or icons — status messaging owns its own palette.
 
 ### Status tones (not brand tokens)
 

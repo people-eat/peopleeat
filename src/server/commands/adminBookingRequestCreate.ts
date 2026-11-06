@@ -17,6 +17,7 @@ import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
 import { bookingRequestNoOffersNotifySchedule } from '../utils/bookingRequestNoOffersNotifySchedule';
 import { bookingRequestParticipantsPrepareForWrite } from '../utils/bookingRequestParticipantsPrepareForWrite';
 import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
+import { bookingRequestSettingPrepareForWrite } from '../utils/bookingRequestSettingPrepareForWrite';
 import { cookIdsCanCreateOffersFind } from '../utils/cookIdsCanCreateOffersFind';
 
 export async function adminBookingRequestCreate(
@@ -51,6 +52,7 @@ export async function adminBookingRequestCreate(
         'adminBookingRequestCreate',
         userId,
     );
+    const setting = await bookingRequestSettingPrepareForWrite(input.setting, serverRuntime, userId, 'create');
     const exactEventAddress: BookingRequestExactEventAddress = {
         displayText: textNormalizeSingleLine(input.exactEventAddress.displayText),
         latitude: input.exactEventAddress.latitude,
@@ -89,6 +91,7 @@ export async function adminBookingRequestCreate(
             preferences,
             publicationStatus,
             expiresAt: bookingRequestExpiresAt(input.dateTime),
+            setting: setting ?? null,
         };
 
         const participantInserts: BookingRequestParticipantCreate[] = participants.map((participant) => ({

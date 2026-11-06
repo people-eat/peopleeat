@@ -24,6 +24,18 @@ fragment AdminBookingRequestPageRequest on AdminBookingRequest {
         state
         country
     }
+    setting
+    kitchenDetails {
+        availability
+        fridgeSpace
+        platingSpace
+        guestTableware
+        notes
+        photos {
+            fileUploadId
+            url
+        }
+    }
     invoiceAddress {
         companyName
         firstName

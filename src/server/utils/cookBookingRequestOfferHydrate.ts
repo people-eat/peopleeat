@@ -7,6 +7,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookBookingRequestOffer } from '../graphql/generated';
 import { toGqlCookBookingRequestOffer } from '../mappers/toGqlCookBookingRequestOffer';
 import { toGqlCookBookingRequestOfferContext } from '../mappers/toGqlCookBookingRequestOfferContext';
+import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from './bookingRequestKitchenDetailsPhotosHydrate';
 import { cookMenusWithCourses } from './cookMenuHydrate';
 import { publicUsersByIdFindMany } from './publicUserHydrate';
 
@@ -27,7 +28,15 @@ export async function cookBookingRequestOfferHydrate(
     const customerUserIds = [...new Set(rows.map((row) => row.bookingRequest.userId))];
     const promoCodeIds = [...new Set(rows.map((row) => row.bookingRequest.promoCodeId).filter((id): id is string => id != null))];
 
-    const [callBookingRows, suggestedMenuRows, siblingOffers, participantRows, publicUsersResult, promoRows] = await Promise.all([
+    const [
+        callBookingRows,
+        suggestedMenuRows,
+        siblingOffers,
+        participantRows,
+        publicUsersResult,
+        promoRows,
+        kitchenDetailsPhotosByRequestId,
+    ] = await Promise.all([
         serverRuntime.db
             .select()
             .from(cookCallSlotBookings)
@@ -58,6 +67,7 @@ export async function cookBookingRequestOfferHydrate(
                   })
                   .from(promoCodes)
                   .where(inArray(promoCodes.promoCodeId, promoCodeIds)),
+        bookingRequestKitchenDetailsPhotosByRequestIdFind(serverRuntime, bookingRequestIds),
     ]);
     const publicUsers = publicUsersResult.byId;
 
@@ -126,6 +136,7 @@ export async function cookBookingRequestOfferHydrate(
                         ? (promoMinById.get(bookingRequest.promoCodeId) ?? null)
                         : null,
                     revealExactEventAddress: offer.userAccepted === true && offer.cookAccepted === true,
+                    kitchenDetailsPhotos: kitchenDetailsPhotosByRequestId.get(offer.bookingRequestId) ?? [],
                 }),
             }),
         );

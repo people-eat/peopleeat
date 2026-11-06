@@ -10,9 +10,11 @@ import { textNormalizeProse, textNormalizeProseTitled, textNormalizeSingleLine, 
 import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequestParticipants, bookingRequests, cooks } from '../db/schema';
 import type {
     BookingRequestExactEventAddress,
+    BookingRequestKitchenDetails,
     BookingRequestOfferPriceAutoAdjustReason,
     BookingRequestParticipantType,
     BookingRequestPriceClassType,
+    BookingRequestSetting,
 } from '../domain/bookingRequest';
 import { bookingRequestOfferPaymentIsPaid } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
@@ -23,12 +25,19 @@ import { bookingRequestAdjustedMessageGenerateScheduleIfEnabled } from '../utils
 import { bookingRequestCookTravelDistanceKmClear } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
 import { bookingRequestExpireNotifySchedule } from '../utils/bookingRequestExpireNotifySchedule';
 import { bookingRequestExpiresAt } from '../utils/bookingRequestExpiresAt';
+import { bookingRequestKitchenDetailsPhotosReplace } from '../utils/bookingRequestKitchenDetailsPhotosReplace';
+import {
+    bookingRequestKitchenDetailsPhotoIdsAssert,
+    bookingRequestKitchenDetailsPrepareForWrite,
+} from '../utils/bookingRequestKitchenDetailsPrepareForWrite';
 import { bookingEventCalendarDateMovedEmailSend, userBookingRequestUpdateEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestNoOffersNotifySchedule } from '../utils/bookingRequestNoOffersNotifySchedule';
 import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/bookingRequestOfferEventTomorrowNotifySchedule';
 import { bookingRequestOfferPriceSnapshot } from '../utils/bookingRequestOfferPriceSnapshot';
 import { bookingRequestParticipantsPrepareForWrite } from '../utils/bookingRequestParticipantsPrepareForWrite';
 import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
+import { bookingRequestSettingPrepareForWrite } from '../utils/bookingRequestSettingPrepareForWrite';
+import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 import { scheduleTestimonialReminderJobs } from '../utils/scheduleTestimonialReminderJobs';
 import { travelDistanceKmResolve } from '../utils/travelDistanceKmResolve';
 
@@ -113,6 +122,8 @@ export async function adminBookingRequestUpdate(
             createdAt?: Date;
             exactEventAddress?: BookingRequestExactEventAddress;
             preferences?: string[];
+            setting?: BookingRequestSetting | null;
+            kitchenDetails?: BookingRequestKitchenDetails | null;
         } = {};
 
         type OfferEventInsert = {
@@ -381,6 +392,27 @@ export async function adminBookingRequestUpdate(
             }
         }
 
+        const nextSetting = await bookingRequestSettingPrepareForWrite(input.setting, serverRuntime, bookingRequest.userId, 'update');
+        if (nextSetting !== undefined && nextSetting !== (bookingRequest.setting ?? null)) {
+            requestPatch.setting = nextSetting;
+        }
+
+        const nextKitchenDetails = await bookingRequestKitchenDetailsPrepareForWrite(
+            input.kitchenDetails,
+            serverRuntime,
+            bookingRequest.userId,
+            'update',
+        );
+        if (nextKitchenDetails !== undefined) {
+            requestPatch.kitchenDetails = nextKitchenDetails;
+        }
+
+        const kitchenEnabled = await featureToggleIsEnabled('BOOKING_REQUEST_KITCHEN_DETAILS', serverRuntime, bookingRequest.userId);
+        const kitchenDetailsPhotoFileUploadIds =
+            !kitchenEnabled || input.kitchenDetailsPhotoFileUploadIds == null
+                ? undefined
+                : bookingRequestKitchenDetailsPhotoIdsAssert(input.kitchenDetailsPhotoFileUploadIds, 'adminBookingRequestUpdate');
+
         if (input.participants != null) {
             const participants = await bookingRequestParticipantsPrepareForWrite(
                 input.participants,
@@ -530,7 +562,8 @@ export async function adminBookingRequestUpdate(
             Object.keys(requestPatch).length === 0 &&
             participantInserts == null &&
             eventInserts.length === 0 &&
-            offerPricePatches.length === 0
+            offerPricePatches.length === 0 &&
+            kitchenDetailsPhotoFileUploadIds === undefined
         ) {
             return { success: true, referenceId: bookingRequestId };
         }
@@ -538,6 +571,15 @@ export async function adminBookingRequestUpdate(
         await serverRuntime.db.transaction(async (transaction) => {
             if (Object.keys(requestPatch).length > 0) {
                 await transaction.update(bookingRequests).set(requestPatch).where(eq(bookingRequests.bookingRequestId, bookingRequestId));
+            }
+
+            if (kitchenDetailsPhotoFileUploadIds !== undefined) {
+                await bookingRequestKitchenDetailsPhotosReplace(transaction, {
+                    bookingRequestId,
+                    userId: bookingRequest.userId,
+                    fileUploadIds: kitchenDetailsPhotoFileUploadIds,
+                    commandName: 'adminBookingRequestUpdate',
+                });
             }
 
             if (participantInserts != null) {

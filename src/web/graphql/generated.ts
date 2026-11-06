@@ -641,6 +641,7 @@ export interface GqlCAdminBookingRequest {
     expiresAt?: Maybe<Scalars['DateTime']['output']>;
     giftCard?: Maybe<GqlCUserBookingRequestGiftCard>;
     invoiceAddress?: Maybe<GqlCInvoiceAddress>;
+    kitchenDetails?: Maybe<GqlCBookingRequestKitchenDetails>;
     maxOfferAmountCents?: Maybe<Scalars['Int']['output']>;
     minOfferAmountCents?: Maybe<Scalars['Int']['output']>;
     minOfferAmountHardCents?: Maybe<Scalars['Int']['output']>;
@@ -654,6 +655,7 @@ export interface GqlCAdminBookingRequest {
     promoCode?: Maybe<GqlCUserBookingRequestPromoCode>;
     publicationStatus: GqlCBookingRequestPublicationStatus;
     queuedJobs: Array<GqlCAdminQueuedJob>;
+    setting?: Maybe<GqlCBookingRequestSetting>;
     status: GqlCBookingRequestStatus;
     suggestedOfferAmountCents: Scalars['Int']['output'];
     travelImpact: Array<GqlCUserBookingRequestOfferTravelImpact>;
@@ -696,6 +698,7 @@ export type GqlCAdminBookingRequestCreate = {
     originalMessage: Scalars['String']['input'];
     participants: Array<GqlCUserBookingRequestParticipantCreate>;
     preferences: Array<Scalars['String']['input']>;
+    setting?: InputMaybe<GqlCBookingRequestSetting>;
     userId: Scalars['ID']['input'];
 };
 
@@ -895,11 +898,14 @@ export type GqlCAdminBookingRequestUpdate = {
     dateTime?: InputMaybe<Scalars['DateTime']['input']>;
     exactEventAddress?: InputMaybe<GqlCAdminBookingRequestExactEventAddressInput>;
     expiresAt?: InputMaybe<Scalars['DateTime']['input']>;
+    kitchenDetails?: InputMaybe<GqlCBookingRequestKitchenDetailsInput>;
+    kitchenDetailsPhotoFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     occasion?: InputMaybe<Scalars['String']['input']>;
     originalMessage?: InputMaybe<Scalars['String']['input']>;
     participants?: InputMaybe<Array<GqlCUserBookingRequestParticipantCreate>>;
     preferences?: InputMaybe<Array<Scalars['String']['input']>>;
     priceClassType?: InputMaybe<GqlCBookingRequestPriceClassType>;
+    setting?: InputMaybe<GqlCBookingRequestSetting>;
 };
 
 export interface GqlCAdminCall {
@@ -2522,6 +2528,30 @@ export interface GqlCBookingRequestCookPoolDetails {
     notifiedAt?: Maybe<Scalars['DateTime']['output']>;
 }
 
+export interface GqlCBookingRequestKitchenDetails {
+    __typename?: 'BookingRequestKitchenDetails';
+    availability?: Maybe<GqlCBookingRequestKitchenDetailsAvailability>;
+    fridgeSpace?: Maybe<GqlCBookingRequestKitchenDetailsSpace>;
+    guestTableware?: Maybe<GqlCBookingRequestKitchenDetailsGuestTableware>;
+    notes?: Maybe<Scalars['String']['output']>;
+    photos: Array<GqlCFileUpload>;
+    platingSpace?: Maybe<GqlCBookingRequestKitchenDetailsSpace>;
+}
+
+export type GqlCBookingRequestKitchenDetailsAvailability = 'FULL' | 'LIMITED' | 'NONE' | 'UNKNOWN';
+
+export type GqlCBookingRequestKitchenDetailsGuestTableware = 'COOK_BRINGS' | 'MIXED' | 'PROVIDED';
+
+export type GqlCBookingRequestKitchenDetailsInput = {
+    availability?: InputMaybe<GqlCBookingRequestKitchenDetailsAvailability>;
+    fridgeSpace?: InputMaybe<GqlCBookingRequestKitchenDetailsSpace>;
+    guestTableware?: InputMaybe<GqlCBookingRequestKitchenDetailsGuestTableware>;
+    notes?: InputMaybe<Scalars['String']['input']>;
+    platingSpace?: InputMaybe<GqlCBookingRequestKitchenDetailsSpace>;
+};
+
+export type GqlCBookingRequestKitchenDetailsSpace = 'LIMITED' | 'NO' | 'YES';
+
 export interface GqlCBookingRequestOfferCallRecording {
     __typename?: 'BookingRequestOfferCallRecording';
     audioUrl?: Maybe<Scalars['String']['output']>;
@@ -2694,6 +2724,8 @@ export type GqlCBookingRequestPriceClassType = 'HIGH' | 'LOW' | 'MEDIUM';
 
 export type GqlCBookingRequestPublicationStatus =
     'PUBLICATION_APPROVED_BY_ADMIN' | 'PUBLICATION_AUTO_APPROVED' | 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW';
+
+export type GqlCBookingRequestSetting = 'INDOOR' | 'OUTDOOR';
 
 export type GqlCBookingRequestStatus =
     | 'CANCELED'
@@ -3296,6 +3328,7 @@ export interface GqlCCookBookingRequest {
     exactEventAddress: GqlCCookTravelOriginAddress;
     expiresAt?: Maybe<Scalars['DateTime']['output']>;
     invoiceAddress?: Maybe<GqlCInvoiceAddress>;
+    kitchenDetails?: Maybe<GqlCBookingRequestKitchenDetails>;
     maxOfferAmountCents?: Maybe<Scalars['Int']['output']>;
     message: Scalars['String']['output'];
     minOfferAmountCents?: Maybe<Scalars['Int']['output']>;
@@ -3305,6 +3338,7 @@ export interface GqlCCookBookingRequest {
     participants: Array<GqlCBookingRequestParticipant>;
     preferences: Array<Scalars['String']['output']>;
     priceClassType?: Maybe<GqlCBookingRequestPriceClassType>;
+    setting?: Maybe<GqlCBookingRequestSetting>;
     status: GqlCBookingRequestStatus;
     suggestedOfferAmountCents: Scalars['Int']['output'];
     suggestedOfferMessage: Scalars['String']['output'];
@@ -3404,6 +3438,7 @@ export interface GqlCCookBookingRequestOfferContext {
     exactEventAddress: GqlCCookTravelOriginAddress;
     expiresAt?: Maybe<Scalars['DateTime']['output']>;
     invoiceAddress?: Maybe<GqlCInvoiceAddress>;
+    kitchenDetails?: Maybe<GqlCBookingRequestKitchenDetails>;
     maxOfferAmountCents?: Maybe<Scalars['Int']['output']>;
     message: Scalars['String']['output'];
     minOfferAmountCents?: Maybe<Scalars['Int']['output']>;
@@ -3412,6 +3447,7 @@ export interface GqlCCookBookingRequestOfferContext {
     participants: Array<GqlCBookingRequestParticipant>;
     preferences: Array<Scalars['String']['output']>;
     priceClassType?: Maybe<GqlCBookingRequestPriceClassType>;
+    setting?: Maybe<GqlCBookingRequestSetting>;
     status: GqlCBookingRequestStatus;
     suggestedOfferAmountCents: Scalars['Int']['output'];
     user: GqlCPublicUser;
@@ -4043,12 +4079,14 @@ export type GqlCFeatureToggleKey =
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
+    | 'BOOKING_REQUEST_KITCHEN_DETAILS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
     | 'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE'
     | 'BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW'
     | 'BOOKING_REQUEST_RESTRICTIONS'
+    | 'BOOKING_REQUEST_SETTING'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_PRESENCE_LINKS'
@@ -4848,6 +4886,7 @@ export type GqlCUserAttentionKind =
     | 'CALL_CONFIRMED'
     | 'CALL_PENDING'
     | 'CALL_RESPONSE_NEEDED'
+    | 'KITCHEN_DETAILS_MISSING'
     | 'OFFERS_TO_REVIEW'
     | 'OFFER_CHAT_UNREAD'
     | 'PAYMENT_DUE'
@@ -4865,6 +4904,7 @@ export interface GqlCUserBookingRequest {
     expiresAt?: Maybe<Scalars['DateTime']['output']>;
     giftCard?: Maybe<GqlCUserBookingRequestGiftCard>;
     invoiceAddress?: Maybe<GqlCInvoiceAddress>;
+    kitchenDetails?: Maybe<GqlCBookingRequestKitchenDetails>;
     occasion: Scalars['String']['output'];
     offers: Array<GqlCUserBookingRequestOffer>;
     originalMessage: Scalars['String']['output'];
@@ -4873,6 +4913,7 @@ export interface GqlCUserBookingRequest {
     priceClassType?: Maybe<GqlCBookingRequestPriceClassType>;
     priceImpact: Array<GqlCUserBookingRequestOfferPriceImpact>;
     promoCode?: Maybe<GqlCUserBookingRequestPromoCode>;
+    setting?: Maybe<GqlCBookingRequestSetting>;
     status: GqlCBookingRequestStatus;
     supportRequest?: Maybe<GqlCUserSupportRequest>;
     travelImpact: Array<GqlCUserBookingRequestOfferTravelImpact>;
@@ -4897,6 +4938,7 @@ export type GqlCUserBookingRequestCreate = {
     preferences: Array<Scalars['String']['input']>;
     priceClassType: GqlCBookingRequestPriceClassType;
     redeemCode?: InputMaybe<Scalars['String']['input']>;
+    setting?: InputMaybe<GqlCBookingRequestSetting>;
 };
 
 export type GqlCUserBookingRequestExactEventAddressInput = {
@@ -5062,6 +5104,7 @@ export interface GqlCUserMutation {
     bookingRequestChurnPromoCodeCreate: GqlCMutationResult;
     bookingRequestCreate: GqlCMutationResult;
     bookingRequestDiscountUpdate: GqlCMutationResult;
+    bookingRequestKitchenDetailsUpdate: GqlCMutationResult;
     bookingRequestOfferAccept: GqlCMutationResult;
     bookingRequestOfferCallCreate: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlCBookingRequestOfferCallTokenResult;
@@ -5136,6 +5179,12 @@ export type GqlCUserMutationBookingRequestCreateArgs = {
 export type GqlCUserMutationBookingRequestDiscountUpdateArgs = {
     bookingRequestId: Scalars['ID']['input'];
     redeemCode?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type GqlCUserMutationBookingRequestKitchenDetailsUpdateArgs = {
+    bookingRequestId: Scalars['ID']['input'];
+    kitchenDetails?: InputMaybe<GqlCBookingRequestKitchenDetailsInput>;
+    photoFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export type GqlCUserMutationBookingRequestOfferAcceptArgs = {
@@ -5234,6 +5283,7 @@ export type GqlCUserMutationBookingRequestUpdateArgs = {
     occasion?: InputMaybe<Scalars['String']['input']>;
     participants: Array<GqlCUserBookingRequestParticipantCreate>;
     preferences?: InputMaybe<Array<Scalars['String']['input']>>;
+    setting?: InputMaybe<GqlCBookingRequestSetting>;
 };
 
 export type GqlCUserMutationChatDeleteArgs = {
@@ -8352,7 +8402,34 @@ export type GqlCBookingRequestSubmittedPageQueryVariables = Exact<{
 }>;
 
 export type GqlCBookingRequestSubmittedPageQuery = {
-    currentSession: { sessionId: string; user: { userId: string; bookingRequest: { bookingRequestId: string } | null } | null };
+    currentSession: {
+        sessionId: string;
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
+        user: {
+            userId: string;
+            bookingRequest: {
+                bookingRequestId: string;
+                kitchenDetails: {
+                    availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                    fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                    platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                    guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                    notes: string | null;
+                    photos: Array<{ fileUploadId: string; url: string }>;
+                } | null;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCBookingRequestSubmittedKitchenDetailsUpdateMutationVariables = Exact<{
+    bookingRequestId: string;
+    kitchenDetails?: Schema.GqlCBookingRequestKitchenDetailsInput | null | undefined;
+    photoFileUploadIds?: Array<string> | string | null | undefined;
+}>;
+
+export type GqlCBookingRequestSubmittedKitchenDetailsUpdateMutation = {
+    user: { bookingRequestKitchenDetailsUpdate: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCChefPageQueryVariables = Exact<{
@@ -10083,6 +10160,7 @@ export type GqlCAdminBookingRequestEditPageRequestFragment = {
     preferences: Array<string>;
     expiresAt: string | null;
     createdAt: string;
+    setting: Schema.GqlCBookingRequestSetting | null;
     exactEventAddress: {
         displayText: string;
         latitude: number;
@@ -10094,6 +10172,14 @@ export type GqlCAdminBookingRequestEditPageRequestFragment = {
         state: string;
         country: string;
     };
+    kitchenDetails: {
+        availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+        fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+        platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+        guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+        notes: string | null;
+        photos: Array<{ fileUploadId: string; url: string }>;
+    } | null;
     participants: Array<{
         bookingRequestParticipantId: string;
         type: Schema.GqlCBookingRequestParticipantType;
@@ -10168,6 +10254,7 @@ export type GqlCAdminBookingRequestEditPageQuery = {
                     preferences: Array<string>;
                     expiresAt: string | null;
                     createdAt: string;
+                    setting: Schema.GqlCBookingRequestSetting | null;
                     exactEventAddress: {
                         displayText: string;
                         latitude: number;
@@ -10179,6 +10266,14 @@ export type GqlCAdminBookingRequestEditPageQuery = {
                         state: string;
                         country: string;
                     };
+                    kitchenDetails: {
+                        availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                        fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                        platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                        guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                        notes: string | null;
+                        photos: Array<{ fileUploadId: string; url: string }>;
+                    } | null;
                     participants: Array<{
                         bookingRequestParticipantId: string;
                         type: Schema.GqlCBookingRequestParticipantType;
@@ -11448,6 +11543,7 @@ export type GqlCAdminBookingRequestPageRequestFragment = {
     canceledAt: string | null;
     cancellationReason: string | null;
     createdAt: string;
+    setting: Schema.GqlCBookingRequestSetting | null;
     exactEventAddress: {
         displayText: string;
         city: string;
@@ -11457,6 +11553,14 @@ export type GqlCAdminBookingRequestPageRequestFragment = {
         state: string;
         country: string;
     };
+    kitchenDetails: {
+        availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+        fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+        platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+        guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+        notes: string | null;
+        photos: Array<{ fileUploadId: string; url: string }>;
+    } | null;
     invoiceAddress: {
         companyName: string | null;
         firstName: string;
@@ -11572,6 +11676,7 @@ export type GqlCAdminBookingRequestPageQuery = {
                     canceledAt: string | null;
                     cancellationReason: string | null;
                     createdAt: string;
+                    setting: Schema.GqlCBookingRequestSetting | null;
                     exactEventAddress: {
                         displayText: string;
                         city: string;
@@ -11581,6 +11686,14 @@ export type GqlCAdminBookingRequestPageQuery = {
                         state: string;
                         country: string;
                     };
+                    kitchenDetails: {
+                        availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                        fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                        platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                        guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                        notes: string | null;
+                        photos: Array<{ fileUploadId: string; url: string }>;
+                    } | null;
                     invoiceAddress: {
                         companyName: string | null;
                         firstName: string;
@@ -11702,6 +11815,7 @@ export type GqlCAdminBookingRequestPageUpdatesSubscription = {
             canceledAt: string | null;
             cancellationReason: string | null;
             createdAt: string;
+            setting: Schema.GqlCBookingRequestSetting | null;
             exactEventAddress: {
                 displayText: string;
                 city: string;
@@ -11711,6 +11825,14 @@ export type GqlCAdminBookingRequestPageUpdatesSubscription = {
                 state: string;
                 country: string;
             };
+            kitchenDetails: {
+                availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                notes: string | null;
+                photos: Array<{ fileUploadId: string; url: string }>;
+            } | null;
             invoiceAddress: {
                 companyName: string | null;
                 firstName: string;
@@ -17841,6 +17963,7 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
                 minOfferAmountCents: number | null;
                 maxOfferAmountCents: number | null;
                 minOfferAmountHardCents: number | null;
+                setting: Schema.GqlCBookingRequestSetting | null;
                 exactEventAddress: {
                     displayText: string;
                     addressLine1: string;
@@ -17850,6 +17973,14 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
                     state: string;
                     country: string;
                 };
+                kitchenDetails: {
+                    availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                    fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                    platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                    guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                    notes: string | null;
+                    photos: Array<{ fileUploadId: string; url: string }>;
+                } | null;
                 invoiceAddress: {
                     companyName: string | null;
                     firstName: string;
@@ -18023,6 +18154,7 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                         minOfferAmountCents: number | null;
                         maxOfferAmountCents: number | null;
                         minOfferAmountHardCents: number | null;
+                        setting: Schema.GqlCBookingRequestSetting | null;
                         exactEventAddress: {
                             displayText: string;
                             addressLine1: string;
@@ -18032,6 +18164,14 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                             state: string;
                             country: string;
                         };
+                        kitchenDetails: {
+                            availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                            fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                            platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                            guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                            notes: string | null;
+                            photos: Array<{ fileUploadId: string; url: string }>;
+                        } | null;
                         invoiceAddress: {
                             companyName: string | null;
                             firstName: string;
@@ -18212,6 +18352,7 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                     minOfferAmountCents: number | null;
                     maxOfferAmountCents: number | null;
                     minOfferAmountHardCents: number | null;
+                    setting: Schema.GqlCBookingRequestSetting | null;
                     exactEventAddress: {
                         displayText: string;
                         addressLine1: string;
@@ -18221,6 +18362,14 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                         state: string;
                         country: string;
                     };
+                    kitchenDetails: {
+                        availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                        fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                        platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                        guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                        notes: string | null;
+                        photos: Array<{ fileUploadId: string; url: string }>;
+                    } | null;
                     invoiceAddress: {
                         companyName: string | null;
                         firstName: string;
@@ -18836,10 +18985,19 @@ export type GqlCProfileCookBookingRequestPageUserFragment = {
                       dateTime: string;
                       message: string;
                       preferences: Array<string>;
+                      setting: Schema.GqlCBookingRequestSetting | null;
                       estimatedTravelDistanceKm: number | null;
                       estimatedTravelExpensesCents: number | null;
                       estimatedCookPayoutCents: number;
                       exactEventAddress: { city: string; postCode: string; country: string };
+                      kitchenDetails: {
+                          availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                          fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                          platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                          guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                          notes: string | null;
+                          photos: Array<{ fileUploadId: string; url: string }>;
+                      } | null;
                       participants: Array<{
                           bookingRequestParticipantId: string;
                           type: Schema.GqlCBookingRequestParticipantType;
@@ -18887,10 +19045,19 @@ export type GqlCProfileCookBookingRequestPageQuery = {
                               dateTime: string;
                               message: string;
                               preferences: Array<string>;
+                              setting: Schema.GqlCBookingRequestSetting | null;
                               estimatedTravelDistanceKm: number | null;
                               estimatedTravelExpensesCents: number | null;
                               estimatedCookPayoutCents: number;
                               exactEventAddress: { city: string; postCode: string; country: string };
+                              kitchenDetails: {
+                                  availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                                  fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                                  platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                                  guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                                  notes: string | null;
+                                  photos: Array<{ fileUploadId: string; url: string }>;
+                              } | null;
                               participants: Array<{
                                   bookingRequestParticipantId: string;
                                   type: Schema.GqlCBookingRequestParticipantType;
@@ -18939,10 +19106,19 @@ export type GqlCProfileCookBookingRequestPageUpdatesSubscription = {
                           dateTime: string;
                           message: string;
                           preferences: Array<string>;
+                          setting: Schema.GqlCBookingRequestSetting | null;
                           estimatedTravelDistanceKm: number | null;
                           estimatedTravelExpensesCents: number | null;
                           estimatedCookPayoutCents: number;
                           exactEventAddress: { city: string; postCode: string; country: string };
+                          kitchenDetails: {
+                              availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                              fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                              platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                              guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                              notes: string | null;
+                              photos: Array<{ fileUploadId: string; url: string }>;
+                          } | null;
                           participants: Array<{
                               bookingRequestParticipantId: string;
                               type: Schema.GqlCBookingRequestParticipantType;
@@ -21301,6 +21477,7 @@ export type GqlCProfileCustomerBookingRequestPageUserFragment = {
         occasion: string;
         dateTime: string;
         priceClassType: Schema.GqlCBookingRequestPriceClassType | null;
+        setting: Schema.GqlCBookingRequestSetting | null;
         originalMessage: string;
         preferences: Array<string>;
         canceledAt: string | null;
@@ -21317,6 +21494,14 @@ export type GqlCProfileCustomerBookingRequestPageUserFragment = {
             state: string;
             country: string;
         };
+        kitchenDetails: {
+            availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+            fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+            platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+            guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+            notes: string | null;
+            photos: Array<{ fileUploadId: string; url: string }>;
+        } | null;
         participants: Array<{
             bookingRequestParticipantId: string;
             type: Schema.GqlCBookingRequestParticipantType;
@@ -21394,6 +21579,7 @@ export type GqlCProfileCustomerBookingRequestPageQuery = {
                 occasion: string;
                 dateTime: string;
                 priceClassType: Schema.GqlCBookingRequestPriceClassType | null;
+                setting: Schema.GqlCBookingRequestSetting | null;
                 originalMessage: string;
                 preferences: Array<string>;
                 canceledAt: string | null;
@@ -21410,6 +21596,14 @@ export type GqlCProfileCustomerBookingRequestPageQuery = {
                     state: string;
                     country: string;
                 };
+                kitchenDetails: {
+                    availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                    fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                    platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                    guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                    notes: string | null;
+                    photos: Array<{ fileUploadId: string; url: string }>;
+                } | null;
                 participants: Array<{
                     bookingRequestParticipantId: string;
                     type: Schema.GqlCBookingRequestParticipantType;
@@ -21492,6 +21686,7 @@ export type GqlCProfileCustomerBookingRequestPageUpdatesSubscription = {
             occasion: string;
             dateTime: string;
             priceClassType: Schema.GqlCBookingRequestPriceClassType | null;
+            setting: Schema.GqlCBookingRequestSetting | null;
             originalMessage: string;
             preferences: Array<string>;
             canceledAt: string | null;
@@ -21508,6 +21703,14 @@ export type GqlCProfileCustomerBookingRequestPageUpdatesSubscription = {
                 state: string;
                 country: string;
             };
+            kitchenDetails: {
+                availability: Schema.GqlCBookingRequestKitchenDetailsAvailability | null;
+                fridgeSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                platingSpace: Schema.GqlCBookingRequestKitchenDetailsSpace | null;
+                guestTableware: Schema.GqlCBookingRequestKitchenDetailsGuestTableware | null;
+                notes: string | null;
+                photos: Array<{ fileUploadId: string; url: string }>;
+            } | null;
             participants: Array<{
                 bookingRequestParticipantId: string;
                 type: Schema.GqlCBookingRequestParticipantType;
@@ -21613,9 +21816,20 @@ export type GqlCProfileBookingRequestUpdateMutationVariables = Exact<{
     preferences?: Array<string> | string | null | undefined;
     participants: Array<Schema.GqlCUserBookingRequestParticipantCreate> | Schema.GqlCUserBookingRequestParticipantCreate;
     exactEventAddress?: Schema.GqlCUserBookingRequestExactEventAddressInput | null | undefined;
+    setting?: Schema.GqlCBookingRequestSetting | null | undefined;
 }>;
 
 export type GqlCProfileBookingRequestUpdateMutation = { user: { bookingRequestUpdate: { success: boolean; referenceId: string | null } } };
+
+export type GqlCProfileCustomerBookingRequestKitchenDetailsUpdateMutationVariables = Exact<{
+    bookingRequestId: string;
+    kitchenDetails?: Schema.GqlCBookingRequestKitchenDetailsInput | null | undefined;
+    photoFileUploadIds?: Array<string> | string | null | undefined;
+}>;
+
+export type GqlCProfileCustomerBookingRequestKitchenDetailsUpdateMutation = {
+    user: { bookingRequestKitchenDetailsUpdate: { success: boolean; referenceId: string | null } };
+};
 
 export type GqlCProfileCustomerBookingRequestParticipantAmendmentCreateMutationVariables = Exact<{
     bookingRequestOfferId: string;
@@ -26398,6 +26612,32 @@ export const AdminBookingRequestEditPageRequestFragmentDoc = {
                             ],
                         },
                     },
+                    { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'kitchenDetails' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'photos' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'participants' },
@@ -27568,6 +27808,32 @@ export const AdminBookingRequestPageRequestFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'state' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                            ],
+                        },
+                    },
+                    { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'kitchenDetails' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'photos' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -31279,6 +31545,35 @@ export const ProfileCookBookingRequestOfferPageUserFragmentDoc = {
                                                                 ],
                                                             },
                                                         },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'kitchenDetails' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'photos' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'fileUploadId' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'invoiceAddress' },
@@ -31920,6 +32215,53 @@ export const ProfileCookBookingRequestPageUserFragmentDoc = {
                                                                                     name: { kind: 'Name', value: 'postCode' },
                                                                                 },
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'kitchenDetails' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'availability' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'fridgeSpace' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'platingSpace' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'guestTableware' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'photos' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'fileUploadId',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'url' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
                                                                             ],
                                                                         },
                                                                     },
@@ -34252,6 +34594,32 @@ export const ProfileCustomerBookingRequestPageUserFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'state' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                                        ],
+                                    },
+                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'kitchenDetails' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'photos' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -40359,6 +40727,7 @@ export const BookingRequestSubmittedPageDocument = {
                             kind: 'SelectionSet',
                             selections: [
                                 { kind: 'Field', name: { kind: 'Name', value: 'sessionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
                                 {
                                     kind: 'Field',
                                     name: { kind: 'Name', value: 'user' },
@@ -40378,7 +40747,37 @@ export const BookingRequestSubmittedPageDocument = {
                                                 ],
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
-                                                    selections: [{ kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } }],
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'kitchenDetails' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'photos' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'fileUploadId' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
                                                 },
                                             },
                                         ],
@@ -40392,6 +40791,81 @@ export const BookingRequestSubmittedPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCBookingRequestSubmittedPageQuery, GqlCBookingRequestSubmittedPageQueryVariables>;
+export const BookingRequestSubmittedKitchenDetailsUpdateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'BookingRequestSubmittedKitchenDetailsUpdate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'kitchenDetails' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'BookingRequestKitchenDetailsInput' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'photoFileUploadIds' } },
+                    type: {
+                        kind: 'ListType',
+                        type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestKitchenDetailsUpdate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'kitchenDetails' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'kitchenDetails' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'photoFileUploadIds' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'photoFileUploadIds' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCBookingRequestSubmittedKitchenDetailsUpdateMutation,
+    GqlCBookingRequestSubmittedKitchenDetailsUpdateMutationVariables
+>;
 export const ChefPageDocument = {
     kind: 'Document',
     definitions: [
@@ -47134,6 +47608,32 @@ export const AdminBookingRequestEditPageDocument = {
                             ],
                         },
                     },
+                    { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'kitchenDetails' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'photos' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'participants' },
@@ -50994,6 +51494,32 @@ export const AdminBookingRequestPageDocument = {
                             ],
                         },
                     },
+                    { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'kitchenDetails' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'photos' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'invoiceAddress' },
@@ -51370,6 +51896,32 @@ export const AdminBookingRequestPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'state' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                            ],
+                        },
+                    },
+                    { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'kitchenDetails' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'photos' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -73491,6 +74043,35 @@ export const ProfileCookBookingRequestOfferPageDocument = {
                                                                 ],
                                                             },
                                                         },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'kitchenDetails' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'photos' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'fileUploadId' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
                                                         {
                                                             kind: 'Field',
                                                             name: { kind: 'Name', value: 'invoiceAddress' },
@@ -74024,6 +74605,35 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'state' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'kitchenDetails' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'photos' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'fileUploadId' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                 ],
                                                             },
                                                         },
@@ -76104,6 +76714,53 @@ export const ProfileCookBookingRequestPageDocument = {
                                                                             ],
                                                                         },
                                                                     },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'kitchenDetails' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'availability' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'fridgeSpace' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'platingSpace' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'guestTableware' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'photos' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'fileUploadId',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'url' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
                                                                     {
                                                                         kind: 'Field',
                                                                         name: { kind: 'Name', value: 'participants' },
@@ -76386,6 +77043,53 @@ export const ProfileCookBookingRequestPageUpdatesDocument = {
                                                                                     name: { kind: 'Name', value: 'postCode' },
                                                                                 },
                                                                                 { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'kitchenDetails' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'availability' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'fridgeSpace' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'platingSpace' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'guestTableware' },
+                                                                                },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'photos' },
+                                                                                    selectionSet: {
+                                                                                        kind: 'SelectionSet',
+                                                                                        selections: [
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: {
+                                                                                                    kind: 'Name',
+                                                                                                    value: 'fileUploadId',
+                                                                                                },
+                                                                                            },
+                                                                                            {
+                                                                                                kind: 'Field',
+                                                                                                name: { kind: 'Name', value: 'url' },
+                                                                                            },
+                                                                                        ],
+                                                                                    },
+                                                                                },
                                                                             ],
                                                                         },
                                                                     },
@@ -83766,6 +84470,32 @@ export const ProfileCustomerBookingRequestPageDocument = {
                                         ],
                                     },
                                 },
+                                { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'kitchenDetails' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'photos' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
                                 { kind: 'Field', name: { kind: 'Name', value: 'originalMessage' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'preferences' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canceledAt' } },
@@ -84046,6 +84776,32 @@ export const ProfileCustomerBookingRequestPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'state' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                                        ],
+                                    },
+                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'setting' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'kitchenDetails' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'availability' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'fridgeSpace' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'platingSpace' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'guestTableware' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'notes' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'photos' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'fileUploadId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'url' } },
+                                                    ],
+                                                },
+                                            },
                                         ],
                                     },
                                 },
@@ -84524,6 +85280,11 @@ export const ProfileBookingRequestUpdateDocument = {
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'exactEventAddress' } },
                     type: { kind: 'NamedType', name: { kind: 'Name', value: 'UserBookingRequestExactEventAddressInput' } },
                 },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'setting' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'BookingRequestSetting' } },
+                },
             ],
             selectionSet: {
                 kind: 'SelectionSet',
@@ -84568,6 +85329,11 @@ export const ProfileBookingRequestUpdateDocument = {
                                             name: { kind: 'Name', value: 'exactEventAddress' },
                                             value: { kind: 'Variable', name: { kind: 'Name', value: 'exactEventAddress' } },
                                         },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'setting' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'setting' } },
+                                        },
                                     ],
                                     selectionSet: {
                                         kind: 'SelectionSet',
@@ -84585,6 +85351,81 @@ export const ProfileBookingRequestUpdateDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileBookingRequestUpdateMutation, GqlCProfileBookingRequestUpdateMutationVariables>;
+export const ProfileCustomerBookingRequestKitchenDetailsUpdateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCustomerBookingRequestKitchenDetailsUpdate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'kitchenDetails' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'BookingRequestKitchenDetailsInput' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'photoFileUploadIds' } },
+                    type: {
+                        kind: 'ListType',
+                        type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestKitchenDetailsUpdate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'kitchenDetails' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'kitchenDetails' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'photoFileUploadIds' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'photoFileUploadIds' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCustomerBookingRequestKitchenDetailsUpdateMutation,
+    GqlCProfileCustomerBookingRequestKitchenDetailsUpdateMutationVariables
+>;
 export const ProfileCustomerBookingRequestParticipantAmendmentCreateDocument = {
     kind: 'Document',
     definitions: [

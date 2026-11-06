@@ -28,13 +28,15 @@ partner.
    (title + courses keyed to the selected preference; each cuisine option also has “Beispielmenü”); edit guests / start time / cuisine /
    price class via bottom Sheet on mobile and Dialog on desktop (scrim locks + blurs the page); partner venue address is omitted from the
    sticky summary and shown as static copy in that editor with a partner-location hint. Without a partner location, the address Combobox
-   stays on the page and in that editor so the venue can be chosen or changed. Sticky summary sidebar only from `@5xl`
-   (`@5xl:sticky @5xl:top-20` on the column wrapper so it tracks while scrolling; single-column + bottom bar below that, so the sidebar does
-   not crowd mid widths). Mobile bottom bar shows guest count (“Teilnehmer” / “guests”) plus the selected price class title (no date; that
-   lives in the date chips), with a borderless edit affordance and primary Next CTA. Foretaste section is a horizontal carousel (5 reel
-   cards, captions at top, prev/next at top right on all widths). Care section (“Ihr genießt…”) stays stacked below `@xl`, three equal cards
-   from `@xl`. Partner testimonials reuse curated partner assignments via `SectionPageTestimonials` with `columns={2}` (sidebar width) and
-   per-card detail dialogs.
+   stays on the page and in that editor so the venue can be chosen or changed. When `BOOKING_REQUEST_SETTING` is on and an address exists
+   (Combobox or locked partner venue), the same Outdoor / Indoor cards as the multi-step form appear, with Later as a skip underneath until
+   the picker is ~42rem wide, then Outdoor / Later / Indoor in one row. Sticky summary sidebar only from `@5xl` (`@5xl:sticky @5xl:top-20`
+   on the column wrapper so it tracks while scrolling; single-column + bottom bar below that, so the sidebar does not crowd mid widths).
+   Mobile bottom bar shows guest count (“Teilnehmer” / “guests”) plus the selected price class title (no date; that lives in the date
+   chips), with a borderless edit affordance and primary Next CTA. Foretaste section is a horizontal carousel (5 reel cards, captions at
+   top, prev/next at top right on all widths). Care section (“Ihr genießt…”) stays stacked below `@xl`, three equal cards from `@xl`.
+   Partner testimonials reuse curated partner assignments via `SectionPageTestimonials` with `columns={2}` (sidebar width) and per-card
+   detail dialogs.
 3. **Step 2 (contact)** — centered `max-w-md` column (no sticky summary), matching the classic form auth width. Required wishes / allergies
    message first, then `AuthIdentityGate` (OTP / passkey / profile; `firstName` seeded from query when registering; register heading
    omitted, submit labeled “Buchungsanfrage senden” / “Send booking request”; `onReady` creates once message is filled). Already signed-in

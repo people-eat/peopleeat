@@ -34,8 +34,8 @@ reserved for detail pages.
 ### Create — `/admin/booking-requests/create`
 
 Pick existing customer, then same core fields as the public booking form (including per-guest dietary restrictions when
-`BOOKING_REQUEST_RESTRICTIONS` is enabled). Optional `?userId=` prefills the customer (from the admin user detail booking-requests tab).
-Publication and cook notify on create (no separate approve step):
+`BOOKING_REQUEST_RESTRICTIONS` is enabled, and indoor/outdoor cards when `BOOKING_REQUEST_SETTING` is on). Optional `?userId=` prefills the
+customer (from the admin user detail booking-requests tab). Publication and cook notify on create (no separate approve step):
 
 - Under 12 participants → auto-approved publication; cook picker defaults to all in travel radius (deselect allowed).
 - 12+ participants → admin-approved publication; picker defaults to none; at least one cook required when any are in radius.
@@ -44,20 +44,20 @@ Cook list from travel-radius preview before a row exists. Confirmation dialog be
 
 ### Detail — `/admin/booking-requests/<id>`
 
-Tabs via URL: **overview** (fields including per-guest restrictions when present, customer and accepted cook links, **Edit**, **Cancel
-request** when status is cancelable, pending request-scoped `queuedJobs` including expire / no-offers / adjusted-message AI), **offers**
-funnel: accepted offer pin, open offers, notified cooks without offers (re-notify), radius cooks not yet notified (suggest / notify / create
-offer), and **discount** (apply / clear promo or gift codes via `BookingRequestDiscountEditor`, same rules as the customer: editable while
-`WAITING_FOR_OFFERS` / `OFFERS_WAITING_FOR_REVIEW`, not canceled, and not dual-accepted; no empty-state copy; input hidden once applied).
-Suggest and re-notify open a confirmation that states the cook will get an email (and, on first notify, the request in their pool). Bulk
-create offer → dedicated create route. Edit mirrors the customer form for occasion chips, preferences, guest restrictions (collapsed by
-default), and live `travelImpact` / `priceImpact` banners next to the venue and guest-count fields (admin also sees cook-payout deltas).
-Changing venue, guests, preferences, or restrictions resets cook acceptance and emits offer timeline events; venue/headcount changes also
-auto-adjust open-offer travel and menu prices (`priceAutoAdjustReason` + `SYSTEM_CHANGED_PRICE`, same as customer update). On a
-dual-accepted offer, venue/participant edits use the amendment create/apply path (confirm dialog: propose to chef vs apply without cook
-approval) instead of resetting acceptance. Other ops fields stay a non-resetting patch. Admin edit can set or clear `adjustedMessage`;
-clearing it while changing `originalMessage` re-enqueues the AI rewrite when the toggle is on — see
-[ai-booking-request-message.md](./ai-booking-request-message.md).
+Tabs via URL: **overview** (fields including per-guest restrictions when present, kitchen details then indoor/outdoor, customer and accepted
+cook links, **Edit**, **Cancel request** when status is cancelable, pending request-scoped `queuedJobs` including expire / no-offers /
+adjusted-message AI), **offers** funnel: accepted offer pin, open offers, notified cooks without offers (re-notify), radius cooks not yet
+notified (suggest / notify / create offer), and **discount** (apply / clear promo or gift codes via `BookingRequestDiscountEditor`, same
+rules as the customer: editable while `WAITING_FOR_OFFERS` / `OFFERS_WAITING_FOR_REVIEW`, not canceled, and not dual-accepted; no
+empty-state copy; input hidden once applied). Suggest and re-notify open a confirmation that states the cook will get an email (and, on
+first notify, the request in their pool). Bulk create offer → dedicated create route. Edit mirrors the customer form for occasion chips,
+preferences, guest restrictions (collapsed by default), indoor/outdoor and kitchen details beside venue, and live `travelImpact` /
+`priceImpact` banners next to the venue and guest-count fields (admin also sees cook-payout deltas). Changing venue, guests, preferences, or
+restrictions resets cook acceptance and emits offer timeline events; venue/headcount changes also auto-adjust open-offer travel and menu
+prices (`priceAutoAdjustReason` + `SYSTEM_CHANGED_PRICE`, same as customer update). On a dual-accepted offer, venue/participant edits use
+the amendment create/apply path (confirm dialog: propose to chef vs apply without cook approval) instead of resetting acceptance. Other ops
+fields stay a non-resetting patch. Admin edit can set or clear `adjustedMessage`; clearing it while changing `originalMessage` re-enqueues
+the AI rewrite when the toggle is on — see [ai-booking-request-message.md](./ai-booking-request-message.md).
 
 **Cancel request** uses the same cancelable statuses and customer/cook emails as self-serve cancel (`WAITING_FOR_OFFERS` /
 `OFFERS_WAITING_FOR_REVIEW` / `EXPIRED`). Reason required. Writes `USER_CANCELLED` offer timeline events.

@@ -20,6 +20,8 @@ Keys today:
 - Cook analytics (overview KPIs + `/profile/analytics`; see [cook-analytics.md](./cook-analytics.md))
 - Cook other profiles (website, Instagram, Google, Take a Chef, and other platforms on the chef profile; admin review stays available)
 - Booking request restrictions
+- Booking request indoor / outdoor
+- Booking request kitchen details
 - Offer chat emoji reactions
 - Offer participant and venue amendment after accept (cook-gated propose / accept)
 - Booking-request edit auto price-adjustment preview (customer headcount `priceImpact`)
@@ -97,6 +99,13 @@ Wired today:
   create/update strip non-empty restriction values when off for the customer `userId`. Detail views still show stored restrictions. Admin
   shells keep the editor visible for ops (`FeatureToggleAdminShellProvider`, default not `gateInAdminShell`); the server still strips when
   the effective toggle is off
+- **Booking request indoor / outdoor** (`BOOKING_REQUEST_SETTING`) — Outdoor / Indoor cards on the form location step, plan details, and
+  pre-accept venue edits, with Later as a skip underneath until the picker is ~42rem wide (then Outdoor / Later / Indoor in one row).
+  Create/update strip incoming `setting` to null when off. Stored values stay readable for cooks, customers, and admin. Not a new funnel
+  step; location `step_completed` records the choice when on
+- **Booking request kitchen details** (`BOOKING_REQUEST_KITCHEN_DETAILS`) — skippable kitchen card after send, request-detail editor, and
+  attention when still empty on an open request. Create/update strip incoming `kitchenDetails` when off. Stored values and photos stay
+  readable. Independent of indoor/outdoor
 - **Offer chat emoji reactions** (`BOOKING_REQUEST_OFFER_CHAT_REACTIONS`) — smile control on peer `*_MESSAGE_SIMPLE` bubbles in customer /
   cook **and admin** offer chat; admin shells mount the session toggle provider and gate this key with `gateInAdminShell` (unlike
   publication / restrictions, which stay visible for ops when the end-user rollout is off). Mutation

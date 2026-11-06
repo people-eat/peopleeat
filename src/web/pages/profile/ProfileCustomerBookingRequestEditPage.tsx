@@ -7,21 +7,31 @@ import { useMutation, useQuery } from 'urql';
 
 import {
     bookingRequestParticipantsFromCounts,
+    bookingRequestSettingChoiceFromStored,
+    bookingRequestSettingFromChoice,
     defaultBookingRequestOccasions,
     defaultBookingRequestPreferences,
     textNormalizeTitled,
 } from '../../../shared';
-import type { BookingRequestParticipantDraft } from '../../../shared';
+import type { BookingRequestParticipantDraft, BookingRequestSettingChoice } from '../../../shared';
 import { Button } from '../../components/base/button';
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from '../../components/base/combobox';
 import { DateTimePicker } from '../../components/base/date-time-picker';
 import { Input } from '../../components/base/input';
 import { StatusAlert } from '../../components/base/status-alert';
 import {
+    bookingRequestKitchenDetailsDraftFromGql,
+    BookingRequestKitchenDetailsFields,
+    bookingRequestKitchenDetailsInputFromDraft,
+    bookingRequestKitchenDetailsPhotosFromGql,
+} from '../../components/BookingRequestKitchenDetailsFields';
+import type { BookingRequestKitchenDetailsPhoto } from '../../components/BookingRequestKitchenDetailsFields';
+import {
     BookingRequestOfferPriceImpactPreview,
     BookingRequestOfferTravelImpactPreview,
 } from '../../components/BookingRequestOfferImpactPreviews';
 import { BookingRequestParticipantsRestrictionsEditor } from '../../components/BookingRequestParticipantsRestrictionsEditor';
+import { BookingRequestSettingPicker } from '../../components/BookingRequestSettingPicker';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
 import { SelectableChip } from '../../components/SelectableChip';
 import type {
@@ -35,6 +45,7 @@ import {
     ProfileCustomerBookingRequestEditLocationSuggestionsDocument,
     ProfileCustomerBookingRequestEditPriceImpactDocument,
     ProfileCustomerBookingRequestEditTravelImpactDocument,
+    ProfileCustomerBookingRequestKitchenDetailsUpdateDocument,
     ProfileCustomerBookingRequestPageUpdatesDocument,
     ProfileCustomerBookingRequestParticipantAmendmentCreateDocument,
 } from '../../graphql/generated';
@@ -76,6 +87,7 @@ type BookingRequestFormValues = {
     childCount: number;
     preferences: string[];
     exactEventAddress: GqlCUserBookingRequestExactEventAddressInput;
+    settingChoice: BookingRequestSettingChoice;
 };
 
 function addressFromRequest(
@@ -120,6 +132,7 @@ function formFromRequest(
         childCount: request.participants.filter((participant) => participant.type === 'DISCOUNTED').length,
         preferences: [...request.preferences],
         exactEventAddress: addressFromRequest(request.exactEventAddress),
+        settingChoice: bookingRequestSettingChoiceFromStored(request.setting),
     };
 }
 
@@ -173,8 +186,15 @@ export function ProfileCustomerBookingRequestEditPage({
     const [locationSearchText, setLocationSearchText] = useState(seedRequest.exactEventAddress.displayText);
     const [customPreferenceText, setCustomPreferenceText] = useState('');
     const [, updateRequest] = useMutation(ProfileBookingRequestUpdateDocument);
+    const [, updateKitchenDetails] = useMutation(ProfileCustomerBookingRequestKitchenDetailsUpdateDocument);
     const [, createParticipantAmendment] = useMutation(ProfileCustomerBookingRequestParticipantAmendmentCreateDocument);
     const restrictionsEnabled = useFeatureToggleActive('BOOKING_REQUEST_RESTRICTIONS');
+    const settingEnabled = useFeatureToggleActive('BOOKING_REQUEST_SETTING');
+    const kitchenEnabled = useFeatureToggleActive('BOOKING_REQUEST_KITCHEN_DETAILS');
+    const [kitchenDraft, setKitchenDraft] = useState(() => bookingRequestKitchenDetailsDraftFromGql(seedRequest.kitchenDetails));
+    const [kitchenPhotos, setKitchenPhotos] = useState<BookingRequestKitchenDetailsPhoto[]>(() =>
+        bookingRequestKitchenDetailsPhotosFromGql(seedRequest.kitchenDetails?.photos),
+    );
     const [participants, setParticipants] = useState<BookingRequestParticipantDraft[]>(() =>
         seedRequest.participants.map((participant) => ({
             type: participant.type,
@@ -282,9 +302,20 @@ export function ProfileCustomerBookingRequestEditPage({
                     preferences,
                     participants: nextParticipants,
                     exactEventAddress: value.exactEventAddress,
+                    ...(settingEnabled ? { setting: bookingRequestSettingFromChoice(value.settingChoice) } : {}),
                 });
                 if (!result.data?.user.bookingRequestUpdate.success) {
                     throw new Error('update failed');
+                }
+                if (kitchenEnabled) {
+                    const kitchenResult = await updateKitchenDetails({
+                        bookingRequestId,
+                        kitchenDetails: bookingRequestKitchenDetailsInputFromDraft(kitchenDraft),
+                        photoFileUploadIds: kitchenPhotos.map((photo) => photo.fileUploadId),
+                    });
+                    if (!kitchenResult.data?.user.bookingRequestKitchenDetailsUpdate.success) {
+                        throw new Error('kitchen details update failed');
+                    }
                 }
                 toast.success({ de: 'Anfrage aktualisiert.', en: 'Request updated.' }[locale]);
                 await navigate({
@@ -374,6 +405,8 @@ export function ProfileCustomerBookingRequestEditPage({
                     restrictions: [...participant.restrictions],
                 })),
             );
+            setKitchenDraft(bookingRequestKitchenDetailsDraftFromGql(request.kitchenDetails));
+            setKitchenPhotos(bookingRequestKitchenDetailsPhotosFromGql(request.kitchenDetails?.photos));
         }
     }, [bookingRequestId, canStayOnEdit, form, isDirty, navigate, request, user]);
 
@@ -596,6 +629,18 @@ export function ProfileCustomerBookingRequestEditPage({
                         </div>
                     )}
                 </form.Field>
+                {settingEnabled && !isParticipantAmendmentMode ? (
+                    <form.Field name="settingChoice">
+                        {(field) => (
+                            <BookingRequestSettingPicker
+                                locale={locale}
+                                value={field.state.value}
+                                disabled={isSubmitting}
+                                onChange={(next) => field.handleChange(next)}
+                            />
+                        )}
+                    </form.Field>
+                ) : null}
                 <div className="grid grid-cols-2 gap-3">
                     <form.Field name="adultCount">
                         {(field) => (
@@ -727,6 +772,19 @@ export function ProfileCustomerBookingRequestEditPage({
                             participants={participants}
                             onChange={setParticipants}
                             disabled={isSubmitting}
+                        />
+                    </div>
+                ) : null}
+                {kitchenEnabled && !isParticipantAmendmentMode ? (
+                    <div className="grid gap-3">
+                        <span className="text-sm font-medium">{{ de: 'Über die Küche', en: 'About the kitchen' }[locale]}</span>
+                        <BookingRequestKitchenDetailsFields
+                            locale={locale}
+                            value={kitchenDraft}
+                            photos={kitchenPhotos}
+                            disabled={isSubmitting}
+                            onChange={setKitchenDraft}
+                            onPhotosChange={setKitchenPhotos}
                         />
                     </div>
                 ) : null}

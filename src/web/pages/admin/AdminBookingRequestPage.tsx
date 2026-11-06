@@ -2,11 +2,19 @@ import { Link } from '@tanstack/react-router';
 import type { LucideIcon } from 'lucide-react';
 import { BadgePercentIcon, FileInputIcon, FileTextIcon } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
-import { formatCurrency, formatDate, formatDateTime, formatParticipants, userDisplayName } from '../../../shared';
+import {
+    bookingRequestSettingLabel,
+    formatCurrency,
+    formatDate,
+    formatDateTime,
+    formatParticipants,
+    userDisplayName,
+} from '../../../shared';
 import type { BookingRequestOfferStatus } from '../../../shared/bookingRequestOfferStatus';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import { AdminBookingRequestCookWithoutOfferCard } from '../../components/AdminBookingRequestCookWithoutOfferCard';
@@ -33,6 +41,10 @@ import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { Textarea } from '../../components/base/textarea';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
 import { BookingRequestOfferParticipantAmendmentAdminPendingAlert } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
+import {
+    BookingRequestKitchenDetailsFactContent,
+    bookingRequestKitchenDetailsHasFacts,
+} from '../../components/BookingRequestVenueConditionsFacts';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import type { GqlCAdminBookingRequestPageQuery, GqlCAdminBookingRequestPageRequestFragment } from '../../graphql/generated';
 import {
@@ -666,6 +678,22 @@ function AdminBookingRequestDetailFields({ bookingRequest }: { bookingRequest: A
                 />
                 <Separator />
                 <DetailField
+                    label={{ de: 'Über die Küche', en: 'About the kitchen' }[locale]}
+                    value={
+                        bookingRequestKitchenDetailsHasFacts(bookingRequest.kitchenDetails, locale) ? (
+                            <BookingRequestKitchenDetailsFactContent details={bookingRequest.kitchenDetails} locale={locale} />
+                        ) : (
+                            empty
+                        )
+                    }
+                />
+                <Separator />
+                <DetailField
+                    label={{ de: 'Wo sitzt ihr', en: 'Where you dine' }[locale]}
+                    value={bookingRequest.setting != null ? bookingRequestSettingLabel(bookingRequest.setting, locale) : empty}
+                />
+                <Separator />
+                <DetailField
                     label={{ de: 'Nachricht', en: 'Message' }[locale]}
                     value={bookingRequest.adjustedMessage?.trim() || bookingRequest.originalMessage || empty}
                 />
@@ -1039,7 +1067,7 @@ function AdminBookingRequestOffersSection({
     );
 }
 
-function DetailField({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+function DetailField({ label, value, mono }: { label: string; value: ReactNode; mono?: boolean }) {
     return (
         <div className="grid gap-1">
             <dt className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{label}</dt>

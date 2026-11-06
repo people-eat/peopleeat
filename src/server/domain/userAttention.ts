@@ -9,6 +9,7 @@ export type UserAttentionRequest = {
     status: BookingRequestStatus;
     occasion: string;
     dateTime: Date;
+    kitchenDetailsMissing: boolean;
     offers: readonly {
         bookingRequestOfferId: string;
         status: BookingRequestOfferStatus;
@@ -124,6 +125,17 @@ export function userAttentionDerive(requests: readonly UserAttentionRequest[]): 
     const callItem = callAttentionFind(requests);
     if (callItem) {
         items.push(callItem);
+    }
+
+    const kitchenRequest = requests
+        .filter(
+            (request) =>
+                request.kitchenDetailsMissing &&
+                (request.status === 'WAITING_FOR_OFFERS' || request.status === 'OFFERS_WAITING_FOR_REVIEW'),
+        )
+        .sort(byDateTimeAsc)[0];
+    if (kitchenRequest) {
+        items.push(item('KITCHEN_DETAILS_MISSING', kitchenRequest));
     }
 
     const reviewOffer = requests

@@ -4,6 +4,7 @@ import { fileUploadLoad } from '../../server/db/fileUploadLoad';
 import { environmentVariables } from '../../server/env/environmentVariablesCreate';
 import { clientIpFromRequest } from '../../server/utils/clientIpFromRequest';
 import {
+    fileUploadAccessibleViaBookingRequestKitchenDetails,
     fileUploadAccessibleViaOfferChat,
     fileUploadAccessibleViaSupportRequest,
     fileUploadReferencedAsCookLogo,
@@ -39,7 +40,8 @@ const log = loggerCreate(db);
 //   4. referenced by a published city/partner/blog hero or section image
 //   5. referenced by a published, non-deleted cook meal image
 //   6. referenced by a published customer/cook testimonial `imageUrls` entry (public)
-//   7. signed-in peer on an offer / support chat that attaches the upload
+//   7. signed-in peer on an offer / support chat that attaches the upload,
+//      or the request owner / pool cook / admin on kitchen-details photos
 //   8. signed-in admin + referenced by any draft/published content page or any meal
 //   9. signed-in admin + referenced by any customer/cook testimonial `imageUrls`
 //  10. signed-in admin + gift-card receipt/voucher PDF or outbound-email attachment
@@ -95,7 +97,8 @@ export const Route = createFileRoute('/api/file-uploads_/$fileUploadId')({
                 if (!allowed && session.userId) {
                     isChatPeerAccess =
                         (await fileUploadAccessibleViaOfferChat(db, fileUpload.fileUploadId, session.userId)) ||
-                        (await fileUploadAccessibleViaSupportRequest(db, fileUpload.fileUploadId, session.userId));
+                        (await fileUploadAccessibleViaSupportRequest(db, fileUpload.fileUploadId, session.userId)) ||
+                        (await fileUploadAccessibleViaBookingRequestKitchenDetails(db, fileUpload.fileUploadId, session.userId));
                     allowed = isChatPeerAccess;
                 }
                 if (!allowed && session.userId) {
@@ -108,7 +111,8 @@ export const Route = createFileRoute('/api/file-uploads_/$fileUploadId')({
                             (await fileUploadReferencedByBookingRequestOfferPaymentPdf(db, fileUpload.fileUploadId)) ||
                             (await fileUploadReferencedByGiftCardPdf(db, fileUpload.fileUploadId)) ||
                             (await fileUploadReferencedByOutboundEmailAttachment(db, fileUpload.fileUploadId)) ||
-                            (await fileUploadReferencedByWhatsAppAttachment(db, fileUpload.fileUploadId));
+                            (await fileUploadReferencedByWhatsAppAttachment(db, fileUpload.fileUploadId)) ||
+                            (await fileUploadAccessibleViaBookingRequestKitchenDetails(db, fileUpload.fileUploadId, session.userId));
                     }
                 }
 

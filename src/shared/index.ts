@@ -103,6 +103,32 @@ export {
 export { featureToggleIsActive, featureToggleKeys } from './featureToggle';
 export type { FeatureToggleKey } from './featureToggle';
 export {
+    bookingRequestSettingChoiceFromStored,
+    bookingRequestSettingChoiceParse,
+    bookingRequestSettingFromChoice,
+    bookingRequestSettingLabel,
+    bookingRequestSettings,
+    isBookingRequestSetting,
+} from './bookingRequestSetting';
+export type { BookingRequestSetting, BookingRequestSettingChoice } from './bookingRequestSetting';
+export {
+    BOOKING_REQUEST_KITCHEN_DETAILS_PHOTO_MAX,
+    bookingRequestKitchenDetailsAvailabilities,
+    bookingRequestKitchenDetailsAvailabilityLabel,
+    bookingRequestKitchenDetailsDraftEmpty,
+    bookingRequestKitchenDetailsDraftIsEmpty,
+    bookingRequestKitchenDetailsGuestTablewareLabel,
+    bookingRequestKitchenDetailsGuestTablewareValues,
+    bookingRequestKitchenDetailsSpaceLabel,
+    bookingRequestKitchenDetailsSpaces,
+} from './bookingRequestKitchenDetails';
+export type {
+    BookingRequestKitchenDetailsAvailability,
+    BookingRequestKitchenDetailsDraft,
+    BookingRequestKitchenDetailsGuestTableware,
+    BookingRequestKitchenDetailsSpace,
+} from './bookingRequestKitchenDetails';
+export {
     COOK_ANALYTICS_PERIOD_DEFAULT,
     cookAnalyticsPeriodParse,
     cookAnalyticsPeriodRange,
@@ -114,7 +140,11 @@ export type { WebPageKey, WebPageSeoDefaults } from './webPage';
 export { webPageKeyFromPath } from './webPageKeyFromPath';
 export type { WebPageVisitMatch } from './webPageKeyFromPath';
 export { bookingRequestFormFunnelArea, bookingRequestFormFunnelSteps, isBookingRequestFormFunnelStep } from './bookingRequestFormFunnel';
-export type { BookingRequestFormFunnelInteraction, BookingRequestFormFunnelStep } from './bookingRequestFormFunnel';
+export type {
+    BookingRequestFormFunnelInteraction,
+    BookingRequestFormFunnelStep,
+    BookingRequestFormLocationSettingChoice,
+} from './bookingRequestFormFunnel';
 export {
     cookBookingRequestOfferFunnelArea,
     cookBookingRequestOfferFunnelSteps,

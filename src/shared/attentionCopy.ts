@@ -14,7 +14,8 @@ export type UserAttentionKind =
     | 'CALL_RESPONSE_NEEDED'
     | 'CALL_PENDING'
     | 'CALL_CONFIRMED'
-    | 'TESTIMONIAL_MISSING';
+    | 'TESTIMONIAL_MISSING'
+    | 'KITCHEN_DETAILS_MISSING';
 
 export type CookAttentionKind = 'APPROVAL_PENDING' | 'WALLET_RESET' | 'OFFER_CHAT_UNREAD' | 'CALL_UPCOMING';
 
@@ -52,6 +53,7 @@ export function userAttentionKindTone(kind: UserAttentionKind): AttentionTone {
         case 'CALL_PENDING':
         case 'CALL_CONFIRMED':
         case 'TESTIMONIAL_MISSING':
+        case 'KITCHEN_DETAILS_MISSING':
             return 'info';
     }
 }
@@ -71,6 +73,8 @@ export function userAttentionKindBadgeLabel(kind: UserAttentionKind, locale: Loc
             return { de: 'Termin', en: 'Call' }[locale];
         case 'TESTIMONIAL_MISSING':
             return { de: 'Bewertung', en: 'Review' }[locale];
+        case 'KITCHEN_DETAILS_MISSING':
+            return { de: 'Küche', en: 'Kitchen' }[locale];
     }
 }
 
@@ -147,6 +151,15 @@ export function userAttentionCopy(
                     en: `${item.occasion}: share a quick note about how dinner went.`,
                 }[locale],
                 actionLabel: { de: 'Bewertung abgeben', en: 'Leave a review' }[locale],
+            };
+        case 'KITCHEN_DETAILS_MISSING':
+            return {
+                title: { de: 'Küchendetails fehlen', en: 'Kitchen details missing' }[locale],
+                body: {
+                    de: `${item.occasion}: hilf deinem Koch mit ein paar Angaben zur Küche.`,
+                    en: `${item.occasion}: help your chef with a few kitchen details.`,
+                }[locale],
+                actionLabel: { de: 'Zur Anfrage', en: 'Open request' }[locale],
             };
     }
 }

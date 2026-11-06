@@ -18,6 +18,7 @@ import { userBookingRequestCreateEmailSend } from '../utils/bookingRequestLifecy
 import { bookingRequestNoOffersNotifySchedule } from '../utils/bookingRequestNoOffersNotifySchedule';
 import { bookingRequestParticipantsPrepareForWrite } from '../utils/bookingRequestParticipantsPrepareForWrite';
 import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
+import { bookingRequestSettingPrepareForWrite } from '../utils/bookingRequestSettingPrepareForWrite';
 import { cookIdsCanCreateOffersFind } from '../utils/cookIdsCanCreateOffersFind';
 import { sessionEventCreate } from '../utils/sessionEventCreate';
 
@@ -52,6 +53,7 @@ export async function userBookingRequestCreate(
         'userBookingRequestCreate',
         userId,
     );
+    const setting = await bookingRequestSettingPrepareForWrite(input.setting, serverRuntime, userId, 'create');
     const exactEventAddress: BookingRequestExactEventAddress = {
         displayText: textNormalizeSingleLine(input.exactEventAddress.displayText),
         latitude: input.exactEventAddress.latitude,
@@ -97,6 +99,7 @@ export async function userBookingRequestCreate(
             priceClassType: input.priceClassType,
             publicationStatus,
             expiresAt: bookingRequestExpiresAt(input.dateTime),
+            setting: setting ?? null,
         };
 
         const participantInserts: BookingRequestParticipantCreate[] = participants.map((participant) => ({

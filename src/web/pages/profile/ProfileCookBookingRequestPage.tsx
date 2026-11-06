@@ -337,6 +337,8 @@ export function ProfileCookBookingRequestPage({
                     }
                     estimatedTravelDistanceKm={request.estimatedTravelDistanceKm}
                     estimatedTravelExpensesCents={request.estimatedTravelExpensesCents}
+                    setting={request.setting}
+                    kitchenDetails={request.kitchenDetails}
                     message={
                         message.length > 0
                             ? {

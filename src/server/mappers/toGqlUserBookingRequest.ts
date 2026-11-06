@@ -1,7 +1,8 @@
 import type { Locale } from '../../shared/locale';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant, GiftCard, PromoCode } from '../db/schema';
 import { bookingRequestStatusDerive } from '../domain/bookingRequest';
-import type { GqlSUserBookingRequest, GqlSUserBookingRequestOffer } from '../graphql/generated';
+import type { GqlSFileUpload, GqlSUserBookingRequest, GqlSUserBookingRequestOffer } from '../graphql/generated';
+import { toGqlBookingRequestKitchenDetails } from './toGqlBookingRequestKitchenDetails';
 import { toGqlBookingRequestParticipant } from './toGqlBookingRequestParticipant';
 import { toGqlCookTravelOriginAddress } from './toGqlCook';
 import { toGqlInvoiceAddress } from './toGqlInvoiceAddress';
@@ -15,10 +16,20 @@ export type ToGqlUserBookingRequestInput = {
     giftCard?: GiftCard | null;
     locale: Locale;
     now?: Date;
+    kitchenDetailsPhotos?: GqlSFileUpload[];
 };
 
 export function toGqlUserBookingRequest(input: ToGqlUserBookingRequestInput): GqlSUserBookingRequest {
-    const { bookingRequest, participants = [], offers, acceptedOfferPaymentStatus, promoCode, giftCard, now } = input;
+    const {
+        bookingRequest,
+        participants = [],
+        offers,
+        acceptedOfferPaymentStatus,
+        promoCode,
+        giftCard,
+        now,
+        kitchenDetailsPhotos = [],
+    } = input;
 
     return {
         bookingRequestId: bookingRequest.bookingRequestId,
@@ -34,6 +45,8 @@ export function toGqlUserBookingRequest(input: ToGqlUserBookingRequestInput): Gq
         occasion: bookingRequest.occasion,
         dateTime: bookingRequest.dateTime,
         exactEventAddress: toGqlCookTravelOriginAddress(bookingRequest.exactEventAddress),
+        setting: bookingRequest.setting ?? null,
+        kitchenDetails: toGqlBookingRequestKitchenDetails(bookingRequest.kitchenDetails, kitchenDetailsPhotos),
         priceClassType: bookingRequest.priceClassType ?? null,
         originalMessage: bookingRequest.originalMessage,
         adjustedMessage: bookingRequest.adjustedMessage ?? null,

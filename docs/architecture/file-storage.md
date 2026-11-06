@@ -34,7 +34,8 @@ FileUploads
 
 Chat is the first interactive consumer: the `ChatMessageUserAttachments` join row links a `ChatMessagesUser` message to one or more
 `FileUploads` rows in send-order. Offer negotiation chats use `BookingRequestOfferEventAttachments` (MESSAGE_SIMPLE events); support request
-chats use `SupportRequestMessageAttachments`. Gift-card purchase receipts store `GiftCards.invoiceFileUploadId` and may also appear on
+chats use `SupportRequestMessageAttachments`. Booking-request kitchen photos use `BookingRequestKitchenDetailsPhotos` (owner, pool-eligible
+cook, or admin download). Gift-card purchase receipts store `GiftCards.invoiceFileUploadId` and may also appear on
 `OutboundEmailAttachments`. Regenerating a gift-card PDF deletes the previous file only when no outbound email or WhatsApp attachment still
 references it. `OutboundEmailAttachments.fileUploadId` cascades on file delete, so an emailed copy is kept. Profile pictures store
 `Users.profilePictureFileUploadId` (see [profile-pictures.md](../features/profile-pictures.md)). New consumers follow the same pattern —
@@ -62,7 +63,8 @@ The upload and download routes are likewise consumer-agnostic:
   6. a **published** customer or cook testimonial lists the public URL in `imageUrls` (JSON string array of `/api/file-uploads/{id}` — see
      [testimonials.md](./testimonials.md)), or
   7. the session user is a **peer** on an offer or support chat that attaches the upload (`BookingRequestOfferEventAttachments` /
-     `SupportRequestMessageAttachments` — customer, cook, or admin for offers; owning customer or admin for support), or
+     `SupportRequestMessageAttachments` — customer, cook, or admin for offers; owning customer or admin for support), or the request owner /
+     a pool-eligible cook / an admin on `BookingRequestKitchenDetailsPhotos`, or
   8. the session user is an **admin** and any content page (draft or published) or any meal (including drafts / soft-deleted) references the
      id (see [`content-sections.md`](./content-sections.md)), or
   9. the session user is an **admin** and any customer or cook testimonial (including `PENDING_REVIEW`) lists the URL in `imageUrls`, or

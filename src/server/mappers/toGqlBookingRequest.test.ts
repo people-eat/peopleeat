@@ -35,6 +35,8 @@ const bookingRequest = {
     canceledAt: null,
     cancellationReason: null,
     publicationStatus: 'PUBLICATION_AUTO_APPROVED',
+    setting: null,
+    kitchenDetails: null,
     preferences: ['vegetarian'],
     invoiceAddress: null,
     references: null,

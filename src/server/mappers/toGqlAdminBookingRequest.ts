@@ -1,8 +1,15 @@
 import type { Locale } from '../../shared/locale';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant, GiftCard, PromoCode } from '../db/schema';
 import { bookingRequestStatusDerive } from '../domain/bookingRequest';
-import type { GqlSAdminBookingRequest, GqlSAdminBookingRequestOffer, GqlSAdminCook, GqlSAdminUser } from '../graphql/generated';
+import type {
+    GqlSAdminBookingRequest,
+    GqlSAdminBookingRequestOffer,
+    GqlSAdminCook,
+    GqlSAdminUser,
+    GqlSFileUpload,
+} from '../graphql/generated';
 import { bookingRequestOfferPriceGuidanceFromRequest } from './bookingRequestOfferPriceGuidanceFromRequest';
+import { toGqlBookingRequestKitchenDetails } from './toGqlBookingRequestKitchenDetails';
 import { toGqlBookingRequestParticipant } from './toGqlBookingRequestParticipant';
 import { toGqlCookTravelOriginAddress } from './toGqlCook';
 import { toGqlInvoiceAddress } from './toGqlInvoiceAddress';
@@ -19,6 +26,7 @@ export type ToGqlAdminBookingRequestInput = {
     promoCode?: PromoCode | null;
     giftCard?: GiftCard | null;
     promoMinimumTotalAmountCustomerCents?: number | null;
+    kitchenDetailsPhotos?: GqlSFileUpload[];
 };
 
 export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): GqlSAdminBookingRequest {
@@ -33,6 +41,7 @@ export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): 
         promoCode,
         giftCard,
         promoMinimumTotalAmountCustomerCents = null,
+        kitchenDetailsPhotos = [],
     } = input;
 
     const guidance = bookingRequestOfferPriceGuidanceFromRequest({
@@ -56,6 +65,8 @@ export function toGqlAdminBookingRequest(input: ToGqlAdminBookingRequestInput): 
         occasion: bookingRequest.occasion,
         dateTime: bookingRequest.dateTime,
         exactEventAddress: toGqlCookTravelOriginAddress(bookingRequest.exactEventAddress),
+        setting: bookingRequest.setting ?? null,
+        kitchenDetails: toGqlBookingRequestKitchenDetails(bookingRequest.kitchenDetails, kitchenDetailsPhotos),
         priceClassType: bookingRequest.priceClassType ?? null,
         suggestedOfferAmountCents: guidance.suggestedOfferAmountCents,
         minOfferAmountCents: guidance.minOfferAmountCents,

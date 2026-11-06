@@ -7,6 +7,7 @@ import type {
     GqlSBookingRequestCookPoolDetails,
     GqlSCookBookingRequest,
     GqlSCookBookingRequestOffer,
+    GqlSFileUpload,
     GqlSPublicUser,
 } from '../graphql/generated';
 import { bookingRequestOfferInitialMessageResolve } from '../utils/bookingRequestOfferInitialChatMessage';
@@ -14,6 +15,7 @@ import {
     bookingRequestOfferPriceGuidanceFromRequest,
     bookingRequestParticipantCounts,
 } from './bookingRequestOfferPriceGuidanceFromRequest';
+import { toGqlBookingRequestKitchenDetails } from './toGqlBookingRequestKitchenDetails';
 import { toGqlBookingRequestParticipant } from './toGqlBookingRequestParticipant';
 import { toGqlCookEventAddress } from './toGqlCook';
 import { toGqlInvoiceAddress } from './toGqlInvoiceAddress';
@@ -31,6 +33,7 @@ export type ToGqlCookBookingRequestInput = {
     estimatedTravelExpensesCents?: number | null;
     promoMinimumTotalAmountCustomerCents?: number | null;
     cookPoolDetails?: GqlSBookingRequestCookPoolDetails | null;
+    kitchenDetailsPhotos?: GqlSFileUpload[];
 };
 
 export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): GqlSCookBookingRequest {
@@ -46,6 +49,7 @@ export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): Gq
         estimatedTravelExpensesCents = null,
         promoMinimumTotalAmountCustomerCents = null,
         cookPoolDetails = null,
+        kitchenDetailsPhotos = [],
     } = input;
 
     const travelExpensesCents = estimatedTravelExpensesCents ?? 0;
@@ -78,6 +82,8 @@ export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): Gq
         dateTime: bookingRequest.dateTime,
         // Pool / open requests never reveal the street — only after dual-accept on the cook's offer.
         exactEventAddress: toGqlCookEventAddress(bookingRequest.exactEventAddress, { revealExact: false }),
+        setting: bookingRequest.setting ?? null,
+        kitchenDetails: toGqlBookingRequestKitchenDetails(bookingRequest.kitchenDetails, kitchenDetailsPhotos),
         priceClassType: bookingRequest.priceClassType ?? null,
         suggestedOfferAmountCents: guidance.suggestedOfferAmountCents,
         minOfferAmountCents: guidance.minOfferAmountCents,

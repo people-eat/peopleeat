@@ -5,7 +5,13 @@ import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { bookingRequestPriceClassLabel, formatDateTime, formatParticipants } from '../../../shared';
+import {
+    bookingRequestKitchenDetailsDraftIsEmpty,
+    bookingRequestPriceClassLabel,
+    bookingRequestSettingLabel,
+    formatDateTime,
+    formatParticipants,
+} from '../../../shared';
 import { bookingRequestStatusHue, bookingRequestStatusLabel } from '../../../shared/bookingRequestStatus';
 import {
     AlertDialog,
@@ -25,7 +31,18 @@ import { Popover, PopoverContent, PopoverTrigger } from '../../components/base/p
 import { StatusAlert } from '../../components/base/status-alert';
 import { Textarea } from '../../components/base/textarea';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
+import {
+    bookingRequestKitchenDetailsDraftFromGql,
+    bookingRequestKitchenDetailsInputFromDraft,
+    bookingRequestKitchenDetailsPhotosFromGql,
+    BookingRequestKitchenDetailsSaveCard,
+} from '../../components/BookingRequestKitchenDetailsFields';
+import type { BookingRequestKitchenDetailsPhoto } from '../../components/BookingRequestKitchenDetailsFields';
 import { BookingRequestOfferParticipantAmendmentCustomerPanel } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
+import {
+    BookingRequestKitchenDetailsFactContent,
+    bookingRequestKitchenDetailsHasFacts,
+} from '../../components/BookingRequestVenueConditionsFacts';
 import { BookingStatusPill } from '../../components/BookingStatusPill';
 import { CustomerBookingRequestOfferCard } from '../../components/CustomerBookingRequestOfferCard';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
@@ -34,6 +51,7 @@ import type { GqlCProfileCustomerBookingRequestPageQuery } from '../../graphql/g
 import {
     ProfileBookingRequestCancelDocument,
     ProfileBookingRequestDiscountUpdateDocument,
+    ProfileCustomerBookingRequestKitchenDetailsUpdateDocument,
     ProfileCustomerBookingRequestPageUpdatesDocument,
     ProfileCustomerBookingRequestParticipantAmendmentCancelDocument,
 } from '../../graphql/generated';
@@ -106,6 +124,14 @@ export function ProfileCustomerBookingRequestPage({
         ProfileCustomerBookingRequestParticipantAmendmentCancelDocument,
     );
     const offerAmendmentEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_AMENDMENT');
+    const kitchenEnabled = useFeatureToggleActive('BOOKING_REQUEST_KITCHEN_DETAILS');
+    const [, updateKitchenDetails] = useMutation(ProfileCustomerBookingRequestKitchenDetailsUpdateDocument);
+    const [kitchenDraft, setKitchenDraft] = useState(() => bookingRequestKitchenDetailsDraftFromGql(seedRequest.kitchenDetails));
+    const [kitchenPhotos, setKitchenPhotos] = useState<BookingRequestKitchenDetailsPhoto[]>(() =>
+        bookingRequestKitchenDetailsPhotosFromGql(seedRequest.kitchenDetails?.photos),
+    );
+    const [kitchenBusy, setKitchenBusy] = useState(false);
+    const [kitchenError, setKitchenError] = useState<string | null>(null);
 
     if (request == null || user == null) {
         return null;
@@ -375,6 +401,19 @@ export function ProfileCustomerBookingRequestPage({
                                 </p>
                             }
                         />
+                        {bookingRequestKitchenDetailsHasFacts(request.kitchenDetails, locale) ? (
+                            <DetailField
+                                className={(request.kitchenDetails?.photos.length ?? 0) > 0 ? '@md:col-span-2' : undefined}
+                                label={{ de: 'Über die Küche', en: 'About the kitchen' }[locale]}
+                                value={<BookingRequestKitchenDetailsFactContent details={request.kitchenDetails} locale={locale} />}
+                            />
+                        ) : null}
+                        {request.setting != null ? (
+                            <DetailField
+                                label={{ de: 'Wo sitzt ihr', en: 'Where you dine' }[locale]}
+                                value={bookingRequestSettingLabel(request.setting, locale)}
+                            />
+                        ) : null}
                         {request.canceledAt && request.cancellationReason ? (
                             <DetailField
                                 className="@md:col-span-2"
@@ -399,6 +438,53 @@ export function ProfileCustomerBookingRequestPage({
                         </div>
                     ) : null}
                 </div>
+
+                {kitchenEnabled &&
+                !request.canceledAt &&
+                new Date(request.dateTime).getTime() > Date.now() &&
+                bookingRequestKitchenDetailsDraftIsEmpty(
+                    bookingRequestKitchenDetailsDraftFromGql(request.kitchenDetails),
+                    request.kitchenDetails?.photos.length ?? 0,
+                ) ? (
+                    <BookingRequestKitchenDetailsSaveCard
+                        locale={locale}
+                        value={kitchenDraft}
+                        photos={kitchenPhotos}
+                        busy={kitchenBusy}
+                        error={kitchenError}
+                        onChange={setKitchenDraft}
+                        onPhotosChange={setKitchenPhotos}
+                        onSave={async () => {
+                            setKitchenBusy(true);
+                            setKitchenError(null);
+                            try {
+                                const result = await updateKitchenDetails({
+                                    bookingRequestId,
+                                    kitchenDetails: bookingRequestKitchenDetailsInputFromDraft(kitchenDraft),
+                                    photoFileUploadIds: kitchenPhotos.map((photo) => photo.fileUploadId),
+                                });
+                                if (result.error || !result.data?.user.bookingRequestKitchenDetailsUpdate.success) {
+                                    throw new Error('kitchen details update failed');
+                                }
+                                toast.success(
+                                    {
+                                        de: 'Küchendetails gespeichert.',
+                                        en: 'Kitchen details saved.',
+                                    }[locale],
+                                );
+                            } catch {
+                                setKitchenError(
+                                    {
+                                        de: 'Küchendetails konnten nicht gespeichert werden.',
+                                        en: 'Could not save kitchen details.',
+                                    }[locale],
+                                );
+                            } finally {
+                                setKitchenBusy(false);
+                            }
+                        }}
+                    />
+                ) : null}
 
                 {canEditDiscount || request.promoCode != null || request.giftCard != null ? (
                     <section className="grid max-w-xl gap-4">

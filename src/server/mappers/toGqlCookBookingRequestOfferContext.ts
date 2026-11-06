@@ -1,9 +1,10 @@
 import type { Locale } from '../../shared/locale';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant } from '../db/schema';
 import { bookingRequestStatusDerive } from '../domain/bookingRequest';
-import type { GqlSCookBookingRequestOfferContext, GqlSPublicUser } from '../graphql/generated';
+import type { GqlSCookBookingRequestOfferContext, GqlSFileUpload, GqlSPublicUser } from '../graphql/generated';
 import { bookingRequestOfferInitialMessageResolve } from '../utils/bookingRequestOfferInitialChatMessage';
 import { bookingRequestOfferPriceGuidanceFromRequest } from './bookingRequestOfferPriceGuidanceFromRequest';
+import { toGqlBookingRequestKitchenDetails } from './toGqlBookingRequestKitchenDetails';
 import { toGqlBookingRequestParticipant } from './toGqlBookingRequestParticipant';
 import { toGqlCookEventAddress } from './toGqlCook';
 import { toGqlInvoiceAddress } from './toGqlInvoiceAddress';
@@ -20,6 +21,7 @@ export type ToGqlCookBookingRequestOfferContextInput = {
     promoMinimumTotalAmountCustomerCents?: number | null;
     /** Exact venue is only for this cook after both sides accepted their offer. */
     revealExactEventAddress?: boolean;
+    kitchenDetailsPhotos?: GqlSFileUpload[];
 };
 
 export function toGqlCookBookingRequestOfferContext(input: ToGqlCookBookingRequestOfferContextInput): GqlSCookBookingRequestOfferContext {
@@ -33,6 +35,7 @@ export function toGqlCookBookingRequestOfferContext(input: ToGqlCookBookingReque
         estimatedTravelExpensesCents = null,
         promoMinimumTotalAmountCustomerCents = null,
         revealExactEventAddress = false,
+        kitchenDetailsPhotos = [],
     } = input;
 
     const guidance = bookingRequestOfferPriceGuidanceFromRequest({
@@ -57,6 +60,8 @@ export function toGqlCookBookingRequestOfferContext(input: ToGqlCookBookingReque
         exactEventAddress: toGqlCookEventAddress(bookingRequest.exactEventAddress, {
             revealExact: revealExactEventAddress,
         }),
+        setting: bookingRequest.setting ?? null,
+        kitchenDetails: toGqlBookingRequestKitchenDetails(bookingRequest.kitchenDetails, kitchenDetailsPhotos),
         priceClassType: bookingRequest.priceClassType ?? null,
         suggestedOfferAmountCents: guidance.suggestedOfferAmountCents,
         minOfferAmountCents: guidance.minOfferAmountCents,

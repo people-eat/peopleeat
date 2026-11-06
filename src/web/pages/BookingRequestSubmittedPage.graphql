@@ -3,11 +3,40 @@
 query BookingRequestSubmittedPage($bookingRequestId: ID!) {
     currentSession {
         sessionId
+        activeFeatureToggleKeys
         user {
             userId
             bookingRequest(bookingRequestId: $bookingRequestId) {
                 bookingRequestId
+                kitchenDetails {
+                    availability
+                    fridgeSpace
+                    platingSpace
+                    guestTableware
+                    notes
+                    photos {
+                        fileUploadId
+                        url
+                    }
+                }
             }
+        }
+    }
+}
+
+mutation BookingRequestSubmittedKitchenDetailsUpdate(
+    $bookingRequestId: ID!
+    $kitchenDetails: BookingRequestKitchenDetailsInput
+    $photoFileUploadIds: [ID!]
+) {
+    user {
+        bookingRequestKitchenDetailsUpdate(
+            bookingRequestId: $bookingRequestId
+            kitchenDetails: $kitchenDetails
+            photoFileUploadIds: $photoFileUploadIds
+        ) {
+            success
+            referenceId
         }
     }
 }

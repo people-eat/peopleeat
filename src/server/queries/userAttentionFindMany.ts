@@ -1,11 +1,13 @@
 import { asc, desc, eq, inArray } from 'drizzle-orm';
 
 import { bookingRequestOffers, bookingRequests, cookCallSlotBookings, customerTestimonials } from '../db/schema';
-import { bookingRequestOfferStatusDerive, bookingRequestStatusDerive } from '../domain/bookingRequest';
+import { bookingRequestKitchenDetailsIsEmpty, bookingRequestOfferStatusDerive, bookingRequestStatusDerive } from '../domain/bookingRequest';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import { userAttentionDerive } from '../domain/userAttention';
 import type { UserAttentionRequest } from '../domain/userAttention';
 import type { GqlSSession, GqlSUser, GqlSUserAttentionItem } from '../graphql/generated';
+import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from '../utils/bookingRequestKitchenDetailsPhotosHydrate';
+import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 
 /**
  * Flat selects only (no cook / menu hydration) since this recomputes on every
@@ -65,6 +67,13 @@ export async function userAttentionFindMany(
 
         const reviewedOfferIds = new Set(testimonialRows.map((row) => row.bookingRequestOfferId));
         const now = new Date();
+        const kitchenToggleOn = await featureToggleIsEnabled('BOOKING_REQUEST_KITCHEN_DETAILS', serverRuntime, parentUser.userId);
+        const kitchenPhotosByRequestId = kitchenToggleOn
+            ? await bookingRequestKitchenDetailsPhotosByRequestIdFind(
+                  serverRuntime,
+                  requestRows.map((row) => row.bookingRequestId),
+              )
+            : new Map<string, unknown[]>();
 
         const attentionRequests = requestRows.map((request): UserAttentionRequest => {
             const offers = offerRows.filter((offer) => offer.bookingRequestId === request.bookingRequestId);
@@ -81,6 +90,12 @@ export async function userAttentionFindMany(
                 }),
                 occasion: request.occasion,
                 dateTime: request.dateTime,
+                kitchenDetailsMissing: kitchenToggleOn
+                    ? bookingRequestKitchenDetailsIsEmpty(
+                          request.kitchenDetails,
+                          kitchenPhotosByRequestId.get(request.bookingRequestId)?.length ?? 0,
+                      )
+                    : false,
                 offers: offers.map((offer) => {
                     const status = bookingRequestOfferStatusDerive({
                         userAccepted: offer.userAccepted ?? null,

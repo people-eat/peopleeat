@@ -176,6 +176,7 @@ import { userBookingRequestCancel } from '../commands/userBookingRequestCancel';
 import { userBookingRequestChurnPromoCodeCreate } from '../commands/userBookingRequestChurnPromoCodeCreate';
 import { userBookingRequestCreate } from '../commands/userBookingRequestCreate';
 import { userBookingRequestDiscountUpdate } from '../commands/userBookingRequestDiscountUpdate';
+import { userBookingRequestKitchenDetailsUpdate } from '../commands/userBookingRequestKitchenDetailsUpdate';
 import { userBookingRequestOfferAccept } from '../commands/userBookingRequestOfferAccept';
 import { userBookingRequestOfferCallCreate } from '../commands/userBookingRequestOfferCallCreate';
 import { userBookingRequestOfferCallJoin } from '../commands/userBookingRequestOfferCallJoin';
@@ -753,6 +754,7 @@ import type {
     GqlSUserMutationBookingRequestChurnPromoCodeCreateArgs,
     GqlSUserMutationBookingRequestCreateArgs,
     GqlSUserMutationBookingRequestDiscountUpdateArgs,
+    GqlSUserMutationBookingRequestKitchenDetailsUpdateArgs,
     GqlSUserMutationBookingRequestOfferAcceptArgs,
     GqlSUserMutationBookingRequestOfferCallCreateArgs,
     GqlSUserMutationBookingRequestOfferCallJoinArgs,
@@ -2575,6 +2577,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return userBookingRequestRequestRecall(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestKitchenDetailsUpdate(
+                parent: GqlSUserMutation,
+                args: GqlSUserMutationBookingRequestKitchenDetailsUpdateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return userBookingRequestKitchenDetailsUpdate(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestUpdate(parent: GqlSUserMutation, args: GqlSUserMutationBookingRequestUpdateArgs, requestingSession: GqlSSession) {
                 return userBookingRequestUpdate(parent, args, requestingSession, serverRuntime);

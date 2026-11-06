@@ -19,6 +19,7 @@ import { toGqlAdminBookingRequestOffer } from '../mappers/toGqlAdminBookingReque
 import { toGqlAdminCook } from '../mappers/toGqlAdminCook';
 import { toGqlAdminUser } from '../mappers/toGqlAdminUser';
 import { adminUserTypesByUserIdFindMany } from './adminUserTypesByUserIdFindMany';
+import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from './bookingRequestKitchenDetailsPhotosHydrate';
 import { bookingRequestOfferCookPayoutReadinessResolve } from './bookingRequestOfferCookPayoutReadinessResolve';
 import { cookMenusWithCourses } from './cookMenuHydrate';
 
@@ -31,21 +32,23 @@ export async function adminBookingRequestHydrate(rows: BookingRequest[], serverR
     const promoCodeIds = [...new Set(rows.map((row) => row.promoCodeId).filter((id): id is string => id != null))];
     const giftCardIds = [...new Set(rows.map((row) => row.giftCardId).filter((id): id is string => id != null))];
 
-    const [participants, offers, customerRows, typesByUserId, promoCodeRows, giftCardRows] = await Promise.all([
-        serverRuntime.db
-            .select()
-            .from(bookingRequestParticipants)
-            .where(inArray(bookingRequestParticipants.bookingRequestId, bookingRequestIds)),
-        serverRuntime.db.select().from(bookingRequestOffers).where(inArray(bookingRequestOffers.bookingRequestId, bookingRequestIds)),
-        serverRuntime.db.select().from(users).where(inArray(users.userId, customerIds)),
-        adminUserTypesByUserIdFindMany(customerIds, serverRuntime.db),
-        promoCodeIds.length === 0
-            ? Promise.resolve([])
-            : serverRuntime.db.select().from(promoCodes).where(inArray(promoCodes.promoCodeId, promoCodeIds)),
-        giftCardIds.length === 0
-            ? Promise.resolve([])
-            : serverRuntime.db.select().from(giftCards).where(inArray(giftCards.giftCardId, giftCardIds)),
-    ]);
+    const [participants, offers, customerRows, typesByUserId, promoCodeRows, giftCardRows, kitchenDetailsPhotosByRequestId] =
+        await Promise.all([
+            serverRuntime.db
+                .select()
+                .from(bookingRequestParticipants)
+                .where(inArray(bookingRequestParticipants.bookingRequestId, bookingRequestIds)),
+            serverRuntime.db.select().from(bookingRequestOffers).where(inArray(bookingRequestOffers.bookingRequestId, bookingRequestIds)),
+            serverRuntime.db.select().from(users).where(inArray(users.userId, customerIds)),
+            adminUserTypesByUserIdFindMany(customerIds, serverRuntime.db),
+            promoCodeIds.length === 0
+                ? Promise.resolve([])
+                : serverRuntime.db.select().from(promoCodes).where(inArray(promoCodes.promoCodeId, promoCodeIds)),
+            giftCardIds.length === 0
+                ? Promise.resolve([])
+                : serverRuntime.db.select().from(giftCards).where(inArray(giftCards.giftCardId, giftCardIds)),
+            bookingRequestKitchenDetailsPhotosByRequestIdFind(serverRuntime, bookingRequestIds),
+        ]);
 
     const promoById = new Map(promoCodeRows.map((row) => [row.promoCodeId, row]));
     const giftById = new Map(giftCardRows.map((row) => [row.giftCardId, row]));
@@ -168,6 +171,7 @@ export async function adminBookingRequestHydrate(rows: BookingRequest[], serverR
                 promoMinimumTotalAmountCustomerCents: bookingRequest.promoCodeId
                     ? (promoMinById.get(bookingRequest.promoCodeId) ?? null)
                     : null,
+                kitchenDetailsPhotos: kitchenDetailsPhotosByRequestId.get(bookingRequest.bookingRequestId) ?? [],
             }),
         );
     }

@@ -38,6 +38,45 @@ export type BookingRequestPublicationStatus = (typeof bookingRequestPublicationS
 const bookingRequestParticipantTypes = ['ADULT', 'DISCOUNTED'] as const;
 export type BookingRequestParticipantType = (typeof bookingRequestParticipantTypes)[number];
 
+const bookingRequestSettings = ['INDOOR', 'OUTDOOR'] as const;
+export type BookingRequestSetting = (typeof bookingRequestSettings)[number];
+
+const bookingRequestKitchenDetailsAvailabilities = ['FULL', 'LIMITED', 'NONE', 'UNKNOWN'] as const;
+export type BookingRequestKitchenDetailsAvailability = (typeof bookingRequestKitchenDetailsAvailabilities)[number];
+
+const bookingRequestKitchenDetailsSpaces = ['YES', 'LIMITED', 'NO'] as const;
+export type BookingRequestKitchenDetailsSpace = (typeof bookingRequestKitchenDetailsSpaces)[number];
+
+const bookingRequestKitchenDetailsGuestTablewareValues = ['PROVIDED', 'COOK_BRINGS', 'MIXED'] as const;
+export type BookingRequestKitchenDetailsGuestTableware = (typeof bookingRequestKitchenDetailsGuestTablewareValues)[number];
+
+/** Kitchen conditions JSONB on `BookingRequests.kitchenDetails`. Null column when empty. */
+export type BookingRequestKitchenDetails = {
+    availability?: BookingRequestKitchenDetailsAvailability | null;
+    fridgeSpace?: BookingRequestKitchenDetailsSpace | null;
+    platingSpace?: BookingRequestKitchenDetailsSpace | null;
+    guestTableware?: BookingRequestKitchenDetailsGuestTableware | null;
+    notes?: string | null;
+};
+
+export function bookingRequestSettingParse(value: string | null | undefined): BookingRequestSetting | null {
+    if (value == null) return null;
+    return (bookingRequestSettings as readonly string[]).includes(value) ? (value as BookingRequestSetting) : null;
+}
+
+export function bookingRequestKitchenDetailsIsEmpty(details: BookingRequestKitchenDetails | null | undefined, photoCount = 0): boolean {
+    if (photoCount > 0) return false;
+    if (details == null) return true;
+    const notes = details.notes?.trim() ?? '';
+    return (
+        details.availability == null &&
+        details.fridgeSpace == null &&
+        details.platingSpace == null &&
+        details.guestTableware == null &&
+        notes.length === 0
+    );
+}
+
 const bookingRequestOfferPaymentStatuses = ['EMPTY', 'SETUP', 'PAYED', 'TRANSFERRED', 'FAILED', 'PAYED_OUT_OF_SYSTEM'] as const;
 export type BookingRequestOfferPaymentStatus = (typeof bookingRequestOfferPaymentStatuses)[number];
 

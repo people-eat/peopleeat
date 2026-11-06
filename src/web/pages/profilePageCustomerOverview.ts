@@ -90,6 +90,9 @@ function attentionTarget(item: CustomerOverviewAttention): CustomerOverviewAtten
     if (item.kind === 'OFFERS_TO_REVIEW') {
         return item.count === 1 ? { kind: 'request', bookingRequestId } : { kind: 'requests' };
     }
+    if (item.kind === 'KITCHEN_DETAILS_MISSING') {
+        return { kind: 'request', bookingRequestId };
+    }
     if (bookingRequestOfferId == null) return null;
     switch (item.kind) {
         case 'PAYMENT_DUE':

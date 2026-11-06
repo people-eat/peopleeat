@@ -13,6 +13,8 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
     COOK_PUBLIC_PROFILE_SHARE: { de: 'Koch: Öffentliches Profil teilen', en: 'Cook: share public profile' },
     COOK_PRESENCE_LINKS: { de: 'Koch: Weitere Profile', en: 'Cook: other profiles' },
     BOOKING_REQUEST_RESTRICTIONS: { de: 'Buchungsanfrage: Einschränkungen', en: 'Booking request: restrictions' },
+    BOOKING_REQUEST_SETTING: { de: 'Buchungsanfrage: Innen / Außen', en: 'Booking request: indoor / outdoor' },
+    BOOKING_REQUEST_KITCHEN_DETAILS: { de: 'Buchungsanfrage: Küchendetails', en: 'Booking request: kitchen details' },
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS: {
         de: 'Angebots-Chat: Emoji-Reaktionen',
         en: 'Offer chat: emoji reactions',
@@ -83,6 +85,14 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     BOOKING_REQUEST_RESTRICTIONS: {
         de: 'Zeigt den Schritt für Ernährungseinschränkungen in der Anfrage und die zugehörigen Editoren. Bei Aus sind neue Werte serverseitig leer.',
         en: 'Shows the dietary-restrictions step and related editors. When off, create and update strip non-empty restriction values.',
+    },
+    BOOKING_REQUEST_SETTING: {
+        de: 'Zeigt die Karten Drinnen / Später / Draußen bei der Adresse. Bei Aus wird Innen/Außen beim Anlegen nicht gespeichert.',
+        en: 'Shows Indoor / Later / Outdoor cards on the address step. When off, create does not store indoor/outdoor.',
+    },
+    BOOKING_REQUEST_KITCHEN_DETAILS: {
+        de: 'Sammelt Küchendetails nach dem Senden der Anfrage (Bestätigungsseite und Anfrage). Bei Aus werden neue Werte nicht gespeichert.',
+        en: 'Collects kitchen details after the request is sent (submitted page and request). When off, new values are not stored.',
     },
     BOOKING_REQUEST_OFFER_CHAT_REACTIONS: {
         de: 'Aktiviert Emoji-Reaktionen auf Nachrichten im Angebots-Chat (Kunde, Koch und Admin).',

@@ -13,15 +13,16 @@ loop needs a complete persistence spine: requests, cook affinity, offers, negoti
 Postgres / Drizzle tables with project conventions (UUID PKs, `*Cents` money integers, `varchar().$type<>` enums, JSONB payloads in
 `src/server/domain/bookingRequest.ts`):
 
-| Table                                            | Role                                                                                                        |
-| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `BookingRequests`                                | Customer event ask — occasion, `dateTime`, exact venue, message, preferences, discounts, invoice, lifecycle |
-| `BookingRequestParticipants`                     | Party line items (`ADULT` \| `DISCOUNTED`) + dietary restrictions                                           |
-| `BookingRequestCooks`                            | Cook ↔ request affinity before / without an offer (notify, open, decline, optional AI evaluation)           |
-| `BookingRequestOffers`                           | Cook proposal — dual accept flags, fee breakdown, payment, optional configured-menu snapshot                |
-| `BookingRequestOfferEvents`                      | Append-only negotiation timeline (“offer chat”) + domain events                                             |
-| `CookCallSlotBookings`                           | Discovery-call request / confirm / decline / cancel tied to an offer                                        |
-| `Menus.bookingRequestOfferId` (+ `copyOfMenuId`) | Optional offer-scoped **copies** of cook inventory menus                                                    |
+| Table                                            | Role                                                                                                                                                    |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BookingRequests`                                | Customer event ask — occasion, `dateTime`, exact venue, nullable `setting`, `kitchenDetails` JSONB, message, preferences, discounts, invoice, lifecycle |
+| `BookingRequestKitchenDetailsPhotos`             | Optional kitchen photos → `FileUploads` (owner / pool cook / admin)                                                                                     |
+| `BookingRequestParticipants`                     | Party line items (`ADULT` \| `DISCOUNTED`) + dietary restrictions                                                                                       |
+| `BookingRequestCooks`                            | Cook ↔ request affinity before / without an offer (notify, open, decline, optional AI evaluation)                                                       |
+| `BookingRequestOffers`                           | Cook proposal — dual accept flags, fee breakdown, payment, optional configured-menu snapshot                                                            |
+| `BookingRequestOfferEvents`                      | Append-only negotiation timeline (“offer chat”) + domain events                                                                                         |
+| `CookCallSlotBookings`                           | Discovery-call request / confirm / decline / cancel tied to an offer                                                                                    |
+| `Menus.bookingRequestOfferId` (+ `copyOfMenuId`) | Optional offer-scoped **copies** of cook inventory menus                                                                                                |
 
 **Deferred:**
 
@@ -41,6 +42,12 @@ Only `exactEventAddress` (Places JSONB, same shape as `CookTravelOriginAddress`)
 Cook-facing GraphQL redacts street fields (`addressLine1` / `addressLine2` / street `displayText`) on `CookBookingRequest` always, and on
 `CookBookingRequestOfferContext` until that offer is dual-accepted — then the full venue is returned for the request tab. The same
 dual-accept gate exposes `invoiceAddress` on `CookBookingRequestOfferContext` (null until checkout stores it).
+
+Indoor/outdoor (`BookingRequests.setting`, nullable `INDOOR` | `OUTDOOR`) and kitchen conditions (`BookingRequests.kitchenDetails` JSONB)
+are separate from the Places address. Null setting means unknown (legacy, toggle off, Later, or skipped). Kitchen photos live in
+`BookingRequestKitchenDetailsPhotos` → `FileUploads`, not inside the JSONB. Cooks see setting and kitchen details as soon as they exist
+(pool and offer Request tab); they are not street-identifying, so they are not dual-accept gated. Kitchen photo download is owner, pool
+cook, or admin only. See [booking-request-create.md](../features/booking-request-create.md).
 
 ### Dual acceptance
 

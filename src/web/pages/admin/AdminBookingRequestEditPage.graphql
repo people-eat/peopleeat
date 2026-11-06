@@ -21,6 +21,18 @@ fragment AdminBookingRequestEditPageRequest on AdminBookingRequest {
         state
         country
     }
+    setting
+    kitchenDetails {
+        availability
+        fridgeSpace
+        platingSpace
+        guestTableware
+        notes
+        photos {
+            fileUploadId
+            url
+        }
+    }
     participants {
         bookingRequestParticipantId
         type

@@ -24,6 +24,7 @@ import type { BookingRequestFormPriceClassType } from '../../shared';
 import {
     bookingRequestPriceClassInfo,
     bookingRequestPriceClassTypes,
+    featureToggleIsActive,
     formatCountryName,
     formatCurrency,
     formatDate,
@@ -43,6 +44,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/base/select';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '../components/base/sheet';
 import { Textarea } from '../components/base/textarea';
+import { BookingRequestSettingPicker } from '../components/BookingRequestSettingPicker';
 import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import { Reveal } from '../components/Reveal';
@@ -581,6 +583,7 @@ export function BookingRequestPlanPage({
     const [session, setSession] = useState<PlanSession>(loaderData.currentSession);
     const partner = loaderData.publicPartner.findOne ?? null;
     const signedIn = sessionAuthPhase(session) === 'signedIn';
+    const settingEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_SETTING');
     const [step, setStep] = useState<BookingRequestPlanStep>(() => (search.step === 'contact' ? 'contact' : 'details'));
     const [detailsEditorOpen, setDetailsEditorOpen] = useState(false);
     const isMobile = useIsMobile();
@@ -646,6 +649,7 @@ export function BookingRequestPlanPage({
         message: values.originalMessage,
         redeemCode: values.redeemCode,
         occasion: values.occasion,
+        settingChoice: values.settingChoice,
         step,
     });
     const debouncedDraftKey = useDebouncedValue(draftKey, 250);
@@ -878,6 +882,18 @@ export function BookingRequestPlanPage({
         );
     }
 
+    function renderSettingPicker() {
+        if (!settingEnabled || values.exactEventAddress == null) return null;
+        return (
+            <BookingRequestSettingPicker
+                locale={locale}
+                value={values.settingChoice}
+                disabled={busy}
+                onChange={(next) => form.setFieldValue('settingChoice', next)}
+            />
+        );
+    }
+
     const detailsEditorFields = (
         <div className="grid gap-6">
             <ParticipantCountField
@@ -1001,6 +1017,7 @@ export function BookingRequestPlanPage({
                     </div>
                 </div>
             ) : null}
+            {renderSettingPicker()}
         </div>
     );
 
@@ -1284,6 +1301,7 @@ export function BookingRequestPlanPage({
                                 </div>
 
                                 {!partnerAddress ? renderLocationPicker() : null}
+                                {renderSettingPicker()}
 
                                 <div className="grid gap-4">
                                     <div className="grid gap-2">

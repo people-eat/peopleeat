@@ -1,6 +1,8 @@
 import { bookingRequestPriceClassTypes, defaultBookingRequestDateTime } from '../../shared/bookingRequestFormDefaults';
 import type { BookingRequestFormPriceClassType } from '../../shared/bookingRequestFormDefaults';
 import { bookingRequestParticipantsFromCounts } from '../../shared/bookingRequestParticipants';
+import type { BookingRequestSettingChoice } from '../../shared/bookingRequestSetting';
+import { bookingRequestSettingChoiceParse, bookingRequestSettingFromChoice } from '../../shared/bookingRequestSetting';
 import type { Locale } from '../../shared/locale';
 import type { GqlCUserBookingRequestCreate, GqlCUserBookingRequestExactEventAddressInput } from '../graphql/generated';
 import {
@@ -36,6 +38,7 @@ export type BookingRequestPlanSearch = {
     postCode?: string;
     state?: string;
     country?: string;
+    setting?: Exclude<BookingRequestSettingChoice, null>;
     partnerId?: string;
     firstName?: string;
     step?: BookingRequestPlanStep;
@@ -54,6 +57,7 @@ export type BookingRequestPlanValues = {
     originalMessage: string;
     redeemCode: string;
     occasion: string;
+    settingChoice: BookingRequestSettingChoice;
 };
 
 function parsePositiveInt(value: unknown, fallback: number): number {
@@ -185,6 +189,7 @@ export function bookingRequestPlanCreateInputFromValues(
         }),
         priceClassType: values.priceClassType,
         redeemCode: values.redeemCode.trim() || null,
+        setting: bookingRequestSettingFromChoice(values.settingChoice),
     };
 }
 
@@ -209,6 +214,7 @@ export function parseBookingRequestPlanSearch(search: Record<string, unknown>): 
     const postCode = typeof search.postCode === 'string' && search.postCode.trim().length > 0 ? search.postCode : undefined;
     const state = typeof search.state === 'string' && search.state.trim().length > 0 ? search.state : undefined;
     const country = typeof search.country === 'string' && search.country.trim().length > 0 ? search.country : undefined;
+    const setting = bookingRequestSettingChoiceParse(search.setting);
     const partnerId = typeof search.partnerId === 'string' && search.partnerId.trim().length > 0 ? search.partnerId.trim() : undefined;
     const firstName = typeof search.firstName === 'string' && search.firstName.trim().length > 0 ? search.firstName.trim() : undefined;
     const step = isPlanStep(search.step) ? search.step : undefined;
@@ -236,6 +242,7 @@ export function parseBookingRequestPlanSearch(search: Record<string, unknown>): 
         postCode,
         state,
         country,
+        setting,
         partnerId,
         firstName,
         step,
@@ -300,6 +307,7 @@ export function bookingRequestPlanValuesFromSearch(
         originalMessage: search.message ?? '',
         redeemCode: search.redeemCode ?? '',
         occasion: search.occasion ?? '',
+        settingChoice: search.setting ?? null,
     };
 }
 
@@ -335,6 +343,7 @@ export function bookingRequestPlanSearchFromValues(input: {
         postCode: address?.postCode || undefined,
         state: address?.state || undefined,
         country: address?.country || undefined,
+        setting: values.settingChoice ?? undefined,
         partnerId,
         firstName,
         step: step === 'details' ? undefined : step,
@@ -361,6 +370,7 @@ export function bookingRequestPlanSearchEqual(a: BookingRequestPlanSearch, b: Bo
         a.postCode === b.postCode &&
         a.state === b.state &&
         a.country === b.country &&
+        a.setting === b.setting &&
         a.partnerId === b.partnerId &&
         a.firstName === b.firstName &&
         a.step === b.step &&

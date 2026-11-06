@@ -8,11 +8,13 @@ import { useMutation, useQuery } from 'urql';
 import {
     bookingRequestOfferPriceCalculate,
     bookingRequestParticipantsFromCounts,
+    bookingRequestSettingChoiceFromStored,
+    bookingRequestSettingFromChoice,
     defaultBookingRequestOccasions,
     defaultBookingRequestPreferences,
     textNormalizeTitled,
 } from '../../../shared';
-import type { BookingRequestParticipantDraft } from '../../../shared';
+import type { BookingRequestKitchenDetailsDraft, BookingRequestParticipantDraft, BookingRequestSettingChoice } from '../../../shared';
 import { AdminBookingRequestOfferAmendmentConfirmDialog } from '../../components/AdminBookingRequestOfferAmendmentConfirmDialog';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
@@ -24,11 +26,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { StatusAlert } from '../../components/base/status-alert';
 import { Textarea } from '../../components/base/textarea';
 import {
+    bookingRequestKitchenDetailsDraftFromGql,
+    BookingRequestKitchenDetailsFields,
+    bookingRequestKitchenDetailsInputFromDraft,
+    bookingRequestKitchenDetailsPhotosFromGql,
+} from '../../components/BookingRequestKitchenDetailsFields';
+import type { BookingRequestKitchenDetailsPhoto } from '../../components/BookingRequestKitchenDetailsFields';
+import {
     BookingRequestOfferPriceImpactPreview,
     BookingRequestOfferTravelImpactPreview,
 } from '../../components/BookingRequestOfferImpactPreviews';
 import { BookingRequestOfferParticipantAmendmentAdminPendingAlert } from '../../components/BookingRequestOfferParticipantAmendmentPanel';
 import { BookingRequestParticipantsRestrictionsEditor } from '../../components/BookingRequestParticipantsRestrictionsEditor';
+import { BookingRequestSettingPicker } from '../../components/BookingRequestSettingPicker';
 import { SelectableChip } from '../../components/SelectableChip';
 import type {
     GqlCAdminBookingRequestEditPageQuery,
@@ -87,6 +97,9 @@ type FormValues = {
     adultCount: number;
     childCount: number;
     preferences: string[];
+    settingChoice: BookingRequestSettingChoice;
+    kitchenDetails: BookingRequestKitchenDetailsDraft;
+    kitchenPhotos: BookingRequestKitchenDetailsPhoto[];
 };
 
 const PRICE_CLASS_OPTIONS: readonly { value: GqlCBookingRequestPriceClassType | 'NONE'; de: string; en: string }[] = [
@@ -141,6 +154,9 @@ function formFromRequest(request: GqlCAdminBookingRequestEditPageRequestFragment
         adultCount: request.participants.filter((participant) => participant.type === 'ADULT').length || 1,
         childCount: request.participants.filter((participant) => participant.type === 'DISCOUNTED').length,
         preferences: [...request.preferences],
+        settingChoice: bookingRequestSettingChoiceFromStored(request.setting),
+        kitchenDetails: bookingRequestKitchenDetailsDraftFromGql(request.kitchenDetails),
+        kitchenPhotos: bookingRequestKitchenDetailsPhotosFromGql(request.kitchenDetails?.photos),
     };
 }
 
@@ -200,6 +216,8 @@ export function AdminBookingRequestEditPage({
     const [restrictionsExpanded, setRestrictionsExpanded] = useState(false);
     const restrictionsPanelId = useId();
     const restrictionsEnabled = useFeatureToggleActive('BOOKING_REQUEST_RESTRICTIONS');
+    const settingEnabled = useFeatureToggleActive('BOOKING_REQUEST_SETTING');
+    const kitchenEnabled = useFeatureToggleActive('BOOKING_REQUEST_KITCHEN_DETAILS');
     const [participants, setParticipants] = useState<BookingRequestParticipantDraft[]>(() => participantsFromRequest(seedRequest));
     const seedParticipants = participantsFromRequest(seedRequest);
     const dualAcceptedOffer = seedRequest.offers.find((offer) => offer.userAccepted === true && offer.cookAccepted === true) ?? null;
@@ -217,6 +235,9 @@ export function AdminBookingRequestEditPage({
             preferences: string[];
             exactEventAddress?: GqlCAdminBookingRequestExactEventAddressInput;
             participants?: BookingRequestParticipantDraft[];
+            setting?: 'INDOOR' | 'OUTDOOR' | null;
+            kitchenDetails?: ReturnType<typeof bookingRequestKitchenDetailsInputFromDraft>;
+            kitchenDetailsPhotoFileUploadIds?: string[];
         };
         amendmentInput: {
             participants?: BookingRequestParticipantDraft[];
@@ -333,6 +354,13 @@ export function AdminBookingRequestEditPage({
                         expiresAt: value.expiresAt,
                         createdAt: value.createdAt,
                         preferences,
+                        ...(settingEnabled ? { setting: bookingRequestSettingFromChoice(value.settingChoice) } : {}),
+                        ...(kitchenEnabled
+                            ? {
+                                  kitchenDetails: bookingRequestKitchenDetailsInputFromDraft(value.kitchenDetails),
+                                  kitchenDetailsPhotoFileUploadIds: value.kitchenPhotos.map((photo) => photo.fileUploadId),
+                              }
+                            : {}),
                     },
                     amendmentInput: {
                         ...(guestsChanged ? { participants: nextParticipants } : {}),
@@ -353,6 +381,13 @@ export function AdminBookingRequestEditPage({
                     expiresAt: value.expiresAt,
                     createdAt: value.createdAt,
                     preferences,
+                    ...(settingEnabled ? { setting: bookingRequestSettingFromChoice(value.settingChoice) } : {}),
+                    ...(kitchenEnabled
+                        ? {
+                              kitchenDetails: bookingRequestKitchenDetailsInputFromDraft(value.kitchenDetails),
+                              kitchenDetailsPhotoFileUploadIds: value.kitchenPhotos.map((photo) => photo.fileUploadId),
+                          }
+                        : {}),
                     ...(dualAcceptedOffer
                         ? {}
                         : {
@@ -674,6 +709,43 @@ export function AdminBookingRequestEditPage({
                             </div>
                         )}
                     </form.Field>
+
+                    {settingEnabled ? (
+                        <form.Field name="settingChoice">
+                            {(field) => (
+                                <BookingRequestSettingPicker
+                                    locale={locale}
+                                    value={field.state.value}
+                                    disabled={isSubmitting}
+                                    onChange={(next) => field.handleChange(next)}
+                                />
+                            )}
+                        </form.Field>
+                    ) : null}
+
+                    {kitchenEnabled ? (
+                        <form.Field name="kitchenDetails">
+                            {(kitchenField) => (
+                                <form.Field name="kitchenPhotos">
+                                    {(photosField) => (
+                                        <div className="grid gap-3">
+                                            <span className="text-sm font-medium">
+                                                {{ de: 'Über die Küche', en: 'About the kitchen' }[locale]}
+                                            </span>
+                                            <BookingRequestKitchenDetailsFields
+                                                locale={locale}
+                                                value={kitchenField.state.value}
+                                                photos={photosField.state.value}
+                                                disabled={isSubmitting}
+                                                onChange={(next) => kitchenField.handleChange(next)}
+                                                onPhotosChange={(next) => photosField.handleChange(next)}
+                                            />
+                                        </div>
+                                    )}
+                                </form.Field>
+                            )}
+                        </form.Field>
+                    ) : null}
 
                     <form.Field name="priceClassType">
                         {(field) => (

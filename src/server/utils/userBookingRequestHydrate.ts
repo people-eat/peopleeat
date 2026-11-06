@@ -6,6 +6,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSUserBookingRequest } from '../graphql/generated';
 import { toGqlUserBookingRequest } from '../mappers/toGqlUserBookingRequest';
 import { toGqlUserBookingRequestOffer } from '../mappers/toGqlUserBookingRequestOffer';
+import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from './bookingRequestKitchenDetailsPhotosHydrate';
 import { publicCookMenusWithCourses } from './cookMenuHydrate';
 import { publicCooksByIdFindMany } from './publicCookHydrate';
 
@@ -17,7 +18,7 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
     const promoCodeIds = [...new Set(rows.map((row) => row.promoCodeId).filter((id): id is string => id != null))];
     const giftCardIds = [...new Set(rows.map((row) => row.giftCardId).filter((id): id is string => id != null))];
 
-    const [participants, offers, promoCodeRows, giftCardRows] = await Promise.all([
+    const [participants, offers, promoCodeRows, giftCardRows, kitchenDetailsPhotosByRequestId] = await Promise.all([
         serverRuntime.db
             .select()
             .from(bookingRequestParticipants)
@@ -29,6 +30,7 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
         giftCardIds.length === 0
             ? Promise.resolve([])
             : serverRuntime.db.select().from(giftCards).where(inArray(giftCards.giftCardId, giftCardIds)),
+        bookingRequestKitchenDetailsPhotosByRequestIdFind(serverRuntime, bookingRequestIds),
     ]);
 
     const promoById = new Map(promoCodeRows.map((row) => [row.promoCodeId, row]));
@@ -120,6 +122,7 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
                 promoCode,
                 giftCard,
                 locale: 'de',
+                kitchenDetailsPhotos: kitchenDetailsPhotosByRequestId.get(bookingRequest.bookingRequestId) ?? [],
             }),
         );
     }

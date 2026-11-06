@@ -33,6 +33,10 @@ export function fileUploadMediaTypeAllowed(mediaType: string): boolean {
     return ALLOWED.has(fileUploadMediaTypeNormalize(mediaType));
 }
 
+export function fileUploadImageMediaTypeAllowed(mediaType: string): boolean {
+    return (FILE_UPLOAD_IMAGE_MEDIA_TYPES as readonly string[]).includes(fileUploadMediaTypeNormalize(mediaType));
+}
+
 export function fileUploadContentDisposition(mediaType: string): 'inline' | 'attachment' {
     const normalized = fileUploadMediaTypeNormalize(mediaType);
     if (INLINE.has(normalized)) return 'inline';

@@ -35,6 +35,9 @@ describe('userAttentionCopy', () => {
         // Assert
         expect(payment.body).toBe('Team dinner: add your payment details to confirm the dinner.');
         expect(review.body).toBe('Past dinner: teile kurz, wie das Dinner war.');
+        const kitchen = userAttentionCopy({ kind: 'KITCHEN_DETAILS_MISSING', count: 1, occasion: 'Garden party' }, 'en', DEFAULT_TIME_ZONE);
+        expect(kitchen.actionLabel).toBe('Open request');
+        expect(kitchen.body).toContain('Garden party');
     });
 
     it('formats the call window into call bodies', () => {

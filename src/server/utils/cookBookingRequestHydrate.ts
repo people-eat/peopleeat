@@ -8,6 +8,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookBookingRequest } from '../graphql/generated';
 import { toGqlBookingRequestCookMenuEvaluation } from '../mappers/toGqlBookingRequestCookMenuEvaluation';
 import { toGqlCookBookingRequest } from '../mappers/toGqlCookBookingRequest';
+import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from './bookingRequestKitchenDetailsPhotosHydrate';
 import { publicUsersByIdFindMany } from './publicUserHydrate';
 
 type CookBookingRequestVisibleRow = {
@@ -26,7 +27,7 @@ export async function cookBookingRequestHydrate(
     const bookingRequestIds = visible.map((row) => row.bookingRequest.bookingRequestId);
     const promoCodeIds = [...new Set(visible.map((row) => row.bookingRequest.promoCodeId).filter((id): id is string => id != null))];
 
-    const [participants, promoRows] = await Promise.all([
+    const [participants, promoRows, kitchenDetailsPhotosByRequestId] = await Promise.all([
         serverRuntime.db
             .select()
             .from(bookingRequestParticipants)
@@ -40,6 +41,7 @@ export async function cookBookingRequestHydrate(
                   })
                   .from(promoCodes)
                   .where(inArray(promoCodes.promoCodeId, promoCodeIds)),
+        bookingRequestKitchenDetailsPhotosByRequestIdFind(serverRuntime, bookingRequestIds),
     ]);
 
     const participantsByRequest = new Map<string, typeof participants>();
@@ -96,6 +98,7 @@ export async function cookBookingRequestHydrate(
                           menuEvaluation: details.menuEvaluation ? toGqlBookingRequestCookMenuEvaluation(details.menuEvaluation) : null,
                       }
                     : null,
+                kitchenDetailsPhotos: kitchenDetailsPhotosByRequestId.get(bookingRequest.bookingRequestId) ?? [],
             }),
         ];
     });

@@ -5,8 +5,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
-import { bookingRequestParticipantsFromCounts, formatDateTime, formatParticipants, userDisplayName } from '../../../shared';
-import type { BookingRequestParticipantDraft, Locale } from '../../../shared';
+import {
+    bookingRequestParticipantsFromCounts,
+    bookingRequestSettingFromChoice,
+    bookingRequestSettingLabel,
+    formatDateTime,
+    formatParticipants,
+    userDisplayName,
+} from '../../../shared';
+import type { BookingRequestParticipantDraft, BookingRequestSettingChoice, Locale } from '../../../shared';
 import { AdminPathPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import { Badge } from '../../components/base/badge';
@@ -19,6 +26,7 @@ import { Input } from '../../components/base/input';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Textarea } from '../../components/base/textarea';
 import { BookingRequestParticipantsRestrictionsEditor } from '../../components/BookingRequestParticipantsRestrictionsEditor';
+import { BookingRequestSettingPicker } from '../../components/BookingRequestSettingPicker';
 import {
     AdminBookingRequestCreateCooksInTravelRadiusDocument,
     AdminBookingRequestCreateCustomerSearchDocument,
@@ -72,6 +80,7 @@ type FormValues = {
     originalMessage: string;
     adultCount: number;
     discountedCount: number;
+    settingChoice: BookingRequestSettingChoice;
 };
 
 type CookInRadiusPreview = NonNullable<
@@ -89,6 +98,7 @@ function emptyFormValues(): FormValues {
         originalMessage: '',
         adultCount: 2,
         discountedCount: 0,
+        settingChoice: null,
     };
 }
 
@@ -135,6 +145,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
     const navigate = useNavigate();
     const [, createBooking] = useMutation(AdminBookingRequestCreateDocument);
     const restrictionsEnabled = useFeatureToggleActive('BOOKING_REQUEST_RESTRICTIONS');
+    const settingEnabled = useFeatureToggleActive('BOOKING_REQUEST_SETTING');
 
     const [customerSearchText, setCustomerSearchText] = useState('');
     const [locationSearchText, setLocationSearchText] = useState('');
@@ -301,6 +312,7 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                     preferences: [],
                     participants,
                     cookIds: selectedCookIds,
+                    ...(settingEnabled ? { setting: bookingRequestSettingFromChoice(value.settingChoice) } : {}),
                 },
             });
             const referenceId = result.data?.admin.bookingRequestCreate.referenceId;
@@ -610,6 +622,18 @@ export function AdminBookingRequestCreatePage({ search }: { search: AdminBooking
                                             <p id={errorId} className="text-sm text-destructive" role="alert">
                                                 {errorMessage}
                                             </p>
+                                        ) : null}
+                                        {settingEnabled && field.state.value ? (
+                                            <form.Field name="settingChoice">
+                                                {(settingField) => (
+                                                    <BookingRequestSettingPicker
+                                                        locale={locale}
+                                                        value={settingField.state.value}
+                                                        disabled={busy}
+                                                        onChange={(next) => settingField.handleChange(next)}
+                                                    />
+                                                )}
+                                            </form.Field>
                                         ) : null}
                                     </div>
                                 );
@@ -977,6 +1001,12 @@ function AdminBookingRequestCreateConfirmDialog({
                         }
                     />
                     <ConfirmRow label={{ de: 'Ort', en: 'Location' }[locale]} value={values.exactEventAddress?.displayText ?? '—'} />
+                    {values.settingChoice === 'INDOOR' || values.settingChoice === 'OUTDOOR' ? (
+                        <ConfirmRow
+                            label={{ de: 'Wo sitzt ihr', en: 'Where you dine' }[locale]}
+                            value={bookingRequestSettingLabel(values.settingChoice, locale)}
+                        />
+                    ) : null}
                     <ConfirmRow label={{ de: 'Teilnehmer', en: 'Participants' }[locale]} value={participantsLabel} />
                     <ConfirmRow
                         label={{ de: 'Veröffentlichung', en: 'Publication' }[locale]}

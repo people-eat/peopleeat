@@ -1012,6 +1012,8 @@ function RequestTabPanel({
             }
             estimatedTravelDistanceKm={offer.travelDistanceKm}
             estimatedTravelExpensesCents={offer.travelExpensesCents}
+            setting={request.setting}
+            kitchenDetails={request.kitchenDetails}
             invoiceAddress={revealExactAddress ? (request.invoiceAddress ?? null) : null}
             dateTimeAction={
                 revealExactAddress && request.status !== 'CANCELED'

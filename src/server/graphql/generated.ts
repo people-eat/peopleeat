@@ -638,6 +638,7 @@ export interface GqlSAdminBookingRequest {
     expiresAt?: Maybe<Scalars['DateTime']['output']>;
     giftCard?: Maybe<GqlSUserBookingRequestGiftCard>;
     invoiceAddress?: Maybe<GqlSInvoiceAddress>;
+    kitchenDetails?: Maybe<GqlSBookingRequestKitchenDetails>;
     maxOfferAmountCents?: Maybe<Scalars['Int']['output']>;
     minOfferAmountCents?: Maybe<Scalars['Int']['output']>;
     minOfferAmountHardCents?: Maybe<Scalars['Int']['output']>;
@@ -651,6 +652,7 @@ export interface GqlSAdminBookingRequest {
     promoCode?: Maybe<GqlSUserBookingRequestPromoCode>;
     publicationStatus: GqlSBookingRequestPublicationStatus;
     queuedJobs: Array<GqlSAdminQueuedJob>;
+    setting?: Maybe<GqlSBookingRequestSetting>;
     status: GqlSBookingRequestStatus;
     suggestedOfferAmountCents: Scalars['Int']['output'];
     travelImpact: Array<GqlSUserBookingRequestOfferTravelImpact>;
@@ -693,6 +695,7 @@ export type GqlSAdminBookingRequestCreate = {
     originalMessage: Scalars['String']['input'];
     participants: Array<GqlSUserBookingRequestParticipantCreate>;
     preferences: Array<Scalars['String']['input']>;
+    setting?: InputMaybe<GqlSBookingRequestSetting>;
     userId: Scalars['ID']['input'];
 };
 
@@ -892,11 +895,14 @@ export type GqlSAdminBookingRequestUpdate = {
     dateTime?: InputMaybe<Scalars['DateTime']['input']>;
     exactEventAddress?: InputMaybe<GqlSAdminBookingRequestExactEventAddressInput>;
     expiresAt?: InputMaybe<Scalars['DateTime']['input']>;
+    kitchenDetails?: InputMaybe<GqlSBookingRequestKitchenDetailsInput>;
+    kitchenDetailsPhotoFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     occasion?: InputMaybe<Scalars['String']['input']>;
     originalMessage?: InputMaybe<Scalars['String']['input']>;
     participants?: InputMaybe<Array<GqlSUserBookingRequestParticipantCreate>>;
     preferences?: InputMaybe<Array<Scalars['String']['input']>>;
     priceClassType?: InputMaybe<GqlSBookingRequestPriceClassType>;
+    setting?: InputMaybe<GqlSBookingRequestSetting>;
 };
 
 export interface GqlSAdminCall {
@@ -2519,6 +2525,30 @@ export interface GqlSBookingRequestCookPoolDetails {
     notifiedAt?: Maybe<Scalars['DateTime']['output']>;
 }
 
+export interface GqlSBookingRequestKitchenDetails {
+    __typename?: 'BookingRequestKitchenDetails';
+    availability?: Maybe<GqlSBookingRequestKitchenDetailsAvailability>;
+    fridgeSpace?: Maybe<GqlSBookingRequestKitchenDetailsSpace>;
+    guestTableware?: Maybe<GqlSBookingRequestKitchenDetailsGuestTableware>;
+    notes?: Maybe<Scalars['String']['output']>;
+    photos: Array<GqlSFileUpload>;
+    platingSpace?: Maybe<GqlSBookingRequestKitchenDetailsSpace>;
+}
+
+export type GqlSBookingRequestKitchenDetailsAvailability = 'FULL' | 'LIMITED' | 'NONE' | 'UNKNOWN';
+
+export type GqlSBookingRequestKitchenDetailsGuestTableware = 'COOK_BRINGS' | 'MIXED' | 'PROVIDED';
+
+export type GqlSBookingRequestKitchenDetailsInput = {
+    availability?: InputMaybe<GqlSBookingRequestKitchenDetailsAvailability>;
+    fridgeSpace?: InputMaybe<GqlSBookingRequestKitchenDetailsSpace>;
+    guestTableware?: InputMaybe<GqlSBookingRequestKitchenDetailsGuestTableware>;
+    notes?: InputMaybe<Scalars['String']['input']>;
+    platingSpace?: InputMaybe<GqlSBookingRequestKitchenDetailsSpace>;
+};
+
+export type GqlSBookingRequestKitchenDetailsSpace = 'LIMITED' | 'NO' | 'YES';
+
 export interface GqlSBookingRequestOfferCallRecording {
     __typename?: 'BookingRequestOfferCallRecording';
     audioUrl?: Maybe<Scalars['String']['output']>;
@@ -2691,6 +2721,8 @@ export type GqlSBookingRequestPriceClassType = 'HIGH' | 'LOW' | 'MEDIUM';
 
 export type GqlSBookingRequestPublicationStatus =
     'PUBLICATION_APPROVED_BY_ADMIN' | 'PUBLICATION_AUTO_APPROVED' | 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW';
+
+export type GqlSBookingRequestSetting = 'INDOOR' | 'OUTDOOR';
 
 export type GqlSBookingRequestStatus =
     | 'CANCELED'
@@ -3293,6 +3325,7 @@ export interface GqlSCookBookingRequest {
     exactEventAddress: GqlSCookTravelOriginAddress;
     expiresAt?: Maybe<Scalars['DateTime']['output']>;
     invoiceAddress?: Maybe<GqlSInvoiceAddress>;
+    kitchenDetails?: Maybe<GqlSBookingRequestKitchenDetails>;
     maxOfferAmountCents?: Maybe<Scalars['Int']['output']>;
     message: Scalars['String']['output'];
     minOfferAmountCents?: Maybe<Scalars['Int']['output']>;
@@ -3302,6 +3335,7 @@ export interface GqlSCookBookingRequest {
     participants: Array<GqlSBookingRequestParticipant>;
     preferences: Array<Scalars['String']['output']>;
     priceClassType?: Maybe<GqlSBookingRequestPriceClassType>;
+    setting?: Maybe<GqlSBookingRequestSetting>;
     status: GqlSBookingRequestStatus;
     suggestedOfferAmountCents: Scalars['Int']['output'];
     suggestedOfferMessage: Scalars['String']['output'];
@@ -3401,6 +3435,7 @@ export interface GqlSCookBookingRequestOfferContext {
     exactEventAddress: GqlSCookTravelOriginAddress;
     expiresAt?: Maybe<Scalars['DateTime']['output']>;
     invoiceAddress?: Maybe<GqlSInvoiceAddress>;
+    kitchenDetails?: Maybe<GqlSBookingRequestKitchenDetails>;
     maxOfferAmountCents?: Maybe<Scalars['Int']['output']>;
     message: Scalars['String']['output'];
     minOfferAmountCents?: Maybe<Scalars['Int']['output']>;
@@ -3409,6 +3444,7 @@ export interface GqlSCookBookingRequestOfferContext {
     participants: Array<GqlSBookingRequestParticipant>;
     preferences: Array<Scalars['String']['output']>;
     priceClassType?: Maybe<GqlSBookingRequestPriceClassType>;
+    setting?: Maybe<GqlSBookingRequestSetting>;
     status: GqlSBookingRequestStatus;
     suggestedOfferAmountCents: Scalars['Int']['output'];
     user: GqlSPublicUser;
@@ -4040,12 +4076,14 @@ export type GqlSFeatureToggleKey =
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
+    | 'BOOKING_REQUEST_KITCHEN_DETAILS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
     | 'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE'
     | 'BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW'
     | 'BOOKING_REQUEST_RESTRICTIONS'
+    | 'BOOKING_REQUEST_SETTING'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_PRESENCE_LINKS'
@@ -4845,6 +4883,7 @@ export type GqlSUserAttentionKind =
     | 'CALL_CONFIRMED'
     | 'CALL_PENDING'
     | 'CALL_RESPONSE_NEEDED'
+    | 'KITCHEN_DETAILS_MISSING'
     | 'OFFERS_TO_REVIEW'
     | 'OFFER_CHAT_UNREAD'
     | 'PAYMENT_DUE'
@@ -4862,6 +4901,7 @@ export interface GqlSUserBookingRequest {
     expiresAt?: Maybe<Scalars['DateTime']['output']>;
     giftCard?: Maybe<GqlSUserBookingRequestGiftCard>;
     invoiceAddress?: Maybe<GqlSInvoiceAddress>;
+    kitchenDetails?: Maybe<GqlSBookingRequestKitchenDetails>;
     occasion: Scalars['String']['output'];
     offers: Array<GqlSUserBookingRequestOffer>;
     originalMessage: Scalars['String']['output'];
@@ -4870,6 +4910,7 @@ export interface GqlSUserBookingRequest {
     priceClassType?: Maybe<GqlSBookingRequestPriceClassType>;
     priceImpact: Array<GqlSUserBookingRequestOfferPriceImpact>;
     promoCode?: Maybe<GqlSUserBookingRequestPromoCode>;
+    setting?: Maybe<GqlSBookingRequestSetting>;
     status: GqlSBookingRequestStatus;
     supportRequest?: Maybe<GqlSUserSupportRequest>;
     travelImpact: Array<GqlSUserBookingRequestOfferTravelImpact>;
@@ -4894,6 +4935,7 @@ export type GqlSUserBookingRequestCreate = {
     preferences: Array<Scalars['String']['input']>;
     priceClassType: GqlSBookingRequestPriceClassType;
     redeemCode?: InputMaybe<Scalars['String']['input']>;
+    setting?: InputMaybe<GqlSBookingRequestSetting>;
 };
 
 export type GqlSUserBookingRequestExactEventAddressInput = {
@@ -5059,6 +5101,7 @@ export interface GqlSUserMutation {
     bookingRequestChurnPromoCodeCreate: GqlSMutationResult;
     bookingRequestCreate: GqlSMutationResult;
     bookingRequestDiscountUpdate: GqlSMutationResult;
+    bookingRequestKitchenDetailsUpdate: GqlSMutationResult;
     bookingRequestOfferAccept: GqlSMutationResult;
     bookingRequestOfferCallCreate: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlSBookingRequestOfferCallTokenResult;
@@ -5133,6 +5176,12 @@ export type GqlSUserMutationBookingRequestCreateArgs = {
 export type GqlSUserMutationBookingRequestDiscountUpdateArgs = {
     bookingRequestId: Scalars['ID']['input'];
     redeemCode?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type GqlSUserMutationBookingRequestKitchenDetailsUpdateArgs = {
+    bookingRequestId: Scalars['ID']['input'];
+    kitchenDetails?: InputMaybe<GqlSBookingRequestKitchenDetailsInput>;
+    photoFileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export type GqlSUserMutationBookingRequestOfferAcceptArgs = {
@@ -5231,6 +5280,7 @@ export type GqlSUserMutationBookingRequestUpdateArgs = {
     occasion?: InputMaybe<Scalars['String']['input']>;
     participants: Array<GqlSUserBookingRequestParticipantCreate>;
     preferences?: InputMaybe<Array<Scalars['String']['input']>>;
+    setting?: InputMaybe<GqlSBookingRequestSetting>;
 };
 
 export type GqlSUserMutationChatDeleteArgs = {
@@ -5781,6 +5831,11 @@ export type GqlSResolversTypes = ResolversObject<{
     BookingRequestCookMenuEvaluationGeneratedMenu: ResolverTypeWrapper<GqlSBookingRequestCookMenuEvaluationGeneratedMenu>;
     BookingRequestCookMenuEvaluationMenu: ResolverTypeWrapper<GqlSBookingRequestCookMenuEvaluationMenu>;
     BookingRequestCookPoolDetails: ResolverTypeWrapper<GqlSBookingRequestCookPoolDetails>;
+    BookingRequestKitchenDetails: ResolverTypeWrapper<GqlSBookingRequestKitchenDetails>;
+    BookingRequestKitchenDetailsAvailability: GqlSBookingRequestKitchenDetailsAvailability;
+    BookingRequestKitchenDetailsGuestTableware: GqlSBookingRequestKitchenDetailsGuestTableware;
+    BookingRequestKitchenDetailsInput: GqlSBookingRequestKitchenDetailsInput;
+    BookingRequestKitchenDetailsSpace: GqlSBookingRequestKitchenDetailsSpace;
     BookingRequestOfferCallRecording: ResolverTypeWrapper<GqlSBookingRequestOfferCallRecording>;
     BookingRequestOfferCallRecordingStatus: GqlSBookingRequestOfferCallRecordingStatus;
     BookingRequestOfferCallRoom: ResolverTypeWrapper<GqlSBookingRequestOfferCallRoom>;
@@ -5808,6 +5863,7 @@ export type GqlSResolversTypes = ResolversObject<{
     BookingRequestParticipantType: GqlSBookingRequestParticipantType;
     BookingRequestPriceClassType: GqlSBookingRequestPriceClassType;
     BookingRequestPublicationStatus: GqlSBookingRequestPublicationStatus;
+    BookingRequestSetting: GqlSBookingRequestSetting;
     BookingRequestStatus: GqlSBookingRequestStatus;
     Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
     Chat: ResolverTypeWrapper<Omit<GqlSChat, 'turns'> & { turns: Array<GqlSResolversTypes['ChatTurn']> }>;
@@ -6340,6 +6396,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
     BookingRequestCookMenuEvaluationGeneratedMenu: GqlSBookingRequestCookMenuEvaluationGeneratedMenu;
     BookingRequestCookMenuEvaluationMenu: GqlSBookingRequestCookMenuEvaluationMenu;
     BookingRequestCookPoolDetails: GqlSBookingRequestCookPoolDetails;
+    BookingRequestKitchenDetails: GqlSBookingRequestKitchenDetails;
+    BookingRequestKitchenDetailsInput: GqlSBookingRequestKitchenDetailsInput;
     BookingRequestOfferCallRecording: GqlSBookingRequestOfferCallRecording;
     BookingRequestOfferCallRoom: GqlSBookingRequestOfferCallRoom;
     BookingRequestOfferCallTokenResult: GqlSBookingRequestOfferCallTokenResult;
@@ -7239,6 +7297,7 @@ export type GqlSAdminBookingRequestResolvers<
     expiresAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     giftCard?: Resolver<Maybe<GqlSResolversTypes['UserBookingRequestGiftCard']>, ParentType, ContextType>;
     invoiceAddress?: Resolver<Maybe<GqlSResolversTypes['InvoiceAddress']>, ParentType, ContextType>;
+    kitchenDetails?: Resolver<Maybe<GqlSResolversTypes['BookingRequestKitchenDetails']>, ParentType, ContextType>;
     maxOfferAmountCents?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     minOfferAmountCents?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     minOfferAmountHardCents?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
@@ -7257,6 +7316,7 @@ export type GqlSAdminBookingRequestResolvers<
     promoCode?: Resolver<Maybe<GqlSResolversTypes['UserBookingRequestPromoCode']>, ParentType, ContextType>;
     publicationStatus?: Resolver<GqlSResolversTypes['BookingRequestPublicationStatus'], ParentType, ContextType>;
     queuedJobs?: Resolver<Array<GqlSResolversTypes['AdminQueuedJob']>, ParentType, ContextType>;
+    setting?: Resolver<Maybe<GqlSResolversTypes['BookingRequestSetting']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestStatus'], ParentType, ContextType>;
     suggestedOfferAmountCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     travelImpact?: Resolver<
@@ -8882,6 +8942,18 @@ export type GqlSBookingRequestCookPoolDetailsResolvers<
     notifiedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
 }>;
 
+export type GqlSBookingRequestKitchenDetailsResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['BookingRequestKitchenDetails'] = GqlSResolversParentTypes['BookingRequestKitchenDetails'],
+> = ResolversObject<{
+    availability?: Resolver<Maybe<GqlSResolversTypes['BookingRequestKitchenDetailsAvailability']>, ParentType, ContextType>;
+    fridgeSpace?: Resolver<Maybe<GqlSResolversTypes['BookingRequestKitchenDetailsSpace']>, ParentType, ContextType>;
+    guestTableware?: Resolver<Maybe<GqlSResolversTypes['BookingRequestKitchenDetailsGuestTableware']>, ParentType, ContextType>;
+    notes?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    photos?: Resolver<Array<GqlSResolversTypes['FileUpload']>, ParentType, ContextType>;
+    platingSpace?: Resolver<Maybe<GqlSResolversTypes['BookingRequestKitchenDetailsSpace']>, ParentType, ContextType>;
+}>;
+
 export type GqlSBookingRequestOfferCallRecordingResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['BookingRequestOfferCallRecording'] =
@@ -9552,6 +9624,7 @@ export type GqlSCookBookingRequestResolvers<
     exactEventAddress?: Resolver<GqlSResolversTypes['CookTravelOriginAddress'], ParentType, ContextType>;
     expiresAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     invoiceAddress?: Resolver<Maybe<GqlSResolversTypes['InvoiceAddress']>, ParentType, ContextType>;
+    kitchenDetails?: Resolver<Maybe<GqlSResolversTypes['BookingRequestKitchenDetails']>, ParentType, ContextType>;
     maxOfferAmountCents?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     message?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     minOfferAmountCents?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
@@ -9561,6 +9634,7 @@ export type GqlSCookBookingRequestResolvers<
     participants?: Resolver<Array<GqlSResolversTypes['BookingRequestParticipant']>, ParentType, ContextType>;
     preferences?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
     priceClassType?: Resolver<Maybe<GqlSResolversTypes['BookingRequestPriceClassType']>, ParentType, ContextType>;
+    setting?: Resolver<Maybe<GqlSResolversTypes['BookingRequestSetting']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestStatus'], ParentType, ContextType>;
     suggestedOfferAmountCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     suggestedOfferMessage?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -9686,6 +9760,7 @@ export type GqlSCookBookingRequestOfferContextResolvers<
     exactEventAddress?: Resolver<GqlSResolversTypes['CookTravelOriginAddress'], ParentType, ContextType>;
     expiresAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     invoiceAddress?: Resolver<Maybe<GqlSResolversTypes['InvoiceAddress']>, ParentType, ContextType>;
+    kitchenDetails?: Resolver<Maybe<GqlSResolversTypes['BookingRequestKitchenDetails']>, ParentType, ContextType>;
     maxOfferAmountCents?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     message?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     minOfferAmountCents?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
@@ -9694,6 +9769,7 @@ export type GqlSCookBookingRequestOfferContextResolvers<
     participants?: Resolver<Array<GqlSResolversTypes['BookingRequestParticipant']>, ParentType, ContextType>;
     preferences?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
     priceClassType?: Resolver<Maybe<GqlSResolversTypes['BookingRequestPriceClassType']>, ParentType, ContextType>;
+    setting?: Resolver<Maybe<GqlSResolversTypes['BookingRequestSetting']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestStatus'], ParentType, ContextType>;
     suggestedOfferAmountCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     user?: Resolver<GqlSResolversTypes['PublicUser'], ParentType, ContextType>;
@@ -11052,6 +11128,7 @@ export type GqlSUserBookingRequestResolvers<
     expiresAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     giftCard?: Resolver<Maybe<GqlSResolversTypes['UserBookingRequestGiftCard']>, ParentType, ContextType>;
     invoiceAddress?: Resolver<Maybe<GqlSResolversTypes['InvoiceAddress']>, ParentType, ContextType>;
+    kitchenDetails?: Resolver<Maybe<GqlSResolversTypes['BookingRequestKitchenDetails']>, ParentType, ContextType>;
     occasion?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     offers?: Resolver<Array<GqlSResolversTypes['UserBookingRequestOffer']>, ParentType, ContextType>;
     originalMessage?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -11065,6 +11142,7 @@ export type GqlSUserBookingRequestResolvers<
         RequireFields<GqlSUserBookingRequestPriceImpactArgs, 'participantsAdult' | 'participantsDiscounted'>
     >;
     promoCode?: Resolver<Maybe<GqlSResolversTypes['UserBookingRequestPromoCode']>, ParentType, ContextType>;
+    setting?: Resolver<Maybe<GqlSResolversTypes['BookingRequestSetting']>, ParentType, ContextType>;
     status?: Resolver<GqlSResolversTypes['BookingRequestStatus'], ParentType, ContextType>;
     supportRequest?: Resolver<Maybe<GqlSResolversTypes['UserSupportRequest']>, ParentType, ContextType>;
     travelImpact?: Resolver<
@@ -11260,6 +11338,12 @@ export type GqlSUserMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSUserMutationBookingRequestDiscountUpdateArgs, 'bookingRequestId'>
+    >;
+    bookingRequestKitchenDetailsUpdate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserMutationBookingRequestKitchenDetailsUpdateArgs, 'bookingRequestId'>
     >;
     bookingRequestOfferAccept?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -11633,6 +11717,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     BookingRequestCookMenuEvaluationGeneratedMenu?: GqlSBookingRequestCookMenuEvaluationGeneratedMenuResolvers<ContextType>;
     BookingRequestCookMenuEvaluationMenu?: GqlSBookingRequestCookMenuEvaluationMenuResolvers<ContextType>;
     BookingRequestCookPoolDetails?: GqlSBookingRequestCookPoolDetailsResolvers<ContextType>;
+    BookingRequestKitchenDetails?: GqlSBookingRequestKitchenDetailsResolvers<ContextType>;
     BookingRequestOfferCallRecording?: GqlSBookingRequestOfferCallRecordingResolvers<ContextType>;
     BookingRequestOfferCallRoom?: GqlSBookingRequestOfferCallRoomResolvers<ContextType>;
     BookingRequestOfferCallTokenResult?: GqlSBookingRequestOfferCallTokenResultResolvers<ContextType>;
@@ -12090,6 +12175,22 @@ export const GqlSAdminUserTypeSchema: z.ZodType<'admin' | 'cook' | 'customer', '
     'customer',
 ]);
 
+export const GqlSBookingRequestKitchenDetailsAvailabilitySchema: z.ZodType<
+    'FULL' | 'LIMITED' | 'NONE' | 'UNKNOWN',
+    'FULL' | 'LIMITED' | 'NONE' | 'UNKNOWN'
+> = z.enum(['FULL', 'LIMITED', 'NONE', 'UNKNOWN']);
+
+export const GqlSBookingRequestKitchenDetailsGuestTablewareSchema: z.ZodType<
+    'COOK_BRINGS' | 'MIXED' | 'PROVIDED',
+    'COOK_BRINGS' | 'MIXED' | 'PROVIDED'
+> = z.enum(['COOK_BRINGS', 'MIXED', 'PROVIDED']);
+
+export const GqlSBookingRequestKitchenDetailsSpaceSchema: z.ZodType<'LIMITED' | 'NO' | 'YES', 'LIMITED' | 'NO' | 'YES'> = z.enum([
+    'LIMITED',
+    'NO',
+    'YES',
+]);
+
 export const GqlSBookingRequestOfferCallRecordingStatusSchema: z.ZodType<
     'COMPLETED' | 'EGRESS_COMPLETE' | 'FAILED' | 'PENDING' | 'TRANSCRIBING',
     'COMPLETED' | 'EGRESS_COMPLETE' | 'FAILED' | 'PENDING' | 'TRANSCRIBING'
@@ -12165,6 +12266,8 @@ export const GqlSBookingRequestPublicationStatusSchema: z.ZodType<
     'PUBLICATION_APPROVED_BY_ADMIN' | 'PUBLICATION_AUTO_APPROVED' | 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW',
     'PUBLICATION_APPROVED_BY_ADMIN' | 'PUBLICATION_AUTO_APPROVED' | 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW'
 > = z.enum(['PUBLICATION_APPROVED_BY_ADMIN', 'PUBLICATION_AUTO_APPROVED', 'PUBLICATION_BLOCKED_BY_ADMIN_REVIEW']);
+
+export const GqlSBookingRequestSettingSchema: z.ZodType<'INDOOR' | 'OUTDOOR', 'INDOOR' | 'OUTDOOR'> = z.enum(['INDOOR', 'OUTDOOR']);
 
 export const GqlSBookingRequestStatusSchema: z.ZodType<
     | 'CANCELED'
@@ -12482,12 +12585,14 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
+    | 'BOOKING_REQUEST_KITCHEN_DETAILS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
     | 'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE'
     | 'BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW'
     | 'BOOKING_REQUEST_RESTRICTIONS'
+    | 'BOOKING_REQUEST_SETTING'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_PRESENCE_LINKS'
@@ -12502,12 +12607,14 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
+    | 'BOOKING_REQUEST_KITCHEN_DETAILS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
     | 'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE'
     | 'BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW'
     | 'BOOKING_REQUEST_RESTRICTIONS'
+    | 'BOOKING_REQUEST_SETTING'
     | 'COOK_ANALYTICS'
     | 'COOK_BIOGRAPHY_AI_WRITE'
     | 'COOK_PRESENCE_LINKS'
@@ -12523,12 +12630,14 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'AI_MENU_EVALUATION',
     'ASSISTANT_COOK',
     'ASSISTANT_CUSTOMER',
+    'BOOKING_REQUEST_KITCHEN_DETAILS',
     'BOOKING_REQUEST_OFFER_AMENDMENT',
     'BOOKING_REQUEST_OFFER_CHAT_REACTIONS',
     'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS',
     'BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE',
     'BOOKING_REQUEST_OFFER_PRICE_IMPACT_PREVIEW',
     'BOOKING_REQUEST_RESTRICTIONS',
+    'BOOKING_REQUEST_SETTING',
     'COOK_ANALYTICS',
     'COOK_BIOGRAPHY_AI_WRITE',
     'COOK_PRESENCE_LINKS',
@@ -12567,6 +12676,7 @@ export const GqlSUserAttentionKindSchema: z.ZodType<
     | 'CALL_CONFIRMED'
     | 'CALL_PENDING'
     | 'CALL_RESPONSE_NEEDED'
+    | 'KITCHEN_DETAILS_MISSING'
     | 'OFFERS_TO_REVIEW'
     | 'OFFER_CHAT_UNREAD'
     | 'PAYMENT_DUE'
@@ -12574,6 +12684,7 @@ export const GqlSUserAttentionKindSchema: z.ZodType<
     | 'CALL_CONFIRMED'
     | 'CALL_PENDING'
     | 'CALL_RESPONSE_NEEDED'
+    | 'KITCHEN_DETAILS_MISSING'
     | 'OFFERS_TO_REVIEW'
     | 'OFFER_CHAT_UNREAD'
     | 'PAYMENT_DUE'
@@ -12582,6 +12693,7 @@ export const GqlSUserAttentionKindSchema: z.ZodType<
     'CALL_CONFIRMED',
     'CALL_PENDING',
     'CALL_RESPONSE_NEEDED',
+    'KITCHEN_DETAILS_MISSING',
     'OFFERS_TO_REVIEW',
     'OFFER_CHAT_UNREAD',
     'PAYMENT_DUE',
@@ -12690,6 +12802,7 @@ export function GqlSAdminBookingRequestCreateSchema(): z.ZodObject<Properties<Gq
         originalMessage: z.string(),
         participants: z.array(z.lazy(() => GqlSUserBookingRequestParticipantCreateSchema())),
         preferences: z.array(z.string()),
+        setting: GqlSBookingRequestSettingSchema.nullish(),
         userId: z.string(),
     }) as z.ZodObject<Properties<GqlSAdminBookingRequestCreate>>;
 }
@@ -12813,11 +12926,14 @@ export function GqlSAdminBookingRequestUpdateSchema(): z.ZodObject<Properties<Gq
         dateTime: z.date().nullish(),
         exactEventAddress: z.lazy(() => GqlSAdminBookingRequestExactEventAddressInputSchema().nullish()),
         expiresAt: z.date().nullish(),
+        kitchenDetails: z.lazy(() => GqlSBookingRequestKitchenDetailsInputSchema().nullish()),
+        kitchenDetailsPhotoFileUploadIds: z.array(z.string()).nullish(),
         occasion: z.string().nullish(),
         originalMessage: z.string().nullish(),
         participants: z.array(z.lazy(() => GqlSUserBookingRequestParticipantCreateSchema())).nullish(),
         preferences: z.array(z.string()).nullish(),
         priceClassType: GqlSBookingRequestPriceClassTypeSchema.nullish(),
+        setting: GqlSBookingRequestSettingSchema.nullish(),
     }) as z.ZodObject<Properties<GqlSAdminBookingRequestUpdate>>;
 }
 
@@ -13102,6 +13218,16 @@ export function GqlSBlogPostUpsertSchema(): z.ZodObject<Properties<GqlSBlogPostU
         titleDe: z.string(),
         titleEn: z.string(),
     }) as z.ZodObject<Properties<GqlSBlogPostUpsert>>;
+}
+
+export function GqlSBookingRequestKitchenDetailsInputSchema(): z.ZodObject<Properties<GqlSBookingRequestKitchenDetailsInput>> {
+    return z.object({
+        availability: GqlSBookingRequestKitchenDetailsAvailabilitySchema.nullish(),
+        fridgeSpace: GqlSBookingRequestKitchenDetailsSpaceSchema.nullish(),
+        guestTableware: GqlSBookingRequestKitchenDetailsGuestTablewareSchema.nullish(),
+        notes: z.string().nullish(),
+        platingSpace: GqlSBookingRequestKitchenDetailsSpaceSchema.nullish(),
+    });
 }
 
 export function GqlSBookingRequestOfferConfiguredMenuCourseInputSchema(): z.ZodObject<
@@ -13578,6 +13704,7 @@ export function GqlSUserBookingRequestCreateSchema(): z.ZodObject<Properties<Gql
         preferences: z.array(z.string()),
         priceClassType: GqlSBookingRequestPriceClassTypeSchema,
         redeemCode: z.string().nullish(),
+        setting: GqlSBookingRequestSettingSchema.nullish(),
     }) as z.ZodObject<Properties<GqlSUserBookingRequestCreate>>;
 }
 
