@@ -184,7 +184,7 @@ export function AdminWhatsAppChatsPage({ data, search }: { data: GqlCAdminWhatsA
                                 en: 'Search phone, name, or user…',
                             }[locale]
                         }
-                        className="min-w-48 max-w-md flex-1"
+                        className="w-full min-w-0 basis-full @5xl:max-w-sm @5xl:flex-1 @5xl:basis-56"
                         aria-label={
                             {
                                 de: 'WhatsApp-Chats suchen',
@@ -192,18 +192,28 @@ export function AdminWhatsAppChatsPage({ data, search }: { data: GqlCAdminWhatsA
                             }[locale]
                         }
                     />
-                    <Tabs
-                        value={tab}
-                        onValueChange={(value) => {
-                            if (value === 'unread') updateSearch({ ...search, unread: true, page: undefined });
-                            else updateSearch({ ...search, unread: undefined, page: undefined });
-                        }}
-                    >
-                        <TabsList>
-                            <TabsTrigger value="all">{{ de: 'Alle', en: 'All' }[locale]}</TabsTrigger>
-                            <TabsTrigger value="unread">{{ de: 'Ungelesen', en: 'Unread' }[locale]}</TabsTrigger>
-                        </TabsList>
-                    </Tabs>
+                    <div className="flex w-full min-w-0 flex-wrap items-center gap-3 @5xl:w-auto @5xl:flex-1">
+                        <Tabs
+                            value={tab}
+                            onValueChange={(value) => {
+                                if (value === 'unread') updateSearch({ ...search, unread: true, page: undefined });
+                                else updateSearch({ ...search, unread: undefined, page: undefined });
+                            }}
+                        >
+                            <TabsList>
+                                <TabsTrigger value="all">{{ de: 'Alle', en: 'All' }[locale]}</TabsTrigger>
+                                <TabsTrigger value="unread">{{ de: 'Ungelesen', en: 'Unread' }[locale]}</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
+                            {
+                                {
+                                    de: `${total} ${total === 1 ? 'Chat' : 'Chats'}`,
+                                    en: `${total} ${total === 1 ? 'chat' : 'chats'}`,
+                                }[locale]
+                            }
+                        </p>
+                    </div>
                 </div>
 
                 {conversations.length === 0 ? (

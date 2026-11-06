@@ -292,7 +292,7 @@ export function AdminBookingRequestsPage({
     return (
         <AdminPathPageChrome contentClassName="min-h-0 overflow-hidden gap-0">
             <AdminPinnedFooterLayout
-                contentClassName="grid w-full content-start gap-6"
+                contentClassName="@container grid w-full content-start gap-6"
                 footer={
                     <AdminListPaginationBar
                         page={page}
@@ -330,7 +330,7 @@ export function AdminBookingRequestsPage({
                     </TabsList>
                 </Tabs>
 
-                <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="flex flex-wrap items-center gap-3">
                     <Input
                         type="search"
                         value={draftQ}
@@ -342,111 +342,123 @@ export function AdminBookingRequestsPage({
                             }[locale]
                         }
                         aria-label={{ de: 'Buchungsanfragen suchen', en: 'Search booking requests' }[locale]}
+                        className="w-full min-w-0 basis-full @5xl:max-w-sm @5xl:flex-1 @5xl:basis-56"
                     />
-                    <p className="text-sm text-muted-foreground tabular-nums">
-                        {
-                            {
-                                de: `${total} ${total === 1 ? 'Anfrage' : 'Anfragen'}`,
-                                en: `${total} ${total === 1 ? 'request' : 'requests'}`,
-                            }[locale]
-                        }
-                    </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                    <label className="flex items-center gap-2 text-sm">
-                        <span className="text-muted-foreground">{{ de: 'Status', en: 'Status' }[locale]}</span>
-                        <Select
-                            value={
-                                isOpenForReviewStatuses(search.statuses)
-                                    ? OPEN_FOR_REVIEW_STATUS_VALUE
-                                    : search.statuses && search.statuses.length > 1
-                                      ? '__statuses__'
-                                      : (search.status ?? '__all__')
-                            }
-                            onValueChange={(value) => {
-                                if (value === OPEN_FOR_REVIEW_STATUS_VALUE) {
+                    <div className="flex w-full min-w-0 flex-wrap items-center gap-3 @5xl:w-auto @5xl:flex-1">
+                        <label className="flex shrink-0 items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">{{ de: 'Status', en: 'Status' }[locale]}</span>
+                            <Select
+                                value={
+                                    isOpenForReviewStatuses(search.statuses)
+                                        ? OPEN_FOR_REVIEW_STATUS_VALUE
+                                        : search.statuses && search.statuses.length > 1
+                                          ? '__statuses__'
+                                          : (search.status ?? '__all__')
+                                }
+                                onValueChange={(value) => {
+                                    if (value === OPEN_FOR_REVIEW_STATUS_VALUE) {
+                                        updateSearch({
+                                            ...search,
+                                            page: undefined,
+                                            status: undefined,
+                                            statuses: [...bookingRequestPublicationReviewQueueStatuses],
+                                        });
+                                        return;
+                                    }
                                     updateSearch({
                                         ...search,
                                         page: undefined,
-                                        status: undefined,
-                                        statuses: [...bookingRequestPublicationReviewQueueStatuses],
+                                        status: value != null && STATUS_SET.has(value) ? (value as GqlCBookingRequestStatus) : undefined,
+                                        statuses: undefined,
                                     });
-                                    return;
-                                }
-                                updateSearch({
-                                    ...search,
-                                    page: undefined,
-                                    status: value != null && STATUS_SET.has(value) ? (value as GqlCBookingRequestStatus) : undefined,
-                                    statuses: undefined,
-                                });
-                            }}
-                        >
-                            <SelectTrigger size="sm" aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}>
+                                }}
+                            >
+                                <SelectTrigger
+                                    size="sm"
+                                    className="w-auto shrink-0"
+                                    aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}
+                                >
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="__all__">{{ de: 'Alle Status', en: 'All statuses' }[locale]}</SelectItem>
+                                    <SelectItem value={OPEN_FOR_REVIEW_STATUS_VALUE}>
+                                        {{ de: 'Offen zur Prüfung', en: 'Open for review' }[locale]}
+                                    </SelectItem>
+                                    {search.statuses && search.statuses.length > 1 && !isOpenForReviewStatuses(search.statuses) ? (
+                                        <SelectItem value="__statuses__">
+                                            {search.statuses.map((status) => bookingRequestStatusLabel(status, locale, 'admin')).join(', ')}
+                                        </SelectItem>
+                                    ) : null}
+                                    {ADMIN_BOOKING_REQUEST_STATUSES.map((status) => (
+                                        <SelectItem key={status} value={status}>
+                                            {bookingRequestStatusLabel(status, locale, 'admin')}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </label>
+
+                        <Select value={gridSortValue(search)} onValueChange={onSortChange}>
+                            <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={{ de: 'Sortierung', en: 'Sort' }[locale]}>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="__all__">{{ de: 'Alle Status', en: 'All statuses' }[locale]}</SelectItem>
-                                <SelectItem value={OPEN_FOR_REVIEW_STATUS_VALUE}>
-                                    {{ de: 'Offen zur Prüfung', en: 'Open for review' }[locale]}
+                                <SelectItem value="createdAt:desc">{{ de: 'Neueste zuerst', en: 'Newest first' }[locale]}</SelectItem>
+                                <SelectItem value="createdAt:asc">{{ de: 'Älteste zuerst', en: 'Oldest first' }[locale]}</SelectItem>
+                                <SelectItem value="dateTime:desc">
+                                    {{ de: 'Termin absteigend', en: 'Event date descending' }[locale]}
                                 </SelectItem>
-                                {search.statuses && search.statuses.length > 1 && !isOpenForReviewStatuses(search.statuses) ? (
-                                    <SelectItem value="__statuses__">
-                                        {search.statuses.map((status) => bookingRequestStatusLabel(status, locale, 'admin')).join(', ')}
-                                    </SelectItem>
-                                ) : null}
-                                {ADMIN_BOOKING_REQUEST_STATUSES.map((status) => (
-                                    <SelectItem key={status} value={status}>
-                                        {bookingRequestStatusLabel(status, locale, 'admin')}
-                                    </SelectItem>
-                                ))}
+                                <SelectItem value="dateTime:asc">
+                                    {{ de: 'Termin aufsteigend', en: 'Event date ascending' }[locale]}
+                                </SelectItem>
+                                <SelectItem value="occasion:asc">{{ de: 'Anlass A–Z', en: 'Occasion A–Z' }[locale]}</SelectItem>
+                                <SelectItem value="occasion:desc">{{ de: 'Anlass Z–A', en: 'Occasion Z–A' }[locale]}</SelectItem>
                             </SelectContent>
                         </Select>
-                    </label>
 
-                    <Select value={gridSortValue(search)} onValueChange={onSortChange}>
-                        <SelectTrigger size="sm" aria-label={{ de: 'Sortierung', en: 'Sort' }[locale]}>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="createdAt:desc">{{ de: 'Neueste zuerst', en: 'Newest first' }[locale]}</SelectItem>
-                            <SelectItem value="createdAt:asc">{{ de: 'Älteste zuerst', en: 'Oldest first' }[locale]}</SelectItem>
-                            <SelectItem value="dateTime:desc">
-                                {{ de: 'Termin absteigend', en: 'Event date descending' }[locale]}
-                            </SelectItem>
-                            <SelectItem value="dateTime:asc">{{ de: 'Termin aufsteigend', en: 'Event date ascending' }[locale]}</SelectItem>
-                            <SelectItem value="occasion:asc">{{ de: 'Anlass A–Z', en: 'Occasion A–Z' }[locale]}</SelectItem>
-                            <SelectItem value="occasion:desc">{{ de: 'Anlass Z–A', en: 'Occasion Z–A' }[locale]}</SelectItem>
-                        </SelectContent>
-                    </Select>
+                        {hasActiveFilters ? (
+                            <Button
+                                type="button"
+                                variant="link"
+                                className="h-auto shrink-0 p-0 text-sm text-muted-foreground"
+                                onClick={clearFilters}
+                            >
+                                {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
+                            </Button>
+                        ) : null}
 
-                    {hasActiveFilters ? (
-                        <Button type="button" variant="link" className="h-auto p-0 text-sm text-muted-foreground" onClick={clearFilters}>
-                            {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
-                        </Button>
-                    ) : null}
+                        <div className="flex shrink-0 items-center gap-1 rounded-lg border border-border p-0.5" role="group">
+                            <Button
+                                type="button"
+                                size="icon-sm"
+                                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                                aria-label={{ de: 'Kartenansicht', en: 'Card view' }[locale]}
+                                aria-pressed={viewMode === 'grid'}
+                                onClick={() => setViewMode('grid')}
+                            >
+                                <LayoutGridIcon />
+                            </Button>
+                            <Button
+                                type="button"
+                                size="icon-sm"
+                                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                                aria-label={{ de: 'Listenansicht', en: 'List view' }[locale]}
+                                aria-pressed={viewMode === 'list'}
+                                onClick={() => setViewMode('list')}
+                            >
+                                <ListIcon />
+                            </Button>
+                        </div>
 
-                    <div className="ml-auto flex items-center gap-1 rounded-lg border border-border p-0.5" role="group">
-                        <Button
-                            type="button"
-                            size="icon-sm"
-                            variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                            aria-label={{ de: 'Kartenansicht', en: 'Card view' }[locale]}
-                            aria-pressed={viewMode === 'grid'}
-                            onClick={() => setViewMode('grid')}
-                        >
-                            <LayoutGridIcon />
-                        </Button>
-                        <Button
-                            type="button"
-                            size="icon-sm"
-                            variant={viewMode === 'list' ? 'default' : 'ghost'}
-                            aria-label={{ de: 'Listenansicht', en: 'List view' }[locale]}
-                            aria-pressed={viewMode === 'list'}
-                            onClick={() => setViewMode('list')}
-                        >
-                            <ListIcon />
-                        </Button>
+                        <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
+                            {
+                                {
+                                    de: `${total} ${total === 1 ? 'Anfrage' : 'Anfragen'}`,
+                                    en: `${total} ${total === 1 ? 'request' : 'requests'}`,
+                                }[locale]
+                            }
+                        </p>
                     </div>
                 </div>
 

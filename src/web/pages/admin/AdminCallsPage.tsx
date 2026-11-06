@@ -191,7 +191,7 @@ export function AdminCallsPage({ data, search }: { data: GqlCAdminCallsPageQuery
     return (
         <AdminPathPageChrome contentClassName="min-h-0 overflow-hidden gap-0">
             <AdminPinnedFooterLayout
-                contentClassName="grid w-full content-start gap-6"
+                contentClassName="@container grid w-full content-start gap-6"
                 footer={
                     <AdminListPaginationBar
                         page={page}
@@ -229,57 +229,61 @@ export function AdminCallsPage({ data, search }: { data: GqlCAdminCallsPageQuery
                     </TabsList>
                 </Tabs>
 
-                <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="flex flex-wrap items-center gap-3">
                     <Input
                         type="search"
                         value={draftQ}
                         onChange={(event) => setDraftQ(event.target.value)}
                         placeholder={{ de: 'Anlass, Koch oder Kunde suchen…', en: 'Search occasion, cook, or customer…' }[locale]}
                         aria-label={{ de: 'Anruf-Verkehr suchen', en: 'Search call traffic' }[locale]}
+                        className="w-full min-w-0 basis-full @5xl:max-w-sm @5xl:flex-1 @5xl:basis-56"
                     />
-                    <p className="text-sm text-muted-foreground tabular-nums">
-                        {
+                    <div className="flex w-full min-w-0 flex-wrap items-center gap-3 @5xl:w-auto @5xl:flex-1">
+                        <label className="flex shrink-0 items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">{{ de: 'Initiator', en: 'Initiator' }[locale]}</span>
+                            <Select
+                                value={search.initiator ?? '__all__'}
+                                onValueChange={(value) => {
+                                    updateSearch({
+                                        ...search,
+                                        page: undefined,
+                                        initiator: value === 'CUSTOMER' || value === 'COOK' ? value : undefined,
+                                    });
+                                }}
+                            >
+                                <SelectTrigger
+                                    size="sm"
+                                    className="w-auto shrink-0"
+                                    aria-label={{ de: 'Initiator filtern', en: 'Filter initiator' }[locale]}
+                                >
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="__all__">{{ de: 'Alle', en: 'All' }[locale]}</SelectItem>
+                                    <SelectItem value="CUSTOMER">{adminCallInitiatorLabel('CUSTOMER', locale)}</SelectItem>
+                                    <SelectItem value="COOK">{adminCallInitiatorLabel('COOK', locale)}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </label>
+                        {search.cookId ? (
+                            <Button
+                                type="button"
+                                variant="link"
+                                className="h-auto shrink-0 p-0 text-sm text-muted-foreground"
+                                onClick={() => updateSearch({ ...search, cookId: undefined, page: undefined })}
+                            >
+                                {{ de: 'Koch-Filter entfernen', en: 'Clear cook filter' }[locale]}
+                            </Button>
+                        ) : null}
+                        <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
                             {
-                                de: `${total} ${total === 1 ? 'Eintrag' : 'Einträge'}`,
-                                en: `${total} ${total === 1 ? 'entry' : 'entries'}`,
-                            }[locale]
-                        }
-                    </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                    <label className="flex items-center gap-2 text-sm">
-                        <span className="text-muted-foreground">{{ de: 'Initiator', en: 'Initiator' }[locale]}</span>
-                        <Select
-                            value={search.initiator ?? '__all__'}
-                            onValueChange={(value) => {
-                                updateSearch({
-                                    ...search,
-                                    page: undefined,
-                                    initiator: value === 'CUSTOMER' || value === 'COOK' ? value : undefined,
-                                });
-                            }}
-                        >
-                            <SelectTrigger size="sm" aria-label={{ de: 'Initiator filtern', en: 'Filter initiator' }[locale]}>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="__all__">{{ de: 'Alle', en: 'All' }[locale]}</SelectItem>
-                                <SelectItem value="CUSTOMER">{adminCallInitiatorLabel('CUSTOMER', locale)}</SelectItem>
-                                <SelectItem value="COOK">{adminCallInitiatorLabel('COOK', locale)}</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </label>
-                    {search.cookId ? (
-                        <Button
-                            type="button"
-                            variant="link"
-                            className="h-auto p-0 text-sm text-muted-foreground"
-                            onClick={() => updateSearch({ ...search, cookId: undefined, page: undefined })}
-                        >
-                            {{ de: 'Koch-Filter entfernen', en: 'Clear cook filter' }[locale]}
-                        </Button>
-                    ) : null}
+                                {
+                                    de: `${total} ${total === 1 ? 'Eintrag' : 'Einträge'}`,
+                                    en: `${total} ${total === 1 ? 'entry' : 'entries'}`,
+                                }[locale]
+                            }
+                        </p>
+                    </div>
                 </div>
 
                 <AdminCallsDataTable data={rows} sorting={sorting} onSortingChange={onSortingChange} />

@@ -21,15 +21,16 @@ preselected (Total clears the filter). Cook rows deep-link to the admin user det
 ### List — `/admin/booking-requests/list`
 
 Search by occasion, message, venue text, or customer email/name (first, last, or full name in either order). Tabs filter publication status
-(admin review / auto-approved / admin-approved; omit = all). A **Status** select filters derived lifecycle (`WAITING_FOR_OFFERS` …
-`CANCELED`; omit = all) via `AdminBookingRequestCriterion.statuses`. **Open for review** keeps waiting-for-offers and offers-in-review. The
-admin home booking-review queue uses that pair together with the admin-review publication tab, and its links open this list with both
-filters set. Sort select is always available (grid and list); list column headers remain sortable too. **Clear filters** appears when
-search, publication, or status is set. **Card grid is default** (`view=grid` or omit); `view=list` shows a sortable table. Grid cards show
-occasion, customer link, status and publication badges, event date, location, participants, created date, and offer chips deep-linking to
-offer detail (unread accent, accepted-path ring). Sort and pinned bottom pagination (page + per-page size; default 25) via URL. Status uses
-derived booking request status with **booking lifecycle pills**; blocked-for-review also shows a publication badge. Exact event time is
-reserved for detail pages.
+(admin review / auto-approved / admin-approved; omit = all). Search, status, sort, view toggle, and count share one toolbar row on a wide
+pane; on a narrow pane the search takes a full row and the controls wrap underneath. A **Status** select filters derived lifecycle
+(`WAITING_FOR_OFFERS` … `CANCELED`; omit = all) via `AdminBookingRequestCriterion.statuses`. **Open for review** keeps waiting-for-offers
+and offers-in-review. The admin home booking-review queue uses that pair together with the admin-review publication tab, and its links open
+this list with both filters set. Sort select is always available (grid and list); list column headers remain sortable too. **Clear filters**
+appears when search, publication, or status is set. **Card grid is default** (`view=grid` or omit); `view=list` shows a sortable table. Grid
+cards show occasion, customer link, status and publication badges, event date, location, participants, created date, and offer chips
+deep-linking to offer detail (unread accent, accepted-path ring). Sort and pinned bottom pagination (page + per-page size; default 25) via
+URL. Status uses derived booking request status with **booking lifecycle pills**; blocked-for-review also shows a publication badge. Exact
+event time is reserved for detail pages.
 
 ### Create — `/admin/booking-requests/create`
 
@@ -134,8 +135,9 @@ unchanged), and **mark paid out-of-system** (`PAYED_OUT_OF_SYSTEM`, no Stripe ca
 
 Overview: attention board (live, pending, upcoming, recent), distribution, charts, cook leaderboard. Attention rows use the same compact
 `Card` density as offer/profile call cards (`bookingOfferCallCardClassName`). Distribution kind cards deep-link into the list with `kind`
-(range-scoped outcomes also pass overview `from` / `to`); cook rows deep-link with `cookId` + range. List: full traffic with filters and
-pinned bottom pagination (`page` / `pageSize`; default 25). Deep links to the offer Call tab.
+(range-scoped outcomes also pass overview `from` / `to`); cook rows deep-link with `cookId` + range. List: full traffic with search,
+initiator filter, and count on one toolbar row on a wide pane (search full-width and controls wrap on a narrow pane), plus pinned bottom
+pagination (`page` / `pageSize`; default 25). Deep links to the offer Call tab.
 
 Publication approve on overview when blocked (picker over radius cooks). Post-approve notify per cook.
 

@@ -194,7 +194,7 @@ export function AdminSupportRequestsPage({
     return (
         <AdminPathPageChrome contentClassName="min-h-0 overflow-hidden gap-0">
             <AdminPinnedFooterLayout
-                contentClassName="grid w-full content-start gap-6"
+                contentClassName="@container grid w-full content-start gap-6"
                 footer={
                     <AdminListPaginationBar
                         page={page}
@@ -212,7 +212,7 @@ export function AdminSupportRequestsPage({
                     />
                 }
             >
-                <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="flex flex-wrap items-center gap-3">
                     <Input
                         type="search"
                         value={draftQ}
@@ -224,84 +224,93 @@ export function AdminSupportRequestsPage({
                             }[locale]
                         }
                         aria-label={{ de: 'Support-Anfragen suchen', en: 'Search support requests' }[locale]}
-                        className="max-w-sm"
+                        className="w-full min-w-0 basis-full @5xl:max-w-sm @5xl:flex-1 @5xl:basis-56"
                     />
-                    <p className="text-sm text-muted-foreground tabular-nums">
-                        {
-                            {
-                                de: `${total} ${total === 1 ? 'Anfrage' : 'Anfragen'}`,
-                                en: `${total} ${total === 1 ? 'request' : 'requests'}`,
-                            }[locale]
-                        }
-                    </p>
-                </div>
+                    <div className="flex w-full min-w-0 flex-wrap items-center gap-3 @5xl:w-auto @5xl:flex-1">
+                        <label className="flex shrink-0 items-center gap-2 text-sm">
+                            <span className="text-muted-foreground">{{ de: 'Status', en: 'Status' }[locale]}</span>
+                            <Select
+                                value={search.status ?? '__all__'}
+                                onValueChange={(value) => {
+                                    updateSearch({
+                                        ...search,
+                                        page: undefined,
+                                        status: value != null && STATUS_SET.has(value) ? (value as GqlCSupportRequestStatus) : undefined,
+                                    });
+                                }}
+                            >
+                                <SelectTrigger
+                                    size="sm"
+                                    className="w-auto shrink-0"
+                                    aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}
+                                >
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="__all__">{{ de: 'Alle Status', en: 'All statuses' }[locale]}</SelectItem>
+                                    <SelectItem value="OPEN">{{ de: 'Offen', en: 'Open' }[locale]}</SelectItem>
+                                    <SelectItem value="RESOLVED">{{ de: 'Erledigt', en: 'Resolved' }[locale]}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </label>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <label className="flex items-center gap-2 text-sm">
-                        <span className="text-muted-foreground">{{ de: 'Status', en: 'Status' }[locale]}</span>
                         <Select
-                            value={search.status ?? '__all__'}
+                            value={resolveAdminSupportRequestsSort(search)}
                             onValueChange={(value) => {
+                                if (value == null || !(ADMIN_SUPPORT_REQUEST_SORT_FIELDS as readonly string[]).includes(value)) return;
                                 updateSearch({
                                     ...search,
                                     page: undefined,
-                                    status: value != null && STATUS_SET.has(value) ? (value as GqlCSupportRequestStatus) : undefined,
+                                    sort: value === DEFAULT_SORT_FIELD ? undefined : (value as GqlCAdminSupportRequestSortField),
                                 });
                             }}
                         >
-                            <SelectTrigger size="sm" aria-label={{ de: 'Status filtern', en: 'Filter by status' }[locale]}>
+                            <SelectTrigger size="sm" className="w-auto shrink-0" aria-label={{ de: 'Sortierung', en: 'Sort' }[locale]}>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="__all__">{{ de: 'Alle Status', en: 'All statuses' }[locale]}</SelectItem>
-                                <SelectItem value="OPEN">{{ de: 'Offen', en: 'Open' }[locale]}</SelectItem>
-                                <SelectItem value="RESOLVED">{{ de: 'Erledigt', en: 'Resolved' }[locale]}</SelectItem>
+                                <SelectItem value="lastMessageAt">{{ de: 'Neueste Nachricht', en: 'Newest message' }[locale]}</SelectItem>
+                                <SelectItem value="createdAt">{{ de: 'Anfrage erstellt', en: 'Request created' }[locale]}</SelectItem>
+                                <SelectItem value="bookingDateTime">
+                                    {{ de: 'Nächster Termin zuerst', en: 'Soonest booking first' }[locale]}
+                                </SelectItem>
                             </SelectContent>
                         </Select>
-                    </label>
 
-                    <Select
-                        value={resolveAdminSupportRequestsSort(search)}
-                        onValueChange={(value) => {
-                            if (value == null || !(ADMIN_SUPPORT_REQUEST_SORT_FIELDS as readonly string[]).includes(value)) return;
-                            updateSearch({
-                                ...search,
-                                page: undefined,
-                                sort: value === DEFAULT_SORT_FIELD ? undefined : (value as GqlCAdminSupportRequestSortField),
-                            });
-                        }}
-                    >
-                        <SelectTrigger size="sm" aria-label={{ de: 'Sortierung', en: 'Sort' }[locale]}>
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="lastMessageAt">{{ de: 'Neueste Nachricht', en: 'Newest message' }[locale]}</SelectItem>
-                            <SelectItem value="createdAt">{{ de: 'Anfrage erstellt', en: 'Request created' }[locale]}</SelectItem>
-                            <SelectItem value="bookingDateTime">
-                                {{ de: 'Nächster Termin zuerst', en: 'Soonest booking first' }[locale]}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+                        <label className="flex shrink-0 items-center gap-2 text-sm">
+                            <Checkbox
+                                checked={resolveAdminSupportRequestsUnreadFirst(search)}
+                                onCheckedChange={(checked) =>
+                                    updateSearch({
+                                        ...search,
+                                        page: undefined,
+                                        unreadFirst: checked === true ? undefined : false,
+                                    })
+                                }
+                            />
+                            {{ de: 'Ungelesene zuerst', en: 'Unread first' }[locale]}
+                        </label>
 
-                    <label className="flex items-center gap-2 text-sm">
-                        <Checkbox
-                            checked={resolveAdminSupportRequestsUnreadFirst(search)}
-                            onCheckedChange={(checked) =>
-                                updateSearch({
-                                    ...search,
-                                    page: undefined,
-                                    unreadFirst: checked === true ? undefined : false,
-                                })
+                        {hasActiveFilters ? (
+                            <Button
+                                type="button"
+                                variant="link"
+                                className="h-auto shrink-0 p-0 text-sm text-muted-foreground"
+                                onClick={clearFilters}
+                            >
+                                {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
+                            </Button>
+                        ) : null}
+
+                        <p className="text-sm text-muted-foreground tabular-nums xl:ml-auto">
+                            {
+                                {
+                                    de: `${total} ${total === 1 ? 'Anfrage' : 'Anfragen'}`,
+                                    en: `${total} ${total === 1 ? 'request' : 'requests'}`,
+                                }[locale]
                             }
-                        />
-                        {{ de: 'Ungelesene zuerst', en: 'Unread first' }[locale]}
-                    </label>
-
-                    {hasActiveFilters ? (
-                        <Button type="button" variant="link" className="h-auto p-0 text-sm text-muted-foreground" onClick={clearFilters}>
-                            {{ de: 'Filter zurücksetzen', en: 'Clear filters' }[locale]}
-                        </Button>
-                    ) : null}
+                        </p>
+                    </div>
                 </div>
 
                 {supportRequests.length === 0 ? (
