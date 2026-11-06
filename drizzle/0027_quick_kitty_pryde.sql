@@ -1,0 +1,1 @@
+ALTER TABLE "BookingRequestOffers" DROP COLUMN "selectedAddons";

@@ -16,6 +16,7 @@ import {
     AlertDialogTitle,
 } from '../../components/base/alert-dialog';
 import { Button } from '../../components/base/button';
+import { Checkbox } from '../../components/base/checkbox';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Textarea } from '../../components/base/textarea';
 import { BookingRequestOfferPriceConfigurationPanel } from '../../components/BookingRequestOfferPriceConfigurationPanel';
@@ -37,6 +38,7 @@ import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { cn } from '../../utils/cn';
+import { offerAddonPriceLabel } from '../../utils/offerAddonPriceLabel';
 import { returnToFromLocation } from '../../utils/returnTo';
 import { cookStubRouteBySlug } from './cookCatalog';
 
@@ -46,6 +48,7 @@ export type ProfileCookBookingRequestOfferCreateStep = 'menus' | 'price' | 'mess
 
 export type ProfileCookBookingRequestOfferCreateSearch = {
     menus?: string;
+    addons?: string;
     price?: number;
     message?: string;
     step?: ProfileCookBookingRequestOfferCreateStep;
@@ -89,6 +92,8 @@ export function parseProfileCookBookingRequestOfferCreateSearch(
 ): ProfileCookBookingRequestOfferCreateSearch {
     const menusRaw = typeof search.menus === 'string' ? search.menus.trim() : '';
     const menus = menusRaw.length > 0 ? menusRaw : undefined;
+    const addonsRaw = typeof search.addons === 'string' ? search.addons.trim() : '';
+    const addons = addonsRaw.length > 0 ? addonsRaw : undefined;
     const priceNum = typeof search.price === 'number' ? search.price : typeof search.price === 'string' ? Number(search.price) : NaN;
     const price = Number.isInteger(priceNum) && priceNum >= 0 ? priceNum : undefined;
     const messageRaw = typeof search.message === 'string' ? search.message.trim() : '';
@@ -96,6 +101,7 @@ export function parseProfileCookBookingRequestOfferCreateSearch(
     const step = offerCreateStepFromSearch(search.step);
     return {
         menus,
+        addons,
         price,
         message,
         // Default menus stays out of the URL; only persist non-default steps.
@@ -105,6 +111,7 @@ export function parseProfileCookBookingRequestOfferCreateSearch(
 
 function profileCookBookingRequestOfferCreateSearchForUrl(next: {
     menus: readonly string[];
+    addons: readonly string[];
     price: number;
     message: string;
     step: ProfileCookBookingRequestOfferCreateStep;
@@ -112,6 +119,7 @@ function profileCookBookingRequestOfferCreateSearchForUrl(next: {
     const trimmedMessage = next.message.trim().slice(0, OFFER_CREATE_MESSAGE_MAX_LENGTH);
     return {
         menus: next.menus.length > 0 ? next.menus.join(',') : undefined,
+        addons: next.addons.length > 0 ? next.addons.join(',') : undefined,
         price: next.price > 0 ? next.price : undefined,
         message: trimmedMessage.length > 0 ? trimmedMessage : undefined,
         // Default menus stays out of the URL; only persist non-default steps.
@@ -119,21 +127,30 @@ function profileCookBookingRequestOfferCreateSearchForUrl(next: {
     };
 }
 
-function menuIdsFromOfferCreateSearch(search: ProfileCookBookingRequestOfferCreateSearch): string[] {
-    if (search.menus == null || search.menus.length === 0) return [];
-    return search.menus
+function idsFromOfferCreateSearch(value: string | undefined): string[] {
+    if (value == null || value.length === 0) return [];
+    return value
         .split(',')
         .map((id) => id.trim())
         .filter((id) => id.length > 0);
 }
 
+function menuIdsFromOfferCreateSearch(search: ProfileCookBookingRequestOfferCreateSearch): string[] {
+    return idsFromOfferCreateSearch(search.menus);
+}
+
+function addonIdsFromOfferCreateSearch(search: ProfileCookBookingRequestOfferCreateSearch): string[] {
+    return idsFromOfferCreateSearch(search.addons);
+}
+
 function offerCreateSearchEqual(a: ProfileCookBookingRequestOfferCreateSearch, b: ProfileCookBookingRequestOfferCreateSearch): boolean {
-    return a.menus === b.menus && a.price === b.price && a.message === b.message && a.step === b.step;
+    return a.menus === b.menus && a.addons === b.addons && a.price === b.price && a.message === b.message && a.step === b.step;
 }
 
 function searchToSearchStr(search: ProfileCookBookingRequestOfferCreateSearch): string {
     const params = new URLSearchParams();
     if (search.menus != null) params.set('menus', search.menus);
+    if (search.addons != null) params.set('addons', search.addons);
     if (search.price != null) params.set('price', String(search.price));
     if (search.message != null) params.set('message', search.message);
     if (search.step != null) params.set('step', search.step);
@@ -227,12 +244,14 @@ export function ProfileCookBookingRequestOfferCreatePage({
     const [, applyGeneratedMenu] = useMutation(ProfileCookBookingRequestOfferCreatePageGeneratedMenuApplyDocument);
     const [, trackFunnelInteraction] = useMutation(CookBookingRequestOfferFunnelTrackDocument);
     const menuEvaluationEnabled = useFeatureToggleActive('AI_MENU_EVALUATION');
+    const offerAddonsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_ADDONS');
     const messageFieldId = useId();
 
     const seedSuggestedOfferMessage =
         seedLookup.__typename === 'CookBookingRequestAvailable' ? seedLookup.bookingRequest.suggestedOfferMessage : '';
     const [priceSeedFromSearch] = useState(() => search.price);
     const [selectedMenuIds, setSelectedMenuIds] = useState(() => menuIdsFromOfferCreateSearch(search));
+    const [selectedAddonIds, setSelectedAddonIds] = useState(() => addonIdsFromOfferCreateSearch(search));
     const [menuPriceCents, setMenuPriceCents] = useState(() => search.price ?? 0);
     const [priceValid, setPriceValid] = useState(false);
     const [message, setMessage] = useState(() => search.message ?? seedSuggestedOfferMessage);
@@ -305,6 +324,10 @@ export function ProfileCookBookingRequestOfferCreatePage({
             const next = current.filter((menuId) => cook.menus.some((row) => row.menuId === menuId));
             return next.length === current.length ? current : next;
         });
+        setSelectedAddonIds((current) => {
+            const next = current.filter((addonId) => cook.offerAddons.some((row) => row.cookOfferAddonId === addonId));
+            return next.length === current.length ? current : next;
+        });
     }, [cook]);
 
     useEffect(() => {
@@ -316,6 +339,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
     useEffect(() => {
         const next = profileCookBookingRequestOfferCreateSearchForUrl({
             menus: selectedMenuIds,
+            addons: offerAddonsEnabled ? selectedAddonIds : [],
             price: menuPriceCents,
             message,
             step,
@@ -327,7 +351,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
             search: next,
             replace: true,
         });
-    }, [bookingRequestId, menuPriceCents, message, navigate, search, selectedMenuIds, step]);
+    }, [bookingRequestId, menuPriceCents, message, navigate, offerAddonsEnabled, search, selectedAddonIds, selectedMenuIds, step]);
 
     if (cook == null || lookup == null) {
         return null;
@@ -433,6 +457,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
                 input: {
                     bookingRequestId,
                     suggestedMenuIds,
+                    suggestedAddonIds: offerAddonsEnabled ? selectedAddonIds : undefined,
                     menuPriceCents,
                     message: trimmedMessage.length > 0 ? trimmedMessage : null,
                 },
@@ -529,6 +554,7 @@ export function ProfileCookBookingRequestOfferCreatePage({
             searchStr: searchToSearchStr(
                 profileCookBookingRequestOfferCreateSearchForUrl({
                     menus,
+                    addons: offerAddonsEnabled ? selectedAddonIds : [],
                     price: menuPriceCents,
                     message,
                     step: 'menus',
@@ -796,6 +822,77 @@ export function ProfileCookBookingRequestOfferCreatePage({
                         onMenuPriceCentsChange={setMenuPriceCents}
                         onValidChange={setPriceValid}
                     />
+                    {offerAddonsEnabled ? (
+                        <section className="grid gap-3">
+                            <div className="grid gap-1">
+                                <h2 className="text-sm font-medium text-foreground">
+                                    {{ de: 'Zusatzleistungen', en: 'Offer extras' }[locale]}
+                                </h2>
+                                <p className="text-sm text-muted-foreground">
+                                    {
+                                        {
+                                            de: 'Optional. Der Gast kann sie vor der Annahme auswählen.',
+                                            en: 'Optional. The guest can choose them before accepting.',
+                                        }[locale]
+                                    }
+                                </p>
+                            </div>
+                            {cook.offerAddons.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">
+                                    {
+                                        {
+                                            de: 'Noch keine Zusatzleistungen in deiner Bibliothek.',
+                                            en: 'No offer extras in your library yet.',
+                                        }[locale]
+                                    }{' '}
+                                    <Link to="/{-$locale}/profile/offer-addons" className="underline">
+                                        {{ de: 'Bibliothek öffnen', en: 'Open library' }[locale]}
+                                    </Link>
+                                </p>
+                            ) : (
+                                <ul className="grid gap-2">
+                                    {cook.offerAddons.map((addon) => {
+                                        const selected = selectedAddonIds.includes(addon.cookOfferAddonId);
+                                        return (
+                                            <li key={addon.cookOfferAddonId}>
+                                                <label
+                                                    className={cn(
+                                                        'flex cursor-pointer items-start gap-3 rounded-xl border p-3',
+                                                        selected && 'border-primary',
+                                                    )}
+                                                >
+                                                    <Checkbox
+                                                        checked={selected}
+                                                        disabled={busy}
+                                                        aria-label={addon.title}
+                                                        onCheckedChange={(checked) => {
+                                                            if (checked === 'indeterminate') return;
+                                                            setSelectedAddonIds((current) =>
+                                                                checked
+                                                                    ? current.includes(addon.cookOfferAddonId)
+                                                                        ? current
+                                                                        : [...current, addon.cookOfferAddonId]
+                                                                    : current.filter((id) => id !== addon.cookOfferAddonId),
+                                                            );
+                                                        }}
+                                                    />
+                                                    <span className="grid min-w-0 gap-1">
+                                                        <span className="font-medium text-foreground">{addon.title}</span>
+                                                        {addon.description.trim().length > 0 ? (
+                                                            <span className="text-sm text-muted-foreground">{addon.description}</span>
+                                                        ) : null}
+                                                        <span className="text-sm text-muted-foreground">
+                                                            {offerAddonPriceLabel(addon.priceCents, addon.pricingUnit, locale)}
+                                                        </span>
+                                                    </span>
+                                                </label>
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            )}
+                        </section>
+                    ) : null}
                 </div>
 
                 <div

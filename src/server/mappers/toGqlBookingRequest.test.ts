@@ -57,6 +57,7 @@ const offer = {
     userRequestedMenuAdjustments: null,
     travelDistanceKm: 12.5,
     menuPriceCents: 20_000,
+    addonPriceCents: 0,
     travelExpensesCents: 2_500,
     paymentProviderFeeCents: 500,
     platformFeePercentCook: 15,

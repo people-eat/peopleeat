@@ -32,6 +32,7 @@ export type AdminBreadcrumbCrumb = {
         | '/{-$locale}/admin/meals/$mealId'
         | '/{-$locale}/admin/menus'
         | '/{-$locale}/admin/menus/$menuId'
+        | '/{-$locale}/admin/offer-addon-templates'
         | '/{-$locale}/admin/outbound-emails'
         | '/{-$locale}/admin/promo-codes'
         | '/{-$locale}/admin/blog-posts'

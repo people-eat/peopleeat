@@ -139,6 +139,17 @@ fragment ProfileCustomerBookingRequestOfferPageUser on User {
                     }
                 }
             }
+            addonPriceCents
+            addons {
+                cookOfferAddonId
+                title
+                description
+                imageUrl
+                pricingUnit
+                priceCents
+                inclusion
+                customerSelected
+            }
             costBreakdown {
                 lineItems {
                     title
@@ -217,6 +228,18 @@ subscription ProfileCustomerBookingRequestOfferPageUpdates($bookingRequestId: ID
 mutation ProfileCustomerBookingRequestOfferCustomerReceiptRegenerate($bookingRequestOfferId: ID!) {
     user {
         bookingRequestOfferCustomerReceiptRegenerate(bookingRequestOfferId: $bookingRequestOfferId) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation ProfileCustomerBookingRequestOfferAddonSelectionUpdate(
+    $bookingRequestOfferId: ID!
+    $selections: [BookingRequestOfferAddonSelectionInput!]!
+) {
+    user {
+        bookingRequestOfferAddonSelectionUpdate(bookingRequestOfferId: $bookingRequestOfferId, selections: $selections) {
             success
             referenceId
         }

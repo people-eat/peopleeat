@@ -8,6 +8,7 @@ import {
     ClockIcon,
     FilePlusIcon,
     MapPinIcon,
+    PackagePlusIcon,
     PhoneIcon,
     SlidersHorizontalIcon,
     UsersIcon,
@@ -126,6 +127,10 @@ function offerEventIcon(type: GqlCChatMessageBookingRequestOfferEventType): Luci
         case 'ADMIN_PAYOUT_RELEASED':
         case 'ADMIN_PAYED_OUT_OF_SYSTEM':
             return BanknoteIcon;
+        case 'COOK_CHANGED_ADDONS':
+        case 'USER_CHANGED_ADDON_SELECTION':
+        case 'ADMIN_CHANGED_ADDONS':
+            return PackagePlusIcon;
         case 'SYSTEM_PAYMENT_FAILED':
             return CircleXIcon;
         case 'COOK_UPDATED_SUGGESTED_MENU':
@@ -218,6 +223,9 @@ function chatMessageBookingRequestOfferEventLabel(type: GqlCChatMessageBookingRe
             COOK_CHANGED_PRICE: { de: 'Preis geändert', en: 'Price changed' },
             SYSTEM_CHANGED_PRICE: { de: 'Preis automatisch angepasst', en: 'Price adjusted automatically' },
             ADMIN_CHANGED_PRICE: { de: 'Concierge hat den Preis geändert', en: 'Concierge changed the price' },
+            COOK_CHANGED_ADDONS: { de: 'Extras aktualisiert', en: 'Extras updated' },
+            USER_CHANGED_ADDON_SELECTION: { de: 'Extras ausgewählt', en: 'Extras selected' },
+            ADMIN_CHANGED_ADDONS: { de: 'Concierge hat die Extras aktualisiert', en: 'Concierge updated extras' },
             ADMIN_ACCEPTANCE_UPDATED: {
                 de: 'Concierge hat die Annahme aktualisiert',
                 en: 'Concierge updated acceptance',

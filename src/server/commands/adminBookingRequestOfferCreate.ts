@@ -106,6 +106,7 @@ export async function adminBookingRequestOfferCreate(
         const price = bookingRequestOfferPriceCalculate({
             menuPriceCents: input.menuPriceCents,
             travelExpensesCents: input.travelExpensesCents,
+            addonPriceCents: 0,
             ...(input.platformFeePercentCook != null ? { platformFeePercentCook: input.platformFeePercentCook } : {}),
             ...(input.platformFeePercentCustomer != null ? { platformFeePercentCustomer: input.platformFeePercentCustomer } : {}),
         });

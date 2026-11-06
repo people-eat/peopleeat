@@ -1,0 +1,53 @@
+fragment ProfileCookOfferAddonEditPageUser on User {
+    userId
+    cook {
+        cookId
+        offerAddon(cookOfferAddonId: $cookOfferAddonId) {
+            cookOfferAddonId
+            title
+            description
+            imageFileUploadId
+            imageUrl
+            pricingUnit
+            priceCents
+            inclusion
+            bookingRequestOfferId
+        }
+    }
+}
+
+query ProfileCookOfferAddonEditPage($cookOfferAddonId: ID!) {
+    currentSession {
+        user {
+            ...ProfileCookOfferAddonEditPageUser
+        }
+    }
+}
+
+subscription ProfileCookOfferAddonEditPageUpdates($cookOfferAddonId: ID!) {
+    userUpdates {
+        ...ProfileCookOfferAddonEditPageUser
+    }
+}
+
+mutation ProfileCookOfferAddonEditPageUpsert($addon: CookOfferAddonUpsert) {
+    user {
+        cook {
+            offerAddonUpsert(addon: $addon) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
+mutation ProfileCookOfferAddonEditPageDelete($cookOfferAddonId: ID!) {
+    user {
+        cook {
+            offerAddonDelete(cookOfferAddonId: $cookOfferAddonId) {
+                success
+                referenceId
+            }
+        }
+    }
+}

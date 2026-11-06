@@ -32,12 +32,17 @@ export function CookMealImageField({
     disabled = false,
     onBusyChange,
     compact = false,
+    emptyDetail,
+    removeDescription,
 }: {
     value: CookMealImageValue;
     onChange: (next: CookMealImageValue) => void;
     disabled?: boolean;
     onBusyChange?: (busy: boolean) => void;
     compact?: boolean;
+    /** `null` hides the empty-state detail. Omitted keeps the meal public-page hint. */
+    emptyDetail?: string | null;
+    removeDescription?: string;
 }) {
     const locale = useLocale();
     const inputRef = useRef<HTMLInputElement>(null);
@@ -123,14 +128,15 @@ export function CookMealImageField({
                 ) : (
                     <div className="grid gap-1">
                         <p className="text-sm text-muted-foreground">{{ de: 'Noch kein Bild.', en: 'No image yet.' }[locale]}</p>
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Ohne Bild erscheint das Gericht nicht auf deiner öffentlichen Kochseite.',
-                                    en: 'Without a picture, the meal does not appear on your public cook page.',
-                                }[locale]
-                            }
-                        </p>
+                        {emptyDetail !== null ? (
+                            <p className="text-sm text-muted-foreground">
+                                {emptyDetail ??
+                                    {
+                                        de: 'Ohne Bild erscheint das Gericht nicht auf deiner öffentlichen Kochseite.',
+                                        en: 'Without a picture, the meal does not appear on your public cook page.',
+                                    }[locale]}
+                            </p>
+                        ) : null}
                     </div>
                 )}
                 <input
@@ -160,12 +166,11 @@ export function CookMealImageField({
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>{{ de: 'Bild entfernen?', en: 'Remove this image?' }[locale]}</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        {
+                                        {removeDescription ??
                                             {
                                                 de: 'Das Bild wird vom Gericht entfernt. Speichere danach, um die Änderung zu übernehmen. Ohne Bild erscheint das Gericht nicht auf deiner öffentlichen Kochseite.',
                                                 en: 'The image will be removed from this meal. Save afterwards to apply the change. Without a picture, the meal does not appear on your public cook page.',
-                                            }[locale]
-                                        }
+                                            }[locale]}
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>

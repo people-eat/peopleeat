@@ -1,14 +1,15 @@
-import type { GqlSPublicCook, GqlSPublicCookMenu, GqlSUserBookingRequestOffer } from '../graphql/generated';
+import type { GqlSPublicCook, GqlSPublicCookMenu, GqlSPublicCookOfferAddon, GqlSUserBookingRequestOffer } from '../graphql/generated';
 import { bookingRequestOfferFieldsBuild } from './bookingRequestOfferFieldsBuild';
 import type { BookingRequestOfferFieldsInput } from './bookingRequestOfferFieldsBuild';
 
 export type ToGqlUserBookingRequestOfferInput = BookingRequestOfferFieldsInput & {
     cook: GqlSPublicCook;
     suggestedMenus?: GqlSPublicCookMenu[];
+    addons?: GqlSPublicCookOfferAddon[];
 };
 
 export function toGqlUserBookingRequestOffer(input: ToGqlUserBookingRequestOfferInput): GqlSUserBookingRequestOffer {
-    const { cook, suggestedMenus = [], ...fieldsInput } = input;
+    const { cook, suggestedMenus = [], addons = [], ...fieldsInput } = input;
     const {
         cookUnreadNotificationCount: _cookUnread,
         canCompletePreparations: _canCompletePreparations,
@@ -18,6 +19,7 @@ export function toGqlUserBookingRequestOffer(input: ToGqlUserBookingRequestOffer
         ...fields,
         cook,
         suggestedMenus,
+        addons,
         customerReceiptFileUpload: null,
         messages: [],
         // Field resolvers populate the review and its eligibility flag.

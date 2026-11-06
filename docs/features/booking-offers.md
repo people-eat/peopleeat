@@ -32,26 +32,28 @@ create / negotiate and for customer booking / accept / pay paths; a ban auto-dec
    DE/EN copy from `bookingRequestSuggestedOfferMessage`, keyed by the customer's `Users.locale`) when the URL has no `message` yet; the
    cook can edit or clear it. The create UI emits funnel `step_entered` / `step_completed` interactions for admin analytics. Footer **Back**
    moves to the previous step. Draft state is URL-backed (`?menus=&price=&message=&step=`) so return from menu edit restores selection,
-   price, message, and step (`step=price` / `step=message` only when on those steps; omitted defaults to menus; later steps without a
-   complete menu selection snap back to menus). A newly minted menu id (or an incomplete menu opened via **Fertigstellen**) is included in
-   `menus` and stays selected when complete. Incomplete inventory menus (any course missing a title or meal options) stay visible with an
-   **Incomplete** badge and a **Fertigstellen** / **Finish** CTA (cannot be selected until complete); expanding that section shows a warning
-   explaining why they cannot be picked. The create UI requires at least one complete menu: **Continue** on step 1 stays disabled until
-   then; if submit somehow lacks menus, a `StatusAlert` (`error`) appears above the menu picker on step 1. The server still accepts an empty
+   price, message, extras, and step (`step=price` / `step=message` only when on those steps; omitted defaults to menus; `addons=` holds
+   library extra ids when offer extras are on, see [booking-offer-addons.md](./booking-offer-addons.md); later steps without a complete menu
+   selection snap back to menus). A newly minted menu id (or an incomplete menu opened via **Fertigstellen**) is included in `menus` and
+   stays selected when complete. Incomplete inventory menus (any course missing a title or meal options) stay visible with an **Incomplete**
+   badge and a **Fertigstellen** / **Finish** CTA (cannot be selected until complete); expanding that section shows a warning explaining why
+   they cannot be picked. The create UI requires at least one complete menu: **Continue** on step 1 stays disabled until then; if submit
+   somehow lacks menus, a `StatusAlert` (`error`) appears above the menu picker on step 1. The server still accepts an empty
    `suggestedMenuIds` list. The optional message is seeded as `COOK_MESSAGE_SIMPLE` after `COOK_CREATED` in the offer chat. The customer is
    emailed that a new offer exists. 3. **Customer** compares offers as cards on the request detail page (cook photo, city, cuisine /
    philosophy tags, menu hint, price, lifecycle pill, and a CTA into the offer). While the request is `OFFERS_WAITING_FOR_REVIEW`, an info
    banner above the cards asks them to review, compare menus, chat, or call before deciding (hidden once an offer is dual-accepted or the
    request leaves that status). They then open `/profile/booking-requests/$id/offers/$offerId` (tabs: offer / chat / call / testimonial;
-   default Offer, clean URL; Chat uses `?tab=chat`). Offer tab shows menus, cook block, cost, and discount redeem / remove via
-   `BookingRequestDiscountEditor` below the cost card while unpaid and not yet dual-accepted (no empty-state copy; input hidden once a code
-   is applied — remove first to enter another; UI follows server/`userUpdates` state only, no optimistic discount patch). When several menus
-   are suggested, the customer picks via selectable menu cards (meal-image collage, clamped title / description, course count); courses for
-   the selected menu stay below. Long menu descriptions and the cook bio use expandable text (collapsed to a few lines with a fade; click to
-   expand). Applied promo / gift fold into `costBreakdown` (negative line items + total via `CostBreakdownPanel`; no per-person or
-   before-discount rows; muted footer notes that travel is included). On wider panes the menu sits left and cook / pricing sit right. While
-   the customer still needs to accept, a pinned footer on the Offer tab holds **Accept**; decline stays in the header overflow menu and
-   opens a reason dialog (free-text plus suggested chips for price / menus / special requests).
+   default Offer, clean URL; Chat uses `?tab=chat`). Offer tab shows menus, optional extras when that toggle is on (see
+   [booking-offer-addons.md](./booking-offer-addons.md)), cook block, cost, and discount redeem / remove via `BookingRequestDiscountEditor`
+   below the cost card while unpaid and not yet dual-accepted (no empty-state copy; input hidden once a code is applied — remove first to
+   enter another; UI follows server/`userUpdates` state only, no optimistic discount patch). When several menus are suggested, the customer
+   picks via selectable menu cards (meal-image collage, clamped title / description, course count); courses for the selected menu stay
+   below. Long menu descriptions and the cook bio use expandable text (collapsed to a few lines with a fade; click to expand). Applied promo
+   / gift fold into `costBreakdown` (negative line items + total via `CostBreakdownPanel`; no per-person or before-discount rows; muted
+   footer notes that travel is included). On wider panes the menu sits left and cook / pricing sit right. While the customer still needs to
+   accept, a pinned footer on the Offer tab holds **Accept**; decline stays in the header overflow menu and opens a reason dialog (free-text
+   plus suggested chips for price / menus / special requests).
 3. **Cook** manages offers at `/profile/booking-request-offers` with Active / Completed (**Stattgefunden**) / Archive tabs
    (`?view=completed` / `?view=archived`; default Active omits `view`). Inbox cards show event date only; while negotiating, amount row is
    **Auftragswert** / **Order value** from `totalWithoutDiscountsCentsCustomer`; after mutual accept, **Auszahlungsbetrag** / **Payout

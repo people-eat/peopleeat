@@ -34,6 +34,7 @@ type Crumb = {
         | '/{-$locale}/profile/meals/$mealId'
         | '/{-$locale}/profile/menus'
         | '/{-$locale}/profile/menus/$menuId'
+        | '/{-$locale}/profile/offer-addons'
         | '/{-$locale}/profile/booking-request-pool'
         | '/{-$locale}/profile/booking-request-pool/$bookingRequestId'
         | '/{-$locale}/profile/booking-request-offers'
@@ -52,6 +53,7 @@ export function CookBreadcrumbs() {
     const travelRoute = cookNavRouteBySlug('travel');
     const mealsRoute = cookNavRouteBySlug('meals');
     const menusRoute = cookNavRouteBySlug('menus');
+    const offerAddonsRoute = cookNavRouteBySlug('offer-addons');
     const poolRoute = cookNavRouteBySlug('booking-request-pool');
     const offersRoute = cookNavRouteBySlug('booking-request-offers');
     const offerCustomerDisplayFromDetail = useMatch({
@@ -84,6 +86,7 @@ export function CookBreadcrumbs() {
 
     const mealMatch = path.match(/^\/profile\/meals\/([^/]+)(\/edit)?$/);
     const menuMatch = path.match(/^\/profile\/menus\/([^/]+)(\/edit)?$/);
+    const offerAddonEditMatch = path.match(/^\/profile\/offer-addons\/([^/]+)\/edit$/);
     const offerEditMatch = path.match(/^\/profile\/booking-request-offers\/([^/]+)\/(edit-price|edit-menus)$/);
     const offerMatch = path.match(/^\/profile\/booking-request-offers\/([^/]+)$/);
 
@@ -125,6 +128,9 @@ export function CookBreadcrumbs() {
         } else {
             crumbs.push({ label: { de: 'Menü', en: 'Menu' }[locale] });
         }
+    } else if (offerAddonEditMatch) {
+        crumbs.push({ label: offerAddonsRoute.title[locale], to: '/{-$locale}/profile/offer-addons' });
+        crumbs.push({ label: { de: 'Bearbeiten', en: 'Edit' }[locale] });
     } else if (path.match(/^\/profile\/booking-request-pool\/[^/]+\/create$/)) {
         const bookingRequestId = path.split('/')[3]!;
         crumbs.push({ label: poolRoute.title[locale], to: '/{-$locale}/profile/booking-request-pool' });

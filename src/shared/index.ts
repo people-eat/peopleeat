@@ -50,11 +50,16 @@ export type { DerivedCallSlot } from './deriveCookCallSlots';
 export {
     BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_COOK,
     BOOKING_REQUEST_OFFER_PLATFORM_FEE_PERCENT_CUSTOMER,
+    bookingRequestOfferAddonPriceCentsCalculate,
     bookingRequestOfferMenuPriceScaleByPaidParticipants,
     bookingRequestOfferPriceCalculate,
     bookingRequestSuggestedCookPayoutCents,
 } from './bookingRequestOfferPrice';
-export type { BookingRequestOfferPriceInput, BookingRequestOfferPriceResult } from './bookingRequestOfferPrice';
+export type {
+    BookingRequestOfferAddonPriceLine,
+    BookingRequestOfferPriceInput,
+    BookingRequestOfferPriceResult,
+} from './bookingRequestOfferPrice';
 export { bookingRequestOfferPriceGuidance, bookingRequestPaidParticipants } from './bookingRequestOfferPriceGuidance';
 export type {
     BookingRequestOfferPriceClassType,

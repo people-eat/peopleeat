@@ -111,6 +111,7 @@ export async function userBookingRequestPriceImpactFindMany(
         const priceAfter = bookingRequestOfferPriceCalculate({
             menuPriceCents: menuPriceCentsAfter,
             travelExpensesCents: row.offer.travelExpensesCents,
+            addonPriceCents: row.offer.addonPriceCents,
             platformFeePercentCook: row.offer.platformFeePercentCook,
             platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
         });

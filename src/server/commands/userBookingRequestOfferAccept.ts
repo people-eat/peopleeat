@@ -1,8 +1,19 @@
 import { and, eq, not } from 'drizzle-orm';
 
 import { bookingRequestOfferPriceCalculate } from '../../shared/bookingRequestOfferPrice';
+import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
 import { idCreate } from '../../shared/idCreate';
-import { bookingRequestOfferEvents, bookingRequestOffers, bookingRequests, cooks, giftCards, promoCodes, users } from '../db/schema';
+import {
+    bookingRequestOfferEvents,
+    bookingRequestOffers,
+    bookingRequestParticipants,
+    bookingRequests,
+    cookOfferAddons,
+    cooks,
+    giftCards,
+    promoCodes,
+    users,
+} from '../db/schema';
 import { cookCanCreateOffersDerive } from '../domain/cook';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
@@ -22,6 +33,7 @@ import { bookingRequestOfferEventTomorrowNotifySchedule } from '../utils/booking
 import { bookingRequestOfferNegotiationAssert } from '../utils/bookingRequestOfferNegotiationAssert';
 import { bookingRequestOfferPaymentPrepare } from '../utils/bookingRequestOfferPaymentPrepare';
 import { bookingRequestOfferPaymentSucceededSessionEventCreate } from '../utils/bookingRequestOfferPaymentSessionEventCreate';
+import { bookingRequestOfferAddonPriceFromRows } from '../utils/bookingRequestOfferAddonPriceFromRows';
 import { bookingRequestOfferPriceSnapshot } from '../utils/bookingRequestOfferPriceSnapshot';
 import { bookingRequestPoolCooksPublish } from '../utils/bookingRequestPoolCooksPublish';
 import { bookingRequestReactionReminderCancel } from '../utils/bookingRequestReactionReminderSchedule';
@@ -101,9 +113,22 @@ export async function userBookingRequestOfferAccept(
             { latitude: eventAddress.latitude, longitude: eventAddress.longitude },
         );
         const travelExpensesCents = Math.round(travelDistanceKm * row.cook.travelExpensesAmount * 2);
+        const [participantRows, offerAddonRows] = await Promise.all([
+            serverRuntime.db
+                .select({ type: bookingRequestParticipants.type })
+                .from(bookingRequestParticipants)
+                .where(eq(bookingRequestParticipants.bookingRequestId, row.bookingRequest.bookingRequestId)),
+            serverRuntime.db.select().from(cookOfferAddons).where(eq(cookOfferAddons.bookingRequestOfferId, bookingRequestOfferId)),
+        ]);
+        const paidParticipants = bookingRequestPaidParticipants(
+            participantRows.filter((participant) => participant.type === 'ADULT').length,
+            participantRows.filter((participant) => participant.type === 'DISCOUNTED').length,
+        );
+        const addonPriceCents = bookingRequestOfferAddonPriceFromRows(offerAddonRows, paidParticipants);
         const price = bookingRequestOfferPriceCalculate({
             menuPriceCents: row.offer.menuPriceCents,
             travelExpensesCents,
+            addonPriceCents,
             platformFeePercentCook: row.offer.platformFeePercentCook,
             platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
         });
@@ -112,6 +137,7 @@ export async function userBookingRequestOfferAccept(
         const priceChanged =
             priceBefore.travelExpensesCents !== priceAfter.travelExpensesCents ||
             priceBefore.menuPriceCents !== priceAfter.menuPriceCents ||
+            priceBefore.addonPriceCents !== priceAfter.addonPriceCents ||
             priceBefore.totalWithoutDiscountsCentsCustomer !== priceAfter.totalWithoutDiscountsCentsCustomer ||
             priceBefore.payoutCentsCook !== priceAfter.payoutCentsCook;
 
@@ -146,6 +172,7 @@ export async function userBookingRequestOfferAccept(
                 .set({
                     userAccepted: true,
                     travelDistanceKm,
+                    addonPriceCents: price.addonPriceCents,
                     travelExpensesCents: price.travelExpensesCents,
                     paymentProviderFeeCents: price.paymentProviderFeeCents,
                     platformFeePercentCook: price.platformFeePercentCook,

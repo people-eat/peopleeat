@@ -69,6 +69,7 @@ import { Route as Char123LocaleChar125AdminMapRouteImport } from './routes/{-$lo
 import { Route as Char123LocaleChar125AdminMealsRouteImport } from './routes/{-$locale}/admin/meals'
 import { Route as Char123LocaleChar125AdminMenusRouteImport } from './routes/{-$locale}/admin/menus'
 import { Route as Char123LocaleChar125AdminOccasionsRouteImport } from './routes/{-$locale}/admin/occasions'
+import { Route as Char123LocaleChar125AdminOfferAddonTemplatesRouteImport } from './routes/{-$locale}/admin/offer-addon-templates'
 import { Route as Char123LocaleChar125AdminOfferChatReviewsRouteImport } from './routes/{-$locale}/admin/offer-chat-reviews'
 import { Route as Char123LocaleChar125AdminOutboundEmailsRouteImport } from './routes/{-$locale}/admin/outbound-emails'
 import { Route as Char123LocaleChar125AdminPartnersRouteImport } from './routes/{-$locale}/admin/partners'
@@ -99,6 +100,7 @@ import { Route as Char123LocaleChar125ProfileChefProfileRouteImport } from './ro
 import { Route as Char123LocaleChar125ProfileGiftCardsRouteImport } from './routes/{-$locale}/profile/gift-cards'
 import { Route as Char123LocaleChar125ProfileMealsRouteImport } from './routes/{-$locale}/profile/meals'
 import { Route as Char123LocaleChar125ProfileMenusRouteImport } from './routes/{-$locale}/profile/menus'
+import { Route as Char123LocaleChar125ProfileOfferAddonsRouteImport } from './routes/{-$locale}/profile/offer-addons'
 import { Route as Char123LocaleChar125ProfilePublicRouteImport } from './routes/{-$locale}/profile/public'
 import { Route as Char123LocaleChar125ProfileSupportRequestsRouteImport } from './routes/{-$locale}/profile/support-requests'
 import { Route as Char123LocaleChar125ProfileTravelRouteImport } from './routes/{-$locale}/profile/travel'
@@ -128,6 +130,7 @@ import { Route as Char123LocaleChar125AdminLogsListRouteImport } from './routes/
 import { Route as Char123LocaleChar125AdminMealsMealIdRouteImport } from './routes/{-$locale}/admin/meals_.$mealId'
 import { Route as Char123LocaleChar125AdminMenusMenuIdRouteImport } from './routes/{-$locale}/admin/menus_.$menuId'
 import { Route as Char123LocaleChar125AdminOccasionsOccasionIdRouteImport } from './routes/{-$locale}/admin/occasions_.$occasionId'
+import { Route as Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplateIdRouteImport } from './routes/{-$locale}/admin/offer-addon-templates_.$offerAddonTemplateId'
 import { Route as Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRouteImport } from './routes/{-$locale}/admin/offer-chat-reviews_.$bookingRequestOfferId'
 import { Route as Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRouteImport } from './routes/{-$locale}/admin/outbound-emails_.$outboundEmailId'
 import { Route as Char123LocaleChar125AdminOutboundEmailsListRouteImport } from './routes/{-$locale}/admin/outbound-emails_.list'
@@ -168,6 +171,7 @@ import { Route as Char123LocaleChar125ProfileBookingRequestPoolBookingRequestIdC
 import { Route as Char123LocaleChar125ProfileBookingRequestsBookingRequestIdEditRouteImport } from './routes/{-$locale}/profile/booking-requests_.$bookingRequestId_.edit'
 import { Route as Char123LocaleChar125ProfileMealsMealIdEditRouteImport } from './routes/{-$locale}/profile/meals_.$mealId_.edit'
 import { Route as Char123LocaleChar125ProfileMenusMenuIdEditRouteImport } from './routes/{-$locale}/profile/menus_.$menuId_.edit'
+import { Route as Char123LocaleChar125ProfileOfferAddonsCookOfferAddonIdEditRouteImport } from './routes/{-$locale}/profile/offer-addons_.$cookOfferAddonId_.edit'
 import { Route as Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRouteImport } from './routes/{-$locale}/admin/booking-requests_.$bookingRequestId_.offers_.$bookingRequestOfferId'
 import { Route as Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRouteImport } from './routes/{-$locale}/admin/booking-requests_.$bookingRequestId_.offers_.create'
 import { Route as Char123LocaleChar125AdminUsersUserIdCookProfileEditRouteImport } from './routes/{-$locale}/admin/users_.$userId_.cook-profile_.edit'
@@ -518,6 +522,12 @@ const Char123LocaleChar125AdminOccasionsRoute =
     path: '/occasions',
     getParentRoute: () => Char123LocaleChar125AdminRoute,
   } as any)
+const Char123LocaleChar125AdminOfferAddonTemplatesRoute =
+  Char123LocaleChar125AdminOfferAddonTemplatesRouteImport.update({
+    id: '/offer-addon-templates',
+    path: '/offer-addon-templates',
+    getParentRoute: () => Char123LocaleChar125AdminRoute,
+  } as any)
 const Char123LocaleChar125AdminOfferChatReviewsRoute =
   Char123LocaleChar125AdminOfferChatReviewsRouteImport.update({
     id: '/offer-chat-reviews',
@@ -696,6 +706,12 @@ const Char123LocaleChar125ProfileMenusRoute =
   Char123LocaleChar125ProfileMenusRouteImport.update({
     id: '/menus',
     path: '/menus',
+    getParentRoute: () => Char123LocaleChar125ProfileRoute,
+  } as any)
+const Char123LocaleChar125ProfileOfferAddonsRoute =
+  Char123LocaleChar125ProfileOfferAddonsRouteImport.update({
+    id: '/offer-addons',
+    path: '/offer-addons',
     getParentRoute: () => Char123LocaleChar125ProfileRoute,
   } as any)
 const Char123LocaleChar125ProfilePublicRoute =
@@ -877,6 +893,14 @@ const Char123LocaleChar125AdminOccasionsOccasionIdRoute =
     path: '/occasions/$occasionId',
     getParentRoute: () => Char123LocaleChar125AdminRoute,
   } as any)
+const Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplateIdRoute =
+  Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplateIdRouteImport.update(
+    {
+      id: '/offer-addon-templates_/$offerAddonTemplateId',
+      path: '/offer-addon-templates/$offerAddonTemplateId',
+      getParentRoute: () => Char123LocaleChar125AdminRoute,
+    } as any,
+  )
 const Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute =
   Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRouteImport.update(
     {
@@ -1139,6 +1163,12 @@ const Char123LocaleChar125ProfileMenusMenuIdEditRoute =
     path: '/menus/$menuId/edit',
     getParentRoute: () => Char123LocaleChar125ProfileRoute,
   } as any)
+const Char123LocaleChar125ProfileOfferAddonsCookOfferAddonIdEditRoute =
+  Char123LocaleChar125ProfileOfferAddonsCookOfferAddonIdEditRouteImport.update({
+    id: '/offer-addons_/$cookOfferAddonId_/edit',
+    path: '/offer-addons/$cookOfferAddonId/edit',
+    getParentRoute: () => Char123LocaleChar125ProfileRoute,
+  } as any)
 const Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute =
   Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRouteImport.update(
     {
@@ -1262,6 +1292,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/admin/meals': typeof Char123LocaleChar125AdminMealsRoute
   '/{-$locale}/admin/menus': typeof Char123LocaleChar125AdminMenusRoute
   '/{-$locale}/admin/occasions': typeof Char123LocaleChar125AdminOccasionsRoute
+  '/{-$locale}/admin/offer-addon-templates': typeof Char123LocaleChar125AdminOfferAddonTemplatesRoute
   '/{-$locale}/admin/offer-chat-reviews': typeof Char123LocaleChar125AdminOfferChatReviewsRoute
   '/{-$locale}/admin/outbound-emails': typeof Char123LocaleChar125AdminOutboundEmailsRoute
   '/{-$locale}/admin/partners': typeof Char123LocaleChar125AdminPartnersRoute
@@ -1291,6 +1322,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/profile/gift-cards': typeof Char123LocaleChar125ProfileGiftCardsRoute
   '/{-$locale}/profile/meals': typeof Char123LocaleChar125ProfileMealsRoute
   '/{-$locale}/profile/menus': typeof Char123LocaleChar125ProfileMenusRoute
+  '/{-$locale}/profile/offer-addons': typeof Char123LocaleChar125ProfileOfferAddonsRoute
   '/{-$locale}/profile/public': typeof Char123LocaleChar125ProfilePublicRoute
   '/{-$locale}/profile/support-requests': typeof Char123LocaleChar125ProfileSupportRequestsRoute
   '/{-$locale}/profile/travel': typeof Char123LocaleChar125ProfileTravelRoute
@@ -1322,6 +1354,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/admin/meals/$mealId': typeof Char123LocaleChar125AdminMealsMealIdRoute
   '/{-$locale}/admin/menus/$menuId': typeof Char123LocaleChar125AdminMenusMenuIdRoute
   '/{-$locale}/admin/occasions/$occasionId': typeof Char123LocaleChar125AdminOccasionsOccasionIdRoute
+  '/{-$locale}/admin/offer-addon-templates/$offerAddonTemplateId': typeof Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplateIdRoute
   '/{-$locale}/admin/offer-chat-reviews/$bookingRequestOfferId': typeof Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute
   '/{-$locale}/admin/outbound-emails/$outboundEmailId': typeof Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute
   '/{-$locale}/admin/outbound-emails/list': typeof Char123LocaleChar125AdminOutboundEmailsListRoute
@@ -1362,6 +1395,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/profile/booking-requests/$bookingRequestId/edit': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdEditRoute
   '/{-$locale}/profile/meals/$mealId/edit': typeof Char123LocaleChar125ProfileMealsMealIdEditRoute
   '/{-$locale}/profile/menus/$menuId/edit': typeof Char123LocaleChar125ProfileMenusMenuIdEditRoute
+  '/{-$locale}/profile/offer-addons/$cookOfferAddonId/edit': typeof Char123LocaleChar125ProfileOfferAddonsCookOfferAddonIdEditRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/create': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRoute
   '/{-$locale}/admin/users/$userId/cook-profile/edit': typeof Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute
@@ -1428,6 +1462,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/admin/meals': typeof Char123LocaleChar125AdminMealsRoute
   '/{-$locale}/admin/menus': typeof Char123LocaleChar125AdminMenusRoute
   '/{-$locale}/admin/occasions': typeof Char123LocaleChar125AdminOccasionsRoute
+  '/{-$locale}/admin/offer-addon-templates': typeof Char123LocaleChar125AdminOfferAddonTemplatesRoute
   '/{-$locale}/admin/offer-chat-reviews': typeof Char123LocaleChar125AdminOfferChatReviewsRoute
   '/{-$locale}/admin/outbound-emails': typeof Char123LocaleChar125AdminOutboundEmailsRoute
   '/{-$locale}/admin/partners': typeof Char123LocaleChar125AdminPartnersRoute
@@ -1457,6 +1492,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/profile/gift-cards': typeof Char123LocaleChar125ProfileGiftCardsRoute
   '/{-$locale}/profile/meals': typeof Char123LocaleChar125ProfileMealsRoute
   '/{-$locale}/profile/menus': typeof Char123LocaleChar125ProfileMenusRoute
+  '/{-$locale}/profile/offer-addons': typeof Char123LocaleChar125ProfileOfferAddonsRoute
   '/{-$locale}/profile/public': typeof Char123LocaleChar125ProfilePublicRoute
   '/{-$locale}/profile/support-requests': typeof Char123LocaleChar125ProfileSupportRequestsRoute
   '/{-$locale}/profile/travel': typeof Char123LocaleChar125ProfileTravelRoute
@@ -1488,6 +1524,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/admin/meals/$mealId': typeof Char123LocaleChar125AdminMealsMealIdRoute
   '/{-$locale}/admin/menus/$menuId': typeof Char123LocaleChar125AdminMenusMenuIdRoute
   '/{-$locale}/admin/occasions/$occasionId': typeof Char123LocaleChar125AdminOccasionsOccasionIdRoute
+  '/{-$locale}/admin/offer-addon-templates/$offerAddonTemplateId': typeof Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplateIdRoute
   '/{-$locale}/admin/offer-chat-reviews/$bookingRequestOfferId': typeof Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute
   '/{-$locale}/admin/outbound-emails/$outboundEmailId': typeof Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute
   '/{-$locale}/admin/outbound-emails/list': typeof Char123LocaleChar125AdminOutboundEmailsListRoute
@@ -1528,6 +1565,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/profile/booking-requests/$bookingRequestId/edit': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdEditRoute
   '/{-$locale}/profile/meals/$mealId/edit': typeof Char123LocaleChar125ProfileMealsMealIdEditRoute
   '/{-$locale}/profile/menus/$menuId/edit': typeof Char123LocaleChar125ProfileMenusMenuIdEditRoute
+  '/{-$locale}/profile/offer-addons/$cookOfferAddonId/edit': typeof Char123LocaleChar125ProfileOfferAddonsCookOfferAddonIdEditRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/create': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRoute
   '/{-$locale}/admin/users/$userId/cook-profile/edit': typeof Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute
@@ -1598,6 +1636,7 @@ export interface FileRoutesById {
   '/{-$locale}/admin/meals': typeof Char123LocaleChar125AdminMealsRoute
   '/{-$locale}/admin/menus': typeof Char123LocaleChar125AdminMenusRoute
   '/{-$locale}/admin/occasions': typeof Char123LocaleChar125AdminOccasionsRoute
+  '/{-$locale}/admin/offer-addon-templates': typeof Char123LocaleChar125AdminOfferAddonTemplatesRoute
   '/{-$locale}/admin/offer-chat-reviews': typeof Char123LocaleChar125AdminOfferChatReviewsRoute
   '/{-$locale}/admin/outbound-emails': typeof Char123LocaleChar125AdminOutboundEmailsRoute
   '/{-$locale}/admin/partners': typeof Char123LocaleChar125AdminPartnersRoute
@@ -1627,6 +1666,7 @@ export interface FileRoutesById {
   '/{-$locale}/profile/gift-cards': typeof Char123LocaleChar125ProfileGiftCardsRoute
   '/{-$locale}/profile/meals': typeof Char123LocaleChar125ProfileMealsRoute
   '/{-$locale}/profile/menus': typeof Char123LocaleChar125ProfileMenusRoute
+  '/{-$locale}/profile/offer-addons': typeof Char123LocaleChar125ProfileOfferAddonsRoute
   '/{-$locale}/profile/public': typeof Char123LocaleChar125ProfilePublicRoute
   '/{-$locale}/profile/support-requests': typeof Char123LocaleChar125ProfileSupportRequestsRoute
   '/{-$locale}/profile/travel': typeof Char123LocaleChar125ProfileTravelRoute
@@ -1658,6 +1698,7 @@ export interface FileRoutesById {
   '/{-$locale}/admin/meals_/$mealId': typeof Char123LocaleChar125AdminMealsMealIdRoute
   '/{-$locale}/admin/menus_/$menuId': typeof Char123LocaleChar125AdminMenusMenuIdRoute
   '/{-$locale}/admin/occasions_/$occasionId': typeof Char123LocaleChar125AdminOccasionsOccasionIdRoute
+  '/{-$locale}/admin/offer-addon-templates_/$offerAddonTemplateId': typeof Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplateIdRoute
   '/{-$locale}/admin/offer-chat-reviews_/$bookingRequestOfferId': typeof Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute
   '/{-$locale}/admin/outbound-emails_/$outboundEmailId': typeof Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute
   '/{-$locale}/admin/outbound-emails_/list': typeof Char123LocaleChar125AdminOutboundEmailsListRoute
@@ -1698,6 +1739,7 @@ export interface FileRoutesById {
   '/{-$locale}/profile/booking-requests_/$bookingRequestId_/edit': typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdEditRoute
   '/{-$locale}/profile/meals_/$mealId_/edit': typeof Char123LocaleChar125ProfileMealsMealIdEditRoute
   '/{-$locale}/profile/menus_/$menuId_/edit': typeof Char123LocaleChar125ProfileMenusMenuIdEditRoute
+  '/{-$locale}/profile/offer-addons_/$cookOfferAddonId_/edit': typeof Char123LocaleChar125ProfileOfferAddonsCookOfferAddonIdEditRoute
   '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/create': typeof Char123LocaleChar125AdminBookingRequestsBookingRequestIdOffersCreateRoute
   '/{-$locale}/admin/users_/$userId_/cook-profile_/edit': typeof Char123LocaleChar125AdminUsersUserIdCookProfileEditRoute
@@ -1769,6 +1811,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/meals'
     | '/{-$locale}/admin/menus'
     | '/{-$locale}/admin/occasions'
+    | '/{-$locale}/admin/offer-addon-templates'
     | '/{-$locale}/admin/offer-chat-reviews'
     | '/{-$locale}/admin/outbound-emails'
     | '/{-$locale}/admin/partners'
@@ -1798,6 +1841,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/gift-cards'
     | '/{-$locale}/profile/meals'
     | '/{-$locale}/profile/menus'
+    | '/{-$locale}/profile/offer-addons'
     | '/{-$locale}/profile/public'
     | '/{-$locale}/profile/support-requests'
     | '/{-$locale}/profile/travel'
@@ -1829,6 +1873,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/meals/$mealId'
     | '/{-$locale}/admin/menus/$menuId'
     | '/{-$locale}/admin/occasions/$occasionId'
+    | '/{-$locale}/admin/offer-addon-templates/$offerAddonTemplateId'
     | '/{-$locale}/admin/offer-chat-reviews/$bookingRequestOfferId'
     | '/{-$locale}/admin/outbound-emails/$outboundEmailId'
     | '/{-$locale}/admin/outbound-emails/list'
@@ -1869,6 +1914,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/booking-requests/$bookingRequestId/edit'
     | '/{-$locale}/profile/meals/$mealId/edit'
     | '/{-$locale}/profile/menus/$menuId/edit'
+    | '/{-$locale}/profile/offer-addons/$cookOfferAddonId/edit'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/create'
     | '/{-$locale}/admin/users/$userId/cook-profile/edit'
@@ -1935,6 +1981,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/meals'
     | '/{-$locale}/admin/menus'
     | '/{-$locale}/admin/occasions'
+    | '/{-$locale}/admin/offer-addon-templates'
     | '/{-$locale}/admin/offer-chat-reviews'
     | '/{-$locale}/admin/outbound-emails'
     | '/{-$locale}/admin/partners'
@@ -1964,6 +2011,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/gift-cards'
     | '/{-$locale}/profile/meals'
     | '/{-$locale}/profile/menus'
+    | '/{-$locale}/profile/offer-addons'
     | '/{-$locale}/profile/public'
     | '/{-$locale}/profile/support-requests'
     | '/{-$locale}/profile/travel'
@@ -1995,6 +2043,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/meals/$mealId'
     | '/{-$locale}/admin/menus/$menuId'
     | '/{-$locale}/admin/occasions/$occasionId'
+    | '/{-$locale}/admin/offer-addon-templates/$offerAddonTemplateId'
     | '/{-$locale}/admin/offer-chat-reviews/$bookingRequestOfferId'
     | '/{-$locale}/admin/outbound-emails/$outboundEmailId'
     | '/{-$locale}/admin/outbound-emails/list'
@@ -2035,6 +2084,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/booking-requests/$bookingRequestId/edit'
     | '/{-$locale}/profile/meals/$mealId/edit'
     | '/{-$locale}/profile/menus/$menuId/edit'
+    | '/{-$locale}/profile/offer-addons/$cookOfferAddonId/edit'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests/$bookingRequestId/offers/create'
     | '/{-$locale}/admin/users/$userId/cook-profile/edit'
@@ -2104,6 +2154,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/meals'
     | '/{-$locale}/admin/menus'
     | '/{-$locale}/admin/occasions'
+    | '/{-$locale}/admin/offer-addon-templates'
     | '/{-$locale}/admin/offer-chat-reviews'
     | '/{-$locale}/admin/outbound-emails'
     | '/{-$locale}/admin/partners'
@@ -2133,6 +2184,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/gift-cards'
     | '/{-$locale}/profile/meals'
     | '/{-$locale}/profile/menus'
+    | '/{-$locale}/profile/offer-addons'
     | '/{-$locale}/profile/public'
     | '/{-$locale}/profile/support-requests'
     | '/{-$locale}/profile/travel'
@@ -2164,6 +2216,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/meals_/$mealId'
     | '/{-$locale}/admin/menus_/$menuId'
     | '/{-$locale}/admin/occasions_/$occasionId'
+    | '/{-$locale}/admin/offer-addon-templates_/$offerAddonTemplateId'
     | '/{-$locale}/admin/offer-chat-reviews_/$bookingRequestOfferId'
     | '/{-$locale}/admin/outbound-emails_/$outboundEmailId'
     | '/{-$locale}/admin/outbound-emails_/list'
@@ -2204,6 +2257,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/booking-requests_/$bookingRequestId_/edit'
     | '/{-$locale}/profile/meals_/$mealId_/edit'
     | '/{-$locale}/profile/menus_/$menuId_/edit'
+    | '/{-$locale}/profile/offer-addons_/$cookOfferAddonId_/edit'
     | '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId'
     | '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/create'
     | '/{-$locale}/admin/users_/$userId_/cook-profile_/edit'
@@ -2665,6 +2719,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125AdminOccasionsRouteImport
       parentRoute: typeof Char123LocaleChar125AdminRoute
     }
+    '/{-$locale}/admin/offer-addon-templates': {
+      id: '/{-$locale}/admin/offer-addon-templates'
+      path: '/offer-addon-templates'
+      fullPath: '/{-$locale}/admin/offer-addon-templates'
+      preLoaderRoute: typeof Char123LocaleChar125AdminOfferAddonTemplatesRouteImport
+      parentRoute: typeof Char123LocaleChar125AdminRoute
+    }
     '/{-$locale}/admin/offer-chat-reviews': {
       id: '/{-$locale}/admin/offer-chat-reviews'
       path: '/offer-chat-reviews'
@@ -2875,6 +2936,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125ProfileMenusRouteImport
       parentRoute: typeof Char123LocaleChar125ProfileRoute
     }
+    '/{-$locale}/profile/offer-addons': {
+      id: '/{-$locale}/profile/offer-addons'
+      path: '/offer-addons'
+      fullPath: '/{-$locale}/profile/offer-addons'
+      preLoaderRoute: typeof Char123LocaleChar125ProfileOfferAddonsRouteImport
+      parentRoute: typeof Char123LocaleChar125ProfileRoute
+    }
     '/{-$locale}/profile/public': {
       id: '/{-$locale}/profile/public'
       path: '/public'
@@ -3076,6 +3144,13 @@ declare module '@tanstack/react-router' {
       path: '/occasions/$occasionId'
       fullPath: '/{-$locale}/admin/occasions/$occasionId'
       preLoaderRoute: typeof Char123LocaleChar125AdminOccasionsOccasionIdRouteImport
+      parentRoute: typeof Char123LocaleChar125AdminRoute
+    }
+    '/{-$locale}/admin/offer-addon-templates_/$offerAddonTemplateId': {
+      id: '/{-$locale}/admin/offer-addon-templates_/$offerAddonTemplateId'
+      path: '/offer-addon-templates/$offerAddonTemplateId'
+      fullPath: '/{-$locale}/admin/offer-addon-templates/$offerAddonTemplateId'
+      preLoaderRoute: typeof Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplateIdRouteImport
       parentRoute: typeof Char123LocaleChar125AdminRoute
     }
     '/{-$locale}/admin/offer-chat-reviews_/$bookingRequestOfferId': {
@@ -3358,6 +3433,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125ProfileMenusMenuIdEditRouteImport
       parentRoute: typeof Char123LocaleChar125ProfileRoute
     }
+    '/{-$locale}/profile/offer-addons_/$cookOfferAddonId_/edit': {
+      id: '/{-$locale}/profile/offer-addons_/$cookOfferAddonId_/edit'
+      path: '/offer-addons/$cookOfferAddonId/edit'
+      fullPath: '/{-$locale}/profile/offer-addons/$cookOfferAddonId/edit'
+      preLoaderRoute: typeof Char123LocaleChar125ProfileOfferAddonsCookOfferAddonIdEditRouteImport
+      parentRoute: typeof Char123LocaleChar125ProfileRoute
+    }
     '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId': {
       id: '/{-$locale}/admin/booking-requests_/$bookingRequestId_/offers_/$bookingRequestOfferId'
       path: '/booking-requests/$bookingRequestId/offers/$bookingRequestOfferId'
@@ -3439,6 +3521,7 @@ interface Char123LocaleChar125AdminRouteChildren {
   Char123LocaleChar125AdminMealsRoute: typeof Char123LocaleChar125AdminMealsRoute
   Char123LocaleChar125AdminMenusRoute: typeof Char123LocaleChar125AdminMenusRoute
   Char123LocaleChar125AdminOccasionsRoute: typeof Char123LocaleChar125AdminOccasionsRoute
+  Char123LocaleChar125AdminOfferAddonTemplatesRoute: typeof Char123LocaleChar125AdminOfferAddonTemplatesRoute
   Char123LocaleChar125AdminOfferChatReviewsRoute: typeof Char123LocaleChar125AdminOfferChatReviewsRoute
   Char123LocaleChar125AdminOutboundEmailsRoute: typeof Char123LocaleChar125AdminOutboundEmailsRoute
   Char123LocaleChar125AdminPartnersRoute: typeof Char123LocaleChar125AdminPartnersRoute
@@ -3470,6 +3553,7 @@ interface Char123LocaleChar125AdminRouteChildren {
   Char123LocaleChar125AdminMealsMealIdRoute: typeof Char123LocaleChar125AdminMealsMealIdRoute
   Char123LocaleChar125AdminMenusMenuIdRoute: typeof Char123LocaleChar125AdminMenusMenuIdRoute
   Char123LocaleChar125AdminOccasionsOccasionIdRoute: typeof Char123LocaleChar125AdminOccasionsOccasionIdRoute
+  Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplateIdRoute: typeof Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplateIdRoute
   Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute: typeof Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute
   Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute: typeof Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute
   Char123LocaleChar125AdminOutboundEmailsListRoute: typeof Char123LocaleChar125AdminOutboundEmailsListRoute
@@ -3534,6 +3618,8 @@ const Char123LocaleChar125AdminRouteChildren: Char123LocaleChar125AdminRouteChil
     Char123LocaleChar125AdminMenusRoute: Char123LocaleChar125AdminMenusRoute,
     Char123LocaleChar125AdminOccasionsRoute:
       Char123LocaleChar125AdminOccasionsRoute,
+    Char123LocaleChar125AdminOfferAddonTemplatesRoute:
+      Char123LocaleChar125AdminOfferAddonTemplatesRoute,
     Char123LocaleChar125AdminOfferChatReviewsRoute:
       Char123LocaleChar125AdminOfferChatReviewsRoute,
     Char123LocaleChar125AdminOutboundEmailsRoute:
@@ -3594,6 +3680,8 @@ const Char123LocaleChar125AdminRouteChildren: Char123LocaleChar125AdminRouteChil
       Char123LocaleChar125AdminMenusMenuIdRoute,
     Char123LocaleChar125AdminOccasionsOccasionIdRoute:
       Char123LocaleChar125AdminOccasionsOccasionIdRoute,
+    Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplateIdRoute:
+      Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplateIdRoute,
     Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute:
       Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute,
     Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute:
@@ -3667,6 +3755,7 @@ interface Char123LocaleChar125ProfileRouteChildren {
   Char123LocaleChar125ProfileGiftCardsRoute: typeof Char123LocaleChar125ProfileGiftCardsRoute
   Char123LocaleChar125ProfileMealsRoute: typeof Char123LocaleChar125ProfileMealsRoute
   Char123LocaleChar125ProfileMenusRoute: typeof Char123LocaleChar125ProfileMenusRoute
+  Char123LocaleChar125ProfileOfferAddonsRoute: typeof Char123LocaleChar125ProfileOfferAddonsRoute
   Char123LocaleChar125ProfilePublicRoute: typeof Char123LocaleChar125ProfilePublicRoute
   Char123LocaleChar125ProfileSupportRequestsRoute: typeof Char123LocaleChar125ProfileSupportRequestsRoute
   Char123LocaleChar125ProfileTravelRoute: typeof Char123LocaleChar125ProfileTravelRoute
@@ -3688,6 +3777,7 @@ interface Char123LocaleChar125ProfileRouteChildren {
   Char123LocaleChar125ProfileBookingRequestsBookingRequestIdEditRoute: typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdEditRoute
   Char123LocaleChar125ProfileMealsMealIdEditRoute: typeof Char123LocaleChar125ProfileMealsMealIdEditRoute
   Char123LocaleChar125ProfileMenusMenuIdEditRoute: typeof Char123LocaleChar125ProfileMenusMenuIdEditRoute
+  Char123LocaleChar125ProfileOfferAddonsCookOfferAddonIdEditRoute: typeof Char123LocaleChar125ProfileOfferAddonsCookOfferAddonIdEditRoute
   Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute: typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute
   Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdCheckoutRoute: typeof Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdCheckoutRoute
 }
@@ -3716,6 +3806,8 @@ const Char123LocaleChar125ProfileRouteChildren: Char123LocaleChar125ProfileRoute
       Char123LocaleChar125ProfileMealsRoute,
     Char123LocaleChar125ProfileMenusRoute:
       Char123LocaleChar125ProfileMenusRoute,
+    Char123LocaleChar125ProfileOfferAddonsRoute:
+      Char123LocaleChar125ProfileOfferAddonsRoute,
     Char123LocaleChar125ProfilePublicRoute:
       Char123LocaleChar125ProfilePublicRoute,
     Char123LocaleChar125ProfileSupportRequestsRoute:
@@ -3758,6 +3850,8 @@ const Char123LocaleChar125ProfileRouteChildren: Char123LocaleChar125ProfileRoute
       Char123LocaleChar125ProfileMealsMealIdEditRoute,
     Char123LocaleChar125ProfileMenusMenuIdEditRoute:
       Char123LocaleChar125ProfileMenusMenuIdEditRoute,
+    Char123LocaleChar125ProfileOfferAddonsCookOfferAddonIdEditRoute:
+      Char123LocaleChar125ProfileOfferAddonsCookOfferAddonIdEditRoute,
     Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute:
       Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdRoute,
     Char123LocaleChar125ProfileBookingRequestsBookingRequestIdOffersBookingRequestOfferIdCheckoutRoute:

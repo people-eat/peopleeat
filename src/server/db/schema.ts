@@ -59,6 +59,7 @@ import type { CookCallAvailabilityExceptionType, CookTravelOriginAddress } from 
 import type { GiftCardInvoiceAddress, GiftCardPaymentStatus } from '../domain/giftCard';
 import type { NewsletterSubscriptionSource } from '../domain/newsletterSubscription';
 import type { UserNotificationSettingsStored } from '../domain/notificationSettings';
+import type { OfferAddonInclusion, OfferAddonPricingUnit } from '../domain/offerAddon';
 import type { OutboundEmailProvider, OutboundEmailPurpose, OutboundEmailRelatedEntityType } from '../domain/outboundEmail';
 import type { SessionGeoInformation } from '../domain/session';
 import type { SessionEventKey, SessionEventPayloadByKey } from '../domain/sessionEvent';
@@ -699,6 +700,94 @@ export const menuCourseMealOptions = pgTable(
 
 export type MenuCourseMealOption = typeof menuCourseMealOptions.$inferSelect;
 export type MenuCourseMealOptionCreate = typeof menuCourseMealOptions.$inferInsert;
+
+// Platform offer-addon templates. Cooks one-click clone into CookOfferAddons.
+// `publishedAt` null = draft / hidden from cook picker. See
+// docs/features/booking-offer-addons.md.
+export const offerAddonTemplates = pgTable(
+    'OfferAddonTemplates',
+    {
+        offerAddonTemplateId: nanoId().primaryKey(),
+        titleDe: varchar().notNull(),
+        titleEn: varchar().notNull(),
+        descriptionDe: text().notNull().default(''),
+        descriptionEn: text().notNull().default(''),
+        pricingUnit: varchar().$type<OfferAddonPricingUnit>().notNull(),
+        suggestedPriceCents: integer().notNull(),
+        imageFileUploadId: nanoId().references((): AnyPgColumn => fileUploads.fileUploadId, {
+            onUpdate: 'cascade',
+            onDelete: 'set null',
+        }),
+        position: integer().notNull().default(0),
+        publishedAt: timestamp({ withTimezone: true }),
+        createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+        updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    },
+    (table) => [
+        index('OfferAddonTemplates_publishedAt_idx').on(table.publishedAt),
+        index('OfferAddonTemplates_position_idx').on(table.position),
+        index('OfferAddonTemplates_imageFileUploadId_idx').on(table.imageFileUploadId),
+    ],
+);
+
+export type OfferAddonTemplate = typeof offerAddonTemplates.$inferSelect;
+export type OfferAddonTemplateCreate = typeof offerAddonTemplates.$inferInsert;
+
+// Cook-owned offer addons. Inventory rows have `bookingRequestOfferId` null;
+// offer-scoped deep copies set it (+ `copyOfCookOfferAddonId`). Optional
+// `copyOfOfferAddonTemplateId` keeps admin-template provenance. See
+// docs/features/booking-offer-addons.md.
+export const cookOfferAddons = pgTable(
+    'CookOfferAddons',
+    {
+        cookOfferAddonId: nanoId().primaryKey(),
+        cookId: nanoId().notNull(),
+        // Lazy — `bookingRequestOffers` is declared later in this module.
+        bookingRequestOfferId: nanoId().references((): AnyPgColumn => bookingRequestOffers.bookingRequestOfferId, {
+            onUpdate: 'cascade',
+            onDelete: 'cascade',
+        }),
+        copyOfCookOfferAddonId: nanoId().references((): AnyPgColumn => cookOfferAddons.cookOfferAddonId, {
+            onUpdate: 'cascade',
+            onDelete: 'set null',
+        }),
+        copyOfOfferAddonTemplateId: nanoId().references(() => offerAddonTemplates.offerAddonTemplateId, {
+            onUpdate: 'cascade',
+            onDelete: 'set null',
+        }),
+        title: varchar().notNull(),
+        description: text().notNull().default(''),
+        imageFileUploadId: nanoId().references((): AnyPgColumn => fileUploads.fileUploadId, {
+            onUpdate: 'cascade',
+            onDelete: 'set null',
+        }),
+        pricingUnit: varchar().$type<OfferAddonPricingUnit>().notNull(),
+        priceCents: integer().notNull(),
+        inclusion: varchar().$type<OfferAddonInclusion>().notNull().default('OPTIONAL'),
+        // Meaningful on offer-scoped rows; library rows stay false.
+        customerSelected: boolean().notNull().default(false),
+        deletedAt: timestamp({ withTimezone: true }),
+        createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+        updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.cookId],
+            foreignColumns: [cooks.cookId],
+        })
+            .onUpdate('cascade')
+            .onDelete('cascade'),
+        index('CookOfferAddons_cookId_idx').on(table.cookId),
+        index('CookOfferAddons_bookingRequestOfferId_idx').on(table.bookingRequestOfferId),
+        index('CookOfferAddons_copyOfCookOfferAddonId_idx').on(table.copyOfCookOfferAddonId),
+        index('CookOfferAddons_copyOfOfferAddonTemplateId_idx').on(table.copyOfOfferAddonTemplateId),
+        index('CookOfferAddons_deletedAt_idx').on(table.deletedAt),
+        index('CookOfferAddons_imageFileUploadId_idx').on(table.imageFileUploadId),
+    ],
+);
+
+export type CookOfferAddon = typeof cookOfferAddons.$inferSelect;
+export type CookOfferAddonCreate = typeof cookOfferAddons.$inferInsert;
 
 // Append-only versioned legal documents (privacy / terms / imprint). Draft
 // rows have `publishedAt` null and are mutable; publishing stamps
@@ -1692,6 +1781,10 @@ export const bookingRequestOffers = pgTable(
         travelDistanceKm: doublePrecision(),
 
         menuPriceCents: integer().notNull(),
+        // Sum of selected offer-addon totals at current paid headcount. Not folded
+        // into menuPriceCents so flat addons survive headcount scaling. See
+        // docs/features/booking-offer-addons.md.
+        addonPriceCents: integer().notNull().default(0),
         travelExpensesCents: integer().notNull(),
         paymentProviderFeeCents: integer().notNull(),
         platformFeePercentCook: smallint().notNull(),

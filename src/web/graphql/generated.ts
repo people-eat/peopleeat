@@ -92,6 +92,8 @@ export interface GqlCAdmin {
     objectStorageObjects: GqlCAdminObjectStorageObjectPage;
     occasion?: Maybe<GqlCAdminOccasion>;
     occasions: Array<GqlCAdminOccasion>;
+    offerAddonTemplate?: Maybe<GqlCAdminOfferAddonTemplate>;
+    offerAddonTemplates: Array<GqlCAdminOfferAddonTemplate>;
     outboundEmail?: Maybe<GqlCAdminOutboundEmail>;
     outboundEmailCreations: Array<GqlCAdminTimeBucket>;
     outboundEmailPurposeStats: Array<GqlCAdminOutboundEmailPurposeStat>;
@@ -360,6 +362,10 @@ export type GqlCAdminObjectStorageObjectsArgs = {
 
 export type GqlCAdminOccasionArgs = {
     occasionId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminOfferAddonTemplateArgs = {
+    offerAddonTemplateId: Scalars['ID']['input'];
 };
 
 export type GqlCAdminOutboundEmailArgs = {
@@ -748,6 +754,8 @@ export interface GqlCAdminBookingRequestOccasionStat {
 export interface GqlCAdminBookingRequestOffer {
     __typename?: 'AdminBookingRequestOffer';
     activeCallRoom?: Maybe<GqlCBookingRequestOfferCallRoom>;
+    addonPriceCents: Scalars['Int']['output'];
+    addons: Array<GqlCCookOfferAddon>;
     adminChatReviewPendingCount: Scalars['Int']['output'];
     adminChatReviewedAt?: Maybe<Scalars['DateTime']['output']>;
     bookingRequest: GqlCAdminBookingRequest;
@@ -1492,6 +1500,8 @@ export interface GqlCAdminMutation {
     occasionDelete: GqlCMutationResult;
     occasionTestimonialsUpdate: GqlCMutationResult;
     occasionUpsert: GqlCMutationResult;
+    offerAddonTemplateDelete: GqlCMutationResult;
+    offerAddonTemplateUpsert: GqlCMutationResult;
     partnerCooksUpdate: GqlCMutationResult;
     partnerDelete: GqlCMutationResult;
     partnerTestimonialsUpdate: GqlCMutationResult;
@@ -1805,6 +1815,14 @@ export type GqlCAdminMutationOccasionUpsertArgs = {
     input: GqlCOccasionUpsert;
 };
 
+export type GqlCAdminMutationOfferAddonTemplateDeleteArgs = {
+    offerAddonTemplateId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationOfferAddonTemplateUpsertArgs = {
+    input: GqlCOfferAddonTemplateUpsert;
+};
+
 export type GqlCAdminMutationPartnerCooksUpdateArgs = {
     cookIds: Array<Scalars['ID']['input']>;
     partnerId: Scalars['ID']['input'];
@@ -1966,6 +1984,23 @@ export interface GqlCAdminOccasion {
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
     testimonials: Array<GqlCAdminPageTestimonial>;
+    titleDe: Scalars['String']['output'];
+    titleEn: Scalars['String']['output'];
+    updatedAt: Scalars['DateTime']['output'];
+}
+
+export interface GqlCAdminOfferAddonTemplate {
+    __typename?: 'AdminOfferAddonTemplate';
+    createdAt: Scalars['DateTime']['output'];
+    descriptionDe: Scalars['String']['output'];
+    descriptionEn: Scalars['String']['output'];
+    imageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    imageUrl?: Maybe<Scalars['String']['output']>;
+    offerAddonTemplateId: Scalars['ID']['output'];
+    position: Scalars['Int']['output'];
+    pricingUnit: GqlCOfferAddonPricingUnit;
+    publishedAt?: Maybe<Scalars['DateTime']['output']>;
+    suggestedPriceCents: Scalars['Int']['output'];
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
@@ -2552,6 +2587,16 @@ export type GqlCBookingRequestKitchenDetailsInput = {
 
 export type GqlCBookingRequestKitchenDetailsSpace = 'LIMITED' | 'NO' | 'YES';
 
+export type GqlCBookingRequestOfferAddonSelectionInput = {
+    cookOfferAddonId: Scalars['ID']['input'];
+    selected: Scalars['Boolean']['input'];
+};
+
+export type GqlCBookingRequestOfferAddonsUpdate = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+    suggestedAddonIds: Array<Scalars['ID']['input']>;
+};
+
 export interface GqlCBookingRequestOfferCallRecording {
     __typename?: 'BookingRequestOfferCallRecording';
     audioUrl?: Maybe<Scalars['String']['output']>;
@@ -2645,6 +2690,7 @@ export type GqlCBookingRequestOfferCreate = {
     bookingRequestId: Scalars['ID']['input'];
     menuPriceCents: Scalars['Int']['input'];
     message?: InputMaybe<Scalars['String']['input']>;
+    suggestedAddonIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     suggestedMenuIds: Array<Scalars['ID']['input']>;
 };
 
@@ -2775,6 +2821,7 @@ export interface GqlCChatMessageBookingRequestOfferEvent {
 export type GqlCChatMessageBookingRequestOfferEventType =
     | 'ADMIN_ACCEPTANCE_UPDATED'
     | 'ADMIN_CALL_STARTED'
+    | 'ADMIN_CHANGED_ADDONS'
     | 'ADMIN_CHANGED_PRICE'
     | 'ADMIN_CONFIGURED_MENU_UPDATED'
     | 'ADMIN_HANDED_OVER_CLOSED'
@@ -2791,6 +2838,7 @@ export type GqlCChatMessageBookingRequestOfferEventType =
     | 'COOK_CALL_SLOT_DECLINED'
     | 'COOK_CALL_SLOT_REQUESTED'
     | 'COOK_CALL_STARTED'
+    | 'COOK_CHANGED_ADDONS'
     | 'COOK_CHANGED_PRICE'
     | 'COOK_CREATED'
     | 'COOK_DECLINED'
@@ -2809,6 +2857,7 @@ export type GqlCChatMessageBookingRequestOfferEventType =
     | 'USER_CALL_SLOT_REQUESTED'
     | 'USER_CALL_STARTED'
     | 'USER_CANCELLED'
+    | 'USER_CHANGED_ADDON_SELECTION'
     | 'USER_CONFIGURED_MENU'
     | 'USER_DATE_UPDATED'
     | 'USER_DECLINED'
@@ -3200,6 +3249,9 @@ export interface GqlCCook {
     menusCounts: Array<Scalars['Int']['output']>;
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
+    offerAddon?: Maybe<GqlCCookOfferAddon>;
+    offerAddonTemplates: Array<GqlCOfferAddonTemplate>;
+    offerAddons: Array<GqlCCookOfferAddon>;
     offerMenus: Array<GqlCCookMenu>;
     onboardingSteps: Array<GqlCCookOnboardingStep>;
     presenceLinks?: Maybe<GqlCCookPresenceLinks>;
@@ -3263,6 +3315,10 @@ export type GqlCCookMenuArgs = {
 
 export type GqlCCookMenusCountsArgs = {
     criteria: Array<GqlCCookMenuCriterion>;
+};
+
+export type GqlCCookOfferAddonArgs = {
+    cookOfferAddonId: Scalars['ID']['input'];
 };
 
 export interface GqlCCookAnalytics {
@@ -3381,6 +3437,8 @@ export interface GqlCCookBookingRequestNotFound {
 export interface GqlCCookBookingRequestOffer {
     __typename?: 'CookBookingRequestOffer';
     activeCallRoom?: Maybe<GqlCBookingRequestOfferCallRoom>;
+    addonPriceCents: Scalars['Int']['output'];
+    addons: Array<GqlCCookOfferAddon>;
     bookingRequest: GqlCCookBookingRequestOfferContext;
     bookingRequestId: Scalars['ID']['output'];
     bookingRequestOfferId: Scalars['ID']['output'];
@@ -3678,6 +3736,7 @@ export interface GqlCCookMutation {
     bookingRequestGeneratedMenuApply: GqlCMutationResult;
     bookingRequestMenuEvaluationRefresh: GqlCMutationResult;
     bookingRequestOfferAccept: GqlCMutationResult;
+    bookingRequestOfferAddonsUpdate: GqlCMutationResult;
     bookingRequestOfferCallCreate: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlCMutationResult;
@@ -3711,6 +3770,9 @@ export interface GqlCCookMutation {
     menuSyncToTemplate: GqlCMutationResult;
     menuTitleDescriptionSuggest: GqlCCookMenuSuggestion;
     menuUpsert: GqlCMutationResult;
+    offerAddonCloneFromTemplate: GqlCMutationResult;
+    offerAddonDelete: GqlCMutationResult;
+    offerAddonUpsert: GqlCMutationResult;
     presenceLinksReplace: GqlCMutationResult;
     stripeDashboardUrlCreate: GqlCCookStripeDashboardResult;
     stripeOnboardingStart: GqlCCookStripeOnboardingResult;
@@ -3737,6 +3799,10 @@ export type GqlCCookMutationBookingRequestMenuEvaluationRefreshArgs = {
 
 export type GqlCCookMutationBookingRequestOfferAcceptArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
+};
+
+export type GqlCCookMutationBookingRequestOfferAddonsUpdateArgs = {
+    input: GqlCBookingRequestOfferAddonsUpdate;
 };
 
 export type GqlCCookMutationBookingRequestOfferCallCreateArgs = {
@@ -3881,6 +3947,18 @@ export type GqlCCookMutationMenuUpsertArgs = {
     menu?: InputMaybe<GqlCCookMenuUpsert>;
 };
 
+export type GqlCCookMutationOfferAddonCloneFromTemplateArgs = {
+    offerAddonTemplateId: Scalars['ID']['input'];
+};
+
+export type GqlCCookMutationOfferAddonDeleteArgs = {
+    cookOfferAddonId: Scalars['ID']['input'];
+};
+
+export type GqlCCookMutationOfferAddonUpsertArgs = {
+    addon?: InputMaybe<GqlCCookOfferAddonUpsert>;
+};
+
 export type GqlCCookMutationPresenceLinksReplaceArgs = {
     input: GqlCCookPresenceLinksUpdate;
 };
@@ -3892,6 +3970,34 @@ export type GqlCCookMutationStripeOnboardingStartArgs = {
 
 export type GqlCCookMutationUpdateArgs = {
     input: GqlCCookUpdate;
+};
+
+export interface GqlCCookOfferAddon {
+    __typename?: 'CookOfferAddon';
+    bookingRequestOfferId?: Maybe<Scalars['ID']['output']>;
+    cookOfferAddonId: Scalars['ID']['output'];
+    copyOfCookOfferAddonId?: Maybe<Scalars['ID']['output']>;
+    copyOfOfferAddonTemplateId?: Maybe<Scalars['ID']['output']>;
+    createdAt: Scalars['DateTime']['output'];
+    customerSelected: Scalars['Boolean']['output'];
+    description: Scalars['String']['output'];
+    imageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    imageUrl?: Maybe<Scalars['String']['output']>;
+    inclusion: GqlCOfferAddonInclusion;
+    priceCents: Scalars['Int']['output'];
+    pricingUnit: GqlCOfferAddonPricingUnit;
+    title: Scalars['String']['output'];
+    updatedAt: Scalars['DateTime']['output'];
+}
+
+export type GqlCCookOfferAddonUpsert = {
+    cookOfferAddonId?: InputMaybe<Scalars['ID']['input']>;
+    description?: InputMaybe<Scalars['String']['input']>;
+    imageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    inclusion?: InputMaybe<GqlCOfferAddonInclusion>;
+    priceCents?: InputMaybe<Scalars['Int']['input']>;
+    pricingUnit?: InputMaybe<GqlCOfferAddonPricingUnit>;
+    title?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GqlCCookOnboardingStep = 'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
@@ -4080,6 +4186,7 @@ export type GqlCFeatureToggleKey =
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_KITCHEN_DETAILS'
+    | 'BOOKING_REQUEST_OFFER_ADDONS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
@@ -4348,6 +4455,34 @@ export type GqlCOccasionUpsert = {
     titleEn: Scalars['String']['input'];
 };
 
+export type GqlCOfferAddonInclusion = 'OPTIONAL' | 'REQUIRED';
+
+export type GqlCOfferAddonPricingUnit = 'FLAT' | 'PER_PERSON';
+
+export interface GqlCOfferAddonTemplate {
+    __typename?: 'OfferAddonTemplate';
+    description: Scalars['String']['output'];
+    imageUrl?: Maybe<Scalars['String']['output']>;
+    offerAddonTemplateId: Scalars['ID']['output'];
+    position: Scalars['Int']['output'];
+    pricingUnit: GqlCOfferAddonPricingUnit;
+    suggestedPriceCents: Scalars['Int']['output'];
+    title: Scalars['String']['output'];
+}
+
+export type GqlCOfferAddonTemplateUpsert = {
+    descriptionDe: Scalars['String']['input'];
+    descriptionEn: Scalars['String']['input'];
+    imageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    offerAddonTemplateId?: InputMaybe<Scalars['ID']['input']>;
+    position?: InputMaybe<Scalars['Int']['input']>;
+    pricingUnit: GqlCOfferAddonPricingUnit;
+    publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
+    suggestedPriceCents: Scalars['Int']['input'];
+    titleDe: Scalars['String']['input'];
+    titleEn: Scalars['String']['input'];
+};
+
 export interface GqlCPageTestimonial {
     __typename?: 'PageTestimonial';
     index: Scalars['Int']['output'];
@@ -4529,6 +4664,18 @@ export interface GqlCPublicCookMenuCourse {
     courseId: Scalars['ID']['output'];
     mealOptions: Array<GqlCPublicCookMeal>;
     mealSelectionLimit?: Maybe<Scalars['Int']['output']>;
+    title: Scalars['String']['output'];
+}
+
+export interface GqlCPublicCookOfferAddon {
+    __typename?: 'PublicCookOfferAddon';
+    cookOfferAddonId: Scalars['ID']['output'];
+    customerSelected: Scalars['Boolean']['output'];
+    description: Scalars['String']['output'];
+    imageUrl?: Maybe<Scalars['String']['output']>;
+    inclusion: GqlCOfferAddonInclusion;
+    priceCents: Scalars['Int']['output'];
+    pricingUnit: GqlCOfferAddonPricingUnit;
     title: Scalars['String']['output'];
 }
 
@@ -4963,6 +5110,8 @@ export interface GqlCUserBookingRequestGiftCard {
 export interface GqlCUserBookingRequestOffer {
     __typename?: 'UserBookingRequestOffer';
     activeCallRoom?: Maybe<GqlCBookingRequestOfferCallRoom>;
+    addonPriceCents: Scalars['Int']['output'];
+    addons: Array<GqlCPublicCookOfferAddon>;
     bookingRequestId: Scalars['ID']['output'];
     bookingRequestOfferId: Scalars['ID']['output'];
     callBookings: Array<GqlCCookCallSlotBooking>;
@@ -5106,6 +5255,7 @@ export interface GqlCUserMutation {
     bookingRequestDiscountUpdate: GqlCMutationResult;
     bookingRequestKitchenDetailsUpdate: GqlCMutationResult;
     bookingRequestOfferAccept: GqlCMutationResult;
+    bookingRequestOfferAddonSelectionUpdate: GqlCMutationResult;
     bookingRequestOfferCallCreate: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlCBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlCMutationResult;
@@ -5189,6 +5339,11 @@ export type GqlCUserMutationBookingRequestKitchenDetailsUpdateArgs = {
 
 export type GqlCUserMutationBookingRequestOfferAcceptArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
+};
+
+export type GqlCUserMutationBookingRequestOfferAddonSelectionUpdateArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+    selections: Array<GqlCBookingRequestOfferAddonSelectionInput>;
 };
 
 export type GqlCUserMutationBookingRequestOfferCallCreateArgs = {
@@ -14636,6 +14791,154 @@ export type GqlCAdminOccasionsPageUpdatesSubscription = {
     };
 };
 
+export type GqlCAdminOfferAddonTemplatePageAdminFragment = {
+    adminId: string;
+    offerAddonTemplate: {
+        offerAddonTemplateId: string;
+        titleDe: string;
+        titleEn: string;
+        descriptionDe: string;
+        descriptionEn: string;
+        pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+        suggestedPriceCents: number;
+        imageFileUploadId: string | null;
+        imageUrl: string | null;
+        position: number;
+        publishedAt: string | null;
+        updatedAt: string;
+    } | null;
+};
+
+export type GqlCAdminOfferAddonTemplatePageQueryVariables = Exact<{
+    offerAddonTemplateId: string;
+}>;
+
+export type GqlCAdminOfferAddonTemplatePageQuery = {
+    currentSession: {
+        user: {
+            admin: {
+                adminId: string;
+                offerAddonTemplate: {
+                    offerAddonTemplateId: string;
+                    titleDe: string;
+                    titleEn: string;
+                    descriptionDe: string;
+                    descriptionEn: string;
+                    pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                    suggestedPriceCents: number;
+                    imageFileUploadId: string | null;
+                    imageUrl: string | null;
+                    position: number;
+                    publishedAt: string | null;
+                    updatedAt: string;
+                } | null;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCAdminOfferAddonTemplatePageUpdatesSubscriptionVariables = Exact<{
+    offerAddonTemplateId: string;
+}>;
+
+export type GqlCAdminOfferAddonTemplatePageUpdatesSubscription = {
+    adminUpdates: {
+        adminId: string;
+        offerAddonTemplate: {
+            offerAddonTemplateId: string;
+            titleDe: string;
+            titleEn: string;
+            descriptionDe: string;
+            descriptionEn: string;
+            pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+            suggestedPriceCents: number;
+            imageFileUploadId: string | null;
+            imageUrl: string | null;
+            position: number;
+            publishedAt: string | null;
+            updatedAt: string;
+        } | null;
+    };
+};
+
+export type GqlCAdminOfferAddonTemplatePageUpsertMutationVariables = Exact<{
+    input: Schema.GqlCOfferAddonTemplateUpsert;
+}>;
+
+export type GqlCAdminOfferAddonTemplatePageUpsertMutation = {
+    admin: { offerAddonTemplateUpsert: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCAdminOfferAddonTemplatePageDeleteMutationVariables = Exact<{
+    offerAddonTemplateId: string;
+}>;
+
+export type GqlCAdminOfferAddonTemplatePageDeleteMutation = {
+    admin: { offerAddonTemplateDelete: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCAdminOfferAddonTemplatesPageAdminFragment = {
+    adminId: string;
+    offerAddonTemplates: Array<{
+        offerAddonTemplateId: string;
+        titleDe: string;
+        titleEn: string;
+        pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+        suggestedPriceCents: number;
+        position: number;
+        publishedAt: string | null;
+        updatedAt: string;
+    }>;
+};
+
+export type GqlCAdminOfferAddonTemplatesPageQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCAdminOfferAddonTemplatesPageQuery = {
+    currentSession: {
+        user: {
+            admin: {
+                adminId: string;
+                offerAddonTemplates: Array<{
+                    offerAddonTemplateId: string;
+                    titleDe: string;
+                    titleEn: string;
+                    pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                    suggestedPriceCents: number;
+                    position: number;
+                    publishedAt: string | null;
+                    updatedAt: string;
+                }>;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCAdminOfferAddonTemplatesPageUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCAdminOfferAddonTemplatesPageUpdatesSubscription = {
+    adminUpdates: {
+        adminId: string;
+        offerAddonTemplates: Array<{
+            offerAddonTemplateId: string;
+            titleDe: string;
+            titleEn: string;
+            pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+            suggestedPriceCents: number;
+            position: number;
+            publishedAt: string | null;
+            updatedAt: string;
+        }>;
+    };
+};
+
+export type GqlCAdminOfferAddonTemplatesPageUpsertMutationVariables = Exact<{
+    input: Schema.GqlCOfferAddonTemplateUpsert;
+}>;
+
+export type GqlCAdminOfferAddonTemplatesPageUpsertMutation = {
+    admin: { offerAddonTemplateUpsert: { success: boolean; referenceId: string | null } };
+};
+
 export type GqlCAdminOfferChatReviewPageOfferFragment = {
     bookingRequestOfferId: string;
     bookingRequestId: string;
@@ -17528,6 +17831,13 @@ export type GqlCProfileCookBookingRequestOfferCreatePageUserFragment = {
             courseMealOptionImages: Array<string>;
             courses: Array<{ courseId: string; title: string; mealOptions: Array<{ mealId: string }> }>;
         }>;
+        offerAddons: Array<{
+            cookOfferAddonId: string;
+            title: string;
+            description: string;
+            pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+            priceCents: number;
+        }>;
         openBookingRequests: Array<{ bookingRequestId: string }>;
         bookingRequestLookup:
             | {
@@ -17609,6 +17919,13 @@ export type GqlCProfileCookBookingRequestOfferCreatePageQuery = {
                     description: string;
                     courseMealOptionImages: Array<string>;
                     courses: Array<{ courseId: string; title: string; mealOptions: Array<{ mealId: string }> }>;
+                }>;
+                offerAddons: Array<{
+                    cookOfferAddonId: string;
+                    title: string;
+                    description: string;
+                    pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                    priceCents: number;
                 }>;
                 openBookingRequests: Array<{ bookingRequestId: string }>;
                 bookingRequestLookup:
@@ -17692,6 +18009,13 @@ export type GqlCProfileCookBookingRequestOfferCreatePageUpdatesSubscription = {
                 description: string;
                 courseMealOptionImages: Array<string>;
                 courses: Array<{ courseId: string; title: string; mealOptions: Array<{ mealId: string }> }>;
+            }>;
+            offerAddons: Array<{
+                cookOfferAddonId: string;
+                title: string;
+                description: string;
+                pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                priceCents: number;
             }>;
             openBookingRequests: Array<{ bookingRequestId: string }>;
             bookingRequestLookup:
@@ -17877,6 +18201,7 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
             payoutCentsCook: number;
             paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
             priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
+            addonPriceCents: number;
             testimonialMissing: boolean;
             preparationsCompletedAt: string | null;
             canCompletePreparations: boolean;
@@ -17896,6 +18221,15 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
                 copyOfMenuId: string | null;
                 courseMealOptionImages: Array<string>;
                 courses: Array<{ courseId: string }>;
+            }>;
+            addons: Array<{
+                cookOfferAddonId: string;
+                title: string;
+                description: string;
+                pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                priceCents: number;
+                inclusion: Schema.GqlCOfferAddonInclusion;
+                customerSelected: boolean;
             }>;
             cookTestimonial: {
                 cookTestimonialId: string;
@@ -18064,6 +18398,7 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                     payoutCentsCook: number;
                     paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
                     priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
+                    addonPriceCents: number;
                     testimonialMissing: boolean;
                     preparationsCompletedAt: string | null;
                     canCompletePreparations: boolean;
@@ -18083,6 +18418,15 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                         copyOfMenuId: string | null;
                         courseMealOptionImages: Array<string>;
                         courses: Array<{ courseId: string }>;
+                    }>;
+                    addons: Array<{
+                        cookOfferAddonId: string;
+                        title: string;
+                        description: string;
+                        pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                        priceCents: number;
+                        inclusion: Schema.GqlCOfferAddonInclusion;
+                        customerSelected: boolean;
                     }>;
                     cookTestimonial: {
                         cookTestimonialId: string;
@@ -18262,6 +18606,7 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                 payoutCentsCook: number;
                 paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
                 priceAutoAdjustReason: Schema.GqlCBookingRequestOfferPriceAutoAdjustReason | null;
+                addonPriceCents: number;
                 testimonialMissing: boolean;
                 preparationsCompletedAt: string | null;
                 canCompletePreparations: boolean;
@@ -18281,6 +18626,15 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                     copyOfMenuId: string | null;
                     courseMealOptionImages: Array<string>;
                     courses: Array<{ courseId: string }>;
+                }>;
+                addons: Array<{
+                    cookOfferAddonId: string;
+                    title: string;
+                    description: string;
+                    pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                    priceCents: number;
+                    inclusion: Schema.GqlCOfferAddonInclusion;
+                    customerSelected: boolean;
                 }>;
                 cookTestimonial: {
                     cookTestimonialId: string;
@@ -20148,6 +20502,191 @@ export type GqlCProfileCookMenusPageUpdatesSubscription = {
     };
 };
 
+export type GqlCProfileCookOfferAddonEditPageUserFragment = {
+    userId: string;
+    cook: {
+        cookId: string;
+        offerAddon: {
+            cookOfferAddonId: string;
+            title: string;
+            description: string;
+            imageFileUploadId: string | null;
+            imageUrl: string | null;
+            pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+            priceCents: number;
+            inclusion: Schema.GqlCOfferAddonInclusion;
+            bookingRequestOfferId: string | null;
+        } | null;
+    } | null;
+};
+
+export type GqlCProfileCookOfferAddonEditPageQueryVariables = Exact<{
+    cookOfferAddonId: string;
+}>;
+
+export type GqlCProfileCookOfferAddonEditPageQuery = {
+    currentSession: {
+        user: {
+            userId: string;
+            cook: {
+                cookId: string;
+                offerAddon: {
+                    cookOfferAddonId: string;
+                    title: string;
+                    description: string;
+                    imageFileUploadId: string | null;
+                    imageUrl: string | null;
+                    pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                    priceCents: number;
+                    inclusion: Schema.GqlCOfferAddonInclusion;
+                    bookingRequestOfferId: string | null;
+                } | null;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCProfileCookOfferAddonEditPageUpdatesSubscriptionVariables = Exact<{
+    cookOfferAddonId: string;
+}>;
+
+export type GqlCProfileCookOfferAddonEditPageUpdatesSubscription = {
+    userUpdates: {
+        userId: string;
+        cook: {
+            cookId: string;
+            offerAddon: {
+                cookOfferAddonId: string;
+                title: string;
+                description: string;
+                imageFileUploadId: string | null;
+                imageUrl: string | null;
+                pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                priceCents: number;
+                inclusion: Schema.GqlCOfferAddonInclusion;
+                bookingRequestOfferId: string | null;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCProfileCookOfferAddonEditPageUpsertMutationVariables = Exact<{
+    addon?: Schema.GqlCCookOfferAddonUpsert | null | undefined;
+}>;
+
+export type GqlCProfileCookOfferAddonEditPageUpsertMutation = {
+    user: { cook: { offerAddonUpsert: { success: boolean; referenceId: string | null } } };
+};
+
+export type GqlCProfileCookOfferAddonEditPageDeleteMutationVariables = Exact<{
+    cookOfferAddonId: string;
+}>;
+
+export type GqlCProfileCookOfferAddonEditPageDeleteMutation = {
+    user: { cook: { offerAddonDelete: { success: boolean; referenceId: string | null } } };
+};
+
+export type GqlCProfileCookOfferAddonsPageUserFragment = {
+    userId: string;
+    cook: {
+        cookId: string;
+        offerAddons: Array<{
+            cookOfferAddonId: string;
+            title: string;
+            description: string;
+            imageUrl: string | null;
+            pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+            priceCents: number;
+            updatedAt: string;
+        }>;
+        offerAddonTemplates: Array<{
+            offerAddonTemplateId: string;
+            title: string;
+            description: string;
+            pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+            suggestedPriceCents: number;
+            imageUrl: string | null;
+            position: number;
+        }>;
+    } | null;
+};
+
+export type GqlCProfileCookOfferAddonsPageQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCProfileCookOfferAddonsPageQuery = {
+    currentSession: {
+        user: {
+            userId: string;
+            cook: {
+                cookId: string;
+                offerAddons: Array<{
+                    cookOfferAddonId: string;
+                    title: string;
+                    description: string;
+                    imageUrl: string | null;
+                    pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                    priceCents: number;
+                    updatedAt: string;
+                }>;
+                offerAddonTemplates: Array<{
+                    offerAddonTemplateId: string;
+                    title: string;
+                    description: string;
+                    pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                    suggestedPriceCents: number;
+                    imageUrl: string | null;
+                    position: number;
+                }>;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCProfileCookOfferAddonsPageUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCProfileCookOfferAddonsPageUpdatesSubscription = {
+    userUpdates: {
+        userId: string;
+        cook: {
+            cookId: string;
+            offerAddons: Array<{
+                cookOfferAddonId: string;
+                title: string;
+                description: string;
+                imageUrl: string | null;
+                pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                priceCents: number;
+                updatedAt: string;
+            }>;
+            offerAddonTemplates: Array<{
+                offerAddonTemplateId: string;
+                title: string;
+                description: string;
+                pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                suggestedPriceCents: number;
+                imageUrl: string | null;
+                position: number;
+            }>;
+        } | null;
+    };
+};
+
+export type GqlCProfileCookOfferAddonsPageUpsertMutationVariables = Exact<{
+    addon?: Schema.GqlCCookOfferAddonUpsert | null | undefined;
+}>;
+
+export type GqlCProfileCookOfferAddonsPageUpsertMutation = {
+    user: { cook: { offerAddonUpsert: { success: boolean; referenceId: string | null } } };
+};
+
+export type GqlCProfileCookOfferAddonsPageCloneMutationVariables = Exact<{
+    offerAddonTemplateId: string;
+}>;
+
+export type GqlCProfileCookOfferAddonsPageCloneMutation = {
+    user: { cook: { offerAddonCloneFromTemplate: { success: boolean; referenceId: string | null } } };
+};
+
 export type GqlCProfileCookPublicPageCookFragment = {
     cookId: string;
     isVisible: boolean;
@@ -20784,6 +21323,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
             menuPriceCents: number;
             travelExpensesCents: number;
             testimonialMissing: boolean;
+            addonPriceCents: number;
             paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
             plannedPaymentPullDateTime: string | null;
             preparationsCompletedAt: string | null;
@@ -20860,6 +21400,16 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
                     mealSelectionLimit: number | null;
                     mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
                 }>;
+            }>;
+            addons: Array<{
+                cookOfferAddonId: string;
+                title: string;
+                description: string;
+                imageUrl: string | null;
+                pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                priceCents: number;
+                inclusion: Schema.GqlCOfferAddonInclusion;
+                customerSelected: boolean;
             }>;
             costBreakdown: {
                 lineItems: Array<{ title: string; amountCents: number }>;
@@ -20972,6 +21522,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
                     menuPriceCents: number;
                     travelExpensesCents: number;
                     testimonialMissing: boolean;
+                    addonPriceCents: number;
                     paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
                     plannedPaymentPullDateTime: string | null;
                     preparationsCompletedAt: string | null;
@@ -21048,6 +21599,16 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
                             mealSelectionLimit: number | null;
                             mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
                         }>;
+                    }>;
+                    addons: Array<{
+                        cookOfferAddonId: string;
+                        title: string;
+                        description: string;
+                        imageUrl: string | null;
+                        pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                        priceCents: number;
+                        inclusion: Schema.GqlCOfferAddonInclusion;
+                        customerSelected: boolean;
                     }>;
                     costBreakdown: {
                         lineItems: Array<{ title: string; amountCents: number }>;
@@ -21171,6 +21732,7 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
                 menuPriceCents: number;
                 travelExpensesCents: number;
                 testimonialMissing: boolean;
+                addonPriceCents: number;
                 paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
                 plannedPaymentPullDateTime: string | null;
                 preparationsCompletedAt: string | null;
@@ -21248,6 +21810,16 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
                         mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null }>;
                     }>;
                 }>;
+                addons: Array<{
+                    cookOfferAddonId: string;
+                    title: string;
+                    description: string;
+                    imageUrl: string | null;
+                    pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                    priceCents: number;
+                    inclusion: Schema.GqlCOfferAddonInclusion;
+                    customerSelected: boolean;
+                }>;
                 costBreakdown: {
                     lineItems: Array<{ title: string; amountCents: number }>;
                     total: { title: string; amountCents: number } | null;
@@ -21321,6 +21893,15 @@ export type GqlCProfileCustomerBookingRequestOfferCustomerReceiptRegenerateMutat
 
 export type GqlCProfileCustomerBookingRequestOfferCustomerReceiptRegenerateMutation = {
     user: { bookingRequestOfferCustomerReceiptRegenerate: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCProfileCustomerBookingRequestOfferAddonSelectionUpdateMutationVariables = Exact<{
+    bookingRequestOfferId: string;
+    selections: Array<Schema.GqlCBookingRequestOfferAddonSelectionInput> | Schema.GqlCBookingRequestOfferAddonSelectionInput;
+}>;
+
+export type GqlCProfileCustomerBookingRequestOfferAddonSelectionUpdateMutation = {
+    user: { bookingRequestOfferAddonSelectionUpdate: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCProfileCustomerBookingRequestOfferAcceptMutationVariables = Exact<{
@@ -29085,6 +29666,83 @@ export const AdminMenuPageAdminFragmentDoc = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminMenuPageAdminFragment, unknown>;
+export const AdminOfferAddonTemplatePageAdminFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatePageAdmin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Admin' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'offerAddonTemplate' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'offerAddonTemplateId' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'suggestedPriceCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'position' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminOfferAddonTemplatePageAdminFragment, unknown>;
+export const AdminOfferAddonTemplatesPageAdminFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatesPageAdmin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Admin' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'offerAddonTemplates' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'suggestedPriceCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'position' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminOfferAddonTemplatesPageAdminFragment, unknown>;
 export const AdminOfferChatReviewPageOfferFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -30744,6 +31402,20 @@ export const ProfileCookBookingRequestOfferCreatePageUserFragmentDoc = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddons' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     alias: { kind: 'Name', value: 'openBookingRequests' },
                                     name: { kind: 'Name', value: 'bookingRequests' },
                                     arguments: [
@@ -31390,6 +32062,23 @@ export const ProfileCookBookingRequestOfferPageUserFragmentDoc = {
                                                                 selections: [{ kind: 'Field', name: { kind: 'Name', value: 'courseId' } }],
                                                             },
                                                         },
+                                                    ],
+                                                },
+                                            },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'addonPriceCents' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'addons' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerSelected' } },
                                                     ],
                                                 },
                                             },
@@ -33396,6 +34085,115 @@ export const ProfileCookMenusPageUserFragmentDoc = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookMenusPageUserFragment, unknown>;
+export const ProfileCookOfferAddonEditPageUserFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonEditPageUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddon' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'cookOfferAddonId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookOfferAddonEditPageUserFragment, unknown>;
+export const ProfileCookOfferAddonsPageUserFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonsPageUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddons' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddonTemplates' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'suggestedPriceCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'position' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookOfferAddonsPageUserFragment, unknown>;
 export const ProfileCookPublicPageCookFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -34279,6 +35077,24 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                                                                 ],
                                                             },
                                                         },
+                                                    ],
+                                                },
+                                            },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'addonPriceCents' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'addons' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerSelected' } },
                                                     ],
                                                 },
                                             },
@@ -61134,6 +61950,445 @@ export const AdminOccasionsPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminOccasionsPageUpdatesSubscription, GqlCAdminOccasionsPageUpdatesSubscriptionVariables>;
+export const AdminOfferAddonTemplatePageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatePage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'admin' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'FragmentSpread',
+                                                            name: { kind: 'Name', value: 'AdminOfferAddonTemplatePageAdmin' },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatePageAdmin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Admin' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'offerAddonTemplate' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'offerAddonTemplateId' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'suggestedPriceCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'position' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminOfferAddonTemplatePageQuery, GqlCAdminOfferAddonTemplatePageQueryVariables>;
+export const AdminOfferAddonTemplatePageUpdatesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'subscription',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatePageUpdates' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'adminUpdates' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'AdminOfferAddonTemplatePageAdmin' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatePageAdmin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Admin' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'offerAddonTemplate' },
+                        arguments: [
+                            {
+                                kind: 'Argument',
+                                name: { kind: 'Name', value: 'offerAddonTemplateId' },
+                                value: { kind: 'Variable', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                            },
+                        ],
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'suggestedPriceCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'position' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminOfferAddonTemplatePageUpdatesSubscription,
+    GqlCAdminOfferAddonTemplatePageUpdatesSubscriptionVariables
+>;
+export const AdminOfferAddonTemplatePageUpsertDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatePageUpsert' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'OfferAddonTemplateUpsert' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddonTemplateUpsert' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminOfferAddonTemplatePageUpsertMutation, GqlCAdminOfferAddonTemplatePageUpsertMutationVariables>;
+export const AdminOfferAddonTemplatePageDeleteDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatePageDelete' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddonTemplateDelete' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'offerAddonTemplateId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminOfferAddonTemplatePageDeleteMutation, GqlCAdminOfferAddonTemplatePageDeleteMutationVariables>;
+export const AdminOfferAddonTemplatesPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatesPage' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'admin' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        {
+                                                            kind: 'FragmentSpread',
+                                                            name: { kind: 'Name', value: 'AdminOfferAddonTemplatesPageAdmin' },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatesPageAdmin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Admin' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'offerAddonTemplates' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'suggestedPriceCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'position' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminOfferAddonTemplatesPageQuery, GqlCAdminOfferAddonTemplatesPageQueryVariables>;
+export const AdminOfferAddonTemplatesPageUpdatesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'subscription',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatesPageUpdates' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'adminUpdates' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'AdminOfferAddonTemplatesPageAdmin' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatesPageAdmin' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Admin' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'offerAddonTemplates' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'suggestedPriceCents' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'position' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCAdminOfferAddonTemplatesPageUpdatesSubscription,
+    GqlCAdminOfferAddonTemplatesPageUpdatesSubscriptionVariables
+>;
+export const AdminOfferAddonTemplatesPageUpsertDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminOfferAddonTemplatesPageUpsert' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'OfferAddonTemplateUpsert' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddonTemplateUpsert' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminOfferAddonTemplatesPageUpsertMutation, GqlCAdminOfferAddonTemplatesPageUpsertMutationVariables>;
 export const AdminOfferChatReviewPageDocument = {
     kind: 'Document',
     definitions: [
@@ -72283,6 +73538,20 @@ export const ProfileCookBookingRequestOfferCreatePageDocument = {
                                 },
                                 {
                                     kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddons' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
                                     alias: { kind: 'Name', value: 'openBookingRequests' },
                                     name: { kind: 'Name', value: 'bookingRequests' },
                                     arguments: [
@@ -72731,6 +74000,20 @@ export const ProfileCookBookingRequestOfferCreatePageUpdatesDocument = {
                                                     ],
                                                 },
                                             },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddons' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
                                         ],
                                     },
                                 },
@@ -73891,6 +75174,23 @@ export const ProfileCookBookingRequestOfferPageDocument = {
                                                     ],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'addonPriceCents' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'addons' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerSelected' } },
+                                                    ],
+                                                },
+                                            },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'cookTestimonial' },
@@ -74453,6 +75753,23 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
                                                                 selections: [{ kind: 'Field', name: { kind: 'Name', value: 'courseId' } }],
                                                             },
                                                         },
+                                                    ],
+                                                },
+                                            },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'addonPriceCents' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'addons' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerSelected' } },
                                                     ],
                                                 },
                                             },
@@ -80204,6 +81521,567 @@ export const ProfileCookMenusPageUpdatesDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCProfileCookMenusPageUpdatesSubscription, GqlCProfileCookMenusPageUpdatesSubscriptionVariables>;
+export const ProfileCookOfferAddonEditPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonEditPage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookOfferAddonEditPageUser' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonEditPageUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddon' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'cookOfferAddonId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookOfferAddonEditPageQuery, GqlCProfileCookOfferAddonEditPageQueryVariables>;
+export const ProfileCookOfferAddonEditPageUpdatesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'subscription',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonEditPageUpdates' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'userUpdates' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookOfferAddonEditPageUser' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonEditPageUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddon' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'cookOfferAddonId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCookOfferAddonEditPageUpdatesSubscription,
+    GqlCProfileCookOfferAddonEditPageUpdatesSubscriptionVariables
+>;
+export const ProfileCookOfferAddonEditPageUpsertDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonEditPageUpsert' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'addon' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookOfferAddonUpsert' } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'offerAddonUpsert' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'addon' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'addon' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookOfferAddonEditPageUpsertMutation, GqlCProfileCookOfferAddonEditPageUpsertMutationVariables>;
+export const ProfileCookOfferAddonEditPageDeleteDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonEditPageDelete' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'offerAddonDelete' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'cookOfferAddonId' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookOfferAddonEditPageDeleteMutation, GqlCProfileCookOfferAddonEditPageDeleteMutationVariables>;
+export const ProfileCookOfferAddonsPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonsPage' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookOfferAddonsPageUser' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonsPageUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddons' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddonTemplates' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'suggestedPriceCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'position' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookOfferAddonsPageQuery, GqlCProfileCookOfferAddonsPageQueryVariables>;
+export const ProfileCookOfferAddonsPageUpdatesDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'subscription',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonsPageUpdates' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'userUpdates' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ProfileCookOfferAddonsPageUser' } }],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonsPageUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'userId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddons' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                                        ],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'offerAddonTemplates' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'suggestedPriceCents' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'position' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookOfferAddonsPageUpdatesSubscription, GqlCProfileCookOfferAddonsPageUpdatesSubscriptionVariables>;
+export const ProfileCookOfferAddonsPageUpsertDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonsPageUpsert' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'addon' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookOfferAddonUpsert' } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'offerAddonUpsert' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'addon' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'addon' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookOfferAddonsPageUpsertMutation, GqlCProfileCookOfferAddonsPageUpsertMutationVariables>;
+export const ProfileCookOfferAddonsPageCloneDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookOfferAddonsPageClone' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'offerAddonCloneFromTemplate' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'offerAddonTemplateId' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'offerAddonTemplateId' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCProfileCookOfferAddonsPageCloneMutation, GqlCProfileCookOfferAddonsPageCloneMutationVariables>;
 export const ProfileCookPublicPageDocument = {
     kind: 'Document',
     definitions: [
@@ -82563,6 +84441,24 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                                                     ],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'addonPriceCents' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'addons' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerSelected' } },
+                                                    ],
+                                                },
+                                            },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'costBreakdown' },
@@ -83190,6 +85086,24 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                                                     ],
                                                 },
                                             },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'addonPriceCents' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'addons' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerSelected' } },
+                                                    ],
+                                                },
+                                            },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'costBreakdown' },
@@ -83389,6 +85303,77 @@ export const ProfileCustomerBookingRequestOfferCustomerReceiptRegenerateDocument
 } as unknown as DocumentNode<
     GqlCProfileCustomerBookingRequestOfferCustomerReceiptRegenerateMutation,
     GqlCProfileCustomerBookingRequestOfferCustomerReceiptRegenerateMutationVariables
+>;
+export const ProfileCustomerBookingRequestOfferAddonSelectionUpdateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCustomerBookingRequestOfferAddonSelectionUpdate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'selections' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: {
+                            kind: 'ListType',
+                            type: {
+                                kind: 'NonNullType',
+                                type: { kind: 'NamedType', name: { kind: 'Name', value: 'BookingRequestOfferAddonSelectionInput' } },
+                            },
+                        },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferAddonSelectionUpdate' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
+                                        },
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'selections' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'selections' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCustomerBookingRequestOfferAddonSelectionUpdateMutation,
+    GqlCProfileCustomerBookingRequestOfferAddonSelectionUpdateMutationVariables
 >;
 export const ProfileCustomerBookingRequestOfferAcceptDocument = {
     kind: 'Document',

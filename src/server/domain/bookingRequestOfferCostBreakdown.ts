@@ -14,6 +14,11 @@ export type CostBreakdown = {
     totalBeforeDiscount: CostLineItem | null;
 };
 
+type BookingRequestOfferCostBreakdownAddonLine = {
+    title: string;
+    amountCents: number;
+};
+
 export type BookingRequestOfferCostBreakdownBuildInput = {
     locale: Locale;
     menuPriceCents: number;
@@ -27,6 +32,8 @@ export type BookingRequestOfferCostBreakdownBuildInput = {
     promoCode?: { redeemCode: string; amountCents: number } | null;
     /** Applied or preview gift amount (not necessarily the card's remaining balance). */
     giftCard?: { redeemCode: string; amountCents: number } | null;
+    /** Selected offer addons — each becomes a cost line (or Extras parent with children). */
+    selectedAddons?: BookingRequestOfferCostBreakdownAddonLine[] | null;
 };
 
 /**
@@ -45,11 +52,29 @@ export function bookingRequestOfferCostBreakdownBuild(input: BookingRequestOffer
             title: { de: 'Menüpreis', en: 'Menu price' }[input.locale],
             amountCents: input.menuPriceCents + input.travelExpensesCents,
         },
-        {
-            title: { de: 'Servicegebühren', en: 'Service fees' }[input.locale],
-            amountCents: input.platformFeeCentsCustomer + input.paymentProviderFeeCents,
-        },
     ];
+
+    const selectedAddons = (input.selectedAddons ?? []).filter((addon) => addon.amountCents > 0);
+    if (selectedAddons.length === 1) {
+        lineItems.push({
+            title: selectedAddons[0]!.title,
+            amountCents: selectedAddons[0]!.amountCents,
+        });
+    } else if (selectedAddons.length > 1) {
+        lineItems.push({
+            title: { de: 'Zusatzleistungen', en: 'Extras' }[input.locale],
+            amountCents: selectedAddons.reduce((sum, addon) => sum + addon.amountCents, 0),
+            subLineItems: selectedAddons.map((addon) => ({
+                title: addon.title,
+                amountCents: addon.amountCents,
+            })),
+        });
+    }
+
+    lineItems.push({
+        title: { de: 'Servicegebühren', en: 'Service fees' }[input.locale],
+        amountCents: input.platformFeeCentsCustomer + input.paymentProviderFeeCents,
+    });
 
     if (input.promoCode && promoCents > 0) {
         lineItems.push({

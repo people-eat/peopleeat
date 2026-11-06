@@ -8,6 +8,7 @@ import {
     bookingRequestOfferEvents,
     bookingRequestOffers,
     bookingRequests,
+    cookOfferAddons,
     cooks,
     menus,
     promoCodes,
@@ -26,12 +27,14 @@ import { slackNotifyOfferCreated } from '../slack/slackNotifyBooking';
 import { bookingRequestCookTravelDistanceKmEnsure } from '../utils/bookingRequestCookTravelDistanceKmEnsure';
 import { cookBookingRequestOfferCreateEmailSend } from '../utils/bookingRequestLifecycleEmails';
 import { bookingRequestNoOffersNotifyCancel } from '../utils/bookingRequestNoOffersNotifySchedule';
+import { bookingRequestOfferAddonsSync } from '../utils/bookingRequestOfferAddonsSync';
 import { bookingRequestOfferHardMinimumAssert } from '../utils/bookingRequestOfferHardMinimumAssert';
 import {
     bookingRequestOfferInitialChatMessageInsert,
     bookingRequestOfferInitialMessageResolve,
 } from '../utils/bookingRequestOfferInitialChatMessage';
 import { bookingRequestReactionReminderSchedule } from '../utils/bookingRequestReactionReminderSchedule';
+import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 import { menuDeepCopyInsert } from '../utils/menuDeepCopyInsert';
 
 export async function cookBookingRequestOfferCreate(
@@ -113,6 +116,25 @@ export async function cookBookingRequestOfferCreate(
             }
         }
 
+        const addonsEnabled = await featureToggleIsEnabled('BOOKING_REQUEST_OFFER_ADDONS', serverRuntime, cookId);
+        const uniqueAddonIds = addonsEnabled ? [...new Set(input.suggestedAddonIds ?? [])] : [];
+        if (uniqueAddonIds.length > 0) {
+            const suggestedAddons = await serverRuntime.db
+                .select({ cookOfferAddonId: cookOfferAddons.cookOfferAddonId })
+                .from(cookOfferAddons)
+                .where(
+                    and(
+                        eq(cookOfferAddons.cookId, cookId),
+                        isNull(cookOfferAddons.deletedAt),
+                        isNull(cookOfferAddons.bookingRequestOfferId),
+                        inArray(cookOfferAddons.cookOfferAddonId, uniqueAddonIds),
+                    ),
+                );
+            if (suggestedAddons.length !== uniqueAddonIds.length) {
+                throw new Error('cookBookingRequestOfferCreate: one or more addons not found');
+            }
+        }
+
         const eventLocation = {
             latitude: bookingRequest.exactEventAddress.latitude,
             longitude: bookingRequest.exactEventAddress.longitude,
@@ -130,9 +152,12 @@ export async function cookBookingRequestOfferCreate(
             existingTravelDistanceKm: affinity?.travelDistanceKm ?? null,
         });
         const travelExpensesCents = Math.round(travelDistanceKm * cook.travelExpensesAmount * 2);
+        // Attached addons start unselected (unless REQUIRED), so create-time
+        // addonPriceCents is 0 until the customer selects.
         const price = bookingRequestOfferPriceCalculate({
             menuPriceCents: input.menuPriceCents,
             travelExpensesCents,
+            addonPriceCents: 0,
         });
 
         let promoMinimumTotalAmountCustomerCents: number | null = null;
@@ -165,6 +190,7 @@ export async function cookBookingRequestOfferCreate(
                 cookUnreadNotificationCount: 0,
                 travelDistanceKm,
                 menuPriceCents: price.menuPriceCents,
+                addonPriceCents: price.addonPriceCents,
                 travelExpensesCents: price.travelExpensesCents,
                 paymentProviderFeeCents: price.paymentProviderFeeCents,
                 platformFeePercentCook: price.platformFeePercentCook,
@@ -181,6 +207,14 @@ export async function cookBookingRequestOfferCreate(
                     cookId,
                     sourceMenuId,
                     bookingRequestOfferId,
+                });
+            }
+
+            if (uniqueAddonIds.length > 0) {
+                await bookingRequestOfferAddonsSync(transaction, {
+                    cookId,
+                    bookingRequestOfferId,
+                    suggestedAddonIds: uniqueAddonIds,
                 });
             }
 

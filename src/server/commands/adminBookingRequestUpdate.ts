@@ -147,6 +147,7 @@ export async function adminBookingRequestUpdate(
             platformFeePercentCustomer: number;
             travelExpensesCents: number;
             menuPriceCents: number;
+            addonPriceCents: number;
             paymentProviderFeeCents: number;
             platformFeeCentsCook: number;
             platformFeeCentsCustomer: number;
@@ -319,6 +320,7 @@ export async function adminBookingRequestUpdate(
                 const price = bookingRequestOfferPriceCalculate({
                     menuPriceCents: offer.menuPriceCents,
                     travelExpensesCents,
+                    addonPriceCents: offer.addonPriceCents,
                     platformFeePercentCook: offer.platformFeePercentCook,
                     platformFeePercentCustomer: offer.platformFeePercentCustomer,
                 });
@@ -334,6 +336,7 @@ export async function adminBookingRequestUpdate(
                         platformFeePercentCustomer: price.platformFeePercentCustomer,
                         travelExpensesCents: price.travelExpensesCents,
                         menuPriceCents: price.menuPriceCents,
+                        addonPriceCents: price.addonPriceCents,
                         paymentProviderFeeCents: price.paymentProviderFeeCents,
                         platformFeeCentsCook: price.platformFeeCentsCook,
                         platformFeeCentsCustomer: price.platformFeeCentsCustomer,
@@ -349,6 +352,7 @@ export async function adminBookingRequestUpdate(
                         platformFeePercentCustomer: offer.platformFeePercentCustomer,
                         travelExpensesCents: offer.travelExpensesCents,
                         menuPriceCents: offer.menuPriceCents,
+                        addonPriceCents: offer.addonPriceCents,
                         paymentProviderFeeCents: offer.paymentProviderFeeCents,
                         platformFeeCentsCook: offer.platformFeeCentsCook,
                         platformFeeCentsCustomer: offer.platformFeeCentsCustomer,
@@ -494,6 +498,7 @@ export async function adminBookingRequestUpdate(
                             const price = bookingRequestOfferPriceCalculate({
                                 menuPriceCents: menuPriceCentsAfter,
                                 travelExpensesCents,
+                                addonPriceCents: offer.addonPriceCents,
                                 platformFeePercentCook: offer.platformFeePercentCook,
                                 platformFeePercentCustomer: offer.platformFeePercentCustomer,
                             });
@@ -511,6 +516,7 @@ export async function adminBookingRequestUpdate(
                                     platformFeePercentCustomer: price.platformFeePercentCustomer,
                                     travelExpensesCents: price.travelExpensesCents,
                                     menuPriceCents: price.menuPriceCents,
+                                    addonPriceCents: price.addonPriceCents,
                                     paymentProviderFeeCents: price.paymentProviderFeeCents,
                                     platformFeeCentsCook: price.platformFeeCentsCook,
                                     platformFeeCentsCustomer: price.platformFeeCentsCustomer,
@@ -522,6 +528,7 @@ export async function adminBookingRequestUpdate(
                                 offerPricePatchesById.set(offer.bookingRequestOfferId, {
                                     ...pending,
                                     menuPriceCents: price.menuPriceCents,
+                                    addonPriceCents: price.addonPriceCents,
                                     platformFeePercentCook: price.platformFeePercentCook,
                                     platformFeePercentCustomer: price.platformFeePercentCustomer,
                                     travelExpensesCents: price.travelExpensesCents,
@@ -593,7 +600,10 @@ export async function adminBookingRequestUpdate(
                 const { bookingRequestOfferId, ...setValues } = patch;
                 await transaction
                     .update(bookingRequestOffers)
-                    .set(setValues)
+                    .set({
+                        ...setValues,
+                        addonPriceCents: patch.addonPriceCents,
+                    })
                     .where(eq(bookingRequestOffers.bookingRequestOfferId, bookingRequestOfferId));
             }
 

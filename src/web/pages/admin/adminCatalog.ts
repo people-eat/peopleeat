@@ -20,6 +20,7 @@ import {
     MonitorIcon,
     NewspaperIcon,
     PartyPopperIcon,
+    PackagePlusIcon,
     SparklesIcon,
     SquareArrowOutUpRightIcon,
     StarIcon,
@@ -40,6 +41,7 @@ export type AdminStubSlug =
     | 'jobs'
     | 'meals'
     | 'menus'
+    | 'offer-addon-templates'
     | 'outbound-emails'
     | 'support-requests'
     | 'promo-codes'
@@ -109,7 +111,7 @@ export const ADMIN_NAV_GROUPS: readonly AdminNavGroup[] = [
     {
         id: 'catalog',
         label: { de: 'Katalog', en: 'Catalog' },
-        items: ['meals', 'menus', 'testimonials'],
+        items: ['meals', 'menus', 'offer-addon-templates', 'testimonials'],
     },
     {
         id: 'content',
@@ -234,6 +236,17 @@ export const ADMIN_STUB_ROUTES: readonly AdminStubRoute[] = [
             en: 'Inspect menus from all cooks (including deleted).',
         },
         icon: HandPlatterIcon,
+    },
+    {
+        slug: 'offer-addon-templates',
+        path: '/admin/offer-addon-templates',
+        to: '/{-$locale}/admin/offer-addon-templates',
+        title: { de: 'Zusatzleistungen', en: 'Offer extras' },
+        description: {
+            de: 'Vorlagen, die Köche in ihre Bibliothek übernehmen können.',
+            en: 'Templates cooks can add to their library.',
+        },
+        icon: PackagePlusIcon,
     },
     {
         slug: 'testimonials',

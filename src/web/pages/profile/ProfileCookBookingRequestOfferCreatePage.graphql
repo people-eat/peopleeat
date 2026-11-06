@@ -36,6 +36,13 @@ fragment ProfileCookBookingRequestOfferCreatePageUser on User {
                 }
             }
         }
+        offerAddons {
+            cookOfferAddonId
+            title
+            description
+            pricingUnit
+            priceCents
+        }
         openBookingRequests: bookingRequests(criterion: { onlyDeclined: false }) {
             bookingRequestId
         }
@@ -126,6 +133,7 @@ subscription ProfileCookBookingRequestOfferCreatePageUpdates($bookingRequestId: 
     }
 }
 
+# `input.suggestedAddonIds` attaches library extras when BOOKING_REQUEST_OFFER_ADDONS is on.
 mutation ProfileCookBookingRequestOfferCreatePageCreate($input: BookingRequestOfferCreate!) {
     user {
         cook {

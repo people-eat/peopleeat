@@ -1,11 +1,14 @@
 import { asc, eq, inArray } from 'drizzle-orm';
 
+import { bookingRequestOfferAddonLineAmountCents } from '../../shared/bookingRequestOfferAddonPrice';
+import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
 import { DEFAULT_LOCALE } from '../../shared/locale';
 import type { BookingRequest } from '../db/schema';
 import {
     bookingRequestOffers,
     bookingRequestParticipants,
     cookCallSlotBookings,
+    cookOfferAddons,
     cooks,
     giftCards,
     menus,
@@ -18,6 +21,7 @@ import { toGqlAdminBookingRequest } from '../mappers/toGqlAdminBookingRequest';
 import { toGqlAdminBookingRequestOffer } from '../mappers/toGqlAdminBookingRequestOffer';
 import { toGqlAdminCook } from '../mappers/toGqlAdminCook';
 import { toGqlAdminUser } from '../mappers/toGqlAdminUser';
+import { toGqlCookOfferAddon } from '../mappers/toGqlCookOfferAddon';
 import { adminUserTypesByUserIdFindMany } from './adminUserTypesByUserIdFindMany';
 import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from './bookingRequestKitchenDetailsPhotosHydrate';
 import { bookingRequestOfferCookPayoutReadinessResolve } from './bookingRequestOfferCookPayoutReadinessResolve';
@@ -91,7 +95,7 @@ export async function adminBookingRequestHydrate(rows: BookingRequest[], serverR
     );
 
     const offerIds = offers.map((offer) => offer.bookingRequestOfferId);
-    const [callBookingRows, suggestedMenuRows] = await Promise.all([
+    const [callBookingRows, suggestedMenuRows, offerAddonRows] = await Promise.all([
         offerIds.length === 0
             ? Promise.resolve([])
             : serverRuntime.db
@@ -102,6 +106,9 @@ export async function adminBookingRequestHydrate(rows: BookingRequest[], serverR
         offerIds.length === 0
             ? Promise.resolve([])
             : serverRuntime.db.select().from(menus).where(inArray(menus.bookingRequestOfferId, offerIds)),
+        offerIds.length === 0
+            ? Promise.resolve([])
+            : serverRuntime.db.select().from(cookOfferAddons).where(inArray(cookOfferAddons.bookingRequestOfferId, offerIds)),
     ]);
 
     const callBookingsByOfferId = new Map<string, typeof callBookingRows>();
@@ -119,6 +126,14 @@ export async function adminBookingRequestHydrate(rows: BookingRequest[], serverR
         menusByOfferId.set(menu.bookingRequestOfferId, list);
     }
 
+    const addonsByOfferId = new Map<string, typeof offerAddonRows>();
+    for (const addon of offerAddonRows) {
+        if (addon.bookingRequestOfferId == null) continue;
+        const list = addonsByOfferId.get(addon.bookingRequestOfferId) ?? [];
+        list.push(addon);
+        addonsByOfferId.set(addon.bookingRequestOfferId, list);
+    }
+
     const result: GqlSAdminBookingRequest[] = [];
     for (const bookingRequest of rows) {
         const customer = customersById.get(bookingRequest.userId);
@@ -127,6 +142,10 @@ export async function adminBookingRequestHydrate(rows: BookingRequest[], serverR
         const requestOffers = offersByRequest.get(bookingRequest.bookingRequestId) ?? [];
         const accepted = requestOffers.find((offer) => offer.userAccepted === true && offer.cookAccepted === true);
         const requestParticipants = participantsByRequest.get(bookingRequest.bookingRequestId) ?? [];
+        const paidParticipants = bookingRequestPaidParticipants(
+            requestParticipants.filter((participant) => participant.type === 'ADULT').length,
+            requestParticipants.filter((participant) => participant.type === 'DISCOUNTED').length,
+        );
         const promoCode = bookingRequest.promoCodeId ? (promoById.get(bookingRequest.promoCodeId) ?? null) : null;
         const giftCard = bookingRequest.giftCardId ? (giftById.get(bookingRequest.giftCardId) ?? null) : null;
         const gqlOffers = [];
@@ -138,6 +157,17 @@ export async function adminBookingRequestHydrate(rows: BookingRequest[], serverR
                 cookPayoutBlockedReason: 'MISSING_STRIPE_ACCOUNT' as const,
             };
             const suggestedMenus = await cookMenusWithCourses(serverRuntime.db, menusByOfferId.get(offer.bookingRequestOfferId) ?? []);
+            const offerAddons = addonsByOfferId.get(offer.bookingRequestOfferId) ?? [];
+            const selectedAddonCostLines = offerAddons
+                .filter((addon) => addon.customerSelected)
+                .map((addon) => ({
+                    title: addon.title,
+                    amountCents: bookingRequestOfferAddonLineAmountCents({
+                        pricingUnit: addon.pricingUnit,
+                        priceCents: addon.priceCents,
+                        paidParticipants,
+                    }),
+                }));
             gqlOffers.push(
                 toGqlAdminBookingRequestOffer({
                     offer,
@@ -147,6 +177,8 @@ export async function adminBookingRequestHydrate(rows: BookingRequest[], serverR
                     cook,
                     callBookings: callBookingsByOfferId.get(offer.bookingRequestOfferId) ?? [],
                     suggestedMenus,
+                    addons: offerAddons.map(toGqlCookOfferAddon),
+                    selectedAddonCostLines,
                     cookPayoutReady: readiness.cookPayoutReady,
                     cookPayoutBlockedReason: readiness.cookPayoutBlockedReason,
                     promoCode,

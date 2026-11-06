@@ -68,6 +68,7 @@ export async function cookBookingRequestOfferPriceUpdate(
         const price = bookingRequestOfferPriceCalculate({
             menuPriceCents,
             travelExpensesCents,
+            addonPriceCents: row.offer.addonPriceCents,
             platformFeePercentCook: row.offer.platformFeePercentCook,
             platformFeePercentCustomer: row.offer.platformFeePercentCustomer,
         });
@@ -95,6 +96,7 @@ export async function cookBookingRequestOfferPriceUpdate(
                     platformFeePercentCustomer: price.platformFeePercentCustomer,
                     travelExpensesCents: price.travelExpensesCents,
                     menuPriceCents: price.menuPriceCents,
+                    addonPriceCents: price.addonPriceCents,
                     paymentProviderFeeCents: price.paymentProviderFeeCents,
                     platformFeeCentsCook: price.platformFeeCentsCook,
                     platformFeeCentsCustomer: price.platformFeeCentsCustomer,

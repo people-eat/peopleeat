@@ -183,6 +183,20 @@
             "when": 1793975865560,
             "tag": "0025_short_crusher_hogan",
             "breakpoints": true
+        },
+        {
+            "idx": 26,
+            "version": "7",
+            "when": 1793979067753,
+            "tag": "0026_famous_slyde",
+            "breakpoints": true
+        },
+        {
+            "idx": 27,
+            "version": "7",
+            "when": 1793981693596,
+            "tag": "0027_quick_kitty_pryde",
+            "breakpoints": true
         }
     ]
 }

@@ -19,8 +19,10 @@ Postgres / Drizzle tables with project conventions (UUID PKs, `*Cents` money int
 | `BookingRequestKitchenDetailsPhotos`             | Optional kitchen photos → `FileUploads` (owner / pool cook / admin)                                                                                     |
 | `BookingRequestParticipants`                     | Party line items (`ADULT` \| `DISCOUNTED`) + dietary restrictions                                                                                       |
 | `BookingRequestCooks`                            | Cook ↔ request affinity before / without an offer (notify, open, decline, optional AI evaluation)                                                       |
-| `BookingRequestOffers`                           | Cook proposal — dual accept flags, fee breakdown, payment, optional configured-menu snapshot                                                            |
+| `BookingRequestOffers`                           | Cook proposal — dual accept flags, fee breakdown (`addonPriceCents` included), payment, optional configured-menu snapshot                               |
 | `BookingRequestOfferEvents`                      | Append-only negotiation timeline (“offer chat”) + domain events                                                                                         |
+| `OfferAddonTemplates`                            | Admin bilingual extras templates cooks can clone into their library                                                                                     |
+| `CookOfferAddons`                                | Cook library extras plus offer-scoped copies (`bookingRequestOfferId`); guest selection is `customerSelected` on the copies                             |
 | `CookCallSlotBookings`                           | Discovery-call request / confirm / decline / cancel tied to an offer                                                                                    |
 | `Menus.bookingRequestOfferId` (+ `copyOfMenuId`) | Optional offer-scoped **copies** of cook inventory menus                                                                                                |
 
@@ -74,8 +76,9 @@ GraphQL **does** project the timeline onto the shared `ChatMessage` wire union:
 - All other event types → `ChatMessageBookingRequestOfferEvent` (`type` + `payload: JSON`)
 
 Exposed as lazy `messages: [ChatMessage!]!` on `UserBookingRequestOffer` / `CookBookingRequestOffer` / `AdminBookingRequestOffer`. Peer
-viewers omit soft-hidden messages and **admin-only ops milestones** (`ADMIN_CHANGED_PRICE`, `ADMIN_ACCEPTANCE_UPDATED`,
-`ADMIN_PAYMENT_SCHEDULE_UPDATED`, `ADMIN_CONFIGURED_MENU_UPDATED` — see `bookingRequestOfferEventTypesAdminOnly`); public admin milestones
+viewers omit soft-hidden messages and **admin-only ops milestones** (`ADMIN_CHANGED_PRICE`, `ADMIN_CHANGED_ADDONS`,
+`ADMIN_ACCEPTANCE_UPDATED`, `ADMIN_PAYMENT_SCHEDULE_UPDATED`, `ADMIN_CONFIGURED_MENU_UPDATED` — see
+`bookingRequestOfferEventTypesAdminOnly`); public admin milestones
 (handover, amendments, preparations, call start) remain. Sends go through role-scoped `bookingRequestOfferChatMessageCreate` mutations
 (optional `fileUploadIds` → `BookingRequestOfferEventAttachments` → `FileUploads`; peers download via GET peer-access). Admins may also
 `bookingRequestOfferChatMessageUpdate` to replace `payload.messageBody` on any `*_MESSAGE_SIMPLE` event (attachments unchanged; allowed

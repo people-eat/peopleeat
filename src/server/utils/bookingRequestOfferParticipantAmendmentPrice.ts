@@ -26,6 +26,8 @@ export type BookingRequestOfferParticipantAmendmentPriceInput = {
     menuPriceCentsOverride?: number;
     /** Sticky offer fee % (required so amendments do not reset to marketplace defaults). */
     platformFeePercentCook: number;
+    /** Selected addon total at the current paid headcount. Omitted means 0. */
+    addonPriceCents?: number;
     platformFeePercentCustomer: number;
     /**
      * When true (PAYED offers), round a positive customer delta up to
@@ -89,6 +91,7 @@ export function bookingRequestOfferParticipantAmendmentPriceCalculate(
     const price = bookingRequestOfferPriceCalculate({
         menuPriceCents: menuPriceCentsAfter,
         travelExpensesCents: input.travelExpensesCentsAfter,
+        addonPriceCents: input.addonPriceCents ?? 0,
         platformFeePercentCook: input.platformFeePercentCook,
         platformFeePercentCustomer: input.platformFeePercentCustomer,
     });

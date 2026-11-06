@@ -84,6 +84,7 @@ export async function adminBookingRequestOfferUpdate(
             userAccepted?: boolean | null;
             cookAccepted?: boolean | null;
             menuPriceCents?: number;
+            addonPriceCents?: number;
             travelExpensesCents?: number;
             paymentProviderFeeCents?: number;
             platformFeePercentCook?: number;
@@ -150,10 +151,12 @@ export async function adminBookingRequestOfferUpdate(
             const price = bookingRequestOfferPriceCalculate({
                 menuPriceCents: nextMenuPriceCents,
                 travelExpensesCents: nextTravelExpensesCents,
+                addonPriceCents: offer.addonPriceCents,
                 platformFeePercentCook: nextPlatformFeePercentCook,
                 platformFeePercentCustomer: nextPlatformFeePercentCustomer,
             });
             offerPatch.menuPriceCents = price.menuPriceCents;
+            offerPatch.addonPriceCents = price.addonPriceCents;
             offerPatch.travelExpensesCents = price.travelExpensesCents;
             offerPatch.paymentProviderFeeCents = price.paymentProviderFeeCents;
             offerPatch.platformFeePercentCook = price.platformFeePercentCook;
@@ -200,6 +203,7 @@ export async function adminBookingRequestOfferUpdate(
             platformFeePercentCustomer: offerPatch.platformFeePercentCustomer ?? offer.platformFeePercentCustomer,
             travelExpensesCents: offerPatch.travelExpensesCents ?? offer.travelExpensesCents,
             menuPriceCents: offerPatch.menuPriceCents ?? offer.menuPriceCents,
+            addonPriceCents: offerPatch.addonPriceCents ?? offer.addonPriceCents,
             paymentProviderFeeCents: offerPatch.paymentProviderFeeCents ?? offer.paymentProviderFeeCents,
             platformFeeCentsCook: offerPatch.platformFeeCentsCook ?? offer.platformFeeCentsCook,
             platformFeeCentsCustomer: offerPatch.platformFeeCentsCustomer ?? offer.platformFeeCentsCustomer,

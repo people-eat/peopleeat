@@ -32,6 +32,8 @@ export type BookingRequestOfferFieldsInput = {
     promoCode?: { redeemCode: string; amountCents: number } | null;
     giftCard?: { redeemCode: string; balanceCents: number } | null;
     callBookings?: CookCallSlotBooking[];
+    /** Selected addon lines for the cost breakdown, from offer-scoped CookOfferAddons. */
+    selectedAddonCostLines?: { title: string; amountCents: number }[] | null;
     now?: Date;
 };
 
@@ -51,6 +53,7 @@ export type BookingRequestOfferFields = {
     userRequestedMenuAdjustments: boolean | null;
     travelDistanceKm: number | null;
     menuPriceCents: number;
+    addonPriceCents: number;
     travelExpensesCents: number;
     paymentProviderFeeCents: number;
     platformFeePercentCook: number;
@@ -103,6 +106,7 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
         promoCode,
         giftCard,
         callBookings = [],
+        selectedAddonCostLines = null,
         now,
     } = input;
 
@@ -131,6 +135,7 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
         participantCount,
         promoCode,
         giftCard: giftCard != null && giftAmountCents > 0 ? { redeemCode: giftCard.redeemCode, amountCents: giftAmountCents } : null,
+        selectedAddons: selectedAddonCostLines,
     });
 
     const pendingDelta =
@@ -166,6 +171,7 @@ export function bookingRequestOfferFieldsBuild(input: BookingRequestOfferFieldsI
         userRequestedMenuAdjustments: offer.userRequestedMenuAdjustments ?? null,
         travelDistanceKm: offer.travelDistanceKm ?? null,
         menuPriceCents: offer.menuPriceCents,
+        addonPriceCents: offer.addonPriceCents,
         travelExpensesCents: offer.travelExpensesCents,
         paymentProviderFeeCents: offer.paymentProviderFeeCents,
         platformFeePercentCook: offer.platformFeePercentCook,

@@ -65,6 +65,7 @@ export function CookSidebar({
     const client = useClient();
     const { active: impersonating } = useSessionImpersonation();
     const analyticsEnabled = useFeatureToggleActive('COOK_ANALYTICS');
+    const offerAddonsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_ADDONS');
     const [poolReviewCount, setPoolReviewCount] = useState(poolReviewCountSeed);
     const [offersUnreadCount, setOffersUnreadCount] = useState(offersUnreadCountSeed);
     const [walletBadge, setWalletBadge] = useState(walletBadgeSeed);
@@ -111,7 +112,11 @@ export function CookSidebar({
             icon: <SummaryIcon />,
             isActive: path === '/profile',
         },
-        ...COOK_NAV_ROUTES.filter((route) => route.slug !== 'analytics' || analyticsEnabled).map((route) => {
+        ...COOK_NAV_ROUTES.filter((route) => {
+            if (route.slug === 'analytics') return analyticsEnabled;
+            if (route.slug === 'offer-addons') return offerAddonsEnabled;
+            return true;
+        }).map((route) => {
             const Icon = route.icon;
             const poolCount = route.slug === 'booking-request-pool' ? poolReviewCount : undefined;
             const offersCount = route.slug === 'booking-request-offers' ? offersUnreadCount : undefined;

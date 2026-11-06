@@ -1,9 +1,20 @@
 import { asc, inArray } from 'drizzle-orm';
 
+import { bookingRequestOfferAddonLineAmountCents } from '../../shared/bookingRequestOfferAddonPrice';
+import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
 import type { BookingRequest } from '../db/schema';
-import { bookingRequestOffers, bookingRequestParticipants, cookCallSlotBookings, giftCards, menus, promoCodes } from '../db/schema';
+import {
+    bookingRequestOffers,
+    bookingRequestParticipants,
+    cookCallSlotBookings,
+    cookOfferAddons,
+    giftCards,
+    menus,
+    promoCodes,
+} from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSUserBookingRequest } from '../graphql/generated';
+import { toGqlPublicCookOfferAddon } from '../mappers/toGqlCookOfferAddon';
 import { toGqlUserBookingRequest } from '../mappers/toGqlUserBookingRequest';
 import { toGqlUserBookingRequestOffer } from '../mappers/toGqlUserBookingRequestOffer';
 import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from './bookingRequestKitchenDetailsPhotosHydrate';
@@ -54,7 +65,7 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
     const cooksById = await publicCooksByIdFindMany(serverRuntime.db, cookIds);
 
     const offerIds = offers.map((offer) => offer.bookingRequestOfferId);
-    const [callBookingRows, suggestedMenuRows] = await Promise.all([
+    const [callBookingRows, suggestedMenuRows, offerAddonRows] = await Promise.all([
         offerIds.length === 0
             ? Promise.resolve([])
             : serverRuntime.db
@@ -65,6 +76,9 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
         offerIds.length === 0
             ? Promise.resolve([])
             : serverRuntime.db.select().from(menus).where(inArray(menus.bookingRequestOfferId, offerIds)),
+        offerIds.length === 0
+            ? Promise.resolve([])
+            : serverRuntime.db.select().from(cookOfferAddons).where(inArray(cookOfferAddons.bookingRequestOfferId, offerIds)),
     ]);
 
     const callBookingsByOfferId = new Map<string, typeof callBookingRows>();
@@ -82,11 +96,23 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
         menusByOfferId.set(menu.bookingRequestOfferId, list);
     }
 
+    const addonsByOfferId = new Map<string, typeof offerAddonRows>();
+    for (const addon of offerAddonRows) {
+        if (addon.bookingRequestOfferId == null) continue;
+        const list = addonsByOfferId.get(addon.bookingRequestOfferId) ?? [];
+        list.push(addon);
+        addonsByOfferId.set(addon.bookingRequestOfferId, list);
+    }
+
     const result: GqlSUserBookingRequest[] = [];
     for (const bookingRequest of rows) {
         const requestOffers = offersByRequest.get(bookingRequest.bookingRequestId) ?? [];
         const accepted = requestOffers.find((offer) => offer.userAccepted === true && offer.cookAccepted === true);
         const requestParticipants = participantsByRequest.get(bookingRequest.bookingRequestId) ?? [];
+        const paidParticipants = bookingRequestPaidParticipants(
+            requestParticipants.filter((participant) => participant.type === 'ADULT').length,
+            requestParticipants.filter((participant) => participant.type === 'DISCOUNTED').length,
+        );
         const promoCode = bookingRequest.promoCodeId ? (promoById.get(bookingRequest.promoCodeId) ?? null) : null;
         const giftCard = bookingRequest.giftCardId ? (giftById.get(bookingRequest.giftCardId) ?? null) : null;
         const gqlOffers = [];
@@ -97,6 +123,17 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
                 serverRuntime.db,
                 menusByOfferId.get(offer.bookingRequestOfferId) ?? [],
             );
+            const offerAddons = addonsByOfferId.get(offer.bookingRequestOfferId) ?? [];
+            const selectedAddonCostLines = offerAddons
+                .filter((addon) => addon.customerSelected)
+                .map((addon) => ({
+                    title: addon.title,
+                    amountCents: bookingRequestOfferAddonLineAmountCents({
+                        pricingUnit: addon.pricingUnit,
+                        priceCents: addon.priceCents,
+                        paidParticipants,
+                    }),
+                }));
             gqlOffers.push(
                 toGqlUserBookingRequestOffer({
                     offer,
@@ -105,6 +142,8 @@ export async function userBookingRequestHydrate(rows: BookingRequest[], serverRu
                     locale: 'de',
                     cook,
                     suggestedMenus,
+                    addons: offerAddons.map(toGqlPublicCookOfferAddon),
+                    selectedAddonCostLines,
                     callBookings: callBookingsByOfferId.get(offer.bookingRequestOfferId) ?? [],
                     promoCode,
                     giftCard,

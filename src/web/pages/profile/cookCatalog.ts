@@ -6,6 +6,7 @@ import {
     EyeIcon,
     FileOutputIcon,
     MapPinIcon,
+    PackagePlusIcon,
     PhoneIcon,
     RadarIcon,
     UtensilsIcon,
@@ -23,6 +24,7 @@ export type CookNavSlug =
     | 'public'
     | 'meals'
     | 'menus'
+    | 'offer-addons'
     | 'wallet'
     | 'calls';
 
@@ -114,6 +116,17 @@ export const COOK_NAV_ROUTES: readonly CookNavRoute[] = [
         title: { de: 'Menüs', en: 'Menus' },
         description: { de: 'Deine Menüs verwalten.', en: 'Manage your menus.' },
         icon: BookOpenIcon,
+    },
+    {
+        slug: 'offer-addons',
+        path: '/profile/offer-addons',
+        to: '/{-$locale}/profile/offer-addons',
+        title: { de: 'Zusatzleistungen', en: 'Offer extras' },
+        description: {
+            de: 'Optionale Leistungen für deine Angebote, etwa Wein oder eine Torte.',
+            en: 'Optional extras for your offers, such as wine or cake.',
+        },
+        icon: PackagePlusIcon,
     },
     {
         slug: 'wallet',

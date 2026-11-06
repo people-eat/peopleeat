@@ -127,6 +127,9 @@ enum ChatMessageBookingRequestOfferEventType {
     COOK_CHANGED_PRICE
     SYSTEM_CHANGED_PRICE
     ADMIN_CHANGED_PRICE
+    COOK_CHANGED_ADDONS
+    USER_CHANGED_ADDON_SELECTION
+    ADMIN_CHANGED_ADDONS
     ADMIN_ACCEPTANCE_UPDATED
     ADMIN_PAYMENT_SCHEDULE_UPDATED
     ADMIN_CONFIGURED_MENU_UPDATED
@@ -700,6 +703,75 @@ type CookMenu {
     courseMealOptionImages: [String!]!
 }
 
+enum OfferAddonPricingUnit {
+    FLAT
+    PER_PERSON
+}
+
+enum OfferAddonInclusion {
+    OPTIONAL
+    REQUIRED
+}
+
+# Cook-owned offer addon (library or offer-scoped copy). Soft-deleted never appear
+# on cook GraphQL. See docs/features/booking-offer-addons.md.
+type CookOfferAddon {
+    cookOfferAddonId: ID!
+    title: String!
+    description: String!
+    imageFileUploadId: ID
+    imageUrl: String
+    pricingUnit: OfferAddonPricingUnit!
+    priceCents: Int!
+    inclusion: OfferAddonInclusion!
+    customerSelected: Boolean!
+    copyOfCookOfferAddonId: ID
+    copyOfOfferAddonTemplateId: ID
+    bookingRequestOfferId: ID
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+# Customer / public view of an offer-attached addon.
+type PublicCookOfferAddon {
+    cookOfferAddonId: ID!
+    title: String!
+    description: String!
+    imageUrl: String
+    pricingUnit: OfferAddonPricingUnit!
+    priceCents: Int!
+    inclusion: OfferAddonInclusion!
+    customerSelected: Boolean!
+}
+
+# Admin platform template cooks can clone into their library.
+type AdminOfferAddonTemplate {
+    offerAddonTemplateId: ID!
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    pricingUnit: OfferAddonPricingUnit!
+    suggestedPriceCents: Int!
+    imageFileUploadId: ID
+    imageUrl: String
+    position: Int!
+    publishedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+# Published template visible to cooks for one-click clone (locale-resolved title).
+type OfferAddonTemplate {
+    offerAddonTemplateId: ID!
+    title: String!
+    description: String!
+    pricingUnit: OfferAddonPricingUnit!
+    suggestedPriceCents: Int!
+    imageUrl: String
+    position: Int!
+}
+
 type CookTravelOriginAddress {
     displayText: String!
     latitude: Latitude!
@@ -858,6 +930,12 @@ type Cook {
     # One count per criterion, same order. Soft-deleted never counted. Empty
     # criteria / oversized batches throw. See CookMealCriterion.
     mealsCounts(criteria: [CookMealCriterion!]!): [Int!]!
+    # Library (inventory) offer addons only — `bookingRequestOfferId` null.
+    # Soft-deleted omitted. Empty when BOOKING_REQUEST_OFFER_ADDONS is off.
+    offerAddons: [CookOfferAddon!]!
+    offerAddon(cookOfferAddonId: ID!): CookOfferAddon
+    # Published admin templates for one-click clone. Empty when toggle off.
+    offerAddonTemplates: [OfferAddonTemplate!]!
     # Library (inventory) menus only — `bookingRequestOfferId` null. Offer pickers
     # depend on this. See `offerMenus` for per-offer copies.
     menus: [CookMenu!]!
@@ -1249,6 +1327,15 @@ type CookMutation {
     mealUpsert(meal: CookMealUpsert): MutationResult!
     # Soft-delete — stamps `deletedAt`. Row stays for admin inspection.
     mealDelete(mealId: ID!): MutationResult!
+    # Insert or patch a library / offer-scoped addon. Gated by
+    # BOOKING_REQUEST_OFFER_ADDONS. Returns `cookOfferAddonId` as `referenceId`.
+    offerAddonUpsert(addon: CookOfferAddonUpsert): MutationResult!
+    # Soft-delete a library addon. Offer-scoped rows are detached via
+    # bookingRequestOfferAddonsUpdate instead.
+    offerAddonDelete(cookOfferAddonId: ID!): MutationResult!
+    # Clone a published admin template into the cook library. Returns new
+    # `cookOfferAddonId`. Gated by BOOKING_REQUEST_OFFER_ADDONS.
+    offerAddonCloneFromTemplate(offerAddonTemplateId: ID!): MutationResult!
     # Insert or patch a menu. Omit `menu` / `menuId` for a locale draft shell
     # (placeholder title + three empty default courses). Pass `menuId` to patch
     # inventory or negotiable offer-scoped copies. Returns `menuId` as
@@ -1311,6 +1398,9 @@ type CookMutation {
     bookingRequestOfferCookStatementRegenerate(bookingRequestOfferId: ID!): MutationResult!
     bookingRequestOfferPriceUpdate(input: BookingRequestOfferPriceUpdate!): MutationResult!
     bookingRequestOfferSuggestedMenusUpdate(input: BookingRequestOfferSuggestedMenusUpdate!): MutationResult!
+    # Replace offer-attached addon set from library ids (deep copy). Gated by
+    # BOOKING_REQUEST_OFFER_ADDONS. Reprices when selection totals change.
+    bookingRequestOfferAddonsUpdate(input: BookingRequestOfferAddonsUpdate!): MutationResult!
     # Append a free-text negotiation message (`COOK_MESSAGE_SIMPLE` event).
     # `referenceId` is the new `bookingRequestOfferEventId`.
     bookingRequestOfferChatMessageCreate(bookingRequestOfferId: ID!, message: String!, fileUploadIds: [ID!]): MutationResult!
@@ -1877,6 +1967,7 @@ type UserBookingRequestOffer {
     userRequestedMenuAdjustments: Boolean
     travelDistanceKm: Float
     menuPriceCents: Int!
+    addonPriceCents: Int!
     travelExpensesCents: Int!
     paymentProviderFeeCents: Int!
     platformFeePercentCook: Int!
@@ -1899,6 +1990,8 @@ type UserBookingRequestOffer {
     createdAt: DateTime!
     cook: PublicCook!
     suggestedMenus: [PublicCookMenu!]!
+    # Offer-attached extras the customer may toggle before accept.
+    addons: [PublicCookOfferAddon!]!
     callBookings: [CookCallSlotBooking!]!
     # Active LiveKit room for this offer, if any.
     activeCallRoom: BookingRequestOfferCallRoom
@@ -1964,6 +2057,7 @@ type CookBookingRequestOffer {
     userRequestedMenuAdjustments: Boolean
     travelDistanceKm: Float
     menuPriceCents: Int!
+    addonPriceCents: Int!
     travelExpensesCents: Int!
     paymentProviderFeeCents: Int!
     platformFeePercentCook: Int!
@@ -1985,6 +2079,7 @@ type CookBookingRequestOffer {
     cookStatementFileUpload: FileUpload
     createdAt: DateTime!
     suggestedMenus: [CookMenu!]!
+    addons: [CookOfferAddon!]!
     callBookings: [CookCallSlotBooking!]!
     activeCallRoom: BookingRequestOfferCallRoom
     bookingRequest: CookBookingRequestOfferContext!
@@ -2023,6 +2118,7 @@ type AdminBookingRequestOffer {
     userRequestedMenuAdjustments: Boolean
     travelDistanceKm: Float
     menuPriceCents: Int!
+    addonPriceCents: Int!
     travelExpensesCents: Int!
     paymentProviderFeeCents: Int!
     platformFeePercentCook: Int!
@@ -2055,6 +2151,7 @@ type AdminBookingRequestOffer {
     createdAt: DateTime!
     cook: AdminCook!
     suggestedMenus: [CookMenu!]!
+    addons: [CookOfferAddon!]!
     callBookings: [CookCallSlotBooking!]!
     activeCallRoom: BookingRequestOfferCallRoom
     # Admin-only: audio recordings + transcripts for rooms on this offer.
@@ -2497,6 +2594,9 @@ input BookingRequestOfferCreate {
     bookingRequestId: ID!
     # Optional — empty list is allowed (price-only offers).
     suggestedMenuIds: [ID!]!
+    # Optional library addon ids to attach (start unselected unless REQUIRED).
+    # Ignored when BOOKING_REQUEST_OFFER_ADDONS is off.
+    suggestedAddonIds: [ID!]
     menuPriceCents: Int!
     # Optional cook note seeded as COOK_MESSAGE_SIMPLE after COOK_CREATED. Phone numbers rejected.
     message: String
@@ -2511,6 +2611,40 @@ input BookingRequestOfferSuggestedMenusUpdate {
     bookingRequestOfferId: ID!
     # Inventory menu ids to copy onto the offer (empty = price-only).
     suggestedMenuIds: [ID!]!
+}
+
+input BookingRequestOfferAddonsUpdate {
+    bookingRequestOfferId: ID!
+    # Inventory addon ids to copy onto the offer (empty = no extras).
+    suggestedAddonIds: [ID!]!
+}
+
+input CookOfferAddonUpsert {
+    cookOfferAddonId: ID
+    title: String
+    description: String
+    imageFileUploadId: ID
+    pricingUnit: OfferAddonPricingUnit
+    priceCents: Int
+    inclusion: OfferAddonInclusion
+}
+
+input BookingRequestOfferAddonSelectionInput {
+    cookOfferAddonId: ID!
+    selected: Boolean!
+}
+
+input OfferAddonTemplateUpsert {
+    offerAddonTemplateId: ID
+    titleDe: String!
+    titleEn: String!
+    descriptionDe: String!
+    descriptionEn: String!
+    pricingUnit: OfferAddonPricingUnit!
+    suggestedPriceCents: Int!
+    imageFileUploadId: ID
+    position: Int
+    publishedAt: DateTime
 }
 
 # Course meal picks for `bookingRequestOfferConfiguredMenuCreate`.
@@ -2950,6 +3084,12 @@ type UserMutation {
         # Offer-scoped menu copy id (from `suggestedMenus`).
         menuId: ID!
         courseSelections: [BookingRequestOfferConfiguredMenuCourseSelectionInput!]!
+    ): MutationResult!
+    # Toggle optional offer addons before accept. Gated by
+    # BOOKING_REQUEST_OFFER_ADDONS. Reprices the offer. Returns offer id.
+    bookingRequestOfferAddonSelectionUpdate(
+        bookingRequestOfferId: ID!
+        selections: [BookingRequestOfferAddonSelectionInput!]!
     ): MutationResult!
     # Append a free-text negotiation message (`USER_MESSAGE_SIMPLE` event).
     # `referenceId` is the new `bookingRequestOfferEventId`.
@@ -4108,6 +4248,11 @@ type Admin {
     blogPosts: [AdminBlogPost!]!
     blogPost(blogPostId: ID!): AdminBlogPost
 
+    # Platform offer-addon templates (draft + published). See
+    # docs/features/booking-offer-addons.md.
+    offerAddonTemplates: [AdminOfferAddonTemplate!]!
+    offerAddonTemplate(offerAddonTemplateId: ID!): AdminOfferAddonTemplate
+
     # Fixed-route SEO (WebPages). Always one entry per `WebPageKey` (ghost
     # rows when no DB entry, filled from shared defaults). See
     # docs/features/admin-web-pages.md.
@@ -4712,6 +4857,12 @@ type AdminMutation {
     occasionTestimonialsUpdate(occasionId: ID!, entries: [TestimonialJunctionEntryInput!]!): MutationResult!
     blogPostUpsert(input: BlogPostUpsert!): MutationResult!
     blogPostDelete(blogPostId: ID!): MutationResult!
+    # Insert or patch a platform offer-addon template. Returns
+    # `offerAddonTemplateId` as `referenceId`.
+    offerAddonTemplateUpsert(input: OfferAddonTemplateUpsert!): MutationResult!
+    # Hard-delete a template. Cook clones keep `copyOfOfferAddonTemplateId` null
+    # after delete (ON DELETE SET NULL).
+    offerAddonTemplateDelete(offerAddonTemplateId: ID!): MutationResult!
     # Upserts fixed-route SEO title/description. Missing rows are created on
     # first write. Returns `webPageKey` as `referenceId`.
     webPageUpsert(webPageKey: WebPageKey!, input: AdminWebPageUpsert!): MutationResult!
@@ -5790,6 +5941,8 @@ enum FeatureToggleKey {
     BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE
     # Customer payment receipt and cook payout statement for a paid offer.
     BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS
+    # Optional priced extras (wine pairing, cutlery, …) on booking offers.
+    BOOKING_REQUEST_OFFER_ADDONS
     ASSISTANT_CUSTOMER
     ASSISTANT_COOK
     PUBLICATION_MEALS

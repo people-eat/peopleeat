@@ -67,6 +67,16 @@ fragment ProfileCookBookingRequestOfferPageUser on User {
                     courseId
                 }
             }
+            addonPriceCents
+            addons {
+                cookOfferAddonId
+                title
+                description
+                pricingUnit
+                priceCents
+                inclusion
+                customerSelected
+            }
             cookTestimonial {
                 ...CookTestimonialCardFields
             }

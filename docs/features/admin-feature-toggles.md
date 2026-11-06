@@ -120,6 +120,8 @@ Wired today:
 - **Offer preparations complete** (`BOOKING_REQUEST_OFFER_PREPARATIONS_COMPLETE`) — cook **shopping / preparations done** control that locks
   further customer amendments as a side effect; cook prep-complete rejects when off for the cook `userId`. Already-locked offers still show
   the lock state (and admin clear) when the toggle is off
+- **Offer extras** (`BOOKING_REQUEST_OFFER_ADDONS`) — cook extras library, attaching extras on offer create, and the guest picker before
+  accept. Admin templates stay available for ops. See [booking-offer-addons.md](./booking-offer-addons.md)
 - **Offer payment receipts** (`BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS`) — on a paid offer, a customer payment receipt and a cook payout
   statement. Each side follows that person's effective toggle. Neither document is an invoice. See
   [booking-payment-receipts.md](./booking-payment-receipts.md)

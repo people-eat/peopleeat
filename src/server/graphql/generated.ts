@@ -89,6 +89,8 @@ export interface GqlSAdmin {
     objectStorageObjects: GqlSAdminObjectStorageObjectPage;
     occasion?: Maybe<GqlSAdminOccasion>;
     occasions: Array<GqlSAdminOccasion>;
+    offerAddonTemplate?: Maybe<GqlSAdminOfferAddonTemplate>;
+    offerAddonTemplates: Array<GqlSAdminOfferAddonTemplate>;
     outboundEmail?: Maybe<GqlSAdminOutboundEmail>;
     outboundEmailCreations: Array<GqlSAdminTimeBucket>;
     outboundEmailPurposeStats: Array<GqlSAdminOutboundEmailPurposeStat>;
@@ -357,6 +359,10 @@ export type GqlSAdminObjectStorageObjectsArgs = {
 
 export type GqlSAdminOccasionArgs = {
     occasionId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminOfferAddonTemplateArgs = {
+    offerAddonTemplateId: Scalars['ID']['input'];
 };
 
 export type GqlSAdminOutboundEmailArgs = {
@@ -745,6 +751,8 @@ export interface GqlSAdminBookingRequestOccasionStat {
 export interface GqlSAdminBookingRequestOffer {
     __typename?: 'AdminBookingRequestOffer';
     activeCallRoom?: Maybe<GqlSBookingRequestOfferCallRoom>;
+    addonPriceCents: Scalars['Int']['output'];
+    addons: Array<GqlSCookOfferAddon>;
     adminChatReviewPendingCount: Scalars['Int']['output'];
     adminChatReviewedAt?: Maybe<Scalars['DateTime']['output']>;
     bookingRequest: GqlSAdminBookingRequest;
@@ -1489,6 +1497,8 @@ export interface GqlSAdminMutation {
     occasionDelete: GqlSMutationResult;
     occasionTestimonialsUpdate: GqlSMutationResult;
     occasionUpsert: GqlSMutationResult;
+    offerAddonTemplateDelete: GqlSMutationResult;
+    offerAddonTemplateUpsert: GqlSMutationResult;
     partnerCooksUpdate: GqlSMutationResult;
     partnerDelete: GqlSMutationResult;
     partnerTestimonialsUpdate: GqlSMutationResult;
@@ -1802,6 +1812,14 @@ export type GqlSAdminMutationOccasionUpsertArgs = {
     input: GqlSOccasionUpsert;
 };
 
+export type GqlSAdminMutationOfferAddonTemplateDeleteArgs = {
+    offerAddonTemplateId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationOfferAddonTemplateUpsertArgs = {
+    input: GqlSOfferAddonTemplateUpsert;
+};
+
 export type GqlSAdminMutationPartnerCooksUpdateArgs = {
     cookIds: Array<Scalars['ID']['input']>;
     partnerId: Scalars['ID']['input'];
@@ -1963,6 +1981,23 @@ export interface GqlSAdminOccasion {
     subHeadlineDe: Scalars['String']['output'];
     subHeadlineEn: Scalars['String']['output'];
     testimonials: Array<GqlSAdminPageTestimonial>;
+    titleDe: Scalars['String']['output'];
+    titleEn: Scalars['String']['output'];
+    updatedAt: Scalars['DateTime']['output'];
+}
+
+export interface GqlSAdminOfferAddonTemplate {
+    __typename?: 'AdminOfferAddonTemplate';
+    createdAt: Scalars['DateTime']['output'];
+    descriptionDe: Scalars['String']['output'];
+    descriptionEn: Scalars['String']['output'];
+    imageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    imageUrl?: Maybe<Scalars['String']['output']>;
+    offerAddonTemplateId: Scalars['ID']['output'];
+    position: Scalars['Int']['output'];
+    pricingUnit: GqlSOfferAddonPricingUnit;
+    publishedAt?: Maybe<Scalars['DateTime']['output']>;
+    suggestedPriceCents: Scalars['Int']['output'];
     titleDe: Scalars['String']['output'];
     titleEn: Scalars['String']['output'];
     updatedAt: Scalars['DateTime']['output'];
@@ -2549,6 +2584,16 @@ export type GqlSBookingRequestKitchenDetailsInput = {
 
 export type GqlSBookingRequestKitchenDetailsSpace = 'LIMITED' | 'NO' | 'YES';
 
+export type GqlSBookingRequestOfferAddonSelectionInput = {
+    cookOfferAddonId: Scalars['ID']['input'];
+    selected: Scalars['Boolean']['input'];
+};
+
+export type GqlSBookingRequestOfferAddonsUpdate = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+    suggestedAddonIds: Array<Scalars['ID']['input']>;
+};
+
 export interface GqlSBookingRequestOfferCallRecording {
     __typename?: 'BookingRequestOfferCallRecording';
     audioUrl?: Maybe<Scalars['String']['output']>;
@@ -2642,6 +2687,7 @@ export type GqlSBookingRequestOfferCreate = {
     bookingRequestId: Scalars['ID']['input'];
     menuPriceCents: Scalars['Int']['input'];
     message?: InputMaybe<Scalars['String']['input']>;
+    suggestedAddonIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     suggestedMenuIds: Array<Scalars['ID']['input']>;
 };
 
@@ -2772,6 +2818,7 @@ export interface GqlSChatMessageBookingRequestOfferEvent {
 export type GqlSChatMessageBookingRequestOfferEventType =
     | 'ADMIN_ACCEPTANCE_UPDATED'
     | 'ADMIN_CALL_STARTED'
+    | 'ADMIN_CHANGED_ADDONS'
     | 'ADMIN_CHANGED_PRICE'
     | 'ADMIN_CONFIGURED_MENU_UPDATED'
     | 'ADMIN_HANDED_OVER_CLOSED'
@@ -2788,6 +2835,7 @@ export type GqlSChatMessageBookingRequestOfferEventType =
     | 'COOK_CALL_SLOT_DECLINED'
     | 'COOK_CALL_SLOT_REQUESTED'
     | 'COOK_CALL_STARTED'
+    | 'COOK_CHANGED_ADDONS'
     | 'COOK_CHANGED_PRICE'
     | 'COOK_CREATED'
     | 'COOK_DECLINED'
@@ -2806,6 +2854,7 @@ export type GqlSChatMessageBookingRequestOfferEventType =
     | 'USER_CALL_SLOT_REQUESTED'
     | 'USER_CALL_STARTED'
     | 'USER_CANCELLED'
+    | 'USER_CHANGED_ADDON_SELECTION'
     | 'USER_CONFIGURED_MENU'
     | 'USER_DATE_UPDATED'
     | 'USER_DECLINED'
@@ -3197,6 +3246,9 @@ export interface GqlSCook {
     menusCounts: Array<Scalars['Int']['output']>;
     minimumParticipants?: Maybe<Scalars['Int']['output']>;
     minimumPriceAmount?: Maybe<Scalars['Int']['output']>;
+    offerAddon?: Maybe<GqlSCookOfferAddon>;
+    offerAddonTemplates: Array<GqlSOfferAddonTemplate>;
+    offerAddons: Array<GqlSCookOfferAddon>;
     offerMenus: Array<GqlSCookMenu>;
     onboardingSteps: Array<GqlSCookOnboardingStep>;
     presenceLinks?: Maybe<GqlSCookPresenceLinks>;
@@ -3260,6 +3312,10 @@ export type GqlSCookMenuArgs = {
 
 export type GqlSCookMenusCountsArgs = {
     criteria: Array<GqlSCookMenuCriterion>;
+};
+
+export type GqlSCookOfferAddonArgs = {
+    cookOfferAddonId: Scalars['ID']['input'];
 };
 
 export interface GqlSCookAnalytics {
@@ -3378,6 +3434,8 @@ export interface GqlSCookBookingRequestNotFound {
 export interface GqlSCookBookingRequestOffer {
     __typename?: 'CookBookingRequestOffer';
     activeCallRoom?: Maybe<GqlSBookingRequestOfferCallRoom>;
+    addonPriceCents: Scalars['Int']['output'];
+    addons: Array<GqlSCookOfferAddon>;
     bookingRequest: GqlSCookBookingRequestOfferContext;
     bookingRequestId: Scalars['ID']['output'];
     bookingRequestOfferId: Scalars['ID']['output'];
@@ -3675,6 +3733,7 @@ export interface GqlSCookMutation {
     bookingRequestGeneratedMenuApply: GqlSMutationResult;
     bookingRequestMenuEvaluationRefresh: GqlSMutationResult;
     bookingRequestOfferAccept: GqlSMutationResult;
+    bookingRequestOfferAddonsUpdate: GqlSMutationResult;
     bookingRequestOfferCallCreate: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlSMutationResult;
@@ -3708,6 +3767,9 @@ export interface GqlSCookMutation {
     menuSyncToTemplate: GqlSMutationResult;
     menuTitleDescriptionSuggest: GqlSCookMenuSuggestion;
     menuUpsert: GqlSMutationResult;
+    offerAddonCloneFromTemplate: GqlSMutationResult;
+    offerAddonDelete: GqlSMutationResult;
+    offerAddonUpsert: GqlSMutationResult;
     presenceLinksReplace: GqlSMutationResult;
     stripeDashboardUrlCreate: GqlSCookStripeDashboardResult;
     stripeOnboardingStart: GqlSCookStripeOnboardingResult;
@@ -3734,6 +3796,10 @@ export type GqlSCookMutationBookingRequestMenuEvaluationRefreshArgs = {
 
 export type GqlSCookMutationBookingRequestOfferAcceptArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
+};
+
+export type GqlSCookMutationBookingRequestOfferAddonsUpdateArgs = {
+    input: GqlSBookingRequestOfferAddonsUpdate;
 };
 
 export type GqlSCookMutationBookingRequestOfferCallCreateArgs = {
@@ -3878,6 +3944,18 @@ export type GqlSCookMutationMenuUpsertArgs = {
     menu?: InputMaybe<GqlSCookMenuUpsert>;
 };
 
+export type GqlSCookMutationOfferAddonCloneFromTemplateArgs = {
+    offerAddonTemplateId: Scalars['ID']['input'];
+};
+
+export type GqlSCookMutationOfferAddonDeleteArgs = {
+    cookOfferAddonId: Scalars['ID']['input'];
+};
+
+export type GqlSCookMutationOfferAddonUpsertArgs = {
+    addon?: InputMaybe<GqlSCookOfferAddonUpsert>;
+};
+
 export type GqlSCookMutationPresenceLinksReplaceArgs = {
     input: GqlSCookPresenceLinksUpdate;
 };
@@ -3889,6 +3967,34 @@ export type GqlSCookMutationStripeOnboardingStartArgs = {
 
 export type GqlSCookMutationUpdateArgs = {
     input: GqlSCookUpdate;
+};
+
+export interface GqlSCookOfferAddon {
+    __typename?: 'CookOfferAddon';
+    bookingRequestOfferId?: Maybe<Scalars['ID']['output']>;
+    cookOfferAddonId: Scalars['ID']['output'];
+    copyOfCookOfferAddonId?: Maybe<Scalars['ID']['output']>;
+    copyOfOfferAddonTemplateId?: Maybe<Scalars['ID']['output']>;
+    createdAt: Scalars['DateTime']['output'];
+    customerSelected: Scalars['Boolean']['output'];
+    description: Scalars['String']['output'];
+    imageFileUploadId?: Maybe<Scalars['ID']['output']>;
+    imageUrl?: Maybe<Scalars['String']['output']>;
+    inclusion: GqlSOfferAddonInclusion;
+    priceCents: Scalars['Int']['output'];
+    pricingUnit: GqlSOfferAddonPricingUnit;
+    title: Scalars['String']['output'];
+    updatedAt: Scalars['DateTime']['output'];
+}
+
+export type GqlSCookOfferAddonUpsert = {
+    cookOfferAddonId?: InputMaybe<Scalars['ID']['input']>;
+    description?: InputMaybe<Scalars['String']['input']>;
+    imageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    inclusion?: InputMaybe<GqlSOfferAddonInclusion>;
+    priceCents?: InputMaybe<Scalars['Int']['input']>;
+    pricingUnit?: InputMaybe<GqlSOfferAddonPricingUnit>;
+    title?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GqlSCookOnboardingStep = 'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
@@ -4077,6 +4183,7 @@ export type GqlSFeatureToggleKey =
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_KITCHEN_DETAILS'
+    | 'BOOKING_REQUEST_OFFER_ADDONS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
@@ -4345,6 +4452,34 @@ export type GqlSOccasionUpsert = {
     titleEn: Scalars['String']['input'];
 };
 
+export type GqlSOfferAddonInclusion = 'OPTIONAL' | 'REQUIRED';
+
+export type GqlSOfferAddonPricingUnit = 'FLAT' | 'PER_PERSON';
+
+export interface GqlSOfferAddonTemplate {
+    __typename?: 'OfferAddonTemplate';
+    description: Scalars['String']['output'];
+    imageUrl?: Maybe<Scalars['String']['output']>;
+    offerAddonTemplateId: Scalars['ID']['output'];
+    position: Scalars['Int']['output'];
+    pricingUnit: GqlSOfferAddonPricingUnit;
+    suggestedPriceCents: Scalars['Int']['output'];
+    title: Scalars['String']['output'];
+}
+
+export type GqlSOfferAddonTemplateUpsert = {
+    descriptionDe: Scalars['String']['input'];
+    descriptionEn: Scalars['String']['input'];
+    imageFileUploadId?: InputMaybe<Scalars['ID']['input']>;
+    offerAddonTemplateId?: InputMaybe<Scalars['ID']['input']>;
+    position?: InputMaybe<Scalars['Int']['input']>;
+    pricingUnit: GqlSOfferAddonPricingUnit;
+    publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
+    suggestedPriceCents: Scalars['Int']['input'];
+    titleDe: Scalars['String']['input'];
+    titleEn: Scalars['String']['input'];
+};
+
 export interface GqlSPageTestimonial {
     __typename?: 'PageTestimonial';
     index: Scalars['Int']['output'];
@@ -4526,6 +4661,18 @@ export interface GqlSPublicCookMenuCourse {
     courseId: Scalars['ID']['output'];
     mealOptions: Array<GqlSPublicCookMeal>;
     mealSelectionLimit?: Maybe<Scalars['Int']['output']>;
+    title: Scalars['String']['output'];
+}
+
+export interface GqlSPublicCookOfferAddon {
+    __typename?: 'PublicCookOfferAddon';
+    cookOfferAddonId: Scalars['ID']['output'];
+    customerSelected: Scalars['Boolean']['output'];
+    description: Scalars['String']['output'];
+    imageUrl?: Maybe<Scalars['String']['output']>;
+    inclusion: GqlSOfferAddonInclusion;
+    priceCents: Scalars['Int']['output'];
+    pricingUnit: GqlSOfferAddonPricingUnit;
     title: Scalars['String']['output'];
 }
 
@@ -4960,6 +5107,8 @@ export interface GqlSUserBookingRequestGiftCard {
 export interface GqlSUserBookingRequestOffer {
     __typename?: 'UserBookingRequestOffer';
     activeCallRoom?: Maybe<GqlSBookingRequestOfferCallRoom>;
+    addonPriceCents: Scalars['Int']['output'];
+    addons: Array<GqlSPublicCookOfferAddon>;
     bookingRequestId: Scalars['ID']['output'];
     bookingRequestOfferId: Scalars['ID']['output'];
     callBookings: Array<GqlSCookCallSlotBooking>;
@@ -5103,6 +5252,7 @@ export interface GqlSUserMutation {
     bookingRequestDiscountUpdate: GqlSMutationResult;
     bookingRequestKitchenDetailsUpdate: GqlSMutationResult;
     bookingRequestOfferAccept: GqlSMutationResult;
+    bookingRequestOfferAddonSelectionUpdate: GqlSMutationResult;
     bookingRequestOfferCallCreate: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallJoin: GqlSBookingRequestOfferCallTokenResult;
     bookingRequestOfferCallLeave: GqlSMutationResult;
@@ -5186,6 +5336,11 @@ export type GqlSUserMutationBookingRequestKitchenDetailsUpdateArgs = {
 
 export type GqlSUserMutationBookingRequestOfferAcceptArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
+};
+
+export type GqlSUserMutationBookingRequestOfferAddonSelectionUpdateArgs = {
+    bookingRequestOfferId: Scalars['ID']['input'];
+    selections: Array<GqlSBookingRequestOfferAddonSelectionInput>;
 };
 
 export type GqlSUserMutationBookingRequestOfferCallCreateArgs = {
@@ -5752,6 +5907,7 @@ export type GqlSResolversTypes = ResolversObject<{
             testimonials: Array<GqlSResolversTypes['AdminPageTestimonial']>;
         }
     >;
+    AdminOfferAddonTemplate: ResolverTypeWrapper<GqlSAdminOfferAddonTemplate>;
     AdminOutboundEmail: ResolverTypeWrapper<GqlSAdminOutboundEmail>;
     AdminOutboundEmailCriterion: GqlSAdminOutboundEmailCriterion;
     AdminOutboundEmailLifecycleStatus: GqlSAdminOutboundEmailLifecycleStatus;
@@ -5836,6 +5992,8 @@ export type GqlSResolversTypes = ResolversObject<{
     BookingRequestKitchenDetailsGuestTableware: GqlSBookingRequestKitchenDetailsGuestTableware;
     BookingRequestKitchenDetailsInput: GqlSBookingRequestKitchenDetailsInput;
     BookingRequestKitchenDetailsSpace: GqlSBookingRequestKitchenDetailsSpace;
+    BookingRequestOfferAddonSelectionInput: GqlSBookingRequestOfferAddonSelectionInput;
+    BookingRequestOfferAddonsUpdate: GqlSBookingRequestOfferAddonsUpdate;
     BookingRequestOfferCallRecording: ResolverTypeWrapper<GqlSBookingRequestOfferCallRecording>;
     BookingRequestOfferCallRecordingStatus: GqlSBookingRequestOfferCallRecordingStatus;
     BookingRequestOfferCallRoom: ResolverTypeWrapper<GqlSBookingRequestOfferCallRoom>;
@@ -5989,6 +6147,8 @@ export type GqlSResolversTypes = ResolversObject<{
     CookMenuSuggestionMealOptionType: GqlSCookMenuSuggestionMealOptionType;
     CookMenuUpsert: GqlSCookMenuUpsert;
     CookMutation: ResolverTypeWrapper<GqlSCookMutation>;
+    CookOfferAddon: ResolverTypeWrapper<GqlSCookOfferAddon>;
+    CookOfferAddonUpsert: GqlSCookOfferAddonUpsert;
     CookOnboardingStep: GqlSCookOnboardingStep;
     CookPresenceLinks: ResolverTypeWrapper<GqlSCookPresenceLinks>;
     CookPresenceLinksUpdate: GqlSCookPresenceLinksUpdate;
@@ -6049,6 +6209,10 @@ export type GqlSResolversTypes = ResolversObject<{
     OccasionFormatsSectionInput: GqlSOccasionFormatsSectionInput;
     OccasionPromo: ResolverTypeWrapper<GqlSOccasionPromo>;
     OccasionUpsert: GqlSOccasionUpsert;
+    OfferAddonInclusion: GqlSOfferAddonInclusion;
+    OfferAddonPricingUnit: GqlSOfferAddonPricingUnit;
+    OfferAddonTemplate: ResolverTypeWrapper<GqlSOfferAddonTemplate>;
+    OfferAddonTemplateUpsert: GqlSOfferAddonTemplateUpsert;
     PageTestimonial: ResolverTypeWrapper<Omit<GqlSPageTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['Testimonial'] }>;
     PartnerPromo: ResolverTypeWrapper<GqlSPartnerPromo>;
     PartnerUpsert: GqlSPartnerUpsert;
@@ -6078,6 +6242,7 @@ export type GqlSResolversTypes = ResolversObject<{
     PublicCookMeal: ResolverTypeWrapper<GqlSPublicCookMeal>;
     PublicCookMenu: ResolverTypeWrapper<GqlSPublicCookMenu>;
     PublicCookMenuCourse: ResolverTypeWrapper<GqlSPublicCookMenuCourse>;
+    PublicCookOfferAddon: ResolverTypeWrapper<GqlSPublicCookOfferAddon>;
     PublicCookQuery: ResolverTypeWrapper<GqlSPublicCookQuery>;
     PublicCookRating: ResolverTypeWrapper<GqlSPublicCookRating>;
     PublicLegal: ResolverTypeWrapper<GqlSPublicLegal>;
@@ -6337,6 +6502,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
         testimonials: Array<GqlSResolversParentTypes['AdminPageTestimonial']>;
     };
+    AdminOfferAddonTemplate: GqlSAdminOfferAddonTemplate;
     AdminOutboundEmail: GqlSAdminOutboundEmail;
     AdminOutboundEmailCriterion: GqlSAdminOutboundEmailCriterion;
     AdminOutboundEmailPurposeStat: GqlSAdminOutboundEmailPurposeStat;
@@ -6398,6 +6564,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
     BookingRequestCookPoolDetails: GqlSBookingRequestCookPoolDetails;
     BookingRequestKitchenDetails: GqlSBookingRequestKitchenDetails;
     BookingRequestKitchenDetailsInput: GqlSBookingRequestKitchenDetailsInput;
+    BookingRequestOfferAddonSelectionInput: GqlSBookingRequestOfferAddonSelectionInput;
+    BookingRequestOfferAddonsUpdate: GqlSBookingRequestOfferAddonsUpdate;
     BookingRequestOfferCallRecording: GqlSBookingRequestOfferCallRecording;
     BookingRequestOfferCallRoom: GqlSBookingRequestOfferCallRoom;
     BookingRequestOfferCallTokenResult: GqlSBookingRequestOfferCallTokenResult;
@@ -6512,6 +6680,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
     CookMenuSuggestion: GqlSCookMenuSuggestion;
     CookMenuUpsert: GqlSCookMenuUpsert;
     CookMutation: GqlSCookMutation;
+    CookOfferAddon: GqlSCookOfferAddon;
+    CookOfferAddonUpsert: GqlSCookOfferAddonUpsert;
     CookPresenceLinks: GqlSCookPresenceLinks;
     CookPresenceLinksUpdate: GqlSCookPresenceLinksUpdate;
     CookPresenceOtherProfile: GqlSCookPresenceOtherProfile;
@@ -6559,6 +6729,8 @@ export type GqlSResolversParentTypes = ResolversObject<{
     OccasionFormatsSectionInput: GqlSOccasionFormatsSectionInput;
     OccasionPromo: GqlSOccasionPromo;
     OccasionUpsert: GqlSOccasionUpsert;
+    OfferAddonTemplate: GqlSOfferAddonTemplate;
+    OfferAddonTemplateUpsert: GqlSOfferAddonTemplateUpsert;
     PageTestimonial: Omit<GqlSPageTestimonial, 'testimonial'> & { testimonial: GqlSResolversParentTypes['Testimonial'] };
     PartnerPromo: GqlSPartnerPromo;
     PartnerUpsert: GqlSPartnerUpsert;
@@ -6582,6 +6754,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     PublicCookMeal: GqlSPublicCookMeal;
     PublicCookMenu: GqlSPublicCookMenu;
     PublicCookMenuCourse: GqlSPublicCookMenuCourse;
+    PublicCookOfferAddon: GqlSPublicCookOfferAddon;
     PublicCookQuery: GqlSPublicCookQuery;
     PublicCookRating: GqlSPublicCookRating;
     PublicLegal: GqlSPublicLegal;
@@ -6989,6 +7162,13 @@ export type GqlSAdminResolvers<
         RequireFields<GqlSAdminOccasionArgs, 'occasionId'>
     >;
     occasions?: Resolver<Array<GqlSResolversTypes['AdminOccasion']>, ParentType, ContextType>;
+    offerAddonTemplate?: Resolver<
+        Maybe<GqlSResolversTypes['AdminOfferAddonTemplate']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminOfferAddonTemplateArgs, 'offerAddonTemplateId'>
+    >;
+    offerAddonTemplates?: Resolver<Array<GqlSResolversTypes['AdminOfferAddonTemplate']>, ParentType, ContextType>;
     outboundEmail?: Resolver<
         Maybe<GqlSResolversTypes['AdminOutboundEmail']>,
         ParentType,
@@ -7376,6 +7556,8 @@ export type GqlSAdminBookingRequestOfferResolvers<
     ParentType extends GqlSResolversParentTypes['AdminBookingRequestOffer'] = GqlSResolversParentTypes['AdminBookingRequestOffer'],
 > = ResolversObject<{
     activeCallRoom?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferCallRoom']>, ParentType, ContextType>;
+    addonPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    addons?: Resolver<Array<GqlSResolversTypes['CookOfferAddon']>, ParentType, ContextType>;
     adminChatReviewPendingCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     adminChatReviewedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     bookingRequest?: Resolver<GqlSResolversTypes['AdminBookingRequest'], ParentType, ContextType>;
@@ -8291,6 +8473,18 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationOccasionUpsertArgs, 'input'>
     >;
+    offerAddonTemplateDelete?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationOfferAddonTemplateDeleteArgs, 'offerAddonTemplateId'>
+    >;
+    offerAddonTemplateUpsert?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationOfferAddonTemplateUpsertArgs, 'input'>
+    >;
     partnerCooksUpdate?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -8488,6 +8682,25 @@ export type GqlSAdminOccasionResolvers<
     subHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     subHeadlineEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     testimonials?: Resolver<Array<GqlSResolversTypes['AdminPageTestimonial']>, ParentType, ContextType>;
+    titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+}>;
+
+export type GqlSAdminOfferAddonTemplateResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminOfferAddonTemplate'] = GqlSResolversParentTypes['AdminOfferAddonTemplate'],
+> = ResolversObject<{
+    createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    descriptionEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    imageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    imageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    offerAddonTemplateId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    position?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    pricingUnit?: Resolver<GqlSResolversTypes['OfferAddonPricingUnit'], ParentType, ContextType>;
+    publishedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
+    suggestedPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     titleDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     titleEn?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
@@ -9544,6 +9757,14 @@ export type GqlSCookResolvers<
     menusCounts?: Resolver<Array<GqlSResolversTypes['Int']>, ParentType, ContextType, RequireFields<GqlSCookMenusCountsArgs, 'criteria'>>;
     minimumParticipants?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
     minimumPriceAmount?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
+    offerAddon?: Resolver<
+        Maybe<GqlSResolversTypes['CookOfferAddon']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookOfferAddonArgs, 'cookOfferAddonId'>
+    >;
+    offerAddonTemplates?: Resolver<Array<GqlSResolversTypes['OfferAddonTemplate']>, ParentType, ContextType>;
+    offerAddons?: Resolver<Array<GqlSResolversTypes['CookOfferAddon']>, ParentType, ContextType>;
     offerMenus?: Resolver<Array<GqlSResolversTypes['CookMenu']>, ParentType, ContextType>;
     onboardingSteps?: Resolver<Array<GqlSResolversTypes['CookOnboardingStep']>, ParentType, ContextType>;
     presenceLinks?: Resolver<Maybe<GqlSResolversTypes['CookPresenceLinks']>, ParentType, ContextType>;
@@ -9696,6 +9917,8 @@ export type GqlSCookBookingRequestOfferResolvers<
     ParentType extends GqlSResolversParentTypes['CookBookingRequestOffer'] = GqlSResolversParentTypes['CookBookingRequestOffer'],
 > = ResolversObject<{
     activeCallRoom?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferCallRoom']>, ParentType, ContextType>;
+    addonPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    addons?: Resolver<Array<GqlSResolversTypes['CookOfferAddon']>, ParentType, ContextType>;
     bookingRequest?: Resolver<GqlSResolversTypes['CookBookingRequestOfferContext'], ParentType, ContextType>;
     bookingRequestId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     bookingRequestOfferId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
@@ -9980,6 +10203,12 @@ export type GqlSCookMutationResolvers<
         ContextType,
         RequireFields<GqlSCookMutationBookingRequestOfferAcceptArgs, 'bookingRequestOfferId'>
     >;
+    bookingRequestOfferAddonsUpdate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationBookingRequestOfferAddonsUpdateArgs, 'input'>
+    >;
     bookingRequestOfferCallCreate?: Resolver<
         GqlSResolversTypes['BookingRequestOfferCallTokenResult'],
         ParentType,
@@ -10168,6 +10397,24 @@ export type GqlSCookMutationResolvers<
         RequireFields<GqlSCookMutationMenuTitleDescriptionSuggestArgs, 'courses'>
     >;
     menuUpsert?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType, Partial<GqlSCookMutationMenuUpsertArgs>>;
+    offerAddonCloneFromTemplate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationOfferAddonCloneFromTemplateArgs, 'offerAddonTemplateId'>
+    >;
+    offerAddonDelete?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationOfferAddonDeleteArgs, 'cookOfferAddonId'>
+    >;
+    offerAddonUpsert?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        Partial<GqlSCookMutationOfferAddonUpsertArgs>
+    >;
     presenceLinksReplace?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
@@ -10183,6 +10430,26 @@ export type GqlSCookMutationResolvers<
     >;
     stripeStatusSync?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType>;
     update?: Resolver<GqlSResolversTypes['MutationResult'], ParentType, ContextType, RequireFields<GqlSCookMutationUpdateArgs, 'input'>>;
+}>;
+
+export type GqlSCookOfferAddonResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookOfferAddon'] = GqlSResolversParentTypes['CookOfferAddon'],
+> = ResolversObject<{
+    bookingRequestOfferId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    cookOfferAddonId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    copyOfCookOfferAddonId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    copyOfOfferAddonTemplateId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    customerSelected?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    imageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    imageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    inclusion?: Resolver<GqlSResolversTypes['OfferAddonInclusion'], ParentType, ContextType>;
+    priceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    pricingUnit?: Resolver<GqlSResolversTypes['OfferAddonPricingUnit'], ParentType, ContextType>;
+    title?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
 
 export type GqlSCookPresenceLinksResolvers<
@@ -10559,6 +10826,19 @@ export type GqlSOccasionPromoResolvers<
     redeemCode?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type GqlSOfferAddonTemplateResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['OfferAddonTemplate'] = GqlSResolversParentTypes['OfferAddonTemplate'],
+> = ResolversObject<{
+    description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    imageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    offerAddonTemplateId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    position?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    pricingUnit?: Resolver<GqlSResolversTypes['OfferAddonPricingUnit'], ParentType, ContextType>;
+    suggestedPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    title?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type GqlSPageTestimonialResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['PageTestimonial'] = GqlSResolversParentTypes['PageTestimonial'],
@@ -10734,6 +11014,20 @@ export type GqlSPublicCookMenuCourseResolvers<
     courseId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     mealOptions?: Resolver<Array<GqlSResolversTypes['PublicCookMeal']>, ParentType, ContextType>;
     mealSelectionLimit?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
+    title?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type GqlSPublicCookOfferAddonResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['PublicCookOfferAddon'] = GqlSResolversParentTypes['PublicCookOfferAddon'],
+> = ResolversObject<{
+    cookOfferAddonId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    customerSelected?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    imageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    inclusion?: Resolver<GqlSResolversTypes['OfferAddonInclusion'], ParentType, ContextType>;
+    priceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    pricingUnit?: Resolver<GqlSResolversTypes['OfferAddonPricingUnit'], ParentType, ContextType>;
     title?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
 }>;
 
@@ -11168,6 +11462,8 @@ export type GqlSUserBookingRequestOfferResolvers<
     ParentType extends GqlSResolversParentTypes['UserBookingRequestOffer'] = GqlSResolversParentTypes['UserBookingRequestOffer'],
 > = ResolversObject<{
     activeCallRoom?: Resolver<Maybe<GqlSResolversTypes['BookingRequestOfferCallRoom']>, ParentType, ContextType>;
+    addonPriceCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    addons?: Resolver<Array<GqlSResolversTypes['PublicCookOfferAddon']>, ParentType, ContextType>;
     bookingRequestId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     bookingRequestOfferId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     callBookings?: Resolver<Array<GqlSResolversTypes['CookCallSlotBooking']>, ParentType, ContextType>;
@@ -11350,6 +11646,12 @@ export type GqlSUserMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSUserMutationBookingRequestOfferAcceptArgs, 'bookingRequestOfferId'>
+    >;
+    bookingRequestOfferAddonSelectionUpdate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserMutationBookingRequestOfferAddonSelectionUpdateArgs, 'bookingRequestOfferId' | 'selections'>
     >;
     bookingRequestOfferCallCreate?: Resolver<
         GqlSResolversTypes['BookingRequestOfferCallTokenResult'],
@@ -11682,6 +11984,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminObjectStorageObject?: GqlSAdminObjectStorageObjectResolvers<ContextType>;
     AdminObjectStorageObjectPage?: GqlSAdminObjectStorageObjectPageResolvers<ContextType>;
     AdminOccasion?: GqlSAdminOccasionResolvers<ContextType>;
+    AdminOfferAddonTemplate?: GqlSAdminOfferAddonTemplateResolvers<ContextType>;
     AdminOutboundEmail?: GqlSAdminOutboundEmailResolvers<ContextType>;
     AdminOutboundEmailPurposeStat?: GqlSAdminOutboundEmailPurposeStatResolvers<ContextType>;
     AdminOutboundEmailRecipientStat?: GqlSAdminOutboundEmailRecipientStatResolvers<ContextType>;
@@ -11790,6 +12093,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     CookMenuOfferContext?: GqlSCookMenuOfferContextResolvers<ContextType>;
     CookMenuSuggestion?: GqlSCookMenuSuggestionResolvers<ContextType>;
     CookMutation?: GqlSCookMutationResolvers<ContextType>;
+    CookOfferAddon?: GqlSCookOfferAddonResolvers<ContextType>;
     CookPresenceLinks?: GqlSCookPresenceLinksResolvers<ContextType>;
     CookPresenceOtherProfile?: GqlSCookPresenceOtherProfileResolvers<ContextType>;
     CookStripeAccountDetails?: GqlSCookStripeAccountDetailsResolvers<ContextType>;
@@ -11822,6 +12126,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     OccasionFormatsCard?: GqlSOccasionFormatsCardResolvers<ContextType>;
     OccasionFormatsSection?: GqlSOccasionFormatsSectionResolvers<ContextType>;
     OccasionPromo?: GqlSOccasionPromoResolvers<ContextType>;
+    OfferAddonTemplate?: GqlSOfferAddonTemplateResolvers<ContextType>;
     PageTestimonial?: GqlSPageTestimonialResolvers<ContextType>;
     PartnerPromo?: GqlSPartnerPromoResolvers<ContextType>;
     PhoneNumber?: GraphQLScalarType;
@@ -11834,6 +12139,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     PublicCookMeal?: GqlSPublicCookMealResolvers<ContextType>;
     PublicCookMenu?: GqlSPublicCookMenuResolvers<ContextType>;
     PublicCookMenuCourse?: GqlSPublicCookMenuCourseResolvers<ContextType>;
+    PublicCookOfferAddon?: GqlSPublicCookOfferAddonResolvers<ContextType>;
     PublicCookQuery?: GqlSPublicCookQueryResolvers<ContextType>;
     PublicCookRating?: GqlSPublicCookRatingResolvers<ContextType>;
     PublicLegal?: GqlSPublicLegalResolvers<ContextType>;
@@ -12300,6 +12606,7 @@ export const GqlSBookingRequestStatusSchema: z.ZodType<
 export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'ADMIN_ACCEPTANCE_UPDATED'
     | 'ADMIN_CALL_STARTED'
+    | 'ADMIN_CHANGED_ADDONS'
     | 'ADMIN_CHANGED_PRICE'
     | 'ADMIN_CONFIGURED_MENU_UPDATED'
     | 'ADMIN_HANDED_OVER_CLOSED'
@@ -12316,6 +12623,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'COOK_CALL_SLOT_DECLINED'
     | 'COOK_CALL_SLOT_REQUESTED'
     | 'COOK_CALL_STARTED'
+    | 'COOK_CHANGED_ADDONS'
     | 'COOK_CHANGED_PRICE'
     | 'COOK_CREATED'
     | 'COOK_DECLINED'
@@ -12334,6 +12642,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_CALL_SLOT_REQUESTED'
     | 'USER_CALL_STARTED'
     | 'USER_CANCELLED'
+    | 'USER_CHANGED_ADDON_SELECTION'
     | 'USER_CONFIGURED_MENU'
     | 'USER_DATE_UPDATED'
     | 'USER_DECLINED'
@@ -12347,6 +12656,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_TIME_UPDATED',
     | 'ADMIN_ACCEPTANCE_UPDATED'
     | 'ADMIN_CALL_STARTED'
+    | 'ADMIN_CHANGED_ADDONS'
     | 'ADMIN_CHANGED_PRICE'
     | 'ADMIN_CONFIGURED_MENU_UPDATED'
     | 'ADMIN_HANDED_OVER_CLOSED'
@@ -12363,6 +12673,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'COOK_CALL_SLOT_DECLINED'
     | 'COOK_CALL_SLOT_REQUESTED'
     | 'COOK_CALL_STARTED'
+    | 'COOK_CHANGED_ADDONS'
     | 'COOK_CHANGED_PRICE'
     | 'COOK_CREATED'
     | 'COOK_DECLINED'
@@ -12381,6 +12692,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     | 'USER_CALL_SLOT_REQUESTED'
     | 'USER_CALL_STARTED'
     | 'USER_CANCELLED'
+    | 'USER_CHANGED_ADDON_SELECTION'
     | 'USER_CONFIGURED_MENU'
     | 'USER_DATE_UPDATED'
     | 'USER_DECLINED'
@@ -12395,6 +12707,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
 > = z.enum([
     'ADMIN_ACCEPTANCE_UPDATED',
     'ADMIN_CALL_STARTED',
+    'ADMIN_CHANGED_ADDONS',
     'ADMIN_CHANGED_PRICE',
     'ADMIN_CONFIGURED_MENU_UPDATED',
     'ADMIN_HANDED_OVER_CLOSED',
@@ -12411,6 +12724,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     'COOK_CALL_SLOT_DECLINED',
     'COOK_CALL_SLOT_REQUESTED',
     'COOK_CALL_STARTED',
+    'COOK_CHANGED_ADDONS',
     'COOK_CHANGED_PRICE',
     'COOK_CREATED',
     'COOK_DECLINED',
@@ -12429,6 +12743,7 @@ export const GqlSChatMessageBookingRequestOfferEventTypeSchema: z.ZodType<
     'USER_CALL_SLOT_REQUESTED',
     'USER_CALL_STARTED',
     'USER_CANCELLED',
+    'USER_CHANGED_ADDON_SELECTION',
     'USER_CONFIGURED_MENU',
     'USER_DATE_UPDATED',
     'USER_DECLINED',
@@ -12586,6 +12901,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_KITCHEN_DETAILS'
+    | 'BOOKING_REQUEST_OFFER_ADDONS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
@@ -12608,6 +12924,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
     | 'BOOKING_REQUEST_KITCHEN_DETAILS'
+    | 'BOOKING_REQUEST_OFFER_ADDONS'
     | 'BOOKING_REQUEST_OFFER_AMENDMENT'
     | 'BOOKING_REQUEST_OFFER_CHAT_REACTIONS'
     | 'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS'
@@ -12631,6 +12948,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'ASSISTANT_COOK',
     'ASSISTANT_CUSTOMER',
     'BOOKING_REQUEST_KITCHEN_DETAILS',
+    'BOOKING_REQUEST_OFFER_ADDONS',
     'BOOKING_REQUEST_OFFER_AMENDMENT',
     'BOOKING_REQUEST_OFFER_CHAT_REACTIONS',
     'BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS',
@@ -12660,6 +12978,10 @@ export const GqlSLegalDocumentKindSchema: z.ZodType<
 > = z.enum(['IMPRINT', 'PRIVACY_POLICY', 'TERMS_AND_CONDITIONS']);
 
 export const GqlSLocaleSchema: z.ZodType<'de' | 'en', 'de' | 'en'> = z.enum(['de', 'en']);
+
+export const GqlSOfferAddonInclusionSchema: z.ZodType<'OPTIONAL' | 'REQUIRED', 'OPTIONAL' | 'REQUIRED'> = z.enum(['OPTIONAL', 'REQUIRED']);
+
+export const GqlSOfferAddonPricingUnitSchema: z.ZodType<'FLAT' | 'PER_PERSON', 'FLAT' | 'PER_PERSON'> = z.enum(['FLAT', 'PER_PERSON']);
 
 export const GqlSSortDirectionSchema: z.ZodType<'ASC' | 'DESC', 'ASC' | 'DESC'> = z.enum(['ASC', 'DESC']);
 
@@ -13230,6 +13552,20 @@ export function GqlSBookingRequestKitchenDetailsInputSchema(): z.ZodObject<Prope
     });
 }
 
+export function GqlSBookingRequestOfferAddonSelectionInputSchema(): z.ZodObject<Properties<GqlSBookingRequestOfferAddonSelectionInput>> {
+    return z.object({
+        cookOfferAddonId: z.string(),
+        selected: z.boolean(),
+    });
+}
+
+export function GqlSBookingRequestOfferAddonsUpdateSchema(): z.ZodObject<Properties<GqlSBookingRequestOfferAddonsUpdate>> {
+    return z.object({
+        bookingRequestOfferId: z.string(),
+        suggestedAddonIds: z.array(z.string()),
+    });
+}
+
 export function GqlSBookingRequestOfferConfiguredMenuCourseInputSchema(): z.ZodObject<
     Properties<GqlSBookingRequestOfferConfiguredMenuCourseInput>
 > {
@@ -13271,6 +13607,7 @@ export function GqlSBookingRequestOfferCreateSchema(): z.ZodObject<Properties<Gq
         bookingRequestId: z.string(),
         menuPriceCents: z.number(),
         message: z.string().nullish(),
+        suggestedAddonIds: z.array(z.string()).nullish(),
         suggestedMenuIds: z.array(z.string()),
     });
 }
@@ -13474,6 +13811,18 @@ export function GqlSCookMenuUpsertSchema(): z.ZodObject<Properties<GqlSCookMenuU
     }) as z.ZodObject<Properties<GqlSCookMenuUpsert>>;
 }
 
+export function GqlSCookOfferAddonUpsertSchema(): z.ZodObject<Properties<GqlSCookOfferAddonUpsert>> {
+    return z.object({
+        cookOfferAddonId: z.string().nullish(),
+        description: z.string().nullish(),
+        imageFileUploadId: z.string().nullish(),
+        inclusion: GqlSOfferAddonInclusionSchema.nullish(),
+        priceCents: z.number().nullish(),
+        pricingUnit: GqlSOfferAddonPricingUnitSchema.nullish(),
+        title: z.string().nullish(),
+    });
+}
+
 export function GqlSCookPresenceLinksUpdateSchema(): z.ZodObject<Properties<GqlSCookPresenceLinksUpdate>> {
     return z.object({
         googleProfileUrl: z.string().nullish(),
@@ -13616,6 +13965,21 @@ export function GqlSOccasionUpsertSchema(): z.ZodObject<Properties<GqlSOccasionU
         titleDe: z.string(),
         titleEn: z.string(),
     }) as z.ZodObject<Properties<GqlSOccasionUpsert>>;
+}
+
+export function GqlSOfferAddonTemplateUpsertSchema(): z.ZodObject<Properties<GqlSOfferAddonTemplateUpsert>> {
+    return z.object({
+        descriptionDe: z.string(),
+        descriptionEn: z.string(),
+        imageFileUploadId: z.string().nullish(),
+        offerAddonTemplateId: z.string().nullish(),
+        position: z.number().nullish(),
+        pricingUnit: GqlSOfferAddonPricingUnitSchema,
+        publishedAt: z.date().nullish(),
+        suggestedPriceCents: z.number(),
+        titleDe: z.string(),
+        titleEn: z.string(),
+    });
 }
 
 export function GqlSPartnerUpsertSchema(): z.ZodObject<Properties<GqlSPartnerUpsert>> {

@@ -71,6 +71,8 @@ import { adminOccasionCooksUpdate } from '../commands/adminOccasionCooksUpdate';
 import { adminOccasionDelete } from '../commands/adminOccasionDelete';
 import { adminOccasionTestimonialsUpdate } from '../commands/adminOccasionTestimonialsUpdate';
 import { adminOccasionUpsert } from '../commands/adminOccasionUpsert';
+import { adminOfferAddonTemplateDelete } from '../commands/adminOfferAddonTemplateDelete';
+import { adminOfferAddonTemplateUpsert } from '../commands/adminOfferAddonTemplateUpsert';
 import { adminPartnerCooksUpdate } from '../commands/adminPartnerCooksUpdate';
 import { adminPartnerDelete } from '../commands/adminPartnerDelete';
 import { adminPartnerTestimonialsUpdate } from '../commands/adminPartnerTestimonialsUpdate';
@@ -123,6 +125,7 @@ import { cookBookingRequestDecline } from '../commands/cookBookingRequestDecline
 import { cookBookingRequestGeneratedMenuApply } from '../commands/cookBookingRequestGeneratedMenuApply';
 import { cookBookingRequestMenuEvaluationRefresh } from '../commands/cookBookingRequestMenuEvaluationRefresh';
 import { cookBookingRequestOfferAccept } from '../commands/cookBookingRequestOfferAccept';
+import { cookBookingRequestOfferAddonsUpdate } from '../commands/cookBookingRequestOfferAddonsUpdate';
 import { cookBookingRequestOfferCallCreate } from '../commands/cookBookingRequestOfferCallCreate';
 import { cookBookingRequestOfferCallJoin } from '../commands/cookBookingRequestOfferCallJoin';
 import { cookBookingRequestOfferCallLeave } from '../commands/cookBookingRequestOfferCallLeave';
@@ -154,6 +157,9 @@ import { cookMenuSuggestionFromText } from '../commands/cookMenuSuggestionFromTe
 import { cookMenuSyncToTemplate } from '../commands/cookMenuSyncToTemplate';
 import { cookMenuTitleDescriptionSuggest } from '../commands/cookMenuTitleDescriptionSuggest';
 import { cookMenuUpsert } from '../commands/cookMenuUpsert';
+import { cookOfferAddonCloneFromTemplate } from '../commands/cookOfferAddonCloneFromTemplate';
+import { cookOfferAddonDelete } from '../commands/cookOfferAddonDelete';
+import { cookOfferAddonUpsert } from '../commands/cookOfferAddonUpsert';
 import { cookPresenceLinksReplace } from '../commands/cookPresenceLinksReplace';
 import { cookStripeDashboardUrlCreate } from '../commands/cookStripeDashboardUrlCreate';
 import { cookStripeOnboardingStart } from '../commands/cookStripeOnboardingStart';
@@ -178,6 +184,7 @@ import { userBookingRequestCreate } from '../commands/userBookingRequestCreate';
 import { userBookingRequestDiscountUpdate } from '../commands/userBookingRequestDiscountUpdate';
 import { userBookingRequestKitchenDetailsUpdate } from '../commands/userBookingRequestKitchenDetailsUpdate';
 import { userBookingRequestOfferAccept } from '../commands/userBookingRequestOfferAccept';
+import { userBookingRequestOfferAddonSelectionUpdate } from '../commands/userBookingRequestOfferAddonSelectionUpdate';
 import { userBookingRequestOfferCallCreate } from '../commands/userBookingRequestOfferCallCreate';
 import { userBookingRequestOfferCallJoin } from '../commands/userBookingRequestOfferCallJoin';
 import { userBookingRequestOfferCallLeave } from '../commands/userBookingRequestOfferCallLeave';
@@ -299,6 +306,8 @@ import { adminOccasionCooksFindMany } from '../queries/adminOccasionCooksFindMan
 import { adminOccasionFindMany } from '../queries/adminOccasionFindMany';
 import { adminOccasionFindOne } from '../queries/adminOccasionFindOne';
 import { adminOccasionTestimonialsFindMany } from '../queries/adminOccasionTestimonialsFindMany';
+import { adminOfferAddonTemplateFindMany } from '../queries/adminOfferAddonTemplateFindMany';
+import { adminOfferAddonTemplateFindOne } from '../queries/adminOfferAddonTemplateFindOne';
 import { adminOutboundEmailAttachmentsFindMany } from '../queries/adminOutboundEmailAttachmentsFindMany';
 import { adminOutboundEmailCounts } from '../queries/adminOutboundEmailCounts';
 import { adminOutboundEmailCreationsFindMany } from '../queries/adminOutboundEmailCreationsFindMany';
@@ -369,6 +378,9 @@ import { cookMenuCounts } from '../queries/cookMenuCounts';
 import { cookMenuFindMany } from '../queries/cookMenuFindMany';
 import { cookMenuFindOne } from '../queries/cookMenuFindOne';
 import { cookMenuTemplateFindOne } from '../queries/cookMenuTemplateFindOne';
+import { cookOfferAddonFindMany } from '../queries/cookOfferAddonFindMany';
+import { cookOfferAddonFindOne } from '../queries/cookOfferAddonFindOne';
+import { cookOfferAddonTemplateFindMany } from '../queries/cookOfferAddonTemplateFindMany';
 import { cookOfferMenuFindMany } from '../queries/cookOfferMenuFindMany';
 import { cookOnboardingStepsFindMany } from '../queries/cookOnboardingStepsFindMany';
 import { cookPresenceLinksFindOne } from '../queries/cookPresenceLinksFindOne';
@@ -570,6 +582,8 @@ import type {
     GqlSAdminMutationOccasionDeleteArgs,
     GqlSAdminMutationOccasionTestimonialsUpdateArgs,
     GqlSAdminMutationOccasionUpsertArgs,
+    GqlSAdminMutationOfferAddonTemplateDeleteArgs,
+    GqlSAdminMutationOfferAddonTemplateUpsertArgs,
     GqlSAdminMutationPartnerCooksUpdateArgs,
     GqlSAdminMutationPartnerDeleteArgs,
     GqlSAdminMutationPartnerTestimonialsUpdateArgs,
@@ -597,6 +611,7 @@ import type {
     GqlSAdminObjectStorageObjectsArgs,
     GqlSAdminOccasion,
     GqlSAdminOccasionArgs,
+    GqlSAdminOfferAddonTemplateArgs,
     GqlSAdminOutboundEmail,
     GqlSAdminOutboundEmailArgs,
     GqlSAdminOutboundEmailCreationsArgs,
@@ -663,6 +678,7 @@ import type {
     GqlSCookMutationBookingRequestGeneratedMenuApplyArgs,
     GqlSCookMutationBookingRequestMenuEvaluationRefreshArgs,
     GqlSCookMutationBookingRequestOfferAcceptArgs,
+    GqlSCookMutationBookingRequestOfferAddonsUpdateArgs,
     GqlSCookMutationBookingRequestOfferCallCreateArgs,
     GqlSCookMutationBookingRequestOfferCallJoinArgs,
     GqlSCookMutationBookingRequestOfferCallLeaveArgs,
@@ -696,9 +712,13 @@ import type {
     GqlSCookMutationMenuSyncToTemplateArgs,
     GqlSCookMutationMenuTitleDescriptionSuggestArgs,
     GqlSCookMutationMenuUpsertArgs,
+    GqlSCookMutationOfferAddonCloneFromTemplateArgs,
+    GqlSCookMutationOfferAddonDeleteArgs,
+    GqlSCookMutationOfferAddonUpsertArgs,
     GqlSCookMutationPresenceLinksReplaceArgs,
     GqlSCookMutationStripeOnboardingStartArgs,
     GqlSCookMutationUpdateArgs,
+    GqlSCookOfferAddonArgs,
     GqlSCookTestimonial,
     GqlSCustomerTestimonial,
     GqlSHumanChatMessage,
@@ -756,6 +776,7 @@ import type {
     GqlSUserMutationBookingRequestDiscountUpdateArgs,
     GqlSUserMutationBookingRequestKitchenDetailsUpdateArgs,
     GqlSUserMutationBookingRequestOfferAcceptArgs,
+    GqlSUserMutationBookingRequestOfferAddonSelectionUpdateArgs,
     GqlSUserMutationBookingRequestOfferCallCreateArgs,
     GqlSUserMutationBookingRequestOfferCallJoinArgs,
     GqlSUserMutationBookingRequestOfferCallLeaveArgs,
@@ -1430,6 +1451,12 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             blogPost(_parent: GqlSAdmin, args: GqlSAdminBlogPostArgs) {
                 return adminBlogPostFindOne(args, serverRuntime);
             },
+            offerAddonTemplates(parent: GqlSAdmin, _: unknown, requestingSession: GqlSSession) {
+                return adminOfferAddonTemplateFindMany(parent, _, requestingSession, serverRuntime);
+            },
+            offerAddonTemplate(parent: GqlSAdmin, args: GqlSAdminOfferAddonTemplateArgs, requestingSession: GqlSSession) {
+                return adminOfferAddonTemplateFindOne(parent, args, requestingSession, serverRuntime);
+            },
             webPages() {
                 return adminWebPageFindMany(serverRuntime);
             },
@@ -1628,6 +1655,15 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             mealsCounts(parent: GqlSCook, args: GqlSCookMealsCountsArgs, requestingSession: GqlSSession) {
                 return cookMealCounts(parent, args, requestingSession, serverRuntime);
             },
+            offerAddons(parent: GqlSCook, _: unknown, requestingSession: GqlSSession) {
+                return cookOfferAddonFindMany(parent, _, requestingSession, serverRuntime);
+            },
+            offerAddon(parent: GqlSCook, args: GqlSCookOfferAddonArgs, requestingSession: GqlSSession) {
+                return cookOfferAddonFindOne(parent, args, requestingSession, serverRuntime);
+            },
+            offerAddonTemplates(parent: GqlSCook, _: unknown, requestingSession: GqlSSession) {
+                return cookOfferAddonTemplateFindMany(parent, _, requestingSession, serverRuntime);
+            },
             menus(parent: GqlSCook, _: unknown, requestingSession: GqlSSession) {
                 return cookMenuFindMany(parent, requestingSession, serverRuntime);
             },
@@ -1711,6 +1747,19 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             mealDelete(parent: GqlSCookMutation, args: GqlSCookMutationMealDeleteArgs, requestingSession: GqlSSession) {
                 return cookMealDelete(parent, args, requestingSession, serverRuntime);
+            },
+            offerAddonUpsert(parent: GqlSCookMutation, args: GqlSCookMutationOfferAddonUpsertArgs, requestingSession: GqlSSession) {
+                return cookOfferAddonUpsert(parent, args, requestingSession, serverRuntime);
+            },
+            offerAddonDelete(parent: GqlSCookMutation, args: GqlSCookMutationOfferAddonDeleteArgs, requestingSession: GqlSSession) {
+                return cookOfferAddonDelete(parent, args, requestingSession, serverRuntime);
+            },
+            offerAddonCloneFromTemplate(
+                parent: GqlSCookMutation,
+                args: GqlSCookMutationOfferAddonCloneFromTemplateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return cookOfferAddonCloneFromTemplate(parent, args, requestingSession, serverRuntime);
             },
             menuUpsert(parent: GqlSCookMutation, args: GqlSCookMutationMenuUpsertArgs, requestingSession: GqlSSession) {
                 return cookMenuUpsert(parent, args, requestingSession, serverRuntime);
@@ -1865,6 +1914,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return cookBookingRequestOfferSuggestedMenusUpdate(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferAddonsUpdate(
+                parent: GqlSCookMutation,
+                args: GqlSCookMutationBookingRequestOfferAddonsUpdateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return cookBookingRequestOfferAddonsUpdate(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestOfferTestimonialUpsert(
                 parent: GqlSCookMutation,
@@ -2196,6 +2252,20 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             },
             blogPostDelete(parent: GqlSAdminMutation, args: GqlSAdminMutationBlogPostDeleteArgs, requestingSession: GqlSSession) {
                 return adminBlogPostDelete(parent, args, requestingSession, serverRuntime);
+            },
+            offerAddonTemplateUpsert(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationOfferAddonTemplateUpsertArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminOfferAddonTemplateUpsert(parent, args, requestingSession, serverRuntime);
+            },
+            offerAddonTemplateDelete(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationOfferAddonTemplateDeleteArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminOfferAddonTemplateDelete(parent, args, requestingSession, serverRuntime);
             },
             webPageUpsert(parent: GqlSAdminMutation, args: GqlSAdminMutationWebPageUpsertArgs, requestingSession: GqlSSession) {
                 return adminWebPageUpsert(parent, args, requestingSession, serverRuntime);
@@ -2594,6 +2664,13 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return userBookingRequestOfferAccept(parent, args, requestingSession, serverRuntime);
+            },
+            bookingRequestOfferAddonSelectionUpdate(
+                parent: GqlSUserMutation,
+                args: GqlSUserMutationBookingRequestOfferAddonSelectionUpdateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return userBookingRequestOfferAddonSelectionUpdate(parent, args, requestingSession, serverRuntime);
             },
             bookingRequestOfferParticipantAmendmentCreate(
                 parent: GqlSUserMutation,

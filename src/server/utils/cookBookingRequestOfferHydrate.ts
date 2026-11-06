@@ -1,12 +1,15 @@
 import { and, asc, eq, inArray } from 'drizzle-orm';
 
+import { bookingRequestOfferAddonLineAmountCents } from '../../shared/bookingRequestOfferAddonPrice';
+import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
 import { DEFAULT_LOCALE } from '../../shared/locale';
-import { bookingRequestOffers, bookingRequestParticipants, cookCallSlotBookings, menus, promoCodes } from '../db/schema';
+import { bookingRequestOffers, bookingRequestParticipants, cookCallSlotBookings, cookOfferAddons, menus, promoCodes } from '../db/schema';
 import type { BookingRequest, BookingRequestOffer } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSCookBookingRequestOffer } from '../graphql/generated';
 import { toGqlCookBookingRequestOffer } from '../mappers/toGqlCookBookingRequestOffer';
 import { toGqlCookBookingRequestOfferContext } from '../mappers/toGqlCookBookingRequestOfferContext';
+import { toGqlCookOfferAddon } from '../mappers/toGqlCookOfferAddon';
 import { bookingRequestKitchenDetailsPhotosByRequestIdFind } from './bookingRequestKitchenDetailsPhotosHydrate';
 import { cookMenusWithCourses } from './cookMenuHydrate';
 import { publicUsersByIdFindMany } from './publicUserHydrate';
@@ -31,6 +34,7 @@ export async function cookBookingRequestOfferHydrate(
     const [
         callBookingRows,
         suggestedMenuRows,
+        offerAddonRows,
         siblingOffers,
         participantRows,
         publicUsersResult,
@@ -43,6 +47,7 @@ export async function cookBookingRequestOfferHydrate(
             .where(inArray(cookCallSlotBookings.bookingRequestOfferId, offerIds))
             .orderBy(asc(cookCallSlotBookings.startAt)),
         serverRuntime.db.select().from(menus).where(inArray(menus.bookingRequestOfferId, offerIds)),
+        serverRuntime.db.select().from(cookOfferAddons).where(inArray(cookOfferAddons.bookingRequestOfferId, offerIds)),
         serverRuntime.db
             .select()
             .from(bookingRequestOffers)
@@ -98,6 +103,14 @@ export async function cookBookingRequestOfferHydrate(
         menusByOfferId.set(menu.bookingRequestOfferId, list);
     }
 
+    const addonsByOfferId = new Map<string, typeof offerAddonRows>();
+    for (const addon of offerAddonRows) {
+        if (addon.bookingRequestOfferId == null) continue;
+        const list = addonsByOfferId.get(addon.bookingRequestOfferId) ?? [];
+        list.push(addon);
+        addonsByOfferId.set(addon.bookingRequestOfferId, list);
+    }
+
     const participantsByRequestId = new Map<string, typeof participantRows>();
     for (const participant of participantRows) {
         const list = participantsByRequestId.get(participant.bookingRequestId) ?? [];
@@ -114,6 +127,22 @@ export async function cookBookingRequestOfferHydrate(
             throw new Error(`cookBookingRequestOfferHydrate: customer user ${bookingRequest.userId} not found`);
         }
         const suggestedMenus = await cookMenusWithCourses(serverRuntime.db, menusByOfferId.get(offer.bookingRequestOfferId) ?? []);
+        const offerAddons = addonsByOfferId.get(offer.bookingRequestOfferId) ?? [];
+        const requestParticipants = participantsByRequestId.get(offer.bookingRequestId) ?? [];
+        const paidParticipants = bookingRequestPaidParticipants(
+            requestParticipants.filter((participant) => participant.type === 'ADULT').length,
+            requestParticipants.filter((participant) => participant.type === 'DISCOUNTED').length,
+        );
+        const selectedAddonCostLines = offerAddons
+            .filter((addon) => addon.customerSelected)
+            .map((addon) => ({
+                title: addon.title,
+                amountCents: bookingRequestOfferAddonLineAmountCents({
+                    pricingUnit: addon.pricingUnit,
+                    priceCents: addon.priceCents,
+                    paidParticipants,
+                }),
+            }));
         result.push(
             toGqlCookBookingRequestOffer({
                 offer,
@@ -122,11 +151,13 @@ export async function cookBookingRequestOfferHydrate(
                 locale: DEFAULT_LOCALE,
                 callBookings: callBookingsByOfferId.get(offer.bookingRequestOfferId) ?? [],
                 suggestedMenus,
-                participants: participantsByRequestId.get(offer.bookingRequestId) ?? [],
-                participantCount: (participantsByRequestId.get(offer.bookingRequestId) ?? []).length,
+                addons: offerAddons.map(toGqlCookOfferAddon),
+                selectedAddonCostLines,
+                participants: requestParticipants,
+                participantCount: requestParticipants.length,
                 bookingRequestContext: toGqlCookBookingRequestOfferContext({
                     bookingRequest,
-                    participants: participantsByRequestId.get(offer.bookingRequestId) ?? [],
+                    participants: requestParticipants,
                     acceptedOfferPaymentStatus: acceptedOffer?.paymentStatus ?? null,
                     offerCount: totalOfferCountByRequestId.get(offer.bookingRequestId) ?? 0,
                     locale: DEFAULT_LOCALE,

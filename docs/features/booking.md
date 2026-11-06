@@ -10,6 +10,7 @@ cook payout. **Go-live path is live** (form, pool, offers, chat, payment, calls,
 | Create request (form, publication, customer list/detail/edit/cancel) | [booking-request-create.md](./booking-request-create.md)                           |
 | Alternative 2-step plan funnel (partner deep-link + non-partner)     | [booking-request-plan.md](./booking-request-plan.md)                               |
 | Offers (cook pool, offer create, dual accept, negotiation surfaces)  | [booking-offers.md](./booking-offers.md)                                           |
+| Offer extras (templates, cook library, guest picker)                 | [booking-offer-addons.md](./booking-offer-addons.md)                               |
 | AI menu evaluation (pool open ranking + inventory recommendation)    | [ai-menu-evaluation.md](./ai-menu-evaluation.md)                                   |
 | AI adjusted request message (cook-facing rewrite after create)       | [ai-booking-request-message.md](./ai-booking-request-message.md)                   |
 | Offer chat (timeline, concierge presence, phone block, chat emails)  | [booking-offer-chat.md](./booking-offer-chat.md)                                   |

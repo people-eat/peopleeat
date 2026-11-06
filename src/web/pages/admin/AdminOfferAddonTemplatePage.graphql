@@ -1,0 +1,51 @@
+fragment AdminOfferAddonTemplatePageAdmin on Admin {
+    adminId
+    offerAddonTemplate(offerAddonTemplateId: $offerAddonTemplateId) {
+        offerAddonTemplateId
+        titleDe
+        titleEn
+        descriptionDe
+        descriptionEn
+        pricingUnit
+        suggestedPriceCents
+        imageFileUploadId
+        imageUrl
+        position
+        publishedAt
+        updatedAt
+    }
+}
+
+query AdminOfferAddonTemplatePage($offerAddonTemplateId: ID!) {
+    currentSession {
+        user {
+            admin {
+                ...AdminOfferAddonTemplatePageAdmin
+            }
+        }
+    }
+}
+
+subscription AdminOfferAddonTemplatePageUpdates($offerAddonTemplateId: ID!) {
+    adminUpdates {
+        ...AdminOfferAddonTemplatePageAdmin
+    }
+}
+
+mutation AdminOfferAddonTemplatePageUpsert($input: OfferAddonTemplateUpsert!) {
+    admin {
+        offerAddonTemplateUpsert(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
+mutation AdminOfferAddonTemplatePageDelete($offerAddonTemplateId: ID!) {
+    admin {
+        offerAddonTemplateDelete(offerAddonTemplateId: $offerAddonTemplateId) {
+            success
+            referenceId
+        }
+    }
+}

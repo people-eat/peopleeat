@@ -84,6 +84,7 @@ import { useTimeZone } from '../../hooks/useTimeZone';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { localePath } from '../../utils/locale';
 import type { Locale } from '../../utils/locale';
+import { offerAddonPriceLabel } from '../../utils/offerAddonPriceLabel';
 import { cookStubRouteBySlug } from './cookCatalog';
 
 const offersListRoute = cookStubRouteBySlug('booking-request-offers');
@@ -845,6 +846,30 @@ function OfferTabPanel({
                     </Button>
                 ) : null}
             </section>
+
+            {offer.addons.length > 0 ? (
+                <section className="grid gap-4">
+                    <h2 className="font-semibold text-foreground">{{ de: 'Zusatzleistungen', en: 'Offer extras' }[locale]}</h2>
+                    <ul className="grid gap-3">
+                        {offer.addons.map((addon) => (
+                            <li key={addon.cookOfferAddonId} className="grid gap-1 rounded-xl border p-4">
+                                <p className="font-medium text-foreground">{addon.title}</p>
+                                {addon.description.trim().length > 0 ? (
+                                    <p className="text-sm text-muted-foreground">{addon.description}</p>
+                                ) : null}
+                                <p className="text-sm text-muted-foreground">
+                                    {offerAddonPriceLabel(addon.priceCents, addon.pricingUnit, locale)}
+                                    {addon.inclusion === 'REQUIRED'
+                                        ? ` (${{ de: 'enthalten', en: 'included' }[locale]})`
+                                        : addon.customerSelected
+                                          ? ` (${{ de: 'ausgewählt', en: 'selected' }[locale]})`
+                                          : ` (${{ de: 'nicht ausgewählt', en: 'not selected' }[locale]})`}
+                                </p>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            ) : null}
 
             <section className="grid gap-4">
                 {canReAccept && offer.priceAutoAdjustReason != null ? (

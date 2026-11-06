@@ -1,10 +1,13 @@
 import { and, asc, eq, inArray } from 'drizzle-orm';
 
+import { bookingRequestOfferAddonLineAmountCents } from '../../shared/bookingRequestOfferAddonPrice';
+import { bookingRequestPaidParticipants } from '../../shared/bookingRequestOfferPriceGuidance';
 import { DEFAULT_LOCALE } from '../../shared/locale';
 import {
     bookingRequestOffers,
     bookingRequestParticipants,
     cookCallSlotBookings,
+    cookOfferAddons,
     cooks,
     giftCards,
     menus,
@@ -16,6 +19,7 @@ import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminBookingRequestOffer } from '../graphql/generated';
 import { toGqlAdminBookingRequestOffer } from '../mappers/toGqlAdminBookingRequestOffer';
 import { toGqlAdminCook } from '../mappers/toGqlAdminCook';
+import { toGqlCookOfferAddon } from '../mappers/toGqlCookOfferAddon';
 import { bookingRequestOfferCookPayoutReadinessResolve } from './bookingRequestOfferCookPayoutReadinessResolve';
 import { cookMenusWithCourses } from './cookMenuHydrate';
 
@@ -51,34 +55,36 @@ export async function adminBookingRequestOfferHydrate(
     );
 
     const offerIds = rows.map((row) => row.offer.bookingRequestOfferId);
-    const [callBookingRows, suggestedMenuRows, siblingOffers, participantRows, promoCodeRows, giftCardRows] = await Promise.all([
-        serverRuntime.db
-            .select()
-            .from(cookCallSlotBookings)
-            .where(inArray(cookCallSlotBookings.bookingRequestOfferId, offerIds))
-            .orderBy(asc(cookCallSlotBookings.startAt)),
-        serverRuntime.db.select().from(menus).where(inArray(menus.bookingRequestOfferId, offerIds)),
-        serverRuntime.db
-            .select()
-            .from(bookingRequestOffers)
-            .where(
-                and(
-                    inArray(bookingRequestOffers.bookingRequestId, bookingRequestIds),
-                    eq(bookingRequestOffers.userAccepted, true),
-                    eq(bookingRequestOffers.cookAccepted, true),
+    const [callBookingRows, suggestedMenuRows, offerAddonRows, siblingOffers, participantRows, promoCodeRows, giftCardRows] =
+        await Promise.all([
+            serverRuntime.db
+                .select()
+                .from(cookCallSlotBookings)
+                .where(inArray(cookCallSlotBookings.bookingRequestOfferId, offerIds))
+                .orderBy(asc(cookCallSlotBookings.startAt)),
+            serverRuntime.db.select().from(menus).where(inArray(menus.bookingRequestOfferId, offerIds)),
+            serverRuntime.db.select().from(cookOfferAddons).where(inArray(cookOfferAddons.bookingRequestOfferId, offerIds)),
+            serverRuntime.db
+                .select()
+                .from(bookingRequestOffers)
+                .where(
+                    and(
+                        inArray(bookingRequestOffers.bookingRequestId, bookingRequestIds),
+                        eq(bookingRequestOffers.userAccepted, true),
+                        eq(bookingRequestOffers.cookAccepted, true),
+                    ),
                 ),
-            ),
-        serverRuntime.db
-            .select()
-            .from(bookingRequestParticipants)
-            .where(inArray(bookingRequestParticipants.bookingRequestId, bookingRequestIds)),
-        promoCodeIds.length === 0
-            ? Promise.resolve([])
-            : serverRuntime.db.select().from(promoCodes).where(inArray(promoCodes.promoCodeId, promoCodeIds)),
-        giftCardIds.length === 0
-            ? Promise.resolve([])
-            : serverRuntime.db.select().from(giftCards).where(inArray(giftCards.giftCardId, giftCardIds)),
-    ]);
+            serverRuntime.db
+                .select()
+                .from(bookingRequestParticipants)
+                .where(inArray(bookingRequestParticipants.bookingRequestId, bookingRequestIds)),
+            promoCodeIds.length === 0
+                ? Promise.resolve([])
+                : serverRuntime.db.select().from(promoCodes).where(inArray(promoCodes.promoCodeId, promoCodeIds)),
+            giftCardIds.length === 0
+                ? Promise.resolve([])
+                : serverRuntime.db.select().from(giftCards).where(inArray(giftCards.giftCardId, giftCardIds)),
+        ]);
 
     const promoById = new Map(promoCodeRows.map((row) => [row.promoCodeId, row]));
     const giftById = new Map(giftCardRows.map((row) => [row.giftCardId, row]));
@@ -97,6 +103,14 @@ export async function adminBookingRequestOfferHydrate(
         const list = menusByOfferId.get(menu.bookingRequestOfferId) ?? [];
         list.push(menu);
         menusByOfferId.set(menu.bookingRequestOfferId, list);
+    }
+
+    const addonsByOfferId = new Map<string, typeof offerAddonRows>();
+    for (const addon of offerAddonRows) {
+        if (addon.bookingRequestOfferId == null) continue;
+        const list = addonsByOfferId.get(addon.bookingRequestOfferId) ?? [];
+        list.push(addon);
+        addonsByOfferId.set(addon.bookingRequestOfferId, list);
     }
 
     const participantsByRequestId = new Map<string, typeof participantRows>();
@@ -121,6 +135,21 @@ export async function adminBookingRequestOfferHydrate(
         const promoCode = bookingRequest.promoCodeId ? (promoById.get(bookingRequest.promoCodeId) ?? null) : null;
         const giftCard = bookingRequest.giftCardId ? (giftById.get(bookingRequest.giftCardId) ?? null) : null;
         const requestParticipants = participantsByRequestId.get(offer.bookingRequestId) ?? [];
+        const offerAddons = addonsByOfferId.get(offer.bookingRequestOfferId) ?? [];
+        const paidParticipants = bookingRequestPaidParticipants(
+            requestParticipants.filter((participant) => participant.type === 'ADULT').length,
+            requestParticipants.filter((participant) => participant.type === 'DISCOUNTED').length,
+        );
+        const selectedAddonCostLines = offerAddons
+            .filter((addon) => addon.customerSelected)
+            .map((addon) => ({
+                title: addon.title,
+                amountCents: bookingRequestOfferAddonLineAmountCents({
+                    pricingUnit: addon.pricingUnit,
+                    priceCents: addon.priceCents,
+                    paidParticipants,
+                }),
+            }));
         result.push(
             toGqlAdminBookingRequestOffer({
                 offer,
@@ -130,6 +159,8 @@ export async function adminBookingRequestOfferHydrate(
                 cook: toGqlAdminCook(cookMatched.cook, cookMatched.status),
                 callBookings: callBookingsByOfferId.get(offer.bookingRequestOfferId) ?? [],
                 suggestedMenus,
+                addons: offerAddons.map(toGqlCookOfferAddon),
+                selectedAddonCostLines,
                 cookPayoutReady: readiness.cookPayoutReady,
                 cookPayoutBlockedReason: readiness.cookPayoutBlockedReason,
                 promoCode,

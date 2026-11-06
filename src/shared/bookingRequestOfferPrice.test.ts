@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    bookingRequestOfferAddonPriceCentsCalculate,
     bookingRequestOfferMenuPriceScaleByPaidParticipants,
     bookingRequestOfferPriceCalculate,
     bookingRequestSuggestedCookPayoutCents,
@@ -15,11 +16,26 @@ describe('bookingRequestOfferPriceCalculate', () => {
 
         expect(result.platformFeePercentCook).toBe(18);
         expect(result.platformFeePercentCustomer).toBe(4);
+        expect(result.addonPriceCents).toBe(0);
         expect(result.platformFeeCentsCook).toBe(3_600);
         expect(result.platformFeeCentsCustomer).toBe(800);
         expect(result.payoutCentsCook).toBe(18_900);
         expect(result.totalWithoutDiscountsCentsCustomer).toBeGreaterThan(20_000 + 800 + 2_500);
         expect(result.paymentProviderFeeCents).toBe(result.totalWithoutDiscountsCentsCustomer - (20_000 + 800 + 2_500));
+    });
+
+    it('includes selected addon cents in the fee base', () => {
+        const result = bookingRequestOfferPriceCalculate({
+            menuPriceCents: 20_000,
+            addonPriceCents: 5_000,
+            travelExpensesCents: 2_500,
+        });
+
+        expect(result.addonPriceCents).toBe(5_000);
+        expect(result.platformFeeCentsCook).toBe(4_500);
+        expect(result.platformFeeCentsCustomer).toBe(1_000);
+        expect(result.payoutCentsCook).toBe(23_000);
+        expect(result.paymentProviderFeeCents).toBe(result.totalWithoutDiscountsCentsCustomer - (25_000 + 1_000 + 2_500));
     });
 
     it('applies sticky per-offer platform fee percent overrides', () => {
@@ -60,6 +76,29 @@ describe('bookingRequestOfferPriceCalculate', () => {
                 platformFeePercentCook: 101,
             }),
         ).toThrow(/platform fee percent/);
+    });
+});
+
+describe('bookingRequestOfferAddonPriceCentsCalculate', () => {
+    it('sums flat and per-person selected lines', () => {
+        expect(
+            bookingRequestOfferAddonPriceCentsCalculate(
+                [
+                    { pricingUnit: 'FLAT', priceCents: 3_000, selected: true },
+                    { pricingUnit: 'PER_PERSON', priceCents: 1_500, selected: true },
+                    { pricingUnit: 'FLAT', priceCents: 9_999, selected: false },
+                ],
+                4,
+            ),
+        ).toBe(3_000 + 6_000);
+    });
+
+    it('treats omitted selected as included', () => {
+        expect(bookingRequestOfferAddonPriceCentsCalculate([{ pricingUnit: 'FLAT', priceCents: 1_000 }], 2)).toBe(1_000);
+    });
+
+    it('rejects negative paid participants', () => {
+        expect(() => bookingRequestOfferAddonPriceCentsCalculate([], -1)).toThrow(/paidParticipants/);
     });
 });
 

@@ -13,7 +13,8 @@ Visiting `/admin/*` as an admin shows:
   - **Messaging** — Offer chat review ([admin-offer-chat-review.md](./admin-offer-chat-review.md)), WhatsApp ([whatsapp.md](./whatsapp.md)),
     outbound emails, assistant chats.
   - **Commerce** — Voucher purchases, promo codes.
-  - **Catalog** — Meals, menus, reviews ([cook-meals.md](./cook-meals.md), …).
+  - **Catalog** — Meals, menus, offer extras ([booking-offer-addons.md](./booking-offer-addons.md)), reviews
+    ([cook-meals.md](./cook-meals.md), …).
   - **Content** — Websites (SEO), blog, cities, partners, occasions, Legal texts (privacy, terms, imprint).
   - **Insights** — Analytics, sessions, map.
   - **Platform** — Scheduled jobs ([admin-jobs.md](./admin-jobs.md)), logs, AI generations, feature toggles

@@ -5,13 +5,20 @@ import {
     stripeDashboardSetupIntentUrl,
 } from '../../shared';
 import { environmentVariables } from '../env/environmentVariablesCreate';
-import type { GqlSAdminBookingRequestOffer, GqlSAdminCook, GqlSAdminCookPayoutBlockedReason, GqlSCookMenu } from '../graphql/generated';
+import type {
+    GqlSAdminBookingRequestOffer,
+    GqlSAdminCook,
+    GqlSAdminCookPayoutBlockedReason,
+    GqlSCookMenu,
+    GqlSCookOfferAddon,
+} from '../graphql/generated';
 import { bookingRequestOfferFieldsBuild } from './bookingRequestOfferFieldsBuild';
 import type { BookingRequestOfferFieldsInput } from './bookingRequestOfferFieldsBuild';
 
 export type ToGqlAdminBookingRequestOfferInput = BookingRequestOfferFieldsInput & {
     cook: GqlSAdminCook;
     suggestedMenus?: GqlSCookMenu[];
+    addons?: GqlSCookOfferAddon[];
     cookPayoutReady: boolean;
     cookPayoutBlockedReason: GqlSAdminCookPayoutBlockedReason | null;
 };
@@ -35,7 +42,7 @@ function adminOfferStripeDashboardUrls(paymentData: BookingRequestOfferFieldsInp
 }
 
 export function toGqlAdminBookingRequestOffer(input: ToGqlAdminBookingRequestOfferInput): GqlSAdminBookingRequestOffer {
-    const { cook, suggestedMenus = [], cookPayoutReady, cookPayoutBlockedReason, ...fieldsInput } = input;
+    const { cook, suggestedMenus = [], addons = [], cookPayoutReady, cookPayoutBlockedReason, ...fieldsInput } = input;
     return {
         ...bookingRequestOfferFieldsBuild(fieldsInput),
         ...adminOfferStripeDashboardUrls(fieldsInput.offer.paymentData),
@@ -43,6 +50,7 @@ export function toGqlAdminBookingRequestOffer(input: ToGqlAdminBookingRequestOff
         adminChatReviewedAt: fieldsInput.offer.adminChatReviewedAt ?? null,
         cook,
         suggestedMenus,
+        addons,
         cookPayoutReady,
         cookPayoutBlockedReason,
         customerReceiptFileUpload: null,

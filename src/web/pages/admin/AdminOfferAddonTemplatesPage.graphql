@@ -1,0 +1,38 @@
+fragment AdminOfferAddonTemplatesPageAdmin on Admin {
+    adminId
+    offerAddonTemplates {
+        offerAddonTemplateId
+        titleDe
+        titleEn
+        pricingUnit
+        suggestedPriceCents
+        position
+        publishedAt
+        updatedAt
+    }
+}
+
+query AdminOfferAddonTemplatesPage {
+    currentSession {
+        user {
+            admin {
+                ...AdminOfferAddonTemplatesPageAdmin
+            }
+        }
+    }
+}
+
+subscription AdminOfferAddonTemplatesPageUpdates {
+    adminUpdates {
+        ...AdminOfferAddonTemplatesPageAdmin
+    }
+}
+
+mutation AdminOfferAddonTemplatesPageUpsert($input: OfferAddonTemplateUpsert!) {
+    admin {
+        offerAddonTemplateUpsert(input: $input) {
+            success
+            referenceId
+        }
+    }
+}

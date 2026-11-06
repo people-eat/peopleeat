@@ -90,6 +90,8 @@ export function toGqlCook(row: Cook, userStatus: UserStatus): GqlSCook {
         callSlotBookings: [],
         meals: [],
         mealsCounts: [],
+        offerAddons: [],
+        offerAddonTemplates: [],
         menus: [],
         offerMenus: [],
         menusCounts: [],

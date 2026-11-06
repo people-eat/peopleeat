@@ -275,6 +275,7 @@ export async function adminBookingRequestOfferHandover(
         const price = bookingRequestOfferPriceCalculate({
             menuPriceCents,
             travelExpensesCents,
+            addonPriceCents: sourceOffer.addonPriceCents,
             ...(input.copyPrice
                 ? {
                       platformFeePercentCook: sourceOffer.platformFeePercentCook,

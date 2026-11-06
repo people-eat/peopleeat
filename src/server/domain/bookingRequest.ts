@@ -447,6 +447,9 @@ const bookingRequestOfferEventTypes = [
     'COOK_CHANGED_PRICE',
     'SYSTEM_CHANGED_PRICE',
     'ADMIN_CHANGED_PRICE',
+    'COOK_CHANGED_ADDONS',
+    'USER_CHANGED_ADDON_SELECTION',
+    'ADMIN_CHANGED_ADDONS',
     'ADMIN_ACCEPTANCE_UPDATED',
     'ADMIN_PAYMENT_SCHEDULE_UPDATED',
     'ADMIN_CONFIGURED_MENU_UPDATED',
@@ -476,6 +479,7 @@ export type BookingRequestOfferEventType = (typeof bookingRequestOfferEventTypes
  */
 export const bookingRequestOfferEventTypesAdminOnly = [
     'ADMIN_CHANGED_PRICE',
+    'ADMIN_CHANGED_ADDONS',
     'ADMIN_ACCEPTANCE_UPDATED',
     'ADMIN_PAYMENT_SCHEDULE_UPDATED',
     'ADMIN_CONFIGURED_MENU_UPDATED',
@@ -494,6 +498,8 @@ type BookingRequestOfferPriceSnapshot = {
     platformFeePercentCustomer: number;
     travelExpensesCents: number;
     menuPriceCents: number;
+    /** Selected addon total; omitted on pre-addon historical event payloads. */
+    addonPriceCents?: number;
     paymentProviderFeeCents: number;
     platformFeeCentsCook: number;
     platformFeeCentsCustomer: number;
@@ -677,6 +683,24 @@ type BookingRequestOfferEventPayloadByType = {
     ADMIN_CHANGED_PRICE: {
         priceBefore: BookingRequestOfferPriceSnapshot;
         priceAfter: BookingRequestOfferPriceSnapshot;
+    };
+    COOK_CHANGED_ADDONS: {
+        priceBefore: BookingRequestOfferPriceSnapshot;
+        priceAfter: BookingRequestOfferPriceSnapshot;
+        addonTitlesBefore: string[];
+        addonTitlesAfter: string[];
+    };
+    USER_CHANGED_ADDON_SELECTION: {
+        priceBefore: BookingRequestOfferPriceSnapshot;
+        priceAfter: BookingRequestOfferPriceSnapshot;
+        selectedTitlesBefore: string[];
+        selectedTitlesAfter: string[];
+    };
+    ADMIN_CHANGED_ADDONS: {
+        priceBefore: BookingRequestOfferPriceSnapshot;
+        priceAfter: BookingRequestOfferPriceSnapshot;
+        addonTitlesBefore: string[];
+        addonTitlesAfter: string[];
     };
     ADMIN_ACCEPTANCE_UPDATED: {
         userAcceptedBefore: boolean | null;

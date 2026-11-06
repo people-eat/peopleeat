@@ -4,6 +4,7 @@ export function bookingRequestOfferPriceSnapshot(offer: {
     platformFeePercentCustomer: number;
     travelExpensesCents: number;
     menuPriceCents: number;
+    addonPriceCents?: number;
     paymentProviderFeeCents: number;
     platformFeeCentsCook: number;
     platformFeeCentsCustomer: number;
@@ -14,6 +15,7 @@ export function bookingRequestOfferPriceSnapshot(offer: {
     platformFeePercentCustomer: number;
     travelExpensesCents: number;
     menuPriceCents: number;
+    addonPriceCents: number;
     paymentProviderFeeCents: number;
     platformFeeCentsCook: number;
     platformFeeCentsCustomer: number;
@@ -25,6 +27,7 @@ export function bookingRequestOfferPriceSnapshot(offer: {
         platformFeePercentCustomer: offer.platformFeePercentCustomer,
         travelExpensesCents: offer.travelExpensesCents,
         menuPriceCents: offer.menuPriceCents,
+        addonPriceCents: offer.addonPriceCents ?? 0,
         paymentProviderFeeCents: offer.paymentProviderFeeCents,
         platformFeeCentsCook: offer.platformFeeCentsCook,
         platformFeeCentsCustomer: offer.platformFeeCentsCustomer,

@@ -35,6 +35,10 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
         de: 'Angebot: Zahlungsbeleg und Abrechnung',
         en: 'Offer: payment receipt and payout statement',
     },
+    BOOKING_REQUEST_OFFER_ADDONS: {
+        de: 'Angebot: Zusatzleistungen',
+        en: 'Offer: extras',
+    },
     ASSISTANT_CUSTOMER: { de: 'Assistent: Kunden', en: 'Assistant: customer' },
     ASSISTANT_COOK: { de: 'Assistent: Köche', en: 'Assistant: cook' },
     PUBLICATION_MEALS: { de: 'Veröffentlichung: Gerichte', en: 'Publication: meals' },
@@ -113,6 +117,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     BOOKING_REQUEST_OFFER_PAYMENT_RECEIPTS: {
         de: 'Erstellt für bezahlte Angebote einen Zahlungsbeleg für den Gast und eine Abrechnung für den Koch. Beides ist keine Rechnung. Der Koch stellt weiter selbst die Rechnung an den Gast. Gilt jeweils für den Gast oder den Koch.',
         en: 'Creates a payment receipt for the guest and a payout statement for the cook on paid offers. Neither is an invoice. The cook still invoices the guest. Applies separately to the guest and the cook.',
+    },
+    BOOKING_REQUEST_OFFER_ADDONS: {
+        de: 'Erlaubt Köchen Zusatzleistungen (Weinbegleitung, Besteck, …) anzubieten und Gästen diese vor der Annahme optional zu wählen. Admin-Vorlagen und Koch-Bibliothek bleiben für Ops sichtbar.',
+        en: 'Lets cooks offer extras (wine pairing, cutlery, …) and guests optionally select them before accept. Admin templates and cook library stay visible for ops.',
     },
     ASSISTANT_CUSTOMER: {
         de: 'Zeigt den Kunden-Assistenten im Profil (Trigger, Seitenleiste und Route).',
