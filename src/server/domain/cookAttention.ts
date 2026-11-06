@@ -70,6 +70,7 @@ export function cookOnboardingStepsDerive(input: {
     cookingPhilosophy: string | null;
     mealCount: number;
     menuCount: number;
+    defaultOfferMessage: string | null;
     offerCount: number;
 }): CookOnboardingStep[] {
     const steps: CookOnboardingStep[] = [];
@@ -86,6 +87,7 @@ export function cookOnboardingStepsDerive(input: {
     if (!profileComplete) steps.push('CHEF_PROFILE');
     if (input.mealCount === 0) steps.push('FIRST_MEAL');
     if (input.menuCount === 0) steps.push('FIRST_MENU');
+    if (input.defaultOfferMessage == null) steps.push('DEFAULT_OFFER_MESSAGE');
     if (input.isApprovedByAdmin && input.stripeStatus === 'COMPLETED' && input.offerCount === 0) steps.push('FIRST_OFFER');
 
     return steps;

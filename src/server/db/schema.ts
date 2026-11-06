@@ -458,6 +458,9 @@ export const cooks = pgTable(
         // Private review links (website, Instagram, Google, other platforms).
         // Null when the cook has saved nothing. Never copied onto PublicCook.
         presenceLinks: jsonb().$type<CookPresenceLinks | null>(),
+        // Offer-create personal-note default. Null = not configured (onboarding +
+        // platform greeting). Empty string = start blank each offer. See cook-profile.md.
+        defaultOfferMessage: text(),
         travelExpensesAmount: integer().notNull().default(25),
         maximumTravelDistance: integer(),
         minimumPriceAmount: integer(),

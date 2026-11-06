@@ -2,6 +2,7 @@ import { tool } from 'ai';
 import { and, eq } from 'drizzle-orm';
 
 import { isCookCallDurationMinutes } from '../../shared/cookCallAvailability';
+import { cookDefaultOfferMessageNormalize } from '../../shared/cookDefaultOfferMessage';
 import { isCookingPhilosophy, isCuisineStyle } from '../../shared/cookProfile';
 import { textNormalizeProse, textNormalizeTitled } from '../../shared/textNormalize';
 import type { Cook } from '../db/schema';
@@ -35,6 +36,7 @@ export async function cookUpdate(
         logoFileUploadId,
         cuisineStyle,
         cookingPhilosophy,
+        defaultOfferMessage,
         exactTravelOriginAddress,
         travelExpensesAmount,
         maximumTravelDistance,
@@ -55,6 +57,7 @@ export async function cookUpdate(
         hasLogo ||
         cuisineStyle !== undefined ||
         cookingPhilosophy !== undefined ||
+        defaultOfferMessage !== undefined ||
         exactTravelOriginAddress !== undefined ||
         travelExpensesAmount !== undefined ||
         maximumTravelDistance !== undefined ||
@@ -122,6 +125,9 @@ export async function cookUpdate(
     }
     if (cookingPhilosophy !== undefined) {
         patch.cookingPhilosophy = cookingPhilosophy === null || cookingPhilosophy.trim() === '' ? null : cookingPhilosophy.trim();
+    }
+    if (defaultOfferMessage !== undefined && defaultOfferMessage !== null) {
+        patch.defaultOfferMessage = cookDefaultOfferMessageNormalize(defaultOfferMessage, 'cookUpdate');
     }
     let travelOriginChanged = false;
     if (resolvedAddress) {
@@ -250,9 +256,10 @@ export function toolCookUpdate({
 }) {
     return tool({
         description: [
-            'Update the signed-in cook profile (visibility, stage name, biography, logo, cuisine, travel, pricing, call settings).',
+            'Update the signed-in cook profile (visibility, stage name, biography, logo, cuisine, travel, pricing, call settings, default offer note).',
             'Only include fields that should change. cuisineStyle / cookingPhilosophy must be catalog values (or null to clear).',
             'stageName is an optional public display name (null / blank clears).',
+            'defaultOfferMessage is the offer-create personal note (empty string starts each offer blank; omit to leave unchanged; null is ignored).',
             'logoFileUploadId links a previously uploaded square image (null clears). Use exactTravelOriginAddress as a free-text address.',
         ].join(' '),
         // Codegen Zod schemas are runtime-compatible; AI SDK brands differ across Zod majors.

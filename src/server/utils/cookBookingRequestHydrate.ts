@@ -82,6 +82,7 @@ export async function cookBookingRequestHydrate(
                 participants: participantsByRequest.get(bookingRequest.bookingRequestId) ?? [],
                 offers: [],
                 customerLocale: customerLocales.get(bookingRequest.userId) ?? DEFAULT_LOCALE,
+                defaultOfferMessage: cook.defaultOfferMessage,
                 user,
                 estimatedTravelDistanceKm,
                 estimatedTravelExpensesCents,

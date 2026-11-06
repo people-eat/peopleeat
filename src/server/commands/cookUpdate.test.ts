@@ -101,6 +101,54 @@ describe('cookUpdate', () => {
         expect(serverRuntime.jobs.enqueue).not.toHaveBeenCalled();
     });
 
+    it('saves an empty default offer message without collapsing it to null', async () => {
+        const { serverRuntime, requestingSession, user } = await setupCook();
+
+        await cookUpdate(cookMutationParent(user.userId), { input: { defaultOfferMessage: '  ' } }, requestingSession, serverRuntime);
+
+        const [row] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
+        expect(row!.defaultOfferMessage).toBe('');
+    });
+
+    it('saves a default offer message and ignores GraphQL null so onboarding stays closed', async () => {
+        const { serverRuntime, requestingSession, user } = await setupCook({ defaultOfferMessage: 'Hallo' });
+
+        await cookUpdate(
+            cookMutationParent(user.userId),
+            { input: { defaultOfferMessage: 'Hallo Gast' } },
+            requestingSession,
+            serverRuntime,
+        );
+        const [saved] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
+        expect(saved!.defaultOfferMessage).toBe('Hallo Gast');
+
+        await cookUpdate(cookMutationParent(user.userId), { input: { defaultOfferMessage: null } }, requestingSession, serverRuntime);
+        const [unchanged] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
+        expect(unchanged!.defaultOfferMessage).toBe('Hallo Gast');
+    });
+
+    it('leaves a null default offer message untouched when the field is omitted', async () => {
+        const { serverRuntime, requestingSession, user } = await setupCook();
+
+        await cookUpdate(cookMutationParent(user.userId), { input: { isVisible: true } }, requestingSession, serverRuntime);
+
+        const [row] = await testDb.select().from(cooks).where(eq(cooks.cookId, user.userId));
+        expect(row!.defaultOfferMessage).toBeNull();
+    });
+
+    it('rejects a default offer message that contains a phone number', async () => {
+        const { serverRuntime, requestingSession, user } = await setupCook();
+
+        await expect(
+            cookUpdate(
+                cookMutationParent(user.userId),
+                { input: { defaultOfferMessage: 'Call me at +4915123456789' } },
+                requestingSession,
+                serverRuntime,
+            ),
+        ).rejects.toThrow(/phone number/);
+    });
+
     it('does not enqueue a summary job when biography is unchanged in the patch', async () => {
         const { serverRuntime, requestingSession, user } = await setupCook();
 

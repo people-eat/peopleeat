@@ -39,6 +39,7 @@ export async function cookOnboardingStepsFindMany(
             cookingPhilosophy: row.cook.cookingPhilosophy,
             mealCount,
             menuCount,
+            defaultOfferMessage: row.cook.defaultOfferMessage ?? null,
             offerCount: offerRow?.value ?? 0,
         });
     } catch (error) {

@@ -1,0 +1,1 @@
+ALTER TABLE "Cooks" ADD COLUMN "defaultOfferMessage" text;

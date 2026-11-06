@@ -99,9 +99,18 @@ describe('cookAttentionCopy', () => {
 describe('cookOnboardingStepCopy', () => {
     it('gives every step its own title', () => {
         // Act
-        const titles = (['WALLET', 'TRAVEL', 'PROFILE_PICTURE', 'CHEF_PROFILE', 'FIRST_MEAL', 'FIRST_MENU', 'FIRST_OFFER'] as const).map(
-            (step) => cookOnboardingStepCopy(step, 'de').title,
-        );
+        const titles = (
+            [
+                'WALLET',
+                'TRAVEL',
+                'PROFILE_PICTURE',
+                'CHEF_PROFILE',
+                'FIRST_MEAL',
+                'FIRST_MENU',
+                'DEFAULT_OFFER_MESSAGE',
+                'FIRST_OFFER',
+            ] as const
+        ).map((step) => cookOnboardingStepCopy(step, 'de').title);
 
         // Assert
         expect(new Set(titles).size).toBe(titles.length);

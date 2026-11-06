@@ -37,6 +37,7 @@ fragment AdminUserCook on AdminCook {
     }
     cuisineStyle
     cookingPhilosophy
+    defaultOfferMessage
     presenceLinks {
         websiteUrl
         instagramUrl

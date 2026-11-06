@@ -19,7 +19,8 @@ export type UserAttentionKind =
 
 export type CookAttentionKind = 'APPROVAL_PENDING' | 'WALLET_RESET' | 'OFFER_CHAT_UNREAD' | 'CALL_UPCOMING';
 
-export type CookOnboardingStep = 'WALLET' | 'TRAVEL' | 'PROFILE_PICTURE' | 'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER';
+export type CookOnboardingStep =
+    'WALLET' | 'TRAVEL' | 'PROFILE_PICTURE' | 'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'DEFAULT_OFFER_MESSAGE' | 'FIRST_OFFER';
 
 export type AttentionCopy = {
     title: string;
@@ -268,6 +269,15 @@ export function cookOnboardingStepCopy(step: CookOnboardingStep, locale: Locale)
                     en: 'Combine meals into menus you can suggest to customers.',
                 }[locale],
                 actionLabel: { de: 'Zu den Menüs', en: 'Go to menus' }[locale],
+            };
+        case 'DEFAULT_OFFER_MESSAGE':
+            return {
+                title: { de: 'Begrüßungstext für Angebote', en: 'Set your default offer note' }[locale],
+                body: {
+                    de: 'Lege fest, mit welchem Text neue Angebote starten, oder lass das Feld leer für eine persönliche Nachricht jedes Mal.',
+                    en: 'Choose the note that prefills new offers, or leave it empty to write a personal message each time.',
+                }[locale],
+                actionLabel: { de: 'Zum Profil', en: 'Edit profile' }[locale],
             };
         case 'FIRST_OFFER':
             return {

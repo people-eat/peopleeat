@@ -1034,6 +1034,7 @@ export interface GqlCAdminCook {
     cookingPhilosophy?: Maybe<Scalars['String']['output']>;
     createdAt: Scalars['DateTime']['output'];
     cuisineStyle?: Maybe<Scalars['String']['output']>;
+    defaultOfferMessage?: Maybe<Scalars['String']['output']>;
     exactTravelOriginAddress?: Maybe<GqlCCookTravelOriginAddress>;
     featuredOn: Array<GqlCAdminCookFeaturedLanding>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
@@ -3233,6 +3234,7 @@ export interface GqlCCook {
     cookId: Scalars['ID']['output'];
     cookingPhilosophy?: Maybe<Scalars['String']['output']>;
     cuisineStyle?: Maybe<Scalars['String']['output']>;
+    defaultOfferMessage?: Maybe<Scalars['String']['output']>;
     exactTravelOriginAddress?: Maybe<GqlCCookTravelOriginAddress>;
     isApprovedByAdmin: Scalars['Boolean']['output'];
     isVisible: Scalars['Boolean']['output'];
@@ -4000,7 +4002,8 @@ export type GqlCCookOfferAddonUpsert = {
     title?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type GqlCCookOnboardingStep = 'CHEF_PROFILE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
+export type GqlCCookOnboardingStep =
+    'CHEF_PROFILE' | 'DEFAULT_OFFER_MESSAGE' | 'FIRST_MEAL' | 'FIRST_MENU' | 'FIRST_OFFER' | 'PROFILE_PICTURE' | 'TRAVEL' | 'WALLET';
 
 export interface GqlCCookPresenceLinks {
     __typename?: 'CookPresenceLinks';
@@ -4134,6 +4137,7 @@ export type GqlCCookUpdate = {
     callSchedulingEnabled?: InputMaybe<Scalars['Boolean']['input']>;
     cookingPhilosophy?: InputMaybe<Scalars['String']['input']>;
     cuisineStyle?: InputMaybe<Scalars['String']['input']>;
+    defaultOfferMessage?: InputMaybe<Scalars['String']['input']>;
     exactTravelOriginAddress?: InputMaybe<Scalars['String']['input']>;
     isVisible?: InputMaybe<Scalars['Boolean']['input']>;
     logoFileUploadId?: InputMaybe<Scalars['ID']['input']>;
@@ -16575,6 +16579,7 @@ export type GqlCAdminUserCookProfileEditCookFragment = {
     biographySummary: string;
     cuisineStyle: string | null;
     cookingPhilosophy: string | null;
+    defaultOfferMessage: string | null;
     travelExpensesAmount: number;
     maximumTravelDistance: number | null;
     logo: { fileUploadId: string; url: string } | null;
@@ -16618,6 +16623,7 @@ export type GqlCAdminUserCookProfileEditPageQuery = {
                         biographySummary: string;
                         cuisineStyle: string | null;
                         cookingPhilosophy: string | null;
+                        defaultOfferMessage: string | null;
                         travelExpensesAmount: number;
                         maximumTravelDistance: number | null;
                         logo: { fileUploadId: string; url: string } | null;
@@ -16724,6 +16730,7 @@ export type GqlCAdminUserCookFragment = {
     biographySummaryGenerating: boolean;
     cuisineStyle: string | null;
     cookingPhilosophy: string | null;
+    defaultOfferMessage: string | null;
     travelExpensesAmount: number;
     maximumTravelDistance: number | null;
     callSchedulingEnabled: boolean;
@@ -16857,6 +16864,7 @@ export type GqlCAdminUserPageQuery = {
                         biographySummaryGenerating: boolean;
                         cuisineStyle: string | null;
                         cookingPhilosophy: string | null;
+                        defaultOfferMessage: string | null;
                         travelExpensesAmount: number;
                         maximumTravelDistance: number | null;
                         callSchedulingEnabled: boolean;
@@ -19879,6 +19887,7 @@ export type GqlCProfileCookChefProfileCookFragment = {
     biographySummaryGenerating: boolean;
     cuisineStyle: string | null;
     cookingPhilosophy: string | null;
+    defaultOfferMessage: string | null;
     presenceLinks: {
         websiteUrl: string | null;
         instagramUrl: string | null;
@@ -19900,6 +19909,7 @@ export type GqlCProfileCookChefProfileUserFragment = {
         biographySummaryGenerating: boolean;
         cuisineStyle: string | null;
         cookingPhilosophy: string | null;
+        defaultOfferMessage: string | null;
         presenceLinks: {
             websiteUrl: string | null;
             instagramUrl: string | null;
@@ -19927,6 +19937,7 @@ export type GqlCProfileCookChefProfilePageQuery = {
                 biographySummaryGenerating: boolean;
                 cuisineStyle: string | null;
                 cookingPhilosophy: string | null;
+                defaultOfferMessage: string | null;
                 presenceLinks: {
                     websiteUrl: string | null;
                     instagramUrl: string | null;
@@ -19954,6 +19965,7 @@ export type GqlCProfileCookChefProfilePageUpdatesSubscription = {
             biographySummaryGenerating: boolean;
             cuisineStyle: string | null;
             cookingPhilosophy: string | null;
+            defaultOfferMessage: string | null;
             presenceLinks: {
                 websiteUrl: string | null;
                 instagramUrl: string | null;
@@ -30615,6 +30627,7 @@ export const AdminUserCookProfileEditCookFragmentDoc = {
                     },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -30719,6 +30732,7 @@ export const AdminUserCookFragmentDoc = {
                     },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -33537,6 +33551,7 @@ export const ProfileCookChefProfileCookFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -33615,6 +33630,7 @@ export const ProfileCookChefProfileUserFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -68584,6 +68600,7 @@ export const AdminUserCookProfileEditPageDocument = {
                     },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -70875,6 +70892,7 @@ export const AdminUserPageDocument = {
                     },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -79838,6 +79856,7 @@ export const ProfileCookChefProfilePageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },
@@ -79934,6 +79953,7 @@ export const ProfileCookChefProfilePageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'biographySummaryGenerating' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'defaultOfferMessage' } },
                     {
                         kind: 'Field',
                         name: { kind: 'Name', value: 'presenceLinks' },

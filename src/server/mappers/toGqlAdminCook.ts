@@ -35,6 +35,7 @@ export function toGqlAdminCook(row: Cook, userStatus: UserStatus): GqlSAdminCook
         cuisineStyle: row.cuisineStyle ?? null,
         cookingPhilosophy: row.cookingPhilosophy ?? null,
         presenceLinks: cookPresenceLinksFromStored(row.presenceLinks),
+        defaultOfferMessage: row.defaultOfferMessage ?? null,
         // Field resolver populates from published customer testimonials.
         rating: undefined as unknown as GqlSPublicCookRating,
         travelExpensesAmount: row.travelExpensesAmount,

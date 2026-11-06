@@ -73,6 +73,7 @@ export function toGqlCook(row: Cook, userStatus: UserStatus): GqlSCook {
         cookingPhilosophy: row.cookingPhilosophy ?? null,
         // Field resolver hides this when COOK_PRESENCE_LINKS is off.
         presenceLinks: cookPresenceLinksFromStored(row.presenceLinks),
+        defaultOfferMessage: row.defaultOfferMessage ?? null,
         // Field resolver populates from published customer testimonials.
         rating: undefined as unknown as GqlSPublicCookRating,
         travelExpensesAmount: row.travelExpensesAmount,

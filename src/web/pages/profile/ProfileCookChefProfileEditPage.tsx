@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation } from 'urql';
 
-import { userDisplayName } from '../../../shared';
+import { containsPhoneNumber, userDisplayName } from '../../../shared';
+import { cookDefaultOfferMessageFormFrom, cookDefaultOfferMessageUpdateFrom } from '../../../shared/cookDefaultOfferMessage';
 import {
     cookPresenceLinksEqual,
     cookPresenceLinksFormFrom,
@@ -20,6 +21,7 @@ import { Skeleton } from '../../components/base/skeleton';
 import { Spinner } from '../../components/base/spinner';
 import { Textarea } from '../../components/base/textarea';
 import { BiographySuggestionReview } from '../../components/BiographySuggestionReview';
+import { CookDefaultOfferMessageFields } from '../../components/CookDefaultOfferMessageFields';
 import { CookPresenceLinksFields, cookPresenceLinksIssueMessage } from '../../components/CookPresenceLinksEditor';
 import { ProfilePictureEditor } from '../../components/ProfilePictureEditor';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
@@ -51,7 +53,7 @@ type ChefProfileFormValues = {
     cuisineStyle: string;
     cookingPhilosophy: string;
     presenceLinks: ReturnType<typeof cookPresenceLinksFormFrom>;
-};
+} & ReturnType<typeof cookDefaultOfferMessageFormFrom>;
 
 function formFromCook(next: GqlCProfileCookChefProfileCookFragment): ChefProfileFormValues {
     return {
@@ -59,6 +61,7 @@ function formFromCook(next: GqlCProfileCookChefProfileCookFragment): ChefProfile
         cuisineStyle: next.cuisineStyle ?? '',
         cookingPhilosophy: next.cookingPhilosophy ?? '',
         presenceLinks: cookPresenceLinksFormFrom(next.presenceLinks),
+        ...cookDefaultOfferMessageFormFrom(next.defaultOfferMessage ?? null),
     };
 }
 
@@ -87,6 +90,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                   cuisineStyle: '',
                   cookingPhilosophy: '',
                   presenceLinks: cookPresenceLinksFormFrom(null),
+                  ...cookDefaultOfferMessageFormFrom(null),
               },
         onSubmit: async ({ value }) => {
             if (!cook) return;
@@ -94,6 +98,20 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
             const nextCuisine = value.cuisineStyle.trim();
             const nextPhilosophy = value.cookingPhilosophy.trim();
             const biographyChanged = value.biography !== cook.biography;
+            if (value.defaultOfferMessageMode === 'custom' && containsPhoneNumber(value.defaultOfferMessageText)) {
+                toast.error(
+                    {
+                        de: 'Das Teilen von Telefonnummern ist nicht erlaubt.',
+                        en: 'Sharing phone numbers is not allowed.',
+                    }[locale],
+                );
+                return;
+            }
+            const defaultOfferMessage = cookDefaultOfferMessageUpdateFrom({
+                current: cook.defaultOfferMessage ?? null,
+                mode: value.defaultOfferMessageMode,
+                text: value.defaultOfferMessageText,
+            });
 
             if (presenceLinksEnabled) {
                 const normalized = cookPresenceLinksNormalize(cookPresenceLinksInputFrom(value.presenceLinks));
@@ -118,6 +136,7 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                     biography: value.biography,
                     cuisineStyle: nextCuisine || null,
                     cookingPhilosophy: nextPhilosophy || null,
+                    ...(defaultOfferMessage !== undefined ? { defaultOfferMessage } : {}),
                 },
             });
             if (result.error || !result.data?.user.cook.update.success) {
@@ -130,6 +149,8 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                 cuisineStyle: nextCuisine,
                 cookingPhilosophy: nextPhilosophy,
                 presenceLinks: value.presenceLinks,
+                defaultOfferMessageMode: value.defaultOfferMessageMode,
+                defaultOfferMessageText: value.defaultOfferMessageText,
             });
 
             if (biographyChanged) {
@@ -376,6 +397,26 @@ export function ProfileCookChefProfileEditPage({ data }: { data: GqlCProfileCook
                             )}
                         </form.Field>
                     </div>
+                </section>
+
+                <section className="grid min-w-0 gap-4">
+                    <form.Field name="defaultOfferMessageMode">
+                        {(modeField) => (
+                            <form.Field name="defaultOfferMessageText">
+                                {(textField) => (
+                                    <CookDefaultOfferMessageFields
+                                        idPrefix="chef-default-offer-message"
+                                        mode={modeField.state.value}
+                                        text={textField.state.value}
+                                        allowTemplate={cook.defaultOfferMessage == null}
+                                        disabled={formBusy}
+                                        onModeChange={modeField.handleChange}
+                                        onTextChange={textField.handleChange}
+                                    />
+                                )}
+                            </form.Field>
+                        )}
+                    </form.Field>
                 </section>
 
                 {presenceLinksEnabled ? (

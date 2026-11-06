@@ -26,6 +26,7 @@ function onboardingInput(overrides: Partial<OnboardingInput> = {}): OnboardingIn
         cookingPhilosophy: 'seasonal',
         mealCount: 1,
         menuCount: 1,
+        defaultOfferMessage: '',
         offerCount: 1,
         ...overrides,
     };
@@ -99,13 +100,14 @@ describe('cookOnboardingStepsDerive', () => {
             cuisineStyle: null,
             mealCount: 0,
             menuCount: 0,
+            defaultOfferMessage: null,
         });
 
         // Act
         const steps = cookOnboardingStepsDerive(input);
 
         // Assert
-        expect(steps).toEqual(['WALLET', 'TRAVEL', 'PROFILE_PICTURE', 'CHEF_PROFILE', 'FIRST_MEAL', 'FIRST_MENU']);
+        expect(steps).toEqual(['WALLET', 'TRAVEL', 'PROFILE_PICTURE', 'CHEF_PROFILE', 'FIRST_MEAL', 'FIRST_MENU', 'DEFAULT_OFFER_MESSAGE']);
     });
 
     it('holds wallet and first offer until approval', () => {
@@ -115,6 +117,15 @@ describe('cookOnboardingStepsDerive', () => {
         // Assert
         expect(steps).not.toContain('WALLET');
         expect(steps).not.toContain('FIRST_OFFER');
+    });
+
+    it('asks for a default offer message until the cook saves one, including empty', () => {
+        expect(cookOnboardingStepsDerive(onboardingInput({ defaultOfferMessage: null }))).toEqual(['DEFAULT_OFFER_MESSAGE']);
+        expect(cookOnboardingStepsDerive(onboardingInput({ defaultOfferMessage: '' }))).toEqual([]);
+        expect(cookOnboardingStepsDerive(onboardingInput({ defaultOfferMessage: 'Hallo' }))).toEqual([]);
+        expect(
+            cookOnboardingStepsDerive(onboardingInput({ isApprovedByAdmin: false, stripeStatus: 'EMPTY', defaultOfferMessage: null })),
+        ).toContain('DEFAULT_OFFER_MESSAGE');
     });
 
     it('asks for the first offer once the wallet is ready', () => {

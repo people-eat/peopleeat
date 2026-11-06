@@ -9,23 +9,27 @@ Signed-in cooks manage these areas under `/profile/*`:
 1. **Overview** (`/profile`) has two lanes: **Attention** (approval pending, Stripe wallet reset when Connect needs updated details, unread
    offer-chat messages deep-linking the busiest offer with `?tab=chat`, upcoming discovery calls in the next 14 days) and **Getting
    started** (incomplete setup only — wallet for `EMPTY` / `PREPARED`, travel origin, profile picture, chef bio/cuisine/philosophy, first
-   meal, first menu, first offer). When `COOK_ANALYTICS` is on and the cook already has marketplace or discovery activity, a compact
-   past-month **Analytics** strip appears (profile views, time to open, offers, conversion) with a link to `/profile/analytics` — see
-   [cook-analytics.md](./cook-analytics.md). Brand-new cooks see no analytics zeros. `ACTIVE_WAS_RESET` is Attention (not Getting started).
-   Completed steps disappear. When both lanes are empty, a calm “you’re all set” note points to the sidebar.
+   meal, first menu, default offer note, first offer). When `COOK_ANALYTICS` is on and the cook already has marketplace or discovery
+   activity, a compact past-month **Analytics** strip appears (profile views, time to open, offers, conversion) with a link to
+   `/profile/analytics` — see [cook-analytics.md](./cook-analytics.md). Brand-new cooks see no analytics zeros. `ACTIVE_WAS_RESET` is
+   Attention (not Getting started). Completed steps disappear. When both lanes are empty, a calm “you’re all set” note points to the
+   sidebar.
 2. **Chef profile** (`/profile/chef-profile`) is a read-only view of biography, biography summary, and cuisine style / cooking philosophy as
-   the shared `CookProfileTags` pills. **Edit** opens the form with a dirty-gated footer (Save only when the form is dirty; otherwise **Back
-   to profile**). Profile picture can be changed or removed there (same crop/upload flow as account —
-   [profile-pictures.md](./profile-pictures.md)). When `COOK_BIOGRAPHY_AI_WRITE` is on, cooks can **Write with AI** / **Improve with AI**
-   (spinner while generating): the suggestion opens a **side-by-side review** (textarea hidden while reviewing); **Accept** fills the
-   biography field so the cook can edit further before Save; **Discard** leaves the form unchanged. When the toggle is off, the button is
-   hidden and the suggest mutation rejects. Biography summary is view-only for cooks and regenerates automatically in the background
-   (best-effort job) whenever they save a non-empty biography — **always**, independent of the AI-write toggle. A biography save **stays on
-   the edit page** (toast + summary skeleton via `Cook.biographySummaryGenerating`); cuisine/philosophy-only saves still navigate back to
-   the read-only view. Clearing the biography clears the summary and cancels any pending summary job. Public surfaces keep showing the last
-   good summary until the job finishes. Admins edit both fields and regenerate the summary on demand; admin enhance uses the same
-   review/accept-into-form pattern (no auto summary) and is gated by the same toggle on the server — see [admin-users.md](./admin-users.md)
-   and [admin-feature-toggles.md](./admin-feature-toggles.md). When `COOK_PRESENCE_LINKS` is on, the same view and edit page include **Other
+   the shared `CookProfileTags` pills, plus a private **default offer note** (customers never see this on the public chef page). **Edit**
+   opens the form with a dirty-gated footer (Save only when the form is dirty; otherwise **Back to profile**). The default offer note has
+   three states: **not set** (`null`, Getting started item; offer create still uses the peopleeat greeting), **empty** (start blank each
+   offer), or **custom text** (prefill). Saving chef profile without changing that section leaves `null` as `null`. Profile picture can be
+   changed or removed there (same crop/upload flow as account — [profile-pictures.md](./profile-pictures.md)). When
+   `COOK_BIOGRAPHY_AI_WRITE` is on, cooks can **Write with AI** / **Improve with AI** (spinner while generating): the suggestion opens a
+   **side-by-side review** (textarea hidden while reviewing); **Accept** fills the biography field so the cook can edit further before Save;
+   **Discard** leaves the form unchanged. When the toggle is off, the button is hidden and the suggest mutation rejects. Biography summary
+   is view-only for cooks and regenerates automatically in the background (best-effort job) whenever they save a non-empty biography —
+   **always**, independent of the AI-write toggle. A biography save **stays on the edit page** (toast + summary skeleton via
+   `Cook.biographySummaryGenerating`); cuisine/philosophy-only saves still navigate back to the read-only view. Clearing the biography
+   clears the summary and cancels any pending summary job. Public surfaces keep showing the last good summary until the job finishes. Admins
+   edit both fields and regenerate the summary on demand; admin enhance uses the same review/accept-into-form pattern (no auto summary) and
+   is gated by the same toggle on the server — see [admin-users.md](./admin-users.md) and
+   [admin-feature-toggles.md](./admin-feature-toggles.md). When `COOK_PRESENCE_LINKS` is on, the same view and edit page include **Other
    profiles** (website, Instagram, Google profile, Take a Chef, and up to five more: Yhangry, Cozymeal, Eatwith, ChefMaison, or a named
    platform). The copy says the peopleeat team uses the links to review the profile and customers never see them. Blank fields clear the
    document. The cook mutation rejects when the toggle is off for that cook. Admins always see and edit the same links on the user
@@ -60,8 +64,8 @@ Signed-in cooks manage these areas under `/profile/*`:
    [cook-call-availability.md](./cook-call-availability.md). Live call booking happens from the offer Call tab, not here.
 7. Admins manage cooks on the user admin surface: approve/revoke with a confirm dialog (approve sends a transactional email with a CTA to
    `/profile`; revoke does not email), toggle public visibility with a confirm dialog, edit stage name / About logo / travel / biography /
-   cuisine catalogs, view live Stripe finances on the cook-profile tab (requirements + balance/transactions, not gated by
-   `COOK_WALLET_STRIPE_BALANCE`), and create draft meals/menus. See [admin-users.md](./admin-users.md).
+   cuisine catalogs / default offer note, view live Stripe finances on the cook-profile tab (requirements + balance/transactions, not gated
+   by `COOK_WALLET_STRIPE_BALANCE`), and create draft meals/menus. See [admin-users.md](./admin-users.md).
 
 **Membership:** new cooks can sign up on `/chef-sign-up` (account + cook in one step) or existing customers can upgrade. Create requires
 travel origin, expenses, and max distance; biography fields are optional and filled later. Signed-in cooks who open `/chef-sign-up` redirect
@@ -140,6 +144,10 @@ changes. Customers still only see city, never the pin or street.
   `COOK_PRESENCE_LINKS` is off; `AdminCook.presenceLinks` is always loaded; `CookMutation.presenceLinksReplace` /
   `AdminMutation.cookPresenceLinksReplace`; UI `CookPresenceLinksFields` / `CookPresenceLinksReadout` on chef profile and admin cook
   profile. Not on `PublicCook`
+- Default offer note: `Cooks.defaultOfferMessage` (`text`, nullable). `null` = not configured (onboarding `DEFAULT_OFFER_MESSAGE` + static
+  greeting on create); `''` = start blank each offer; non-empty = prefill. `Cook.defaultOfferMessage` / `AdminCook.defaultOfferMessage` /
+  `CookUpdate.defaultOfferMessage` (omit = no change; empty string is stored; GraphQL `null` is ignored). Not on `PublicCook`. UI
+  `CookDefaultOfferMessageFields` / `CookDefaultOfferMessageReadout`. Phone numbers rejected; max 2000 chars; `textNormalizeProse`
 - Catalogs: `src/shared/cookProfile.ts` — validated in `cookUpdate`
 - Display pills: `CookProfileTags` / `CookProfileTag` in `src/web/components/CookProfileTags.tsx` — shared muted chips for cuisine style +
   cooking philosophy on chef-profile read, public/hero/offer/featured surfaces (not `Badge secondary`, which is white-on-card)

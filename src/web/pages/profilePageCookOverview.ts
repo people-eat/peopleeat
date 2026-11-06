@@ -48,6 +48,7 @@ const onboardingStepHref: Record<CookOnboardingStep, CookOverviewGettingStartedH
     CHEF_PROFILE: '/{-$locale}/profile/chef-profile/edit',
     FIRST_MEAL: '/{-$locale}/profile/meals',
     FIRST_MENU: '/{-$locale}/profile/menus',
+    DEFAULT_OFFER_MESSAGE: '/{-$locale}/profile/chef-profile/edit',
     FIRST_OFFER: '/{-$locale}/profile/booking-request-pool',
 };
 

@@ -99,9 +99,8 @@ the customer total for create and price-change milestones.
 `toGqlOfferChatMessages` filters `hiddenByAdmin` rows for `user` / `cook` viewers; admin sees them with `ChatMessageUser.hiddenByAdmin` /
 `canHardDelete` stamped. It also omits **admin-only ops milestones** (`ADMIN_CHANGED_PRICE`, `ADMIN_CHANGED_ADDONS`,
 `ADMIN_ACCEPTANCE_UPDATED`, `ADMIN_PAYMENT_SCHEDULE_UPDATED`, `ADMIN_CONFIGURED_MENU_UPDATED`) for peer viewers — those stay in the DB for
-admin audit. Existing public
-admin milestones (handover, participant amendments, preparations clear, call start, admin messages) still show to cook and customer.
-Chat-notify email “latest peer body” skips hidden rows.
+admin audit. Existing public admin milestones (handover, participant amendments, preparations clear, call start, admin messages) still show
+to cook and customer. Chat-notify email “latest peer body” skips hidden rows.
 
 Admin offer handover may optionally hard-copy `*_MESSAGE_SIMPLE` rows (+ attachment joins) onto the new offer
 ([admin-booking-requests.md](./admin-booking-requests.md)). Copied cook messages include `handedOverFrom` + `originalCreatedAt` in the

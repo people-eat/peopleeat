@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useMutation, useQuery } from 'urql';
 
-import { userDisplayName } from '../../../shared';
+import { containsPhoneNumber, userDisplayName } from '../../../shared';
+import { cookDefaultOfferMessageFormFrom, cookDefaultOfferMessageUpdateFrom } from '../../../shared/cookDefaultOfferMessage';
 import {
     cookPresenceLinksEqual,
     cookPresenceLinksFormFrom,
@@ -24,6 +25,7 @@ import { Separator } from '../../components/base/separator';
 import { Spinner } from '../../components/base/spinner';
 import { Textarea } from '../../components/base/textarea';
 import { BiographySuggestionReview } from '../../components/BiographySuggestionReview';
+import { CookDefaultOfferMessageFields } from '../../components/CookDefaultOfferMessageFields';
 import { CookLogoEditor } from '../../components/CookLogoEditor';
 import { CookPresenceLinksFields, cookPresenceLinksIssueMessage } from '../../components/CookPresenceLinksEditor';
 import type { GqlCAdminUserCookProfileEditPageQuery, GqlCLocationSuggestion } from '../../graphql/generated';
@@ -42,8 +44,8 @@ export const adminUserCookProfileEditPageTitle = {
     en: 'Edit cook profile',
 } as const;
 export const adminUserCookProfileEditPageDescription = {
-    de: 'Biografie, Künstlername, About-Bild, Tags, Reiseeinstellungen und weitere Profile eines Kochs bearbeiten.',
-    en: 'Edit a cook biography, stage name, About picture, tags, travel settings, and other profiles.',
+    de: 'Biografie, Künstlername, About-Bild, Tags, Begrüßungstext, Reiseeinstellungen und weitere Profile eines Kochs bearbeiten.',
+    en: 'Edit a cook biography, stage name, About picture, tags, default offer note, travel settings, and other profiles.',
 } as const;
 
 export function adminUserCookProfileEditPageVariables(userId: string) {
@@ -70,7 +72,7 @@ type CookFormValues = {
     travelExpensesText: string;
     maximumTravelDistanceText: string;
     presenceLinks: ReturnType<typeof cookPresenceLinksFormFrom>;
-};
+} & ReturnType<typeof cookDefaultOfferMessageFormFrom>;
 
 function centsToEuroText(cents: number): string {
     return (cents / 100).toFixed(2).replace('.', ',');
@@ -104,6 +106,7 @@ function formFromCook(cook: AdminCookRow): CookFormValues {
         travelExpensesText: centsToEuroText(cook.travelExpensesAmount),
         maximumTravelDistanceText: String(cook.maximumTravelDistance ?? 100),
         presenceLinks: cookPresenceLinksFormFrom(cook.presenceLinks),
+        ...cookDefaultOfferMessageFormFrom(cook.defaultOfferMessage ?? null),
     };
 }
 
@@ -206,6 +209,20 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                 toast.error(cookPresenceLinksIssueMessage(normalized.issue, locale));
                 return;
             }
+            if (value.defaultOfferMessageMode === 'custom' && containsPhoneNumber(value.defaultOfferMessageText)) {
+                toast.error(
+                    {
+                        de: 'Das Teilen von Telefonnummern ist nicht erlaubt.',
+                        en: 'Sharing phone numbers is not allowed.',
+                    }[locale],
+                );
+                return;
+            }
+            const defaultOfferMessage = cookDefaultOfferMessageUpdateFrom({
+                current: cook.defaultOfferMessage ?? null,
+                mode: value.defaultOfferMessageMode,
+                text: value.defaultOfferMessageText,
+            });
             const current = cookPresenceLinksFromStored(cook.presenceLinks);
             if (!cookPresenceLinksEqual(current, normalized.value)) {
                 const presenceResult = await replacePresenceLinks({
@@ -229,6 +246,7 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                     exactTravelOriginAddress: value.selectedLocation?.displayText ?? undefined,
                     travelExpensesAmount: amount,
                     maximumTravelDistance: distance,
+                    ...(defaultOfferMessage !== undefined ? { defaultOfferMessage } : {}),
                 },
             });
             if (result.error || !result.data?.admin.cookUpdate.success) {
@@ -530,6 +548,26 @@ export function AdminUserCookProfileEditPage({ data, userId }: { data: GqlCAdmin
                             )}
                         </form.Field>
                     </div>
+
+                    <Separator />
+
+                    <form.Field name="defaultOfferMessageMode">
+                        {(modeField) => (
+                            <form.Field name="defaultOfferMessageText">
+                                {(textField) => (
+                                    <CookDefaultOfferMessageFields
+                                        idPrefix="admin-cook-default-offer-message"
+                                        mode={modeField.state.value}
+                                        text={textField.state.value}
+                                        allowTemplate={cook.defaultOfferMessage == null}
+                                        disabled={formBusy}
+                                        onModeChange={modeField.handleChange}
+                                        onTextChange={textField.handleChange}
+                                    />
+                                )}
+                            </form.Field>
+                        )}
+                    </form.Field>
 
                     <Separator />
 

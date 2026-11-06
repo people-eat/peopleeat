@@ -905,6 +905,10 @@ type Cook {
     # Private review links. Null when `COOK_PRESENCE_LINKS` is off for this cook,
     # or when nothing is saved. Never exposed on `PublicCook`.
     presenceLinks: CookPresenceLinks
+    # Personal-note default for offer create. Null = not configured (onboarding
+    # item; create still uses the platform greeting). Empty string = start blank
+    # each offer. Non-empty = prefill that text. Never on `PublicCook`.
+    defaultOfferMessage: String
     # Same aggregate as `PublicCook.rating` — published customer reviews on completed offers.
     # Used for cook self-preview of listing cards; `reviewCount: 0` when none.
     rating: PublicCookRating!
@@ -1037,6 +1041,7 @@ enum CookOnboardingStep {
     CHEF_PROFILE
     FIRST_MEAL
     FIRST_MENU
+    DEFAULT_OFFER_MESSAGE
     FIRST_OFFER
 }
 
@@ -1225,6 +1230,9 @@ input CookUpdate {
     logoFileUploadId: ID
     cuisineStyle: String
     cookingPhilosophy: String
+    # Offer-create personal-note default. Omit = no change. Empty string =
+    # configured blank. Null is ignored (cannot reopen onboarding).
+    defaultOfferMessage: String
     exactTravelOriginAddress: String
     travelExpensesAmount: Int
     maximumTravelDistance: Int
@@ -2443,7 +2451,9 @@ type CookBookingRequest {
     minOfferAmountCents: Int
     maxOfferAmountCents: Int
     minOfferAmountHardCents: Int
-    # Static personal-note draft for offer create, in the customer's profile language.
+    # Personal-note draft for offer create: cook `defaultOfferMessage` when set
+    # (including empty), otherwise the static DE/EN greeting in the customer's
+    # profile language.
     suggestedOfferMessage: String!
     # Resolved for the cook: adjustedMessage ?? originalMessage (trimmed).
     message: String!
@@ -3413,6 +3423,8 @@ type AdminCook {
     # Private review links. Always returned for admins (not gated by `COOK_PRESENCE_LINKS`).
     # Null when nothing is saved.
     presenceLinks: CookPresenceLinks
+    # Same null / empty / text rules as `Cook.defaultOfferMessage`.
+    defaultOfferMessage: String
     # Same aggregate as `PublicCook.rating` — published customer reviews on completed offers.
     rating: PublicCookRating!
     travelExpensesAmount: Int!

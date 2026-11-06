@@ -13,6 +13,7 @@ fragment AdminUserCookProfileEditCook on AdminCook {
     }
     cuisineStyle
     cookingPhilosophy
+    defaultOfferMessage
     presenceLinks {
         websiteUrl
         instagramUrl

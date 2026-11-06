@@ -68,6 +68,15 @@ export type {
 } from './bookingRequestOfferPriceGuidance';
 export { bookingRequestSuggestedOfferMessage } from './bookingRequestSuggestedOfferMessage';
 export {
+    COOK_DEFAULT_OFFER_MESSAGE_MAX_LENGTH,
+    cookDefaultOfferMessageFormFrom,
+    cookDefaultOfferMessageModeFrom,
+    cookDefaultOfferMessageNormalize,
+    cookDefaultOfferMessageUpdateFrom,
+    cookSuggestedOfferMessageResolve,
+} from './cookDefaultOfferMessage';
+export type { CookDefaultOfferMessageMode } from './cookDefaultOfferMessage';
+export {
     stripeDashboardConnectAccountUrl,
     stripeDashboardIsTestMode,
     stripeDashboardPaymentIntentUrl,

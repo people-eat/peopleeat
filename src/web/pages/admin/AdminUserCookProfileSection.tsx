@@ -22,6 +22,7 @@ import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { Switch } from '../../components/base/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/base/tooltip';
+import { CookDefaultOfferMessageReadout } from '../../components/CookDefaultOfferMessageFields';
 import { CookPresenceLinksReadout } from '../../components/CookPresenceLinksEditor';
 import { CookProfileTags } from '../../components/CookProfileTags';
 import { TestimonialRatingStars } from '../../components/TestimonialRatingStars';
@@ -486,6 +487,23 @@ function AdminUserCookProfileBody({
                     </dd>
                 </div>
             </dl>
+
+            <section className="grid gap-3">
+                <div className="grid gap-1">
+                    <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                        {{ de: 'Begrüßungstext für Angebote', en: 'Default offer note' }[locale]}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Wird beim Erstellen eines Angebots vorausgefüllt. Gäste sehen ihn als erste Chat-Nachricht.',
+                                en: 'Prefills when the cook creates an offer. Guests see it as the first chat message.',
+                            }[locale]
+                        }
+                    </p>
+                </div>
+                <CookDefaultOfferMessageReadout value={cook.defaultOfferMessage ?? null} />
+            </section>
 
             <section className="grid gap-3">
                 <div className="grid gap-1">

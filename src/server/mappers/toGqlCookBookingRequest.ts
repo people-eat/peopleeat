@@ -1,5 +1,5 @@
 import { bookingRequestSuggestedCookPayoutCents } from '../../shared/bookingRequestOfferPrice';
-import { bookingRequestSuggestedOfferMessage } from '../../shared/bookingRequestSuggestedOfferMessage';
+import { cookSuggestedOfferMessageResolve } from '../../shared/cookDefaultOfferMessage';
 import type { Locale } from '../../shared/locale';
 import type { BookingRequest, BookingRequestOffer, BookingRequestParticipant } from '../db/schema';
 import { bookingRequestStatusDerive } from '../domain/bookingRequest';
@@ -25,8 +25,10 @@ export type ToGqlCookBookingRequestInput = {
     participants?: BookingRequestParticipant[];
     offers?: GqlSCookBookingRequestOffer[];
     acceptedOfferPaymentStatus?: BookingRequestOffer['paymentStatus'] | null;
-    /** Customer's `Users.locale` — drives `suggestedOfferMessage`. */
+    /** Customer's `Users.locale` — drives the static greeting when the cook has no default. */
     customerLocale: Locale;
+    /** Cook's saved offer-create note. Null keeps the static customer-locale greeting. */
+    defaultOfferMessage?: string | null;
     now?: Date;
     user: GqlSPublicUser;
     estimatedTravelDistanceKm?: number | null;
@@ -43,6 +45,7 @@ export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): Gq
         offers = [],
         acceptedOfferPaymentStatus,
         customerLocale,
+        defaultOfferMessage = null,
         now,
         user,
         estimatedTravelDistanceKm = null,
@@ -89,7 +92,7 @@ export function toGqlCookBookingRequest(input: ToGqlCookBookingRequestInput): Gq
         minOfferAmountCents: guidance.minOfferAmountCents,
         maxOfferAmountCents: guidance.maxOfferAmountCents,
         minOfferAmountHardCents: guidance.minOfferAmountHardCents,
-        suggestedOfferMessage: bookingRequestSuggestedOfferMessage(customerLocale),
+        suggestedOfferMessage: cookSuggestedOfferMessageResolve(defaultOfferMessage, customerLocale),
         message: bookingRequestOfferInitialMessageResolve(bookingRequest),
         preferences: bookingRequest.preferences,
         invoiceAddress: bookingRequest.invoiceAddress ? toGqlInvoiceAddress(bookingRequest.invoiceAddress) : null,

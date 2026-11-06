@@ -80,7 +80,7 @@ describe('profilePageCookOverview', () => {
 
     it('maps onboarding steps to their pages in server order', () => {
         // Arrange
-        const cook = cookFixture({ onboardingSteps: ['WALLET', 'PROFILE_PICTURE', 'FIRST_OFFER'] });
+        const cook = cookFixture({ onboardingSteps: ['WALLET', 'PROFILE_PICTURE', 'DEFAULT_OFFER_MESSAGE', 'FIRST_OFFER'] });
 
         // Act
         const overview = profilePageCookOverview(cook, 'de', DEFAULT_TIME_ZONE);
@@ -89,9 +89,11 @@ describe('profilePageCookOverview', () => {
         expect(overview.gettingStarted.map((step) => step.href)).toEqual([
             '/{-$locale}/profile/wallet',
             '/{-$locale}/profile/chef-profile/edit',
+            '/{-$locale}/profile/chef-profile/edit',
             '/{-$locale}/profile/booking-request-pool',
         ]);
         expect(overview.gettingStarted[1]?.actionLabel).toBe('Bild hinzufügen');
+        expect(overview.gettingStarted[2]?.actionLabel).toBe('Zum Profil');
         expect(overview.allClear).toBe(false);
     });
 });

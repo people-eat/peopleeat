@@ -46,6 +46,33 @@ describe('adminCookUpdate', () => {
         expect(admin.serverRuntime.publish.adminUpdates).toHaveBeenCalledTimes(1);
     });
 
+    it('saves an empty default offer message without collapsing it to null', async () => {
+        const { admin, cookUser } = await seedAdminAndCook();
+
+        await adminCookUpdate(
+            adminMutationParent(admin.user.userId),
+            { cookId: cookUser.user.userId, input: { defaultOfferMessage: '' } },
+            admin.requestingSession,
+            admin.serverRuntime,
+        );
+
+        const [row] = await testDb.select().from(cooks).where(eq(cooks.cookId, cookUser.user.userId));
+        expect(row?.defaultOfferMessage).toBe('');
+    });
+
+    it('rejects a default offer message that contains a phone number', async () => {
+        const { admin, cookUser } = await seedAdminAndCook();
+
+        await expect(
+            adminCookUpdate(
+                adminMutationParent(admin.user.userId),
+                { cookId: cookUser.user.userId, input: { defaultOfferMessage: 'Call +4915123456789' } },
+                admin.requestingSession,
+                admin.serverRuntime,
+            ),
+        ).rejects.toThrow(/phone number/);
+    });
+
     it('rejects when no fields are provided and leaves the cook unchanged', async () => {
         // Arrange
         const { admin, cookUser } = await seedAdminAndCook();

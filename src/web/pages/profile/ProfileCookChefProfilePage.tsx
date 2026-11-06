@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 
 import { Button } from '../../components/base/button';
 import { Skeleton } from '../../components/base/skeleton';
+import { CookDefaultOfferMessageReadout } from '../../components/CookDefaultOfferMessageFields';
 import { CookPresenceLinksReadout } from '../../components/CookPresenceLinksEditor';
 import { cookProfileTagLabels, CookProfileTags } from '../../components/CookProfileTags';
 import { ProfilePinnedFooterLayout } from '../../components/ProfilePinnedFooterLayout';
@@ -93,6 +94,23 @@ export function ProfileCookChefProfilePage({ data }: { data: GqlCProfileCookChef
                         </dd>
                     </div>
                 </dl>
+            </section>
+
+            <section className="grid min-w-0 gap-3">
+                <div className="grid gap-1">
+                    <h2 className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+                        {{ de: 'Begrüßungstext für Angebote', en: 'Default offer note' }[locale]}
+                    </h2>
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Wird beim Erstellen eines Angebots vorausgefüllt. Gäste sehen ihn als erste Chat-Nachricht.',
+                                en: 'Prefills when you create an offer. Guests see it as the first chat message.',
+                            }[locale]
+                        }
+                    </p>
+                </div>
+                <CookDefaultOfferMessageReadout value={cook.defaultOfferMessage ?? null} />
             </section>
 
             {presenceLinksEnabled ? (
