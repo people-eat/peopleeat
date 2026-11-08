@@ -84,9 +84,10 @@ English copy and `/en` URLs. Resource bullets: `[title](url): one-sentence descr
 - Prefer schema.org types that match the page (`WebSite`, `Organization`, `FAQPage`, `Person`, `Service`, `BlogPosting`, `BreadcrumbList`).
 - Builders live in `src/web/seo/jsonLd.ts`. `jsonLdScripts(webPageUrl)` emits `WebSite` + `Organization` (legal name, Frankfurt postal
   address, contact email, Instagram / Facebook / LinkedIn `sameAs`). `jsonLdFaqPage(entries)` emits `FAQPage`. `jsonLdPerson` is the public
-  chef (aggregate rating only when the page shows reviews). `jsonLdCityService` is a city landing, with `GeoCoordinates` from the stored
-  center. `jsonLdBlogPosting` is an article, dated from `publishedAt` / `updatedAt`. `jsonLdBreadcrumbList` mirrors the header logo and the
-  page's index link. Wire them from a route's `head().scripts`. Canonical URLs come from `canonicalUrlBuild` in `seoMeta.ts`.
+  chef. Omit `aggregateRating` / `Review` on `Person` (Google review snippets do not support that parent; Search Console flags it as invalid
+  object type for `<parent_node>`). `jsonLdCityService` is a city landing, with `GeoCoordinates` from the stored center. `jsonLdBlogPosting`
+  is an article, dated from `publishedAt` / `updatedAt`. `jsonLdBreadcrumbList` mirrors the header logo and the page's index link. Wire them
+  from a route's `head().scripts`. Canonical URLs come from `canonicalUrlBuild` in `seoMeta.ts`.
 - Carry `dateModified` from `__SITE_LAST_MODIFIED__` (declared in `src/vite-env.d.ts`, injected by Vite).
 - FAQ answers must stand alone (1–3 factual sentences). Avoid marketing prose; engines extract verbatim.
 - Schema content must match visible content.

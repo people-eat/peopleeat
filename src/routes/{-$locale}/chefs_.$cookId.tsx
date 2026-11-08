@@ -40,10 +40,6 @@ export const Route = createFileRoute('/{-$locale}/chefs_/$cookId')({
             cuisineStyle: cook.cuisineStyle,
             biographySummary: cook.biographySummary,
         });
-        const rating =
-            cook.rating.reviewCount > 0 && cook.rating.averageRating != null
-                ? { averageRating: cook.rating.averageRating, reviewCount: cook.rating.reviewCount }
-                : null;
         return {
             ...seoMeta({
                 title,
@@ -67,7 +63,6 @@ export const Route = createFileRoute('/{-$locale}/chefs_/$cookId')({
                     description,
                     image: cook.user.profilePicture?.url,
                     cityName: cityLabel,
-                    rating,
                 }),
                 jsonLdFaqPage(publicFaqJsonLdEntries(locale)),
             ]),

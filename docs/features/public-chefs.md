@@ -42,7 +42,8 @@ The meta description uses the biography summary when it is at least 50 character
 is set. When the travel-origin city matches exactly one published city page (German name, English name, or path, compared as slugs), the pin
 links to that page and both the title and the pin use the page’s localized name. No match, or two matches, leaves the city as plain text.
 Cook self-preview does not resolve the city page, so its pin stays plain text. The route also emits `Person` and `BreadcrumbList` JSON-LD.
-`aggregateRating` is included only when the hero shows stars.
+`Person` does not include `aggregateRating` or `Review`: Google review snippets do not support that parent type, and Search Console reports
+it as invalid object type for `<parent_node>`. Visible star ratings on the hero and cards are unchanged.
 
 Section padding matches other public bands (`px-4` → `@lg:px-6`).
 

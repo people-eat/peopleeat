@@ -47,10 +47,10 @@ describe('jsonLdFaqPage', () => {
 });
 
 describe('jsonLdPerson', () => {
-    it('includes a rating only when reviews exist', () => {
+    it('emits a Person without review-snippet markup', () => {
         // Arrange — nothing
         // Act
-        const withRating = JSON.parse(
+        const de = JSON.parse(
             jsonLdPerson({
                 webPageUrl: 'https://example.com',
                 locale: 'de',
@@ -59,26 +59,25 @@ describe('jsonLdPerson', () => {
                 description: 'Anna kocht in Berlin.',
                 image: '/api/file-uploads/pic',
                 cityName: 'Berlin',
-                rating: { averageRating: 4.5, reviewCount: 2 },
             }).children,
-        ) as { image: string; aggregateRating: { reviewCount: number }; jobTitle: string };
-        const withoutRating = JSON.parse(
+        ) as { '@type': string; image: string; jobTitle: string; aggregateRating?: unknown };
+        const en = JSON.parse(
             jsonLdPerson({
                 webPageUrl: 'https://example.com',
                 locale: 'en',
                 path: '/chefs/cook-1',
                 name: 'Anna',
                 description: 'Anna cooks in Berlin.',
-                rating: null,
             }).children,
-        ) as { aggregateRating?: unknown; jobTitle: string };
+        ) as { jobTitle: string; aggregateRating?: unknown };
 
         // Assert
-        expect(withRating.jobTitle).toBe('Privatkoch');
-        expect(withRating.image).toBe('https://example.com/api/file-uploads/pic');
-        expect(withRating.aggregateRating.reviewCount).toBe(2);
-        expect(withoutRating.jobTitle).toBe('Private chef');
-        expect(withoutRating.aggregateRating).toBeUndefined();
+        expect(de['@type']).toBe('Person');
+        expect(de.jobTitle).toBe('Privatkoch');
+        expect(de.image).toBe('https://example.com/api/file-uploads/pic');
+        expect(de.aggregateRating).toBeUndefined();
+        expect(en.jobTitle).toBe('Private chef');
+        expect(en.aggregateRating).toBeUndefined();
     });
 });
 

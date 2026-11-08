@@ -26,9 +26,11 @@ The pieces:
 | Structured data     | `src/web/seo/jsonLd.ts` — homepage `WebSite` + `Organization`, plus `FAQPage`, `BreadcrumbList`, chef `Person`, city `Service`, `BlogPosting`                                      |
 
 Optional structured data (JSON-LD) is available via `src/web/seo/jsonLd.ts`. The homepage emits `WebSite` + `Organization` (legal name,
-postal address, contact email, and social `sameAs`) and `FAQPage`. Chef profiles emit `Person` (rating only when reviews are visible), the
-same FAQ, and `BreadcrumbList`. City pages emit `Service` with the stored map center. Articles emit `BlogPosting`. Wire them from a route's
-`head().scripts`. AI-search / GEO layers (`/llms.txt`, AI crawler policy, freshness) live in [discovery-geo.md](./discovery-geo.md).
+postal address, contact email, and social `sameAs`) and `FAQPage`. Chef profiles emit `Person`, the same FAQ, and `BreadcrumbList`. Do not
+put `aggregateRating` or `Review` on `Person`: Google review snippets do not support that parent type, and Search Console reports it as
+invalid object type for `<parent_node>`. Visible star ratings on the chef page stay in the UI. City pages emit `Service` with the stored map
+center. Articles emit `BlogPosting`. Wire them from a route's `head().scripts`. AI-search / GEO layers (`/llms.txt`, AI crawler policy,
+freshness) live in [discovery-geo.md](./discovery-geo.md).
 
 ## Alternatives considered
 

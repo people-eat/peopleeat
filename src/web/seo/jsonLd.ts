@@ -9,7 +9,7 @@
 //   - `jsonLdFaqPage(qa)` — `FAQPage` for a visible Q&A block. Pass the same
 //     entries the DOM renders so schema and content cannot drift.
 //   - `jsonLdBreadcrumbList` — trail matching the header logo and the page's index link.
-//   - `jsonLdPerson` — public chef profile.
+//   - `jsonLdPerson` — public chef profile (`Person` only; no `aggregateRating`).
 //   - `jsonLdCityService` — city landing as a service in that place.
 //   - `jsonLdBlogPosting` — article page.
 //
@@ -43,11 +43,6 @@ export interface FaqEntry {
 export interface JsonLdBreadcrumb {
     name: string;
     path: string;
-}
-
-export interface JsonLdRating {
-    averageRating: number;
-    reviewCount: number;
 }
 
 function script(value: unknown): JsonLdScript {
@@ -136,7 +131,6 @@ export function jsonLdPerson(input: {
     description: string;
     image?: string | null;
     cityName?: string | null;
-    rating?: JsonLdRating | null;
 }): JsonLdScript {
     const url = canonicalUrlBuild(input.webPageUrl, input.locale, input.path);
     const image = input.image?.trim() ? imageUrlAbsolute(input.webPageUrl, input.image) : undefined;
@@ -153,15 +147,6 @@ export function jsonLdPerson(input: {
     };
     if (image) person.image = image;
     if (cityName) person.homeLocation = { '@type': 'City', name: cityName };
-    if (input.rating && input.rating.reviewCount > 0) {
-        person.aggregateRating = {
-            '@type': 'AggregateRating',
-            ratingValue: input.rating.averageRating,
-            reviewCount: input.rating.reviewCount,
-            bestRating: 5,
-            worstRating: 1,
-        };
-    }
     return script(person);
 }
 
