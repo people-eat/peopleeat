@@ -1,5 +1,5 @@
 import { useForm, useSelector } from '@tanstack/react-form';
-import { FileTextIcon, PlusIcon, SparklesIcon, XIcon } from 'lucide-react';
+import { FileTextIcon, PencilSparklesIcon, SparklesIcon, TextCursorInputIcon, XIcon } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { toast } from 'sonner';
@@ -75,23 +75,36 @@ function CreateChooserCard({
     icon,
     title,
     description,
+    tone,
     disabled,
     onClick,
 }: {
     icon: ReactNode;
     title: string;
     description: string;
+    tone: 'accent' | 'sky';
     disabled?: boolean;
     onClick: () => void;
 }) {
     return (
         <button
             type="button"
-            className="grid cursor-pointer gap-2 rounded-xl border border-border bg-card p-4 text-left outline-none transition-[color,background-color,border-color,box-shadow,opacity] hover:border-foreground/30 hover:bg-muted/40 active:bg-muted/80 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+            className={cn(
+                'grid cursor-pointer gap-2 rounded-xl border p-4 text-left outline-none transition-[color,background-color,border-color,box-shadow,opacity] focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
+                tone === 'accent'
+                    ? 'border-accent/35 bg-accent/10 hover:border-accent/50 hover:bg-accent/15 active:bg-accent/20 focus-visible:border-accent focus-visible:ring-accent/50'
+                    : 'border-sky-300 bg-sky-50 hover:border-sky-400 hover:bg-sky-100/80 active:bg-sky-100 focus-visible:border-sky-500 focus-visible:ring-sky-500/50',
+            )}
             disabled={disabled}
             onClick={onClick}
         >
-            <span className="flex size-10 items-center justify-center rounded-lg bg-muted" aria-hidden>
+            <span
+                className={cn(
+                    'flex size-10 items-center justify-center rounded-lg',
+                    tone === 'accent' ? 'bg-accent/15 text-accent' : 'bg-sky-100 text-sky-700',
+                )}
+                aria-hidden
+            >
                 {icon}
             </span>
             <span className="font-medium">{title}</span>
@@ -312,7 +325,8 @@ export function CookMenuCreateDialog({
                 {step === 'chooser' ? (
                     <div className="grid gap-3 sm:grid-cols-2">
                         <CreateChooserCard
-                            icon={<SparklesIcon className="size-5 text-muted-foreground" />}
+                            tone="accent"
+                            icon={<PencilSparklesIcon className="size-5" />}
                             title={{ de: 'Aus Text oder Datei', en: 'From text or a file' }[locale]}
                             description={
                                 {
@@ -324,7 +338,8 @@ export function CookMenuCreateDialog({
                             onClick={() => setStep('input')}
                         />
                         <CreateChooserCard
-                            icon={<PlusIcon className="size-5 text-muted-foreground" />}
+                            tone="sky"
+                            icon={<TextCursorInputIcon className="size-5" />}
                             title={{ de: 'Selbst zusammenstellen', en: 'Start from scratch' }[locale]}
                             description={
                                 {

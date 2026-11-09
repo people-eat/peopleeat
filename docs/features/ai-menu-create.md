@@ -41,13 +41,14 @@ New meals and menus from this flow (and from **Use recommendation**) keep a `gen
 
 ## Decisions
 
-| Decision                                     | Why                                                                                          |
-| -------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Review before insert                         | Cooks see reuse vs new dishes; nothing hits the library until they say yes                   |
-| One from-text pipeline, files as extra input | Matching work already existed; PDF/images go to Gemini, txt/docx become prompt text          |
-| Feature toggle `AI_MENU_CREATE`              | Ops can disable without a deploy                                                             |
-| Cook-only generated badge                    | Origin marking for cooks and ops; customer-facing “AI” labels would undercut trust on offers |
-| Keep pool Use recommendation                 | Request-specific evaluation is already reviewed as a card                                    |
+| Decision                                     | Why                                                                                           |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Review before insert                         | Cooks see reuse vs new dishes; nothing hits the library until they say yes                    |
+| One from-text pipeline, files as extra input | Matching work already existed; PDF/images go to Gemini, txt/docx become prompt text           |
+| Feature toggle `AI_MENU_CREATE`              | Ops can disable without a deploy                                                              |
+| Cook-only generated badge                    | Origin marking for cooks and ops; customer-facing “AI” labels would undercut trust on offers  |
+| Keep pool Use recommendation                 | Request-specific evaluation is already reviewed as a card                                     |
+| Chooser path colour                          | Accent orange for text/file (same family as the assistant trigger); sky blue for from-scratch |
 
 ### Alternatives considered
 
@@ -100,9 +101,10 @@ AiGenerations kind stays `COOK_MENU_SUGGESTION_FROM_TEXT`. Prompt column stores 
 ### UI
 
 `CookMenuCreateDialog` (chooser, text/files, generating, review). `context` is `library` (default) or `offer` for the review save label.
-Callers: `ProfileCookMenusPage`, `CookMenuSelectPanel` (offer create / edit-menus). Feature toggle via
-`useFeatureToggleActive('AI_MENU_CREATE')`. Cook-only generated badge on `CookMealCard` / `CookMenuCard`. Review cards use
-`density="compact"` and `showStatusBadge={false}` (hides draft/published and the missing-image chip).
+Chooser cards use tone styling: accent fill/border for **From text or a file**, sky blue for **Start from scratch**. Callers:
+`ProfileCookMenusPage`, `CookMenuSelectPanel` (offer create / edit-menus). Feature toggle via `useFeatureToggleActive('AI_MENU_CREATE')`.
+Cook-only generated badge on `CookMealCard` / `CookMenuCard`. Review cards use `density="compact"` and `showStatusBadge={false}` (hides
+draft/published and the missing-image chip).
 
 See [cook-menus.md](./cook-menus.md), [cook-meals.md](./cook-meals.md), [booking-offers.md](./booking-offers.md),
 [ai-menu-evaluation.md](./ai-menu-evaluation.md), [ai-generations.md](../architecture/ai-generations.md).
