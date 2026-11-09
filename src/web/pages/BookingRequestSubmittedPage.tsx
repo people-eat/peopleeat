@@ -36,22 +36,22 @@ const SUBMITTED_STEP_IMAGES = [
     {
         src: '/booking-request/submitted/1.webp',
         alt: {
-            de: 'Lachs-Tartare mit essbaren Blüten, angerichtet für ein Event',
-            en: 'Salmon tartare with edible flowers, plated for an event',
+            de: 'Lachs-Crudo mit Kumquat und Kräuteröl, angerichtet für ein Event',
+            en: 'Salmon crudo with kumquat and herb oil, plated for an event',
         },
     },
     {
         src: '/booking-request/submitted/2.webp',
         alt: {
-            de: 'Gebratene Jakobsmuscheln mit Kaviar und Babykarotten',
-            en: 'Seared scallops with caviar and baby carrots',
+            de: 'Gefüllte Hähnchenbrust mit Kartoffelpüree und Ofengemüse',
+            en: 'Stuffed chicken breast with potato puree and roasted vegetables',
         },
     },
     {
         src: '/booking-request/submitted/3.webp',
         alt: {
-            de: 'Gourmet-Desserts mit Beeren, Feige und Blattgold',
-            en: 'Gourmet desserts with berries, fig, and gold leaf',
+            de: 'Blumenförmiges Dessert mit Minze, grüner Sauce und gelbem Coulis',
+            en: 'Flower-shaped dessert with mint, green sauce, and yellow coulis',
         },
     },
 ] as const;
@@ -211,7 +211,7 @@ export function BookingRequestSubmittedPage({
                                 return (
                                     <div
                                         key={step.title}
-                                        className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_15rem] lg:items-stretch lg:gap-x-10 xl:grid-cols-[minmax(0,1fr)_17rem]"
+                                        className="grid gap-0 lg:grid-cols-[minmax(0,1fr)_9rem] lg:items-start lg:gap-x-10 xl:grid-cols-[minmax(0,1fr)_10rem]"
                                     >
                                         <div className="flex gap-4">
                                             <div className="flex w-9 shrink-0 flex-col items-center">
@@ -231,8 +231,10 @@ export function BookingRequestSubmittedPage({
                                         <AppImage
                                             src={image.src}
                                             alt={image.alt[locale]}
+                                            width={960}
+                                            height={960}
                                             className={cn(
-                                                'hidden h-22 w-full rounded-2xl object-cover lg:block xl:h-28',
+                                                'hidden aspect-square w-full rounded-2xl object-cover lg:block',
                                                 !isLast && 'lg:mb-6',
                                             )}
                                         />
@@ -246,7 +248,9 @@ export function BookingRequestSubmittedPage({
                                         key={image.src}
                                         src={image.src}
                                         alt={image.alt[locale]}
-                                        className="aspect-4/3 w-full rounded-xl object-cover"
+                                        width={960}
+                                        height={960}
+                                        className="aspect-square w-full rounded-xl object-cover"
                                     />
                                 ))}
                             </div>

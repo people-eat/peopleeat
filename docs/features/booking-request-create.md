@@ -141,7 +141,8 @@ Lifecycle emails: create / cook notify / request update / cancel — `src/server
   scroller — document gutters off via `workspace-no-document-scroll` ([theme.md](../styles/theme.md)). Funnel instrumentation:
   [session-events.md](../architecture/session-events.md), [admin-analytics.md](./admin-analytics.md).
 - Submitted: `BookingRequestSubmittedPage.tsx` (+ `.graphql`), `src/routes/{-$locale}/booking-request_.$bookingRequestId_.submitted.tsx`
-  (same viewport-lock path match).
+  (same viewport-lock path match). Square step images: `public/booking-request/submitted/{1,2,3}.webp` (regenerate via
+  `npm run images:optimize-public`).
 - Customer list / detail / edit: `ProfileCustomerBookingRequestsPage.tsx`, `ProfileCustomerBookingRequestPage.tsx`,
   `ProfileCustomerBookingRequestEditPage.tsx`, `CustomerBookingRequestCard.tsx`, `BookingRequestDiscountEditor.tsx`
 - Architecture: [docs/architecture/booking.md](../architecture/booking.md)
