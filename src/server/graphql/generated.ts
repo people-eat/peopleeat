@@ -13681,7 +13681,7 @@ export function GqlSAdminBookingRequestUpdateSchema(): z.ZodObject<Properties<Gq
         adjustedMessage: z.string().nullish(),
         createdAt: z.date().nullish(),
         dateTime: z.date().nullish(),
-        exactEventAddress: GqlSAdminBookingRequestExactEventAddressInputSchema().nullish(),
+        exactEventAddress: z.lazy(() => GqlSAdminBookingRequestExactEventAddressInputSchema().nullish()),
         expiresAt: z.date().nullish(),
         kitchenDetails: z.lazy(() => GqlSBookingRequestKitchenDetailsInputSchema().nullish()),
         kitchenDetailsPhotoFileUploadIds: z.array(z.string()).nullish(),

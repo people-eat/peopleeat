@@ -3217,8 +3217,10 @@ type UserMutation {
         menuId: ID!
         courseSelections: [BookingRequestOfferConfiguredMenuCourseSelectionInput!]!
     ): MutationResult!
-    # Toggle optional offer addons before accept. Gated by
-    # BOOKING_REQUEST_OFFER_ADDONS. Reprices the offer. Returns offer id.
+    # Toggle optional offer addons while paymentStatus is EMPTY (before accept
+    # or on checkout before card/payment). Gated by BOOKING_REQUEST_OFFER_ADDONS.
+    # Reprices the offer; after dual-accept, refreshes Stripe when needed.
+    # Returns offer id.
     bookingRequestOfferAddonSelectionUpdate(
         bookingRequestOfferId: ID!
         selections: [BookingRequestOfferAddonSelectionInput!]!

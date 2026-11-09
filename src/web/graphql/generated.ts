@@ -21789,8 +21789,19 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageUserFragment = {
         offers: Array<{
             bookingRequestOfferId: string;
             status: Schema.GqlCBookingRequestOfferStatus;
+            paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
             plannedPaymentPullDateTime: string | null;
             configuredMenu: { title: string; courses: Array<{ title: string; meals: Array<{ mealImageUrl: string | null }> }> } | null;
+            addons: Array<{
+                cookOfferAddonId: string;
+                title: string;
+                description: string;
+                imageUrl: string | null;
+                pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                priceCents: number;
+                inclusion: Schema.GqlCOfferAddonInclusion;
+                customerSelected: boolean;
+            }>;
             cook: {
                 cookId: string;
                 pathName: string;
@@ -21838,11 +21849,22 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageQuery = {
                 offers: Array<{
                     bookingRequestOfferId: string;
                     status: Schema.GqlCBookingRequestOfferStatus;
+                    paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
                     plannedPaymentPullDateTime: string | null;
                     configuredMenu: {
                         title: string;
                         courses: Array<{ title: string; meals: Array<{ mealImageUrl: string | null }> }>;
                     } | null;
+                    addons: Array<{
+                        cookOfferAddonId: string;
+                        title: string;
+                        description: string;
+                        imageUrl: string | null;
+                        pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                        priceCents: number;
+                        inclusion: Schema.GqlCOfferAddonInclusion;
+                        customerSelected: boolean;
+                    }>;
                     cook: {
                         cookId: string;
                         pathName: string;
@@ -21891,8 +21913,19 @@ export type GqlCProfileCustomerBookingRequestOfferCheckoutPageUpdatesSubscriptio
             offers: Array<{
                 bookingRequestOfferId: string;
                 status: Schema.GqlCBookingRequestOfferStatus;
+                paymentStatus: Schema.GqlCBookingRequestOfferPaymentStatus;
                 plannedPaymentPullDateTime: string | null;
                 configuredMenu: { title: string; courses: Array<{ title: string; meals: Array<{ mealImageUrl: string | null }> }> } | null;
+                addons: Array<{
+                    cookOfferAddonId: string;
+                    title: string;
+                    description: string;
+                    imageUrl: string | null;
+                    pricingUnit: Schema.GqlCOfferAddonPricingUnit;
+                    priceCents: number;
+                    inclusion: Schema.GqlCOfferAddonInclusion;
+                    customerSelected: boolean;
+                }>;
                 cook: {
                     cookId: string;
                     pathName: string;
@@ -35509,6 +35542,24 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageUserFragmentDoc = {
                                                     ],
                                                 },
                                             },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'addons' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerSelected' } },
+                                                    ],
+                                                },
+                                            },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'cook' },
@@ -85781,6 +85832,24 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageDocument = {
                                             },
                                             {
                                                 kind: 'Field',
+                                                name: { kind: 'Name', value: 'addons' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerSelected' } },
+                                                    ],
+                                                },
+                                            },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
+                                            {
+                                                kind: 'Field',
                                                 name: { kind: 'Name', value: 'cook' },
                                                 selectionSet: {
                                                     kind: 'SelectionSet',
@@ -86014,6 +86083,24 @@ export const ProfileCustomerBookingRequestOfferCheckoutPageUpdatesDocument = {
                                                     ],
                                                 },
                                             },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'addons' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookOfferAddonId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'pricingUnit' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'priceCents' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'inclusion' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'customerSelected' } },
+                                                    ],
+                                                },
+                                            },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'paymentStatus' } },
                                             {
                                                 kind: 'Field',
                                                 name: { kind: 'Name', value: 'cook' },

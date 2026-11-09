@@ -9,6 +9,7 @@ import { bookingRequestCheckoutFunnelArea } from '../../../shared/bookingRequest
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/base/avatar';
 import { Button } from '../../components/base/button';
 import { StatusAlert } from '../../components/base/status-alert';
+import { BookingRequestOfferAddonSelectionList } from '../../components/BookingRequestOfferAddonSelectionList';
 import { CookMenuCardMedia } from '../../components/CookMenuCard';
 import { CookProfileTags } from '../../components/CookProfileTags';
 import { CostBreakdownPanel } from '../../components/CostBreakdownPanel';
@@ -22,6 +23,7 @@ import {
     ProfileCustomerBookingRequestOfferCheckoutPageUpdatesDocument,
     ProfileCustomerBookingRequestOfferPaymentStatusUpdateDocument,
 } from '../../graphql/generated';
+import { useFeatureToggleActive } from '../../hooks/useFeatureToggleActive';
 import { useLocale } from '../../hooks/useLocale';
 import { useUserUpdatesSeed } from '../../hooks/useUserUpdatesSeed';
 import { bookingPaymentPullIsPast } from '../../utils/bookingPaymentPullIsPast';
@@ -176,6 +178,7 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
 }) {
     const locale = useLocale();
     const navigate = useNavigate();
+    const offerAddonsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_ADDONS');
     const seedUser = data.currentSession.user ?? null;
     const seedRequest = seedUser?.bookingRequest ?? null;
     const seedOffer = seedRequest?.offers.find((entry) => entry.bookingRequestOfferId === bookingRequestOfferId) ?? null;
@@ -387,12 +390,27 @@ export function ProfileCustomerBookingRequestOfferCheckoutPage({
                                 {liveOffer.configuredMenu != null ? (
                                     <CheckoutMenuSummary menu={liveOffer.configuredMenu} locale={locale} />
                                 ) : null}
+                                {offerAddonsEnabled && liveOffer.addons.length > 0 && liveOffer.paymentStatus === 'EMPTY' ? (
+                                    <BookingRequestOfferAddonSelectionList
+                                        bookingRequestOfferId={bookingRequestOfferId}
+                                        addons={liveOffer.addons}
+                                        compact
+                                        heading={{ de: 'Zusatzleistungen', en: 'Extras' }[locale]}
+                                        description={
+                                            {
+                                                de: 'Wähle aus, was dazukommen soll. Der Preis aktualisiert sich danach.',
+                                                en: 'Choose what to add. The price updates afterwards.',
+                                            }[locale]
+                                        }
+                                    />
+                                ) : null}
                                 <OfferCostSummary offer={liveOffer} locale={locale} />
                             </aside>
 
                             <div className="grid gap-4">
                                 <Suspense fallback={<div className="min-h-40 animate-pulse rounded-md bg-muted/40" aria-hidden />}>
                                     <StripePaymentPanel
+                                        key={liveOffer.payment.clientSecret}
                                         kind={liveOffer.payment.type}
                                         clientSecret={liveOffer.payment.clientSecret}
                                         publishableKey={liveOffer.payment.publishableKey}

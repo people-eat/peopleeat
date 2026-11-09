@@ -38,6 +38,17 @@ fragment ProfileCustomerBookingRequestOfferCheckoutPageUser on User {
                     }
                 }
             }
+            addons {
+                cookOfferAddonId
+                title
+                description
+                imageUrl
+                pricingUnit
+                priceCents
+                inclusion
+                customerSelected
+            }
+            paymentStatus
             cook {
                 cookId
                 pathName

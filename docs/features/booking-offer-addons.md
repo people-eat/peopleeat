@@ -39,9 +39,11 @@ Attached extras start unselected for the guest.
 ### Guest offer
 
 On the offer tab, when the toggle is on, the offer has extras, negotiation is still open, and payment has not started, the guest sees a card
-per extra (title, description, flat or per-person price). Ticking one saves immediately. The price overview already includes the selected
-lines from the server and updates when the offer refreshes. Required extras, if any, stay checked and cannot be removed. After both sides
-accept, or once payment has started, the picker is hidden. The cost breakdown still shows what was selected.
+per extra (image, title, description, flat or per-person price) with a meal-style `+` / check selection control. Choosing one saves
+immediately. The same picker also appears on checkout in the left summary column below the configured menu while payment is still `EMPTY`,
+so extras can still be toggled before the card is charged. The price overview already includes the selected lines from the server and
+updates when the offer refreshes. Required extras, if any, stay selected and cannot be removed. Once payment has started (`SETUP` / `PAYED`
+/ …), the picker is hidden. The cost breakdown still shows what was selected.
 
 ### Cook offer
 
@@ -61,7 +63,9 @@ not in this surface yet.
 ### Chosen
 
 Admins publish bilingual templates. Cooks copy them or write their own, then choose which library extras ride along with an offer. Guests
-toggle optional extras before accept, and the server reprices the offer.
+toggle optional extras while payment is still empty (offer tab before accept, and checkout after dual-accept), and the server reprices the
+offer. After dual-accept, near-term PaymentIntents are cancelled and re-prepared when the customer total changes; SetupIntent paths only
+need a Stripe refresh when the total drops to €0.
 
 ## Next steps
 
@@ -78,14 +82,17 @@ GraphQL:
 - Admin: `offerAddonTemplates`, `offerAddonTemplate`, `offerAddonTemplateUpsert`, `offerAddonTemplateDelete`
 - Cook: `offerAddons`, `offerAddon`, `offerAddonTemplates`, `offerAddonUpsert`, `offerAddonDelete`, `offerAddonCloneFromTemplate`
 - Create: `BookingRequestOfferCreate.suggestedAddonIds`
-- Guest: `bookingRequestOfferAddonSelectionUpdate` (reprices, publishes `userUpdates` so the subscribed cost breakdown refreshes)
+- Guest: `bookingRequestOfferAddonSelectionUpdate` (reprices, publishes `userUpdates` so the subscribed cost breakdown refreshes; after
+  dual-accept with `paymentStatus: EMPTY`, may cancel/re-prepare Stripe)
 - Offer types expose `addons` and `addonPriceCents`
 
 UI:
 
 - `AdminOfferAddonTemplatesPage` / `AdminOfferAddonTemplatePage`
 - `ProfileCookOfferAddonsPage` / `ProfileCookOfferAddonEditPage` (nav gated in `CookSidebar`)
-- Guest picker on `ProfileCustomerBookingRequestOfferPage` Offer tab
+- Shared guest picker `BookingRequestOfferAddonSelectionList` (image cards + `+` / check, same pattern as meal selection)
+- Guest picker on `ProfileCustomerBookingRequestOfferPage` Offer tab and `ProfileCustomerBookingRequestOfferCheckoutPage` left sidebar
+  (below configured menu)
 - Library picker on the price step of `ProfileCookBookingRequestOfferCreatePage` (`addons=` draft)
 - Readonly list on `ProfileCookBookingRequestOfferPage` Offer tab
 

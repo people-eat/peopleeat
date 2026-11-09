@@ -28,13 +28,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/base/avatar';
 import { Button } from '../../components/base/button';
 import { Card, CardContent } from '../../components/base/card';
-import { Checkbox } from '../../components/base/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../../components/base/dropdown-menu';
 import { NotificationBadge } from '../../components/base/notification-badge';
 import { StatusAlert } from '../../components/base/status-alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { BookingEventCalendarLink } from '../../components/BookingEventCalendarLink';
 import { BookingRequestDiscountEditor } from '../../components/BookingRequestDiscountEditor';
+import { BookingRequestOfferAddonSelectionList } from '../../components/BookingRequestOfferAddonSelectionList';
 import { BookingRequestOfferAttentionBanner } from '../../components/BookingRequestOfferAttentionBanner';
 import { BookingRequestOfferCallControls } from '../../components/BookingRequestOfferCallPanel';
 import { BookingRequestOfferCallSessionProvider } from '../../components/BookingRequestOfferCallSession';
@@ -68,7 +68,6 @@ import type {
 import {
     ProfileBookingRequestDiscountUpdateDocument,
     ProfileCustomerBookingRequestOfferAcceptDocument,
-    ProfileCustomerBookingRequestOfferAddonSelectionUpdateDocument,
     ProfileCustomerBookingRequestOfferCallCreateDocument,
     ProfileCustomerBookingRequestOfferCallJoinDocument,
     ProfileCustomerBookingRequestOfferCallLeaveDocument,
@@ -93,7 +92,6 @@ import { bookingPaymentPullIsPast } from '../../utils/bookingPaymentPullIsPast';
 import { cn } from '../../utils/cn';
 import type { Locale } from '../../utils/locale';
 import { localePath } from '../../utils/locale';
-import { offerAddonPriceLabel } from '../../utils/offerAddonPriceLabel';
 
 export {
     profileCustomerBookingRequestOfferPageDescription,
@@ -850,8 +848,6 @@ function OfferTabPanel({
     onCancelAmendment: () => Promise<void>;
 }) {
     const [, updateDiscount] = useMutation(ProfileBookingRequestDiscountUpdateDocument);
-    const [, updateAddonSelection] = useMutation(ProfileCustomerBookingRequestOfferAddonSelectionUpdateDocument);
-    const [pendingAddonId, setPendingAddonId] = useState<string | null>(null);
     const offerAddonsEnabled = useFeatureToggleActive('BOOKING_REQUEST_OFFER_ADDONS');
     const cook = offer.cook;
     const biographyText =
@@ -1044,71 +1040,17 @@ function OfferTabPanel({
                 </section>
 
                 {showAddonPicker ? (
-                    <section className="grid gap-3">
-                        <h2 className="font-serif text-2xl/tight text-foreground">{{ de: 'Zusatzleistungen', en: 'Extras' }[locale]}</h2>
-                        <p className="text-sm text-muted-foreground">
+                    <BookingRequestOfferAddonSelectionList
+                        bookingRequestOfferId={bookingRequestOfferId}
+                        addons={offer.addons}
+                        heading={{ de: 'Zusatzleistungen', en: 'Extras' }[locale]}
+                        description={
                             {
-                                {
-                                    de: 'Wähle aus, was dazukommen soll. Der Preis aktualisiert sich danach.',
-                                    en: 'Choose what to add. The price updates afterwards.',
-                                }[locale]
-                            }
-                        </p>
-                        <ul className="grid gap-3">
-                            {offer.addons.map((addon) => {
-                                const required = addon.inclusion === 'REQUIRED';
-                                const pending = pendingAddonId === addon.cookOfferAddonId;
-                                return (
-                                    <li key={addon.cookOfferAddonId}>
-                                        <label
-                                            className={cn(
-                                                'flex cursor-pointer items-start gap-3 rounded-xl border p-4',
-                                                addon.customerSelected && 'border-primary',
-                                                (required || pending) && 'cursor-default',
-                                            )}
-                                        >
-                                            <Checkbox
-                                                checked={required || addon.customerSelected}
-                                                disabled={required || pending || pendingAddonId != null}
-                                                aria-label={addon.title}
-                                                onCheckedChange={(checked) => {
-                                                    if (required || checked === 'indeterminate') return;
-                                                    setPendingAddonId(addon.cookOfferAddonId);
-                                                    void updateAddonSelection({
-                                                        bookingRequestOfferId,
-                                                        selections: [{ cookOfferAddonId: addon.cookOfferAddonId, selected: checked }],
-                                                    }).then((result) => {
-                                                        setPendingAddonId(null);
-                                                        if (
-                                                            result.error ||
-                                                            !result.data?.user.bookingRequestOfferAddonSelectionUpdate.success
-                                                        ) {
-                                                            toast.error(
-                                                                {
-                                                                    de: 'Die Auswahl konnte nicht gespeichert werden.',
-                                                                    en: 'Could not save that choice.',
-                                                                }[locale],
-                                                            );
-                                                        }
-                                                    });
-                                                }}
-                                            />
-                                            <span className="grid min-w-0 gap-1">
-                                                <span className="font-medium text-foreground">{addon.title}</span>
-                                                {addon.description.trim().length > 0 ? (
-                                                    <span className="text-sm text-muted-foreground">{addon.description}</span>
-                                                ) : null}
-                                                <span className="text-sm text-muted-foreground">
-                                                    {offerAddonPriceLabel(addon.priceCents, addon.pricingUnit, locale)}
-                                                    {required ? ` (${{ de: 'enthalten', en: 'included' }[locale]})` : null}
-                                                </span>
-                                            </span>
-                                        </label>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </section>
+                                de: 'Wähle aus, was dazukommen soll. Der Preis aktualisiert sich danach.',
+                                en: 'Choose what to add. The price updates afterwards.',
+                            }[locale]
+                        }
+                    />
                 ) : null}
 
                 <section className="grid gap-4">
