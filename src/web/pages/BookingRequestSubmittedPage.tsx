@@ -8,13 +8,13 @@ import { bookingRequestKitchenDetailsDraftEmpty, bookingRequestKitchenDetailsDra
 import { AppImage } from '../components/AppImage';
 import { Button } from '../components/base/button';
 import { StatusAlert } from '../components/base/status-alert';
+import type { BookingRequestKitchenDetailsPhoto } from '../components/BookingRequestKitchenDetailsFields';
 import {
     bookingRequestKitchenDetailsDraftFromGql,
     bookingRequestKitchenDetailsInputFromDraft,
     bookingRequestKitchenDetailsPhotosFromGql,
     BookingRequestKitchenDetailsSaveCard,
 } from '../components/BookingRequestKitchenDetailsFields';
-import type { BookingRequestKitchenDetailsPhoto } from '../components/BookingRequestKitchenDetailsFields';
 import type { GqlCBookingRequestSubmittedPageQuery } from '../graphql/generated';
 import { BookingRequestSubmittedKitchenDetailsUpdateDocument } from '../graphql/generated';
 import { useLocale } from '../hooks/useLocale';
