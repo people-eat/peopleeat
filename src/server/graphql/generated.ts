@@ -1094,6 +1094,7 @@ export interface GqlSAdminCookMeal {
     createdAt: Scalars['DateTime']['output'];
     deletedAt?: Maybe<Scalars['DateTime']['output']>;
     description: Scalars['String']['output'];
+    generatedAt?: Maybe<Scalars['DateTime']['output']>;
     imageFileUploadId?: Maybe<Scalars['ID']['output']>;
     imageUrl?: Maybe<Scalars['String']['output']>;
     mealId: Scalars['ID']['output'];
@@ -1141,6 +1142,7 @@ export interface GqlSAdminCookMenu {
     createdAt: Scalars['DateTime']['output'];
     deletedAt?: Maybe<Scalars['DateTime']['output']>;
     description: Scalars['String']['output'];
+    generatedAt?: Maybe<Scalars['DateTime']['output']>;
     menuId: Scalars['ID']['output'];
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     title: Scalars['String']['output'];
@@ -3670,6 +3672,7 @@ export interface GqlSCookMeal {
     __typename?: 'CookMeal';
     createdAt: Scalars['DateTime']['output'];
     description: Scalars['String']['output'];
+    generatedAt?: Maybe<Scalars['DateTime']['output']>;
     imageFileUploadId?: Maybe<Scalars['ID']['output']>;
     imageUrl?: Maybe<Scalars['String']['output']>;
     mealId: Scalars['ID']['output'];
@@ -3724,6 +3727,7 @@ export interface GqlSCookMenu {
     courses: Array<GqlSCookMenuCourse>;
     createdAt: Scalars['DateTime']['output'];
     description: Scalars['String']['output'];
+    generatedAt?: Maybe<Scalars['DateTime']['output']>;
     menuId: Scalars['ID']['output'];
     offerContext?: Maybe<GqlSCookMenuOfferContext>;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -3771,6 +3775,45 @@ export interface GqlSCookMenuSuggestion {
     title: Scalars['String']['output'];
 }
 
+export interface GqlSCookMenuSuggestionDraft {
+    __typename?: 'CookMenuSuggestionDraft';
+    courses: Array<GqlSCookMenuSuggestionDraftCourse>;
+    description: Scalars['String']['output'];
+    title: Scalars['String']['output'];
+}
+
+export interface GqlSCookMenuSuggestionDraftCourse {
+    __typename?: 'CookMenuSuggestionDraftCourse';
+    mealOptions: Array<GqlSCookMenuSuggestionDraftMealOption>;
+    title: Scalars['String']['output'];
+}
+
+export type GqlSCookMenuSuggestionDraftCourseInput = {
+    mealOptions: Array<GqlSCookMenuSuggestionDraftMealOptionInput>;
+    title: Scalars['String']['input'];
+};
+
+export type GqlSCookMenuSuggestionDraftInput = {
+    courses: Array<GqlSCookMenuSuggestionDraftCourseInput>;
+    description: Scalars['String']['input'];
+    title: Scalars['String']['input'];
+};
+
+export interface GqlSCookMenuSuggestionDraftMealOption {
+    __typename?: 'CookMenuSuggestionDraftMealOption';
+    description?: Maybe<Scalars['String']['output']>;
+    mealId?: Maybe<Scalars['ID']['output']>;
+    title?: Maybe<Scalars['String']['output']>;
+    type: GqlSCookMenuSuggestionMealOptionType;
+}
+
+export type GqlSCookMenuSuggestionDraftMealOptionInput = {
+    description?: InputMaybe<Scalars['String']['input']>;
+    mealId?: InputMaybe<Scalars['ID']['input']>;
+    title?: InputMaybe<Scalars['String']['input']>;
+    type: GqlSCookMenuSuggestionMealOptionType;
+};
+
 export type GqlSCookMenuSuggestionMealOptionType = 'EXISTING_MEAL' | 'NEW_MEAL';
 
 export type GqlSCookMenuUpsert = {
@@ -3817,8 +3860,9 @@ export interface GqlSCookMutation {
     mealUpsert: GqlSMutationResult;
     menuCopy: GqlSMutationResult;
     menuDelete: GqlSMutationResult;
+    menuSuggestionApply: GqlSMutationResult;
     menuSuggestionFromInventory: GqlSCookMenuSuggestion;
-    menuSuggestionFromText: GqlSCookMenuSuggestion;
+    menuSuggestionFromText: GqlSCookMenuSuggestionDraft;
     menuSyncToTemplate: GqlSMutationResult;
     menuTitleDescriptionSuggest: GqlSCookMenuSuggestion;
     menuUpsert: GqlSMutationResult;
@@ -3977,12 +4021,17 @@ export type GqlSCookMutationMenuDeleteArgs = {
     menuId: Scalars['ID']['input'];
 };
 
+export type GqlSCookMutationMenuSuggestionApplyArgs = {
+    suggestion: GqlSCookMenuSuggestionDraftInput;
+};
+
 export type GqlSCookMutationMenuSuggestionFromInventoryArgs = {
     brief?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GqlSCookMutationMenuSuggestionFromTextArgs = {
-    text: Scalars['String']['input'];
+    fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    text?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GqlSCookMutationMenuSyncToTemplateArgs = {
@@ -4236,6 +4285,7 @@ export type GqlSDateTimeRange = {
 
 export type GqlSFeatureToggleKey =
     | 'AI_BOOKING_REQUEST_MESSAGE'
+    | 'AI_MENU_CREATE'
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
@@ -6215,6 +6265,12 @@ export type GqlSResolversTypes = ResolversObject<{
     CookMenuCriterion: GqlSCookMenuCriterion;
     CookMenuOfferContext: ResolverTypeWrapper<GqlSCookMenuOfferContext>;
     CookMenuSuggestion: ResolverTypeWrapper<GqlSCookMenuSuggestion>;
+    CookMenuSuggestionDraft: ResolverTypeWrapper<GqlSCookMenuSuggestionDraft>;
+    CookMenuSuggestionDraftCourse: ResolverTypeWrapper<GqlSCookMenuSuggestionDraftCourse>;
+    CookMenuSuggestionDraftCourseInput: GqlSCookMenuSuggestionDraftCourseInput;
+    CookMenuSuggestionDraftInput: GqlSCookMenuSuggestionDraftInput;
+    CookMenuSuggestionDraftMealOption: ResolverTypeWrapper<GqlSCookMenuSuggestionDraftMealOption>;
+    CookMenuSuggestionDraftMealOptionInput: GqlSCookMenuSuggestionDraftMealOptionInput;
     CookMenuSuggestionMealOptionType: GqlSCookMenuSuggestionMealOptionType;
     CookMenuUpsert: GqlSCookMenuUpsert;
     CookMutation: ResolverTypeWrapper<GqlSCookMutation>;
@@ -6754,6 +6810,12 @@ export type GqlSResolversParentTypes = ResolversObject<{
     CookMenuCriterion: GqlSCookMenuCriterion;
     CookMenuOfferContext: GqlSCookMenuOfferContext;
     CookMenuSuggestion: GqlSCookMenuSuggestion;
+    CookMenuSuggestionDraft: GqlSCookMenuSuggestionDraft;
+    CookMenuSuggestionDraftCourse: GqlSCookMenuSuggestionDraftCourse;
+    CookMenuSuggestionDraftCourseInput: GqlSCookMenuSuggestionDraftCourseInput;
+    CookMenuSuggestionDraftInput: GqlSCookMenuSuggestionDraftInput;
+    CookMenuSuggestionDraftMealOption: GqlSCookMenuSuggestionDraftMealOption;
+    CookMenuSuggestionDraftMealOptionInput: GqlSCookMenuSuggestionDraftMealOptionInput;
     CookMenuUpsert: GqlSCookMenuUpsert;
     CookMutation: GqlSCookMutation;
     CookOfferAddon: GqlSCookOfferAddon;
@@ -7895,6 +7957,7 @@ export type GqlSAdminCookMealResolvers<
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     deletedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    generatedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     imageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     imageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     mealId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
@@ -7918,6 +7981,7 @@ export type GqlSAdminCookMenuResolvers<
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     deletedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    generatedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     menuId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     publishedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     title?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -10211,6 +10275,7 @@ export type GqlSCookMealResolvers<
 > = ResolversObject<{
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    generatedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     imageFileUploadId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     imageUrl?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
     mealId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
@@ -10262,6 +10327,7 @@ export type GqlSCookMenuResolvers<
     courses?: Resolver<Array<GqlSResolversTypes['CookMenuCourse']>, ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    generatedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     menuId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     offerContext?: Resolver<Maybe<GqlSResolversTypes['CookMenuOfferContext']>, ParentType, ContextType>;
     publishedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -10305,6 +10371,35 @@ export type GqlSCookMenuSuggestionResolvers<
     courses?: Resolver<Array<GqlSResolversTypes['CookMenuCourseSuggestion']>, ParentType, ContextType>;
     description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     title?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type GqlSCookMenuSuggestionDraftResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookMenuSuggestionDraft'] = GqlSResolversParentTypes['CookMenuSuggestionDraft'],
+> = ResolversObject<{
+    courses?: Resolver<Array<GqlSResolversTypes['CookMenuSuggestionDraftCourse']>, ParentType, ContextType>;
+    description?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    title?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type GqlSCookMenuSuggestionDraftCourseResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookMenuSuggestionDraftCourse'] =
+        GqlSResolversParentTypes['CookMenuSuggestionDraftCourse'],
+> = ResolversObject<{
+    mealOptions?: Resolver<Array<GqlSResolversTypes['CookMenuSuggestionDraftMealOption']>, ParentType, ContextType>;
+    title?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type GqlSCookMenuSuggestionDraftMealOptionResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['CookMenuSuggestionDraftMealOption'] =
+        GqlSResolversParentTypes['CookMenuSuggestionDraftMealOption'],
+> = ResolversObject<{
+    description?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    mealId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
+    title?: Resolver<Maybe<GqlSResolversTypes['String']>, ParentType, ContextType>;
+    type?: Resolver<GqlSResolversTypes['CookMenuSuggestionMealOptionType'], ParentType, ContextType>;
 }>;
 
 export type GqlSCookMutationResolvers<
@@ -10510,6 +10605,12 @@ export type GqlSCookMutationResolvers<
         ContextType,
         RequireFields<GqlSCookMutationMenuDeleteArgs, 'menuId'>
     >;
+    menuSuggestionApply?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationMenuSuggestionApplyArgs, 'suggestion'>
+    >;
     menuSuggestionFromInventory?: Resolver<
         GqlSResolversTypes['CookMenuSuggestion'],
         ParentType,
@@ -10517,10 +10618,10 @@ export type GqlSCookMutationResolvers<
         Partial<GqlSCookMutationMenuSuggestionFromInventoryArgs>
     >;
     menuSuggestionFromText?: Resolver<
-        GqlSResolversTypes['CookMenuSuggestion'],
+        GqlSResolversTypes['CookMenuSuggestionDraft'],
         ParentType,
         ContextType,
-        RequireFields<GqlSCookMutationMenuSuggestionFromTextArgs, 'text'>
+        Partial<GqlSCookMutationMenuSuggestionFromTextArgs>
     >;
     menuSyncToTemplate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -12242,6 +12343,9 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     CookMenuCourseSuggestion?: GqlSCookMenuCourseSuggestionResolvers<ContextType>;
     CookMenuOfferContext?: GqlSCookMenuOfferContextResolvers<ContextType>;
     CookMenuSuggestion?: GqlSCookMenuSuggestionResolvers<ContextType>;
+    CookMenuSuggestionDraft?: GqlSCookMenuSuggestionDraftResolvers<ContextType>;
+    CookMenuSuggestionDraftCourse?: GqlSCookMenuSuggestionDraftCourseResolvers<ContextType>;
+    CookMenuSuggestionDraftMealOption?: GqlSCookMenuSuggestionDraftMealOptionResolvers<ContextType>;
     CookMutation?: GqlSCookMutationResolvers<ContextType>;
     CookOfferAddon?: GqlSCookOfferAddonResolvers<ContextType>;
     CookPresenceLinks?: GqlSCookPresenceLinksResolvers<ContextType>;
@@ -13055,6 +13159,7 @@ export const GqlSCookStripeStatusSchema: z.ZodType<
 
 export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'AI_BOOKING_REQUEST_MESSAGE'
+    | 'AI_MENU_CREATE'
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
@@ -13079,6 +13184,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'PUBLICATION_MENUS'
     | 'SIGN_IN_GOOGLE',
     | 'AI_BOOKING_REQUEST_MESSAGE'
+    | 'AI_MENU_CREATE'
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
@@ -13104,6 +13210,7 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'SIGN_IN_GOOGLE'
 > = z.enum([
     'AI_BOOKING_REQUEST_MESSAGE',
+    'AI_MENU_CREATE',
     'AI_MENU_EVALUATION',
     'ASSISTANT_COOK',
     'ASSISTANT_CUSTOMER',
@@ -13960,6 +14067,30 @@ export function GqlSCookMenuCriterionSchema(): z.ZodObject<Properties<GqlSCookMe
     return z.object({
         searchText: z.string().nullish(),
     });
+}
+
+export function GqlSCookMenuSuggestionDraftCourseInputSchema(): z.ZodObject<Properties<GqlSCookMenuSuggestionDraftCourseInput>> {
+    return z.object({
+        mealOptions: z.array(GqlSCookMenuSuggestionDraftMealOptionInputSchema()),
+        title: z.string(),
+    }) as z.ZodObject<Properties<GqlSCookMenuSuggestionDraftCourseInput>>;
+}
+
+export function GqlSCookMenuSuggestionDraftInputSchema(): z.ZodObject<Properties<GqlSCookMenuSuggestionDraftInput>> {
+    return z.object({
+        courses: z.array(GqlSCookMenuSuggestionDraftCourseInputSchema()),
+        description: z.string(),
+        title: z.string(),
+    }) as z.ZodObject<Properties<GqlSCookMenuSuggestionDraftInput>>;
+}
+
+export function GqlSCookMenuSuggestionDraftMealOptionInputSchema(): z.ZodObject<Properties<GqlSCookMenuSuggestionDraftMealOptionInput>> {
+    return z.object({
+        description: z.string().nullish(),
+        mealId: z.string().nullish(),
+        title: z.string().nullish(),
+        type: GqlSCookMenuSuggestionMealOptionTypeSchema,
+    }) as z.ZodObject<Properties<GqlSCookMenuSuggestionDraftMealOptionInput>>;
 }
 
 export function GqlSCookMenuUpsertSchema(): z.ZodObject<Properties<GqlSCookMenuUpsert>> {

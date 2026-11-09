@@ -1,9 +1,12 @@
 // Types a signed-in user may store through POST /api/file-uploads.
-// Bitmap images, PDF, and the audio types the chat player understands.
-// HTML, SVG, and XML stay off this list: the download route serves bytes
-// from the app origin, and those types execute when opened in a tab.
+// Bitmap images, PDF, plain text, Word (.docx), and the audio types the chat
+// player understands. HTML, SVG, and XML stay off this list: the download
+// route serves bytes from the app origin, and those types execute when opened
+// in a tab.
 
 const FILE_UPLOAD_IMAGE_MEDIA_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const;
+
+const FILE_UPLOAD_DOCUMENT_MEDIA_TYPES = ['text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'] as const;
 
 const FILE_UPLOAD_AUDIO_MEDIA_TYPES = [
     'audio/webm',
@@ -15,7 +18,12 @@ const FILE_UPLOAD_AUDIO_MEDIA_TYPES = [
     'audio/x-m4a',
 ] as const;
 
-const FILE_UPLOAD_MEDIA_TYPES = [...FILE_UPLOAD_IMAGE_MEDIA_TYPES, 'application/pdf', ...FILE_UPLOAD_AUDIO_MEDIA_TYPES] as const;
+const FILE_UPLOAD_MEDIA_TYPES = [
+    ...FILE_UPLOAD_IMAGE_MEDIA_TYPES,
+    'application/pdf',
+    ...FILE_UPLOAD_DOCUMENT_MEDIA_TYPES,
+    ...FILE_UPLOAD_AUDIO_MEDIA_TYPES,
+] as const;
 
 const ALLOWED = new Set<string>(FILE_UPLOAD_MEDIA_TYPES);
 const INLINE = new Set<string>([...FILE_UPLOAD_IMAGE_MEDIA_TYPES, ...FILE_UPLOAD_AUDIO_MEDIA_TYPES]);

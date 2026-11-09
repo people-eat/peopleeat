@@ -4,6 +4,7 @@
  */
 export const featureToggleKeys = [
     'AI_MENU_EVALUATION',
+    'AI_MENU_CREATE',
     'AI_BOOKING_REQUEST_MESSAGE',
     'COOK_BIOGRAPHY_AI_WRITE',
     'COOK_WALLET_STRIPE_BALANCE',

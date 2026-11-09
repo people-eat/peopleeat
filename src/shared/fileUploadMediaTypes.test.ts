@@ -8,9 +8,11 @@ import {
 } from './fileUploadMediaTypes';
 
 describe('fileUploadMediaTypes', () => {
-    it('allows chat images, pdf, and audio', () => {
+    it('allows chat images, pdf, documents, and audio', () => {
         expect(fileUploadMediaTypeAllowed('image/webp')).toBe(true);
         expect(fileUploadMediaTypeAllowed('application/pdf')).toBe(true);
+        expect(fileUploadMediaTypeAllowed('text/plain')).toBe(true);
+        expect(fileUploadMediaTypeAllowed('application/vnd.openxmlformats-officedocument.wordprocessingml.document')).toBe(true);
         expect(fileUploadMediaTypeAllowed('audio/webm;codecs=opus')).toBe(true);
     });
 

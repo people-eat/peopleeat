@@ -16,6 +16,7 @@ export type CookMenuCardMenu = {
     courseCount: number;
     courseMealOptionImages?: ReadonlyArray<string>;
     publishedAt?: string | null;
+    generatedAt?: string | null;
     deletedAt?: string | null;
 };
 
@@ -170,6 +171,7 @@ export function CookMenuCard({
                             {menu.publishedAt ? { de: 'Veröffentlicht', en: 'Published' }[locale] : { de: 'Entwurf', en: 'Draft' }[locale]}
                         </Badge>
                     ) : null}
+                    {menu.generatedAt != null ? <Badge variant="outline">{{ de: 'Generiert', en: 'Generated' }[locale]}</Badge> : null}
                     <span className="text-sm text-muted-foreground">{courseLabel}</span>
                     {isDeleted || meta != null ? (
                         <span className="text-sm text-muted-foreground">

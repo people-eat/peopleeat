@@ -659,6 +659,7 @@ type CookMeal {
     imageFileUploadId: ID
     imageUrl: String
     publishedAt: DateTime
+    generatedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
     relationships: CookMealRelationships!
@@ -691,6 +692,7 @@ type CookMenu {
     title: String!
     description: String!
     publishedAt: DateTime
+    generatedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
     copyOfMenuId: ID
@@ -1322,6 +1324,44 @@ type CookMenuSuggestion {
     courses: [CookMenuCourseSuggestion!]!
 }
 
+# Draft AI menu (not yet persisted). Meal options keep EXISTING_MEAL / NEW_MEAL
+# so the cook can review reuse vs new dishes before `menuSuggestionApply`.
+type CookMenuSuggestionDraftMealOption {
+    type: CookMenuSuggestionMealOptionType!
+    mealId: ID
+    title: String
+    description: String
+}
+
+type CookMenuSuggestionDraftCourse {
+    title: String!
+    mealOptions: [CookMenuSuggestionDraftMealOption!]!
+}
+
+type CookMenuSuggestionDraft {
+    title: String!
+    description: String!
+    courses: [CookMenuSuggestionDraftCourse!]!
+}
+
+input CookMenuSuggestionDraftMealOptionInput {
+    type: CookMenuSuggestionMealOptionType!
+    mealId: ID
+    title: String
+    description: String
+}
+
+input CookMenuSuggestionDraftCourseInput {
+    title: String!
+    mealOptions: [CookMenuSuggestionDraftMealOptionInput!]!
+}
+
+input CookMenuSuggestionDraftInput {
+    title: String!
+    description: String!
+    courses: [CookMenuSuggestionDraftCourseInput!]!
+}
+
 # Cook write namespace — gated by `guardCookMutation` (session user has a `Cooks`
 # row). Stamps `cookId` (= `Users.userId`) onto the parent in TypeScript only
 # (see `extensions.ts`) for downstream commands.
@@ -1358,9 +1398,14 @@ type CookMutation {
     # Overwrite the inventory template (`copyOfMenuId`) with this offer-scoped
     # copy's title, description, and courses. Returns the template `menuId`.
     menuSyncToTemplate(menuId: ID!): MutationResult!
-    # AI: derive a structured menu from free text. Inserts NEW_MEAL drafts;
-    # returns title / empty description / courses with mealIds.
-    menuSuggestionFromText(text: String!): CookMenuSuggestion!
+    # AI: derive a structured menu from notes and/or uploaded files (PDF, images,
+    # text, Word). Matches existing meals; does not insert until `menuSuggestionApply`.
+    # Gated by AI_MENU_CREATE. At least one of text / fileUploadIds required.
+    menuSuggestionFromText(text: String, fileUploadIds: [ID!]): CookMenuSuggestionDraft!
+    # Persist a reviewed suggestion as a draft inventory menu. Inserts NEW_MEAL
+    # drafts and the menu (both stamped generatedAt). Returns menuId as referenceId.
+    # Gated by AI_MENU_CREATE.
+    menuSuggestionApply(suggestion: CookMenuSuggestionDraftInput!): MutationResult!
     # AI: assemble a menu from the cook's meal inventory (optional free-text
     # brief). Inserts NEW_MEAL drafts; returns title / description / courses
     # with mealIds. Own AiGenerations kind — see ai-generations.md.
@@ -3678,6 +3723,7 @@ type AdminCookMeal {
     imageFileUploadId: ID
     imageUrl: String
     publishedAt: DateTime
+    generatedAt: DateTime
     deletedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -3760,6 +3806,7 @@ type AdminCookMenu {
     copyOfMenuId: ID
     bookingRequestOfferId: ID
     publishedAt: DateTime
+    generatedAt: DateTime
     deletedAt: DateTime
     createdAt: DateTime!
     updatedAt: DateTime!
@@ -6000,6 +6047,7 @@ type PublicWebPageQuery {
 
 enum FeatureToggleKey {
     AI_MENU_EVALUATION
+    AI_MENU_CREATE
     AI_BOOKING_REQUEST_MESSAGE
     COOK_BIOGRAPHY_AI_WRITE
     COOK_WALLET_STRIPE_BALANCE

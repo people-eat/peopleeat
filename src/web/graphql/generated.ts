@@ -1097,6 +1097,7 @@ export interface GqlCAdminCookMeal {
     createdAt: Scalars['DateTime']['output'];
     deletedAt?: Maybe<Scalars['DateTime']['output']>;
     description: Scalars['String']['output'];
+    generatedAt?: Maybe<Scalars['DateTime']['output']>;
     imageFileUploadId?: Maybe<Scalars['ID']['output']>;
     imageUrl?: Maybe<Scalars['String']['output']>;
     mealId: Scalars['ID']['output'];
@@ -1144,6 +1145,7 @@ export interface GqlCAdminCookMenu {
     createdAt: Scalars['DateTime']['output'];
     deletedAt?: Maybe<Scalars['DateTime']['output']>;
     description: Scalars['String']['output'];
+    generatedAt?: Maybe<Scalars['DateTime']['output']>;
     menuId: Scalars['ID']['output'];
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     title: Scalars['String']['output'];
@@ -3673,6 +3675,7 @@ export interface GqlCCookMeal {
     __typename?: 'CookMeal';
     createdAt: Scalars['DateTime']['output'];
     description: Scalars['String']['output'];
+    generatedAt?: Maybe<Scalars['DateTime']['output']>;
     imageFileUploadId?: Maybe<Scalars['ID']['output']>;
     imageUrl?: Maybe<Scalars['String']['output']>;
     mealId: Scalars['ID']['output'];
@@ -3727,6 +3730,7 @@ export interface GqlCCookMenu {
     courses: Array<GqlCCookMenuCourse>;
     createdAt: Scalars['DateTime']['output'];
     description: Scalars['String']['output'];
+    generatedAt?: Maybe<Scalars['DateTime']['output']>;
     menuId: Scalars['ID']['output'];
     offerContext?: Maybe<GqlCCookMenuOfferContext>;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
@@ -3774,6 +3778,45 @@ export interface GqlCCookMenuSuggestion {
     title: Scalars['String']['output'];
 }
 
+export interface GqlCCookMenuSuggestionDraft {
+    __typename?: 'CookMenuSuggestionDraft';
+    courses: Array<GqlCCookMenuSuggestionDraftCourse>;
+    description: Scalars['String']['output'];
+    title: Scalars['String']['output'];
+}
+
+export interface GqlCCookMenuSuggestionDraftCourse {
+    __typename?: 'CookMenuSuggestionDraftCourse';
+    mealOptions: Array<GqlCCookMenuSuggestionDraftMealOption>;
+    title: Scalars['String']['output'];
+}
+
+export type GqlCCookMenuSuggestionDraftCourseInput = {
+    mealOptions: Array<GqlCCookMenuSuggestionDraftMealOptionInput>;
+    title: Scalars['String']['input'];
+};
+
+export type GqlCCookMenuSuggestionDraftInput = {
+    courses: Array<GqlCCookMenuSuggestionDraftCourseInput>;
+    description: Scalars['String']['input'];
+    title: Scalars['String']['input'];
+};
+
+export interface GqlCCookMenuSuggestionDraftMealOption {
+    __typename?: 'CookMenuSuggestionDraftMealOption';
+    description?: Maybe<Scalars['String']['output']>;
+    mealId?: Maybe<Scalars['ID']['output']>;
+    title?: Maybe<Scalars['String']['output']>;
+    type: GqlCCookMenuSuggestionMealOptionType;
+}
+
+export type GqlCCookMenuSuggestionDraftMealOptionInput = {
+    description?: InputMaybe<Scalars['String']['input']>;
+    mealId?: InputMaybe<Scalars['ID']['input']>;
+    title?: InputMaybe<Scalars['String']['input']>;
+    type: GqlCCookMenuSuggestionMealOptionType;
+};
+
 export type GqlCCookMenuSuggestionMealOptionType = 'EXISTING_MEAL' | 'NEW_MEAL';
 
 export type GqlCCookMenuUpsert = {
@@ -3820,8 +3863,9 @@ export interface GqlCCookMutation {
     mealUpsert: GqlCMutationResult;
     menuCopy: GqlCMutationResult;
     menuDelete: GqlCMutationResult;
+    menuSuggestionApply: GqlCMutationResult;
     menuSuggestionFromInventory: GqlCCookMenuSuggestion;
-    menuSuggestionFromText: GqlCCookMenuSuggestion;
+    menuSuggestionFromText: GqlCCookMenuSuggestionDraft;
     menuSyncToTemplate: GqlCMutationResult;
     menuTitleDescriptionSuggest: GqlCCookMenuSuggestion;
     menuUpsert: GqlCMutationResult;
@@ -3980,12 +4024,17 @@ export type GqlCCookMutationMenuDeleteArgs = {
     menuId: Scalars['ID']['input'];
 };
 
+export type GqlCCookMutationMenuSuggestionApplyArgs = {
+    suggestion: GqlCCookMenuSuggestionDraftInput;
+};
+
 export type GqlCCookMutationMenuSuggestionFromInventoryArgs = {
     brief?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GqlCCookMutationMenuSuggestionFromTextArgs = {
-    text: Scalars['String']['input'];
+    fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+    text?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GqlCCookMutationMenuSyncToTemplateArgs = {
@@ -4239,6 +4288,7 @@ export type GqlCDateTimeRange = {
 
 export type GqlCFeatureToggleKey =
     | 'AI_BOOKING_REQUEST_MESSAGE'
+    | 'AI_MENU_CREATE'
     | 'AI_MENU_EVALUATION'
     | 'ASSISTANT_COOK'
     | 'ASSISTANT_CUSTOMER'
@@ -7659,6 +7709,59 @@ export type GqlCCookMealEditorMealUpsertMutationVariables = Exact<{
 
 export type GqlCCookMealEditorMealUpsertMutation = { user: { cook: { mealUpsert: { success: boolean; referenceId: string | null } } } };
 
+export type GqlCCookMenuCreateDialogMealsQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCCookMenuCreateDialogMealsQuery = {
+    currentSession: {
+        user: {
+            cook: {
+                cookId: string;
+                meals: Array<{
+                    mealId: string;
+                    title: string;
+                    description: string;
+                    imageUrl: string | null;
+                    publishedAt: string | null;
+                    generatedAt: string | null;
+                }>;
+            } | null;
+        } | null;
+    };
+};
+
+export type GqlCCookMenuCreateDialogSuggestionFromTextMutationVariables = Exact<{
+    text?: string | null | undefined;
+    fileUploadIds?: Array<string> | string | null | undefined;
+}>;
+
+export type GqlCCookMenuCreateDialogSuggestionFromTextMutation = {
+    user: {
+        cook: {
+            menuSuggestionFromText: {
+                title: string;
+                description: string;
+                courses: Array<{
+                    title: string;
+                    mealOptions: Array<{
+                        type: Schema.GqlCCookMenuSuggestionMealOptionType;
+                        mealId: string | null;
+                        title: string | null;
+                        description: string | null;
+                    }>;
+                }>;
+            };
+        };
+    };
+};
+
+export type GqlCCookMenuCreateDialogSuggestionApplyMutationVariables = Exact<{
+    suggestion: Schema.GqlCCookMenuSuggestionDraftInput;
+}>;
+
+export type GqlCCookMenuCreateDialogSuggestionApplyMutation = {
+    user: { cook: { menuSuggestionApply: { success: boolean; referenceId: string | null } } };
+};
+
 export type GqlCCookSidebarNavBadgesFragment = {
     cookId: string;
     attentionCounts: { bookingRequestPoolCount: number; bookingRequestOfferUnreadCount: number; walletNeedsAttention: boolean };
@@ -11005,6 +11108,7 @@ export type GqlCAdminBookingRequestOfferPageOfferFragment = {
         menuId: string;
         title: string;
         description: string;
+        generatedAt: string | null;
         courseMealOptionImages: Array<string>;
         courses: Array<{ courseId: string }>;
     }>;
@@ -11249,6 +11353,7 @@ export type GqlCAdminBookingRequestOfferPageQuery = {
                         menuId: string;
                         title: string;
                         description: string;
+                        generatedAt: string | null;
                         courseMealOptionImages: Array<string>;
                         courses: Array<{ courseId: string }>;
                     }>;
@@ -11495,6 +11600,7 @@ export type GqlCAdminBookingRequestOfferPageUpdatesSubscription = {
                 menuId: string;
                 title: string;
                 description: string;
+                generatedAt: string | null;
                 courseMealOptionImages: Array<string>;
                 courses: Array<{ courseId: string }>;
             }>;
@@ -14002,6 +14108,7 @@ export type GqlCAdminMealPageMealFragment = {
     imageFileUploadId: string | null;
     imageUrl: string | null;
     publishedAt: string | null;
+    generatedAt: string | null;
     deletedAt: string | null;
     createdAt: string;
     updatedAt: string;
@@ -14030,6 +14137,7 @@ export type GqlCAdminMealPageAdminFragment = {
         imageFileUploadId: string | null;
         imageUrl: string | null;
         publishedAt: string | null;
+        generatedAt: string | null;
         deletedAt: string | null;
         createdAt: string;
         updatedAt: string;
@@ -14066,6 +14174,7 @@ export type GqlCAdminMealPageQuery = {
                     imageFileUploadId: string | null;
                     imageUrl: string | null;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     deletedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
@@ -14103,6 +14212,7 @@ export type GqlCAdminMealPageUpdatesSubscription = {
             imageFileUploadId: string | null;
             imageUrl: string | null;
             publishedAt: string | null;
+            generatedAt: string | null;
             deletedAt: string | null;
             createdAt: string;
             updatedAt: string;
@@ -14154,6 +14264,7 @@ export type GqlCAdminMealsPageQuery = {
                     description: string;
                     imageUrl: string | null;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     deletedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
@@ -14368,6 +14479,7 @@ export type GqlCAdminMenuPageMealOptionFragment = {
     imageFileUploadId: string | null;
     imageUrl: string | null;
     publishedAt: string | null;
+    generatedAt: string | null;
     deletedAt: string | null;
 };
 
@@ -14382,6 +14494,7 @@ export type GqlCAdminMenuPageMenuFragment = {
     copyOfMenuId: string | null;
     bookingRequestOfferId: string | null;
     publishedAt: string | null;
+    generatedAt: string | null;
     deletedAt: string | null;
     createdAt: string;
     updatedAt: string;
@@ -14396,6 +14509,7 @@ export type GqlCAdminMenuPageMenuFragment = {
             imageFileUploadId: string | null;
             imageUrl: string | null;
             publishedAt: string | null;
+            generatedAt: string | null;
             deletedAt: string | null;
         }>;
     }>;
@@ -14414,6 +14528,7 @@ export type GqlCAdminMenuPageAdminFragment = {
         copyOfMenuId: string | null;
         bookingRequestOfferId: string | null;
         publishedAt: string | null;
+        generatedAt: string | null;
         deletedAt: string | null;
         createdAt: string;
         updatedAt: string;
@@ -14428,6 +14543,7 @@ export type GqlCAdminMenuPageAdminFragment = {
                 imageFileUploadId: string | null;
                 imageUrl: string | null;
                 publishedAt: string | null;
+                generatedAt: string | null;
                 deletedAt: string | null;
             }>;
         }>;
@@ -14454,6 +14570,7 @@ export type GqlCAdminMenuPageQuery = {
                     copyOfMenuId: string | null;
                     bookingRequestOfferId: string | null;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     deletedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
@@ -14468,6 +14585,7 @@ export type GqlCAdminMenuPageQuery = {
                             imageFileUploadId: string | null;
                             imageUrl: string | null;
                             publishedAt: string | null;
+                            generatedAt: string | null;
                             deletedAt: string | null;
                         }>;
                     }>;
@@ -14495,6 +14613,7 @@ export type GqlCAdminMenuPageUpdatesSubscription = {
             copyOfMenuId: string | null;
             bookingRequestOfferId: string | null;
             publishedAt: string | null;
+            generatedAt: string | null;
             deletedAt: string | null;
             createdAt: string;
             updatedAt: string;
@@ -14509,6 +14628,7 @@ export type GqlCAdminMenuPageUpdatesSubscription = {
                     imageFileUploadId: string | null;
                     imageUrl: string | null;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     deletedAt: string | null;
                 }>;
             }>;
@@ -14555,6 +14675,7 @@ export type GqlCAdminMenusPageQuery = {
                     courseCount: number;
                     courseMealOptionImages: Array<string>;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     deletedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
@@ -17185,6 +17306,7 @@ export type GqlCAdminUserPageQuery = {
                     description: string;
                     imageUrl: string | null;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     deletedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
@@ -17198,6 +17320,7 @@ export type GqlCAdminUserPageQuery = {
                     courseCount: number;
                     courseMealOptionImages: Array<string>;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     deletedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
@@ -18442,6 +18565,7 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
                 title: string;
                 description: string;
                 copyOfMenuId: string | null;
+                generatedAt: string | null;
                 courseMealOptionImages: Array<string>;
                 courses: Array<{ courseId: string }>;
             }>;
@@ -18639,6 +18763,7 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                         title: string;
                         description: string;
                         copyOfMenuId: string | null;
+                        generatedAt: string | null;
                         courseMealOptionImages: Array<string>;
                         courses: Array<{ courseId: string }>;
                     }>;
@@ -18847,6 +18972,7 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                     title: string;
                     description: string;
                     copyOfMenuId: string | null;
+                    generatedAt: string | null;
                     courseMealOptionImages: Array<string>;
                     courses: Array<{ courseId: string }>;
                 }>;
@@ -20229,6 +20355,7 @@ export type GqlCProfileCookMealPageUserFragment = {
             imageFileUploadId: string | null;
             imageUrl: string | null;
             publishedAt: string | null;
+            generatedAt: string | null;
             createdAt: string;
             updatedAt: string;
             relationships: {
@@ -20264,6 +20391,7 @@ export type GqlCProfileCookMealPageQuery = {
                     imageFileUploadId: string | null;
                     imageUrl: string | null;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
                     relationships: {
@@ -20300,6 +20428,7 @@ export type GqlCProfileCookMealPageUpdatesSubscription = {
                 imageFileUploadId: string | null;
                 imageUrl: string | null;
                 publishedAt: string | null;
+                generatedAt: string | null;
                 createdAt: string;
                 updatedAt: string;
                 relationships: {
@@ -20341,6 +20470,7 @@ export type GqlCProfileCookMealsPageUserFragment = {
             description: string;
             imageUrl: string | null;
             publishedAt: string | null;
+            generatedAt: string | null;
             createdAt: string;
             updatedAt: string;
         }>;
@@ -20361,6 +20491,7 @@ export type GqlCProfileCookMealsPageQuery = {
                     description: string;
                     imageUrl: string | null;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
                 }>;
@@ -20382,6 +20513,7 @@ export type GqlCProfileCookMealsPageUpdatesSubscription = {
                 description: string;
                 imageUrl: string | null;
                 publishedAt: string | null;
+                generatedAt: string | null;
                 createdAt: string;
                 updatedAt: string;
             }>;
@@ -20394,6 +20526,7 @@ export type GqlCProfileCookMenuPageMenuFieldsFragment = {
     title: string;
     description: string;
     publishedAt: string | null;
+    generatedAt: string | null;
     createdAt: string;
     updatedAt: string;
     copyOfMenuId: string | null;
@@ -20408,7 +20541,14 @@ export type GqlCProfileCookMenuPageMenuFieldsFragment = {
         courseId: string;
         title: string;
         mealSelectionLimit: number | null;
-        mealOptions: Array<{ mealId: string; title: string; description: string; imageUrl: string | null; publishedAt: string | null }>;
+        mealOptions: Array<{
+            mealId: string;
+            title: string;
+            description: string;
+            imageUrl: string | null;
+            publishedAt: string | null;
+            generatedAt: string | null;
+        }>;
     }>;
 };
 
@@ -20429,6 +20569,7 @@ export type GqlCProfileCookMenuPageUserFragment = {
             title: string;
             description: string;
             publishedAt: string | null;
+            generatedAt: string | null;
             createdAt: string;
             updatedAt: string;
             copyOfMenuId: string | null;
@@ -20460,6 +20601,7 @@ export type GqlCProfileCookMenuPageUserFragment = {
                     description: string;
                     imageUrl: string | null;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                 }>;
             }>;
         } | null;
@@ -20489,6 +20631,7 @@ export type GqlCProfileCookMenuPageQuery = {
                     title: string;
                     description: string;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
                     copyOfMenuId: string | null;
@@ -20520,6 +20663,7 @@ export type GqlCProfileCookMenuPageQuery = {
                             description: string;
                             imageUrl: string | null;
                             publishedAt: string | null;
+                            generatedAt: string | null;
                         }>;
                     }>;
                 } | null;
@@ -20550,6 +20694,7 @@ export type GqlCProfileCookMenuPageUpdatesSubscription = {
                 title: string;
                 description: string;
                 publishedAt: string | null;
+                generatedAt: string | null;
                 createdAt: string;
                 updatedAt: string;
                 copyOfMenuId: string | null;
@@ -20581,6 +20726,7 @@ export type GqlCProfileCookMenuPageUpdatesSubscription = {
                         description: string;
                         imageUrl: string | null;
                         publishedAt: string | null;
+                        generatedAt: string | null;
                     }>;
                 }>;
             } | null;
@@ -20623,6 +20769,7 @@ export type GqlCProfileCookMenusPageUserFragment = {
             title: string;
             description: string;
             publishedAt: string | null;
+            generatedAt: string | null;
             createdAt: string;
             updatedAt: string;
             courseMealOptionImages: Array<string>;
@@ -20633,6 +20780,7 @@ export type GqlCProfileCookMenusPageUserFragment = {
             title: string;
             description: string;
             publishedAt: string | null;
+            generatedAt: string | null;
             createdAt: string;
             updatedAt: string;
             copyOfMenuId: string | null;
@@ -20662,6 +20810,7 @@ export type GqlCProfileCookMenusPageQuery = {
                     title: string;
                     description: string;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
                     courseMealOptionImages: Array<string>;
@@ -20672,6 +20821,7 @@ export type GqlCProfileCookMenusPageQuery = {
                     title: string;
                     description: string;
                     publishedAt: string | null;
+                    generatedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
                     copyOfMenuId: string | null;
@@ -20702,6 +20852,7 @@ export type GqlCProfileCookMenusPageUpdatesSubscription = {
                 title: string;
                 description: string;
                 publishedAt: string | null;
+                generatedAt: string | null;
                 createdAt: string;
                 updatedAt: string;
                 courseMealOptionImages: Array<string>;
@@ -20712,6 +20863,7 @@ export type GqlCProfileCookMenusPageUpdatesSubscription = {
                 title: string;
                 description: string;
                 publishedAt: string | null;
+                generatedAt: string | null;
                 createdAt: string;
                 updatedAt: string;
                 copyOfMenuId: string | null;
@@ -28056,6 +28208,7 @@ export const AdminBookingRequestOfferPageOfferFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
                                 {
                                     kind: 'Field',
@@ -29407,6 +29560,7 @@ export const AdminMealPageMealFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -29497,6 +29651,7 @@ export const AdminMealPageAdminFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -29782,6 +29937,7 @@ export const AdminMenuPageMealOptionFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                 ],
             },
@@ -29808,6 +29964,7 @@ export const AdminMenuPageMenuFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -29847,6 +30004,7 @@ export const AdminMenuPageMenuFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                 ],
             },
@@ -29895,6 +30053,7 @@ export const AdminMenuPageAdminFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                 ],
             },
@@ -29916,6 +30075,7 @@ export const AdminMenuPageAdminFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -32333,6 +32493,7 @@ export const ProfileCookBookingRequestOfferPageUserFragmentDoc = {
                                                         { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
                                                         {
                                                             kind: 'Field',
@@ -33964,6 +34125,7 @@ export const ProfileCookMealPageUserFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                             {
@@ -34053,6 +34215,7 @@ export const ProfileCookMealsPageUserFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                         ],
@@ -34080,6 +34243,7 @@ export const ProfileCookMenuPageMenuFieldsFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
@@ -34117,6 +34281,7 @@ export const ProfileCookMenuPageMenuFieldsFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                         ],
                                     },
                                 },
@@ -34230,6 +34395,7 @@ export const ProfileCookMenuPageUserFragmentDoc = {
                     { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
@@ -34267,6 +34433,7 @@ export const ProfileCookMenuPageUserFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                         ],
                                     },
                                 },
@@ -34306,6 +34473,7 @@ export const ProfileCookMenusPageUserFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
@@ -34330,6 +34498,7 @@ export const ProfileCookMenusPageUserFragmentDoc = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
@@ -37865,6 +38034,225 @@ export const CookMealEditorMealUpsertDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCCookMealEditorMealUpsertMutation, GqlCCookMealEditorMealUpsertMutationVariables>;
+export const CookMenuCreateDialogMealsDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'CookMenuCreateDialogMeals' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'cook' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'meals' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCCookMenuCreateDialogMealsQuery, GqlCCookMenuCreateDialogMealsQueryVariables>;
+export const CookMenuCreateDialogSuggestionFromTextDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'CookMenuCreateDialogSuggestionFromText' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'text' } },
+                    type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } },
+                },
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'fileUploadIds' } },
+                    type: {
+                        kind: 'ListType',
+                        type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'menuSuggestionFromText' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'text' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'text' } },
+                                                    },
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'fileUploadIds' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'fileUploadIds' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'courses' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                    {
+                                                                        kind: 'Field',
+                                                                        name: { kind: 'Name', value: 'mealOptions' },
+                                                                        selectionSet: {
+                                                                            kind: 'SelectionSet',
+                                                                            selections: [
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'type' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'mealId' } },
+                                                                                { kind: 'Field', name: { kind: 'Name', value: 'title' } },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'description' },
+                                                                                },
+                                                                            ],
+                                                                        },
+                                                                    },
+                                                                ],
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCCookMenuCreateDialogSuggestionFromTextMutation,
+    GqlCCookMenuCreateDialogSuggestionFromTextMutationVariables
+>;
+export const CookMenuCreateDialogSuggestionApplyDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'CookMenuCreateDialogSuggestionApply' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'suggestion' } },
+                    type: {
+                        kind: 'NonNullType',
+                        type: { kind: 'NamedType', name: { kind: 'Name', value: 'CookMenuSuggestionDraftInput' } },
+                    },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'menuSuggestionApply' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'suggestion' },
+                                                        value: { kind: 'Variable', name: { kind: 'Name', value: 'suggestion' } },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCCookMenuCreateDialogSuggestionApplyMutation, GqlCCookMenuCreateDialogSuggestionApplyMutationVariables>;
 export const CookSidebarNavBadgesUpdatesDocument = {
     kind: 'Document',
     definitions: [
@@ -50858,6 +51246,7 @@ export const AdminBookingRequestOfferPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
                                 {
                                     kind: 'Field',
@@ -51517,6 +51906,7 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'menuId' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'description' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
                                 {
                                     kind: 'Field',
@@ -60107,6 +60497,7 @@ export const AdminMealPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -60222,6 +60613,7 @@ export const AdminMealPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -60450,6 +60842,7 @@ export const AdminMealsPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -60949,6 +61342,7 @@ export const AdminMenuPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                 ],
             },
@@ -60970,6 +61364,7 @@ export const AdminMenuPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -61065,6 +61460,7 @@ export const AdminMenuPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                 ],
             },
@@ -61086,6 +61482,7 @@ export const AdminMenuPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'bookingRequestOfferId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -61349,6 +61746,7 @@ export const AdminMenusPageDocument = {
                                                                         name: { kind: 'Name', value: 'courseMealOptionImages' },
                                                                     },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -70724,6 +71122,7 @@ export const AdminUserPageDocument = {
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -70773,6 +71172,7 @@ export const AdminUserPageDocument = {
                                                                         name: { kind: 'Name', value: 'courseMealOptionImages' },
                                                                     },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'deletedAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                                                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
@@ -75977,6 +76377,7 @@ export const ProfileCookBookingRequestOfferPageDocument = {
                                                         { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
                                                         {
                                                             kind: 'Field',
@@ -76559,6 +76960,7 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
                                                         { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                                         { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
                                                         {
                                                             kind: 'Field',
@@ -81097,6 +81499,7 @@ export const ProfileCookMealPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                             {
@@ -81219,6 +81622,7 @@ export const ProfileCookMealPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageFileUploadId' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                             {
@@ -81451,6 +81855,7 @@ export const ProfileCookMealsPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                         ],
@@ -81511,6 +81916,7 @@ export const ProfileCookMealsPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                         ],
@@ -81572,6 +81978,7 @@ export const ProfileCookMenuPageDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
@@ -81609,6 +82016,7 @@ export const ProfileCookMenuPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                         ],
                                     },
                                 },
@@ -81747,6 +82155,7 @@ export const ProfileCookMenuPageUpdatesDocument = {
                     { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
@@ -81784,6 +82193,7 @@ export const ProfileCookMenuPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'imageUrl' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                         ],
                                     },
                                 },
@@ -82170,6 +82580,7 @@ export const ProfileCookMenusPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
@@ -82194,6 +82605,7 @@ export const ProfileCookMenusPageDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },
@@ -82277,6 +82689,7 @@ export const ProfileCookMenusPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'courseMealOptionImages' } },
@@ -82301,6 +82714,7 @@ export const ProfileCookMenusPageUpdatesDocument = {
                                             { kind: 'Field', name: { kind: 'Name', value: 'title' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'description' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'generatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                                             { kind: 'Field', name: { kind: 'Name', value: 'copyOfMenuId' } },

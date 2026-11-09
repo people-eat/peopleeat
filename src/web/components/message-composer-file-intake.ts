@@ -26,7 +26,7 @@ export function useMessageComposerFileIntake({ enabled, multiple, onAdd, value, 
         }
     };
 
-    const onDragEnter = (event: DragEvent<HTMLFormElement>) => {
+    const onDragEnter = (event: DragEvent<HTMLElement>) => {
         if (enabled && isFileDrag(event)) {
             event.preventDefault();
             dragDepthRef.current += 1;
@@ -34,7 +34,7 @@ export function useMessageComposerFileIntake({ enabled, multiple, onAdd, value, 
         }
     };
 
-    const onDragOver = (event: DragEvent<HTMLFormElement>) => {
+    const onDragOver = (event: DragEvent<HTMLElement>) => {
         if (enabled && isFileDrag(event)) {
             event.preventDefault();
             event.dataTransfer.dropEffect = 'copy';
@@ -48,7 +48,7 @@ export function useMessageComposerFileIntake({ enabled, multiple, onAdd, value, 
         }
     };
 
-    const onDrop = (event: DragEvent<HTMLFormElement>) => {
+    const onDrop = (event: DragEvent<HTMLElement>) => {
         if (enabled && isFileDrag(event)) {
             event.preventDefault();
             dragDepthRef.current = 0;

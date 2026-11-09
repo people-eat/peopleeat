@@ -85,6 +85,7 @@ fragment AdminBookingRequestOfferPageOffer on AdminBookingRequestOffer {
         menuId
         title
         description
+        generatedAt
         courseMealOptionImages
         courses {
             courseId

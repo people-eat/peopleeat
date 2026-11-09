@@ -9,6 +9,7 @@ export function toGqlAdminCookMenu(
         copyOfMenuId?: string | null;
         bookingRequestOfferId?: string | null;
         publishedAt: Date | null;
+        generatedAt?: Date | null;
         deletedAt: Date | null;
         createdAt: Date;
         updatedAt: Date;
@@ -30,6 +31,7 @@ export function toGqlAdminCookMenu(
         copyOfMenuId: row.copyOfMenuId ?? null,
         bookingRequestOfferId: row.bookingRequestOfferId ?? null,
         publishedAt: row.publishedAt,
+        generatedAt: row.generatedAt ?? null,
         deletedAt: row.deletedAt,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,

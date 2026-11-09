@@ -244,10 +244,21 @@ export function ProfileCookMealPage({ data, mealId }: { data: GqlCProfileCookMea
                     </>
                 }
             >
-                {publicationEnabled ? (
-                    <Badge variant="outline" className="w-fit">
-                        {meal.publishedAt ? { de: 'Veröffentlicht', en: 'Published' }[locale] : { de: 'Entwurf', en: 'Draft' }[locale]}
-                    </Badge>
+                {publicationEnabled || meal.generatedAt != null ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                        {publicationEnabled ? (
+                            <Badge variant="outline" className="w-fit">
+                                {meal.publishedAt
+                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
+                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
+                            </Badge>
+                        ) : null}
+                        {meal.generatedAt != null ? (
+                            <Badge variant="outline" className="w-fit">
+                                {{ de: 'Generiert', en: 'Generated' }[locale]}
+                            </Badge>
+                        ) : null}
+                    </div>
                 ) : null}
 
                 {meal.imageUrl == null || meal.imageUrl.length === 0 ? (

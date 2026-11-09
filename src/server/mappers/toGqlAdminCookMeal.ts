@@ -12,6 +12,7 @@ export function toGqlAdminCookMeal(row: Meal, cookName: string): GqlSAdminCookMe
         imageFileUploadId: row.imageFileUploadId,
         imageUrl: row.imageFileUploadId ? fileUploadPublicUrl(row.imageFileUploadId) : null,
         publishedAt: row.publishedAt,
+        generatedAt: row.generatedAt,
         deletedAt: row.deletedAt,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,

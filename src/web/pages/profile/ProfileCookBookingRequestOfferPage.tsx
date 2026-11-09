@@ -822,6 +822,7 @@ function OfferTabPanel({
                                         description: menu.description,
                                         courseCount: menu.courses.length,
                                         courseMealOptionImages: menu.courseMealOptionImages,
+                                        generatedAt: menu.generatedAt,
                                     }}
                                     showStatusBadge={false}
                                     to="/{-$locale}/profile/menus/$menuId"

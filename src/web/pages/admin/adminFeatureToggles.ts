@@ -3,6 +3,7 @@ import type { Locale } from '../../utils/locale';
 
 const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>> = {
     AI_MENU_EVALUATION: { de: 'KI-Menübewertung', en: 'AI menu evaluation' },
+    AI_MENU_CREATE: { de: 'KI-Menü erstellen', en: 'AI menu create' },
     AI_BOOKING_REQUEST_MESSAGE: {
         de: 'KI: Angepasste Anfrage-Nachricht',
         en: 'AI: Adjusted booking-request message',
@@ -62,6 +63,10 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
     AI_MENU_EVALUATION: {
         de: 'Steuert, ob Köche ihre Menüs per KI bewerten, aktualisieren und Ergebnisse übernehmen können.',
         en: 'Controls whether cooks can open, refresh, and apply AI menu evaluations.',
+    },
+    AI_MENU_CREATE: {
+        de: 'Zeigt beim Anlegen eines Menüs die Wahl Leer oder aus Notizen/Datei. Die KI nutzt vorhandene Gerichte und füllt Lücken.',
+        en: 'Shows Empty vs from notes/file when creating a menu. AI reuses existing dishes and fills gaps.',
     },
     AI_BOOKING_REQUEST_MESSAGE: {
         de: 'Schreibt die Buchungsanfrage-Nachricht nach dem Anlegen für den Koch per KI um.',

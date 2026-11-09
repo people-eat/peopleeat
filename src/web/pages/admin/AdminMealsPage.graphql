@@ -15,6 +15,7 @@ query AdminMealsPage($criterion: AdminCookMealCriterion!) {
                     description
                     imageUrl
                     publishedAt
+                    generatedAt
                     deletedAt
                     createdAt
                     updatedAt

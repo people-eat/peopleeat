@@ -6,6 +6,7 @@ fragment ProfileCookMenuPageMenuFields on CookMenu {
     title
     description
     publishedAt
+    generatedAt
     createdAt
     updatedAt
     copyOfMenuId
@@ -26,6 +27,7 @@ fragment ProfileCookMenuPageMenuFields on CookMenu {
             description
             imageUrl
             publishedAt
+            generatedAt
         }
     }
 }

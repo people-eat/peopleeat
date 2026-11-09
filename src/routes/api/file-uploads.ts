@@ -28,7 +28,7 @@ const FILE_UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
 //
 // Auth: the session cookie must already resolve to a user. Anonymous sessions
 // can't upload — they have no user to own the row. Media types are limited to
-// images, PDF, and audio (`fileUploadMediaTypeAllowed`).
+// images, PDF, text, Word, and audio (`fileUploadMediaTypeAllowed`).
 export const Route = createFileRoute('/api/file-uploads')({
     server: {
         handlers: {

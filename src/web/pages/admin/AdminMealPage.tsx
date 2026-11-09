@@ -270,6 +270,11 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
                                     : { de: 'Entwurf', en: 'Draft' }[locale]}
                             </Badge>
                         )}
+                        {meal.generatedAt != null ? (
+                            <Badge variant="outline" className="w-fit">
+                                {{ de: 'Generiert', en: 'Generated' }[locale]}
+                            </Badge>
+                        ) : null}
                         <Link
                             to="/{-$locale}/admin/users/$userId"
                             params={{ userId: meal.cookId }}
@@ -311,6 +316,16 @@ export function AdminMealPage({ data, mealId }: { data: GqlCAdminMealPageQuery; 
                     <div className="grid gap-4">
                         <div className="grid gap-1">
                             <h1 className="font-serif text-3xl/tight text-foreground">{meal.title}</h1>
+                            {meal.generatedAt != null ? (
+                                <p className="text-sm text-muted-foreground">
+                                    {
+                                        {
+                                            de: `Generiert am ${formatDateTime(meal.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
+                                            en: `Generated on ${formatDateTime(meal.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
+                                        }[locale]
+                                    }
+                                </p>
+                            ) : null}
                             <p className="text-muted-foreground whitespace-pre-wrap">
                                 {meal.description.trim() ? meal.description : { de: 'Keine Beschreibung.', en: 'No description.' }[locale]}
                             </p>

@@ -9,10 +9,11 @@ Cooks maintain a personal meal library; operators can browse every cook’s meal
 Signed-in cooks manage meals under the cook shell:
 
 - **List** (`/profile/meals`) — active meals as `CookMealCard` (horizontal: thumb left; title, clamped description, outline draft/published
-  badge; missing-image warning). Published meals without an image also show a warning **Not on public page** badge. A list banner calls out
-  how many published meals lack a picture. Card click navigates to meal detail. Status tabs (All / Published / Draft) with counts; debounced
-  search, sort, and **New meal** (creates a draft, toasts, navigates to edit). Filter state lives in the URL so refresh and back/forward
-  keep the lens. Grid uses container queries (1 → 2 columns from ~42 rem) so sidebar collapse reflows like viewport width.
+  badge; missing-image warning; cook-only **Generiert** / **Generated** outline badge when `generatedAt` is set). Published meals without an
+  image also show a warning **Not on public page** badge. A list banner calls out how many published meals lack a picture. Card click
+  navigates to meal detail. Status tabs (All / Published / Draft) with counts; debounced search, sort, and **New meal** (creates a draft,
+  toasts, navigates to edit). Filter state lives in the URL so refresh and back/forward keep the lens. Grid uses container queries (1 → 2
+  columns from ~42 rem) so sidebar collapse reflows like viewport width.
 - **Detail** (`/profile/meals/$mealId`) — view-first: badge, title, description, image, usage sections. Missing image shows a warning
   `StatusAlert` (published: not on public page; draft: will not appear once published) with **Add picture**. Footer: **Edit** and
   **Publish** (draft only). Publish confirm warns when there is no image. **Unpublish** and **Delete** in an overflow menu. **Usage in
@@ -86,7 +87,7 @@ blocking: a course blocks delete when this meal is its only active option.
 
 ## Implementation
 
-- Schema: `Meals` in `src/server/db/schema.ts`
+- Schema: `Meals` in `src/server/db/schema.ts` (nullable `generatedAt` when the meal was inserted from AI menu apply)
 - SDL: `CookMeal`, relationships, `CookMutation`, `AdminCookMeal` (`imageFileUploadId`, `relationships`), `AdminCookMealCriterion`
   (`status`, `imageFilter`, broader `searchText`, optional `mealIds` for primary-key drill-in) in `schema.graphqls`
 - Commands: `cookMealUpsert` (+ colocated `toolCookMealUpsert`), `cookMealDelete` (soft; refuses when relationships block); admin
@@ -99,11 +100,12 @@ blocking: a course blocks delete when this meal is its only active option.
 - Mappers: `toGqlCookMeal`, `toGqlAdminCookMeal`
 - Guard: `guardCookMutation`
 - File GET: published non-deleted meal images public; admins read any — [file-storage.md](../architecture/file-storage.md)
-- UI: `CookMealCard` (cook/admin manage; missing-image popover + published-without-image status badge; optional Add picture),
-  `CustomerMealCard` (horizontal consume on offers/checkout; `variant="marketing"` on public cook page), shared `MealDetailsDialog`,
-  `CookMealImageField`, `CookMealEditorDialog` (menu-edit create/edit; injectable `saveHandlers` for admin); profile list/detail/edit
-  (list + detail + public-preview `StatusAlert`s for missing images), `SectionCookMeals`, `AdminMealsPage` / `AdminMealPage` /
-  `AdminMealEditPage` + shared `AdminCookInventoryListToolbar` / `adminCookInventoryListSearch`, user-detail meals tab
+- UI: `CookMealCard` (cook/admin manage; missing-image popover + published-without-image status badge; `showStatusBadge={false}` hides those
+  plus the missing-image chip, used on AI menu review; optional Add picture), `CustomerMealCard` (horizontal consume on offers/checkout;
+  `variant="marketing"` on public cook page), shared `MealDetailsDialog`, `CookMealImageField`, `CookMealEditorDialog` (menu-edit
+  create/edit; injectable `saveHandlers` for admin); profile list/detail/edit (list + detail + public-preview `StatusAlert`s for missing
+  images), `SectionCookMeals`, `AdminMealsPage` / `AdminMealPage` / `AdminMealEditPage` + shared `AdminCookInventoryListToolbar` /
+  `adminCookInventoryListSearch`, user-detail meals tab
 - Routes: `profile/meals`, `profile/meals_.$mealId`, edit route, `admin/meals`, `admin/meals_.$mealId`, edit route, public chef page meals
   section
 - Live state: `useUserUpdatesSeed` + `userUpdates` after cook meal commands; admin detail/edit via `adminUpdates` —

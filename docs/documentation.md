@@ -57,6 +57,7 @@ docs/
 │   ├── booking-offers.md         # Cook pool, offer create, dual accept, negotiation
 │   ├── booking-offer-addons.md   # Offer extras: templates, cook library, guest picker
 │   ├── ai-menu-evaluation.md     # AI menu ranking + inventory recommendation on pool open
+│   ├── ai-menu-create.md         # Cook AI menu from text or files, review before save
 │   ├── ai-booking-request-message.md # AI cook-facing booking-request message rewrite
 │   ├── booking-offer-chat.md     # Offer timeline chat, concierge, phone block
 │   ├── admin-offer-chat-review.md # Post-hoc admin review pipeline for offer chats

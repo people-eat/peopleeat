@@ -5,3 +5,7 @@
  *  the SEO JSON-LD as `dateModified` so AI search engines have an explicit
  *  freshness signal. */
 declare const __SITE_LAST_MODIFIED__: string;
+
+declare module 'mammoth' {
+    export function extractRawText(input: { buffer: Buffer }): Promise<{ value: string }>;
+}

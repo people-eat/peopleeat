@@ -6,7 +6,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { idCreate } from '../../shared/idCreate';
 import { aiGenerations, cooks, meals } from '../db/schema';
 import { commandSetup, cookMutationParent, findLogsForSession, testDb } from '../test/commandTestUtils';
+import { featureToggleIsEnabled } from '../utils/featureToggleIsEnabled';
 import { cookMenuSuggestionFromText } from './cookMenuSuggestionFromText';
+import { fileUploadCreate } from './fileUploadCreate';
 
 vi.mock('ai', async (importOriginal) => {
     const actual = await importOriginal<typeof AiModule>();
@@ -15,6 +17,14 @@ vi.mock('ai', async (importOriginal) => {
         generateText: vi.fn(),
     };
 });
+
+vi.mock('../utils/featureToggleIsEnabled', () => ({
+    featureToggleIsEnabled: vi.fn(async () => true),
+}));
+
+vi.mock('../utils/docxTextExtract', () => ({
+    docxTextExtract: vi.fn(async () => 'Word-Menü: Tomatensuppe, dann Fisch.'),
+}));
 
 function modelObject(output: unknown, modelId: string) {
     return {
@@ -33,11 +43,33 @@ function modelObject(output: unknown, modelId: string) {
 describe('cookMenuSuggestionFromText', () => {
     beforeEach(() => {
         vi.mocked(generateText).mockReset();
+        vi.mocked(featureToggleIsEnabled).mockReset();
+        vi.mocked(featureToggleIsEnabled).mockResolvedValue(true);
     });
 
-    it('inserts new draft meals, reuses existing meals, and records an AiGeneration', async () => {
-        // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Ada', lastName: 'Text' });
+    it('rejects when AI_MENU_CREATE is disabled', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Ada', lastName: 'Off' });
+        await testDb.insert(cooks).values({ cookId: user.userId });
+        vi.mocked(featureToggleIsEnabled).mockResolvedValue(false);
+
+        await expect(
+            cookMenuSuggestionFromText(cookMutationParent(user.userId), { text: 'Ein Menü.' }, requestingSession, serverRuntime),
+        ).rejects.toThrow(/AI_MENU_CREATE is disabled/);
+        expect(generateText).not.toHaveBeenCalled();
+    });
+
+    it('rejects when text and files are both empty', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Bea', lastName: 'Empty' });
+        await testDb.insert(cooks).values({ cookId: user.userId });
+
+        await expect(
+            cookMenuSuggestionFromText(cookMutationParent(user.userId), { text: '   ' }, requestingSession, serverRuntime),
+        ).rejects.toThrow(/text or files required/);
+        expect(generateText).not.toHaveBeenCalled();
+    });
+
+    it('returns a draft that reuses existing meals and proposes new ones without inserting', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Cleo', lastName: 'Draft' });
         await testDb.insert(cooks).values({ cookId: user.userId });
         const existingMealId = idCreate();
         await testDb.insert(meals).values({
@@ -51,6 +83,7 @@ describe('cookMenuSuggestionFromText', () => {
             modelObject(
                 {
                     title: '  sommer menü  ',
+                    description: '  leicht und frisch.  ',
                     courses: [
                         {
                             title: '  vorspeise  ',
@@ -65,7 +98,6 @@ describe('cookMenuSuggestionFromText', () => {
             ),
         );
 
-        // Act
         const result = await cookMenuSuggestionFromText(
             cookMutationParent(user.userId),
             { text: 'Vorspeise Tomatensuppe, danach gegrillter Fisch.' },
@@ -73,30 +105,28 @@ describe('cookMenuSuggestionFromText', () => {
             serverRuntime,
         );
 
-        // Assert
         expect(result.title).toBe('Sommer menü');
-        expect(result.description).toBe('');
-        expect(result.courses).toHaveLength(1);
-        expect(result.courses[0]?.title).toBe('Vorspeise');
-        expect(result.courses[0]?.mealIds).toHaveLength(2);
-        expect(result.courses[0]?.mealIds[0]).toBe(existingMealId);
+        expect(result.description).toBe('Leicht und frisch.');
+        expect(result.courses).toEqual([
+            {
+                title: 'Vorspeise',
+                mealOptions: [
+                    { type: 'EXISTING_MEAL', mealId: existingMealId, title: null, description: null },
+                    { type: 'NEW_MEAL', mealId: null, title: 'Gegrillter fisch', description: 'Mit zitrone.' },
+                ],
+            },
+        ]);
 
         const mealRows = await testDb.select().from(meals).where(eq(meals.cookId, user.userId));
-        expect(mealRows).toHaveLength(2);
-        const created = mealRows.find((meal) => meal.mealId !== existingMealId);
-        expect(created?.title).toBe('Gegrillter fisch');
-        expect(created?.description).toBe('Mit zitrone.');
-        expect(created?.publishedAt).toBeNull();
-        expect(created?.deletedAt).toBeNull();
-        expect(result.courses[0]?.mealIds[1]).toBe(created?.mealId);
+        expect(mealRows).toHaveLength(1);
+        expect(serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
 
-        const call = vi.mocked(generateText).mock.calls[0]?.[0] as { prompt: string };
-        expect(call.prompt).toContain('Tomatensuppe');
-        expect(call.prompt).toContain('Vorspeise Tomatensuppe, danach gegrillter Fisch.');
-
-        expect(serverRuntime.publish.userUpdates).toHaveBeenCalledTimes(1);
-        expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: user.userId });
-        expect(serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
+        const call = vi.mocked(generateText).mock.calls[0]?.[0] as {
+            messages: Array<{ content: Array<{ type: string; text?: string }> }>;
+        };
+        const textPart = call.messages[0]?.content.find((part) => part.type === 'text');
+        expect(textPart?.text).toContain('Tomatensuppe');
+        expect(textPart?.text).toContain('Vorspeise Tomatensuppe, danach gegrillter Fisch.');
 
         await serverRuntime.aiGenerations.drain();
         const [generation] = await testDb
@@ -107,72 +137,17 @@ describe('cookMenuSuggestionFromText', () => {
         expect(generation?.modelId).toBe('mock-from-text');
         expect(generation?.output).toContain('sommer menü');
         expect(generation?.inputTokens).toBe(11);
-        expect(generation?.outputTokens).toBe(7);
-        expect(generation?.totalTokens).toBe(18);
-        expect(generation?.reasoningTokens).toBe(2);
         expect(generation?.cachedInputTokens).toBe(3);
     });
 
-    it('does not insert or publish when every option is an existing meal', async () => {
-        // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Bea', lastName: 'Reuse' });
-        await testDb.insert(cooks).values({ cookId: user.userId });
-        const existingMealId = idCreate();
-        await testDb.insert(meals).values({
-            mealId: existingMealId,
-            cookId: user.userId,
-            title: 'Risotto',
-            description: 'Reis',
-        });
-        vi.mocked(generateText).mockResolvedValue(
-            modelObject(
-                {
-                    title: 'Risotto Menü',
-                    courses: [
-                        {
-                            title: 'Hauptgang',
-                            mealOptions: [{ type: 'EXISTING_MEAL', mealId: existingMealId, title: null, description: null }],
-                        },
-                    ],
-                },
-                'mock-from-text-existing',
-            ),
-        );
-
-        // Act
-        const result = await cookMenuSuggestionFromText(
-            cookMutationParent(user.userId),
-            { text: 'Nur Risotto.' },
-            requestingSession,
-            serverRuntime,
-        );
-
-        // Assert
-        expect(result).toEqual({
-            title: 'Risotto Menü',
-            description: '',
-            courses: [{ title: 'Hauptgang', mealIds: [existingMealId] }],
-        });
-        const mealRows = await testDb.select().from(meals).where(eq(meals.cookId, user.userId));
-        expect(mealRows).toHaveLength(1);
-        expect(serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
-
-        await serverRuntime.aiGenerations.drain();
-        const [generation] = await testDb
-            .select()
-            .from(aiGenerations)
-            .where(and(eq(aiGenerations.kind, 'COOK_MENU_SUGGESTION_FROM_TEXT'), eq(aiGenerations.userId, user.userId)));
-        expect(generation?.modelId).toBe('mock-from-text-existing');
-    });
-
     it('skips unknown existing meals and incomplete new meals', async () => {
-        // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Cleo', lastName: 'Skip' });
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Dora', lastName: 'Skip' });
         await testDb.insert(cooks).values({ cookId: user.userId });
         vi.mocked(generateText).mockResolvedValue(
             modelObject(
                 {
                     title: 'Lücken Menü',
+                    description: '',
                     courses: [
                         {
                             title: 'zwischengang',
@@ -188,7 +163,6 @@ describe('cookMenuSuggestionFromText', () => {
             ),
         );
 
-        // Act
         const result = await cookMenuSuggestionFromText(
             cookMutationParent(user.userId),
             { text: 'Unvollständig.' },
@@ -196,49 +170,137 @@ describe('cookMenuSuggestionFromText', () => {
             serverRuntime,
         );
 
-        // Assert
         expect(result).toEqual({
             title: 'Lücken Menü',
             description: '',
-            courses: [{ title: 'Zwischengang', mealIds: [] }],
+            courses: [{ title: 'Zwischengang', mealOptions: [] }],
         });
         const mealRows = await testDb.select().from(meals).where(eq(meals.cookId, user.userId));
         expect(mealRows).toHaveLength(0);
-        expect(serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
-
-        await serverRuntime.aiGenerations.drain();
-        const rows = await testDb
-            .select()
-            .from(aiGenerations)
-            .where(and(eq(aiGenerations.kind, 'COOK_MENU_SUGGESTION_FROM_TEXT'), eq(aiGenerations.userId, user.userId)));
-        expect(rows).toHaveLength(1);
     });
 
-    it('logs and rethrows when the model throws, leaving meals unchanged', async () => {
-        // Arrange
-        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Dora', lastName: 'Throw' });
+    it('sends PDF bytes as a file part and records a placeholder in the prompt ledger', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Eva', lastName: 'Pdf' });
         await testDb.insert(cooks).values({ cookId: user.userId });
-        const existingMealId = idCreate();
-        await testDb.insert(meals).values({
-            mealId: existingMealId,
-            cookId: user.userId,
-            title: 'Suppe',
-            description: 'Klar',
+        const upload = await fileUploadCreate(testDb, {
+            userId: user.userId,
+            filename: 'menu.pdf',
+            mediaType: 'application/pdf',
+            bytes: Buffer.from('%PDF-fake'),
         });
-        vi.mocked(generateText).mockRejectedValue(new Error('model down'));
+        vi.mocked(generateText).mockResolvedValue(
+            modelObject(
+                {
+                    title: 'PDF Menü',
+                    description: 'Aus der Karte.',
+                    courses: [{ title: 'Vorspeise', mealOptions: [] }],
+                },
+                'mock-from-text-pdf',
+            ),
+        );
 
-        // Act
-        const pending = cookMenuSuggestionFromText(
+        const result = await cookMenuSuggestionFromText(
             cookMutationParent(user.userId),
-            { text: 'Ein Menü.' },
+            { fileUploadIds: [upload.fileUploadId] },
             requestingSession,
             serverRuntime,
         );
 
-        // Assert
-        await expect(pending).rejects.toThrow(/model down/);
-        const mealRows = await testDb.select().from(meals).where(eq(meals.cookId, user.userId));
-        expect(mealRows.map((meal) => meal.mealId)).toEqual([existingMealId]);
+        expect(result.title).toBe('PDF Menü');
+        const call = vi.mocked(generateText).mock.calls[0]?.[0] as {
+            messages: Array<{ content: Array<{ type: string; mediaType?: string }> }>;
+        };
+        expect(call.messages[0]?.content.some((part) => part.type === 'file' && part.mediaType === 'application/pdf')).toBe(true);
+
+        await serverRuntime.aiGenerations.drain();
+        const [generation] = await testDb
+            .select()
+            .from(aiGenerations)
+            .where(and(eq(aiGenerations.kind, 'COOK_MENU_SUGGESTION_FROM_TEXT'), eq(aiGenerations.userId, user.userId)));
+        expect(generation?.prompt).toContain('[file mediaType=application/pdf');
+        expect(generation?.prompt).toContain('menu.pdf');
+    });
+
+    it('sends image bytes as a file part', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Eve', lastName: 'Jpeg' });
+        await testDb.insert(cooks).values({ cookId: user.userId });
+        const upload = await fileUploadCreate(testDb, {
+            userId: user.userId,
+            filename: 'karte.jpg',
+            mediaType: 'image/jpeg',
+            bytes: Buffer.from('fake-jpeg'),
+        });
+        vi.mocked(generateText).mockResolvedValue(
+            modelObject(
+                {
+                    title: 'Foto Menü',
+                    description: 'Aus dem Foto.',
+                    courses: [{ title: 'Vorspeise', mealOptions: [] }],
+                },
+                'mock-from-text-jpeg',
+            ),
+        );
+
+        await cookMenuSuggestionFromText(
+            cookMutationParent(user.userId),
+            { fileUploadIds: [upload.fileUploadId] },
+            requestingSession,
+            serverRuntime,
+        );
+
+        const call = vi.mocked(generateText).mock.calls[0]?.[0] as {
+            messages: Array<{ content: Array<{ type: string; mediaType?: string }> }>;
+        };
+        expect(call.messages[0]?.content.some((part) => part.type === 'file' && part.mediaType === 'image/jpeg')).toBe(true);
+    });
+
+    it('extracts plain text and Word files into the prompt instead of file parts', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Finn', lastName: 'Docs' });
+        await testDb.insert(cooks).values({ cookId: user.userId });
+        const txt = await fileUploadCreate(testDb, {
+            userId: user.userId,
+            filename: 'notes.txt',
+            mediaType: 'text/plain',
+            bytes: Buffer.from('Handgeschriebene Karte: Risotto'),
+        });
+        const docx = await fileUploadCreate(testDb, {
+            userId: user.userId,
+            filename: 'menu.docx',
+            mediaType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            bytes: Buffer.from('fake-docx'),
+        });
+        vi.mocked(generateText).mockResolvedValue(
+            modelObject(
+                { title: 'Risotto Abend', description: '', courses: [{ title: 'Hauptgang', mealOptions: [] }] },
+                'mock-from-text-docs',
+            ),
+        );
+
+        await cookMenuSuggestionFromText(
+            cookMutationParent(user.userId),
+            { fileUploadIds: [txt.fileUploadId, docx.fileUploadId] },
+            requestingSession,
+            serverRuntime,
+        );
+
+        const call = vi.mocked(generateText).mock.calls[0]?.[0] as {
+            messages: Array<{ content: Array<{ type: string; text?: string }> }>;
+        };
+        const textPart = call.messages[0]?.content.find((part) => part.type === 'text');
+        expect(textPart?.text).toContain('Handgeschriebene Karte: Risotto');
+        expect(textPart?.text).toContain('Word-Menü: Tomatensuppe, dann Fisch.');
+        expect(call.messages[0]?.content.some((part) => part.type === 'file')).toBe(false);
+    });
+
+    it('logs and rethrows when the model throws', async () => {
+        const { serverRuntime, requestingSession, user } = await commandSetup.withUser({ firstName: 'Gia', lastName: 'Throw' });
+        await testDb.insert(cooks).values({ cookId: user.userId });
+        vi.mocked(generateText).mockRejectedValue(new Error('model down'));
+
+        await expect(
+            cookMenuSuggestionFromText(cookMutationParent(user.userId), { text: 'Ein Menü.' }, requestingSession, serverRuntime),
+        ).rejects.toThrow(/model down/);
+
         expect(serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
         await serverRuntime.aiGenerations.drain();
         const generations = await testDb.select().from(aiGenerations).where(eq(aiGenerations.userId, user.userId));

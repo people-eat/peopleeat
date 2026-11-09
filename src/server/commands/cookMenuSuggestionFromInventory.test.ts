@@ -74,6 +74,7 @@ describe('cookMenuSuggestionFromInventory', () => {
         expect(created?.description).toBe('Mit zitrone.');
         expect(created?.publishedAt).toBeNull();
         expect(created?.deletedAt).toBeNull();
+        expect(created?.generatedAt).toBeInstanceOf(Date);
         expect(result).toEqual({
             title: 'Sommer menü',
             description: 'Frische kräuter.',

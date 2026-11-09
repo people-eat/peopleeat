@@ -11,6 +11,7 @@ import { Input } from '../../components/base/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/base/select';
 import { Tabs, TabsList, TabsTrigger } from '../../components/base/tabs';
 import { CookMenuCard } from '../../components/CookMenuCard';
+import { CookMenuCreateDialog } from '../../components/CookMenuCreateDialog';
 import type { GqlCProfileCookMenusPageQuery } from '../../graphql/generated';
 import { ProfileCookMenusPageUpdatesDocument, ProfileMenuUpsertDocument } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
@@ -62,10 +63,12 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
     const timeZone = useTimeZone();
     const navigate = useNavigate({ from: '/{-$locale}/profile/menus' });
     const publicationEnabled = useFeatureToggleActive('PUBLICATION_MENUS');
+    const aiMenuCreateEnabled = useFeatureToggleActive('AI_MENU_CREATE');
     const seedUser = data.currentSession.user ?? null;
     const user = useUserUpdatesSeed(seedUser, ProfileCookMenusPageUpdatesDocument);
     const [, upsertMenu] = useMutation(ProfileMenuUpsertDocument);
     const [creating, setCreating] = useState(false);
+    const [createOpen, setCreateOpen] = useState(false);
     const [draftQ, setDraftQ] = useState(search.q ?? '');
     const debouncedQ = useDebouncedValue(draftQ, 300);
 
@@ -229,7 +232,18 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                     </SelectContent>
                 </Select>
                 {scope === 'library' ? (
-                    <Button type="button" className="shrink-0" disabled={creating} onClick={() => void onCreate()}>
+                    <Button
+                        type="button"
+                        className="shrink-0"
+                        disabled={creating}
+                        onClick={() => {
+                            if (aiMenuCreateEnabled) {
+                                setCreateOpen(true);
+                                return;
+                            }
+                            void onCreate();
+                        }}
+                    >
                         <PlusIcon className="size-4" />
                         {
                             {
@@ -265,6 +279,7 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                                     courseCount: menu.courses.length,
                                     courseMealOptionImages: menu.courseMealOptionImages,
                                     publishedAt: menu.publishedAt,
+                                    generatedAt: menu.generatedAt,
                                 }}
                                 to="/{-$locale}/profile/menus/$menuId"
                                 params={{ menuId: menu.menuId }}
@@ -300,6 +315,7 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                                         courseCount: menu.courses.length,
                                         courseMealOptionImages: menu.courseMealOptionImages,
                                         publishedAt: menu.publishedAt,
+                                        generatedAt: menu.generatedAt,
                                     }}
                                     meta={offerMeta}
                                     showStatusBadge={false}
@@ -321,6 +337,21 @@ export function ProfileCookMenusPage({ data, search }: { data: GqlCProfileCookMe
                     })}
                 </ul>
             )}
+            {aiMenuCreateEnabled ? (
+                <CookMenuCreateDialog
+                    open={createOpen}
+                    onOpenChange={setCreateOpen}
+                    busy={creating}
+                    onEmptyCreate={() => {
+                        setCreateOpen(false);
+                        void onCreate();
+                    }}
+                    onApplied={(menuId) => {
+                        toast.success({ de: 'Menü angelegt.', en: 'Menu created.' }[locale]);
+                        void navigate({ to: '/{-$locale}/profile/menus/$menuId', params: { menuId } });
+                    }}
+                />
+            ) : null}
         </main>
     );
 }

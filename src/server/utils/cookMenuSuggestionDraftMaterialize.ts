@@ -15,12 +15,15 @@ export type CookMenuSuggestionDraft = {
     }[];
 };
 
+type SuggestionWriteDb = Pick<ServerRuntime['db'], 'insert'>;
+
 /** Insert NEW_MEAL drafts and resolve meal ids for a structured menu suggestion. */
 export async function cookMenuSuggestionDraftMaterialize(
     cookId: string,
     draft: CookMenuSuggestionDraft,
     existingMealIds: ReadonlySet<string>,
-    serverRuntime: ServerRuntime,
+    db: SuggestionWriteDb,
+    generatedAt: Date | null = new Date(),
 ): Promise<GqlSCookMenuSuggestion> {
     const mealInserts: MealCreate[] = [];
     const courses: GqlSCookMenuCourseSuggestion[] = [];
@@ -40,6 +43,7 @@ export async function cookMenuSuggestionDraftMaterialize(
                     description: textNormalizeProseTitled(meal.description),
                     publishedAt: null,
                     deletedAt: null,
+                    generatedAt,
                 });
                 mealIds.push(mealId);
             }
@@ -52,7 +56,7 @@ export async function cookMenuSuggestionDraftMaterialize(
     }
 
     if (mealInserts.length > 0) {
-        await serverRuntime.db.insert(meals).values(mealInserts);
+        await db.insert(meals).values(mealInserts);
     }
 
     return {

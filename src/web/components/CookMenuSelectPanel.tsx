@@ -1,6 +1,7 @@
 import { ChevronDownIcon, PencilIcon, PlusIcon, RefreshCwIcon, SparklesIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { useFeatureToggleActive } from '../hooks/useFeatureToggleActive';
 import { useLocale } from '../hooks/useLocale';
 import { cn } from '../utils/cn';
 import type { Locale } from '../utils/locale';
@@ -11,6 +12,7 @@ import { Skeleton } from './base/skeleton';
 import { StatusAlert } from './base/status-alert';
 import { StatusBadge } from './base/status-badge';
 import { CookMenuCardMedia } from './CookMenuCard';
+import { CookMenuCreateDialog } from './CookMenuCreateDialog';
 
 export type CookMenuSelectPanelMenuCourse = {
     title: string;
@@ -130,7 +132,7 @@ function CookMenuSelectPanelMenuCard({
     const canEdit = onEditMenu != null;
 
     return (
-        <li className="min-w-0">
+        <li id={`cook-menu-select-${menu.menuId}`} className="min-w-0">
             <Card
                 className={cn(
                     'h-full justify-between gap-3 py-4',
@@ -212,6 +214,7 @@ export function CookMenuSelectPanel({
     selectedMenuIds,
     onToggle,
     onCreateMenu,
+    onMenuApplied,
     onEditMenu,
     createMenuDisabled = false,
     editMenuDisabled = false,
@@ -229,6 +232,7 @@ export function CookMenuSelectPanel({
     selectedMenuIds: string[];
     onToggle: (menuId: string) => void;
     onCreateMenu?: () => void;
+    onMenuApplied?: (menuId: string) => void;
     onEditMenu?: (menuId: string) => void;
     createMenuDisabled?: boolean;
     editMenuDisabled?: boolean;
@@ -243,6 +247,9 @@ export function CookMenuSelectPanel({
     className?: string;
 }) {
     const locale = useLocale();
+    const aiMenuCreateEnabled = useFeatureToggleActive('AI_MENU_CREATE');
+    const [createOpen, setCreateOpen] = useState(false);
+    const [scrollToMenuId, setScrollToMenuId] = useState<string | null>(null);
     const evaluationById = new Map((menuEvaluations ?? []).map((row) => [row.menuId, row]));
     const sortedMenus = cookMenuSelectPanelMenusSortByEvaluation(menus, menuEvaluations);
     const selectableMenus = sortedMenus.filter((menu) => cookMenuSelectPanelMenuIsComplete(menu.courses));
@@ -253,209 +260,247 @@ export function CookMenuSelectPanel({
     );
     const showEvaluationUi = menuEvaluationLoading || menuEvaluations != null || generatedMenu != null || onRefreshEvaluation != null;
 
+    useEffect(() => {
+        if (scrollToMenuId == null) return;
+        const node = document.getElementById(`cook-menu-select-${scrollToMenuId}`);
+        if (node == null) return;
+        node.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        setScrollToMenuId(null);
+    }, [scrollToMenuId, menus]);
+
     return (
-        <div className={cn('grid gap-3', className)}>
-            {onRefreshEvaluation != null || onCreateMenu != null ? (
-                <div className="flex flex-wrap items-center justify-end gap-2">
-                    {onRefreshEvaluation != null ? (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            disabled={refreshEvaluationDisabled || menuEvaluationLoading}
-                            onClick={onRefreshEvaluation}
-                        >
-                            <RefreshCwIcon className={cn('size-4', menuEvaluationLoading && 'animate-spin')} />
-                            {
-                                {
-                                    de: menuEvaluationLoading ? 'Bewertung läuft…' : 'Empfehlungen aktualisieren',
-                                    en: menuEvaluationLoading ? 'Evaluating…' : 'Refresh recommendations',
-                                }[locale]
-                            }
-                        </Button>
-                    ) : null}
-                    {onCreateMenu != null ? (
-                        <Button type="button" variant="outline" size="sm" disabled={createMenuDisabled} onClick={onCreateMenu}>
-                            <PlusIcon className="size-4" />
-                            {
-                                {
-                                    de: createMenuDisabled ? 'Wird angelegt…' : 'Neues Menü',
-                                    en: createMenuDisabled ? 'Creating…' : 'New menu',
-                                }[locale]
-                            }
-                        </Button>
-                    ) : null}
-                </div>
-            ) : null}
-
-            {showEvaluationUi && menuEvaluationLoading ? (
-                <StatusAlert tone="info">
-                    {
-                        {
-                            de: 'Wir bewerten deine Menüs für diese Anfrage und bereiten eine Empfehlung vor.',
-                            en: 'We are evaluating your menus for this request and preparing a recommendation.',
-                        }[locale]
-                    }
-                </StatusAlert>
-            ) : null}
-
-            {showEvaluationUi && !menuEvaluationLoading && evaluationSummary != null && evaluationSummary.trim().length > 0 ? (
-                <StatusAlert tone="info">{evaluationSummary}</StatusAlert>
-            ) : null}
-
-            {menuEvaluationLoading ? (
-                <ul
-                    className={menuGridClassName}
-                    aria-busy="true"
-                    aria-label={{ de: 'Empfehlung lädt', en: 'Recommendation loading' }[locale]}
-                >
-                    <CookMenuSelectPanelSkeletonCard />
-                </ul>
-            ) : null}
-
-            {!menuEvaluationLoading && generatedMenu != null && onApplyGeneratedMenu != null ? (
-                <Card className="gap-3 border-foreground/20 bg-muted/20 py-4">
-                    <CardHeader className="px-4">
-                        <div className="flex items-start gap-3">
-                            <span
-                                className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground"
-                                aria-hidden
-                            >
-                                <SparklesIcon className="size-6 opacity-50" />
-                            </span>
-                            <div className="grid min-w-0 flex-1 gap-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <CardTitle className="line-clamp-1 font-medium leading-snug">{generatedMenu.title}</CardTitle>
-                                    <StatusBadge tone="success" className="font-normal">
-                                        {{ de: 'Plattform-Empfehlung', en: 'Platform recommendation' }[locale]}
-                                    </StatusBadge>
-                                </div>
-                                {generatedMenu.description.trim().length > 0 ? (
-                                    <CardDescription className="line-clamp-3">{generatedMenu.description}</CardDescription>
-                                ) : null}
-                                <span className="text-xs text-muted-foreground">
-                                    {
-                                        {
-                                            de:
-                                                generatedMenu.courseCount === 1
-                                                    ? '1 Gang (Vorschlag)'
-                                                    : `${generatedMenu.courseCount} Gänge (Vorschlag)`,
-                                            en:
-                                                generatedMenu.courseCount === 1
-                                                    ? '1 course (suggestion)'
-                                                    : `${generatedMenu.courseCount} courses (suggestion)`,
-                                        }[locale]
-                                    }
-                                </span>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardFooter className="justify-end px-4">
-                        <Button type="button" size="sm" disabled={applyGeneratedMenuDisabled} onClick={onApplyGeneratedMenu}>
-                            <SparklesIcon className="size-4" />
-                            {
-                                {
-                                    de: applyGeneratedMenuDisabled ? 'Wird angelegt…' : 'Empfehlung übernehmen',
-                                    en: applyGeneratedMenuDisabled ? 'Creating…' : 'Use recommendation',
-                                }[locale]
-                            }
-                        </Button>
-                    </CardFooter>
-                </Card>
-            ) : null}
-
-            {menus.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                    {
-                        {
-                            de: 'Noch keine Menüs. Erstelle eines, um fortzufahren.',
-                            en: 'No menus yet. Create one to continue.',
-                        }[locale]
-                    }
-                </p>
-            ) : (
-                <>
-                    {selectableMenus.length > 0 ? (
-                        <ul className={cn(menuGridClassName, menuEvaluationLoading && 'opacity-70')}>
-                            {selectableMenus.map((menu) => (
-                                <CookMenuSelectPanelMenuCard
-                                    key={menu.menuId}
-                                    menu={menu}
-                                    checked={selectedMenuIds.includes(menu.menuId)}
-                                    selectable
-                                    onToggle={onToggle}
-                                    onEditMenu={onEditMenu}
-                                    editMenuDisabled={editMenuDisabled}
-                                    evaluation={menuEvaluationLoading ? undefined : evaluationById.get(menu.menuId)}
-                                    locale={locale}
-                                />
-                            ))}
-                        </ul>
-                    ) : (
-                        <p className="text-sm text-muted-foreground">
-                            {
-                                {
-                                    de: 'Keine vollständigen Menüs zur Auswahl. Vervollständige eines unten.',
-                                    en: 'No complete menus to select. Finish one below.',
-                                }[locale]
-                            }
-                        </p>
-                    )}
-
-                    {incompleteMenus.length > 0 ? (
-                        <div className="grid gap-2">
+        <>
+            <div className={cn('grid gap-3', className)}>
+                {onRefreshEvaluation != null || onCreateMenu != null ? (
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                        {onRefreshEvaluation != null ? (
                             <Button
                                 type="button"
-                                variant="ghost"
+                                variant="outline"
                                 size="sm"
-                                className="w-full justify-between text-muted-foreground"
-                                aria-expanded={incompleteExpanded}
-                                onClick={() => setIncompleteExpanded((current) => !current)}
+                                disabled={refreshEvaluationDisabled || menuEvaluationLoading}
+                                onClick={onRefreshEvaluation}
                             >
-                                <span>
+                                <RefreshCwIcon className={cn('size-4', menuEvaluationLoading && 'animate-spin')} />
+                                {
                                     {
-                                        {
-                                            de: `Unvollständige Menüs (${incompleteMenus.length})`,
-                                            en: `Incomplete menus (${incompleteMenus.length})`,
-                                        }[locale]
-                                    }
-                                </span>
-                                <ChevronDownIcon
-                                    className={cn('size-4 shrink-0 transition-transform', !incompleteExpanded && '-rotate-90')}
-                                    aria-hidden
-                                />
+                                        de: menuEvaluationLoading ? 'Bewertung läuft…' : 'Empfehlungen aktualisieren',
+                                        en: menuEvaluationLoading ? 'Evaluating…' : 'Refresh recommendations',
+                                    }[locale]
+                                }
                             </Button>
-                            {incompleteExpanded ? (
-                                <div className="grid gap-3">
-                                    <StatusAlert tone="warning">
+                        ) : null}
+                        {onCreateMenu != null ? (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                disabled={createMenuDisabled}
+                                onClick={() => {
+                                    if (aiMenuCreateEnabled) {
+                                        setCreateOpen(true);
+                                        return;
+                                    }
+                                    onCreateMenu();
+                                }}
+                            >
+                                <PlusIcon className="size-4" />
+                                {
+                                    {
+                                        de: createMenuDisabled ? 'Wird angelegt…' : 'Neues Menü',
+                                        en: createMenuDisabled ? 'Creating…' : 'New menu',
+                                    }[locale]
+                                }
+                            </Button>
+                        ) : null}
+                    </div>
+                ) : null}
+
+                {showEvaluationUi && menuEvaluationLoading ? (
+                    <StatusAlert tone="info">
+                        {
+                            {
+                                de: 'Wir bewerten deine Menüs für diese Anfrage und bereiten eine Empfehlung vor.',
+                                en: 'We are evaluating your menus for this request and preparing a recommendation.',
+                            }[locale]
+                        }
+                    </StatusAlert>
+                ) : null}
+
+                {showEvaluationUi && !menuEvaluationLoading && evaluationSummary != null && evaluationSummary.trim().length > 0 ? (
+                    <StatusAlert tone="info">{evaluationSummary}</StatusAlert>
+                ) : null}
+
+                {menuEvaluationLoading ? (
+                    <ul
+                        className={menuGridClassName}
+                        aria-busy="true"
+                        aria-label={{ de: 'Empfehlung lädt', en: 'Recommendation loading' }[locale]}
+                    >
+                        <CookMenuSelectPanelSkeletonCard />
+                    </ul>
+                ) : null}
+
+                {!menuEvaluationLoading && generatedMenu != null && onApplyGeneratedMenu != null ? (
+                    <Card className="gap-3 border-foreground/20 bg-muted/20 py-4">
+                        <CardHeader className="px-4">
+                            <div className="flex items-start gap-3">
+                                <span
+                                    className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-secondary text-muted-foreground"
+                                    aria-hidden
+                                >
+                                    <SparklesIcon className="size-6 opacity-50" />
+                                </span>
+                                <div className="grid min-w-0 flex-1 gap-1">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <CardTitle className="line-clamp-1 font-medium leading-snug">{generatedMenu.title}</CardTitle>
+                                        <StatusBadge tone="success" className="font-normal">
+                                            {{ de: 'Plattform-Empfehlung', en: 'Platform recommendation' }[locale]}
+                                        </StatusBadge>
+                                    </div>
+                                    {generatedMenu.description.trim().length > 0 ? (
+                                        <CardDescription className="line-clamp-3">{generatedMenu.description}</CardDescription>
+                                    ) : null}
+                                    <span className="text-xs text-muted-foreground">
                                         {
                                             {
-                                                de: 'Diese Menüs können noch nicht ausgewählt werden. Jeder Gang braucht einen Titel und mindestens eine Speise. Tippe auf Fertigstellen, um sie zu vervollständigen.',
-                                                en: 'These menus cannot be selected yet. Every course needs a title and at least one dish. Tap Finish to complete them.',
+                                                de:
+                                                    generatedMenu.courseCount === 1
+                                                        ? '1 Gang (Vorschlag)'
+                                                        : `${generatedMenu.courseCount} Gänge (Vorschlag)`,
+                                                en:
+                                                    generatedMenu.courseCount === 1
+                                                        ? '1 course (suggestion)'
+                                                        : `${generatedMenu.courseCount} courses (suggestion)`,
                                             }[locale]
                                         }
-                                    </StatusAlert>
-                                    <ul className={menuGridClassName}>
-                                        {incompleteMenus.map((menu) => (
-                                            <CookMenuSelectPanelMenuCard
-                                                key={menu.menuId}
-                                                menu={menu}
-                                                checked={false}
-                                                selectable={false}
-                                                onToggle={onToggle}
-                                                onEditMenu={onEditMenu}
-                                                editMenuDisabled={editMenuDisabled}
-                                                evaluation={menuEvaluationLoading ? undefined : evaluationById.get(menu.menuId)}
-                                                locale={locale}
-                                            />
-                                        ))}
-                                    </ul>
+                                    </span>
                                 </div>
-                            ) : null}
-                        </div>
-                    ) : null}
-                </>
-            )}
-        </div>
+                            </div>
+                        </CardHeader>
+                        <CardFooter className="justify-end px-4">
+                            <Button type="button" size="sm" disabled={applyGeneratedMenuDisabled} onClick={onApplyGeneratedMenu}>
+                                <SparklesIcon className="size-4" />
+                                {
+                                    {
+                                        de: applyGeneratedMenuDisabled ? 'Wird angelegt…' : 'Empfehlung übernehmen',
+                                        en: applyGeneratedMenuDisabled ? 'Creating…' : 'Use recommendation',
+                                    }[locale]
+                                }
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                ) : null}
+
+                {menus.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                        {
+                            {
+                                de: 'Noch keine Menüs. Erstelle eines, um fortzufahren.',
+                                en: 'No menus yet. Create one to continue.',
+                            }[locale]
+                        }
+                    </p>
+                ) : (
+                    <>
+                        {selectableMenus.length > 0 ? (
+                            <ul className={cn(menuGridClassName, menuEvaluationLoading && 'opacity-70')}>
+                                {selectableMenus.map((menu) => (
+                                    <CookMenuSelectPanelMenuCard
+                                        key={menu.menuId}
+                                        menu={menu}
+                                        checked={selectedMenuIds.includes(menu.menuId)}
+                                        selectable
+                                        onToggle={onToggle}
+                                        onEditMenu={onEditMenu}
+                                        editMenuDisabled={editMenuDisabled}
+                                        evaluation={menuEvaluationLoading ? undefined : evaluationById.get(menu.menuId)}
+                                        locale={locale}
+                                    />
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">
+                                {
+                                    {
+                                        de: 'Keine vollständigen Menüs zur Auswahl. Vervollständige eines unten.',
+                                        en: 'No complete menus to select. Finish one below.',
+                                    }[locale]
+                                }
+                            </p>
+                        )}
+
+                        {incompleteMenus.length > 0 ? (
+                            <div className="grid gap-2">
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-between text-muted-foreground"
+                                    aria-expanded={incompleteExpanded}
+                                    onClick={() => setIncompleteExpanded((current) => !current)}
+                                >
+                                    <span>
+                                        {
+                                            {
+                                                de: `Unvollständige Menüs (${incompleteMenus.length})`,
+                                                en: `Incomplete menus (${incompleteMenus.length})`,
+                                            }[locale]
+                                        }
+                                    </span>
+                                    <ChevronDownIcon
+                                        className={cn('size-4 shrink-0 transition-transform', !incompleteExpanded && '-rotate-90')}
+                                        aria-hidden
+                                    />
+                                </Button>
+                                {incompleteExpanded ? (
+                                    <div className="grid gap-3">
+                                        <StatusAlert tone="warning">
+                                            {
+                                                {
+                                                    de: 'Diese Menüs können noch nicht ausgewählt werden. Jeder Gang braucht einen Titel und mindestens eine Speise. Tippe auf Fertigstellen, um sie zu vervollständigen.',
+                                                    en: 'These menus cannot be selected yet. Every course needs a title and at least one dish. Tap Finish to complete them.',
+                                                }[locale]
+                                            }
+                                        </StatusAlert>
+                                        <ul className={menuGridClassName}>
+                                            {incompleteMenus.map((menu) => (
+                                                <CookMenuSelectPanelMenuCard
+                                                    key={menu.menuId}
+                                                    menu={menu}
+                                                    checked={false}
+                                                    selectable={false}
+                                                    onToggle={onToggle}
+                                                    onEditMenu={onEditMenu}
+                                                    editMenuDisabled={editMenuDisabled}
+                                                    evaluation={menuEvaluationLoading ? undefined : evaluationById.get(menu.menuId)}
+                                                    locale={locale}
+                                                />
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : null}
+                            </div>
+                        ) : null}
+                    </>
+                )}
+            </div>
+            {onCreateMenu != null && aiMenuCreateEnabled ? (
+                <CookMenuCreateDialog
+                    open={createOpen}
+                    onOpenChange={setCreateOpen}
+                    busy={createMenuDisabled}
+                    context="offer"
+                    onEmptyCreate={() => {
+                        setCreateOpen(false);
+                        onCreateMenu();
+                    }}
+                    onApplied={(menuId) => {
+                        onMenuApplied?.(menuId);
+                        setScrollToMenuId(menuId);
+                    }}
+                />
+            ) : null}
+        </>
     );
 }

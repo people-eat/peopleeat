@@ -16,8 +16,9 @@ assembled from their meals. Recommendations only: the cook still chooses freely.
    - Suitability badges (Passend / Weniger passend) in the card footer (bottom left, same row as Edit / Select) with hover / pressed
      affordance; per-menu reasons open in a popover so cards stay scannable
    - Incomplete menus collapsed by default (expand to finish)
-   - Platform recommendation card with **Use recommendation** (creates a draft inventory menu and selects it; clears `generatedMenu` and the
-     banner summary; stamps the new menu as suitable so the Passend badge shows immediately)
+   - Platform recommendation card with **Use recommendation** (creates a draft inventory menu and selects it; stamps `generatedAt` on the
+     menu and any new meals; clears `generatedMenu` and the banner summary; stamps the new menu as suitable so the Passend badge shows
+     immediately)
    - **Refresh recommendations** (manual only — menu create/edit does not auto-re-evaluate)
 4. Inventory menu generation is also available as a sync cook mutation (`menuSuggestionFromInventory`) for menu-create reuse, with its own
    admin AI-generations kind.
@@ -34,8 +35,8 @@ assembled from their meals. Recommendations only: the cook still chooses freely.
 
 ## Next steps / Ideas
 
-- Wire `menuSuggestionFromInventory` into the cook menu create / edit UI.
 - Optional ranking scores (numeric) if boolean + copy is not enough for sorting.
+- Cooks who bring their own notes or a file use [ai-menu-create.md](./ai-menu-create.md) instead of this request-specific recommendation.
 
 ## Implementation
 

@@ -44,8 +44,8 @@ export function uploadErrorMessage(error: unknown, locale: Locale): string {
             en: 'No file in form data',
         },
         'File type is not allowed': {
-            de: 'Dieser Dateityp ist nicht erlaubt. Erlaubt sind Bilder, PDF und Audio.',
-            en: 'This file type is not allowed. Images, PDF, and audio are allowed.',
+            de: 'Dieser Dateityp ist nicht erlaubt. Erlaubt sind Bilder, PDF, Text, Word und Audio.',
+            en: 'This file type is not allowed. Images, PDF, text, Word, and audio are allowed.',
         },
         'Failed to persist file upload': {
             de: 'Datei-Upload konnte nicht gespeichert werden',

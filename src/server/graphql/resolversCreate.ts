@@ -153,6 +153,7 @@ import { cookMealDelete } from '../commands/cookMealDelete';
 import { cookMealUpsert } from '../commands/cookMealUpsert';
 import { cookMenuCopy } from '../commands/cookMenuCopy';
 import { cookMenuDelete } from '../commands/cookMenuDelete';
+import { cookMenuSuggestionApply } from '../commands/cookMenuSuggestionApply';
 import { cookMenuSuggestionFromInventory } from '../commands/cookMenuSuggestionFromInventory';
 import { cookMenuSuggestionFromText } from '../commands/cookMenuSuggestionFromText';
 import { cookMenuSyncToTemplate } from '../commands/cookMenuSyncToTemplate';
@@ -712,6 +713,7 @@ import type {
     GqlSCookMutationMealUpsertArgs,
     GqlSCookMutationMenuCopyArgs,
     GqlSCookMutationMenuDeleteArgs,
+    GqlSCookMutationMenuSuggestionApplyArgs,
     GqlSCookMutationMenuSuggestionFromInventoryArgs,
     GqlSCookMutationMenuSuggestionFromTextArgs,
     GqlSCookMutationMenuSyncToTemplateArgs,
@@ -1791,6 +1793,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 requestingSession: GqlSSession,
             ) {
                 return cookMenuSuggestionFromText(parent, args, requestingSession, serverRuntime);
+            },
+            menuSuggestionApply(parent: GqlSCookMutation, args: GqlSCookMutationMenuSuggestionApplyArgs, requestingSession: GqlSSession) {
+                return cookMenuSuggestionApply(parent, args, requestingSession, serverRuntime);
             },
             menuSuggestionFromInventory(
                 parent: GqlSCookMutation,

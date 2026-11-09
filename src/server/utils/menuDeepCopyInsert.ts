@@ -75,6 +75,7 @@ export async function menuDeepCopyInsert(db: DbExecutor, input: MenuDeepCopyInse
         title: menu.title,
         description: menu.description,
         publishedAt: bookingRequestOfferId ? menu.publishedAt : null,
+        generatedAt: menu.generatedAt,
         deletedAt: null,
     });
     if (courseInserts.length > 0) {

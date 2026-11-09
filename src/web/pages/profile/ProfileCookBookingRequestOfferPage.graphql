@@ -62,6 +62,7 @@ fragment ProfileCookBookingRequestOfferPageUser on User {
                 title
                 description
                 copyOfMenuId
+                generatedAt
                 courseMealOptionImages
                 courses {
                     courseId

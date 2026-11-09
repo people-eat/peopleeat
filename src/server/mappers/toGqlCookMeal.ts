@@ -10,6 +10,7 @@ export function toGqlCookMeal(row: Meal): GqlSCookMeal {
         imageFileUploadId: row.imageFileUploadId,
         imageUrl: row.imageFileUploadId ? fileUploadPublicUrl(row.imageFileUploadId) : null,
         publishedAt: row.publishedAt,
+        generatedAt: row.generatedAt,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
         // Overridden by `CookMeal.relationships` field resolver when requested.

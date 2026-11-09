@@ -347,15 +347,18 @@ export function ProfileCookMenuPage({ data, menuId }: { data: GqlCProfileCookMen
                     </>
                 }
             >
-                {isOfferMenu ? (
-                    <div className="flex">
-                        <Badge variant="outline">{{ de: 'Angebotsmenü', en: 'Offer menu' }[locale]}</Badge>
-                    </div>
-                ) : publicationEnabled ? (
-                    <div className="flex">
-                        <Badge variant="outline">
-                            {menu.publishedAt ? { de: 'Veröffentlicht', en: 'Published' }[locale] : { de: 'Entwurf', en: 'Draft' }[locale]}
-                        </Badge>
+                {isOfferMenu || publicationEnabled || menu.generatedAt != null ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                        {isOfferMenu ? (
+                            <Badge variant="outline">{{ de: 'Angebotsmenü', en: 'Offer menu' }[locale]}</Badge>
+                        ) : publicationEnabled ? (
+                            <Badge variant="outline">
+                                {menu.publishedAt
+                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
+                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
+                            </Badge>
+                        ) : null}
+                        {menu.generatedAt != null ? <Badge variant="outline">{{ de: 'Generiert', en: 'Generated' }[locale]}</Badge> : null}
                     </div>
                 ) : null}
 

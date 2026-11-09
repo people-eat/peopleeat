@@ -62,6 +62,16 @@ source = source.replace(
 );
 
 source = source.replace(
+    'mealOptions: z.array(z.lazy(() => GqlSCookMenuSuggestionDraftMealOptionInputSchema())),',
+    'mealOptions: z.array(GqlSCookMenuSuggestionDraftMealOptionInputSchema()),',
+);
+
+source = source.replace(
+    'courses: z.array(z.lazy(() => GqlSCookMenuSuggestionDraftCourseInputSchema())),',
+    'courses: z.array(GqlSCookMenuSuggestionDraftCourseInputSchema()),',
+);
+
+source = source.replace(
     'geoCoordinates: z.lazy(() => GqlSGeoCoordinatesInputSchema().nullish()),',
     'geoCoordinates: GqlSGeoCoordinatesInputSchema().nullish(),',
 );
@@ -93,6 +103,9 @@ for (const name of [
     'GqlSContentSectionInput',
     'GqlSCookMenuUpdate',
     'GqlSCookMenuUpsert',
+    'GqlSCookMenuSuggestionDraftInput',
+    'GqlSCookMenuSuggestionDraftCourseInput',
+    'GqlSCookMenuSuggestionDraftMealOptionInput',
     'GqlSCookPresenceLinksUpdate',
     'GqlSCookPresenceOtherProfileInput',
     'GqlSAdminCookMenuUpsert',

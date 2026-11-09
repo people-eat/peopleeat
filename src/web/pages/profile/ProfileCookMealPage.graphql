@@ -12,6 +12,7 @@ fragment ProfileCookMealPageUser on User {
             imageFileUploadId
             imageUrl
             publishedAt
+            generatedAt
             createdAt
             updatedAt
             relationships {

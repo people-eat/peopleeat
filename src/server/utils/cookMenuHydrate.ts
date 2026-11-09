@@ -118,6 +118,7 @@ export async function cookMenusWithCourses(db: Database, rows: Menu[]): Promise<
             title: row.title,
             description: row.description,
             publishedAt: row.publishedAt,
+            generatedAt: row.generatedAt,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
             copyOfMenuId: row.copyOfMenuId ?? null,

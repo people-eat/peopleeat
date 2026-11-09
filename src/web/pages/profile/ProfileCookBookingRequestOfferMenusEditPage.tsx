@@ -289,6 +289,10 @@ export function ProfileCookBookingRequestOfferMenusEditPage({
                     );
                 }}
                 onCreateMenu={() => void onCreateMenu()}
+                onMenuApplied={(menuId) => {
+                    setSelectedMenuIds((current) => (current.includes(menuId) ? current : [...current, menuId]));
+                    toast.success({ de: 'Menü angelegt und ausgewählt.', en: 'Menu created and selected.' }[locale]);
+                }}
                 onEditMenu={(menuId) => void onEditMenu(menuId)}
                 createMenuDisabled={busy}
                 editMenuDisabled={busy}

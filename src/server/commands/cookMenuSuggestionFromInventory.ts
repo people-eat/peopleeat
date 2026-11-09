@@ -39,7 +39,7 @@ export async function cookMenuSuggestionFromInventory(
             .where(and(eq(meals.cookId, cookId), isNull(meals.deletedAt)));
         const existingMealIds = new Set(cookMeals.map((meal) => meal.mealId));
 
-        const suggestion = await cookMenuSuggestionDraftMaterialize(cookId, draft, existingMealIds, serverRuntime);
+        const suggestion = await cookMenuSuggestionDraftMaterialize(cookId, draft, existingMealIds, serverRuntime.db);
         await serverRuntime.publish.userUpdates({ userId: cookId });
         return suggestion;
     } catch (error) {

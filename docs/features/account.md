@@ -19,9 +19,9 @@ On the account page, settings sit in cards:
   payments, and support always go to the account email. See [notification-settings.md](./notification-settings.md).
 - **Delete account**: the action sits at the end of the card.
 - **Sign-in and security** is the last card: list, add, and remove passkeys. Enable, confirm, and disable authenticator-app two-factor (QR
-  + recovery codes). List signed-in devices by browser and device. Signing out another device, signing out here, or signing out everywhere
-  else each asks for confirmation first. The confirm button is destructive. Everywhere-else sits before sign-out-here, both at the end of
-  the card. Add-passkey sits at the end of its section.
+  - recovery codes). List signed-in devices by browser and device. Signing out another device, signing out here, or signing out everywhere
+    else each asks for confirmation first. The confirm button is destructive. Everywhere-else sits before sign-out-here, both at the end of
+    the card. Add-passkey sits at the end of its section.
 - Privacy, terms, and imprint stay as quiet links under the cards.
 
 Language switches via the shared LanguageSwitcher (cookie + URL path). Changing language while signed in opens a hard confirm when the route

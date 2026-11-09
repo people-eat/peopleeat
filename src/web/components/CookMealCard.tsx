@@ -18,6 +18,7 @@ export type CookMealCardMeal = {
     description: string;
     imageUrl?: string | null;
     publishedAt?: string | null;
+    generatedAt?: string | null;
     deletedAt?: string | null;
 };
 
@@ -116,10 +117,11 @@ export function CookMealCard({
                     {meal.publishedAt ? { de: 'Veröffentlicht', en: 'Published' }[locale] : { de: 'Entwurf', en: 'Draft' }[locale]}
                 </Badge>
             ) : null}
-            {publishedWithoutImage ? (
+            {meal.generatedAt != null ? <Badge variant="outline">{{ de: 'Generiert', en: 'Generated' }[locale]}</Badge> : null}
+            {showStatusBadge && publishedWithoutImage ? (
                 <StatusBadge tone="warning">{{ de: 'Nicht auf Profil', en: 'Not on public page' }[locale]}</StatusBadge>
             ) : null}
-            {missingImage && !publishedWithoutImage ? (
+            {showStatusBadge && missingImage && !publishedWithoutImage ? (
                 <div
                     className="inline-flex"
                     onClick={(event) => event.stopPropagation()}

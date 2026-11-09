@@ -258,6 +258,7 @@ query AdminUserPage(
                     description
                     imageUrl
                     publishedAt
+                    generatedAt
                     deletedAt
                     createdAt
                     updatedAt
@@ -271,6 +272,7 @@ query AdminUserPage(
                     courseCount
                     courseMealOptionImages
                     publishedAt
+                    generatedAt
                     deletedAt
                     createdAt
                     updatedAt

@@ -1,0 +1,50 @@
+# Cook AI menu create dialog. Meals hydrate EXISTING_MEAL cards in the review step.
+
+query CookMenuCreateDialogMeals {
+    currentSession {
+        user {
+            cook {
+                cookId
+                meals {
+                    mealId
+                    title
+                    description
+                    imageUrl
+                    publishedAt
+                    generatedAt
+                }
+            }
+        }
+    }
+}
+
+mutation CookMenuCreateDialogSuggestionFromText($text: String, $fileUploadIds: [ID!]) {
+    user {
+        cook {
+            menuSuggestionFromText(text: $text, fileUploadIds: $fileUploadIds) {
+                title
+                description
+                courses {
+                    title
+                    mealOptions {
+                        type
+                        mealId
+                        title
+                        description
+                    }
+                }
+            }
+        }
+    }
+}
+
+mutation CookMenuCreateDialogSuggestionApply($suggestion: CookMenuSuggestionDraftInput!) {
+    user {
+        cook {
+            menuSuggestionApply(suggestion: $suggestion) {
+                success
+                referenceId
+            }
+        }
+    }
+}

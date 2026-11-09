@@ -571,6 +571,8 @@ export const meals = pgTable(
         }),
         publishedAt: timestamp({ withTimezone: true }),
         deletedAt: timestamp({ withTimezone: true }),
+        // Set when this meal was inserted by AI menu create / recommendation apply.
+        generatedAt: timestamp({ withTimezone: true }),
         createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
         updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
     },
@@ -614,6 +616,8 @@ export const menus = pgTable(
         description: text().notNull(),
         publishedAt: timestamp({ withTimezone: true }),
         deletedAt: timestamp({ withTimezone: true }),
+        // Set when this menu was inserted by AI menu create / recommendation apply.
+        generatedAt: timestamp({ withTimezone: true }),
         createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
         updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
     },

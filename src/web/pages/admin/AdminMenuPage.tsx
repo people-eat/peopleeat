@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
 import { pipe, subscribe } from 'wonka';
 
+import { formatDateTime } from '../../../shared';
 import { AdminPageChrome } from '../../components/AdminPageChrome';
 import { AdminPinnedFooterLayout } from '../../components/AdminPinnedFooterLayout';
 import {
@@ -30,6 +31,7 @@ import {
     AdminMenuUpsertDocument,
 } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
+import { useTimeZone } from '../../hooks/useTimeZone';
 
 export const adminMenuPageTitle = {
     de: 'Menü ansehen, veröffentlichen oder löschen',
@@ -48,6 +50,7 @@ function coursesReadyToPublish(menu: AdminMenu): boolean {
 
 export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; menuId: string }) {
     const locale = useLocale();
+    const timeZone = useTimeZone();
     const navigate = useNavigate();
     const client = useClient();
     const seedAdmin = data.currentSession.user?.admin ?? null;
@@ -221,6 +224,11 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
                                     : { de: 'Entwurf', en: 'Draft' }[locale]}
                             </Badge>
                         )}
+                        {menu.generatedAt != null ? (
+                            <Badge variant="outline" className="w-fit">
+                                {{ de: 'Generiert', en: 'Generated' }[locale]}
+                            </Badge>
+                        ) : null}
                         <Link
                             to="/{-$locale}/admin/users/$userId"
                             params={{ userId: menu.cookId }}
@@ -244,6 +252,16 @@ export function AdminMenuPage({ data, menuId }: { data: GqlCAdminMenuPageQuery; 
 
                     <div className="grid gap-1">
                         <h1 className="font-serif text-3xl/tight text-foreground">{menu.title}</h1>
+                        {menu.generatedAt != null ? (
+                            <p className="text-sm text-muted-foreground">
+                                {
+                                    {
+                                        de: `Generiert am ${formatDateTime(menu.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
+                                        en: `Generated on ${formatDateTime(menu.generatedAt, { locale, timeZone, dateStyle: 'medium', timeStyle: 'short' })}`,
+                                    }[locale]
+                                }
+                            </p>
+                        ) : null}
                         <p className="text-muted-foreground whitespace-pre-wrap">
                             {menu.description.trim() ? menu.description : { de: 'Keine Beschreibung.', en: 'No description.' }[locale]}
                         </p>

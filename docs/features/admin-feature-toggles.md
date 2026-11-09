@@ -145,6 +145,9 @@ Wired today:
   `/profile/chef-profile` (view and edit). `Cook.presenceLinks` is null and `presenceLinksReplace` rejects when off for the cook `userId`.
   Admin cook-profile view and edit always show and save the links. Customers never see them. See [cook-profile.md](./cook-profile.md)
 - **AI menu evaluation** (`AI_MENU_EVALUATION`) — cook open / refresh / apply gates use the cook `userId`
+- **AI menu create** (`AI_MENU_CREATE`) — shows from scratch vs from text/file when a cook creates a menu (library and offer create /
+  edit-menus); `menuSuggestionFromText` / `menuSuggestionApply` reject when off for the cook `userId`. Admin **Create menu** stays a blank
+  mint. See [ai-menu-create.md](./ai-menu-create.md)
 - **Landing booking how-it-works** (`LANDING_BOOKING_HOW_IT_WORKS`) — shows `SectionBookingHowItWorks` on the home page when on; missing row
   stays off. Public home reads `Session.activeFeatureToggleKeys` (global + signed-in override). See [landing.md](./landing.md)
 - **Landing testimonial cards** (`LANDING_TESTIMONIAL_CARDS`) — home testimonials use the shared public review card when on; missing row

@@ -110,6 +110,7 @@ describe('cookBookingRequestGeneratedMenuApply', () => {
         expect(menu?.title).toBe('Summer evening');
         expect(menu?.description).toBe('Light and fresh');
         expect(menu?.bookingRequestOfferId).toBeNull();
+        expect(menu?.generatedAt).toBeInstanceOf(Date);
 
         const courses = await testDb.select().from(menuCourses).where(eq(menuCourses.menuId, menuId));
         expect(courses).toHaveLength(2);
@@ -126,7 +127,8 @@ describe('cookBookingRequestGeneratedMenuApply', () => {
             .select()
             .from(meals)
             .where(and(eq(meals.cookId, setup.user.userId)));
-        expect(newMeals.some((meal) => meal.title === 'Herb risotto')).toBe(true);
+        expect(newMeals.some((meal) => meal.title === 'Herb risotto' && meal.generatedAt instanceof Date)).toBe(true);
+        expect(newMeals.find((meal) => meal.mealId === mealId)?.generatedAt).toBeNull();
         expect(setup.serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: setup.user.userId });
 
         const [details] = await testDb

@@ -10,10 +10,11 @@ Signed-in cooks manage menus under the cook shell:
 
 - **List** (`/profile/menus`) — scope tabs **Library** (Vorlagen) | **In offers** (In Angeboten) with counts. Library is inventory
   templates; In offers lists per-offer deep copies with customer name + booking date on each card and an **Open offer** link. Library keeps
-  search, sort, **New menu** (draft with three default empty courses → edit), and when `PUBLICATION_MENUS` is on a publication **Select**
-  (All / Published / Draft) instead of nested status tabs. In offers keeps search/sort only and shows short copy that templates and offer
-  copies do not auto-sync. URL-backed: `scope=offers`, `status`, `q`, `sort`. Same container-query card grid as meals (meal-image collage
-  from `courseMealOptionImages`, or book icon when empty).
+  search, sort, **New menu** (when `AI_MENU_CREATE` is on: chooser from text/file first vs from scratch, then **Suggest menu** and review
+  before save; otherwise a draft with three default empty courses → edit), and when `PUBLICATION_MENUS` is on a publication **Select** (All
+  / Published / Draft) instead of nested status tabs. In offers keeps search/sort only and shows short copy that templates and offer copies
+  do not auto-sync. URL-backed: `scope=offers`, `status`, `q`, `sort`. Same container-query card grid as meals (meal-image collage from
+  `courseMealOptionImages`, or book icon when empty). Cards with `generatedAt` show a cook-only **Generiert** / **Generated** outline badge.
 - **Detail** (`/profile/menus/$menuId`) — view-first course summary (no course borders; `text-base` titles) with `CookMealCard` per meal
   option (click → read-only details dialog). Copy explains guest choice per course; multi-select courses show **Up to N dishes selectable**,
   single-select with several options shows **1 dish selectable**.
@@ -57,11 +58,12 @@ Menu cards for that cook; card click opens admin menu detail. **Create menu** mi
 ### Offer menus
 
 When a cook creates or updates an offer, inventory menus are deep-copied onto the offer; offer-scoped copies are separate from the meal/menu
-library. From offer create / edit-menus, **New menu** mints a draft (same as the menus list) and opens menu edit with a safe `returnTo` back
-to the offer flow; **Edit** on any picker card opens the same menu edit + `returnTo` loop (incomplete menus are added to draft `menus` so
-they stay selected when complete; already-selected complete menus keep their selection). Draft selection / price / message live in
-offer-create URL search. Meal AI in the course editor can still insert draft meals — see [booking-offers.md](./booking-offers.md) and
-[ai-generations.md](../architecture/ai-generations.md).
+library. From offer create / edit-menus, **New menu** follows the same chooser as the menus list when `AI_MENU_CREATE` is on: from scratch
+mints a draft and opens menu edit with a safe `returnTo`; from text/file reviews then **Create and select** (toast, stay, scroll the
+selected card into view). When the toggle is off, **New menu** still mints a draft and opens edit + `returnTo`. **Edit** on any picker card
+opens the same menu edit + `returnTo` loop (incomplete menus are added to draft `menus` so they stay selected when complete;
+already-selected complete menus keep their selection). Draft selection / price / message live in offer-create URL search. See
+[ai-menu-create.md](./ai-menu-create.md) and [booking-offers.md](./booking-offers.md).
 
 Cooks can also find those copies under `/profile/menus?scope=offers`, edit them in place while negotiable, or **Sync to template** to push
 customizations back onto the library source (`copyOfMenuId`).
@@ -109,7 +111,8 @@ item’s full height while a `DragOverlay` follows the pointer on the vertical a
 
 ## Implementation
 
-- Schema: `Menus`, `MenuCourses`, `MenuCourseMealOptions`; nullable offer link + copy-of for offer-scoped rows
+- Schema: `Menus`, `MenuCourses`, `MenuCourseMealOptions`; nullable offer link + copy-of for offer-scoped rows; nullable `generatedAt` on
+  menus created from AI apply or Use recommendation
 - `Cook.menus` stays inventory-only (`bookingRequestOfferId` null) for offer pickers; `Cook.offerMenus` lists offer-scoped copies with
   `CookMenuOfferContext` (offer id, booking date/time, customer first name, offer status); `CookMenu.templateMenu` resolves the living
   inventory source for sync preview
@@ -119,22 +122,22 @@ item’s full height while a `DragOverlay` follows the pointer on the vertical a
   `AdminCookMenuCriterion` (optional `menuIds` for primary-key drill-in) / shared `AdminCookInventoryStatus`, courses, suggestion types
 - Commands: `cookMenuUpsert` (+ colocated `toolCookMenuUpsert`; locale-aware draft defaults via `cookMenuDraftDefaults` from cook
   `Users.locale`; offer rows: no `publishedAt`; editable only while negotiable), delete (soft, inventory-only), copy (inventory source),
-  `menuSyncToTemplate` (offer → living inventory `copyOfMenuId`), `menuSuggestionFromText`, `menuTitleDescriptionSuggest` (menu-level AI
-  suggestion mutations remain; cook UI surface removed with inline create form, meal AI in the course editor still ships); admin
-  `adminCookMenuUpsert` (+ `toolAdminCookMenuUpsert`; `cookId` required on create; inventory + offer copies; `publishedAt` inventory-only) /
-  `adminCookMenuDelete` / `adminCookMenuCopy` (inventory only)
+  `menuSyncToTemplate` (offer → living inventory `copyOfMenuId`), `menuSuggestionFromText` / `menuSuggestionApply` (AI create from text or
+  files; gated by `AI_MENU_CREATE`; no insert until apply), `menuTitleDescriptionSuggest`; admin `adminCookMenuUpsert` (+
+  `toolAdminCookMenuUpsert`; `cookId` required on create; inventory + offer copies; `publishedAt` inventory-only) / `adminCookMenuDelete` /
+  `adminCookMenuCopy` (inventory only)
 - Queries: `cookMenuFindMany`, `cookOfferMenuFindMany`, find-one with course hydrate (derives `courseMealOptionImages` from hydrated meals);
   `Cook.menusCounts(criteria: [CookMenuCriterion!]!)` (soft-deleted never counted; optional `searchText`); admin find/counts (inventory
   only) and findOne (inventory + offer-scoped for deep-links; hydrates courses; exposes `bookingRequestOfferId` / `copyOfMenuId`)
 - Guard: `guardCookMutation` + legal acceptance
 - UI: `CookMenuCard` / exported `CookMenuCardMedia` (collage from `courseMealOptionImages`; card shell measures height and sizes the collage
   as a square via ResizeObserver — avoids CSS `aspect-square` + `self-stretch` flex blow-up; admin click → `MenuDetailsDialog`),
-  `CookMenuCoursesEditor` (uses `CookMealCard` + `CookMealEditorDialog` for inline meal create/edit with `CookMealImageField`; desktop
-  vertical sortable via `@dnd-kit/sortable` + `restrictToVerticalAxis`; mobile/button reorder FLIP via `animateListReorder` +
-  `data-reorder-id`), `CookMenuSelectPanel` on offer create / edit-menus (reuses `CookMenuCardMedia`) —
-  [booking-offers.md](./booking-offers.md); `AdminMenusPage` / `AdminMenuPage` / `AdminMenuEditPage` share inventory toolbar patterns with
-  admin meals
+  `CookMenuCreateDialog` (chooser + text/files + review; [ai-menu-create.md](./ai-menu-create.md)), `CookMenuCoursesEditor` (uses
+  `CookMealCard` + `CookMealEditorDialog` for inline meal create/edit with `CookMealImageField`; desktop vertical sortable via
+  `@dnd-kit/sortable` + `restrictToVerticalAxis`; mobile/button reorder FLIP via `animateListReorder` + `data-reorder-id`),
+  `CookMenuSelectPanel` on offer create / edit-menus (reuses `CookMenuCardMedia`) — [booking-offers.md](./booking-offers.md);
+  `AdminMenusPage` / `AdminMenuPage` / `AdminMenuEditPage` share inventory toolbar patterns with admin meals
 - Routes: profile menus, admin menus + `$menuId` + edit, pool offer-create route
-- Live state: `useUserUpdatesSeed` + subscription after cook menu commands (including AI draft meals); admin detail/edit via `adminUpdates`
+- Live state: `useUserUpdatesSeed` + subscription after cook menu commands (including AI menu apply); admin detail/edit via `adminUpdates`
 
 See [cook-meals.md](./cook-meals.md), [cook-shell.md](./cook-shell.md), [admin-users.md](./admin-users.md).

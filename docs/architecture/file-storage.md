@@ -50,7 +50,8 @@ domain-specific blob table is the exception, not the default.
 The upload and download routes are likewise consumer-agnostic:
 
 - `POST /api/file-uploads` — multipart upload, returns `{ fileUploadId, filename, mediaType, size }`. The signed-in user may store jpeg,
-  png, webp, gif, PDF, and the audio types in `src/shared/fileUploadMediaTypes.ts`. HTML, SVG, and other active types are rejected (`415`).
+  png, webp, gif, PDF, plain text, Word (`.docx`), and the audio types in `src/shared/fileUploadMediaTypes.ts`. HTML, SVG, and other active
+  types are rejected (`415`).
 - `GET /api/file-uploads/:fileUploadId` — streams the bytes back with `X-Content-Type-Options: nosniff`. Bitmap images and audio are
   `Content-Disposition: inline`. Everything else, including PDF and any older HTML or SVG row, is `attachment`. HTML, SVG, and XML are
   served as `application/octet-stream` so the browser cannot render them on this origin. Authorization:

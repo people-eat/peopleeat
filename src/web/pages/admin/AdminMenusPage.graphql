@@ -16,6 +16,7 @@ query AdminMenusPage($criterion: AdminCookMenuCriterion!) {
                     courseCount
                     courseMealOptionImages
                     publishedAt
+                    generatedAt
                     deletedAt
                     createdAt
                     updatedAt

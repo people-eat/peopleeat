@@ -10,6 +10,7 @@ fragment ProfileCookMenusPageUser on User {
             title
             description
             publishedAt
+            generatedAt
             createdAt
             updatedAt
             courseMealOptionImages
@@ -22,6 +23,7 @@ fragment ProfileCookMenusPageUser on User {
             title
             description
             publishedAt
+            generatedAt
             createdAt
             updatedAt
             copyOfMenuId

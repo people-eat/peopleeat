@@ -27,8 +27,9 @@ Live LLM/agent trees (nested tools, latency, Langfuse sessions) are OpenTelemetr
 ## Consequences
 
 - Every successful one-shot call stores full `system`, `prompt`, and `output` (structured outputs as JSON text).
-- **Multimodal exception:** binary file parts (call-recording audio) are not dumped into Postgres. The prompt column stores text parts plus
-  a placeholder like `[file mediaType=audio/ogg byteLength=…]`.
+- **Multimodal exception:** binary file parts (call-recording audio, menu PDF/images) are not dumped into Postgres. The prompt column stores
+  text parts plus a placeholder like `[file mediaType=audio/ogg byteLength=…]`. Menu create also extracts `.txt` / `.docx` into the prompt
+  and records the same placeholders for those files.
 - Inserts never fail the caller (same stance as `ServerRuntime.log`).
 - Token columns match chat generation meta (`inputTokens`, `outputTokens`, `totalTokens`, `reasoningTokens`, `cachedInputTokens`) via shared
   `aiGenerationUsageFromLanguageModel`.

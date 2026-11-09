@@ -8,6 +8,7 @@ fragment AdminMenuPageMealOption on AdminCookMeal {
     imageFileUploadId
     imageUrl
     publishedAt
+    generatedAt
     deletedAt
 }
 
@@ -22,6 +23,7 @@ fragment AdminMenuPageMenu on AdminCookMenu {
     copyOfMenuId
     bookingRequestOfferId
     publishedAt
+    generatedAt
     deletedAt
     createdAt
     updatedAt

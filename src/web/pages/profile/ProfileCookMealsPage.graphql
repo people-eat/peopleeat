@@ -11,6 +11,7 @@ fragment ProfileCookMealsPageUser on User {
             description
             imageUrl
             publishedAt
+            generatedAt
             createdAt
             updatedAt
         }
