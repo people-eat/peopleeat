@@ -1,3 +1,4 @@
+import { bookingRequestOfferChatMessageAuthorCanDelete } from '../../shared';
 import type { FileUploadMetadata } from '../db/fileUploadMetadata';
 import type { BookingRequestOfferEvent, BookingRequestOfferEventReaction } from '../db/schema';
 import type { BookingRequestOfferChatReactorRole, BookingRequestOfferEventType } from '../domain/bookingRequest';
@@ -39,19 +40,20 @@ type MessageSimplePayload = {
         sourceEventId: string;
     };
     hiddenByAdmin?: boolean;
+    hiddenByAuthor?: boolean;
 };
 
-function messageSimpleIsHiddenByAdmin(event: BookingRequestOfferEvent): boolean {
+function messageSimpleIsHiddenFromParticipants(event: BookingRequestOfferEvent): boolean {
     if (!MESSAGE_SIMPLE_TYPES.has(event.type)) return false;
     const payload = event.payload as MessageSimplePayload;
-    return payload.hiddenByAdmin === true;
+    return payload.hiddenByAdmin === true || payload.hiddenByAuthor === true;
 }
 
 /** Project offer timeline events onto the human chat message union. */
 export function toGqlOfferChatMessages(input: ToGqlOfferChatMessagesInput): GqlSHumanChatMessage[] {
     return input.events.flatMap((event) => {
         if (input.viewerRole !== 'admin') {
-            if (messageSimpleIsHiddenByAdmin(event)) return [];
+            if (messageSimpleIsHiddenFromParticipants(event)) return [];
             if (bookingRequestOfferEventTypeAdminOnlySet.has(event.type)) return [];
         }
         return [toGqlOfferChatMessage(event, input)];
@@ -100,7 +102,10 @@ function toGqlOfferChatMessageUser(event: BookingRequestOfferEvent, input: ToGql
     const { author, isOwn } = authorAndIsOwnForMessageSimple(event.type, payload, input);
     const attachments = input.attachmentsByEventId?.get(event.bookingRequestOfferEventId) ?? [];
     const hiddenByAdmin = payload.hiddenByAdmin === true;
+    const hiddenByAuthor = payload.hiddenByAuthor === true;
+    const createdAt = createdAtForMessageSimple(event, payload);
     const canHardDelete = input.viewerRole === 'admin' && event.type === 'ADMIN_MESSAGE_SIMPLE';
+    const canSoftDelete = canSoftDeleteForViewer(event, payload, input, createdAt);
     return {
         gqlTypeName: 'ChatMessageUser',
         chatMessageId: event.bookingRequestOfferEventId,
@@ -109,13 +114,32 @@ function toGqlOfferChatMessageUser(event: BookingRequestOfferEvent, input: ToGql
         showCopyButton: false,
         collapseLongBody: false,
         hiddenByAdmin,
+        hiddenByAuthor,
         canHardDelete,
+        canSoftDelete,
         body: payload.messageBody,
         attachments: attachments.map(toGqlFileUpload),
         deliveryStatus: null,
         reactions: reactionsResolve(input.reactionsByEventId?.get(event.bookingRequestOfferEventId), input.viewerRole),
-        createdAt: createdAtForMessageSimple(event, payload),
+        createdAt,
     };
+}
+
+function canSoftDeleteForViewer(
+    event: BookingRequestOfferEvent,
+    payload: MessageSimplePayload,
+    input: ToGqlOfferChatMessagesInput,
+    createdAt: Date,
+): boolean {
+    if (payload.hiddenByAuthor === true) return false;
+    if (payload.handedOverFrom) return false;
+    if (input.viewerRole === 'user' && event.type === 'USER_MESSAGE_SIMPLE') {
+        return bookingRequestOfferChatMessageAuthorCanDelete(createdAt);
+    }
+    if (input.viewerRole === 'cook' && event.type === 'COOK_MESSAGE_SIMPLE') {
+        return bookingRequestOfferChatMessageAuthorCanDelete(createdAt);
+    }
+    return false;
 }
 
 function createdAtForMessageSimple(event: BookingRequestOfferEvent, payload: MessageSimplePayload): Date {

@@ -14,7 +14,7 @@ interface HumanChatMessageProps {
     onEditUserMessage?: (chatMessageId: string, body: string) => Promise<boolean>;
     /** Soft-hide / unhide (admin offer chat). */
     onVisibilityChangeUserMessage?: (chatMessageId: string, hiddenByAdmin: boolean) => Promise<boolean>;
-    /** Hard-delete admin messages (admin offer chat). */
+    /** Hard-delete admin messages, or author soft-delete within 1 hour. */
     onDeleteUserMessage?: (chatMessageId: string) => Promise<boolean>;
     /** When set, peer bubbles expose a reaction picker (WhatsApp Concierge). */
     onReactUserMessage?: (chatMessageId: string, emoji: string) => Promise<boolean>;
@@ -81,7 +81,9 @@ export function ChatMessage({ message, chatTurnId, onApprovalRespond, onPromptUs
                     showCopyButton: false,
                     collapseLongBody: true,
                     hiddenByAdmin: false,
+                    hiddenByAuthor: false,
                     canHardDelete: false,
+                    canSoftDelete: false,
                     author: { display: 'You', createdAt: message.createdAt, profilePicture: null },
                     attachments: message.attachments,
                     reactions: [],

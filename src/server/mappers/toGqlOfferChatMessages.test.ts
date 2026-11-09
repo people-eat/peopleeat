@@ -11,13 +11,14 @@ function offerEvent(
     type: BookingRequestOfferEventType,
     id: string,
     payload: BookingRequestOfferEvent['payload'] = {},
+    createdAt = new Date('2024-01-01T12:00:00.000Z'),
 ): BookingRequestOfferEvent {
     return {
         bookingRequestOfferEventId: id,
         bookingRequestOfferId: 'offer_1',
         type,
         payload,
-        createdAt: new Date('2024-01-01T12:00:00.000Z'),
+        createdAt,
     };
 }
 
@@ -160,5 +161,55 @@ describe('toGqlOfferChatMessages admin rails', () => {
 
         expect(forCook.map((message) => message.chatMessageId)).toEqual(['e_setup', 'e_paid', 'e_fail', 'e_payout', 'e_oos']);
         expect(forUser.map((message) => message.chatMessageId)).toEqual(['e_setup', 'e_paid', 'e_fail', 'e_payout', 'e_oos']);
+    });
+
+    it('hides author-deleted messages from cook and customer, keeps them for admin', () => {
+        const events = [messageEvent('USER_MESSAGE_SIMPLE', 'e_deleted', { messageBody: 'oops', hiddenByAuthor: true })];
+        const forAdmin = toGqlOfferChatMessages({ events, customer, cook, viewerRole: 'admin' });
+        const forCook = toGqlOfferChatMessages({ events, customer, cook, viewerRole: 'cook' });
+        const forUser = toGqlOfferChatMessages({ events, customer, cook, viewerRole: 'user' });
+
+        expect(forCook).toEqual([]);
+        expect(forUser).toEqual([]);
+        expect(forAdmin[0]).toMatchObject({
+            chatMessageId: 'e_deleted',
+            hiddenByAuthor: true,
+            hiddenByAdmin: false,
+            canSoftDelete: false,
+        });
+    });
+
+    it('stamps canSoftDelete for own recent messages only', () => {
+        const recent = new Date();
+        const events = [
+            offerEvent('USER_MESSAGE_SIMPLE', 'e_user', { messageBody: 'hi' }, recent),
+            offerEvent('COOK_MESSAGE_SIMPLE', 'e_cook', { messageBody: 'hi' }, recent),
+            offerEvent('COOK_MESSAGE_SIMPLE', 'e_old_cook', { messageBody: 'old' }, new Date('2024-01-01T12:00:00.000Z')),
+            offerEvent(
+                'COOK_MESSAGE_SIMPLE',
+                'e_handover',
+                {
+                    messageBody: 'prior',
+                    handedOverFrom: {
+                        cookId: 'cook_old',
+                        cookDisplayName: 'Chef Alpha',
+                        sourceEventId: 'e_src',
+                    },
+                    originalCreatedAt: recent.toISOString(),
+                },
+                recent,
+            ),
+        ];
+
+        const forUser = toGqlOfferChatMessages({ events, customer, cook, viewerRole: 'user' });
+        const forCook = toGqlOfferChatMessages({ events, customer, cook, viewerRole: 'cook' });
+        const forAdmin = toGqlOfferChatMessages({ events, customer, cook, viewerRole: 'admin' });
+
+        expect(forUser.find((message) => message.chatMessageId === 'e_user')).toMatchObject({ canSoftDelete: true });
+        expect(forUser.find((message) => message.chatMessageId === 'e_cook')).toMatchObject({ canSoftDelete: false });
+        expect(forCook.find((message) => message.chatMessageId === 'e_cook')).toMatchObject({ canSoftDelete: true });
+        expect(forCook.find((message) => message.chatMessageId === 'e_old_cook')).toMatchObject({ canSoftDelete: false });
+        expect(forCook.find((message) => message.chatMessageId === 'e_handover')).toMatchObject({ canSoftDelete: false });
+        expect(forAdmin.every((message) => message.gqlTypeName === 'ChatMessageUser' && message.canSoftDelete === false)).toBe(true);
     });
 });

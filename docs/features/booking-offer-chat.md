@@ -21,7 +21,12 @@ Customer, cook, and admin negotiate on an offer through a shared timeline chat w
 4. When the customer or cook sends a peer message, the other party gets a **debounced email** (~1 minute) if they still have unread chat
    when the email fires. Opening the chat cancels a pending email. Admin messages do not trigger this email.
 5. Chat stays open after dual accept (payment / logistics can continue); it closes when the offer is declined or the request is canceled.
-6. **Admins can moderate** any free-text (`*_MESSAGE_SIMPLE`) bubble via an ellipsis menu on the bubble:
+6. **Customer and cook can delete their own messages** for **1 hour** after send. The ellipsis **Delete** control is only on own bubbles and
+   disappears when the hour is up. Delete is a **soft hide** (`hiddenByAuthor` on the event payload): the bubble vanishes for cook and
+   customer (including the author). Admins still see a muted bubble labeled as deleted by the sender. No undo for cook/customer. Handed-over
+   prior-chef bubbles are not own, so the new cook cannot delete them. Confirmation required. The 1-hour window uses the original send time
+   (including handover copies).
+7. **Admins can moderate** any free-text (`*_MESSAGE_SIMPLE`) bubble via an ellipsis menu on the bubble:
    - **Edit** opens a dialog and saves the body only (attachments unchanged). Same phone-number block as send. No “edited” badge and no
      unread / email side effects.
    - **Hide from participants** soft-hides the bubble (`hiddenByAdmin` on the event payload). Admins still see a muted bubble with a clear
@@ -29,12 +34,13 @@ Customer, cook, and admin negotiate on an offer through a shared timeline chat w
      unhide require a confirmation dialog that explains the consequence.
    - **Delete permanently** is available only for **admin** messages (`ADMIN_MESSAGE_SIMPLE`). Irreversible (event + attachments / reactions
      cascade). Confirmation required. Peer messages use hide, not hard delete. Moderation stays available after chat send is closed (ops /
-     moderation). Offer handover copies simple messages **still marked hidden** when the source was hidden.
-7. **Emoji reactions** on `*_MESSAGE_SIMPLE` bubbles (customer / cook / admin), gated by feature toggle
+     moderation). Offer handover copies simple messages **still marked hidden** when the source was hidden by admin or deleted by the
+     author.
+8. **Emoji reactions** on `*_MESSAGE_SIMPLE` bubbles (customer / cook / admin), gated by feature toggle
    `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` (missing = off). Smile control on peer bubbles; toggle same emoji clears. One reaction per party.
    No unread bump and no chat-notify email. Customer/cook reactions require chat still writable; admin may react after send is closed.
-   Hidden messages cannot receive reactions. Milestone pills cannot receive reactions. Offer handover does **not** copy reactions onto the
-   new offer.
+   Hidden messages (admin hide or author delete) cannot receive reactions. Milestone pills cannot receive reactions. Offer handover does
+   **not** copy reactions onto the new offer.
 
 Admin uses the same chat component with admin-oriented presence copy — [admin-booking-requests.md](./admin-booking-requests.md). Peer
 messages also enter the post-hoc admin review pipeline — [admin-offer-chat-review.md](./admin-offer-chat-review.md).
@@ -82,7 +88,13 @@ all”); live via admin updates. Non-goals for a first slice: autocomplete menti
 - `*_MESSAGE_SIMPLE` → `ChatMessageUser`
 - Other event types → `ChatMessageBookingRequestOfferEvent`
 
-Sends: role-scoped `bookingRequestOfferChatMessageCreate` (optional `fileUploadIds`). Admin moderation (no chat-writable gate):
+Sends: role-scoped `bookingRequestOfferChatMessageCreate` (optional `fileUploadIds`). Author retract (own `USER_MESSAGE_SIMPLE` /
+`COOK_MESSAGE_SIMPLE` only, 1-hour window from send / `originalCreatedAt`):
+
+- `user.bookingRequestOfferChatMessageDelete` / `cook.bookingRequestOfferChatMessageDelete` set `payload.hiddenByAuthor`
+
+Window helper: `bookingRequestOfferChatMessageAuthorCanDelete` in `src/shared`. Not gated on chat still writable. Admin moderation (no
+chat-writable gate):
 
 - `admin.bookingRequestOfferChatMessageUpdate(bookingRequestOfferEventId, message)` patches `payload.messageBody` on `*_MESSAGE_SIMPLE` only
   (empty body allowed when attachments exist)
@@ -96,19 +108,22 @@ an optional cook `message` as `COOK_MESSAGE_SIMPLE` (phone-blocked on create too
 offer-created email covers first contact). `COOK_CREATED` stores `menuPriceCents` and `totalWithoutDiscountsCentsCustomer`; chat UI renders
 the customer total for create and price-change milestones.
 
-`toGqlOfferChatMessages` filters `hiddenByAdmin` rows for `user` / `cook` viewers; admin sees them with `ChatMessageUser.hiddenByAdmin` /
-`canHardDelete` stamped. It also omits **admin-only ops milestones** (`ADMIN_CHANGED_PRICE`, `ADMIN_CHANGED_ADDONS`,
-`ADMIN_ACCEPTANCE_UPDATED`, `ADMIN_PAYMENT_SCHEDULE_UPDATED`, `ADMIN_CONFIGURED_MENU_UPDATED`) for peer viewers — those stay in the DB for
-admin audit. Existing public admin milestones (handover, participant amendments, preparations clear, call start, admin messages) still show
-to cook and customer. Chat-notify email “latest peer body” skips hidden rows.
+`toGqlOfferChatMessages` filters `hiddenByAdmin` and `hiddenByAuthor` rows for `user` / `cook` viewers; admin sees them with
+`ChatMessageUser.hiddenByAdmin` / `hiddenByAuthor` / `canHardDelete` / `canSoftDelete` stamped (`canSoftDelete` only for the author within
+the 1-hour window). It also omits **admin-only ops milestones** (`ADMIN_CHANGED_PRICE`, `ADMIN_CHANGED_ADDONS`, `ADMIN_ACCEPTANCE_UPDATED`,
+`ADMIN_PAYMENT_SCHEDULE_UPDATED`, `ADMIN_CONFIGURED_MENU_UPDATED`) for peer viewers — those stay in the DB for admin audit. Existing public
+admin milestones (handover, participant amendments, preparations clear, call start, admin messages) still show to cook and customer.
+Chat-notify email “latest peer body” skips hidden rows (admin hide or author delete).
 
 Admin offer handover may optionally hard-copy `*_MESSAGE_SIMPLE` rows (+ attachment joins) onto the new offer
 ([admin-booking-requests.md](./admin-booking-requests.md)). Copied cook messages include `handedOverFrom` + `originalCreatedAt` in the
-payload; `hiddenByAdmin` is preserved when set. `toGqlOfferChatMessages` uses handover fields so prior-chef bubbles keep the old cook’s
-display name and true send time, and are never `isOwn` for the new cook. Peer chat-notify emails are not scheduled for copied messages.
+payload; `hiddenByAdmin` and `hiddenByAuthor` are preserved when set. `toGqlOfferChatMessages` uses handover fields so prior-chef bubbles
+keep the old cook’s display name and true send time, and are never `isOwn` for the new cook. Peer chat-notify emails are not scheduled for
+copied messages.
 
 Shared UI: `BookingRequestOfferChat` — concierge row + `containsPhoneNumber` on client and all three create commands; optional
-`onEditMessage` / `onVisibilityChangeMessage` / `onDeleteMessage` (admin pages) → ellipsis menu + confirm dialogs on `ChatMessageUserView`;
+`onEditMessage` / `onVisibilityChangeMessage` (admin pages) and `onDeleteMessage` (admin hard-delete plus cook/customer author retract) →
+ellipsis menu + confirm dialogs on `ChatMessageUserView` (`canSoftDelete` expires in the client at 1 hour without waiting for a refetch);
 optional `onReactMessage` when `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` is active (`useFeatureToggleActive` with `gateInAdminShell` so admin
 offer chat follows the same effective keys as profile). On admin peer bubbles the ellipsis and smile controls stack beside the bubble
 (ellipsis above, smile below). Mutations: `bookingRequestOfferChatMessageReactionUpsert` on User / Cook / Admin.

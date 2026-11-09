@@ -44,6 +44,10 @@ export { centsToEuros, eurosToCents } from './euroAmount';
 export { geoDistance } from './geoDistance';
 export type { GeoCoordinates } from './geoDistance';
 export { bookingRequestOfferChatCanSend } from './bookingRequestOfferChatCanSend';
+export {
+    BOOKING_REQUEST_OFFER_CHAT_MESSAGE_AUTHOR_DELETE_WINDOW_MS,
+    bookingRequestOfferChatMessageAuthorCanDelete,
+} from './bookingRequestOfferChatMessageAuthorCanDelete';
 export { isCallJoinable } from './callJoinWindow';
 export { COOK_CALL_AVAILABILITY_TIME_ZONE, deriveCookCallSlots, zonedMidnightToUtc } from './deriveCookCallSlots';
 export type { DerivedCallSlot } from './deriveCookCallSlots';

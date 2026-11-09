@@ -13,7 +13,7 @@ Post-hoc monitoring of customer–cook offer chats: admins review full threads, 
    presence banner omits the Juliana intro subtitle. The transcript keeps the same bottom breathing room as composer surfaces; the pinned
    footer is two actions only: **Im Angebot antworten** / **Respond in offer** (opens the admin offer chat tab for concierge replies) and
    **Bestätigen** / **Confirm**. Admins can still edit, soft-hide / unhide, react, or (for admin messages) permanently delete on the review
-   surface — [booking-offer-chat.md](./booking-offer-chat.md).
+   surface. Author-deleted cook/customer bubbles stay visible here as muted rows — [booking-offer-chat.md](./booking-offer-chat.md).
 4. **Bestätigen** / **Confirm** clears that offer from the queue and opens the next pending offer, or returns to the empty state when none
    remain. New peer messages after acknowledge put the offer back in the queue.
 5. `/admin` shows a fifth action queue (KPI + capped list) for pending offer-chat reviews, deep-linking into the review page. The Messaging

@@ -1,7 +1,11 @@
 import { ChevronDownIcon, EyeIcon, EyeOffIcon, MoreHorizontalIcon, PencilIcon, SmilePlusIcon, Trash2Icon } from 'lucide-react';
 import type { TransitionEvent } from 'react';
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { containsPhoneNumber } from '../../../shared';
+import {
+    BOOKING_REQUEST_OFFER_CHAT_MESSAGE_AUTHOR_DELETE_WINDOW_MS,
+    bookingRequestOfferChatMessageAuthorCanDelete,
+    containsPhoneNumber,
+} from '../../../shared';
 import { isVoiceNoteMessage, voiceNoteCaption } from '../../chat/chatVoiceMessage';
 import type { GqlCChatMessageUser } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
@@ -57,7 +61,7 @@ export function ChatMessageUserView({
     onEdit?: (body: string) => Promise<boolean>;
     /** Soft-hide / unhide for offer-chat admin moderation. */
     onVisibilityChange?: (hiddenByAdmin: boolean) => Promise<boolean>;
-    /** Hard-delete (admin messages only when `message.canHardDelete`). */
+    /** Hard-delete admin messages (`canHardDelete`) or author soft-delete (`canSoftDelete`). */
     onDelete?: () => Promise<boolean>;
     /**
      * When set on peer messages, shows a reaction picker. Pass `''` to clear the
@@ -75,15 +79,22 @@ export function ChatMessageUserView({
     const [editOpen, setEditOpen] = useState(false);
     const [editDraft, setEditDraft] = useState(message.body);
     const [editBusy, setEditBusy] = useState(false);
-    const [confirmAction, setConfirmAction] = useState<'hide' | 'unhide' | 'delete' | null>(null);
+    const [confirmAction, setConfirmAction] = useState<'hide' | 'unhide' | 'delete' | 'softDelete' | null>(null);
     const [confirmBusy, setConfirmBusy] = useState(false);
     const [reactOpen, setReactOpen] = useState(false);
     const [reactBusy, setReactBusy] = useState(false);
+    const createdAtMs = new Date(message.createdAt).getTime();
+    const [nowMs, setNowMs] = useState(() => Date.now());
     const isOwn = message.isOwn;
     const side = isOwn ? 'user' : 'assistant';
     const tone = isOwn ? 'user' : 'assistant';
     const hiddenByAdmin = message.hiddenByAdmin;
-    const showModerationMenu = onEdit != null || onVisibilityChange != null || (onDelete != null && message.canHardDelete);
+    const hiddenByAuthor = message.hiddenByAuthor;
+    const hiddenFromParticipants = hiddenByAdmin || hiddenByAuthor;
+    const canSoftDeleteNow =
+        onDelete != null && message.canSoftDelete && bookingRequestOfferChatMessageAuthorCanDelete(new Date(createdAtMs), new Date(nowMs));
+    const showModerationMenu =
+        onEdit != null || onVisibilityChange != null || (onDelete != null && message.canHardDelete) || canSoftDeleteNow;
     const editContainsPhoneNumber = containsPhoneNumber(editDraft);
     const editEmptyBlocked = editDraft.trim().length === 0 && !hasAttachments;
     const editLabel = { de: 'Nachricht bearbeiten', en: 'Edit message' }[locale];
@@ -91,10 +102,23 @@ export function ChatMessageUserView({
     const hideLabel = { de: 'Vor Teilnehmern verbergen', en: 'Hide from participants' }[locale];
     const unhideLabel = { de: 'Wieder für Teilnehmer zeigen', en: 'Show to participants' }[locale];
     const deleteLabel = { de: 'Dauerhaft löschen', en: 'Delete permanently' }[locale];
+    const softDeleteLabel = { de: 'Löschen', en: 'Delete' }[locale];
     const hiddenLabel = { de: 'Vor Gast und Koch verborgen', en: 'Hidden from customer and cook' }[locale];
+    const deletedByAuthorLabel = { de: 'Vom Absender gelöscht', en: 'Deleted by the sender' }[locale];
     const reactLabel = { de: 'Reagieren', en: 'React' }[locale];
     const reactions = message.reactions ?? [];
     const ownReactionEmoji = reactions.find((reaction) => reaction.isOwn)?.emoji;
+
+    useEffect(() => {
+        if (!message.canSoftDelete || onDelete == null) return;
+        const remaining = createdAtMs + BOOKING_REQUEST_OFFER_CHAT_MESSAGE_AUTHOR_DELETE_WINDOW_MS - Date.now();
+        if (remaining <= 0) {
+            setNowMs(Date.now());
+            return;
+        }
+        const timeout = window.setTimeout(() => setNowMs(Date.now()), remaining);
+        return () => window.clearTimeout(timeout);
+    }, [message.canSoftDelete, createdAtMs, onDelete]);
 
     useEffect(() => {
         if (editOpen) setEditDraft(message.body);
@@ -124,7 +148,7 @@ export function ChatMessageUserView({
                 ok = await onVisibilityChange(true);
             } else if (confirmAction === 'unhide' && onVisibilityChange != null) {
                 ok = await onVisibilityChange(false);
-            } else if (confirmAction === 'delete' && onDelete != null) {
+            } else if ((confirmAction === 'delete' || confirmAction === 'softDelete') && onDelete != null) {
                 ok = await onDelete();
             }
             if (ok) setConfirmAction(null);
@@ -197,6 +221,7 @@ export function ChatMessageUserView({
                                     hide: { de: 'Nachricht verbergen?', en: 'Hide this message?' },
                                     unhide: { de: 'Nachricht wieder zeigen?', en: 'Show this message again?' },
                                     delete: { de: 'Nachricht dauerhaft löschen?', en: 'Delete this message permanently?' },
+                                    softDelete: { de: 'Nachricht löschen?', en: 'Delete this message?' },
                                 }[confirmAction][locale]
                             }
                         </AlertDialogTitle>
@@ -215,6 +240,10 @@ export function ChatMessageUserView({
                                         de: 'Diese Admin-Nachricht wird unwiderruflich gelöscht, inklusive Anhänge und Reaktionen.',
                                         en: 'This admin message will be permanently deleted, including attachments and reactions.',
                                     },
+                                    softDelete: {
+                                        de: 'Die Nachricht wird für dich und den anderen Teilnehmer nicht mehr angezeigt.',
+                                        en: 'The message will no longer be shown for you or the other participant.',
+                                    },
                                 }[confirmAction][locale]
                             }
                         </AlertDialogDescription>
@@ -223,7 +252,11 @@ export function ChatMessageUserView({
                         <AlertDialogCancel disabled={confirmBusy}>{{ de: 'Abbrechen', en: 'Cancel' }[locale]}</AlertDialogCancel>
                         <AlertDialogAction
                             disabled={confirmBusy}
-                            variant={confirmAction === 'delete' || confirmAction === 'hide' ? 'destructive' : 'default'}
+                            variant={
+                                confirmAction === 'delete' || confirmAction === 'hide' || confirmAction === 'softDelete'
+                                    ? 'destructive'
+                                    : 'default'
+                            }
                             onClick={(event) => {
                                 event.preventDefault();
                                 void runConfirmAction();
@@ -234,6 +267,7 @@ export function ChatMessageUserView({
                                     hide: { de: 'Verbergen', en: 'Hide' },
                                     unhide: { de: 'Wieder zeigen', en: 'Show again' },
                                     delete: { de: 'Dauerhaft löschen', en: 'Delete permanently' },
+                                    softDelete: { de: 'Löschen', en: 'Delete' },
                                 }[confirmAction][locale]
                             }
                         </AlertDialogAction>
@@ -302,6 +336,17 @@ export function ChatMessageUserView({
                         {deleteLabel}
                     </DropdownMenuItem>
                 ) : null}
+                {canSoftDeleteNow ? (
+                    <DropdownMenuItem
+                        variant="destructive"
+                        onSelect={() => {
+                            setConfirmAction('softDelete');
+                        }}
+                    >
+                        <Trash2Icon aria-hidden />
+                        {softDeleteLabel}
+                    </DropdownMenuItem>
+                ) : null}
             </DropdownMenuContent>
         </DropdownMenu>
     ) : null;
@@ -334,6 +379,16 @@ export function ChatMessageUserView({
 
     const bubbleInner = (
         <>
+            {hiddenByAuthor ? (
+                <p
+                    className={cn(
+                        'mb-1 text-[11px] leading-tight font-medium',
+                        tone === 'user' ? 'text-primary-foreground/80' : 'text-muted-foreground',
+                    )}
+                >
+                    {deletedByAuthorLabel}
+                </p>
+            ) : null}
             {hiddenByAdmin ? (
                 <p
                     className={cn(
@@ -461,7 +516,7 @@ export function ChatMessageUserView({
             </div>
         ) : null;
 
-    const bubbleClassName = cn(voiceAttachment && 'py-4', hiddenByAdmin && 'opacity-60');
+    const bubbleClassName = cn(voiceAttachment && 'py-4', hiddenFromParticipants && 'opacity-60');
 
     if (isOwn) {
         return (

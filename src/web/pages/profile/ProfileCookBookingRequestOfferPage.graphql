@@ -329,6 +329,17 @@ mutation ProfileCookBookingRequestOfferChatMessageReactionUpsert($bookingRequest
     }
 }
 
+mutation ProfileCookBookingRequestOfferChatMessageDelete($bookingRequestOfferEventId: ID!) {
+    user {
+        cook {
+            bookingRequestOfferChatMessageDelete(bookingRequestOfferEventId: $bookingRequestOfferEventId) {
+                success
+                referenceId
+            }
+        }
+    }
+}
+
 mutation ProfileCookBookingRequestOfferUnreadNotificationCountReset($bookingRequestOfferId: ID!) {
     user {
         cook {

@@ -113,7 +113,7 @@ async function seedSourceChat(bookingRequestOfferId: string, customerUserId: str
             bookingRequestOfferEventId: userMessageId,
             bookingRequestOfferId,
             type: 'USER_MESSAGE_SIMPLE' as const,
-            payload: { messageBody: 'Looking for a chef' },
+            payload: { messageBody: 'Looking for a chef', hiddenByAuthor: true },
             createdAt: t0,
         },
         {
@@ -419,6 +419,7 @@ describe('adminBookingRequestOfferHandover', () => {
         const userCopy = messageEvents.find((event) => event.type === 'USER_MESSAGE_SIMPLE');
         expect(userCopy?.payload).toMatchObject({
             messageBody: 'Looking for a chef',
+            hiddenByAuthor: true,
             originalCreatedAt: t0.toISOString(),
         });
         expect(userCopy?.payload).not.toHaveProperty('handedOverFrom');

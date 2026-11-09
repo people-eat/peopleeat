@@ -338,6 +338,15 @@ mutation ProfileCustomerBookingRequestOfferChatMessageReactionUpsert($bookingReq
     }
 }
 
+mutation ProfileCustomerBookingRequestOfferChatMessageDelete($bookingRequestOfferEventId: ID!) {
+    user {
+        bookingRequestOfferChatMessageDelete(bookingRequestOfferEventId: $bookingRequestOfferEventId) {
+            success
+            referenceId
+        }
+    }
+}
+
 mutation ProfileCustomerBookingRequestOfferUnreadNotificationCountReset($bookingRequestOfferId: ID!) {
     user {
         bookingRequestOfferUnreadNotificationCountReset(bookingRequestOfferId: $bookingRequestOfferId) {

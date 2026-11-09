@@ -3017,11 +3017,13 @@ export interface GqlSChatMessageUser {
     author: GqlSPublicUser;
     body: Scalars['String']['output'];
     canHardDelete: Scalars['Boolean']['output'];
+    canSoftDelete: Scalars['Boolean']['output'];
     chatMessageId: Scalars['ID']['output'];
     collapseLongBody: Scalars['Boolean']['output'];
     createdAt: Scalars['DateTime']['output'];
     deliveryStatus?: Maybe<GqlSChatMessageDeliveryStatus>;
     hiddenByAdmin: Scalars['Boolean']['output'];
+    hiddenByAuthor: Scalars['Boolean']['output'];
     isOwn: Scalars['Boolean']['output'];
     linkClickedAt?: Maybe<Scalars['DateTime']['output']>;
     reactions: Array<GqlSChatMessageReaction>;
@@ -3840,6 +3842,7 @@ export interface GqlSCookMutation {
     bookingRequestOfferCallSlotDecline: GqlSMutationResult;
     bookingRequestOfferCallSlotRequest: GqlSMutationResult;
     bookingRequestOfferChatMessageCreate: GqlSMutationResult;
+    bookingRequestOfferChatMessageDelete: GqlSMutationResult;
     bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
     bookingRequestOfferCookStatementRegenerate: GqlSMutationResult;
     bookingRequestOfferCreate: GqlSMutationResult;
@@ -3937,6 +3940,10 @@ export type GqlSCookMutationBookingRequestOfferChatMessageCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     message: Scalars['String']['input'];
+};
+
+export type GqlSCookMutationBookingRequestOfferChatMessageDeleteArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
 };
 
 export type GqlSCookMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
@@ -5375,6 +5382,7 @@ export interface GqlSUserMutation {
     bookingRequestOfferCallSlotDecline: GqlSMutationResult;
     bookingRequestOfferCallSlotRequest: GqlSMutationResult;
     bookingRequestOfferChatMessageCreate: GqlSMutationResult;
+    bookingRequestOfferChatMessageDelete: GqlSMutationResult;
     bookingRequestOfferChatMessageReactionUpsert: GqlSMutationResult;
     bookingRequestOfferConfiguredMenuCreate: GqlSMutationResult;
     bookingRequestOfferCustomerReceiptRegenerate: GqlSMutationResult;
@@ -5493,6 +5501,10 @@ export type GqlSUserMutationBookingRequestOfferChatMessageCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     message: Scalars['String']['input'];
+};
+
+export type GqlSUserMutationBookingRequestOfferChatMessageDeleteArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
 };
 
 export type GqlSUserMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
@@ -9666,11 +9678,13 @@ export type GqlSChatMessageUserResolvers<
     author?: Resolver<GqlSResolversTypes['PublicUser'], ParentType, ContextType>;
     body?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     canHardDelete?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    canSoftDelete?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     chatMessageId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     collapseLongBody?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     deliveryStatus?: Resolver<Maybe<GqlSResolversTypes['ChatMessageDeliveryStatus']>, ParentType, ContextType>;
     hiddenByAdmin?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
+    hiddenByAuthor?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     isOwn?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     linkClickedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     reactions?: Resolver<Array<GqlSResolversTypes['ChatMessageReaction']>, ParentType, ContextType>;
@@ -10489,6 +10503,12 @@ export type GqlSCookMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSCookMutationBookingRequestOfferChatMessageCreateArgs, 'bookingRequestOfferId' | 'message'>
+    >;
+    bookingRequestOfferChatMessageDelete?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSCookMutationBookingRequestOfferChatMessageDeleteArgs, 'bookingRequestOfferEventId'>
     >;
     bookingRequestOfferChatMessageReactionUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -11946,6 +11966,12 @@ export type GqlSUserMutationResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSUserMutationBookingRequestOfferChatMessageCreateArgs, 'bookingRequestOfferId' | 'message'>
+    >;
+    bookingRequestOfferChatMessageDelete?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSUserMutationBookingRequestOfferChatMessageDeleteArgs, 'bookingRequestOfferEventId'>
     >;
     bookingRequestOfferChatMessageReactionUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],

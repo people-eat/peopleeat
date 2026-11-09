@@ -153,6 +153,33 @@ describe('bookingRequestOfferChatMessageReactionUpsert', () => {
         expect(cleared?.emoji).toBeNull();
     });
 
+    it('rejects reactions on messages hidden by the author', async () => {
+        await featureToggleSet(true);
+        const { customer, bookingRequestOfferId } = await offerFixture();
+        const eventId = idCreate();
+        await testDb.insert(bookingRequestOfferEvents).values({
+            bookingRequestOfferEventId: eventId,
+            bookingRequestOfferId,
+            type: 'COOK_MESSAGE_SIMPLE',
+            payload: { messageBody: 'Deleted', hiddenByAuthor: true },
+        });
+
+        await expect(
+            bookingRequestOfferChatMessageReactionUpsert(
+                {
+                    reactorUserId: customer.user.userId,
+                    reactorRole: 'USER',
+                    bookingRequestOfferEventId: eventId,
+                    emoji: '👍',
+                },
+                customer.requestingSession,
+                customer.serverRuntime,
+            ),
+        ).rejects.toThrow(/cannot react to a hidden message/);
+        expect(customer.serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+        expect(customer.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
+    });
+
     it('rejects reactions on messages hidden by admin', async () => {
         await featureToggleSet(true);
         const { customer, bookingRequestOfferId } = await offerFixture();

@@ -3020,11 +3020,13 @@ export interface GqlCChatMessageUser {
     author: GqlCPublicUser;
     body: Scalars['String']['output'];
     canHardDelete: Scalars['Boolean']['output'];
+    canSoftDelete: Scalars['Boolean']['output'];
     chatMessageId: Scalars['ID']['output'];
     collapseLongBody: Scalars['Boolean']['output'];
     createdAt: Scalars['DateTime']['output'];
     deliveryStatus?: Maybe<GqlCChatMessageDeliveryStatus>;
     hiddenByAdmin: Scalars['Boolean']['output'];
+    hiddenByAuthor: Scalars['Boolean']['output'];
     isOwn: Scalars['Boolean']['output'];
     linkClickedAt?: Maybe<Scalars['DateTime']['output']>;
     reactions: Array<GqlCChatMessageReaction>;
@@ -3843,6 +3845,7 @@ export interface GqlCCookMutation {
     bookingRequestOfferCallSlotDecline: GqlCMutationResult;
     bookingRequestOfferCallSlotRequest: GqlCMutationResult;
     bookingRequestOfferChatMessageCreate: GqlCMutationResult;
+    bookingRequestOfferChatMessageDelete: GqlCMutationResult;
     bookingRequestOfferChatMessageReactionUpsert: GqlCMutationResult;
     bookingRequestOfferCookStatementRegenerate: GqlCMutationResult;
     bookingRequestOfferCreate: GqlCMutationResult;
@@ -3940,6 +3943,10 @@ export type GqlCCookMutationBookingRequestOfferChatMessageCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     message: Scalars['String']['input'];
+};
+
+export type GqlCCookMutationBookingRequestOfferChatMessageDeleteArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
 };
 
 export type GqlCCookMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
@@ -5378,6 +5385,7 @@ export interface GqlCUserMutation {
     bookingRequestOfferCallSlotDecline: GqlCMutationResult;
     bookingRequestOfferCallSlotRequest: GqlCMutationResult;
     bookingRequestOfferChatMessageCreate: GqlCMutationResult;
+    bookingRequestOfferChatMessageDelete: GqlCMutationResult;
     bookingRequestOfferChatMessageReactionUpsert: GqlCMutationResult;
     bookingRequestOfferConfiguredMenuCreate: GqlCMutationResult;
     bookingRequestOfferCustomerReceiptRegenerate: GqlCMutationResult;
@@ -5496,6 +5504,10 @@ export type GqlCUserMutationBookingRequestOfferChatMessageCreateArgs = {
     bookingRequestOfferId: Scalars['ID']['input'];
     fileUploadIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     message: Scalars['String']['input'];
+};
+
+export type GqlCUserMutationBookingRequestOfferChatMessageDeleteArgs = {
+    bookingRequestOfferEventId: Scalars['ID']['input'];
 };
 
 export type GqlCUserMutationBookingRequestOfferChatMessageReactionUpsertArgs = {
@@ -5975,7 +5987,9 @@ type GqlCHumanChatMessageFields_ChatMessageUser_Fragment = {
     showCopyButton: boolean;
     collapseLongBody: boolean;
     hiddenByAdmin: boolean;
+    hiddenByAuthor: boolean;
     canHardDelete: boolean;
+    canSoftDelete: boolean;
     deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
     linkClickedAt: string | null;
     reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -11192,7 +11206,9 @@ export type GqlCAdminBookingRequestOfferPageOfferFragment = {
               showCopyButton: boolean;
               collapseLongBody: boolean;
               hiddenByAdmin: boolean;
+              hiddenByAuthor: boolean;
               canHardDelete: boolean;
+              canSoftDelete: boolean;
               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
               linkClickedAt: string | null;
               reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -11448,7 +11464,9 @@ export type GqlCAdminBookingRequestOfferPageQuery = {
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               hiddenByAdmin: boolean;
+                              hiddenByAuthor: boolean;
                               canHardDelete: boolean;
+                              canSoftDelete: boolean;
                               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                               linkClickedAt: string | null;
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -11690,7 +11708,9 @@ export type GqlCAdminBookingRequestOfferPageUpdatesSubscription = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       hiddenByAdmin: boolean;
+                      hiddenByAuthor: boolean;
                       canHardDelete: boolean;
+                      canSoftDelete: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                       linkClickedAt: string | null;
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -15311,7 +15331,9 @@ export type GqlCAdminOfferChatReviewPageOfferFragment = {
               showCopyButton: boolean;
               collapseLongBody: boolean;
               hiddenByAdmin: boolean;
+              hiddenByAuthor: boolean;
               canHardDelete: boolean;
+              canSoftDelete: boolean;
               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
               linkClickedAt: string | null;
               reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -15375,7 +15397,9 @@ export type GqlCAdminOfferChatReviewPageQuery = {
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               hiddenByAdmin: boolean;
+                              hiddenByAuthor: boolean;
                               canHardDelete: boolean;
+                              canSoftDelete: boolean;
                               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                               linkClickedAt: string | null;
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -15441,7 +15465,9 @@ export type GqlCAdminOfferChatReviewPageUpdatesSubscription = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       hiddenByAdmin: boolean;
+                      hiddenByAuthor: boolean;
                       canHardDelete: boolean;
+                      canSoftDelete: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                       linkClickedAt: string | null;
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -16476,7 +16502,9 @@ export type GqlCAdminSupportRequestDetailFieldsFragment = {
               showCopyButton: boolean;
               collapseLongBody: boolean;
               hiddenByAdmin: boolean;
+              hiddenByAuthor: boolean;
               canHardDelete: boolean;
+              canSoftDelete: boolean;
               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
               linkClickedAt: string | null;
               reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -16531,7 +16559,9 @@ export type GqlCAdminSupportRequestPageQuery = {
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               hiddenByAdmin: boolean;
+                              hiddenByAuthor: boolean;
                               canHardDelete: boolean;
+                              canSoftDelete: boolean;
                               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                               linkClickedAt: string | null;
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -16588,7 +16618,9 @@ export type GqlCAdminSupportRequestPageUpdatesSubscription = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       hiddenByAdmin: boolean;
+                      hiddenByAuthor: boolean;
                       canHardDelete: boolean;
+                      canSoftDelete: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                       linkClickedAt: string | null;
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -17760,7 +17792,9 @@ export type GqlCAdminWhatsAppChatDetailFieldsFragment = {
               showCopyButton: boolean;
               collapseLongBody: boolean;
               hiddenByAdmin: boolean;
+              hiddenByAuthor: boolean;
               canHardDelete: boolean;
+              canSoftDelete: boolean;
               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
               linkClickedAt: string | null;
               reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -17808,7 +17842,9 @@ export type GqlCAdminWhatsAppChatPageAdminFragment = {
                   showCopyButton: boolean;
                   collapseLongBody: boolean;
                   hiddenByAdmin: boolean;
+                  hiddenByAuthor: boolean;
                   canHardDelete: boolean;
+                  canSoftDelete: boolean;
                   deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                   linkClickedAt: string | null;
                   reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -17865,7 +17901,9 @@ export type GqlCAdminWhatsAppChatPageQuery = {
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               hiddenByAdmin: boolean;
+                              hiddenByAuthor: boolean;
                               canHardDelete: boolean;
+                              canSoftDelete: boolean;
                               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                               linkClickedAt: string | null;
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -17928,7 +17966,9 @@ export type GqlCAdminWhatsAppChatPageUpdatesSubscription = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       hiddenByAdmin: boolean;
+                      hiddenByAuthor: boolean;
                       canHardDelete: boolean;
+                      canSoftDelete: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                       linkClickedAt: string | null;
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -18697,7 +18737,9 @@ export type GqlCProfileCookBookingRequestOfferPageUserFragment = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       hiddenByAdmin: boolean;
+                      hiddenByAuthor: boolean;
                       canHardDelete: boolean;
+                      canSoftDelete: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                       linkClickedAt: string | null;
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -18899,7 +18941,9 @@ export type GqlCProfileCookBookingRequestOfferPageQuery = {
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               hiddenByAdmin: boolean;
+                              hiddenByAuthor: boolean;
                               canHardDelete: boolean;
+                              canSoftDelete: boolean;
                               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                               linkClickedAt: string | null;
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -19108,7 +19152,9 @@ export type GqlCProfileCookBookingRequestOfferPageUpdatesSubscription = {
                           showCopyButton: boolean;
                           collapseLongBody: boolean;
                           hiddenByAdmin: boolean;
+                          hiddenByAuthor: boolean;
                           canHardDelete: boolean;
+                          canSoftDelete: boolean;
                           deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                           linkClickedAt: string | null;
                           reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -19213,6 +19259,14 @@ export type GqlCProfileCookBookingRequestOfferChatMessageReactionUpsertMutationV
 
 export type GqlCProfileCookBookingRequestOfferChatMessageReactionUpsertMutation = {
     user: { cook: { bookingRequestOfferChatMessageReactionUpsert: { success: boolean; referenceId: string | null } } };
+};
+
+export type GqlCProfileCookBookingRequestOfferChatMessageDeleteMutationVariables = Exact<{
+    bookingRequestOfferEventId: string;
+}>;
+
+export type GqlCProfileCookBookingRequestOfferChatMessageDeleteMutation = {
+    user: { cook: { bookingRequestOfferChatMessageDelete: { success: boolean; referenceId: string | null } } };
 };
 
 export type GqlCProfileCookBookingRequestOfferUnreadNotificationCountResetMutationVariables = Exact<{
@@ -21830,7 +21884,9 @@ export type GqlCProfileCustomerBookingRequestOfferPageUserFragment = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       hiddenByAdmin: boolean;
+                      hiddenByAuthor: boolean;
                       canHardDelete: boolean;
+                      canSoftDelete: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                       linkClickedAt: string | null;
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -22033,7 +22089,9 @@ export type GqlCProfileCustomerBookingRequestOfferPageQuery = {
                               showCopyButton: boolean;
                               collapseLongBody: boolean;
                               hiddenByAdmin: boolean;
+                              hiddenByAuthor: boolean;
                               canHardDelete: boolean;
+                              canSoftDelete: boolean;
                               deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                               linkClickedAt: string | null;
                               reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -22243,7 +22301,9 @@ export type GqlCProfileCustomerBookingRequestOfferPageUpdatesSubscription = {
                           showCopyButton: boolean;
                           collapseLongBody: boolean;
                           hiddenByAdmin: boolean;
+                          hiddenByAuthor: boolean;
                           canHardDelete: boolean;
+                          canSoftDelete: boolean;
                           deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                           linkClickedAt: string | null;
                           reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -22357,6 +22417,14 @@ export type GqlCProfileCustomerBookingRequestOfferChatMessageReactionUpsertMutat
 
 export type GqlCProfileCustomerBookingRequestOfferChatMessageReactionUpsertMutation = {
     user: { bookingRequestOfferChatMessageReactionUpsert: { success: boolean; referenceId: string | null } };
+};
+
+export type GqlCProfileCustomerBookingRequestOfferChatMessageDeleteMutationVariables = Exact<{
+    bookingRequestOfferEventId: string;
+}>;
+
+export type GqlCProfileCustomerBookingRequestOfferChatMessageDeleteMutation = {
+    user: { bookingRequestOfferChatMessageDelete: { success: boolean; referenceId: string | null } };
 };
 
 export type GqlCProfileCustomerBookingRequestOfferUnreadNotificationCountResetMutationVariables = Exact<{
@@ -22922,7 +22990,9 @@ export type GqlCProfileCustomerSupportRequestPageUserFragment = {
                   showCopyButton: boolean;
                   collapseLongBody: boolean;
                   hiddenByAdmin: boolean;
+                  hiddenByAuthor: boolean;
                   canHardDelete: boolean;
+                  canSoftDelete: boolean;
                   deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                   linkClickedAt: string | null;
                   reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -22970,7 +23040,9 @@ export type GqlCProfileCustomerSupportRequestPageQuery = {
                           showCopyButton: boolean;
                           collapseLongBody: boolean;
                           hiddenByAdmin: boolean;
+                          hiddenByAuthor: boolean;
                           canHardDelete: boolean;
+                          canSoftDelete: boolean;
                           deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                           linkClickedAt: string | null;
                           reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -23025,7 +23097,9 @@ export type GqlCProfileCustomerSupportRequestPageUpdatesSubscription = {
                       showCopyButton: boolean;
                       collapseLongBody: boolean;
                       hiddenByAdmin: boolean;
+                      hiddenByAuthor: boolean;
                       canHardDelete: boolean;
+                      canSoftDelete: boolean;
                       deliveryStatus: Schema.GqlCChatMessageDeliveryStatus | null;
                       linkClickedAt: string | null;
                       reactions: Array<{ emoji: string; isOwn: boolean }>;
@@ -27980,7 +28054,9 @@ export const HumanChatMessageFieldsFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -28493,7 +28569,9 @@ export const AdminBookingRequestOfferPageOfferFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -30291,7 +30369,9 @@ export const AdminOfferChatReviewPageOfferFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -30808,7 +30888,9 @@ export const AdminSupportRequestDetailFieldsFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -31306,7 +31388,9 @@ export const AdminWhatsAppChatDetailFieldsFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -31430,7 +31514,9 @@ export const AdminWhatsAppChatPageAdminFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -32824,7 +32910,9 @@ export const ProfileCookBookingRequestOfferPageUserFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -35737,7 +35825,9 @@ export const ProfileCustomerBookingRequestOfferPageUserFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -36277,7 +36367,9 @@ export const ProfileCustomerSupportRequestPageUserFragmentDoc = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -50944,7 +51036,9 @@ export const AdminBookingRequestOfferPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -51604,7 +51698,9 @@ export const AdminBookingRequestOfferPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -63671,7 +63767,9 @@ export const AdminOfferChatReviewPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -63898,7 +63996,9 @@ export const AdminOfferChatReviewPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -68112,7 +68212,9 @@ export const AdminSupportRequestPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -68313,7 +68415,9 @@ export const AdminSupportRequestPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -73654,7 +73758,9 @@ export const AdminWhatsAppChatPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -73852,7 +73958,9 @@ export const AdminWhatsAppChatPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -76157,7 +76265,9 @@ export const ProfileCookBookingRequestOfferPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -76740,7 +76850,9 @@ export const ProfileCookBookingRequestOfferPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -77906,6 +78018,70 @@ export const ProfileCookBookingRequestOfferChatMessageReactionUpsertDocument = {
 } as unknown as DocumentNode<
     GqlCProfileCookBookingRequestOfferChatMessageReactionUpsertMutation,
     GqlCProfileCookBookingRequestOfferChatMessageReactionUpsertMutationVariables
+>;
+export const ProfileCookBookingRequestOfferChatMessageDeleteDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCookBookingRequestOfferChatMessageDelete' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferEventId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'cook' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'bookingRequestOfferChatMessageDelete' },
+                                                arguments: [
+                                                    {
+                                                        kind: 'Argument',
+                                                        name: { kind: 'Name', value: 'bookingRequestOfferEventId' },
+                                                        value: {
+                                                            kind: 'Variable',
+                                                            name: { kind: 'Name', value: 'bookingRequestOfferEventId' },
+                                                        },
+                                                    },
+                                                ],
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCookBookingRequestOfferChatMessageDeleteMutation,
+    GqlCProfileCookBookingRequestOfferChatMessageDeleteMutationVariables
 >;
 export const ProfileCookBookingRequestOfferUnreadNotificationCountResetDocument = {
     kind: 'Document',
@@ -85275,7 +85451,9 @@ export const ProfileCustomerBookingRequestOfferPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -85920,7 +86098,9 @@ export const ProfileCustomerBookingRequestOfferPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -87132,6 +87312,58 @@ export const ProfileCustomerBookingRequestOfferChatMessageReactionUpsertDocument
 } as unknown as DocumentNode<
     GqlCProfileCustomerBookingRequestOfferChatMessageReactionUpsertMutation,
     GqlCProfileCustomerBookingRequestOfferChatMessageReactionUpsertMutationVariables
+>;
+export const ProfileCustomerBookingRequestOfferChatMessageDeleteDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'ProfileCustomerBookingRequestOfferChatMessageDelete' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferEventId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'bookingRequestOfferChatMessageDelete' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'bookingRequestOfferEventId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'bookingRequestOfferEventId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<
+    GqlCProfileCustomerBookingRequestOfferChatMessageDeleteMutation,
+    GqlCProfileCustomerBookingRequestOfferChatMessageDeleteMutationVariables
 >;
 export const ProfileCustomerBookingRequestOfferUnreadNotificationCountResetDocument = {
     kind: 'Document',
@@ -89104,7 +89336,9 @@ export const ProfileCustomerSupportRequestPageDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {
@@ -89282,7 +89516,9 @@ export const ProfileCustomerSupportRequestPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'showCopyButton' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'collapseLongBody' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAdmin' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'hiddenByAuthor' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'canHardDelete' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'canSoftDelete' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'deliveryStatus' } },
                                 { kind: 'Field', name: { kind: 'Name', value: 'linkClickedAt' } },
                                 {

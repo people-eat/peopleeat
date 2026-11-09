@@ -42,6 +42,7 @@ export const Customer: Story = {
             viewerRole="customer"
             peers={customerPeers}
             onSend={onSend}
+            onDeleteMessage={onDeleteMessage}
             onReactMessage={onReactMessage}
         />
     ),
@@ -56,6 +57,7 @@ export const Cook: Story = {
             viewerRole="cook"
             peers={cookPeers}
             onSend={onSend}
+            onDeleteMessage={onDeleteMessage}
             onReactMessage={onReactMessage}
         />
     ),

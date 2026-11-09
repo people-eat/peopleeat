@@ -47,7 +47,9 @@ type ChatMessageUserFixtureInput = {
     attachments?: GqlCFileUpload[];
     reactions?: Array<{ emoji: string; isOwn: boolean }>;
     hiddenByAdmin?: boolean;
+    hiddenByAuthor?: boolean;
     canHardDelete?: boolean;
+    canSoftDelete?: boolean;
     collapseLongBody?: boolean;
     showCopyButton?: boolean;
     deliveryStatus?: GqlCChatMessageUser['deliveryStatus'];
@@ -67,7 +69,9 @@ export function chatMessageUserFixture(input: ChatMessageUserFixtureInput = {}):
         showCopyButton: input.showCopyButton ?? true,
         collapseLongBody: input.collapseLongBody ?? false,
         hiddenByAdmin: input.hiddenByAdmin ?? false,
+        hiddenByAuthor: input.hiddenByAuthor ?? false,
         canHardDelete: input.canHardDelete ?? false,
+        canSoftDelete: input.canSoftDelete ?? false,
         deliveryStatus: input.deliveryStatus ?? 'DELIVERED',
         reactions: input.reactions ?? [],
         author: {
@@ -115,7 +119,9 @@ export function humanChatMessageUserFragment(
         showCopyButton: message.showCopyButton,
         collapseLongBody: message.collapseLongBody,
         hiddenByAdmin: message.hiddenByAdmin,
+        hiddenByAuthor: message.hiddenByAuthor,
         canHardDelete: message.canHardDelete,
+        canSoftDelete: message.canSoftDelete,
         deliveryStatus: message.deliveryStatus ?? null,
         linkClickedAt: null,
         reactions: message.reactions.map((reaction) => ({ emoji: reaction.emoji, isOwn: reaction.isOwn })),

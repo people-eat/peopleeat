@@ -106,8 +106,8 @@ export async function bookingRequestOfferChatMessageNotifyEmailSend(
         .orderBy(desc(bookingRequestOfferEvents.createdAt))
         .limit(100);
     const latestPeerMessage = peerMessages.find((message) => {
-        const payload = message.payload as { hiddenByAdmin?: boolean };
-        return payload.hiddenByAdmin !== true;
+        const payload = message.payload as { hiddenByAdmin?: boolean; hiddenByAuthor?: boolean };
+        return payload.hiddenByAdmin !== true && payload.hiddenByAuthor !== true;
     });
 
     const webPageUrl = environmentVariables.webPageUrl;

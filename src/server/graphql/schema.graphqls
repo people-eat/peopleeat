@@ -57,9 +57,17 @@ type ChatMessageUser {
     # Other chat surfaces (assistant / support / WhatsApp) always stamp `false`.
     # See docs/features/booking-offer-chat.md.
     hiddenByAdmin: Boolean!
+    # Soft-hide when the customer or cook deleted their own bubble. Stamped from
+    # payload for admin viewers; peers never receive these rows. Always `false`
+    # on other chat surfaces. See docs/features/booking-offer-chat.md.
+    hiddenByAuthor: Boolean!
     # Wire-only. True when the viewer is admin and this bubble is an
     # `ADMIN_MESSAGE_SIMPLE` (hard-delete allowed). Always `false` elsewhere.
     canHardDelete: Boolean!
+    # Wire-only. True when the viewer authored this USER/COOK_MESSAGE_SIMPLE
+    # bubble, it is not already author-hidden, and send time is within 1 hour.
+    # Always `false` elsewhere. The client also expires the control at 1 hour.
+    canSoftDelete: Boolean!
     body: String!
     # Files the user attached to this message, in send-order. Empty list when
     # the message was a plain-text send. The bytes are not exposed inline —
@@ -1461,6 +1469,10 @@ type CookMutation {
     # clears. Gated by `BOOKING_REQUEST_OFFER_CHAT_REACTIONS`. No unread / email.
     # `referenceId` is the target event id.
     bookingRequestOfferChatMessageReactionUpsert(bookingRequestOfferEventId: ID!, emoji: String!): MutationResult!
+    # Soft-delete own `COOK_MESSAGE_SIMPLE` within 1 hour of send. Hides the
+    # bubble from customer and cook; admin still sees it. `referenceId` is the
+    # event id. See docs/features/booking-offer-chat.md.
+    bookingRequestOfferChatMessageDelete(bookingRequestOfferEventId: ID!): MutationResult!
     # Clears `cookUnreadNotificationCount` on this cook's offer (call when opening chat).
     bookingRequestOfferUnreadNotificationCountReset(bookingRequestOfferId: ID!): MutationResult!
     # Call-slot booking — cook proposes any free time (overlap-checked).
@@ -3202,6 +3214,10 @@ type UserMutation {
     # clears. Gated by `BOOKING_REQUEST_OFFER_CHAT_REACTIONS`. No unread / email.
     # `referenceId` is the target event id.
     bookingRequestOfferChatMessageReactionUpsert(bookingRequestOfferEventId: ID!, emoji: String!): MutationResult!
+    # Soft-delete own `USER_MESSAGE_SIMPLE` within 1 hour of send. Hides the
+    # bubble from customer and cook; admin still sees it. `referenceId` is the
+    # event id. See docs/features/booking-offer-chat.md.
+    bookingRequestOfferChatMessageDelete(bookingRequestOfferEventId: ID!): MutationResult!
     # Clears `userUnreadNotificationCount` on an owned offer (call when opening chat).
     bookingRequestOfferUnreadNotificationCountReset(bookingRequestOfferId: ID!): MutationResult!
     # Call-slot booking — customer proposes a derived free slot.

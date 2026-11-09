@@ -112,6 +112,7 @@ import { authTotpEnrollCancel } from '../commands/authTotpEnrollCancel';
 import { authTotpEnrollConfirm } from '../commands/authTotpEnrollConfirm';
 import { authTotpEnrollStart } from '../commands/authTotpEnrollStart';
 import { authTotpVerify } from '../commands/authTotpVerify';
+import { bookingRequestOfferChatMessageDelete } from '../commands/bookingRequestOfferChatMessageDelete';
 import { bookingRequestOfferChatMessageReactionUpsert } from '../commands/bookingRequestOfferChatMessageReactionUpsert';
 import { bookingRequestOfferCookStatementRegenerate } from '../commands/bookingRequestOfferCookStatementRegenerate';
 import { bookingRequestOfferCustomerReceiptRegenerate } from '../commands/bookingRequestOfferCustomerReceiptRegenerate';
@@ -693,6 +694,7 @@ import type {
     GqlSCookMutationBookingRequestOfferCallSlotDeclineArgs,
     GqlSCookMutationBookingRequestOfferCallSlotRequestArgs,
     GqlSCookMutationBookingRequestOfferChatMessageCreateArgs,
+    GqlSCookMutationBookingRequestOfferChatMessageDeleteArgs,
     GqlSCookMutationBookingRequestOfferChatMessageReactionUpsertArgs,
     GqlSCookMutationBookingRequestOfferCookStatementRegenerateArgs,
     GqlSCookMutationBookingRequestOfferCreateArgs,
@@ -793,6 +795,7 @@ import type {
     GqlSUserMutationBookingRequestOfferCallSlotDeclineArgs,
     GqlSUserMutationBookingRequestOfferCallSlotRequestArgs,
     GqlSUserMutationBookingRequestOfferChatMessageCreateArgs,
+    GqlSUserMutationBookingRequestOfferChatMessageDeleteArgs,
     GqlSUserMutationBookingRequestOfferChatMessageReactionUpsertArgs,
     GqlSUserMutationBookingRequestOfferConfiguredMenuCreateArgs,
     GqlSUserMutationBookingRequestOfferCustomerReceiptRegenerateArgs,
@@ -1969,6 +1972,21 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                     serverRuntime,
                 );
             },
+            bookingRequestOfferChatMessageDelete(
+                parent: GqlSCookMutation,
+                args: GqlSCookMutationBookingRequestOfferChatMessageDeleteArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return bookingRequestOfferChatMessageDelete(
+                    {
+                        actorUserId: parent.cookId,
+                        actorRole: 'COOK',
+                        bookingRequestOfferEventId: args.bookingRequestOfferEventId,
+                    },
+                    requestingSession,
+                    serverRuntime,
+                );
+            },
             bookingRequestOfferUnreadNotificationCountReset(
                 parent: GqlSCookMutation,
                 args: GqlSCookMutationBookingRequestOfferUnreadNotificationCountResetArgs,
@@ -2759,6 +2777,21 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                         reactorRole: 'USER',
                         bookingRequestOfferEventId: args.bookingRequestOfferEventId,
                         emoji: args.emoji,
+                    },
+                    requestingSession,
+                    serverRuntime,
+                );
+            },
+            bookingRequestOfferChatMessageDelete(
+                parent: GqlSUserMutation,
+                args: GqlSUserMutationBookingRequestOfferChatMessageDeleteArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return bookingRequestOfferChatMessageDelete(
+                    {
+                        actorUserId: parent.userId,
+                        actorRole: 'USER',
+                        bookingRequestOfferEventId: args.bookingRequestOfferEventId,
                     },
                     requestingSession,
                     serverRuntime,

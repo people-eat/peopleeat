@@ -102,7 +102,7 @@ export function BookingRequestOfferChat({
     onEditMessage?: (chatMessageId: string, message: string) => Promise<boolean>;
     /** Admin-only: soft-hide / unhide a `*_MESSAGE_SIMPLE` for customer and cook. */
     onVisibilityChangeMessage?: (chatMessageId: string, hiddenByAdmin: boolean) => Promise<boolean>;
-    /** Admin-only: permanently delete an `ADMIN_MESSAGE_SIMPLE`. */
+    /** Admin hard-delete of `ADMIN_MESSAGE_SIMPLE`, or author soft-delete within 1 hour. */
     onDeleteMessage?: (chatMessageId: string) => Promise<boolean>;
     /** When set and `BOOKING_REQUEST_OFFER_CHAT_REACTIONS` is on (incl. admin shell), peer bubbles get a reaction picker. */
     onReactMessage?: (chatMessageId: string, emoji: string) => Promise<boolean>;

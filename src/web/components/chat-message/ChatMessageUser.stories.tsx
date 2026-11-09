@@ -120,6 +120,36 @@ export const HiddenByAdmin: Story = {
     ),
 };
 
+export const HiddenByAuthor: Story = {
+    render: () => (
+        <div className="max-w-md">
+            <ChatMessageUserView
+                message={chatMessageUserFixture({
+                    isOwn: false,
+                    hiddenByAuthor: true,
+                    body: 'Diese Nachricht hat der Absender gelöscht.',
+                })}
+            />
+        </div>
+    ),
+};
+
+export const AuthorSoftDelete: Story = {
+    render: () => (
+        <div className="max-w-md">
+            <ChatMessageUserView
+                message={chatMessageUserFixture({
+                    isOwn: true,
+                    canSoftDelete: true,
+                    createdAt: new Date().toISOString(),
+                    body: 'Diese Nachricht kann ich noch löschen.',
+                })}
+                onDelete={moderationStubs.onDelete}
+            />
+        </div>
+    ),
+};
+
 export const AdminModeration: Story = {
     render: () => (
         <div className="max-w-md">

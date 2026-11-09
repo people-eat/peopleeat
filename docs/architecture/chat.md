@@ -84,10 +84,10 @@ union HumanChatMessage = ChatMessageUser | ChatMessageBookingRequestOfferEvent
 Offer free-text and support messages project to `ChatMessageUser`. Offer timeline events project to `ChatMessageBookingRequestOfferEvent`.
 Domain fields keep `messages: [HumanChatMessage!]!` — not `ChatTurn`.
 
-`ChatMessageUser` carries `author`, `isOwn`, wire-only `showCopyButton` / `collapseLongBody`, `attachments`, and `reactions` (emoji
-overlays; WhatsApp Concierge today, empty elsewhere). Admin offer chat keeps customer and cook on the peer rail (`isOwn: false`) and admin
-on the right — see [booking-offer-chat.md](../features/booking-offer-chat.md). Attachments still use the shared
-[`FileUploads`](./file-storage.md) store.
+`ChatMessageUser` carries `author`, `isOwn`, wire-only `showCopyButton` / `collapseLongBody` / `canHardDelete` / `canSoftDelete`,
+`hiddenByAdmin` / `hiddenByAuthor` (offer chat), `attachments`, and `reactions` (emoji overlays; WhatsApp Concierge today, empty elsewhere).
+Admin offer chat keeps customer and cook on the peer rail (`isOwn: false`) and admin on the right — see
+[booking-offer-chat.md](../features/booking-offer-chat.md). Attachments still use the shared [`FileUploads`](./file-storage.md) store.
 
 ### Mutations (assistant)
 

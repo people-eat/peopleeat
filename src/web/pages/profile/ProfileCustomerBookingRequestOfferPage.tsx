@@ -76,6 +76,7 @@ import {
     ProfileCustomerBookingRequestOfferCallSlotDeclineDocument,
     ProfileCustomerBookingRequestOfferCallSlotRequestDocument,
     ProfileCustomerBookingRequestOfferChatMessageCreateDocument,
+    ProfileCustomerBookingRequestOfferChatMessageDeleteDocument,
     ProfileCustomerBookingRequestOfferChatMessageReactionUpsertDocument,
     ProfileCustomerBookingRequestOfferConfiguredMenuCreateDocument,
     ProfileCustomerBookingRequestOfferCustomerReceiptRegenerateDocument,
@@ -218,6 +219,7 @@ export function ProfileCustomerBookingRequestOfferPage({
     const [, acceptOffer] = useMutation(ProfileCustomerBookingRequestOfferAcceptDocument);
     const [, configureMenu] = useMutation(ProfileCustomerBookingRequestOfferConfiguredMenuCreateDocument);
     const [, sendOfferChatMessage] = useMutation(ProfileCustomerBookingRequestOfferChatMessageCreateDocument);
+    const [, deleteChatMessage] = useMutation(ProfileCustomerBookingRequestOfferChatMessageDeleteDocument);
     const [, upsertOfferChatReaction] = useMutation(ProfileCustomerBookingRequestOfferChatMessageReactionUpsertDocument);
     const [, resetUnread] = useMutation(ProfileCustomerBookingRequestOfferUnreadNotificationCountResetDocument);
     const [{ fetching: amendmentCancelBusy }, cancelAmendment] = useMutation(
@@ -616,6 +618,21 @@ export function ProfileCustomerBookingRequestOfferPage({
                                             {
                                                 de: 'Nachricht konnte nicht gesendet werden.',
                                                 en: 'Could not send the message.',
+                                            }[locale],
+                                        );
+                                        return false;
+                                    }
+                                    return true;
+                                }}
+                                onDeleteMessage={async (chatMessageId) => {
+                                    const result = await deleteChatMessage({
+                                        bookingRequestOfferEventId: chatMessageId,
+                                    });
+                                    if (result.error || !result.data?.user.bookingRequestOfferChatMessageDelete.success) {
+                                        toast.error(
+                                            {
+                                                de: 'Nachricht konnte nicht gelöscht werden.',
+                                                en: 'Could not delete the message.',
                                             }[locale],
                                         );
                                         return false;

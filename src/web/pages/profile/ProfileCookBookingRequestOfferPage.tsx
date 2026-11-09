@@ -69,6 +69,7 @@ import {
     ProfileCookBookingRequestOfferCallSlotDeclineDocument,
     ProfileCookBookingRequestOfferCallSlotRequestDocument,
     ProfileCookBookingRequestOfferChatMessageCreateDocument,
+    ProfileCookBookingRequestOfferChatMessageDeleteDocument,
     ProfileCookBookingRequestOfferChatMessageReactionUpsertDocument,
     ProfileCookBookingRequestOfferCookStatementRegenerateDocument,
     ProfileCookBookingRequestOfferDeclineDocument,
@@ -180,6 +181,7 @@ export function ProfileCookBookingRequestOfferPage({
     const [, declineParticipantAmendment] = useMutation(ProfileCookBookingRequestOfferParticipantAmendmentDeclineDocument);
     const [, completePreparations] = useMutation(ProfileCookBookingRequestOfferPreparationsCompleteDocument);
     const [, sendChatMessage] = useMutation(ProfileCookBookingRequestOfferChatMessageCreateDocument);
+    const [, deleteChatMessage] = useMutation(ProfileCookBookingRequestOfferChatMessageDeleteDocument);
     const [, upsertOfferChatReaction] = useMutation(ProfileCookBookingRequestOfferChatMessageReactionUpsertDocument);
     const [, resetUnread] = useMutation(ProfileCookBookingRequestOfferUnreadNotificationCountResetDocument);
 
@@ -571,6 +573,21 @@ export function ProfileCookBookingRequestOfferPage({
                                     if (result.error || !result.data?.user.cook.bookingRequestOfferChatMessageCreate.success) {
                                         toast.error(
                                             { de: 'Nachricht konnte nicht gesendet werden.', en: 'Could not send the message.' }[locale],
+                                        );
+                                        return false;
+                                    }
+                                    return true;
+                                }}
+                                onDeleteMessage={async (chatMessageId) => {
+                                    const result = await deleteChatMessage({
+                                        bookingRequestOfferEventId: chatMessageId,
+                                    });
+                                    if (result.error || !result.data?.user.cook.bookingRequestOfferChatMessageDelete.success) {
+                                        toast.error(
+                                            {
+                                                de: 'Nachricht konnte nicht gelöscht werden.',
+                                                en: 'Could not delete the message.',
+                                            }[locale],
                                         );
                                         return false;
                                     }
