@@ -19,7 +19,7 @@ export async function adminCookTestimonialUpsert(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const rating = testimonialRatingAssertRequired(input.rating, 'adminCookTestimonialUpsert');
     const authorName = textNormalizeTitledOrNull(input.authorName);

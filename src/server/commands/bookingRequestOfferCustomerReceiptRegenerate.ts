@@ -20,7 +20,7 @@ export async function bookingRequestOfferCustomerReceiptRegenerate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
     await userActiveStatusAssert(userId, serverRuntime, 'bookingRequestOfferCustomerReceiptRegenerate');
 
     try {

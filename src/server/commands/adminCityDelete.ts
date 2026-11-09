@@ -11,7 +11,7 @@ export async function adminCityDelete(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     try {
         const deleted = await serverRuntime.db.delete(cities).where(eq(cities.cityId, cityId)).returning({ cityId: cities.cityId });

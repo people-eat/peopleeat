@@ -25,7 +25,7 @@ export async function cookBookingRequestOfferDecline(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
     await userActiveStatusAssert(cookId, serverRuntime, 'cookBookingRequestOfferDecline');
 
     const reason = args.reason.trim();

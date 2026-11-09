@@ -16,7 +16,7 @@ export async function adminBookingRequestOfferCallRecordingSummaryGenerate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<string> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     try {
         const [recording] = await serverRuntime.db

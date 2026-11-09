@@ -19,7 +19,7 @@ export async function bookingRequestOfferCookStatementRegenerate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
 
     try {
         const [offer] = await serverRuntime.db

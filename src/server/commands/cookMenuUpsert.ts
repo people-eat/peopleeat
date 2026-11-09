@@ -208,7 +208,7 @@ export async function cookMenuUpsert(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
 
     const menu = args?.menu;
     const menuId = menu?.menuId ?? null;

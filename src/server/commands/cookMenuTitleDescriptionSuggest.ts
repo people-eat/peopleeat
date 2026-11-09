@@ -27,7 +27,7 @@ export async function cookMenuTitleDescriptionSuggest(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSCookMenuSuggestion> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
 
     try {
         const mealIds = [...new Set(courses.flatMap((course) => course.mealIds))];

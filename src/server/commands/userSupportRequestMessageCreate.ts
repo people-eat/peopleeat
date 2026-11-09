@@ -21,7 +21,7 @@ export async function userSupportRequestMessageCreate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
 
     const message = textNormalizeProseTitled(args.message);
     const requestedFileUploadIds = Array.from(new Set(args.fileUploadIds ?? []));

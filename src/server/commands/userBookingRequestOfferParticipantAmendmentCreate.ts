@@ -67,10 +67,10 @@ function exactEventAddressNormalize(
 export async function userBookingRequestOfferParticipantAmendmentCreate(
     { userId }: GqlSUserMutation,
     args: GqlSUserMutationBookingRequestOfferParticipantAmendmentCreateArgs,
-    _requestingSession: GqlSSession,
+    requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
     await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestOfferParticipantAmendmentCreate');
 
     const { bookingRequestOfferId } = args;

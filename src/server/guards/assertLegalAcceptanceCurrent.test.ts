@@ -9,15 +9,15 @@ import { assertLegalAcceptanceCurrent } from './assertLegalAcceptanceCurrent';
 describe('assertLegalAcceptanceCurrent', () => {
     it('resolves when acceptance is newer than any published document', async () => {
         // Arrange — commandSetup stamps 9999-12-31, after publishedAt values other suites insert
-        const { serverRuntime, user } = await commandSetup.withUser();
+        const { requestingSession, serverRuntime, user } = await commandSetup.withUser();
 
         // Act / Assert
-        await expect(assertLegalAcceptanceCurrent(user.userId, serverRuntime)).resolves.toBeUndefined();
+        await expect(assertLegalAcceptanceCurrent(user.userId, requestingSession, serverRuntime)).resolves.toBeUndefined();
     });
 
     it('throws when published privacy is newer than the user acceptance', async () => {
         // Arrange — 2999 stays before the default 9999 acceptance so parallel suites stay current
-        const { serverRuntime, user } = await commandSetup.withUser({
+        const { requestingSession, serverRuntime, user } = await commandSetup.withUser({
             lastAcceptedPrivacyPolicy: null,
             lastAcceptedTerms: null,
         });
@@ -31,7 +31,7 @@ describe('assertLegalAcceptanceCurrent', () => {
 
         try {
             // Act / Assert
-            await expect(assertLegalAcceptanceCurrent(user.userId, serverRuntime)).rejects.toThrow('Unauthorized');
+            await expect(assertLegalAcceptanceCurrent(user.userId, requestingSession, serverRuntime)).rejects.toThrow('Unauthorized');
         } finally {
             await testDb.delete(adminLegalPrivacyPolicies).where(eq(adminLegalPrivacyPolicies.privacyPolicyId, privacyPolicyId));
         }
@@ -39,9 +39,18 @@ describe('assertLegalAcceptanceCurrent', () => {
 
     it('throws when the user does not exist', async () => {
         // Arrange
-        const { serverRuntime } = await commandSetup();
+        const { requestingSession, serverRuntime } = await commandSetup();
 
         // Act / Assert
-        await expect(assertLegalAcceptanceCurrent(idCreate(), serverRuntime)).rejects.toThrow('Unauthorized');
+        await expect(assertLegalAcceptanceCurrent(idCreate(), requestingSession, serverRuntime)).rejects.toThrow('Unauthorized');
+    });
+
+    it('resolves during admin impersonation even when acceptance is stale', async () => {
+        // Arrange
+        const { requestingSession, serverRuntime, user } = await commandSetup.withStaleLegalAcceptance();
+        requestingSession.impersonationReturnSessionId = idCreate();
+
+        // Act / Assert
+        await expect(assertLegalAcceptanceCurrent(user.userId, requestingSession, serverRuntime)).resolves.toBeUndefined();
     });
 });

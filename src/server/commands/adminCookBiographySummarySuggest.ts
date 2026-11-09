@@ -9,7 +9,7 @@ export async function adminCookBiographySummarySuggest(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<string> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const trimmed = biography.trim();
     if (!trimmed) {

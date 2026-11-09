@@ -19,6 +19,24 @@ describe('sessionAuthPhase', () => {
         expect(sessionAuthPhase({ user: { userId: 'u1' }, authEmailOtp: null })).toBe('signedIn');
     });
 
+    it('detects signed-in when legalAcceptance is present and not required', () => {
+        expect(
+            sessionAuthPhase({
+                user: { userId: 'u1', legalAcceptance: { required: false } },
+                authEmailOtp: null,
+            }),
+        ).toBe('signedIn');
+    });
+
+    it('detects legal pending when the signed-in user must accept latest terms', () => {
+        expect(
+            sessionAuthPhase({
+                user: { userId: 'u1', legalAcceptance: { required: true } },
+                authEmailOtp: null,
+            }),
+        ).toBe('legalPending');
+    });
+
     it('detects totp pending before signed-in', () => {
         expect(
             sessionAuthPhase({

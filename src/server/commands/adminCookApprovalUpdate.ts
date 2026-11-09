@@ -12,7 +12,7 @@ export async function adminCookApprovalUpdate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     try {
         const [existing] = await serverRuntime.db

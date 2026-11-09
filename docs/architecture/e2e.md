@@ -102,11 +102,12 @@ cook name. Skips only when `STRIPE_SECRET_KEY` is unset. CI’s `sk_test_ci_plac
 Page not found). After customer cancel (churn → confirm), in-radius deep-link explains “Request withdrawn” without cancel-reason text;
 out-of-radius stays generic not-found (no cancel oracle).
 
-**Booking-request create + auth** (three specs): deep-link a complete form draft via URL search (`bookingRequestFormDraftUrl`) so Places is
+**Booking-request create + auth** (four specs): deep-link a complete form draft via URL search (`bookingRequestFormDraftUrl`) so Places is
 never exercised. Signed-in customers click **Send request**; cold sessions click **Next** into `AuthIdentityGate`. Returning users verify
-OTP for a seeded email (auto-submit on bind); new users complete profile + legal after OTP, then create account (auto-submit). Assert toast
+OTP for a seeded email (auto-submit on bind); returning users with stale legal acceptance agree the inline terms panel first, then
+auto-submit; new users complete profile + legal after OTP, then create account (auto-submit). Assert toast
 
-- occasion on `/profile/booking-requests`. Named failures map to signed-in vs returning-OTP vs new-customer.
+- occasion on `/profile/booking-requests`. Named failures map to signed-in vs returning-OTP vs returning-OTP-legal vs new-customer.
 
 **Content page publish** (blog / partner / occasion / city): admin actor creates via list CTA (city create dialog needs a city-center pick —
 `placesUi.cityCenterSuggestionsMock` stubs only that GraphQL operation; CI has no Places key). Editor sets a unique path/title/headline and

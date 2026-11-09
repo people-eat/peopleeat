@@ -25,7 +25,7 @@ export async function chatInputCollectionRespond(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSChatMessageCreateResult | null> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
 
     const existing = await chatTurnFindOneByClientRequestId(serverRuntime, clientRequestId, userId);
     if (existing) {

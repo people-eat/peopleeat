@@ -18,7 +18,7 @@ export async function userBookingRequestOfferCallJoin(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSBookingRequestOfferCallTokenResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
     await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestOfferCallJoin');
 
     const { bookingRequestOfferId } = args;

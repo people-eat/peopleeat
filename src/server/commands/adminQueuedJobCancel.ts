@@ -14,7 +14,7 @@ export async function adminQueuedJobCancel(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const jobId = args.jobId.trim();
     const name = args.name.trim();

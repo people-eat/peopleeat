@@ -23,7 +23,7 @@ export async function adminCustomerTestimonialUpsert(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const body = textNormalizeProseTitled(input.body);
     if (body.length === 0) {

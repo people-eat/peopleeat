@@ -18,7 +18,7 @@ export async function cookBookingRequestOfferCallCreate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSBookingRequestOfferCallTokenResult> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
     await userActiveStatusAssert(cookId, serverRuntime, 'cookBookingRequestOfferCallCreate');
 
     const { bookingRequestOfferId } = args;

@@ -27,7 +27,7 @@ export async function adminBookingRequestOfferCallSlotDecline(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const { cookCallSlotBookingId, onBehalfOf } = args;
     const declineReason = args.reason?.trim() || undefined;

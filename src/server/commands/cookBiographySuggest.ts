@@ -10,7 +10,7 @@ export async function cookBiographySuggest(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<string> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
 
     try {
         const enabled = await featureToggleIsEnabled('COOK_BIOGRAPHY_AI_WRITE', serverRuntime, cookId);

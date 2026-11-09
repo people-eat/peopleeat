@@ -33,7 +33,7 @@ export async function adminCookUpdate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     try {
         return await cookUpdateAdminApply(adminId, cookId, input, requestingSession, serverRuntime);

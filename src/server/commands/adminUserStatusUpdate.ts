@@ -25,7 +25,7 @@ export async function adminUserStatusUpdate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     if (status !== 'ACTIVE' && status !== 'BANNED') {
         throw new Error('adminUserStatusUpdate: status must be ACTIVE or BANNED');

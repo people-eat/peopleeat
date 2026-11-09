@@ -11,7 +11,7 @@ export async function adminPromoCodeUpdate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const expiresAt = new Date(input.expiresAt);
     if (Number.isNaN(expiresAt.getTime())) {

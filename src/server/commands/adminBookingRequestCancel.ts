@@ -12,7 +12,7 @@ export async function adminBookingRequestCancel(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const reason = args.reason.trim();
     if (reason.length === 0) {

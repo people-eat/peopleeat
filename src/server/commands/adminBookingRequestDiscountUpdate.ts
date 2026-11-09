@@ -17,7 +17,7 @@ export async function adminBookingRequestDiscountUpdate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const bookingRequestId = args.bookingRequestId.trim();
     if (bookingRequestId.length === 0) {

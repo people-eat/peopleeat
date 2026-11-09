@@ -13,10 +13,17 @@ English columns exist.
 
 ### Signed-in acceptance gate
 
-Every signed-in user (including admins) with outdated or missing privacy/terms acceptance sees a **non-dismissible** dialog: change
-summaries, links to full public pages, **Accept**, and **Sign out** (allowed while pending). Imprint is not gated. Gate is suppressed on
-privacy/terms routes so “read full text” works. Accept stamps both acceptance times to now. In the root startup pipeline the legal dialog is
+Every signed-in user (including admins) with outdated or missing privacy/terms acceptance must confirm the latest texts before marketplace
+writes. Cold signed-in page loads use a **non-dismissible** root dialog: change summaries, links to full public pages, **Accept**, and
+**Sign out** (allowed while pending). Locale-mismatch confirm is also allowed while pending (locale-only `userUpdate`) so that dialog can
+resolve before this one. Imprint is not gated. Gate is suppressed on privacy/terms routes so “read full text” works. Accept stamps both
+acceptance times to now. **Admin Sign in as** skips the gate entirely: the dialog does not open, marketplace writes are not blocked, and
+`userLegalAccept` is refused so the operator cannot stamp the target user’s acceptance. In the root startup pipeline the legal dialog is
 second (after locale mismatch, before the cookie banner) — see [session-startup-gates.md](./session-startup-gates.md).
+
+In-page sign-in (booking form, plan, gift-card, log-on, chef sign-up) does not wait for that bootstrap dialog. `AuthIdentityGate` treats
+stale acceptance as `legalPending`, shows the same copy inline (`LegalAcceptancePanel`, full-text links in a new tab), and holds `onReady`
+until the user agrees, so `bookingRequestCreate` / gift-card pay are not sent as `Unauthorized`.
 
 ### Registration
 
@@ -59,9 +66,10 @@ Published version pages are read-only; draft ids redirect to draft route. Newest
 
 ### Chosen
 
-Blocking dialog + German `*De` columns + draft/publish versioning + server hard-gate on mutations (except accept and terminate sessions) +
-separate public and admin GraphQL types + kind-discriminated `legalDocumentDraftUpsert` (ensure open draft, seed from published when body
-blank on insert) and `legalDocumentPublish` (non-empty body and summary). Three tables stay; only GraphQL/commands collapse.
+Blocking dialog + German `*De` columns + draft/publish versioning + server hard-gate on mutations (except accept, terminate sessions,
+locale-only `userUpdate`, and admin impersonation) + separate public and admin GraphQL types + kind-discriminated `legalDocumentDraftUpsert`
+(ensure open draft, seed from published when body blank on insert) and `legalDocumentPublish` (non-empty body and change summary). Three
+tables stay; only GraphQL/commands collapse.
 
 ## Implementation
 
@@ -70,9 +78,12 @@ blank on insert) and `legalDocumentPublish` (non-empty body and summary). Three 
   `legalDocumentPublish`
 - Commands: `adminLegalDocumentDraftUpsert` / `adminLegalDocumentPublish` (switch on kind); latest-published helpers in utils (commands do
   not import queries)
-- Gate: `LegalAcceptanceGate` via `SessionStartupGates` on root layout
+- Gate: `LegalAcceptancePanel` (shared copy + `userLegalAccept` / sign-out); `LegalAcceptanceGate` dialog via `SessionStartupGates` on root
+  layout; `AuthIdentityGate` inline `legalPending` for in-page sign-in; `userLegalAcceptanceFindOne` returns `required: false` while
+  impersonating so neither surface opens
 - Admin UI: overview, kind hub, draft editor with diff tab, published version view; routes under `admin/legal`
-- Hard gate: `assertLegalAcceptanceCurrent` on user and admin mutations (except accept paths)
+- Hard gate: `assertLegalAcceptanceCurrent` on user and admin mutations (except accept paths, locale-only `userUpdate`, and impersonation
+  sessions)
 
 Live updates: admin legal mutations publish admin updates; pages seed from loader and replace from subscription (no refetch).
 

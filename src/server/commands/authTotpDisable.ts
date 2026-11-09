@@ -12,7 +12,7 @@ export async function authTotpDisable(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
     authTotpEncryptionKeyRequire();
 
     try {

@@ -10,7 +10,11 @@ Passwordless email OTP, optional Google, and passkeys establish a cookie session
    so it does not reopen; requesting the same email again sends the **same** code again (60s send cooldown) so a slow first delivery cannot
    be invalidated by a retry. A new code for the same address is limited to five per hour across sessions. An info `StatusAlert` reminds
    users to also check spam/junk if the email is missing.
-3. **Existing email:** verifying the code binds the session to that user.
+3. **Existing email:** verifying the code binds the session to that user. If that user’s stored privacy/terms acceptance is older than the
+   latest published versions, the identity gate stays on an inline **legal accept** step (`sessionAuthPhase` `legalPending`) and does
+   **not** fire `onReady` (booking submit, gift-card pay, log-on redirect) until they agree. “Read full text” opens in a new tab so in-flow
+   drafts are not abandoned. The root startup dialog still covers already-signed-in page loads — see
+   [session-startup-gates.md](./session-startup-gates.md).
 4. **New email:** verification marks the email as verified (~30 minutes) without creating a user yet. The UI shows the verified email (with
    discard) and a separate profile section. Submitting creates the account (name required; phone, birth date, and preferred communication
    optional on the schema but collected on most flows), records legal acceptance, binds the session, and consumes the OTP. Chef sign-up can
@@ -78,11 +82,14 @@ Google Cloud consent screen is verified.
   default true). Gift card omits them. Admin create requires full profile. Optional nested cook create or `UserMutation.cookCreate`. Minimum
   age **18** when birth date present (`src/shared/userBirthDate.ts`).
 - Shared UI: `src/web/components/auth/` (`AuthIdentityGate`, `AuthEmailOtpFlow`, `AuthEmailOtpSpamHint`, `AuthGoogleLogOn`,
-  `AuthIdentityGateLogOnFooter`, `AuthPasskeyLogOn`, `AuthTotpChallenge`, `UserProfileForm`, `sessionAuthPhase`).
-  `PreferredCommunicationField` on account. Terms + privacy checkboxes required on register. Email step uses TanStack Form with `z.email()`;
-  OTP dialog supports Enter, paste, and auto-submit at six digits, with a shared spam/junk `StatusAlert`. Google (toggle-gated) then passkey
-  sit in the gate `footer` on `/log-on`, booking form, booking plan, gift-card, and chef sign-up. `sessionAuthPhase` is `register` when OTP
-  **or** an OAuth ticket has `verifiedAt`, and `totpPending` after primary auth when TOTP is enabled.
+  `AuthIdentityGateLogOnFooter`, `AuthPasskeyLogOn`, `AuthTotpChallenge`, `UserProfileForm`, `sessionAuthPhase`) and
+  `src/web/components/LegalAcceptancePanel.tsx`. `PreferredCommunicationField` on account. Terms + privacy checkboxes required on register.
+  Email step uses TanStack Form with `z.email()`; OTP dialog supports Enter, paste, and auto-submit at six digits, with a shared spam/junk
+  `StatusAlert`. Google (toggle-gated) then passkey sit in the gate `footer` on `/log-on`, booking form, booking plan, gift-card, and chef
+  sign-up. `sessionAuthPhase` is `register` when OTP **or** an OAuth ticket has `verifiedAt`, `totpPending` after primary auth when TOTP is
+  enabled, and `legalPending` when the bound user must accept the latest published privacy/terms (`User.legalAcceptance.required`).
+  `onReady` runs only for `signedIn`. Shared legal copy and `userLegalAccept` live in `LegalAcceptancePanel` (inline in the identity gate;
+  dialog wrapper is `LegalAcceptanceGate`).
 - Google HTTP: `GET /api/auth/google` and `/api/auth/google/callback` (PKCE, restore session from `AuthOauthStates`, Set-Cookie on
   callback). GraphQL: `Session.authOauthTicket`, `authOauthTicketDelete`. Tables: `AuthOauthStates`, `AuthOauthTickets`,
   `AuthOauthIdentities`. Feature toggle `SIGN_IN_GOOGLE`. Admin usage on `/admin/analytics`; linked-method stock on `/admin/users`.

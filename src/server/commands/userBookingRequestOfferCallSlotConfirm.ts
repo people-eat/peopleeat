@@ -26,7 +26,7 @@ export async function userBookingRequestOfferCallSlotConfirm(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
     await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestOfferCallSlotConfirm');
 
     const { cookCallSlotBookingId } = args;

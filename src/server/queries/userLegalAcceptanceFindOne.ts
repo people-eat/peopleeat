@@ -13,6 +13,9 @@ export async function userLegalAcceptanceFindOne(
     if (!requestingSession.userId || requestingSession.userId !== parentUser.userId) {
         return null;
     }
+    if (requestingSession.impersonationReturnSessionId) {
+        return { required: false, pendingPrivacyPolicy: null, pendingTermsAndConditions: null };
+    }
     const [user] = await serverRuntime.db
         .select({
             lastAcceptedPrivacyPolicy: users.lastAcceptedPrivacyPolicy,

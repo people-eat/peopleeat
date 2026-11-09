@@ -41,7 +41,7 @@ export async function userBookingRequestOfferPaymentStatusUpdate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
     await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestOfferPaymentStatusUpdate');
 
     const { bookingRequestOfferId, invoiceAddress: invoiceAddressInput } = args;

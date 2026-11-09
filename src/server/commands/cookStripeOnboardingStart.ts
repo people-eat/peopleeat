@@ -62,7 +62,7 @@ export async function cookStripeOnboardingStart(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSCookStripeOnboardingResult> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
 
     try {
         const [row] = await serverRuntime.db

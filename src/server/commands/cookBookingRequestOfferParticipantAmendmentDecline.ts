@@ -17,10 +17,10 @@ import { userActiveStatusAssert } from '../utils/userActiveStatusAssert';
 export async function cookBookingRequestOfferParticipantAmendmentDecline(
     { cookId }: GqlSCookMutation,
     args: GqlSCookMutationBookingRequestOfferParticipantAmendmentDeclineArgs,
-    _requestingSession: GqlSSession,
+    requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
     await userActiveStatusAssert(cookId, serverRuntime, 'cookBookingRequestOfferParticipantAmendmentDecline');
 
     const { bookingRequestOfferId } = args;

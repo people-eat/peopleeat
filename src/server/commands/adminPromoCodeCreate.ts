@@ -11,7 +11,7 @@ export async function adminPromoCodeCreate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const redeemCode = input.redeemCode.trim();
     if (redeemCode.length === 0) {

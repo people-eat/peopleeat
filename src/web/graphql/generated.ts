@@ -7781,6 +7781,11 @@ export type GqlCAuthSessionFieldsFragment = {
         preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
         admin: { adminId: string } | null;
         cook: { cookId: string } | null;
+        legalAcceptance: {
+            required: boolean;
+            pendingPrivacyPolicy: { privacyPolicyId: string; changeSummaryDe: string; publishedAt: string } | null;
+            pendingTermsAndConditions: { termsAndConditionsId: string; changeSummaryDe: string; publishedAt: string } | null;
+        } | null;
     } | null;
     authEmailOtp: { authEmailOtpId: string; emailAddress: string; expiresAt: string; verifiedAt: string | null; createdAt: string } | null;
     authOauthTicket: {
@@ -7822,6 +7827,11 @@ export type GqlCAuthSessionQuery = {
             preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
             admin: { adminId: string } | null;
             cook: { cookId: string } | null;
+            legalAcceptance: {
+                required: boolean;
+                pendingPrivacyPolicy: { privacyPolicyId: string; changeSummaryDe: string; publishedAt: string } | null;
+                pendingTermsAndConditions: { termsAndConditionsId: string; changeSummaryDe: string; publishedAt: string } | null;
+            } | null;
         } | null;
         authEmailOtp: {
             authEmailOtpId: string;
@@ -7860,6 +7870,11 @@ export type GqlCAuthSessionUpdatesSubscription = {
             preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
             admin: { adminId: string } | null;
             cook: { cookId: string } | null;
+            legalAcceptance: {
+                required: boolean;
+                pendingPrivacyPolicy: { privacyPolicyId: string; changeSummaryDe: string; publishedAt: string } | null;
+                pendingTermsAndConditions: { termsAndConditionsId: string; changeSummaryDe: string; publishedAt: string } | null;
+            } | null;
         } | null;
         authEmailOtp: {
             authEmailOtpId: string;
@@ -8396,6 +8411,11 @@ export type GqlCBookingRequestFormPageQuery = {
             }> | null;
             admin: { adminId: string } | null;
             cook: { cookId: string } | null;
+            legalAcceptance: {
+                required: boolean;
+                pendingPrivacyPolicy: { privacyPolicyId: string; changeSummaryDe: string; publishedAt: string } | null;
+                pendingTermsAndConditions: { termsAndConditionsId: string; changeSummaryDe: string; publishedAt: string } | null;
+            } | null;
         } | null;
         authEmailOtp: {
             authEmailOtpId: string;
@@ -8485,6 +8505,11 @@ export type GqlCBookingRequestPlanPageQuery = {
             preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
             admin: { adminId: string } | null;
             cook: { cookId: string } | null;
+            legalAcceptance: {
+                required: boolean;
+                pendingPrivacyPolicy: { privacyPolicyId: string; changeSummaryDe: string; publishedAt: string } | null;
+                pendingTermsAndConditions: { termsAndConditionsId: string; changeSummaryDe: string; publishedAt: string } | null;
+            } | null;
         } | null;
         authEmailOtp: {
             authEmailOtpId: string;
@@ -8772,6 +8797,11 @@ export type GqlCChefSignUpPageQuery = {
             preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
             admin: { adminId: string } | null;
             cook: { cookId: string } | null;
+            legalAcceptance: {
+                required: boolean;
+                pendingPrivacyPolicy: { privacyPolicyId: string; changeSummaryDe: string; publishedAt: string } | null;
+                pendingTermsAndConditions: { termsAndConditionsId: string; changeSummaryDe: string; publishedAt: string } | null;
+            } | null;
         } | null;
         authEmailOtp: {
             authEmailOtpId: string;
@@ -9079,6 +9109,11 @@ export type GqlCGiftCardPageQuery = {
             preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
             admin: { adminId: string } | null;
             cook: { cookId: string } | null;
+            legalAcceptance: {
+                required: boolean;
+                pendingPrivacyPolicy: { privacyPolicyId: string; changeSummaryDe: string; publishedAt: string } | null;
+                pendingTermsAndConditions: { termsAndConditionsId: string; changeSummaryDe: string; publishedAt: string } | null;
+            } | null;
         } | null;
         giftCard: {
             giftCardId: string;
@@ -9143,6 +9178,11 @@ export type GqlCGiftCardSessionUpdatesSubscription = {
             preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
             admin: { adminId: string } | null;
             cook: { cookId: string } | null;
+            legalAcceptance: {
+                required: boolean;
+                pendingPrivacyPolicy: { privacyPolicyId: string; changeSummaryDe: string; publishedAt: string } | null;
+                pendingTermsAndConditions: { termsAndConditionsId: string; changeSummaryDe: string; publishedAt: string } | null;
+            } | null;
         } | null;
         giftCard: {
             giftCardId: string;
@@ -9243,6 +9283,11 @@ export type GqlCLogOnPageQuery = {
             preferredCommunication: Schema.GqlCUserPreferredCommunication | null;
             admin: { adminId: string } | null;
             cook: { cookId: string } | null;
+            legalAcceptance: {
+                required: boolean;
+                pendingPrivacyPolicy: { privacyPolicyId: string; changeSummaryDe: string; publishedAt: string } | null;
+                pendingTermsAndConditions: { termsAndConditionsId: string; changeSummaryDe: string; publishedAt: string } | null;
+            } | null;
         } | null;
         authEmailOtp: {
             authEmailOtpId: string;
@@ -26603,6 +26648,40 @@ export const AuthSessionFieldsFragmentDoc = {
                                         selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalAcceptance' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'required' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingPrivacyPolicy' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'privacyPolicyId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingTermsAndConditions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'termsAndConditionsId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -38487,6 +38566,40 @@ export const AuthSessionDocument = {
                                         selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalAcceptance' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'required' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingPrivacyPolicy' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'privacyPolicyId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingTermsAndConditions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'termsAndConditionsId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -38588,6 +38701,40 @@ export const AuthSessionUpdatesDocument = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalAcceptance' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'required' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingPrivacyPolicy' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'privacyPolicyId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingTermsAndConditions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'termsAndConditionsId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
                                     },
                                 },
                             ],
@@ -40874,6 +41021,40 @@ export const BookingRequestFormPageDocument = {
                                         selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalAcceptance' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'required' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingPrivacyPolicy' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'privacyPolicyId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingTermsAndConditions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'termsAndConditionsId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -41535,6 +41716,40 @@ export const BookingRequestPlanPageDocument = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalAcceptance' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'required' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingPrivacyPolicy' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'privacyPolicyId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingTermsAndConditions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'termsAndConditionsId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
                                     },
                                 },
                             ],
@@ -42317,6 +42532,40 @@ export const ChefSignUpPageDocument = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalAcceptance' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'required' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingPrivacyPolicy' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'privacyPolicyId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingTermsAndConditions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'termsAndConditionsId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
                                     },
                                 },
                             ],
@@ -43589,6 +43838,40 @@ export const GiftCardPageDocument = {
                                         selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }],
                                     },
                                 },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalAcceptance' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'required' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingPrivacyPolicy' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'privacyPolicyId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingTermsAndConditions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'termsAndConditionsId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
+                                    },
+                                },
                             ],
                         },
                     },
@@ -43783,6 +44066,40 @@ export const GiftCardSessionUpdatesDocument = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalAcceptance' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'required' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingPrivacyPolicy' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'privacyPolicyId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingTermsAndConditions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'termsAndConditionsId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
                                     },
                                 },
                             ],
@@ -44223,6 +44540,40 @@ export const LogOnPageDocument = {
                                     selectionSet: {
                                         kind: 'SelectionSet',
                                         selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }],
+                                    },
+                                },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'legalAcceptance' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'required' } },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingPrivacyPolicy' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'privacyPolicyId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                            {
+                                                kind: 'Field',
+                                                name: { kind: 'Name', value: 'pendingTermsAndConditions' },
+                                                selectionSet: {
+                                                    kind: 'SelectionSet',
+                                                    selections: [
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'termsAndConditionsId' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'changeSummaryDe' } },
+                                                        { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                                    ],
+                                                },
+                                            },
+                                        ],
                                     },
                                 },
                             ],

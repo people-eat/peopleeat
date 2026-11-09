@@ -35,7 +35,7 @@ export async function emailAddressUpdateOtpRequest(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
 
     const email = emailNormalize(args.emailAddress);
     const locale = args.locale;

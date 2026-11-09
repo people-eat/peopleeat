@@ -29,7 +29,7 @@ export async function adminBookingRequestOfferPayoutAlreadyTookPlaceCheck(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const bookingRequestOfferId = args.bookingRequestOfferId.trim();
     if (bookingRequestOfferId.length === 0) {

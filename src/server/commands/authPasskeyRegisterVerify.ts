@@ -24,7 +24,7 @@ export async function authPasskeyRegisterVerify(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
     const response = args.response as RegistrationResponseJSON;
 
     try {

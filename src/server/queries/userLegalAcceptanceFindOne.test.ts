@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { idCreate } from '../../shared/idCreate';
 import { toGqlUser } from '../mappers/toGqlUser';
 import { commandSetup } from '../test/commandTestUtils';
 import { userLegalAcceptanceFindOne } from './userLegalAcceptanceFindOne';
@@ -32,5 +33,21 @@ describe('userLegalAcceptanceFindOne', () => {
 
         // Act / Assert
         await expect(userLegalAcceptanceFindOne(toGqlUser(owner.user), other.requestingSession, other.serverRuntime)).resolves.toBeNull();
+    });
+
+    it('returns not required during admin impersonation even when acceptance is stale', async () => {
+        // Arrange
+        const { requestingSession, serverRuntime, user } = await commandSetup.withStaleLegalAcceptance();
+        requestingSession.impersonationReturnSessionId = idCreate();
+
+        // Act
+        const result = await userLegalAcceptanceFindOne(toGqlUser(user), requestingSession, serverRuntime);
+
+        // Assert
+        expect(result).toEqual({
+            required: false,
+            pendingPrivacyPolicy: null,
+            pendingTermsAndConditions: null,
+        });
     });
 });

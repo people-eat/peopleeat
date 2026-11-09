@@ -33,7 +33,7 @@ export async function cookBookingRequestOfferTestimonialUpsert(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
     await userActiveStatusAssert(cookId, serverRuntime, 'cookBookingRequestOfferTestimonialUpsert');
 
     const body = input.body == null ? null : textNormalizeProseTitled(input.body) || null;

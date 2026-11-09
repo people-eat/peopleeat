@@ -28,7 +28,7 @@ export async function chatMessageCreate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSChatMessageCreateResult | null> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
 
     const trimmed = message.trim();
     if (!trimmed) {

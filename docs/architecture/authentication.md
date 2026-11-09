@@ -44,7 +44,8 @@ consent is not the HttpOnly session cookie — see [cookie-consent.md](../featur
   `window.location.assign` keeps the old cookie). `sessionImpersonationEnd` soft-terminates the impersonation session and returns the admin
   session id; the banner uses the same switch endpoint to restore the cookie (or a freshly minted admin-bound session if the return session
   was terminated). Presence of `impersonationReturnSessionId` is the impersonation probe (`Session.impersonation`); the acting admin is
-  `returnSession.userId`.
+  `returnSession.userId`. Impersonation sessions skip the legal-acceptance and locale-mismatch gates (dialogs, `legalPending`, and the
+  mutation hard-gate) and cannot call `userLegalAccept` — see [admin-legal.md](../features/admin-legal.md).
 
 ### Key Files
 
@@ -194,7 +195,8 @@ summary on `AdminUser`.
 - `src/web/pages/LogOnPage.tsx` (route: `src/routes/{-$locale}/log-on.tsx`; `/sign-in` redirects)
 - `src/web/components/auth/` — shared email/OTP/profile gate used by log-on, booking form, chef sign-up, gift-card purchase;
   `AuthEmailOtpSpamHint` on email OTP dialogs; `AuthIdentityGateLogOnFooter` (Google then passkey) on log-on, booking form, booking plan,
-  gift-card, and chef sign-up; `AuthTotpChallenge` when `sessionAuthPhase === 'totpPending'`; `AuthTotpAccountSection` on the account page
+  gift-card, and chef sign-up; `AuthTotpChallenge` when `sessionAuthPhase === 'totpPending'`; inline `LegalAcceptancePanel` when
+  `sessionAuthPhase === 'legalPending'` (stale privacy/terms; `onReady` waits); `AuthTotpAccountSection` on the account page
 - `src/web/pages/AccountPage.tsx` (routes: `profile/account.tsx`, `admin/account.tsx`) — profile fields, phone number, passkeys, TOTP,
   email-address change (OTP), session revoke / sign-out, account deletion (OTP to the current address)
 - `docs/features/sign-in.md` / `docs/features/account.md`

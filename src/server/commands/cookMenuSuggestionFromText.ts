@@ -52,7 +52,7 @@ export async function cookMenuSuggestionFromText(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSCookMenuSuggestion> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
 
     try {
         const cookMeals = await serverRuntime.db

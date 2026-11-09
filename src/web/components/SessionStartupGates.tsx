@@ -40,8 +40,9 @@ export function SessionStartupGates({ children, enableCookieShell }: PropsWithCh
     const acceptance = session?.user?.legalAcceptance;
     const cookieSetting = session?.cookieSetting;
 
-    const localeEligible = Boolean(profileLocale && profileLocale !== routeLocale);
-    const legalEligible = Boolean(acceptance?.required) && !isPublicLegalReadablePath(pathname);
+    const impersonating = Boolean(session?.impersonation?.active);
+    const localeEligible = Boolean(profileLocale && profileLocale !== routeLocale) && !impersonating;
+    const legalEligible = Boolean(acceptance?.required) && !impersonating && !isPublicLegalReadablePath(pathname);
     const cookieEligible = enableCookieShell && data != null && (cookieSetting == null || editorOpen);
 
     const active: ActiveGate = localeEligible ? 'locale' : legalEligible ? 'legal' : cookieEligible ? 'cookie' : null;

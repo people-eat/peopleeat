@@ -19,7 +19,7 @@ export async function cookMenuSuggestionFromInventory(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSCookMenuSuggestion> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
 
     try {
         const draft = await cookMenuSuggestionFromInventoryGenerate({

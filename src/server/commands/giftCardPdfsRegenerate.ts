@@ -9,7 +9,7 @@ export async function giftCardPdfsRegenerate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
 
     try {
         const ok = await giftCardPdfsRegenerateForPayedCard(giftCardId, serverRuntime, { requireBuyerUserId: userId });

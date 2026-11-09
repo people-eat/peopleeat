@@ -204,7 +204,7 @@ export async function adminCookMealUpsert(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const mealId = meal.mealId ?? null;
     if (mealId == null || mealId === '') {

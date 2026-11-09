@@ -70,4 +70,23 @@ describe('userLegalAccept', () => {
         expect(logRows[0]!.level).toBe('error');
         expect(logRows[0]!.message).toMatch(/userLegalAccept: user not found/);
     });
+
+    it('throws when the session is an admin impersonation', async () => {
+        // Arrange
+        const { requestingSession, serverRuntime, user } = await commandSetup.withUser({
+            lastAcceptedPrivacyPolicy: null,
+            lastAcceptedTerms: null,
+        });
+        requestingSession.impersonationReturnSessionId = idCreate();
+
+        // Act / Assert
+        await expect(userLegalAccept(userMutationParent(user.userId), requestingSession, serverRuntime)).rejects.toThrow(
+            /userLegalAccept: cannot accept while impersonating/,
+        );
+
+        const [row] = await testDb.select().from(users).where(eq(users.userId, user.userId));
+        expect(row?.lastAcceptedPrivacyPolicy).toBeNull();
+        expect(row?.lastAcceptedTerms).toBeNull();
+        expect(serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+    });
 });

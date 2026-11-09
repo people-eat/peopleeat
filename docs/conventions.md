@@ -762,15 +762,15 @@ Every guard under `src/server/guards/` (including `assertLegalAcceptanceCurrent`
 via `commandSetup` / `testDb`. Never mock Drizzle. Stub `serverRuntime.subscribe.to` when the guard opens a channel, and assert it was not
 called when the guard rejects first.
 
-| Guard                          | Required cases                                                                                            |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `guardUserMutation`            | Anonymous session throws `Unauthorized`; signed-in session returns `{ userId }`                           |
-| `guardUserSubscription`        | Anonymous throws and does not subscribe; signed-in session subscribes to `userId`                         |
-| `guardSessionSubscription`     | Subscribes to `session-updates:${sessionId}` with no signed-in user required                              |
-| `guardCookMutation`            | Anonymous throws; signed-in non-cook throws; non-`ACTIVE` cook throws; `ACTIVE` cook returns `{ cookId }` |
-| `guardAdminMutation`           | Anonymous throws; non-admin throws; admin returns `{ adminId }`                                           |
-| `guardAdminSubscription`       | Anonymous throws (no subscribe); non-admin throws (no subscribe); admin subscribes to `admin-updates`     |
-| `assertLegalAcceptanceCurrent` | Current acceptance resolves; stale acceptance throws `Unauthorized`; missing user throws `Unauthorized`   |
+| Guard                          | Required cases                                                                                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `guardUserMutation`            | Anonymous session throws `Unauthorized`; signed-in session returns `{ userId }`                                                                         |
+| `guardUserSubscription`        | Anonymous throws and does not subscribe; signed-in session subscribes to `userId`                                                                       |
+| `guardSessionSubscription`     | Subscribes to `session-updates:${sessionId}` with no signed-in user required                                                                            |
+| `guardCookMutation`            | Anonymous throws; signed-in non-cook throws; non-`ACTIVE` cook throws; `ACTIVE` cook returns `{ cookId }`                                               |
+| `guardAdminMutation`           | Anonymous throws; non-admin throws; admin returns `{ adminId }`                                                                                         |
+| `guardAdminSubscription`       | Anonymous throws (no subscribe); non-admin throws (no subscribe); admin subscribes to `admin-updates`                                                   |
+| `assertLegalAcceptanceCurrent` | Current acceptance resolves; stale acceptance throws `Unauthorized`; missing user throws `Unauthorized`; impersonation session resolves even when stale |
 
 Keep any inserted legal rows at a `publishedAt` before `commandSetup`'s default acceptance (`9999-12-31`) and delete them in a `finally`,
 the same way `publicLegalFind.test.ts` does. A later `publishedAt` makes unrelated command tests fail the legal gate under parallel workers.

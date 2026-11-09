@@ -92,7 +92,7 @@ export function AuthEmailOtpFlow({
             const refreshed = await sessionRefresh();
             if (result.error || !result.data?.authEmailOtpVerify.success) {
                 const phase = refreshed ? sessionAuthPhase(refreshed) : null;
-                const verifiedEarlier = phase === 'signedIn' || phase === 'register' || phase === 'totpPending';
+                const verifiedEarlier = phase === 'signedIn' || phase === 'legalPending' || phase === 'register' || phase === 'totpPending';
                 if (!verifiedEarlier) {
                     toast.error({ de: 'Code ungültig oder abgelaufen.', en: 'Invalid or expired code.' }[locale]);
                     verifyStarted.current = false;

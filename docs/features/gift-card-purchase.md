@@ -8,7 +8,8 @@ On `/gift-card`, buyers choose an amount (minimum €25), occasion, a single rec
 personal message.
 
 Anonymous buyers complete identity before purchase: email OTP (+ name-only registration for new accounts), or passkey for existing users who
-already registered one (skips OTP). Phone, birth date, and preferred communication stay optional.
+already registered one (skips OTP). Returning users with stale privacy/terms acceptance agree the inline legal panel before checkout starts.
+Phone, birth date, and preferred communication stay optional.
 
 After configuration, checkout opens on a dedicated full-page Stripe flow. Successful payment marks the card paid (`payedAt`), generates a
 printable voucher and a purchase receipt as PDFs, and emails the redeem code with both attachments. PDF generation is best-effort per file.

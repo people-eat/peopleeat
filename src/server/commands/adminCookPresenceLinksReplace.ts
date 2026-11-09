@@ -18,6 +18,6 @@ export async function adminCookPresenceLinksReplace(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
     return cookPresenceLinksReplaceApply(cookId, input, requestingSession, serverRuntime, 'adminCookPresenceLinksReplace');
 }

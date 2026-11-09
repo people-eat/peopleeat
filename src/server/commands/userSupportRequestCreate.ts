@@ -17,7 +17,7 @@ export async function userSupportRequestCreate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
 
     const subject = textNormalizeTitled(args.subject);
     const messageBody = textNormalizeProseTitled(args.messageBody);

@@ -18,7 +18,7 @@ export async function userBookingRequestOfferUnreadNotificationCountReset(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
     await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestOfferUnreadNotificationCountReset');
 
     const { bookingRequestOfferId } = args;

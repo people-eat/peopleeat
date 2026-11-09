@@ -15,7 +15,7 @@ export async function adminSessionTerminateMany(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     if (sessionIds.length === 0) {
         return { success: true };

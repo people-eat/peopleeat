@@ -21,7 +21,7 @@ export async function userBookingRequestOfferAddonSelectionUpdate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
 
     if (!(await featureToggleIsEnabled('BOOKING_REQUEST_OFFER_ADDONS', serverRuntime, userId))) {
         throw new Error('userBookingRequestOfferAddonSelectionUpdate: feature disabled');

@@ -24,7 +24,7 @@ export async function userBookingRequestKitchenDetailsUpdate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
     await userActiveStatusAssert(userId, serverRuntime, 'userBookingRequestKitchenDetailsUpdate');
 
     const { bookingRequestId, kitchenDetails: kitchenDetailsArg, photoFileUploadIds } = args;

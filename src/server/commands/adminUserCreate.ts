@@ -20,7 +20,7 @@ export async function adminUserCreate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     // Phase 1 — Payload construction (pure validation + Places resolve; no DB writes yet)
     const email = emailNormalize(input.emailAddress);

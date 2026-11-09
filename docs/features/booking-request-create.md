@@ -19,9 +19,11 @@ Customers create booking requests; the platform publishes them to cooks (or hold
    redirects via the URL (restriction selections stay in form state only; bounds are preserved across draft sync). Cooks are redirected to
    `/profile` (header **Send request** CTA is already hidden for them); `UserMutation.bookingRequestCreate` also rejects cook callers.
 2. Anonymous users complete identity before submit: email OTP (+ profile for new accounts), or passkey for existing users who already
-   registered one (skips OTP). Helper copy explains passkeys are not for first-time users. The auth step uses the same sticky Back / Next
-   chrome as other wizard steps; on create-profile, Next is **Create account** (always enabled, validates and scrolls to the first invalid
-   field on click). Signed-in users submit from the message step.
+   registered one (skips OTP). Helper copy explains passkeys are not for first-time users. Returning users whose stored terms/privacy
+   acceptance is stale see an inline **Updated legal terms** panel in the same auth step (change summaries, full-text links in a new tab,
+   **I agree** / **Sign out**); `bookingRequestCreate` is not sent until they accept. The auth step uses the same sticky Back / Next chrome
+   as other wizard steps; on create-profile, Next is **Create account** (always enabled, validates and scrolls to the first invalid field on
+   click). Signed-in users submit from the message step.
 3. On create, the customer lands on `/booking-request/$id/submitted` (reload-stable: id in the path, ownership re-checked from the server).
    That page confirms the request, explains what happens next (chefs create offers → customer is notified via email and WhatsApp when we
    have their number → customer chooses), and links to the request detail. When `BOOKING_REQUEST_KITCHEN_DETAILS` is on, a skippable kitchen

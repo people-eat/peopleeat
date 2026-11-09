@@ -16,7 +16,7 @@ export async function adminFeatureToggleUserOverrideDelete(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const trimmedUserId = userId.trim();
     if (trimmedUserId.length === 0) {

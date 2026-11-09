@@ -10,6 +10,10 @@ export async function userLegalAccept(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
+    if (requestingSession.impersonationReturnSessionId) {
+        throw new Error('userLegalAccept: cannot accept while impersonating');
+    }
+
     try {
         const now = new Date();
         const updated = await serverRuntime.db

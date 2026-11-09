@@ -44,6 +44,44 @@ describe('userUpdate', () => {
         expect(serverRuntime.publish.userUpdates).toHaveBeenCalledWith({ userId: user.userId });
     });
 
+    it('allows a locale-only patch when legal acceptance is stale', async () => {
+        // Arrange — mismatch-gate confirm sits above the legal dialog, so locale
+        // alone must succeed while privacy/terms are still pending.
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance({ locale: 'de' });
+
+        // Act
+        const result = await userUpdate(userMutationParent(user.userId), { user: { locale: 'en' } }, requestingSession, serverRuntime);
+
+        // Assert
+        expect(result).toEqual({ success: true });
+        const [row] = await testDb.select().from(users).where(eq(users.userId, user.userId));
+        expect(row?.locale).toBe('en');
+        expect(row?.lastAcceptedPrivacyPolicy).toBeNull();
+        expect(row?.lastAcceptedTerms).toBeNull();
+    });
+
+    it('still rejects a non-locale patch when legal acceptance is stale', async () => {
+        // Arrange
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance();
+
+        // Act / Assert
+        await expect(
+            userUpdate(userMutationParent(user.userId), { user: { firstName: 'Renamed' } }, requestingSession, serverRuntime),
+        ).rejects.toThrow(/Unauthorized/);
+        expect(serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+    });
+
+    it('still rejects locale bundled with another field when legal acceptance is stale', async () => {
+        // Arrange
+        const { serverRuntime, requestingSession, user } = await commandSetup.withStaleLegalAcceptance({ locale: 'de' });
+
+        // Act / Assert
+        await expect(
+            userUpdate(userMutationParent(user.userId), { user: { locale: 'en', firstName: 'Renamed' } }, requestingSession, serverRuntime),
+        ).rejects.toThrow(/Unauthorized/);
+        expect(serverRuntime.publish.userUpdates).not.toHaveBeenCalled();
+    });
+
     it('merges notification settings without turning other channels off', async () => {
         const { serverRuntime, requestingSession, user } = await commandSetup.withUser();
 

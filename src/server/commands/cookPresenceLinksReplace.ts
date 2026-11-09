@@ -10,7 +10,7 @@ export async function cookPresenceLinksReplace(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(cookId, serverRuntime);
+    await assertLegalAcceptanceCurrent(cookId, requestingSession, serverRuntime);
 
     const enabled = await featureToggleIsEnabled('COOK_PRESENCE_LINKS', serverRuntime, cookId);
     if (!enabled) {

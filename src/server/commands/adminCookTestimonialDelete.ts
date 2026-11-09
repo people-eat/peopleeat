@@ -12,7 +12,7 @@ export async function adminCookTestimonialDelete(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     try {
         const deleted = await serverRuntime.db.transaction(async (transaction) => {

@@ -26,6 +26,7 @@ import {
     AlertDialogTrigger,
 } from '../base/alert-dialog';
 import { Button } from '../base/button';
+import { LegalAcceptancePanel } from '../LegalAcceptancePanel';
 import { AuthEmailOtpFlow } from './AuthEmailOtpFlow';
 import { AuthTotpChallenge } from './AuthTotpChallenge';
 import { sessionAuthPhase } from './sessionAuthPhase';
@@ -262,6 +263,20 @@ export function AuthIdentityGate({
 
     if (phase === 'signedIn') {
         return children ? <>{children(session)}</> : null;
+    }
+
+    if (phase === 'legalPending') {
+        return (
+            <LegalAcceptancePanel
+                layout="inline"
+                sessionId={session.sessionId}
+                acceptance={session.user?.legalAcceptance ?? null}
+                fullTextInNewTab
+                onResolved={async () => {
+                    await sessionRefresh();
+                }}
+            />
+        );
     }
 
     if (phase === 'totpPending') {

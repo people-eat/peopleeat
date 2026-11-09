@@ -19,7 +19,7 @@ export async function emailAddressUpdateOtpVerify(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
 
     const pepper = authOtpPepperRequire();
     const now = new Date();

@@ -12,7 +12,7 @@ export async function authTotpEnrollStart(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSAuthTotpEnrollStartResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
     authTotpEncryptionKeyRequire();
 
     try {

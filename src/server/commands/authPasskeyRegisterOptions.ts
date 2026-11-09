@@ -19,7 +19,7 @@ export async function authPasskeyRegisterOptions(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<unknown> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
+    await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
 
     try {
         const [user] = await serverRuntime.db.select().from(users).where(eq(users.userId, userId)).limit(1);

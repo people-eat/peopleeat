@@ -17,7 +17,7 @@ export async function adminUserEmailAddressUpdate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     const nextEmail = emailNormalize(emailAddress);
     if (nextEmail.length === 0) {

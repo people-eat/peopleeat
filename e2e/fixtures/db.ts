@@ -3,6 +3,8 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 
 import * as schema from '../../src/server/db/schema';
 import {
+    adminLegalPrivacyPolicies,
+    adminLegalTermsAndConditions,
     admins,
     bookingRequestOffers,
     bookingRequestParticipants,
@@ -62,11 +64,22 @@ export type SeededActor = {
     lastName: string;
 };
 
-async function seedUser(input: { firstName: string; lastName: string; emailPrefix: string }): Promise<SeededActor> {
+async function seedUser(input: {
+    firstName: string;
+    lastName: string;
+    emailPrefix: string;
+    staleLegalAcceptance?: boolean;
+}): Promise<SeededActor> {
     const userId = idCreate();
     const sessionId = idCreate();
     // OTP verify normalizes emails to lowercase; nanoIds are mixed-case.
     const emailAddress = `${input.emailPrefix}-${userId.toLowerCase()}@example.com`;
+    const legalAcceptance = input.staleLegalAcceptance
+        ? {
+              lastAcceptedPrivacyPolicy: new Date('2020-01-01T00:00:00.000Z'),
+              lastAcceptedTerms: new Date('2020-01-01T00:00:00.000Z'),
+          }
+        : defaultLegalAcceptance;
 
     const [user] = await e2eDb
         .insert(users)
@@ -78,7 +91,7 @@ async function seedUser(input: { firstName: string; lastName: string; emailPrefi
             // E2e drives `/en/…` UI; default DB locale is `de` and would open
             // LocaleMismatchGate over every dialog/button.
             locale: 'en',
-            ...defaultLegalAcceptance,
+            ...legalAcceptance,
         })
         .returning();
     if (!user) throw new Error('e2e seedUser: insert returned no rows');
@@ -100,11 +113,33 @@ async function seedUser(input: { firstName: string; lastName: string; emailPrefi
     };
 }
 
-export async function seedCustomer(overrides?: { firstName?: string; lastName?: string }): Promise<SeededActor> {
+export async function seedCustomer(overrides?: {
+    firstName?: string;
+    lastName?: string;
+    staleLegalAcceptance?: boolean;
+}): Promise<SeededActor> {
     return seedUser({
         firstName: overrides?.firstName ?? 'E2E',
         lastName: overrides?.lastName ?? 'Customer',
         emailPrefix: 'e2e-customer',
+        staleLegalAcceptance: overrides?.staleLegalAcceptance,
+    });
+}
+
+/** Insert published privacy + terms so a stale `lastAccepted*` user must re-accept. */
+export async function seedPublishedLegalDocuments(): Promise<void> {
+    const publishedAt = new Date();
+    await e2eDb.insert(adminLegalPrivacyPolicies).values({
+        privacyPolicyId: idCreate(),
+        bodyDe: 'E2E privacy policy body\n',
+        changeSummaryDe: 'E2E privacy update',
+        publishedAt,
+    });
+    await e2eDb.insert(adminLegalTermsAndConditions).values({
+        termsAndConditionsId: idCreate(),
+        bodyDe: 'E2E terms and conditions body\n',
+        changeSummaryDe: 'E2E terms update',
+        publishedAt,
     });
 }
 

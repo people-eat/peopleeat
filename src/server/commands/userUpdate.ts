@@ -19,18 +19,30 @@ export async function userUpdate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(userId, serverRuntime);
     const { user } = args;
+    const hasFirstName = user.firstName !== undefined && user.firstName !== null;
+    const hasLastName = user.lastName !== undefined && user.lastName !== null;
+    const hasPhoneNumber = user.phoneNumber !== undefined && user.phoneNumber !== null;
+    const hasBirthDate = user.birthDate !== undefined && user.birthDate !== null;
+    const hasPreferredCommunication = user.preferredCommunication !== undefined && user.preferredCommunication !== null;
+    const hasLocale = user.locale !== undefined && user.locale !== null;
+    const hasTimeZone = user.timeZone !== undefined && user.timeZone !== null;
+    const hasProfilePicture = user.profilePictureFileUploadId !== undefined;
+    const hasNotificationSettings = notificationSettingsPatchHasDomain(user.notificationSettings);
+    const localeOnly =
+        hasLocale &&
+        !hasFirstName &&
+        !hasLastName &&
+        !hasPhoneNumber &&
+        !hasBirthDate &&
+        !hasPreferredCommunication &&
+        !hasTimeZone &&
+        !hasProfilePicture &&
+        !hasNotificationSettings;
+    if (!localeOnly) {
+        await assertLegalAcceptanceCurrent(userId, requestingSession, serverRuntime);
+    }
     try {
-        const hasFirstName = user.firstName !== undefined && user.firstName !== null;
-        const hasLastName = user.lastName !== undefined && user.lastName !== null;
-        const hasPhoneNumber = user.phoneNumber !== undefined && user.phoneNumber !== null;
-        const hasBirthDate = user.birthDate !== undefined && user.birthDate !== null;
-        const hasPreferredCommunication = user.preferredCommunication !== undefined && user.preferredCommunication !== null;
-        const hasLocale = user.locale !== undefined && user.locale !== null;
-        const hasTimeZone = user.timeZone !== undefined && user.timeZone !== null;
-        const hasProfilePicture = user.profilePictureFileUploadId !== undefined;
-        const hasNotificationSettings = notificationSettingsPatchHasDomain(user.notificationSettings);
         if (
             !hasFirstName &&
             !hasLastName &&

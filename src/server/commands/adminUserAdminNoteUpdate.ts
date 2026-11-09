@@ -11,7 +11,7 @@ export async function adminUserAdminNoteUpdate(
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
-    await assertLegalAcceptanceCurrent(adminId, serverRuntime);
+    await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     // Phase 1 — Payload construction (pure, no DB calls)
     const adminNoteUpdate = adminNote.trim();
