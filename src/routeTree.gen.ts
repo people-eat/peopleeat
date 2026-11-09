@@ -17,6 +17,7 @@ import { Route as SitemapCitiesDotxmlRouteImport } from './routes/sitemap-cities
 import { Route as SitemapOccasionsDotxmlRouteImport } from './routes/sitemap-occasions[.]xml'
 import { Route as SitemapPagesDotxmlRouteImport } from './routes/sitemap-pages[.]xml'
 import { Route as SitemapPartnersDotxmlRouteImport } from './routes/sitemap-partners[.]xml'
+import { Route as SitemapVenuesDotxmlRouteImport } from './routes/sitemap-venues[.]xml'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as Char123LocaleChar125RouteImport } from './routes/{-$locale}'
 import { Route as ApiFileUploadsRouteImport } from './routes/api/file-uploads'
@@ -41,6 +42,7 @@ import { Route as Char123LocaleChar125PrivacyPolicyRouteImport } from './routes/
 import { Route as Char123LocaleChar125ProfileRouteImport } from './routes/{-$locale}/profile'
 import { Route as Char123LocaleChar125SignInRouteImport } from './routes/{-$locale}/sign-in'
 import { Route as Char123LocaleChar125TermsAndConditionsRouteImport } from './routes/{-$locale}/terms-and-conditions'
+import { Route as Char123LocaleChar125VenuesRouteImport } from './routes/{-$locale}/venues'
 import { Route as ApiAuthGoogleRouteImport } from './routes/api/auth/google'
 import { Route as ApiFileUploadsFileUploadIdRouteImport } from './routes/api/file-uploads_.$fileUploadId'
 import { Route as ApiSessionSwitchRouteImport } from './routes/api/session.switch'
@@ -106,6 +108,7 @@ import { Route as Char123LocaleChar125ProfilePublicRouteImport } from './routes/
 import { Route as Char123LocaleChar125ProfileSupportRequestsRouteImport } from './routes/{-$locale}/profile/support-requests'
 import { Route as Char123LocaleChar125ProfileTravelRouteImport } from './routes/{-$locale}/profile/travel'
 import { Route as Char123LocaleChar125ProfileWalletRouteImport } from './routes/{-$locale}/profile/wallet'
+import { Route as Char123LocaleChar125VenuesPathNameRouteImport } from './routes/{-$locale}/venues_.$pathName'
 import { Route as ApiAuthGoogleCallbackRouteImport } from './routes/api/auth/google.callback'
 import { Route as ApiWhatsappLinksTokenRouteImport } from './routes/api/whatsapp/links/$token'
 import { Route as ServerBookingRequestOffersBookingRequestOfferIdCookStatementRouteImport } from './routes/server.booking-request-offers.$bookingRequestOfferId.cook-statement'
@@ -136,6 +139,7 @@ import { Route as Char123LocaleChar125AdminOfferAddonTemplatesOfferAddonTemplate
 import { Route as Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRouteImport } from './routes/{-$locale}/admin/offer-chat-reviews_.$bookingRequestOfferId'
 import { Route as Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRouteImport } from './routes/{-$locale}/admin/outbound-emails_.$outboundEmailId'
 import { Route as Char123LocaleChar125AdminOutboundEmailsListRouteImport } from './routes/{-$locale}/admin/outbound-emails_.list'
+import { Route as Char123LocaleChar125AdminPartnerVenuesPartnerVenueIdRouteImport } from './routes/{-$locale}/admin/partner-venues_.$partnerVenueId'
 import { Route as Char123LocaleChar125AdminPartnersPartnerIdRouteImport } from './routes/{-$locale}/admin/partners_.$partnerId'
 import { Route as Char123LocaleChar125AdminPromoCodesPromoCodeIdRouteImport } from './routes/{-$locale}/admin/promo-codes_.$promoCodeId'
 import { Route as Char123LocaleChar125AdminPromoCodesCreateRouteImport } from './routes/{-$locale}/admin/promo-codes_.create'
@@ -221,6 +225,11 @@ const SitemapPagesDotxmlRoute = SitemapPagesDotxmlRouteImport.update({
 const SitemapPartnersDotxmlRoute = SitemapPartnersDotxmlRouteImport.update({
   id: '/sitemap-partners.xml',
   path: '/sitemap-partners.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapVenuesDotxmlRoute = SitemapVenuesDotxmlRouteImport.update({
+  id: '/sitemap-venues.xml',
+  path: '/sitemap-venues.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -359,6 +368,12 @@ const Char123LocaleChar125TermsAndConditionsRoute =
   Char123LocaleChar125TermsAndConditionsRouteImport.update({
     id: '/terms-and-conditions',
     path: '/terms-and-conditions',
+    getParentRoute: () => Char123LocaleChar125Route,
+  } as any)
+const Char123LocaleChar125VenuesRoute =
+  Char123LocaleChar125VenuesRouteImport.update({
+    id: '/venues',
+    path: '/venues',
     getParentRoute: () => Char123LocaleChar125Route,
   } as any)
 const ApiAuthGoogleRoute = ApiAuthGoogleRouteImport.update({
@@ -745,6 +760,12 @@ const Char123LocaleChar125ProfileWalletRoute =
     path: '/wallet',
     getParentRoute: () => Char123LocaleChar125ProfileRoute,
   } as any)
+const Char123LocaleChar125VenuesPathNameRoute =
+  Char123LocaleChar125VenuesPathNameRouteImport.update({
+    id: '/venues_/$pathName',
+    path: '/venues/$pathName',
+    getParentRoute: () => Char123LocaleChar125Route,
+  } as any)
 const ApiAuthGoogleCallbackRoute = ApiAuthGoogleCallbackRouteImport.update({
   id: '/callback',
   path: '/callback',
@@ -931,6 +952,12 @@ const Char123LocaleChar125AdminOutboundEmailsListRoute =
   Char123LocaleChar125AdminOutboundEmailsListRouteImport.update({
     id: '/outbound-emails_/list',
     path: '/outbound-emails/list',
+    getParentRoute: () => Char123LocaleChar125AdminRoute,
+  } as any)
+const Char123LocaleChar125AdminPartnerVenuesPartnerVenueIdRoute =
+  Char123LocaleChar125AdminPartnerVenuesPartnerVenueIdRouteImport.update({
+    id: '/partner-venues_/$partnerVenueId',
+    path: '/partner-venues/$partnerVenueId',
     getParentRoute: () => Char123LocaleChar125AdminRoute,
   } as any)
 const Char123LocaleChar125AdminPartnersPartnerIdRoute =
@@ -1253,6 +1280,7 @@ export interface FileRoutesByFullPath {
   '/sitemap-occasions.xml': typeof SitemapOccasionsDotxmlRoute
   '/sitemap-pages.xml': typeof SitemapPagesDotxmlRoute
   '/sitemap-partners.xml': typeof SitemapPartnersDotxmlRoute
+  '/sitemap-venues.xml': typeof SitemapVenuesDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$locale}': typeof Char123LocaleChar125RouteWithChildren
   '/api/file-uploads': typeof ApiFileUploadsRoute
@@ -1276,6 +1304,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/profile': typeof Char123LocaleChar125ProfileRouteWithChildren
   '/{-$locale}/sign-in': typeof Char123LocaleChar125SignInRoute
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
+  '/{-$locale}/venues': typeof Char123LocaleChar125VenuesRoute
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/file-uploads/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
@@ -1340,6 +1369,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/profile/support-requests': typeof Char123LocaleChar125ProfileSupportRequestsRoute
   '/{-$locale}/profile/travel': typeof Char123LocaleChar125ProfileTravelRoute
   '/{-$locale}/profile/wallet': typeof Char123LocaleChar125ProfileWalletRoute
+  '/{-$locale}/venues/$pathName': typeof Char123LocaleChar125VenuesPathNameRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile/': typeof Char123LocaleChar125ProfileIndexRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
@@ -1372,6 +1402,7 @@ export interface FileRoutesByFullPath {
   '/{-$locale}/admin/offer-chat-reviews/$bookingRequestOfferId': typeof Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute
   '/{-$locale}/admin/outbound-emails/$outboundEmailId': typeof Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute
   '/{-$locale}/admin/outbound-emails/list': typeof Char123LocaleChar125AdminOutboundEmailsListRoute
+  '/{-$locale}/admin/partner-venues/$partnerVenueId': typeof Char123LocaleChar125AdminPartnerVenuesPartnerVenueIdRoute
   '/{-$locale}/admin/partners/$partnerId': typeof Char123LocaleChar125AdminPartnersPartnerIdRoute
   '/{-$locale}/admin/promo-codes/$promoCodeId': typeof Char123LocaleChar125AdminPromoCodesPromoCodeIdRoute
   '/{-$locale}/admin/promo-codes/create': typeof Char123LocaleChar125AdminPromoCodesCreateRoute
@@ -1428,6 +1459,7 @@ export interface FileRoutesByTo {
   '/sitemap-occasions.xml': typeof SitemapOccasionsDotxmlRoute
   '/sitemap-pages.xml': typeof SitemapPagesDotxmlRoute
   '/sitemap-partners.xml': typeof SitemapPartnersDotxmlRoute
+  '/sitemap-venues.xml': typeof SitemapVenuesDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/api/file-uploads': typeof ApiFileUploadsRoute
   '/api/graphql': typeof ApiGraphqlRoute
@@ -1448,6 +1480,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/privacy-policy': typeof Char123LocaleChar125PrivacyPolicyRoute
   '/{-$locale}/sign-in': typeof Char123LocaleChar125SignInRoute
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
+  '/{-$locale}/venues': typeof Char123LocaleChar125VenuesRoute
   '/{-$locale}': typeof Char123LocaleChar125IndexRoute
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/file-uploads/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
@@ -1512,6 +1545,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/profile/support-requests': typeof Char123LocaleChar125ProfileSupportRequestsRoute
   '/{-$locale}/profile/travel': typeof Char123LocaleChar125ProfileTravelRoute
   '/{-$locale}/profile/wallet': typeof Char123LocaleChar125ProfileWalletRoute
+  '/{-$locale}/venues/$pathName': typeof Char123LocaleChar125VenuesPathNameRoute
   '/{-$locale}/admin': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile': typeof Char123LocaleChar125ProfileIndexRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
@@ -1544,6 +1578,7 @@ export interface FileRoutesByTo {
   '/{-$locale}/admin/offer-chat-reviews/$bookingRequestOfferId': typeof Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute
   '/{-$locale}/admin/outbound-emails/$outboundEmailId': typeof Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute
   '/{-$locale}/admin/outbound-emails/list': typeof Char123LocaleChar125AdminOutboundEmailsListRoute
+  '/{-$locale}/admin/partner-venues/$partnerVenueId': typeof Char123LocaleChar125AdminPartnerVenuesPartnerVenueIdRoute
   '/{-$locale}/admin/partners/$partnerId': typeof Char123LocaleChar125AdminPartnersPartnerIdRoute
   '/{-$locale}/admin/promo-codes/$promoCodeId': typeof Char123LocaleChar125AdminPromoCodesPromoCodeIdRoute
   '/{-$locale}/admin/promo-codes/create': typeof Char123LocaleChar125AdminPromoCodesCreateRoute
@@ -1601,6 +1636,7 @@ export interface FileRoutesById {
   '/sitemap-occasions.xml': typeof SitemapOccasionsDotxmlRoute
   '/sitemap-pages.xml': typeof SitemapPagesDotxmlRoute
   '/sitemap-partners.xml': typeof SitemapPartnersDotxmlRoute
+  '/sitemap-venues.xml': typeof SitemapVenuesDotxmlRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/{-$locale}': typeof Char123LocaleChar125RouteWithChildren
   '/api/file-uploads': typeof ApiFileUploadsRoute
@@ -1624,6 +1660,7 @@ export interface FileRoutesById {
   '/{-$locale}/profile': typeof Char123LocaleChar125ProfileRouteWithChildren
   '/{-$locale}/sign-in': typeof Char123LocaleChar125SignInRoute
   '/{-$locale}/terms-and-conditions': typeof Char123LocaleChar125TermsAndConditionsRoute
+  '/{-$locale}/venues': typeof Char123LocaleChar125VenuesRoute
   '/{-$locale}/': typeof Char123LocaleChar125IndexRoute
   '/api/auth/google': typeof ApiAuthGoogleRouteWithChildren
   '/api/file-uploads_/$fileUploadId': typeof ApiFileUploadsFileUploadIdRoute
@@ -1688,6 +1725,7 @@ export interface FileRoutesById {
   '/{-$locale}/profile/support-requests': typeof Char123LocaleChar125ProfileSupportRequestsRoute
   '/{-$locale}/profile/travel': typeof Char123LocaleChar125ProfileTravelRoute
   '/{-$locale}/profile/wallet': typeof Char123LocaleChar125ProfileWalletRoute
+  '/{-$locale}/venues_/$pathName': typeof Char123LocaleChar125VenuesPathNameRoute
   '/{-$locale}/admin/': typeof Char123LocaleChar125AdminIndexRoute
   '/{-$locale}/profile/': typeof Char123LocaleChar125ProfileIndexRoute
   '/api/auth/google/callback': typeof ApiAuthGoogleCallbackRoute
@@ -1720,6 +1758,7 @@ export interface FileRoutesById {
   '/{-$locale}/admin/offer-chat-reviews_/$bookingRequestOfferId': typeof Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute
   '/{-$locale}/admin/outbound-emails_/$outboundEmailId': typeof Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute
   '/{-$locale}/admin/outbound-emails_/list': typeof Char123LocaleChar125AdminOutboundEmailsListRoute
+  '/{-$locale}/admin/partner-venues_/$partnerVenueId': typeof Char123LocaleChar125AdminPartnerVenuesPartnerVenueIdRoute
   '/{-$locale}/admin/partners_/$partnerId': typeof Char123LocaleChar125AdminPartnersPartnerIdRoute
   '/{-$locale}/admin/promo-codes_/$promoCodeId': typeof Char123LocaleChar125AdminPromoCodesPromoCodeIdRoute
   '/{-$locale}/admin/promo-codes_/create': typeof Char123LocaleChar125AdminPromoCodesCreateRoute
@@ -1778,6 +1817,7 @@ export interface FileRouteTypes {
     | '/sitemap-occasions.xml'
     | '/sitemap-pages.xml'
     | '/sitemap-partners.xml'
+    | '/sitemap-venues.xml'
     | '/sitemap.xml'
     | '/{-$locale}'
     | '/api/file-uploads'
@@ -1801,6 +1841,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile'
     | '/{-$locale}/sign-in'
     | '/{-$locale}/terms-and-conditions'
+    | '/{-$locale}/venues'
     | '/{-$locale}/'
     | '/api/auth/google'
     | '/api/file-uploads/$fileUploadId'
@@ -1865,6 +1906,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/support-requests'
     | '/{-$locale}/profile/travel'
     | '/{-$locale}/profile/wallet'
+    | '/{-$locale}/venues/$pathName'
     | '/{-$locale}/admin/'
     | '/{-$locale}/profile/'
     | '/api/auth/google/callback'
@@ -1897,6 +1939,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/offer-chat-reviews/$bookingRequestOfferId'
     | '/{-$locale}/admin/outbound-emails/$outboundEmailId'
     | '/{-$locale}/admin/outbound-emails/list'
+    | '/{-$locale}/admin/partner-venues/$partnerVenueId'
     | '/{-$locale}/admin/partners/$partnerId'
     | '/{-$locale}/admin/promo-codes/$promoCodeId'
     | '/{-$locale}/admin/promo-codes/create'
@@ -1953,6 +1996,7 @@ export interface FileRouteTypes {
     | '/sitemap-occasions.xml'
     | '/sitemap-pages.xml'
     | '/sitemap-partners.xml'
+    | '/sitemap-venues.xml'
     | '/sitemap.xml'
     | '/api/file-uploads'
     | '/api/graphql'
@@ -1973,6 +2017,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/privacy-policy'
     | '/{-$locale}/sign-in'
     | '/{-$locale}/terms-and-conditions'
+    | '/{-$locale}/venues'
     | '/{-$locale}'
     | '/api/auth/google'
     | '/api/file-uploads/$fileUploadId'
@@ -2037,6 +2082,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/support-requests'
     | '/{-$locale}/profile/travel'
     | '/{-$locale}/profile/wallet'
+    | '/{-$locale}/venues/$pathName'
     | '/{-$locale}/admin'
     | '/{-$locale}/profile'
     | '/api/auth/google/callback'
@@ -2069,6 +2115,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/offer-chat-reviews/$bookingRequestOfferId'
     | '/{-$locale}/admin/outbound-emails/$outboundEmailId'
     | '/{-$locale}/admin/outbound-emails/list'
+    | '/{-$locale}/admin/partner-venues/$partnerVenueId'
     | '/{-$locale}/admin/partners/$partnerId'
     | '/{-$locale}/admin/promo-codes/$promoCodeId'
     | '/{-$locale}/admin/promo-codes/create'
@@ -2125,6 +2172,7 @@ export interface FileRouteTypes {
     | '/sitemap-occasions.xml'
     | '/sitemap-pages.xml'
     | '/sitemap-partners.xml'
+    | '/sitemap-venues.xml'
     | '/sitemap.xml'
     | '/{-$locale}'
     | '/api/file-uploads'
@@ -2148,6 +2196,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile'
     | '/{-$locale}/sign-in'
     | '/{-$locale}/terms-and-conditions'
+    | '/{-$locale}/venues'
     | '/{-$locale}/'
     | '/api/auth/google'
     | '/api/file-uploads_/$fileUploadId'
@@ -2212,6 +2261,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/profile/support-requests'
     | '/{-$locale}/profile/travel'
     | '/{-$locale}/profile/wallet'
+    | '/{-$locale}/venues_/$pathName'
     | '/{-$locale}/admin/'
     | '/{-$locale}/profile/'
     | '/api/auth/google/callback'
@@ -2244,6 +2294,7 @@ export interface FileRouteTypes {
     | '/{-$locale}/admin/offer-chat-reviews_/$bookingRequestOfferId'
     | '/{-$locale}/admin/outbound-emails_/$outboundEmailId'
     | '/{-$locale}/admin/outbound-emails_/list'
+    | '/{-$locale}/admin/partner-venues_/$partnerVenueId'
     | '/{-$locale}/admin/partners_/$partnerId'
     | '/{-$locale}/admin/promo-codes_/$promoCodeId'
     | '/{-$locale}/admin/promo-codes_/create'
@@ -2301,6 +2352,7 @@ export interface RootRouteChildren {
   SitemapOccasionsDotxmlRoute: typeof SitemapOccasionsDotxmlRoute
   SitemapPagesDotxmlRoute: typeof SitemapPagesDotxmlRoute
   SitemapPartnersDotxmlRoute: typeof SitemapPartnersDotxmlRoute
+  SitemapVenuesDotxmlRoute: typeof SitemapVenuesDotxmlRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   Char123LocaleChar125Route: typeof Char123LocaleChar125RouteWithChildren
   ApiFileUploadsRoute: typeof ApiFileUploadsRoute
@@ -2378,6 +2430,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap-partners.xml'
       fullPath: '/sitemap-partners.xml'
       preLoaderRoute: typeof SitemapPartnersDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap-venues.xml': {
+      id: '/sitemap-venues.xml'
+      path: '/sitemap-venues.xml'
+      fullPath: '/sitemap-venues.xml'
+      preLoaderRoute: typeof SitemapVenuesDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -2546,6 +2605,13 @@ declare module '@tanstack/react-router' {
       path: '/terms-and-conditions'
       fullPath: '/{-$locale}/terms-and-conditions'
       preLoaderRoute: typeof Char123LocaleChar125TermsAndConditionsRouteImport
+      parentRoute: typeof Char123LocaleChar125Route
+    }
+    '/{-$locale}/venues': {
+      id: '/{-$locale}/venues'
+      path: '/venues'
+      fullPath: '/{-$locale}/venues'
+      preLoaderRoute: typeof Char123LocaleChar125VenuesRouteImport
       parentRoute: typeof Char123LocaleChar125Route
     }
     '/api/auth/google': {
@@ -3003,6 +3069,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char123LocaleChar125ProfileWalletRouteImport
       parentRoute: typeof Char123LocaleChar125ProfileRoute
     }
+    '/{-$locale}/venues_/$pathName': {
+      id: '/{-$locale}/venues_/$pathName'
+      path: '/venues/$pathName'
+      fullPath: '/{-$locale}/venues/$pathName'
+      preLoaderRoute: typeof Char123LocaleChar125VenuesPathNameRouteImport
+      parentRoute: typeof Char123LocaleChar125Route
+    }
     '/api/auth/google/callback': {
       id: '/api/auth/google/callback'
       path: '/callback'
@@ -3211,6 +3284,13 @@ declare module '@tanstack/react-router' {
       path: '/outbound-emails/list'
       fullPath: '/{-$locale}/admin/outbound-emails/list'
       preLoaderRoute: typeof Char123LocaleChar125AdminOutboundEmailsListRouteImport
+      parentRoute: typeof Char123LocaleChar125AdminRoute
+    }
+    '/{-$locale}/admin/partner-venues_/$partnerVenueId': {
+      id: '/{-$locale}/admin/partner-venues_/$partnerVenueId'
+      path: '/partner-venues/$partnerVenueId'
+      fullPath: '/{-$locale}/admin/partner-venues/$partnerVenueId'
+      preLoaderRoute: typeof Char123LocaleChar125AdminPartnerVenuesPartnerVenueIdRouteImport
       parentRoute: typeof Char123LocaleChar125AdminRoute
     }
     '/{-$locale}/admin/partners_/$partnerId': {
@@ -3596,6 +3676,7 @@ interface Char123LocaleChar125AdminRouteChildren {
   Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute: typeof Char123LocaleChar125AdminOfferChatReviewsBookingRequestOfferIdRoute
   Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute: typeof Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute
   Char123LocaleChar125AdminOutboundEmailsListRoute: typeof Char123LocaleChar125AdminOutboundEmailsListRoute
+  Char123LocaleChar125AdminPartnerVenuesPartnerVenueIdRoute: typeof Char123LocaleChar125AdminPartnerVenuesPartnerVenueIdRoute
   Char123LocaleChar125AdminPartnersPartnerIdRoute: typeof Char123LocaleChar125AdminPartnersPartnerIdRoute
   Char123LocaleChar125AdminPromoCodesPromoCodeIdRoute: typeof Char123LocaleChar125AdminPromoCodesPromoCodeIdRoute
   Char123LocaleChar125AdminPromoCodesCreateRoute: typeof Char123LocaleChar125AdminPromoCodesCreateRoute
@@ -3727,6 +3808,8 @@ const Char123LocaleChar125AdminRouteChildren: Char123LocaleChar125AdminRouteChil
       Char123LocaleChar125AdminOutboundEmailsOutboundEmailIdRoute,
     Char123LocaleChar125AdminOutboundEmailsListRoute:
       Char123LocaleChar125AdminOutboundEmailsListRoute,
+    Char123LocaleChar125AdminPartnerVenuesPartnerVenueIdRoute:
+      Char123LocaleChar125AdminPartnerVenuesPartnerVenueIdRoute,
     Char123LocaleChar125AdminPartnersPartnerIdRoute:
       Char123LocaleChar125AdminPartnersPartnerIdRoute,
     Char123LocaleChar125AdminPromoCodesPromoCodeIdRoute:
@@ -3920,6 +4003,7 @@ interface Char123LocaleChar125RouteChildren {
   Char123LocaleChar125ProfileRoute: typeof Char123LocaleChar125ProfileRouteWithChildren
   Char123LocaleChar125SignInRoute: typeof Char123LocaleChar125SignInRoute
   Char123LocaleChar125TermsAndConditionsRoute: typeof Char123LocaleChar125TermsAndConditionsRoute
+  Char123LocaleChar125VenuesRoute: typeof Char123LocaleChar125VenuesRoute
   Char123LocaleChar125IndexRoute: typeof Char123LocaleChar125IndexRoute
   Char123LocaleChar125BlogPostsPathNameRoute: typeof Char123LocaleChar125BlogPostsPathNameRoute
   Char123LocaleChar125BookingRequestChatRoute: typeof Char123LocaleChar125BookingRequestChatRoute
@@ -3929,6 +4013,7 @@ interface Char123LocaleChar125RouteChildren {
   Char123LocaleChar125CitiesPathNameRoute: typeof Char123LocaleChar125CitiesPathNameRoute
   Char123LocaleChar125OccasionsPathNameRoute: typeof Char123LocaleChar125OccasionsPathNameRoute
   Char123LocaleChar125PartnersPathNameRoute: typeof Char123LocaleChar125PartnersPathNameRoute
+  Char123LocaleChar125VenuesPathNameRoute: typeof Char123LocaleChar125VenuesPathNameRoute
   Char123LocaleChar125BookingRequestBookingRequestIdSubmittedRoute: typeof Char123LocaleChar125BookingRequestBookingRequestIdSubmittedRoute
   Char123LocaleChar125GiftCardGiftCardIdCheckoutRoute: typeof Char123LocaleChar125GiftCardGiftCardIdCheckoutRoute
 }
@@ -3956,6 +4041,7 @@ const Char123LocaleChar125RouteChildren: Char123LocaleChar125RouteChildren = {
   Char123LocaleChar125SignInRoute: Char123LocaleChar125SignInRoute,
   Char123LocaleChar125TermsAndConditionsRoute:
     Char123LocaleChar125TermsAndConditionsRoute,
+  Char123LocaleChar125VenuesRoute: Char123LocaleChar125VenuesRoute,
   Char123LocaleChar125IndexRoute: Char123LocaleChar125IndexRoute,
   Char123LocaleChar125BlogPostsPathNameRoute:
     Char123LocaleChar125BlogPostsPathNameRoute,
@@ -3973,6 +4059,8 @@ const Char123LocaleChar125RouteChildren: Char123LocaleChar125RouteChildren = {
     Char123LocaleChar125OccasionsPathNameRoute,
   Char123LocaleChar125PartnersPathNameRoute:
     Char123LocaleChar125PartnersPathNameRoute,
+  Char123LocaleChar125VenuesPathNameRoute:
+    Char123LocaleChar125VenuesPathNameRoute,
   Char123LocaleChar125BookingRequestBookingRequestIdSubmittedRoute:
     Char123LocaleChar125BookingRequestBookingRequestIdSubmittedRoute,
   Char123LocaleChar125GiftCardGiftCardIdCheckoutRoute:
@@ -4003,6 +4091,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapOccasionsDotxmlRoute: SitemapOccasionsDotxmlRoute,
   SitemapPagesDotxmlRoute: SitemapPagesDotxmlRoute,
   SitemapPartnersDotxmlRoute: SitemapPartnersDotxmlRoute,
+  SitemapVenuesDotxmlRoute: SitemapVenuesDotxmlRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   Char123LocaleChar125Route: Char123LocaleChar125RouteWithChildren,
   ApiFileUploadsRoute: ApiFileUploadsRoute,

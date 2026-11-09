@@ -9,7 +9,7 @@ import type {
     GqlCAdminMapBookingRequestPoint,
     GqlCAdminMapCityPoint,
     GqlCAdminMapCookPoint,
-    GqlCAdminMapPartnerPoint,
+    GqlCAdminMapPartnerVenuePoint,
 } from '../../graphql/generated';
 import { AdminMapCoverageDocument } from '../../graphql/generated';
 import { useLocale } from '../../hooks/useLocale';
@@ -21,7 +21,7 @@ type AdminMapSelectionPanelProps = {
     cooks: readonly GqlCAdminMapCookPoint[];
     bookingRequests: readonly GqlCAdminMapBookingRequestPoint[];
     cities: readonly GqlCAdminMapCityPoint[];
-    partners: readonly GqlCAdminMapPartnerPoint[];
+    partnerVenues: readonly GqlCAdminMapPartnerVenuePoint[];
     onCoverageCooksChange: (cooks: readonly AdminMapCoverageCook[]) => void;
     onClose: () => void;
 };
@@ -31,7 +31,7 @@ export function AdminMapSelectionPanel({
     cooks,
     bookingRequests,
     cities,
-    partners,
+    partnerVenues,
     onCoverageCooksChange,
     onClose,
 }: AdminMapSelectionPanelProps) {
@@ -40,7 +40,7 @@ export function AdminMapSelectionPanel({
     const cook = focus.kind === 'cook' ? cooks.find((row) => row.cookId === focus.id) : undefined;
     const booking = focus.kind === 'booking' ? bookingRequests.find((row) => row.bookingRequestId === focus.id) : undefined;
     const city = focus.kind === 'city' ? cities.find((row) => row.cityId === focus.id) : undefined;
-    const partner = focus.kind === 'partner' ? partners.find((row) => row.partnerId === focus.id) : undefined;
+    const venue = focus.kind === 'venue' ? partnerVenues.find((row) => row.partnerVenueId === focus.id) : undefined;
 
     const coveragePoint =
         focus.kind === 'booking' && booking
@@ -93,13 +93,13 @@ export function AdminMapSelectionPanel({
                         ? city.nameDe
                         : city.nameEn
                     : focus.id
-                : (partner?.name ?? focus.id);
+                : (venue?.name ?? focus.id);
 
     const kindLabel = {
         cook: { de: 'Koch', en: 'Cook' },
         booking: { de: 'Buchungsanfrage', en: 'Booking request' },
         city: { de: 'Stadt', en: 'City' },
-        partner: { de: 'Partner', en: 'Partner' },
+        venue: { de: 'Location', en: 'Venue' },
     }[focus.kind][locale];
 
     return (
@@ -180,15 +180,16 @@ export function AdminMapSelectionPanel({
                     </>
                 ) : null}
 
-                {focus.kind === 'partner' && partner ? (
+                {focus.kind === 'venue' && venue ? (
                     <>
                         <p>
                             {{ de: 'Veröffentlicht', en: 'Published' }[locale]}:{' '}
-                            {partner.published ? { de: 'Ja', en: 'Yes' }[locale] : { de: 'Nein', en: 'No' }[locale]}
+                            {venue.published ? { de: 'Ja', en: 'Yes' }[locale] : { de: 'Nein', en: 'No' }[locale]}
                         </p>
+                        {venue.partnerName ? <p className="text-muted-foreground">{venue.partnerName}</p> : null}
                         <Button type="button" variant="outline" size="sm" asChild>
-                            <Link to="/{-$locale}/admin/partners/$partnerId" params={{ partnerId: partner.partnerId }}>
-                                {{ de: 'Partner öffnen', en: 'Open partner' }[locale]}
+                            <Link to="/{-$locale}/admin/partner-venues/$partnerVenueId" params={{ partnerVenueId: venue.partnerVenueId }}>
+                                {{ de: 'Location öffnen', en: 'Open venue' }[locale]}
                             </Link>
                         </Button>
                     </>
@@ -230,7 +231,7 @@ export function AdminMapSelectionPanel({
                     </div>
                 ) : null}
 
-                {!cook && !booking && !city && !partner ? (
+                {!cook && !booking && !city && !venue ? (
                     <p className="text-muted-foreground">
                         {{ de: 'Punkt nicht in den geladenen Ebenen.', en: 'Point not in the loaded layers.' }[locale]}
                     </p>

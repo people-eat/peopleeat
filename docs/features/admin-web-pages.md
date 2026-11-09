@@ -12,13 +12,13 @@ Every known fixed route key is part of the product enum. Admins always see the f
 
 ### Public and chrome routes
 
-Fixed routes (landing, cities, partners, occasions, chefs, blog list, about, gift card, chef recruitment, booking surfaces, chef sign-up,
+Fixed routes (landing, cities, venues, occasions, chefs, blog list, about, gift card, chef recruitment, booking surfaces, chef sign-up,
 legal pages, sign-in, profile and admin layout shells, etc.) load **document title and meta description** from the web-pages store by stable
 key.
 
 Visible H1 and marketing copy stay on page modules — SEO can differ from on-page headlines. Empty English fields fall back to German.
-Missing rows use shared defaults from `webPageDefaults`. Dynamic city, partner, occasion, and blog detail pages keep entity-owned SEO.
-Account routes at `/profile/account` and `/admin/account` use hardcoded noindex SEO and are not in the catalog.
+Missing rows use shared defaults from `webPageDefaults`. Dynamic city, venue, occasion, and blog detail pages keep entity-owned SEO. Account
+routes at `/profile/account` and `/admin/account` use hardcoded noindex SEO and are not in the catalog.
 
 ### Admin `/admin/web-pages`
 

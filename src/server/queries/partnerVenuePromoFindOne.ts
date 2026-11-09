@@ -1,19 +1,19 @@
 import { eq } from 'drizzle-orm';
 
-import { partners, promoCodes } from '../db/schema';
+import { partnerVenues, promoCodes } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSPartnerPromo, GqlSSession } from '../graphql/generated';
+import type { GqlSPartnerVenuePromo, GqlSSession } from '../graphql/generated';
 
 /**
- * Resolves the public promo banner for a partner. Returns null when the
- * partner has no assignment, the code is booking-request-scoped, or it
- * has expired — so the CTA card hides itself without extra client logic.
+ * Resolves the public promo banner for a partner venue. Returns null when the
+ * venue has no assignment, the code is booking-request-scoped, or it has
+ * expired — so the CTA card hides itself without extra client logic.
  */
-export async function partnerPromoFindOne(
-    partnerId: string,
+export async function partnerVenuePromoFindOne(
+    partnerVenueId: string,
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
-): Promise<GqlSPartnerPromo | null> {
+): Promise<GqlSPartnerVenuePromo | null> {
     try {
         const [row] = await serverRuntime.db
             .select({
@@ -22,9 +22,9 @@ export async function partnerPromoFindOne(
                 expiresAt: promoCodes.expiresAt,
                 bookingRequestId: promoCodes.bookingRequestId,
             })
-            .from(partners)
-            .innerJoin(promoCodes, eq(partners.promoCodeId, promoCodes.promoCodeId))
-            .where(eq(partners.partnerId, partnerId))
+            .from(partnerVenues)
+            .innerJoin(promoCodes, eq(partnerVenues.promoCodeId, promoCodes.promoCodeId))
+            .where(eq(partnerVenues.partnerVenueId, partnerVenueId))
             .limit(1);
 
         if (!row || row.bookingRequestId || row.expiresAt <= new Date()) {

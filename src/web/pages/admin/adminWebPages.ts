@@ -5,7 +5,7 @@ import type { Locale } from '../../utils/locale';
 const adminWebPageLabels: Record<WebPageKey, Record<Locale, string>> = {
     LANDING: { de: 'Startseite', en: 'Landing' },
     CITIES: { de: 'Städte', en: 'Cities' },
-    PARTNERS: { de: 'Partner', en: 'Partners' },
+    VENUES: { de: 'Locations', en: 'Venues' },
     OCCASIONS: { de: 'Anlässe', en: 'Occasions' },
     CHEFS: { de: 'Köche', en: 'Chefs' },
     BLOG_POSTS: { de: 'Blog', en: 'Blog' },

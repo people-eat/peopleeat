@@ -12,14 +12,14 @@ import {
     customerTestimonials,
     occasions,
     occasionTestimonials,
-    partners,
-    partnerTestimonials,
+    partnerVenues,
+    partnerVenueTestimonials,
 } from '../db/schema';
 import type { GqlSTestimonialJunctionEntryInput } from '../graphql/generated';
-import { adminMutationParent, commandSetup, findLogsForSession, testDb } from '../test/commandTestUtils';
+import { adminMutationParent, commandSetup, findLogsForSession, partnerVenueInsert, testDb } from '../test/commandTestUtils';
 import { adminCityTestimonialsUpdate } from './adminCityTestimonialsUpdate';
 import { adminOccasionTestimonialsUpdate } from './adminOccasionTestimonialsUpdate';
-import { adminPartnerTestimonialsUpdate } from './adminPartnerTestimonialsUpdate';
+import { adminPartnerVenueTestimonialsUpdate } from './adminPartnerVenueTestimonialsUpdate';
 
 const pages = ['city', 'occasion', 'partner'] as const;
 type PageKind = (typeof pages)[number];
@@ -27,7 +27,13 @@ type PageKind = (typeof pages)[number];
 const commandName: Record<PageKind, string> = {
     city: 'adminCityTestimonialsUpdate',
     occasion: 'adminOccasionTestimonialsUpdate',
-    partner: 'adminPartnerTestimonialsUpdate',
+    partner: 'adminPartnerVenueTestimonialsUpdate',
+};
+
+const notFoundMessage: Record<PageKind, string> = {
+    city: 'city not found',
+    occasion: 'occasion not found',
+    partner: 'partner venue not found',
 };
 
 async function adminSetup(firstName: string, staleAcceptance = false) {
@@ -103,7 +109,7 @@ async function insertPage(kind: PageKind, updatedAt: Date) {
     } else if (kind === 'occasion') {
         await testDb.insert(occasions).values({ occasionId: pageId, name: `Occasion ${token}`, ...copy });
     } else {
-        await testDb.insert(partners).values({ partnerId: pageId, name: `Partner ${token}`, ...copy });
+        await partnerVenueInsert({ partnerVenueId: pageId, name: `Partner ${token}`, ...copy });
     }
     return pageId;
 }
@@ -115,7 +121,7 @@ async function insertJunction(kind: PageKind, pageId: string, entry: GqlSTestimo
     } else if (kind === 'occasion') {
         await testDb.insert(occasionTestimonials).values({ occasionId: pageId, ...row });
     } else {
-        await testDb.insert(partnerTestimonials).values({ partnerId: pageId, ...row });
+        await testDb.insert(partnerVenueTestimonials).values({ partnerVenueId: pageId, ...row });
     }
 }
 
@@ -132,9 +138,9 @@ async function readJunctions(kind: PageKind, pageId: string) {
     }
     return testDb
         .select()
-        .from(partnerTestimonials)
-        .where(eq(partnerTestimonials.partnerId, pageId))
-        .orderBy(asc(partnerTestimonials.index));
+        .from(partnerVenueTestimonials)
+        .where(eq(partnerVenueTestimonials.partnerVenueId, pageId))
+        .orderBy(asc(partnerVenueTestimonials.index));
 }
 
 async function readUpdatedAt(kind: PageKind, pageId: string) {
@@ -146,7 +152,10 @@ async function readUpdatedAt(kind: PageKind, pageId: string) {
         const [row] = await testDb.select({ updatedAt: occasions.updatedAt }).from(occasions).where(eq(occasions.occasionId, pageId));
         return row!.updatedAt;
     }
-    const [row] = await testDb.select({ updatedAt: partners.updatedAt }).from(partners).where(eq(partners.partnerId, pageId));
+    const [row] = await testDb
+        .select({ updatedAt: partnerVenues.updatedAt })
+        .from(partnerVenues)
+        .where(eq(partnerVenues.partnerVenueId, pageId));
     return row!.updatedAt;
 }
 
@@ -163,7 +172,7 @@ async function updatePage(
     if (kind === 'occasion') {
         return adminOccasionTestimonialsUpdate(parent, { occasionId: pageId, entries }, admin.requestingSession, admin.serverRuntime);
     }
-    return adminPartnerTestimonialsUpdate(parent, { partnerId: pageId, entries }, admin.requestingSession, admin.serverRuntime);
+    return adminPartnerVenueTestimonialsUpdate(parent, { partnerVenueId: pageId, entries }, admin.requestingSession, admin.serverRuntime);
 }
 
 for (const kind of pages) {
@@ -251,11 +260,11 @@ for (const kind of pages) {
             const pageId = idCreate();
 
             // Act + Assert
-            await expect(updatePage(kind, admin, pageId, [])).rejects.toThrow(new RegExp(`${kind} not found`));
+            await expect(updatePage(kind, admin, pageId, [])).rejects.toThrow(new RegExp(notFoundMessage[kind]));
 
             const logRows = await findLogsForSession(admin.requestingSession.sessionId);
             expect(admin.serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();
-            expect(logRows[0]!.message).toMatch(new RegExp(`${kind} not found`));
+            expect(logRows[0]!.message).toMatch(new RegExp(notFoundMessage[kind]));
         });
 
         it('throws on a duplicate entry and leaves previous rows unchanged', async () => {
@@ -343,7 +352,12 @@ for (const kind of pages) {
                     ? adminCityTestimonialsUpdate(parent, { cityId: pageId, entries: [] }, requestingSession, serverRuntime)
                     : kind === 'occasion'
                       ? adminOccasionTestimonialsUpdate(parent, { occasionId: pageId, entries: [] }, requestingSession, serverRuntime)
-                      : adminPartnerTestimonialsUpdate(parent, { partnerId: pageId, entries: [] }, requestingSession, serverRuntime);
+                      : adminPartnerVenueTestimonialsUpdate(
+                            parent,
+                            { partnerVenueId: pageId, entries: [] },
+                            requestingSession,
+                            serverRuntime,
+                        );
             await expect(attempt).rejects.toThrow(/Unauthorized/);
 
             expect(serverRuntime.publish.adminUpdates).not.toHaveBeenCalled();

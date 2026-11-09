@@ -7,7 +7,7 @@ const DESCRIPTION_MAX = 180;
 export const LLMS_PAGE_BLURBS: Record<string, string> = {
     '/': 'Private chefs who cook at your home. Customers send a booking request and cooks reply with offers.',
     '/cities': 'City pages for finding private chefs who travel to that area.',
-    '/partners': 'Partner landing pages for venues and hosts booking a private chef.',
+    '/venues': 'Venue landing pages for hosts booking a private chef.',
     '/occasions': 'Occasion pages for dinners such as birthdays and other celebrations.',
     '/chefs': 'Public chef profiles with meals, a biography, and customer reviews.',
     '/blog-posts': 'Articles about private dining and booking a chef.',

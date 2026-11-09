@@ -32,10 +32,10 @@ generic warning.
 
 ### Alternatives considered
 
-| Approach                                       | Pros                  | Cons                       |
-| ---------------------------------------------- | --------------------- | -------------------------- |
-| Shared section model with cities/partners/blog | One editor + renderer | Careful bilingual defaults |
-| City-only section fork                         | Independent evolution | Duplication                |
+| Approach                                     | Pros                  | Cons                       |
+| -------------------------------------------- | --------------------- | -------------------------- |
+| Shared section model with cities/venues/blog | One editor + renderer | Careful bilingual defaults |
+| City-only section fork                       | Independent evolution | Duplication                |
 
 ### Chosen
 

@@ -285,7 +285,7 @@ export const ADMIN_STUB_ROUTES: readonly AdminStubRoute[] = [
         path: '/admin/partners',
         to: '/{-$locale}/admin/partners',
         title: { de: 'Partner', en: 'Partners' },
-        description: { de: 'Partner verwalten.', en: 'Manage partners.' },
+        description: { de: 'Partner und Locations verwalten.', en: 'Manage partners and venues.' },
         icon: HandshakeIcon,
     },
     {

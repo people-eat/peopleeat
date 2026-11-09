@@ -144,8 +144,8 @@ function featuredLandingKindLabel(kind: GqlCAdminCookFeaturedLandingKind, locale
     switch (kind) {
         case 'CITY':
             return { de: 'Stadt', en: 'City' }[locale];
-        case 'PARTNER':
-            return { de: 'Partner', en: 'Partner' }[locale];
+        case 'PARTNER_VENUE':
+            return { de: 'Location', en: 'Venue' }[locale];
         case 'OCCASION':
             return { de: 'Anlass', en: 'Occasion' }[locale];
     }
@@ -155,8 +155,8 @@ function featuredLandingTo(kind: GqlCAdminCookFeaturedLandingKind, id: string) {
     switch (kind) {
         case 'CITY':
             return { to: '/{-$locale}/admin/cities/$cityId' as const, params: { cityId: id } };
-        case 'PARTNER':
-            return { to: '/{-$locale}/admin/partners/$partnerId' as const, params: { partnerId: id } };
+        case 'PARTNER_VENUE':
+            return { to: '/{-$locale}/admin/partner-venues/$partnerVenueId' as const, params: { partnerVenueId: id } };
         case 'OCCASION':
             return { to: '/{-$locale}/admin/occasions/$occasionId' as const, params: { occasionId: id } };
     }

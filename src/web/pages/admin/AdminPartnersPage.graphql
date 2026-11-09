@@ -4,18 +4,18 @@ query AdminPartnersPage {
             admin {
                 adminId
                 partners {
-                    partnerId
-                    pathName
-                    name
-                    titleDe
-                    titleEn
-                    headlineDe
-                    headlineEn
-                    heroImageUrl
-                    publishedAt
-                    updatedAt
+                    ...AdminPartnerFields
                 }
             }
+        }
+    }
+}
+
+mutation AdminPartnerUpsert($input: PartnerUpsert!) {
+    admin {
+        partnerUpsert(input: $input) {
+            success
+            referenceId
         }
     }
 }
@@ -29,20 +29,20 @@ mutation AdminPartnerDelete($partnerId: ID!) {
     }
 }
 
+mutation AdminPartnerVenueCreate($input: PartnerVenueUpsert!) {
+    admin {
+        partnerVenueUpsert(input: $input) {
+            success
+            referenceId
+        }
+    }
+}
+
 subscription AdminPartnersPageUpdates {
     adminUpdates {
         adminId
         partners {
-            partnerId
-            pathName
-            name
-            titleDe
-            titleEn
-            headlineDe
-            headlineEn
-            heroImageUrl
-            publishedAt
-            updatedAt
+            ...AdminPartnerFields
         }
     }
 }

@@ -30,7 +30,7 @@ Some codes bind to a single booking request (cancel win-back: fixed amount, ~30 
 - Scoped codes apply only when the checkout/request id matches — see [booking-payment.md](./booking-payment.md) and
   [booking-request-create.md](./booking-request-create.md).
 - Public discount preview excludes scoped codes so they never appear in generic form previews.
-- Partner promo assignment rejects scoped codes; expired partner promos hidden on public surfaces — [partners.md](./partners.md).
+- Venue promo assignment rejects scoped codes; expired venue promos hidden on public surfaces — [partners.md](./partners.md).
 
 ## Decisions
 

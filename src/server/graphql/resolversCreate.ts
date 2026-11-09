@@ -73,10 +73,12 @@ import { adminOccasionTestimonialsUpdate } from '../commands/adminOccasionTestim
 import { adminOccasionUpsert } from '../commands/adminOccasionUpsert';
 import { adminOfferAddonTemplateDelete } from '../commands/adminOfferAddonTemplateDelete';
 import { adminOfferAddonTemplateUpsert } from '../commands/adminOfferAddonTemplateUpsert';
-import { adminPartnerCooksUpdate } from '../commands/adminPartnerCooksUpdate';
 import { adminPartnerDelete } from '../commands/adminPartnerDelete';
-import { adminPartnerTestimonialsUpdate } from '../commands/adminPartnerTestimonialsUpdate';
 import { adminPartnerUpsert } from '../commands/adminPartnerUpsert';
+import { adminPartnerVenueCooksUpdate } from '../commands/adminPartnerVenueCooksUpdate';
+import { adminPartnerVenueDelete } from '../commands/adminPartnerVenueDelete';
+import { adminPartnerVenueTestimonialsUpdate } from '../commands/adminPartnerVenueTestimonialsUpdate';
+import { adminPartnerVenueUpsert } from '../commands/adminPartnerVenueUpsert';
 import { adminPromoCodeCreate } from '../commands/adminPromoCodeCreate';
 import { adminPromoCodeUpdate } from '../commands/adminPromoCodeUpdate';
 import { adminQueuedJobCancel } from '../commands/adminQueuedJobCancel';
@@ -303,8 +305,8 @@ import { adminMapBookingRequestPointsFindMany } from '../queries/adminMapBooking
 import { adminMapCityPointsFindMany } from '../queries/adminMapCityPointsFindMany';
 import { adminMapCookPointsFindMany } from '../queries/adminMapCookPointsFindMany';
 import { adminMapCooksMissingOriginCount } from '../queries/adminMapCooksMissingOriginCount';
-import { adminMapPartnerPointsFindMany } from '../queries/adminMapPartnerPointsFindMany';
-import { adminMapPartnersMissingLocationCount } from '../queries/adminMapPartnersMissingLocationCount';
+import { adminMapPartnerVenuePointsFindMany } from '../queries/adminMapPartnerVenuePointsFindMany';
+import { adminMapPartnerVenuesMissingLocationCount } from '../queries/adminMapPartnerVenuesMissingLocationCount';
 import { adminObjectStorageObjectFindMany } from '../queries/adminObjectStorageObjectFindMany';
 import { adminOccasionCooksFindMany } from '../queries/adminOccasionCooksFindMany';
 import { adminOccasionFindMany } from '../queries/adminOccasionFindMany';
@@ -319,10 +321,11 @@ import { adminOutboundEmailFindMany } from '../queries/adminOutboundEmailFindMan
 import { adminOutboundEmailFindOne } from '../queries/adminOutboundEmailFindOne';
 import { adminOutboundEmailPurposeStatsFindMany } from '../queries/adminOutboundEmailPurposeStatsFindMany';
 import { adminOutboundEmailRecipientStatsFindMany } from '../queries/adminOutboundEmailRecipientStatsFindMany';
-import { adminPartnerCooksFindMany } from '../queries/adminPartnerCooksFindMany';
 import { adminPartnerFindMany } from '../queries/adminPartnerFindMany';
 import { adminPartnerFindOne } from '../queries/adminPartnerFindOne';
-import { adminPartnerTestimonialsFindMany } from '../queries/adminPartnerTestimonialsFindMany';
+import { adminPartnerVenueCooksFindMany } from '../queries/adminPartnerVenueCooksFindMany';
+import { adminPartnerVenueFindOne } from '../queries/adminPartnerVenueFindOne';
+import { adminPartnerVenueTestimonialsFindMany } from '../queries/adminPartnerVenueTestimonialsFindMany';
 import { adminPromoCodeCounts } from '../queries/adminPromoCodeCounts';
 import { adminPromoCodeFindMany } from '../queries/adminPromoCodeFindMany';
 import { adminPromoCodeFindOne } from '../queries/adminPromoCodeFindOne';
@@ -395,9 +398,9 @@ import { giftCardFileUploadFindOne } from '../queries/giftCardFileUploadFindOne'
 import { occasionFeaturedCooksFindMany } from '../queries/occasionFeaturedCooksFindMany';
 import { occasionPromoFindOne } from '../queries/occasionPromoFindOne';
 import { occasionTestimonialsFindMany } from '../queries/occasionTestimonialsFindMany';
-import { partnerFeaturedCooksFindMany } from '../queries/partnerFeaturedCooksFindMany';
-import { partnerPromoFindOne } from '../queries/partnerPromoFindOne';
-import { partnerTestimonialsFindMany } from '../queries/partnerTestimonialsFindMany';
+import { partnerVenueFeaturedCooksFindMany } from '../queries/partnerVenueFeaturedCooksFindMany';
+import { partnerVenuePromoFindOne } from '../queries/partnerVenuePromoFindOne';
+import { partnerVenueTestimonialsFindMany } from '../queries/partnerVenueTestimonialsFindMany';
 import { publicBlogPostFindMany } from '../queries/publicBlogPostFindMany';
 import { publicBlogPostFindOneByPathName } from '../queries/publicBlogPostFindOneByPathName';
 import { publicCityFindMany } from '../queries/publicCityFindMany';
@@ -412,9 +415,9 @@ import { publicCookMealFindMany } from '../queries/publicCookMealFindMany';
 import { publicLegalFind } from '../queries/publicLegalFind';
 import { publicOccasionFindMany } from '../queries/publicOccasionFindMany';
 import { publicOccasionFindOneByPathName } from '../queries/publicOccasionFindOneByPathName';
-import { publicPartnerFindMany } from '../queries/publicPartnerFindMany';
-import { publicPartnerFindOne } from '../queries/publicPartnerFindOne';
-import { publicPartnerFindOneByPathName } from '../queries/publicPartnerFindOneByPathName';
+import { publicPartnerVenueFindMany } from '../queries/publicPartnerVenueFindMany';
+import { publicPartnerVenueFindOne } from '../queries/publicPartnerVenueFindOne';
+import { publicPartnerVenueFindOneByPathName } from '../queries/publicPartnerVenueFindOneByPathName';
 import { publicWebPageFindOne } from '../queries/publicWebPageFindOne';
 import { sessionAuthEmailOtpFindOne } from '../queries/sessionAuthEmailOtpFindOne';
 import { sessionAuthOauthTicketFindOne } from '../queries/sessionAuthOauthTicketFindOne';
@@ -593,10 +596,12 @@ import type {
     GqlSAdminMutationOccasionUpsertArgs,
     GqlSAdminMutationOfferAddonTemplateDeleteArgs,
     GqlSAdminMutationOfferAddonTemplateUpsertArgs,
-    GqlSAdminMutationPartnerCooksUpdateArgs,
     GqlSAdminMutationPartnerDeleteArgs,
-    GqlSAdminMutationPartnerTestimonialsUpdateArgs,
     GqlSAdminMutationPartnerUpsertArgs,
+    GqlSAdminMutationPartnerVenueCooksUpdateArgs,
+    GqlSAdminMutationPartnerVenueDeleteArgs,
+    GqlSAdminMutationPartnerVenueTestimonialsUpdateArgs,
+    GqlSAdminMutationPartnerVenueUpsertArgs,
     GqlSAdminMutationPromoCodeCreateArgs,
     GqlSAdminMutationPromoCodeUpdateArgs,
     GqlSAdminMutationQueuedJobCancelArgs,
@@ -628,8 +633,9 @@ import type {
     GqlSAdminOutboundEmailRecipientStatsArgs,
     GqlSAdminOutboundEmailsArgs,
     GqlSAdminOutboundEmailsCountsArgs,
-    GqlSAdminPartner,
     GqlSAdminPartnerArgs,
+    GqlSAdminPartnerVenue,
+    GqlSAdminPartnerVenueArgs,
     GqlSAdminPromoCode,
     GqlSAdminPromoCodeArgs,
     GqlSAdminPromoCodesArgs,
@@ -760,10 +766,10 @@ import type {
     GqlSPublicOccasion,
     GqlSPublicOccasionQuery,
     GqlSPublicOccasionQueryFindOneByPathNameArgs,
-    GqlSPublicPartner,
-    GqlSPublicPartnerQuery,
-    GqlSPublicPartnerQueryFindOneArgs,
-    GqlSPublicPartnerQueryFindOneByPathNameArgs,
+    GqlSPublicPartnerVenue,
+    GqlSPublicPartnerVenueQuery,
+    GqlSPublicPartnerVenueQueryFindOneArgs,
+    GqlSPublicPartnerVenueQueryFindOneByPathNameArgs,
     GqlSPublicWebPageQuery,
     GqlSPublicWebPageQueryFindOneArgs,
     GqlSResolvers,
@@ -898,26 +904,26 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 return cityTestimonialsFindMany(parent, serverRuntime);
             },
         },
-        AdminPartner: {
-            cooks(parent: GqlSAdminPartner) {
-                return adminPartnerCooksFindMany(parent, serverRuntime);
+        AdminPartnerVenue: {
+            cooks(parent: GqlSAdminPartnerVenue) {
+                return adminPartnerVenueCooksFindMany(parent, serverRuntime);
             },
-            promo(parent: GqlSAdminPartner, _: unknown, requestingSession: GqlSSession) {
-                return partnerPromoFindOne(parent.partnerId, requestingSession, serverRuntime);
+            promo(parent: GqlSAdminPartnerVenue, _: unknown, requestingSession: GqlSSession) {
+                return partnerVenuePromoFindOne(parent.partnerVenueId, requestingSession, serverRuntime);
             },
-            testimonials(parent: GqlSAdminPartner) {
-                return adminPartnerTestimonialsFindMany(parent, serverRuntime);
+            testimonials(parent: GqlSAdminPartnerVenue) {
+                return adminPartnerVenueTestimonialsFindMany(parent, serverRuntime);
             },
         },
-        PublicPartner: {
-            featuredCooks(parent: GqlSPublicPartner) {
-                return partnerFeaturedCooksFindMany(parent, serverRuntime);
+        PublicPartnerVenue: {
+            featuredCooks(parent: GqlSPublicPartnerVenue) {
+                return partnerVenueFeaturedCooksFindMany(parent, serverRuntime);
             },
-            promo(parent: GqlSPublicPartner, _: unknown, requestingSession: GqlSSession) {
-                return partnerPromoFindOne(parent.partnerId, requestingSession, serverRuntime);
+            promo(parent: GqlSPublicPartnerVenue, _: unknown, requestingSession: GqlSSession) {
+                return partnerVenuePromoFindOne(parent.partnerVenueId, requestingSession, serverRuntime);
             },
-            testimonials(parent: GqlSPublicPartner) {
-                return partnerTestimonialsFindMany(parent, serverRuntime);
+            testimonials(parent: GqlSPublicPartnerVenue) {
+                return partnerVenueTestimonialsFindMany(parent, serverRuntime);
             },
         },
         AdminOccasion: {
@@ -1461,6 +1467,9 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             partner(_parent: GqlSAdmin, args: GqlSAdminPartnerArgs) {
                 return adminPartnerFindOne(args, serverRuntime);
             },
+            partnerVenue(_parent: GqlSAdmin, args: GqlSAdminPartnerVenueArgs) {
+                return adminPartnerVenueFindOne(args, serverRuntime);
+            },
             occasions() {
                 return adminOccasionFindMany(serverRuntime);
             },
@@ -1523,11 +1532,11 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             cities() {
                 return adminMapCityPointsFindMany(serverRuntime);
             },
-            partners() {
-                return adminMapPartnerPointsFindMany(serverRuntime);
+            partnerVenues() {
+                return adminMapPartnerVenuePointsFindMany(serverRuntime);
             },
-            partnersMissingLocationCount() {
-                return adminMapPartnersMissingLocationCount(serverRuntime);
+            partnerVenuesMissingLocationCount() {
+                return adminMapPartnerVenuesMissingLocationCount(serverRuntime);
             },
         },
         AdminCustomerTestimonial: {
@@ -2214,15 +2223,25 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             partnerDelete(parent: GqlSAdminMutation, args: GqlSAdminMutationPartnerDeleteArgs, requestingSession: GqlSSession) {
                 return adminPartnerDelete(parent, args, requestingSession, serverRuntime);
             },
-            partnerCooksUpdate(parent: GqlSAdminMutation, args: GqlSAdminMutationPartnerCooksUpdateArgs, requestingSession: GqlSSession) {
-                return adminPartnerCooksUpdate(parent, args, requestingSession, serverRuntime);
+            partnerVenueUpsert(parent: GqlSAdminMutation, args: GqlSAdminMutationPartnerVenueUpsertArgs, requestingSession: GqlSSession) {
+                return adminPartnerVenueUpsert(parent, args, requestingSession, serverRuntime);
             },
-            partnerTestimonialsUpdate(
+            partnerVenueDelete(parent: GqlSAdminMutation, args: GqlSAdminMutationPartnerVenueDeleteArgs, requestingSession: GqlSSession) {
+                return adminPartnerVenueDelete(parent, args, requestingSession, serverRuntime);
+            },
+            partnerVenueCooksUpdate(
                 parent: GqlSAdminMutation,
-                args: GqlSAdminMutationPartnerTestimonialsUpdateArgs,
+                args: GqlSAdminMutationPartnerVenueCooksUpdateArgs,
                 requestingSession: GqlSSession,
             ) {
-                return adminPartnerTestimonialsUpdate(parent, args, requestingSession, serverRuntime);
+                return adminPartnerVenueCooksUpdate(parent, args, requestingSession, serverRuntime);
+            },
+            partnerVenueTestimonialsUpdate(
+                parent: GqlSAdminMutation,
+                args: GqlSAdminMutationPartnerVenueTestimonialsUpdateArgs,
+                requestingSession: GqlSSession,
+            ) {
+                return adminPartnerVenueTestimonialsUpdate(parent, args, requestingSession, serverRuntime);
             },
             occasionUpsert(parent: GqlSAdminMutation, args: GqlSAdminMutationOccasionUpsertArgs, requestingSession: GqlSSession) {
                 return adminOccasionUpsert(parent, args, requestingSession, serverRuntime);
@@ -2934,8 +2953,8 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
             publicCity() {
                 return {} as GqlSPublicCityQuery;
             },
-            publicPartner() {
-                return {} as GqlSPublicPartnerQuery;
+            publicPartnerVenue() {
+                return {} as GqlSPublicPartnerVenueQuery;
             },
             publicOccasion() {
                 return {} as GqlSPublicOccasionQuery;
@@ -2958,15 +2977,15 @@ export function resolversCreate(serverRuntime: ServerRuntime): GqlSResolvers {
                 return publicCityFindOneByPathName(args, serverRuntime);
             },
         },
-        PublicPartnerQuery: {
+        PublicPartnerVenueQuery: {
             findMany() {
-                return publicPartnerFindMany(serverRuntime);
+                return publicPartnerVenueFindMany(serverRuntime);
             },
-            findOne(_parent: unknown, args: GqlSPublicPartnerQueryFindOneArgs) {
-                return publicPartnerFindOne(args, serverRuntime);
+            findOne(_parent: unknown, args: GqlSPublicPartnerVenueQueryFindOneArgs) {
+                return publicPartnerVenueFindOne(args, serverRuntime);
             },
-            findOneByPathName(_parent: unknown, args: GqlSPublicPartnerQueryFindOneByPathNameArgs) {
-                return publicPartnerFindOneByPathName(args, serverRuntime);
+            findOneByPathName(_parent: unknown, args: GqlSPublicPartnerVenueQueryFindOneByPathNameArgs) {
+                return publicPartnerVenueFindOneByPathName(args, serverRuntime);
             },
         },
         PublicOccasionQuery: {

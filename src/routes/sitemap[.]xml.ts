@@ -6,7 +6,7 @@ import {
     publicPublishedBlogPostsFindMany,
     publicPublishedCitiesFindMany,
     publicPublishedOccasionsFindMany,
-    publicPublishedPartnersFindMany,
+    publicPublishedPartnerVenuesFindMany,
 } from '../server/utils/contentPageFind';
 import { publicVisibleCookIdsFindMany } from '../server/utils/publicVisibleCookIdsFindMany';
 import { maxLastModified, sitemapIndexBuild } from '../web/seo/sitemapXmlBuild';
@@ -20,9 +20,9 @@ export const Route = createFileRoute('/sitemap.xml')({
             GET: async () => {
                 const webPageUrl = environmentVariables.webPageUrl;
                 const siteLastModified = __SITE_LAST_MODIFIED__;
-                const [cities, partners, occasions, blogPosts, cooks] = await Promise.all([
+                const [cities, venues, occasions, blogPosts, cooks] = await Promise.all([
                     publicPublishedCitiesFindMany(db),
-                    publicPublishedPartnersFindMany(db),
+                    publicPublishedPartnerVenuesFindMany(db),
                     publicPublishedOccasionsFindMany(db),
                     publicPublishedBlogPostsFindMany(db),
                     publicVisibleCookIdsFindMany(db),
@@ -37,9 +37,9 @@ export const Route = createFileRoute('/sitemap.xml')({
                         ),
                     },
                     {
-                        path: '/sitemap-partners.xml',
+                        path: '/sitemap-venues.xml',
                         lastmod: maxLastModified(
-                            partners.map((row) => ({ lastModifiedAt: row.updatedAt })),
+                            venues.map((row) => ({ lastModifiedAt: row.updatedAt })),
                             siteLastModified,
                         ),
                     },

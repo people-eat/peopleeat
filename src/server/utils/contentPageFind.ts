@@ -1,8 +1,8 @@
 import { and, desc, eq, isNotNull, lte, sql } from 'drizzle-orm';
 
 import type { Database } from '../db';
-import { blogPosts, cities, occasions, partners } from '../db/schema';
-import type { BlogPost, City, Occasion, Partner } from '../db/schema';
+import { blogPosts, cities, occasions, partnerVenues } from '../db/schema';
+import type { BlogPost, City, Occasion, PartnerVenue } from '../db/schema';
 
 function publishedNow() {
     return new Date();
@@ -19,13 +19,13 @@ export async function cityFindByPathNameAny(db: Database, pathName: string): Pro
     return byPrevious ?? null;
 }
 
-export async function partnerFindByPathNameAny(db: Database, pathName: string): Promise<Partner | null> {
-    const [byCurrent] = await db.select().from(partners).where(eq(partners.pathName, pathName)).limit(1);
+export async function partnerVenueFindByPathNameAny(db: Database, pathName: string): Promise<PartnerVenue | null> {
+    const [byCurrent] = await db.select().from(partnerVenues).where(eq(partnerVenues.pathName, pathName)).limit(1);
     if (byCurrent) return byCurrent;
     const [byPrevious] = await db
         .select()
-        .from(partners)
-        .where(sql`${pathName} = any(${partners.previousPathNames})`)
+        .from(partnerVenues)
+        .where(sql`${pathName} = any(${partnerVenues.previousPathNames})`)
         .limit(1);
     return byPrevious ?? null;
 }
@@ -73,13 +73,13 @@ export async function publicPublishedCitiesFindMany(db: Database): Promise<City[
         .orderBy(desc(cities.publishedAt));
 }
 
-export async function publicPublishedPartnersFindMany(db: Database): Promise<Partner[]> {
+export async function publicPublishedPartnerVenuesFindMany(db: Database): Promise<PartnerVenue[]> {
     const now = publishedNow();
     return db
         .select()
-        .from(partners)
-        .where(and(isNotNull(partners.publishedAt), lte(partners.publishedAt, now)))
-        .orderBy(desc(partners.publishedAt));
+        .from(partnerVenues)
+        .where(and(isNotNull(partnerVenues.publishedAt), lte(partnerVenues.publishedAt, now)))
+        .orderBy(desc(partnerVenues.publishedAt));
 }
 
 export async function publicPublishedOccasionsFindMany(db: Database): Promise<Occasion[]> {

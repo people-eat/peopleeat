@@ -1927,7 +1927,7 @@ enum TestimonialPublicationStatus {
     PENDING_REVIEW
 }
 
-# Discriminates which catalog a curated `CityTestimonials` / `PartnerTestimonials`
+# Discriminates which catalog a curated `CityTestimonials` / `PartnerVenueTestimonials`
 # / `OccasionTestimonials` junction row points at.
 enum TestimonialType {
     COOK
@@ -3320,7 +3320,7 @@ type Query {
     publicLegal: PublicLegal!
     # Public content pages (published only).
     publicCity: PublicCityQuery!
-    publicPartner: PublicPartnerQuery!
+    publicPartnerVenue: PublicPartnerVenueQuery!
     publicOccasion: PublicOccasionQuery!
     publicBlogPost: PublicBlogPostQuery!
     # Visible, admin-approved cooks for the public chefs listing / detail pages.
@@ -3379,7 +3379,7 @@ input SessionWebPageVisitCreateInput {
     cityId: ID
     cookId: ID
     blogPostId: ID
-    partnerId: ID
+    partnerVenueId: ID
     occasionId: ID
     bookingRequestId: ID
 }
@@ -3573,7 +3573,7 @@ type AdminCook {
     callDurationMinutes: Int!
     # Recurring weekly discovery-call windows (read-only on admin user detail).
     callAvailabilityRules: [CookCallAvailabilityRule!]!
-    # City / partner / occasion landings that currently feature this cook.
+    # City / partner-venue / occasion landings that currently feature this cook.
     featuredOn: [AdminCookFeaturedLanding!]!
     # Optional public display name; when set, public surfaces prefer it over firstName.
     stageName: String
@@ -3586,11 +3586,11 @@ type AdminCook {
 
 enum AdminCookFeaturedLandingKind {
     CITY
-    PARTNER
+    PARTNER_VENUE
     OCCASION
 }
 
-# Reverse index: landings that curate this cook. `id` is cityId / partnerId / occasionId.
+# Reverse index: landings that curate this cook. `id` is cityId / partnerVenueId / occasionId.
 type AdminCookFeaturedLanding {
     kind: AdminCookFeaturedLandingKind!
     id: ID!
@@ -3603,19 +3603,19 @@ type AdminCookFeaturedLanding {
 #
 # See docs/architecture/testimonials.md.
 
-# Where a testimonial appears on public surfaces. City / partner / occasion rows
-# come from curation junctions; CHEF is auto for published customer reviews tied
-# to a cook offer. See docs/architecture/testimonials.md.
+# Where a testimonial appears on public surfaces. City / partner-venue / occasion
+# rows come from curation junctions; CHEF is auto for published customer reviews
+# tied to a cook offer. See docs/architecture/testimonials.md.
 enum AdminTestimonialPublicPageKind {
     CITY
-    PARTNER
+    PARTNER_VENUE
     OCCASION
     CHEF
 }
 
 type AdminTestimonialPublicPagePlacement {
     kind: AdminTestimonialPublicPageKind!
-    # cityId / partnerId / occasionId / cookId.
+    # cityId / partnerVenueId / occasionId / cookId.
     entityId: ID!
     labelDe: String!
     labelEn: String!
@@ -3740,7 +3740,7 @@ input AdminCookTestimonialUpsert {
     imageFileUploadIds: [ID!]
 }
 
-# Ordered curation entry for `cityTestimonialsUpdate` / `partnerTestimonialsUpdate`
+# Ordered curation entry for `cityTestimonialsUpdate` / `partnerVenueTestimonialsUpdate`
 # / `occasionTestimonialsUpdate`.
 input TestimonialJunctionEntryInput {
     testimonialType: TestimonialType!
@@ -4394,11 +4394,12 @@ type Admin {
     # `EMAIL_TRANSPORT` is `console` or the Resend usage API call fails.
     resendUsage: AdminResendUsage
 
-    # Content pages — cities, partners, occasions, blog posts (drafts + published).
+    # Content pages — cities, partners (companies), partner venues, occasions, blog posts (drafts + published).
     cities: [AdminCity!]!
     city(cityId: ID!): AdminCity
     partners: [AdminPartner!]!
     partner(partnerId: ID!): AdminPartner
+    partnerVenue(partnerVenueId: ID!): AdminPartnerVenue
     occasions: [AdminOccasion!]!
     occasion(occasionId: ID!): AdminOccasion
     blogPosts: [AdminBlogPost!]!
@@ -4448,15 +4449,15 @@ type Admin {
 }
 
 # Ops map payload — pin DTOs only (no nested AdminCook / AdminBookingRequest).
-# Booking points are date-bounded; cooks/cities/partners load as full slim sets.
+# Booking points are date-bounded; cooks/cities/venues load as full slim sets.
 # See docs/features/admin-map.md.
 type AdminMap {
     cooks: [AdminMapCookPoint!]!
     cooksMissingOriginCount: Int!
     bookingRequests(range: DateTimeRange!): [AdminMapBookingRequestPoint!]!
     cities: [AdminMapCityPoint!]!
-    partners: [AdminMapPartnerPoint!]!
-    partnersMissingLocationCount: Int!
+    partnerVenues: [AdminMapPartnerVenuePoint!]!
+    partnerVenuesMissingLocationCount: Int!
 }
 
 enum AdminMapCookStatus {
@@ -4494,8 +4495,10 @@ type AdminMapCityPoint {
     published: Boolean!
 }
 
-type AdminMapPartnerPoint {
+type AdminMapPartnerVenuePoint {
+    partnerVenueId: ID!
     partnerId: ID!
+    partnerName: String!
     latitude: Latitude!
     longitude: Longitude!
     name: String!
@@ -4990,9 +4993,11 @@ type AdminMutation {
     cityCooksUpdate(cityId: ID!, cookIds: [ID!]!): MutationResult!
     partnerUpsert(input: PartnerUpsert!): MutationResult!
     partnerDelete(partnerId: ID!): MutationResult!
-    # Full-list replace of curated partner cooks (ordered). Empty clears
-    # assignment so the public partner page shows no cooks section.
-    partnerCooksUpdate(partnerId: ID!, cookIds: [ID!]!): MutationResult!
+    partnerVenueUpsert(input: PartnerVenueUpsert!): MutationResult!
+    partnerVenueDelete(partnerVenueId: ID!): MutationResult!
+    # Full-list replace of curated venue cooks (ordered). Empty clears
+    # assignment so the public venue page shows no cooks section.
+    partnerVenueCooksUpdate(partnerVenueId: ID!, cookIds: [ID!]!): MutationResult!
     occasionUpsert(input: OccasionUpsert!): MutationResult!
     occasionDelete(occasionId: ID!): MutationResult!
     # Full-list replace of curated occasion cooks (ordered). Empty clears
@@ -5008,10 +5013,10 @@ type AdminMutation {
     cookTestimonialDelete(cookTestimonialId: ID!): MutationResult!
     cookTestimonialImageUpdate(cookTestimonialId: ID!, imageFileUploadIds: [ID!]!): MutationResult!
     cookTestimonialPublish(cookTestimonialId: ID!, publicationStatus: TestimonialPublicationStatus!): MutationResult!
-    # Full-list replace of curated city/partner/occasion testimonials (ordered).
+    # Full-list replace of curated city/partner-venue/occasion testimonials (ordered).
     # Empty clears the assignment so the public page shows no testimonials section.
     cityTestimonialsUpdate(cityId: ID!, entries: [TestimonialJunctionEntryInput!]!): MutationResult!
-    partnerTestimonialsUpdate(partnerId: ID!, entries: [TestimonialJunctionEntryInput!]!): MutationResult!
+    partnerVenueTestimonialsUpdate(partnerVenueId: ID!, entries: [TestimonialJunctionEntryInput!]!): MutationResult!
     occasionTestimonialsUpdate(occasionId: ID!, entries: [TestimonialJunctionEntryInput!]!): MutationResult!
     blogPostUpsert(input: BlogPostUpsert!): MutationResult!
     blogPostDelete(blogPostId: ID!): MutationResult!
@@ -5610,6 +5615,16 @@ type PublicCity {
 
 type AdminPartner {
     partnerId: ID!
+    name: String!
+    venues: [AdminPartnerVenue!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type AdminPartnerVenue {
+    partnerVenueId: ID!
+    partnerId: ID!
+    partner: AdminPartner!
     pathName: String!
     previousPathNames: [String!]!
     name: String!
@@ -5639,12 +5654,12 @@ type AdminPartner {
     howItWorksAlternativeMedia: Boolean!
     # Show travel-origin city on featured cook cards. Default true.
     featuredCooksShowCity: Boolean!
-    # Optional partner location address (reusable outside booking).
+    # Optional venue address (reusable outside booking).
     locationAddress: CookTravelOriginAddress
     # Assigned promo code id. Null when none. Assignment rejects scoped codes.
     promoCodeId: ID
     # Resolved promo for editor preview. Null when none / expired / scoped.
-    promo: PartnerPromo
+    promo: PartnerVenuePromo
     sections: [ContentSection!]!
     cooks: [AdminFeaturedCook!]!
     # Curated, ordered testimonials for the editor. Empty until assigned.
@@ -5654,8 +5669,8 @@ type AdminPartner {
     updatedAt: DateTime!
 }
 
-type PublicPartner {
-    partnerId: ID!
+type PublicPartnerVenue {
+    partnerVenueId: ID!
     pathName: String!
     previousPathNames: [String!]!
     name: String!
@@ -5682,10 +5697,10 @@ type PublicPartner {
     howItWorksAlternativeMedia: Boolean!
     # Show travel-origin city on featured cook cards. Default true.
     featuredCooksShowCity: Boolean!
-    # Optional partner location address (reusable outside booking).
+    # Optional venue address (reusable outside booking).
     locationAddress: CookTravelOriginAddress
     # Promo shown on the CTA card. Null when none / expired / scoped.
-    promo: PartnerPromo
+    promo: PartnerVenuePromo
     sections: [ContentSection!]!
     featuredCooks: [PublicCook!]!
     # Curated, ordered testimonials. Empty when none are assigned.
@@ -5695,9 +5710,9 @@ type PublicPartner {
     updatedAt: DateTime!
 }
 
-# Public view of a promo assigned to a partner. Only returned when the code
+# Public view of a promo assigned to a partner venue. Only returned when the code
 # exists, is not booking-request-scoped, and has not expired.
-type PartnerPromo {
+type PartnerVenuePromo {
     redeemCode: String!
     amountCents: Int!
 }
@@ -5895,6 +5910,12 @@ input CityUpsert {
 
 input PartnerUpsert {
     partnerId: ID
+    name: String!
+}
+
+input PartnerVenueUpsert {
+    partnerVenueId: ID
+    partnerId: ID!
     pathName: String!
     name: String!
     titleDe: String!
@@ -5918,7 +5939,7 @@ input PartnerUpsert {
     howItWorksAlternativeMedia: Boolean!
     # Show travel-origin city on featured cook cards. Default true.
     featuredCooksShowCity: Boolean!
-    # Optional partner location address. Null / omit clears.
+    # Optional venue address. Null / omit clears.
     locationAddress: UserBookingRequestExactEventAddressInput
     # Set to a promoCodeId to assign, or null to clear.
     promoCodeId: ID
@@ -5972,10 +5993,10 @@ type PublicCityQuery {
     findMany: [PublicCity!]!
 }
 
-type PublicPartnerQuery {
-    findOne(partnerId: ID!): PublicPartner
-    findOneByPathName(pathName: String!): PublicPartner
-    findMany: [PublicPartner!]!
+type PublicPartnerVenueQuery {
+    findOne(partnerVenueId: ID!): PublicPartnerVenue
+    findOneByPathName(pathName: String!): PublicPartnerVenue
+    findMany: [PublicPartnerVenue!]!
 }
 
 type PublicOccasionQuery {
@@ -6028,13 +6049,13 @@ type PublicCookQuery {
 #
 # Admin-editable bilingual title/description for fixed marketing and chrome
 # routes. Missing DB rows use shared defaults (ghost). First admin write
-# upserts. Dynamic city/partner/occasion/blog detail SEO stays on those entity
+# upserts. Dynamic city/partner-venue/occasion/blog detail SEO stays on those entity
 # tables. See docs/features/admin-web-pages.md.
 
 enum WebPageKey {
     LANDING
     CITIES
-    PARTNERS
+    VENUES
     OCCASIONS
     CHEFS
     BLOG_POSTS
@@ -6117,7 +6138,7 @@ enum FeatureToggleKey {
     LANDING_BOOKING_HOW_IT_WORKS
     # Home testimonials section uses the shared public review card instead of the scrolling quote marquee.
     LANDING_TESTIMONIAL_CARDS
-    PARTNER_PAGE_PARTNERS_EXPLORE
+    VENUE_PAGE_VENUES_EXPLORE
     # Google social log-on on AuthIdentityGate. Missing row is off.
     SIGN_IN_GOOGLE
 }

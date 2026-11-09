@@ -1,7 +1,7 @@
 /**
  * Testimonial domain vocabulary — enums and JSONB shapes for
  * `CustomerTestimonials` / `CookTestimonials` / `CityTestimonials` /
- * `PartnerTestimonials` / `OccasionTestimonials`. See
+ * `PartnerVenueTestimonials` / `OccasionTestimonials`. See
  * `docs/architecture/testimonials.md`.
  */
 

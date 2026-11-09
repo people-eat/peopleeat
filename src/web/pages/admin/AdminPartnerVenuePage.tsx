@@ -25,32 +25,33 @@ import {
 } from '../../components/ContentPageTestimonialsEditor';
 import { contentSectionsFromGql, contentSectionsToInput } from '../../components/contentSectionsMap';
 import type {
-    GqlCAdminPartnerPageQuery,
+    GqlCAdminPartnerVenuePageQuery,
     GqlCLocationSuggestion,
     GqlCUserBookingRequestExactEventAddressInput,
 } from '../../graphql/generated';
 import {
-    AdminPartnerCooksUpdateDocument,
-    AdminPartnerDeleteDocument,
-    AdminPartnerPageCookSearchDocument,
-    AdminPartnerPageLocationSuggestionsDocument,
-    AdminPartnerPagePromoCodesDocument,
-    AdminPartnerPageUpdatesDocument,
-    AdminPartnerTestimonialsUpdateDocument,
-    AdminPartnerUpsertDocument,
+    AdminPartnerVenueCooksUpdateDocument,
+    AdminPartnerVenueDeleteDocument,
+    AdminPartnerVenuePageCookSearchDocument,
+    AdminPartnerVenuePageLocationSuggestionsDocument,
+    AdminPartnerVenuePagePromoCodesDocument,
+    AdminPartnerVenuePageUpdatesDocument,
+    AdminPartnerVenueTestimonialsUpdateDocument,
+    AdminPartnerVenueUpsertDocument,
 } from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 
-export { parseContentPageEditorSearch as parseAdminPartnerPageSearch } from '../../components/ContentPageEditor';
+export { parseContentPageEditorSearch as parseAdminPartnerVenuePageSearch } from '../../components/ContentPageEditor';
 
-export const adminPartnerPageTitle = { de: 'Partner bearbeiten', en: 'Edit partner' } as const;
-export const adminPartnerPageDescription = {
-    de: 'Partnerseite bearbeiten.',
-    en: 'Edit partner landing page.',
+export const adminPartnerVenuePageTitle = { de: 'Location bearbeiten', en: 'Edit venue' } as const;
+export const adminPartnerVenuePageDescription = {
+    de: 'Locationseite bearbeiten.',
+    en: 'Edit venue landing page.',
 } as const;
 
-type PartnerEditorValues = ContentPageEditorValues & {
+type VenueEditorValues = ContentPageEditorValues & {
+    partnerId: string;
     name: string;
     firstSectionHeadlineDe: string;
     firstSectionHeadlineEn: string;
@@ -67,9 +68,9 @@ type PartnerEditorValues = ContentPageEditorValues & {
     promoCodeId: string | null;
 };
 
-type PartnerRow = NonNullable<NonNullable<NonNullable<GqlCAdminPartnerPageQuery['currentSession']['user']>['admin']>['partner']>;
+type VenueRow = NonNullable<NonNullable<NonNullable<GqlCAdminPartnerVenuePageQuery['currentSession']['user']>['admin']>['partnerVenue']>;
 
-function addressFromPartner(address: NonNullable<PartnerRow['locationAddress']>): GqlCUserBookingRequestExactEventAddressInput {
+function addressFromVenue(address: NonNullable<VenueRow['locationAddress']>): GqlCUserBookingRequestExactEventAddressInput {
     return {
         displayText: address.displayText,
         latitude: address.latitude,
@@ -99,56 +100,57 @@ function addressFromSuggestion(suggestion: GqlCLocationSuggestion): GqlCUserBook
     };
 }
 
-function valuesFromPartner(partner: PartnerRow): PartnerEditorValues {
-    const locationAddress = partner.locationAddress ? addressFromPartner(partner.locationAddress) : null;
+function valuesFromVenue(venue: VenueRow): VenueEditorValues {
+    const locationAddress = venue.locationAddress ? addressFromVenue(venue.locationAddress) : null;
     return {
-        pathName: partner.pathName,
-        name: partner.name,
-        titleDe: partner.titleDe,
-        titleEn: partner.titleEn,
-        descriptionDe: partner.descriptionDe,
-        descriptionEn: partner.descriptionEn,
-        headlineDe: partner.headlineDe,
-        headlineEn: partner.headlineEn,
-        subHeadlineDe: partner.subHeadlineDe,
-        subHeadlineEn: partner.subHeadlineEn,
-        heroImageFileUploadId: partner.heroImageFileUploadId ?? null,
-        firstSectionHeadlineDe: partner.firstSectionHeadlineDe,
-        firstSectionHeadlineEn: partner.firstSectionHeadlineEn,
-        firstSectionBodyDe: partner.firstSectionBodyDe,
-        firstSectionBodyEn: partner.firstSectionBodyEn,
-        firstSectionImageFileUploadId: partner.firstSectionImageFileUploadId ?? null,
-        firstSectionCtaUrl: partner.firstSectionCtaUrl ?? '',
-        heroImageOverlay: partner.heroImageOverlay,
-        firstSectionImageOverlay: partner.firstSectionImageOverlay,
-        howItWorksAlternativeMedia: partner.howItWorksAlternativeMedia,
-        featuredCooksShowCity: partner.featuredCooksShowCity,
+        pathName: venue.pathName,
+        partnerId: venue.partnerId,
+        name: venue.name,
+        titleDe: venue.titleDe,
+        titleEn: venue.titleEn,
+        descriptionDe: venue.descriptionDe,
+        descriptionEn: venue.descriptionEn,
+        headlineDe: venue.headlineDe,
+        headlineEn: venue.headlineEn,
+        subHeadlineDe: venue.subHeadlineDe,
+        subHeadlineEn: venue.subHeadlineEn,
+        heroImageFileUploadId: venue.heroImageFileUploadId ?? null,
+        firstSectionHeadlineDe: venue.firstSectionHeadlineDe,
+        firstSectionHeadlineEn: venue.firstSectionHeadlineEn,
+        firstSectionBodyDe: venue.firstSectionBodyDe,
+        firstSectionBodyEn: venue.firstSectionBodyEn,
+        firstSectionImageFileUploadId: venue.firstSectionImageFileUploadId ?? null,
+        firstSectionCtaUrl: venue.firstSectionCtaUrl ?? '',
+        heroImageOverlay: venue.heroImageOverlay,
+        firstSectionImageOverlay: venue.firstSectionImageOverlay,
+        howItWorksAlternativeMedia: venue.howItWorksAlternativeMedia,
+        featuredCooksShowCity: venue.featuredCooksShowCity,
         locationAddress,
         locationSearchText: locationAddress?.displayText ?? '',
-        promoCodeId: partner.promoCodeId ?? null,
-        sections: contentSectionsFromGql(partner.sections),
-        publishedAt: partner.publishedAt,
+        promoCodeId: venue.promoCodeId ?? null,
+        sections: contentSectionsFromGql(venue.sections),
+        publishedAt: venue.publishedAt,
     };
 }
 
-export function AdminPartnerPage({
+export function AdminPartnerVenuePage({
     data,
-    partnerId,
+    partnerVenueId,
     search,
 }: {
-    data: GqlCAdminPartnerPageQuery;
-    partnerId: string;
+    data: GqlCAdminPartnerVenuePageQuery;
+    partnerVenueId: string;
     search: ContentPageEditorSearch;
 }) {
     const locale = useLocale();
     const client = useClient();
     const seedAdmin = data.currentSession.user?.admin ?? null;
-    const seedPartner = seedAdmin?.partner ?? null;
-    if (!seedPartner) throw notFound();
+    const seedVenue = seedAdmin?.partnerVenue ?? null;
+    if (!seedVenue) throw notFound();
 
-    const [values, setValues] = useState<PartnerEditorValues>(() => valuesFromPartner(seedPartner));
-    const [assignedCooks, setAssignedCooks] = useState(seedPartner.cooks);
-    const [assignedTestimonials, setAssignedTestimonials] = useState(seedPartner.testimonials);
+    const [values, setValues] = useState<VenueEditorValues>(() => valuesFromVenue(seedVenue));
+    const [assignedCooks, setAssignedCooks] = useState(seedVenue.cooks);
+    const [assignedTestimonials, setAssignedTestimonials] = useState(seedVenue.testimonials);
     const [busy, setBusy] = useState(false);
     const [cookSearch, setCookSearch] = useState('');
     const debouncedCookSearch = useDebouncedValue(cookSearch, 300);
@@ -158,17 +160,17 @@ export function AdminPartnerPage({
     // Latest form snapshot for onSave — ContentPageEditor only passes shared fields.
     const valuesRef = useRef(values);
     valuesRef.current = values;
-    const [, upsert] = useMutation(AdminPartnerUpsertDocument);
-    const [, remove] = useMutation(AdminPartnerDeleteDocument);
-    const [, updateCooks] = useMutation(AdminPartnerCooksUpdateDocument);
-    const [, updateTestimonials] = useMutation(AdminPartnerTestimonialsUpdateDocument);
+    const [, upsert] = useMutation(AdminPartnerVenueUpsertDocument);
+    const [, remove] = useMutation(AdminPartnerVenueDeleteDocument);
+    const [, updateCooks] = useMutation(AdminPartnerVenueCooksUpdateDocument);
+    const [, updateTestimonials] = useMutation(AdminPartnerVenueTestimonialsUpdateDocument);
     const tab = contentPageEditorTabFromSearch(search);
 
     function markPageDirty() {
         pageDirtyRef.current = true;
     }
 
-    function patchPartnerValues(partial: Partial<PartnerEditorValues>) {
+    function patchVenueValues(partial: Partial<VenueEditorValues>) {
         markPageDirty();
         setValues((prev) => {
             const next = { ...prev, ...partial };
@@ -178,7 +180,7 @@ export function AdminPartnerPage({
     }
 
     const [{ data: cookSearchData }] = useQuery({
-        query: AdminPartnerPageCookSearchDocument,
+        query: AdminPartnerVenuePageCookSearchDocument,
         variables: {
             criterion: {
                 skip: 0,
@@ -190,7 +192,7 @@ export function AdminPartnerPage({
     });
 
     const [{ data: promoCodesData }] = useQuery({
-        query: AdminPartnerPagePromoCodesDocument,
+        query: AdminPartnerVenuePagePromoCodesDocument,
         variables: {
             criterion: { skip: 0, take: 100 },
         },
@@ -198,7 +200,7 @@ export function AdminPartnerPage({
 
     const debouncedLocationSearch = useDebouncedValue(values.locationSearchText, 300);
     const [{ data: suggestionsData, fetching: suggestionsFetching }] = useQuery({
-        query: AdminPartnerPageLocationSuggestionsDocument,
+        query: AdminPartnerVenuePageLocationSuggestionsDocument,
         variables: { searchText: debouncedLocationSearch, onlyFullAddresses: true },
         pause: debouncedLocationSearch.trim().length < 3 || values.locationAddress?.displayText === values.locationSearchText,
     });
@@ -206,19 +208,19 @@ export function AdminPartnerPage({
 
     useEffect(() => {
         if (!seedAdmin) return;
-        const request = createRequest(AdminPartnerPageUpdatesDocument, { partnerId });
+        const request = createRequest(AdminPartnerVenuePageUpdatesDocument, { partnerVenueId });
         const { unsubscribe } = pipe(
             client.executeSubscription(request),
             subscribe((result) => {
-                const next = result.data?.adminUpdates.partner;
+                const next = result.data?.adminUpdates.partnerVenue;
                 if (!next) return;
-                if (!pageDirtyRef.current) setValues(valuesFromPartner(next));
+                if (!pageDirtyRef.current) setValues(valuesFromVenue(next));
                 setAssignedCooks(next.cooks);
                 setAssignedTestimonials(next.testimonials);
             }),
         );
         return unsubscribe;
-    }, [client, partnerId, seedAdmin]);
+    }, [client, partnerVenueId, seedAdmin]);
 
     const assignedIds = assignedCooks.map((row) => row.cook.cookId);
 
@@ -321,16 +323,16 @@ export function AdminPartnerPage({
         <AdminPageChrome
             crumbs={[
                 { label: { de: 'Partner', en: 'Partners' }[locale], to: '/{-$locale}/admin/partners' },
-                { label: values.name.trim() || { de: 'Partner', en: 'Partner' }[locale] },
+                { label: values.name.trim() || { de: 'Location', en: 'Venue' }[locale] },
             ]}
         >
             <ContentPageEditor
                 uiLocale={locale}
                 values={values}
-                onChange={(partial) => patchPartnerValues(partial)}
+                onChange={(partial) => patchVenueValues(partial)}
                 busy={busy}
                 listTo="/{-$locale}/admin/partners"
-                detail={{ to: '/{-$locale}/admin/partners/$partnerId', params: { partnerId } }}
+                detail={{ to: '/{-$locale}/admin/partner-venues/$partnerVenueId', params: { partnerVenueId } }}
                 tab={tab}
                 user={data.currentSession.user}
                 featuredCooks={previewCooks}
@@ -340,10 +342,10 @@ export function AdminPartnerPage({
                 howItWorks
                 howItWorksHideCta
                 howItWorksAlternativeMedia={values.howItWorksAlternativeMedia}
-                partnersExplore
+                venuesExplore
                 knownFrom
                 chefForAnyOccasion={{
-                    displayName: values.name.trim() || { de: 'Partner', en: 'Partner' }[locale],
+                    displayName: values.name.trim() || { de: 'Location', en: 'Venue' }[locale],
                     headlineDe: values.firstSectionHeadlineDe,
                     headlineEn: values.firstSectionHeadlineEn,
                     bodyDe: values.firstSectionBodyDe,
@@ -357,7 +359,7 @@ export function AdminPartnerPage({
                     <label className="flex items-start gap-2 text-sm">
                         <Checkbox
                             checked={values.heroImageOverlay}
-                            onCheckedChange={(checked) => patchPartnerValues({ heroImageOverlay: checked === true })}
+                            onCheckedChange={(checked) => patchVenueValues({ heroImageOverlay: checked === true })}
                             className="mt-0.5"
                         />
                         <span className="flex flex-col gap-0.5">
@@ -378,12 +380,32 @@ export function AdminPartnerPage({
                 identityFields={
                     <Card className="gap-4 py-4" data-content-editor-anchor="top">
                         <CardHeader className="px-4">
-                            <CardTitle>{{ de: 'Partnername', en: 'Partner name' }[locale]}</CardTitle>
+                            <CardTitle>{{ de: 'Location', en: 'Venue' }[locale]}</CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-col gap-3 px-4">
                             <label className="flex flex-col gap-1.5 text-sm">
+                                <span className="font-medium">{{ de: 'Partner', en: 'Partner' }[locale]}</span>
+                                <Select
+                                    value={values.partnerId}
+                                    onValueChange={(partnerId) => {
+                                        if (partnerId) patchVenueValues({ partnerId });
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {(seedAdmin?.partners ?? []).map((partner) => (
+                                            <SelectItem key={partner.partnerId} value={partner.partnerId}>
+                                                {partner.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </label>
+                            <label className="flex flex-col gap-1.5 text-sm">
                                 <span className="font-medium">{{ de: 'Name', en: 'Name' }[locale]}</span>
-                                <Input value={values.name} onChange={(e) => patchPartnerValues({ name: e.target.value })} />
+                                <Input value={values.name} onChange={(e) => patchVenueValues({ name: e.target.value })} />
                             </label>
                         </CardContent>
                     </Card>
@@ -396,8 +418,8 @@ export function AdminPartnerPage({
                                 <CardDescription>
                                     {
                                         {
-                                            de: 'Headline, Text und Bild neben der CTA-Karte auf der Partnerseite.',
-                                            en: 'Headline, body, and image beside the CTA card on the partner page.',
+                                            de: 'Headline, Text und Bild neben der CTA-Karte auf der Locationseite.',
+                                            en: 'Headline, body, and image beside the CTA card on the venue page.',
                                         }[locale]
                                     }
                                 </CardDescription>
@@ -407,21 +429,21 @@ export function AdminPartnerPage({
                                     <span className="font-medium">{{ de: 'Headline (DE)', en: 'Headline (DE)' }[locale]}</span>
                                     <Input
                                         value={values.firstSectionHeadlineDe}
-                                        onChange={(e) => patchPartnerValues({ firstSectionHeadlineDe: e.target.value })}
+                                        onChange={(e) => patchVenueValues({ firstSectionHeadlineDe: e.target.value })}
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
                                     <span className="font-medium">{{ de: 'Headline (EN)', en: 'Headline (EN)' }[locale]}</span>
                                     <Input
                                         value={values.firstSectionHeadlineEn}
-                                        onChange={(e) => patchPartnerValues({ firstSectionHeadlineEn: e.target.value })}
+                                        onChange={(e) => patchVenueValues({ firstSectionHeadlineEn: e.target.value })}
                                     />
                                 </label>
                                 <label className="flex flex-col gap-1.5 text-sm">
                                     <span className="font-medium">{{ de: 'Text (DE)', en: 'Body (DE)' }[locale]}</span>
                                     <Textarea
                                         value={values.firstSectionBodyDe}
-                                        onChange={(e) => patchPartnerValues({ firstSectionBodyDe: e.target.value })}
+                                        onChange={(e) => patchVenueValues({ firstSectionBodyDe: e.target.value })}
                                         rows={4}
                                     />
                                 </label>
@@ -429,7 +451,7 @@ export function AdminPartnerPage({
                                     <span className="font-medium">{{ de: 'Text (EN)', en: 'Body (EN)' }[locale]}</span>
                                     <Textarea
                                         value={values.firstSectionBodyEn}
-                                        onChange={(e) => patchPartnerValues({ firstSectionBodyEn: e.target.value })}
+                                        onChange={(e) => patchVenueValues({ firstSectionBodyEn: e.target.value })}
                                         rows={4}
                                     />
                                 </label>
@@ -437,7 +459,7 @@ export function AdminPartnerPage({
                                     fileUploadId={values.firstSectionImageFileUploadId}
                                     uiLocale={locale}
                                     onUploadStart={markPageDirty}
-                                    onChange={(firstSectionImageFileUploadId) => patchPartnerValues({ firstSectionImageFileUploadId })}
+                                    onChange={(firstSectionImageFileUploadId) => patchVenueValues({ firstSectionImageFileUploadId })}
                                     label={{ de: 'Abschnittsbild', en: 'Section image' }[locale]}
                                     removeTitle={{ de: 'Abschnittsbild entfernen?', en: 'Remove section image?' }[locale]}
                                     removeDescription={
@@ -450,7 +472,7 @@ export function AdminPartnerPage({
                                 <label className="flex items-start gap-2 text-sm">
                                     <Checkbox
                                         checked={values.firstSectionImageOverlay}
-                                        onCheckedChange={(checked) => patchPartnerValues({ firstSectionImageOverlay: checked === true })}
+                                        onCheckedChange={(checked) => patchVenueValues({ firstSectionImageOverlay: checked === true })}
                                         className="mt-0.5"
                                     />
                                     <span className="flex flex-col gap-0.5">
@@ -471,7 +493,7 @@ export function AdminPartnerPage({
                                     <span className="font-medium">{{ de: 'CTA-Link', en: 'CTA link' }[locale]}</span>
                                     <Input
                                         value={values.firstSectionCtaUrl}
-                                        onChange={(e) => patchPartnerValues({ firstSectionCtaUrl: e.target.value })}
+                                        onChange={(e) => patchVenueValues({ firstSectionCtaUrl: e.target.value })}
                                         placeholder="/booking-request/form"
                                     />
                                     <span className="text-xs text-muted-foreground">
@@ -492,8 +514,8 @@ export function AdminPartnerPage({
                                 <CardDescription>
                                     {
                                         {
-                                            de: 'Optional. Wird für /booking-request/plan?partnerId=… vorausgefüllt. URL-Parameter überschreiben den Ort.',
-                                            en: 'Optional. Prefills /booking-request/plan?partnerId=…. URL params override the venue.',
+                                            de: 'Optional. Wird für /booking-request/plan?venueId=… vorausgefüllt. URL-Parameter überschreiben den Ort.',
+                                            en: 'Optional. Prefills /booking-request/plan?venueId=…. URL params override the venue.',
                                         }[locale]
                                     }
                                 </CardDescription>
@@ -506,7 +528,7 @@ export function AdminPartnerPage({
                                     inputValue={values.locationSearchText}
                                     onValueChange={(next) => {
                                         if (next == null) {
-                                            patchPartnerValues({ locationAddress: null, locationSearchText: '' });
+                                            patchVenueValues({ locationAddress: null, locationSearchText: '' });
                                             return;
                                         }
                                         const match = suggestions.find((suggestion) => suggestion.displayText === next);
@@ -521,14 +543,14 @@ export function AdminPartnerPage({
                                             );
                                             return;
                                         }
-                                        patchPartnerValues({
+                                        patchVenueValues({
                                             locationAddress: address,
                                             locationSearchText: match.displayText,
                                         });
                                     }}
                                     onInputValueChange={(next) => {
                                         const clearAddress = values.locationAddress != null && next !== values.locationAddress.displayText;
-                                        patchPartnerValues({
+                                        patchVenueValues({
                                             locationSearchText: next,
                                             ...(clearAddress ? { locationAddress: null } : {}),
                                         });
@@ -582,7 +604,7 @@ export function AdminPartnerPage({
                                     </span>
                                     <Select
                                         value={values.promoCodeId ?? '__none__'}
-                                        onValueChange={(value) => patchPartnerValues({ promoCodeId: value === '__none__' ? null : value })}
+                                        onValueChange={(value) => patchVenueValues({ promoCodeId: value === '__none__' ? null : value })}
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue />
@@ -627,7 +649,7 @@ export function AdminPartnerPage({
                                 <label className="flex items-start gap-2 text-sm">
                                     <Checkbox
                                         checked={values.howItWorksAlternativeMedia}
-                                        onCheckedChange={(checked) => patchPartnerValues({ howItWorksAlternativeMedia: checked === true })}
+                                        onCheckedChange={(checked) => patchVenueValues({ howItWorksAlternativeMedia: checked === true })}
                                         className="mt-0.5"
                                     />
                                     <span className="flex flex-col gap-0.5">
@@ -663,7 +685,7 @@ export function AdminPartnerPage({
                                 <label className="flex items-start gap-2 text-sm">
                                     <Checkbox
                                         checked={values.featuredCooksShowCity}
-                                        onCheckedChange={(checked) => patchPartnerValues({ featuredCooksShowCity: checked === true })}
+                                        onCheckedChange={(checked) => patchVenueValues({ featuredCooksShowCity: checked === true })}
                                         className="mt-0.5"
                                     />
                                     <span className="flex flex-col gap-0.5">
@@ -692,13 +714,13 @@ export function AdminPartnerPage({
                             onCandidateSearchChange={setCookSearch}
                             emptyHint={
                                 {
-                                    de: 'Leer lassen: auf der Partnerseite werden keine Köche gezeigt.',
-                                    en: 'Leave empty: the partner page shows no chefs.',
+                                    de: 'Leer lassen: auf der Locationseite werden keine Köche gezeigt.',
+                                    en: 'Leave empty: the venue page shows no chefs.',
                                 }[locale]
                             }
                             onSave={async (cookIds) => {
-                                const result = await updateCooks({ partnerId, cookIds });
-                                if (result.error || !result.data?.admin.partnerCooksUpdate.success) {
+                                const result = await updateCooks({ partnerVenueId, cookIds });
+                                if (result.error || !result.data?.admin.partnerVenueCooksUpdate.success) {
                                     throw new Error('cooks update failed');
                                 }
                                 setAssignedCooks(
@@ -749,13 +771,13 @@ export function AdminPartnerPage({
                             busy={busy}
                             emptyHint={
                                 {
-                                    de: 'Leer lassen: auf der Partnerseite werden keine Bewertungen gezeigt.',
-                                    en: 'Leave empty: the partner page shows no testimonials.',
+                                    de: 'Leer lassen: auf der Locationseite werden keine Bewertungen gezeigt.',
+                                    en: 'Leave empty: the venue page shows no testimonials.',
                                 }[locale]
                             }
                             onSave={async (entries) => {
-                                const result = await updateTestimonials({ partnerId, entries });
-                                if (result.error || !result.data?.admin.partnerTestimonialsUpdate.success) {
+                                const result = await updateTestimonials({ partnerVenueId, entries });
+                                if (result.error || !result.data?.admin.partnerVenueTestimonialsUpdate.success) {
                                     throw new Error('testimonials update failed');
                                 }
                                 const byKey = new Map(
@@ -783,7 +805,8 @@ export function AdminPartnerPage({
                         const current = valuesRef.current;
                         const result = await upsert({
                             input: {
-                                partnerId,
+                                partnerVenueId,
+                                partnerId: current.partnerId,
                                 pathName: current.pathName,
                                 name: current.name,
                                 titleDe: current.titleDe,
@@ -812,7 +835,7 @@ export function AdminPartnerPage({
                                 publishedAt: next.publishedAt,
                             },
                         });
-                        if (result.error || !result.data?.admin.partnerUpsert.success) {
+                        if (result.error || !result.data?.admin.partnerVenueUpsert.success) {
                             throw new Error('upsert failed');
                         }
                         pageDirtyRef.current = false;
@@ -823,8 +846,8 @@ export function AdminPartnerPage({
                 onDelete={async () => {
                     setBusy(true);
                     try {
-                        const result = await remove({ partnerId });
-                        if (result.error || !result.data?.admin.partnerDelete.success) {
+                        const result = await remove({ partnerVenueId });
+                        if (result.error || !result.data?.admin.partnerVenueDelete.success) {
                             throw new Error('delete failed');
                         }
                     } finally {

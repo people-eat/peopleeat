@@ -1,10 +1,10 @@
 import { eq } from 'drizzle-orm';
 
-import { cities, cityCooks, occasionCooks, occasions, partnerCooks, partners } from '../db/schema';
+import { cities, cityCooks, occasionCooks, occasions, partnerVenueCooks, partnerVenues } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminCookFeaturedLanding } from '../graphql/generated';
 
-/** Reverse index: city / partner / occasion landings that currently feature this cook. */
+/** Reverse index: city / partner-venue / occasion landings that currently feature this cook. */
 export async function adminCookFeaturedLandingsFindMany(
     cookId: string,
     serverRuntime: ServerRuntime,
@@ -22,14 +22,14 @@ export async function adminCookFeaturedLandingsFindMany(
             .where(eq(cityCooks.cookId, cookId)),
         serverRuntime.db
             .select({
-                id: partners.partnerId,
-                titleDe: partners.titleDe,
-                titleEn: partners.titleEn,
-                pathName: partners.pathName,
+                id: partnerVenues.partnerVenueId,
+                titleDe: partnerVenues.titleDe,
+                titleEn: partnerVenues.titleEn,
+                pathName: partnerVenues.pathName,
             })
-            .from(partnerCooks)
-            .innerJoin(partners, eq(partners.partnerId, partnerCooks.partnerId))
-            .where(eq(partnerCooks.cookId, cookId)),
+            .from(partnerVenueCooks)
+            .innerJoin(partnerVenues, eq(partnerVenues.partnerVenueId, partnerVenueCooks.partnerVenueId))
+            .where(eq(partnerVenueCooks.cookId, cookId)),
         serverRuntime.db
             .select({
                 id: occasions.occasionId,
@@ -51,7 +51,7 @@ export async function adminCookFeaturedLandingsFindMany(
             pathName: row.pathName,
         })),
         ...partnerRows.map((row): GqlSAdminCookFeaturedLanding => ({
-            kind: 'PARTNER',
+            kind: 'PARTNER_VENUE',
             id: row.id,
             titleDe: row.titleDe,
             titleEn: row.titleEn,

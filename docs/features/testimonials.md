@@ -95,18 +95,18 @@ existing follow-up answers unless the cook fills them again; dropping from 5 to 
 
 ### Chosen
 
-Dual customer and cook testimonials linked to completed offers, admin moderation for low stars, and curated picks on city, partner, and chef
+Dual customer and cook testimonials linked to completed offers, admin moderation for low stars, and curated picks on city, venue, and chef
 surfaces.
 
 ## Implementation
 
 Structural decisions: [architecture/testimonials.md](../architecture/testimonials.md).
 
-- Tables: `CustomerTestimonials`, `CookTestimonials`, `CityTestimonials`, `PartnerTestimonials`
+- Tables: `CustomerTestimonials`, `CookTestimonials`, `CityTestimonials`, `PartnerVenueTestimonials`
 - Domain: `src/server/domain/testimonial.ts`
 - Shared rating gate: `src/shared/testimonialRating.ts` (`isTestimonialRating`, `testimonialRatingAssertRequired`) — every write command
   requires an integer 1–5 and rejects `0` / null
-- GraphQL: public and admin types, offer fields, city/partner curation, admin `testimonials` + upserts, user/cook
+- GraphQL: public and admin types, offer fields, city/venue/occasion curation, admin `testimonials` + upserts, user/cook
   `bookingRequestOfferTestimonialUpsert` (body, rating, images; cook also `lowRatingAnswers`)
 - Commands / queries: `*Testimonial*` under commands and queries (incl. `adminCustomerTestimonialUpsert` / `adminCookTestimonialUpsert`,
   `adminTestimonialsFindMany` for the combined catalog, `userBookingRequestOfferTestimonialUpsert` /

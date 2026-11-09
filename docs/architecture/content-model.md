@@ -52,7 +52,7 @@ A new editable-list domain follows the same shape every time:
 5. **Admin page** — privileged route, `noindex`, gated server-side. Prefer one inline form open at a time and a single list query driving
    the UI.
 
-### Free-form SEO pages (cities / partners / occasions / blog)
+### Free-form SEO pages (cities / venues / occasions / blog)
 
 Ordered bilingual section blocks for landing pages and articles use the shared model in [`content-sections.md`](./content-sections.md) — one
 Zod/GraphQL/UI stack, four thin entity tables — not a separate CMS product.

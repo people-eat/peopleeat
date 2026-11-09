@@ -11,11 +11,11 @@ export const Route = createFileRoute('/{-$locale}/booking-request_/plan')({
     validateSearch: (search: Record<string, unknown>) => parseBookingRequestPlanSearch(search),
     loader: async ({ params, location }) => {
         const search = parseBookingRequestPlanSearch(location.search as Record<string, unknown>);
-        const includePartner = search.partnerId != null;
+        const includeVenue = search.venueId != null;
         const data = await routeLoaderGraphqlClient(BookingRequestPlanPageDocument, {
-            // Placeholder when no partner deep-link; field is skipped via @include.
-            partnerId: search.partnerId ?? '____________________',
-            includePartner,
+            // Placeholder when no venue deep-link; field is skipped via @include.
+            venueId: search.venueId ?? '____________________',
+            includeVenue,
         })();
         if (data.currentSession.user?.cook) {
             throw redirect({

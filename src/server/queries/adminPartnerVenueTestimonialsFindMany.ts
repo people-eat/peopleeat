@@ -1,22 +1,22 @@
 import { asc, eq } from 'drizzle-orm';
 
-import { partnerTestimonials } from '../db/schema';
+import { partnerVenueTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSAdminPageTestimonial, GqlSAdminPartner } from '../graphql/generated';
+import type { GqlSAdminPageTestimonial, GqlSAdminPartnerVenue } from '../graphql/generated';
 import { toGqlAdminCookTestimonial } from '../mappers/toGqlAdminCookTestimonial';
 import { toGqlAdminCustomerTestimonial } from '../mappers/toGqlAdminCustomerTestimonial';
 import { testimonialCatalogEntriesLoad } from '../utils/testimonialCatalogEntriesLoad';
 
-/** `AdminPartner.testimonials` — draft + published entries. */
-export async function adminPartnerTestimonialsFindMany(
-    parent: GqlSAdminPartner,
+/** `AdminPartnerVenue.testimonials` — draft + published entries. */
+export async function adminPartnerVenueTestimonialsFindMany(
+    parent: GqlSAdminPartnerVenue,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSAdminPageTestimonial[]> {
     const junctionRows = await serverRuntime.db
         .select()
-        .from(partnerTestimonials)
-        .where(eq(partnerTestimonials.partnerId, parent.partnerId))
-        .orderBy(asc(partnerTestimonials.index));
+        .from(partnerVenueTestimonials)
+        .where(eq(partnerVenueTestimonials.partnerVenueId, parent.partnerVenueId))
+        .orderBy(asc(partnerVenueTestimonials.index));
     return testimonialCatalogEntriesLoad(junctionRows, serverRuntime, {
         publishedOnly: false,
         toCustomer: toGqlAdminCustomerTestimonial,

@@ -1,11 +1,24 @@
 import { fileUploadPublicUrl } from '../../shared/contentSection';
-import type { Partner } from '../db/schema';
-import type { GqlSAdminPartner, GqlSPublicPartner } from '../graphql/generated';
+import type { Partner, PartnerVenue } from '../db/schema';
+import type { GqlSAdminPartner, GqlSAdminPartnerVenue, GqlSPublicPartnerVenue } from '../graphql/generated';
 import { toGqlContentSection } from './toGqlContentSection';
 import { toGqlCookTravelOriginAddress } from './toGqlCook';
 
-function partnerContentFields(row: Partner) {
+export function toGqlAdminPartner(row: Partner, venues: PartnerVenue[] = []): GqlSAdminPartner {
+    const partner: GqlSAdminPartner = {
+        partnerId: row.partnerId,
+        name: row.name,
+        venues: [],
+        createdAt: row.createdAt,
+        updatedAt: row.updatedAt,
+    };
+    partner.venues = venues.map((venue) => toGqlAdminPartnerVenue(venue, partner));
+    return partner;
+}
+
+function partnerVenueContentFields(row: PartnerVenue) {
     return {
+        partnerVenueId: row.partnerVenueId,
         partnerId: row.partnerId,
         pathName: row.pathName,
         previousPathNames: row.previousPathNames,
@@ -39,27 +52,23 @@ function partnerContentFields(row: Partner) {
     };
 }
 
-export function toGqlAdminPartner(row: Partner): GqlSAdminPartner {
+export function toGqlAdminPartnerVenue(row: PartnerVenue, partner: GqlSAdminPartner): GqlSAdminPartnerVenue {
     return {
-        ...partnerContentFields(row),
+        ...partnerVenueContentFields(row),
+        partner,
         promoCodeId: row.promoCodeId,
-        // Field resolver populates promo preview.
         promo: null,
-        // Field resolver populates cook assignment.
         cooks: [],
-        // Field resolver populates curated testimonials.
         testimonials: [],
     };
 }
 
-export function toGqlPublicPartner(row: Partner): GqlSPublicPartner {
+export function toGqlPublicPartnerVenue(row: PartnerVenue): GqlSPublicPartnerVenue {
+    const { partnerId: _partnerId, ...fields } = partnerVenueContentFields(row);
     return {
-        ...partnerContentFields(row),
-        // Field resolver populates promo banner.
+        ...fields,
         promo: null,
-        // Field resolver populates featured cooks.
         featuredCooks: [],
-        // Field resolver populates curated testimonials.
         testimonials: [],
     };
 }

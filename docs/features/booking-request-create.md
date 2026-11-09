@@ -69,8 +69,8 @@ after send (`BOOKING_REQUEST_KITCHEN_DETAILS`). The two toggles are independent.
 1. **High — Customer publication status** — Show customers when a large-group request is waiting on admin review vs approved (today only
    admins see publication state).
 
-Sibling create surface: [booking-request-plan.md](./booking-request-plan.md) (`/booking-request/plan`) — 2-step partner-friendly funnel that
-also creates via `bookingRequestCreate`. Partner `?partnerId=` + default venue live there (not on this multi-step form).
+Sibling create surface: [booking-request-plan.md](./booking-request-plan.md) (`/booking-request/plan`) — 2-step venue-friendly funnel that
+also creates via `bookingRequestCreate`. Venue `?venueId=` + default address live there (not on this multi-step form).
 
 ## Ideas
 

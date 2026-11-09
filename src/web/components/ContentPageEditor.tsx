@@ -64,7 +64,7 @@ export function contentPageEditorTabFromSearch(search: ContentPageEditorSearch):
 
 type ContentPageEditorDetail =
     | { to: '/{-$locale}/admin/cities/$cityId'; params: { cityId: string } }
-    | { to: '/{-$locale}/admin/partners/$partnerId'; params: { partnerId: string } }
+    | { to: '/{-$locale}/admin/partner-venues/$partnerVenueId'; params: { partnerVenueId: string } }
     | { to: '/{-$locale}/admin/occasions/$occasionId'; params: { occasionId: string } }
     | { to: '/{-$locale}/admin/blog-posts/$blogPostId'; params: { blogPostId: string } };
 
@@ -73,7 +73,7 @@ type ContentPageEditorListTo =
 
 type ContentPagePublicDetail =
     | { to: '/{-$locale}/cities/$pathName'; params: { pathName: string } }
-    | { to: '/{-$locale}/partners/$pathName'; params: { pathName: string } }
+    | { to: '/{-$locale}/venues/$pathName'; params: { pathName: string } }
     | { to: '/{-$locale}/occasions/$pathName'; params: { pathName: string } }
     | { to: '/{-$locale}/blog-posts/$pathName'; params: { pathName: string } };
 
@@ -82,7 +82,7 @@ function contentPagePublicDetail(listTo: ContentPageEditorListTo, pathName: stri
         return { to: '/{-$locale}/cities/$pathName', params: { pathName } };
     }
     if (listTo === '/{-$locale}/admin/partners') {
-        return { to: '/{-$locale}/partners/$pathName', params: { pathName } };
+        return { to: '/{-$locale}/venues/$pathName', params: { pathName } };
     }
     if (listTo === '/{-$locale}/admin/occasions') {
         return { to: '/{-$locale}/occasions/$pathName', params: { pathName } };
@@ -133,7 +133,7 @@ export function ContentPageEditor({
     howItWorksHideCta,
     howItWorksAlternativeMedia,
     cities,
-    partnersExplore,
+    venuesExplore,
     knownFrom,
 }: {
     uiLocale: Locale;
@@ -166,7 +166,7 @@ export function ContentPageEditor({
     howItWorksHideCta?: ContentPageViewModel['howItWorksHideCta'];
     howItWorksAlternativeMedia?: ContentPageViewModel['howItWorksAlternativeMedia'];
     cities?: ContentPageViewModel['cities'];
-    partnersExplore?: ContentPageViewModel['partnersExplore'];
+    venuesExplore?: ContentPageViewModel['venuesExplore'];
     knownFrom?: ContentPageViewModel['knownFrom'];
 }) {
     const navigate = useNavigate();
@@ -280,7 +280,7 @@ export function ContentPageEditor({
                 howItWorksHideCta,
                 howItWorksAlternativeMedia,
                 cities,
-                partnersExplore,
+                venuesExplore,
                 knownFrom,
             }}
         />

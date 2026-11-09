@@ -99,6 +99,7 @@ export interface GqlSAdmin {
     outboundEmails: Array<GqlSAdminOutboundEmail>;
     outboundEmailsCounts: Array<Scalars['Int']['output']>;
     partner?: Maybe<GqlSAdminPartner>;
+    partnerVenue?: Maybe<GqlSAdminPartnerVenue>;
     partners: Array<GqlSAdminPartner>;
     promoCode?: Maybe<GqlSAdminPromoCode>;
     promoCodes: Array<GqlSAdminPromoCode>;
@@ -401,6 +402,10 @@ export type GqlSAdminOutboundEmailsCountsArgs = {
 
 export type GqlSAdminPartnerArgs = {
     partnerId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminPartnerVenueArgs = {
+    partnerVenueId: Scalars['ID']['input'];
 };
 
 export type GqlSAdminPromoCodeArgs = {
@@ -1085,7 +1090,7 @@ export interface GqlSAdminCookFeaturedLanding {
     titleEn: Scalars['String']['output'];
 }
 
-export type GqlSAdminCookFeaturedLandingKind = 'CITY' | 'OCCASION' | 'PARTNER';
+export type GqlSAdminCookFeaturedLandingKind = 'CITY' | 'OCCASION' | 'PARTNER_VENUE';
 
 export interface GqlSAdminCookInTravelRadiusPreview {
     __typename?: 'AdminCookInTravelRadiusPreview';
@@ -1404,8 +1409,8 @@ export interface GqlSAdminMap {
     cities: Array<GqlSAdminMapCityPoint>;
     cooks: Array<GqlSAdminMapCookPoint>;
     cooksMissingOriginCount: Scalars['Int']['output'];
-    partners: Array<GqlSAdminMapPartnerPoint>;
-    partnersMissingLocationCount: Scalars['Int']['output'];
+    partnerVenues: Array<GqlSAdminMapPartnerVenuePoint>;
+    partnerVenuesMissingLocationCount: Scalars['Int']['output'];
 }
 
 export type GqlSAdminMapBookingRequestsArgs = {
@@ -1445,12 +1450,14 @@ export interface GqlSAdminMapCookPoint {
 
 export type GqlSAdminMapCookStatus = 'HIDDEN' | 'LISTABLE' | 'PENDING';
 
-export interface GqlSAdminMapPartnerPoint {
-    __typename?: 'AdminMapPartnerPoint';
+export interface GqlSAdminMapPartnerVenuePoint {
+    __typename?: 'AdminMapPartnerVenuePoint';
     latitude: Scalars['Latitude']['output'];
     longitude: Scalars['Longitude']['output'];
     name: Scalars['String']['output'];
     partnerId: Scalars['ID']['output'];
+    partnerName: Scalars['String']['output'];
+    partnerVenueId: Scalars['ID']['output'];
     published: Scalars['Boolean']['output'];
 }
 
@@ -1521,10 +1528,12 @@ export interface GqlSAdminMutation {
     occasionUpsert: GqlSMutationResult;
     offerAddonTemplateDelete: GqlSMutationResult;
     offerAddonTemplateUpsert: GqlSMutationResult;
-    partnerCooksUpdate: GqlSMutationResult;
     partnerDelete: GqlSMutationResult;
-    partnerTestimonialsUpdate: GqlSMutationResult;
     partnerUpsert: GqlSMutationResult;
+    partnerVenueCooksUpdate: GqlSMutationResult;
+    partnerVenueDelete: GqlSMutationResult;
+    partnerVenueTestimonialsUpdate: GqlSMutationResult;
+    partnerVenueUpsert: GqlSMutationResult;
     promoCodeCreate: GqlSMutationResult;
     promoCodeUpdate: GqlSMutationResult;
     queuedJobCancel: GqlSMutationResult;
@@ -1842,22 +1851,30 @@ export type GqlSAdminMutationOfferAddonTemplateUpsertArgs = {
     input: GqlSOfferAddonTemplateUpsert;
 };
 
-export type GqlSAdminMutationPartnerCooksUpdateArgs = {
-    cookIds: Array<Scalars['ID']['input']>;
-    partnerId: Scalars['ID']['input'];
-};
-
 export type GqlSAdminMutationPartnerDeleteArgs = {
-    partnerId: Scalars['ID']['input'];
-};
-
-export type GqlSAdminMutationPartnerTestimonialsUpdateArgs = {
-    entries: Array<GqlSTestimonialJunctionEntryInput>;
     partnerId: Scalars['ID']['input'];
 };
 
 export type GqlSAdminMutationPartnerUpsertArgs = {
     input: GqlSPartnerUpsert;
+};
+
+export type GqlSAdminMutationPartnerVenueCooksUpdateArgs = {
+    cookIds: Array<Scalars['ID']['input']>;
+    partnerVenueId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationPartnerVenueDeleteArgs = {
+    partnerVenueId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationPartnerVenueTestimonialsUpdateArgs = {
+    entries: Array<GqlSTestimonialJunctionEntryInput>;
+    partnerVenueId: Scalars['ID']['input'];
+};
+
+export type GqlSAdminMutationPartnerVenueUpsertArgs = {
+    input: GqlSPartnerVenueUpsert;
 };
 
 export type GqlSAdminMutationPromoCodeCreateArgs = {
@@ -2136,6 +2153,15 @@ export interface GqlSAdminPageTestimonial {
 
 export interface GqlSAdminPartner {
     __typename?: 'AdminPartner';
+    createdAt: Scalars['DateTime']['output'];
+    name: Scalars['String']['output'];
+    partnerId: Scalars['ID']['output'];
+    updatedAt: Scalars['DateTime']['output'];
+    venues: Array<GqlSAdminPartnerVenue>;
+}
+
+export interface GqlSAdminPartnerVenue {
+    __typename?: 'AdminPartnerVenue';
     cooks: Array<GqlSAdminFeaturedCook>;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
@@ -2157,10 +2183,12 @@ export interface GqlSAdminPartner {
     howItWorksAlternativeMedia: Scalars['Boolean']['output'];
     locationAddress?: Maybe<GqlSCookTravelOriginAddress>;
     name: Scalars['String']['output'];
+    partner: GqlSAdminPartner;
     partnerId: Scalars['ID']['output'];
+    partnerVenueId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
     previousPathNames: Array<Scalars['String']['output']>;
-    promo?: Maybe<GqlSPartnerPromo>;
+    promo?: Maybe<GqlSPartnerVenuePromo>;
     promoCodeId?: Maybe<Scalars['ID']['output']>;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     sections: Array<GqlSContentSection>;
@@ -2351,7 +2379,7 @@ export type GqlSAdminTestimonialCriterion = {
     take?: Scalars['Int']['input'];
 };
 
-export type GqlSAdminTestimonialPublicPageKind = 'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER';
+export type GqlSAdminTestimonialPublicPageKind = 'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER_VENUE';
 
 export interface GqlSAdminTestimonialPublicPagePlacement {
     __typename?: 'AdminTestimonialPublicPagePlacement';
@@ -4333,10 +4361,10 @@ export type GqlSFeatureToggleKey =
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'LANDING_TESTIMONIAL_CARDS'
-    | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
-    | 'SIGN_IN_GOOGLE';
+    | 'SIGN_IN_GOOGLE'
+    | 'VENUE_PAGE_VENUES_EXPLORE';
 
 export interface GqlSFileUpload {
     __typename?: 'FileUpload';
@@ -4627,13 +4655,18 @@ export interface GqlSPageTestimonial {
     testimonial: GqlSTestimonial;
 }
 
-export interface GqlSPartnerPromo {
-    __typename?: 'PartnerPromo';
+export type GqlSPartnerUpsert = {
+    name: Scalars['String']['input'];
+    partnerId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export interface GqlSPartnerVenuePromo {
+    __typename?: 'PartnerVenuePromo';
     amountCents: Scalars['Int']['output'];
     redeemCode: Scalars['String']['output'];
 }
 
-export type GqlSPartnerUpsert = {
+export type GqlSPartnerVenueUpsert = {
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
     featuredCooksShowCity: Scalars['Boolean']['input'];
@@ -4651,7 +4684,8 @@ export type GqlSPartnerUpsert = {
     howItWorksAlternativeMedia: Scalars['Boolean']['input'];
     locationAddress?: InputMaybe<GqlSUserBookingRequestExactEventAddressInput>;
     name: Scalars['String']['input'];
-    partnerId?: InputMaybe<Scalars['ID']['input']>;
+    partnerId: Scalars['ID']['input'];
+    partnerVenueId?: InputMaybe<Scalars['ID']['input']>;
     pathName: Scalars['String']['input'];
     promoCodeId?: InputMaybe<Scalars['ID']['input']>;
     publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
@@ -4916,8 +4950,8 @@ export type GqlSPublicOccasionQueryFindOneByPathNameArgs = {
     pathName: Scalars['String']['input'];
 };
 
-export interface GqlSPublicPartner {
-    __typename?: 'PublicPartner';
+export interface GqlSPublicPartnerVenue {
+    __typename?: 'PublicPartnerVenue';
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
@@ -4939,10 +4973,10 @@ export interface GqlSPublicPartner {
     howItWorksAlternativeMedia: Scalars['Boolean']['output'];
     locationAddress?: Maybe<GqlSCookTravelOriginAddress>;
     name: Scalars['String']['output'];
-    partnerId: Scalars['ID']['output'];
+    partnerVenueId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
     previousPathNames: Array<Scalars['String']['output']>;
-    promo?: Maybe<GqlSPartnerPromo>;
+    promo?: Maybe<GqlSPartnerVenuePromo>;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     sections: Array<GqlSContentSection>;
     subHeadlineDe: Scalars['String']['output'];
@@ -4953,18 +4987,18 @@ export interface GqlSPublicPartner {
     updatedAt: Scalars['DateTime']['output'];
 }
 
-export interface GqlSPublicPartnerQuery {
-    __typename?: 'PublicPartnerQuery';
-    findMany: Array<GqlSPublicPartner>;
-    findOne?: Maybe<GqlSPublicPartner>;
-    findOneByPathName?: Maybe<GqlSPublicPartner>;
+export interface GqlSPublicPartnerVenueQuery {
+    __typename?: 'PublicPartnerVenueQuery';
+    findMany: Array<GqlSPublicPartnerVenue>;
+    findOne?: Maybe<GqlSPublicPartnerVenue>;
+    findOneByPathName?: Maybe<GqlSPublicPartnerVenue>;
 }
 
-export type GqlSPublicPartnerQueryFindOneArgs = {
-    partnerId: Scalars['ID']['input'];
+export type GqlSPublicPartnerVenueQueryFindOneArgs = {
+    partnerVenueId: Scalars['ID']['input'];
 };
 
-export type GqlSPublicPartnerQueryFindOneByPathNameArgs = {
+export type GqlSPublicPartnerVenueQueryFindOneByPathNameArgs = {
     pathName: Scalars['String']['input'];
 };
 
@@ -5001,7 +5035,7 @@ export interface GqlSQuery {
     publicCook: GqlSPublicCookQuery;
     publicLegal: GqlSPublicLegal;
     publicOccasion: GqlSPublicOccasionQuery;
-    publicPartner: GqlSPublicPartnerQuery;
+    publicPartnerVenue: GqlSPublicPartnerVenueQuery;
     publicWebPage: GqlSPublicWebPageQuery;
 }
 
@@ -5061,7 +5095,7 @@ export type GqlSSessionWebPageVisitCreateInput = {
     cityId?: InputMaybe<Scalars['ID']['input']>;
     cookId?: InputMaybe<Scalars['ID']['input']>;
     occasionId?: InputMaybe<Scalars['ID']['input']>;
-    partnerId?: InputMaybe<Scalars['ID']['input']>;
+    partnerVenueId?: InputMaybe<Scalars['ID']['input']>;
     path?: InputMaybe<Scalars['String']['input']>;
     webPageKey: GqlSWebPageKey;
 };
@@ -5769,11 +5803,11 @@ export type GqlSWebPageKey =
     | 'IMPRINT'
     | 'LANDING'
     | 'OCCASIONS'
-    | 'PARTNERS'
     | 'PRIVACY_POLICY'
     | 'PROFILE'
     | 'SIGN_IN'
-    | 'TERMS_AND_CONDITIONS';
+    | 'TERMS_AND_CONDITIONS'
+    | 'VENUES';
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
@@ -5913,6 +5947,7 @@ export type GqlSResolversTypes = ResolversObject<{
             | 'occasion'
             | 'occasions'
             | 'partner'
+            | 'partnerVenue'
             | 'partners'
             | 'promoCode'
             | 'promoCodes'
@@ -5937,6 +5972,7 @@ export type GqlSResolversTypes = ResolversObject<{
             occasion?: Maybe<GqlSResolversTypes['AdminOccasion']>;
             occasions: Array<GqlSResolversTypes['AdminOccasion']>;
             partner?: Maybe<GqlSResolversTypes['AdminPartner']>;
+            partnerVenue?: Maybe<GqlSResolversTypes['AdminPartnerVenue']>;
             partners: Array<GqlSResolversTypes['AdminPartner']>;
             promoCode?: Maybe<GqlSResolversTypes['AdminPromoCode']>;
             promoCodes: Array<GqlSResolversTypes['AdminPromoCode']>;
@@ -6050,7 +6086,7 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminMapCityPoint: ResolverTypeWrapper<GqlSAdminMapCityPoint>;
     AdminMapCookPoint: ResolverTypeWrapper<GqlSAdminMapCookPoint>;
     AdminMapCookStatus: GqlSAdminMapCookStatus;
-    AdminMapPartnerPoint: ResolverTypeWrapper<GqlSAdminMapPartnerPoint>;
+    AdminMapPartnerVenuePoint: ResolverTypeWrapper<GqlSAdminMapPartnerVenuePoint>;
     AdminMutation: ResolverTypeWrapper<GqlSAdminMutation>;
     AdminObjectStorageObject: ResolverTypeWrapper<GqlSAdminObjectStorageObject>;
     AdminObjectStorageObjectCriterion: GqlSAdminObjectStorageObjectCriterion;
@@ -6075,9 +6111,11 @@ export type GqlSResolversTypes = ResolversObject<{
     AdminPageTestimonial: ResolverTypeWrapper<
         Omit<GqlSAdminPageTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['AdminTestimonial'] }
     >;
-    AdminPartner: ResolverTypeWrapper<
-        Omit<GqlSAdminPartner, 'cooks' | 'sections' | 'testimonials'> & {
+    AdminPartner: ResolverTypeWrapper<Omit<GqlSAdminPartner, 'venues'> & { venues: Array<GqlSResolversTypes['AdminPartnerVenue']> }>;
+    AdminPartnerVenue: ResolverTypeWrapper<
+        Omit<GqlSAdminPartnerVenue, 'cooks' | 'partner' | 'sections' | 'testimonials'> & {
             cooks: Array<GqlSResolversTypes['AdminFeaturedCook']>;
+            partner: GqlSResolversTypes['AdminPartner'];
             sections: Array<GqlSResolversTypes['ContentSection']>;
             testimonials: Array<GqlSResolversTypes['AdminPageTestimonial']>;
         }
@@ -6382,8 +6420,9 @@ export type GqlSResolversTypes = ResolversObject<{
     OfferAddonTemplate: ResolverTypeWrapper<GqlSOfferAddonTemplate>;
     OfferAddonTemplateUpsert: GqlSOfferAddonTemplateUpsert;
     PageTestimonial: ResolverTypeWrapper<Omit<GqlSPageTestimonial, 'testimonial'> & { testimonial: GqlSResolversTypes['Testimonial'] }>;
-    PartnerPromo: ResolverTypeWrapper<GqlSPartnerPromo>;
     PartnerUpsert: GqlSPartnerUpsert;
+    PartnerVenuePromo: ResolverTypeWrapper<GqlSPartnerVenuePromo>;
+    PartnerVenueUpsert: GqlSPartnerVenueUpsert;
     PhoneNumber: ResolverTypeWrapper<Scalars['PhoneNumber']['output']>;
     PublicBlogPost: ResolverTypeWrapper<Omit<GqlSPublicBlogPost, 'sections'> & { sections: Array<GqlSResolversTypes['ContentSection']> }>;
     PublicBlogPostQuery: ResolverTypeWrapper<
@@ -6429,17 +6468,17 @@ export type GqlSResolversTypes = ResolversObject<{
             findOneByPathName?: Maybe<GqlSResolversTypes['PublicOccasion']>;
         }
     >;
-    PublicPartner: ResolverTypeWrapper<
-        Omit<GqlSPublicPartner, 'sections' | 'testimonials'> & {
+    PublicPartnerVenue: ResolverTypeWrapper<
+        Omit<GqlSPublicPartnerVenue, 'sections' | 'testimonials'> & {
             sections: Array<GqlSResolversTypes['ContentSection']>;
             testimonials: Array<GqlSResolversTypes['PageTestimonial']>;
         }
     >;
-    PublicPartnerQuery: ResolverTypeWrapper<
-        Omit<GqlSPublicPartnerQuery, 'findMany' | 'findOne' | 'findOneByPathName'> & {
-            findMany: Array<GqlSResolversTypes['PublicPartner']>;
-            findOne?: Maybe<GqlSResolversTypes['PublicPartner']>;
-            findOneByPathName?: Maybe<GqlSResolversTypes['PublicPartner']>;
+    PublicPartnerVenueQuery: ResolverTypeWrapper<
+        Omit<GqlSPublicPartnerVenueQuery, 'findMany' | 'findOne' | 'findOneByPathName'> & {
+            findMany: Array<GqlSResolversTypes['PublicPartnerVenue']>;
+            findOne?: Maybe<GqlSResolversTypes['PublicPartnerVenue']>;
+            findOneByPathName?: Maybe<GqlSResolversTypes['PublicPartnerVenue']>;
         }
     >;
     PublicUser: ResolverTypeWrapper<GqlSPublicUser>;
@@ -6548,6 +6587,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
         | 'occasion'
         | 'occasions'
         | 'partner'
+        | 'partnerVenue'
         | 'partners'
         | 'promoCode'
         | 'promoCodes'
@@ -6572,6 +6612,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
         occasion?: Maybe<GqlSResolversParentTypes['AdminOccasion']>;
         occasions: Array<GqlSResolversParentTypes['AdminOccasion']>;
         partner?: Maybe<GqlSResolversParentTypes['AdminPartner']>;
+        partnerVenue?: Maybe<GqlSResolversParentTypes['AdminPartnerVenue']>;
         partners: Array<GqlSResolversParentTypes['AdminPartner']>;
         promoCode?: Maybe<GqlSResolversParentTypes['AdminPromoCode']>;
         promoCodes: Array<GqlSResolversParentTypes['AdminPromoCode']>;
@@ -6661,7 +6702,7 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminMapBookingRequestPoint: GqlSAdminMapBookingRequestPoint;
     AdminMapCityPoint: GqlSAdminMapCityPoint;
     AdminMapCookPoint: GqlSAdminMapCookPoint;
-    AdminMapPartnerPoint: GqlSAdminMapPartnerPoint;
+    AdminMapPartnerVenuePoint: GqlSAdminMapPartnerVenuePoint;
     AdminMutation: GqlSAdminMutation;
     AdminObjectStorageObject: GqlSAdminObjectStorageObject;
     AdminObjectStorageObjectCriterion: GqlSAdminObjectStorageObjectCriterion;
@@ -6677,8 +6718,10 @@ export type GqlSResolversParentTypes = ResolversObject<{
     AdminOutboundEmailPurposeStat: GqlSAdminOutboundEmailPurposeStat;
     AdminOutboundEmailRecipientStat: GqlSAdminOutboundEmailRecipientStat;
     AdminPageTestimonial: Omit<GqlSAdminPageTestimonial, 'testimonial'> & { testimonial: GqlSResolversParentTypes['AdminTestimonial'] };
-    AdminPartner: Omit<GqlSAdminPartner, 'cooks' | 'sections' | 'testimonials'> & {
+    AdminPartner: Omit<GqlSAdminPartner, 'venues'> & { venues: Array<GqlSResolversParentTypes['AdminPartnerVenue']> };
+    AdminPartnerVenue: Omit<GqlSAdminPartnerVenue, 'cooks' | 'partner' | 'sections' | 'testimonials'> & {
         cooks: Array<GqlSResolversParentTypes['AdminFeaturedCook']>;
+        partner: GqlSResolversParentTypes['AdminPartner'];
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
         testimonials: Array<GqlSResolversParentTypes['AdminPageTestimonial']>;
     };
@@ -6911,8 +6954,9 @@ export type GqlSResolversParentTypes = ResolversObject<{
     OfferAddonTemplate: GqlSOfferAddonTemplate;
     OfferAddonTemplateUpsert: GqlSOfferAddonTemplateUpsert;
     PageTestimonial: Omit<GqlSPageTestimonial, 'testimonial'> & { testimonial: GqlSResolversParentTypes['Testimonial'] };
-    PartnerPromo: GqlSPartnerPromo;
     PartnerUpsert: GqlSPartnerUpsert;
+    PartnerVenuePromo: GqlSPartnerVenuePromo;
+    PartnerVenueUpsert: GqlSPartnerVenueUpsert;
     PhoneNumber: Scalars['PhoneNumber']['output'];
     PublicBlogPost: Omit<GqlSPublicBlogPost, 'sections'> & { sections: Array<GqlSResolversParentTypes['ContentSection']> };
     PublicBlogPostQuery: Omit<GqlSPublicBlogPostQuery, 'findMany' | 'findOneByPathName'> & {
@@ -6948,14 +6992,14 @@ export type GqlSResolversParentTypes = ResolversObject<{
         findMany: Array<GqlSResolversParentTypes['PublicOccasion']>;
         findOneByPathName?: Maybe<GqlSResolversParentTypes['PublicOccasion']>;
     };
-    PublicPartner: Omit<GqlSPublicPartner, 'sections' | 'testimonials'> & {
+    PublicPartnerVenue: Omit<GqlSPublicPartnerVenue, 'sections' | 'testimonials'> & {
         sections: Array<GqlSResolversParentTypes['ContentSection']>;
         testimonials: Array<GqlSResolversParentTypes['PageTestimonial']>;
     };
-    PublicPartnerQuery: Omit<GqlSPublicPartnerQuery, 'findMany' | 'findOne' | 'findOneByPathName'> & {
-        findMany: Array<GqlSResolversParentTypes['PublicPartner']>;
-        findOne?: Maybe<GqlSResolversParentTypes['PublicPartner']>;
-        findOneByPathName?: Maybe<GqlSResolversParentTypes['PublicPartner']>;
+    PublicPartnerVenueQuery: Omit<GqlSPublicPartnerVenueQuery, 'findMany' | 'findOne' | 'findOneByPathName'> & {
+        findMany: Array<GqlSResolversParentTypes['PublicPartnerVenue']>;
+        findOne?: Maybe<GqlSResolversParentTypes['PublicPartnerVenue']>;
+        findOneByPathName?: Maybe<GqlSResolversParentTypes['PublicPartnerVenue']>;
     };
     PublicUser: GqlSPublicUser;
     PublicWebPage: GqlSPublicWebPage;
@@ -7395,6 +7439,12 @@ export type GqlSAdminResolvers<
         ParentType,
         ContextType,
         RequireFields<GqlSAdminPartnerArgs, 'partnerId'>
+    >;
+    partnerVenue?: Resolver<
+        Maybe<GqlSResolversTypes['AdminPartnerVenue']>,
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminPartnerVenueArgs, 'partnerVenueId'>
     >;
     partners?: Resolver<Array<GqlSResolversTypes['AdminPartner']>, ParentType, ContextType>;
     promoCode?: Resolver<
@@ -8243,8 +8293,8 @@ export type GqlSAdminMapResolvers<
     cities?: Resolver<Array<GqlSResolversTypes['AdminMapCityPoint']>, ParentType, ContextType>;
     cooks?: Resolver<Array<GqlSResolversTypes['AdminMapCookPoint']>, ParentType, ContextType>;
     cooksMissingOriginCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
-    partners?: Resolver<Array<GqlSResolversTypes['AdminMapPartnerPoint']>, ParentType, ContextType>;
-    partnersMissingLocationCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
+    partnerVenues?: Resolver<Array<GqlSResolversTypes['AdminMapPartnerVenuePoint']>, ParentType, ContextType>;
+    partnerVenuesMissingLocationCount?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type GqlSAdminMapBookingRequestPointResolvers<
@@ -8284,14 +8334,16 @@ export type GqlSAdminMapCookPointResolvers<
     maximumTravelDistance?: Resolver<Maybe<GqlSResolversTypes['Int']>, ParentType, ContextType>;
 }>;
 
-export type GqlSAdminMapPartnerPointResolvers<
+export type GqlSAdminMapPartnerVenuePointResolvers<
     ContextType = any,
-    ParentType extends GqlSResolversParentTypes['AdminMapPartnerPoint'] = GqlSResolversParentTypes['AdminMapPartnerPoint'],
+    ParentType extends GqlSResolversParentTypes['AdminMapPartnerVenuePoint'] = GqlSResolversParentTypes['AdminMapPartnerVenuePoint'],
 > = ResolversObject<{
     latitude?: Resolver<GqlSResolversTypes['Latitude'], ParentType, ContextType>;
     longitude?: Resolver<GqlSResolversTypes['Longitude'], ParentType, ContextType>;
     name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     partnerId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    partnerName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    partnerVenueId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     published?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
@@ -8689,29 +8741,41 @@ export type GqlSAdminMutationResolvers<
         ContextType,
         RequireFields<GqlSAdminMutationOfferAddonTemplateUpsertArgs, 'input'>
     >;
-    partnerCooksUpdate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSAdminMutationPartnerCooksUpdateArgs, 'cookIds' | 'partnerId'>
-    >;
     partnerDelete?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationPartnerDeleteArgs, 'partnerId'>
     >;
-    partnerTestimonialsUpdate?: Resolver<
-        GqlSResolversTypes['MutationResult'],
-        ParentType,
-        ContextType,
-        RequireFields<GqlSAdminMutationPartnerTestimonialsUpdateArgs, 'entries' | 'partnerId'>
-    >;
     partnerUpsert?: Resolver<
         GqlSResolversTypes['MutationResult'],
         ParentType,
         ContextType,
         RequireFields<GqlSAdminMutationPartnerUpsertArgs, 'input'>
+    >;
+    partnerVenueCooksUpdate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationPartnerVenueCooksUpdateArgs, 'cookIds' | 'partnerVenueId'>
+    >;
+    partnerVenueDelete?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationPartnerVenueDeleteArgs, 'partnerVenueId'>
+    >;
+    partnerVenueTestimonialsUpdate?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationPartnerVenueTestimonialsUpdateArgs, 'entries' | 'partnerVenueId'>
+    >;
+    partnerVenueUpsert?: Resolver<
+        GqlSResolversTypes['MutationResult'],
+        ParentType,
+        ContextType,
+        RequireFields<GqlSAdminMutationPartnerVenueUpsertArgs, 'input'>
     >;
     promoCodeCreate?: Resolver<
         GqlSResolversTypes['MutationResult'],
@@ -8972,6 +9036,17 @@ export type GqlSAdminPartnerResolvers<
     ContextType = any,
     ParentType extends GqlSResolversParentTypes['AdminPartner'] = GqlSResolversParentTypes['AdminPartner'],
 > = ResolversObject<{
+    createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    partnerId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
+    venues?: Resolver<Array<GqlSResolversTypes['AdminPartnerVenue']>, ParentType, ContextType>;
+}>;
+
+export type GqlSAdminPartnerVenueResolvers<
+    ContextType = any,
+    ParentType extends GqlSResolversParentTypes['AdminPartnerVenue'] = GqlSResolversParentTypes['AdminPartnerVenue'],
+> = ResolversObject<{
     cooks?: Resolver<Array<GqlSResolversTypes['AdminFeaturedCook']>, ParentType, ContextType>;
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -8993,10 +9068,12 @@ export type GqlSAdminPartnerResolvers<
     howItWorksAlternativeMedia?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     locationAddress?: Resolver<Maybe<GqlSResolversTypes['CookTravelOriginAddress']>, ParentType, ContextType>;
     name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
+    partner?: Resolver<GqlSResolversTypes['AdminPartner'], ParentType, ContextType>;
     partnerId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    partnerVenueId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     previousPathNames?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
-    promo?: Resolver<Maybe<GqlSResolversTypes['PartnerPromo']>, ParentType, ContextType>;
+    promo?: Resolver<Maybe<GqlSResolversTypes['PartnerVenuePromo']>, ParentType, ContextType>;
     promoCodeId?: Resolver<Maybe<GqlSResolversTypes['ID']>, ParentType, ContextType>;
     publishedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     sections?: Resolver<Array<GqlSResolversTypes['ContentSection']>, ParentType, ContextType>;
@@ -11159,9 +11236,9 @@ export type GqlSPageTestimonialResolvers<
     testimonial?: Resolver<GqlSResolversTypes['Testimonial'], ParentType, ContextType>;
 }>;
 
-export type GqlSPartnerPromoResolvers<
+export type GqlSPartnerVenuePromoResolvers<
     ContextType = any,
-    ParentType extends GqlSResolversParentTypes['PartnerPromo'] = GqlSResolversParentTypes['PartnerPromo'],
+    ParentType extends GqlSResolversParentTypes['PartnerVenuePromo'] = GqlSResolversParentTypes['PartnerVenuePromo'],
 > = ResolversObject<{
     amountCents?: Resolver<GqlSResolversTypes['Int'], ParentType, ContextType>;
     redeemCode?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -11458,9 +11535,9 @@ export type GqlSPublicOccasionQueryResolvers<
     >;
 }>;
 
-export type GqlSPublicPartnerResolvers<
+export type GqlSPublicPartnerVenueResolvers<
     ContextType = any,
-    ParentType extends GqlSResolversParentTypes['PublicPartner'] = GqlSResolversParentTypes['PublicPartner'],
+    ParentType extends GqlSResolversParentTypes['PublicPartnerVenue'] = GqlSResolversParentTypes['PublicPartnerVenue'],
 > = ResolversObject<{
     createdAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
     descriptionDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -11483,10 +11560,10 @@ export type GqlSPublicPartnerResolvers<
     howItWorksAlternativeMedia?: Resolver<GqlSResolversTypes['Boolean'], ParentType, ContextType>;
     locationAddress?: Resolver<Maybe<GqlSResolversTypes['CookTravelOriginAddress']>, ParentType, ContextType>;
     name?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
-    partnerId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
+    partnerVenueId?: Resolver<GqlSResolversTypes['ID'], ParentType, ContextType>;
     pathName?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
     previousPathNames?: Resolver<Array<GqlSResolversTypes['String']>, ParentType, ContextType>;
-    promo?: Resolver<Maybe<GqlSResolversTypes['PartnerPromo']>, ParentType, ContextType>;
+    promo?: Resolver<Maybe<GqlSResolversTypes['PartnerVenuePromo']>, ParentType, ContextType>;
     publishedAt?: Resolver<Maybe<GqlSResolversTypes['DateTime']>, ParentType, ContextType>;
     sections?: Resolver<Array<GqlSResolversTypes['ContentSection']>, ParentType, ContextType>;
     subHeadlineDe?: Resolver<GqlSResolversTypes['String'], ParentType, ContextType>;
@@ -11497,22 +11574,22 @@ export type GqlSPublicPartnerResolvers<
     updatedAt?: Resolver<GqlSResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
 
-export type GqlSPublicPartnerQueryResolvers<
+export type GqlSPublicPartnerVenueQueryResolvers<
     ContextType = any,
-    ParentType extends GqlSResolversParentTypes['PublicPartnerQuery'] = GqlSResolversParentTypes['PublicPartnerQuery'],
+    ParentType extends GqlSResolversParentTypes['PublicPartnerVenueQuery'] = GqlSResolversParentTypes['PublicPartnerVenueQuery'],
 > = ResolversObject<{
-    findMany?: Resolver<Array<GqlSResolversTypes['PublicPartner']>, ParentType, ContextType>;
+    findMany?: Resolver<Array<GqlSResolversTypes['PublicPartnerVenue']>, ParentType, ContextType>;
     findOne?: Resolver<
-        Maybe<GqlSResolversTypes['PublicPartner']>,
+        Maybe<GqlSResolversTypes['PublicPartnerVenue']>,
         ParentType,
         ContextType,
-        RequireFields<GqlSPublicPartnerQueryFindOneArgs, 'partnerId'>
+        RequireFields<GqlSPublicPartnerVenueQueryFindOneArgs, 'partnerVenueId'>
     >;
     findOneByPathName?: Resolver<
-        Maybe<GqlSResolversTypes['PublicPartner']>,
+        Maybe<GqlSResolversTypes['PublicPartnerVenue']>,
         ParentType,
         ContextType,
-        RequireFields<GqlSPublicPartnerQueryFindOneByPathNameArgs, 'pathName'>
+        RequireFields<GqlSPublicPartnerVenueQueryFindOneByPathNameArgs, 'pathName'>
     >;
 }>;
 
@@ -11558,7 +11635,7 @@ export type GqlSQueryResolvers<
     publicCook?: Resolver<GqlSResolversTypes['PublicCookQuery'], ParentType, ContextType>;
     publicLegal?: Resolver<GqlSResolversTypes['PublicLegal'], ParentType, ContextType>;
     publicOccasion?: Resolver<GqlSResolversTypes['PublicOccasionQuery'], ParentType, ContextType>;
-    publicPartner?: Resolver<GqlSResolversTypes['PublicPartnerQuery'], ParentType, ContextType>;
+    publicPartnerVenue?: Resolver<GqlSResolversTypes['PublicPartnerVenueQuery'], ParentType, ContextType>;
     publicWebPage?: Resolver<GqlSResolversTypes['PublicWebPageQuery'], ParentType, ContextType>;
 }>;
 
@@ -12307,7 +12384,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminMapBookingRequestPoint?: GqlSAdminMapBookingRequestPointResolvers<ContextType>;
     AdminMapCityPoint?: GqlSAdminMapCityPointResolvers<ContextType>;
     AdminMapCookPoint?: GqlSAdminMapCookPointResolvers<ContextType>;
-    AdminMapPartnerPoint?: GqlSAdminMapPartnerPointResolvers<ContextType>;
+    AdminMapPartnerVenuePoint?: GqlSAdminMapPartnerVenuePointResolvers<ContextType>;
     AdminMutation?: GqlSAdminMutationResolvers<ContextType>;
     AdminObjectStorageObject?: GqlSAdminObjectStorageObjectResolvers<ContextType>;
     AdminObjectStorageObjectPage?: GqlSAdminObjectStorageObjectPageResolvers<ContextType>;
@@ -12318,6 +12395,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     AdminOutboundEmailRecipientStat?: GqlSAdminOutboundEmailRecipientStatResolvers<ContextType>;
     AdminPageTestimonial?: GqlSAdminPageTestimonialResolvers<ContextType>;
     AdminPartner?: GqlSAdminPartnerResolvers<ContextType>;
+    AdminPartnerVenue?: GqlSAdminPartnerVenueResolvers<ContextType>;
     AdminPromoCode?: GqlSAdminPromoCodeResolvers<ContextType>;
     AdminQueuedJob?: GqlSAdminQueuedJobResolvers<ContextType>;
     AdminResendEmailQuota?: GqlSAdminResendEmailQuotaResolvers<ContextType>;
@@ -12463,7 +12541,7 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     OccasionPromo?: GqlSOccasionPromoResolvers<ContextType>;
     OfferAddonTemplate?: GqlSOfferAddonTemplateResolvers<ContextType>;
     PageTestimonial?: GqlSPageTestimonialResolvers<ContextType>;
-    PartnerPromo?: GqlSPartnerPromoResolvers<ContextType>;
+    PartnerVenuePromo?: GqlSPartnerVenuePromoResolvers<ContextType>;
     PhoneNumber?: GraphQLScalarType;
     PublicBlogPost?: GqlSPublicBlogPostResolvers<ContextType>;
     PublicBlogPostQuery?: GqlSPublicBlogPostQueryResolvers<ContextType>;
@@ -12483,8 +12561,8 @@ export type GqlSResolvers<ContextType = any> = ResolversObject<{
     PublicLegalTermsAndConditions?: GqlSPublicLegalTermsAndConditionsResolvers<ContextType>;
     PublicOccasion?: GqlSPublicOccasionResolvers<ContextType>;
     PublicOccasionQuery?: GqlSPublicOccasionQueryResolvers<ContextType>;
-    PublicPartner?: GqlSPublicPartnerResolvers<ContextType>;
-    PublicPartnerQuery?: GqlSPublicPartnerQueryResolvers<ContextType>;
+    PublicPartnerVenue?: GqlSPublicPartnerVenueResolvers<ContextType>;
+    PublicPartnerVenueQuery?: GqlSPublicPartnerVenueQueryResolvers<ContextType>;
     PublicUser?: GqlSPublicUserResolvers<ContextType>;
     PublicWebPage?: GqlSPublicWebPageResolvers<ContextType>;
     PublicWebPageQuery?: GqlSPublicWebPageQueryResolvers<ContextType>;
@@ -12589,11 +12667,10 @@ export const GqlSAdminCallTrafficSortFieldSchema: z.ZodType<'createdAt' | 'occur
     'occurredAt',
 ]);
 
-export const GqlSAdminCookFeaturedLandingKindSchema: z.ZodType<'CITY' | 'OCCASION' | 'PARTNER', 'CITY' | 'OCCASION' | 'PARTNER'> = z.enum([
-    'CITY',
-    'OCCASION',
-    'PARTNER',
-]);
+export const GqlSAdminCookFeaturedLandingKindSchema: z.ZodType<
+    'CITY' | 'OCCASION' | 'PARTNER_VENUE',
+    'CITY' | 'OCCASION' | 'PARTNER_VENUE'
+> = z.enum(['CITY', 'OCCASION', 'PARTNER_VENUE']);
 
 export const GqlSAdminCookInventoryStatusSchema: z.ZodType<'DELETED' | 'DRAFT' | 'PUBLISHED', 'DELETED' | 'DRAFT' | 'PUBLISHED'> = z.enum([
     'DELETED',
@@ -12801,9 +12878,9 @@ export const GqlSAdminSupportRequestSortFieldSchema: z.ZodType<
 > = z.enum(['bookingDateTime', 'createdAt', 'lastMessageAt']);
 
 export const GqlSAdminTestimonialPublicPageKindSchema: z.ZodType<
-    'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER',
-    'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER'
-> = z.enum(['CHEF', 'CITY', 'OCCASION', 'PARTNER']);
+    'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER_VENUE',
+    'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER_VENUE'
+> = z.enum(['CHEF', 'CITY', 'OCCASION', 'PARTNER_VENUE']);
 
 export const GqlSAdminTimeBucketGranularitySchema: z.ZodType<'day' | 'month' | 'week', 'day' | 'month' | 'week'> = z.enum([
     'day',
@@ -13267,10 +13344,10 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'LANDING_TESTIMONIAL_CARDS'
-    | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
-    | 'SIGN_IN_GOOGLE',
+    | 'SIGN_IN_GOOGLE'
+    | 'VENUE_PAGE_VENUES_EXPLORE',
     | 'AI_BOOKING_REQUEST_MESSAGE'
     | 'AI_MENU_CREATE'
     | 'AI_MENU_EVALUATION'
@@ -13293,10 +13370,10 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'LANDING_TESTIMONIAL_CARDS'
-    | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
     | 'SIGN_IN_GOOGLE'
+    | 'VENUE_PAGE_VENUES_EXPLORE'
 > = z.enum([
     'AI_BOOKING_REQUEST_MESSAGE',
     'AI_MENU_CREATE',
@@ -13320,10 +13397,10 @@ export const GqlSFeatureToggleKeySchema: z.ZodType<
     'COOK_WALLET_STRIPE_BALANCE',
     'LANDING_BOOKING_HOW_IT_WORKS',
     'LANDING_TESTIMONIAL_CARDS',
-    'PARTNER_PAGE_PARTNERS_EXPLORE',
     'PUBLICATION_MEALS',
     'PUBLICATION_MENUS',
     'SIGN_IN_GOOGLE',
+    'VENUE_PAGE_VENUES_EXPLORE',
 ]);
 
 export const GqlSGiftCardPaymentStatusSchema: z.ZodType<'PAYED' | 'PREPARED', 'PAYED' | 'PREPARED'> = z.enum(['PAYED', 'PREPARED']);
@@ -13406,11 +13483,11 @@ export const GqlSWebPageKeySchema: z.ZodType<
     | 'IMPRINT'
     | 'LANDING'
     | 'OCCASIONS'
-    | 'PARTNERS'
     | 'PRIVACY_POLICY'
     | 'PROFILE'
     | 'SIGN_IN'
-    | 'TERMS_AND_CONDITIONS',
+    | 'TERMS_AND_CONDITIONS'
+    | 'VENUES',
     | 'ABOUT_US'
     | 'ADMINISTRATION'
     | 'BLOG_POSTS'
@@ -13425,11 +13502,11 @@ export const GqlSWebPageKeySchema: z.ZodType<
     | 'IMPRINT'
     | 'LANDING'
     | 'OCCASIONS'
-    | 'PARTNERS'
     | 'PRIVACY_POLICY'
     | 'PROFILE'
     | 'SIGN_IN'
     | 'TERMS_AND_CONDITIONS'
+    | 'VENUES'
 > = z.enum([
     'ABOUT_US',
     'ADMINISTRATION',
@@ -13445,11 +13522,11 @@ export const GqlSWebPageKeySchema: z.ZodType<
     'IMPRINT',
     'LANDING',
     'OCCASIONS',
-    'PARTNERS',
     'PRIVACY_POLICY',
     'PROFILE',
     'SIGN_IN',
     'TERMS_AND_CONDITIONS',
+    'VENUES',
 ]);
 
 export function GqlSAdminAiGenerationCriterionSchema(): z.ZodType<GqlSAdminAiGenerationCriterion> {
@@ -13604,7 +13681,7 @@ export function GqlSAdminBookingRequestUpdateSchema(): z.ZodObject<Properties<Gq
         adjustedMessage: z.string().nullish(),
         createdAt: z.date().nullish(),
         dateTime: z.date().nullish(),
-        exactEventAddress: z.lazy(() => GqlSAdminBookingRequestExactEventAddressInputSchema().nullish()),
+        exactEventAddress: GqlSAdminBookingRequestExactEventAddressInputSchema().nullish(),
         expiresAt: z.date().nullish(),
         kitchenDetails: z.lazy(() => GqlSBookingRequestKitchenDetailsInputSchema().nullish()),
         kitchenDetailsPhotoFileUploadIds: z.array(z.string()).nullish(),
@@ -14368,6 +14445,13 @@ export function GqlSOfferAddonTemplateUpsertSchema(): z.ZodObject<Properties<Gql
 
 export function GqlSPartnerUpsertSchema(): z.ZodObject<Properties<GqlSPartnerUpsert>> {
     return z.object({
+        name: z.string(),
+        partnerId: z.string().nullish(),
+    }) as z.ZodObject<Properties<GqlSPartnerUpsert>>;
+}
+
+export function GqlSPartnerVenueUpsertSchema(): z.ZodObject<Properties<GqlSPartnerVenueUpsert>> {
+    return z.object({
         descriptionDe: z.string(),
         descriptionEn: z.string(),
         featuredCooksShowCity: z.boolean(),
@@ -14383,9 +14467,10 @@ export function GqlSPartnerUpsertSchema(): z.ZodObject<Properties<GqlSPartnerUps
         heroImageFileUploadId: z.string().nullish(),
         heroImageOverlay: z.boolean(),
         howItWorksAlternativeMedia: z.boolean(),
-        locationAddress: z.lazy(() => GqlSUserBookingRequestExactEventAddressInputSchema().nullish()),
+        locationAddress: GqlSUserBookingRequestExactEventAddressInputSchema().nullish(),
         name: z.string(),
-        partnerId: z.string().nullish(),
+        partnerId: z.string(),
+        partnerVenueId: z.string().nullish(),
         pathName: z.string(),
         promoCodeId: z.string().nullish(),
         publishedAt: z.date().nullish(),
@@ -14394,7 +14479,7 @@ export function GqlSPartnerUpsertSchema(): z.ZodObject<Properties<GqlSPartnerUps
         subHeadlineEn: z.string(),
         titleDe: z.string(),
         titleEn: z.string(),
-    }) as z.ZodObject<Properties<GqlSPartnerUpsert>>;
+    }) as z.ZodObject<Properties<GqlSPartnerVenueUpsert>>;
 }
 
 export function GqlSPublicCookFindManyCriterionSchema(): z.ZodObject<Properties<GqlSPublicCookFindManyCriterion>> {
@@ -14420,7 +14505,7 @@ export function GqlSSessionWebPageVisitCreateInputSchema(): z.ZodObject<Properti
         cityId: z.string().nullish(),
         cookId: z.string().nullish(),
         occasionId: z.string().nullish(),
-        partnerId: z.string().nullish(),
+        partnerVenueId: z.string().nullish(),
         path: z.string().nullish(),
         webPageKey: GqlSWebPageKeySchema,
     });

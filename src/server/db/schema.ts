@@ -1346,10 +1346,12 @@ export const outboundEmailAttachments = pgTable(
 export type OutboundEmailAttachment = typeof outboundEmailAttachments.$inferSelect;
 export type OutboundEmailAttachmentCreate = typeof outboundEmailAttachments.$inferInsert;
 
-// --- Content pages (cities / partners / occasions / blog) --------------------
+// --- Content pages (cities / partner venues / occasions / blog) --------------
 //
 // Shared bilingual section model lives in `src/shared/contentSection.ts` and is
 // stored as jsonb on each entity. See docs/architecture/content-sections.md.
+// Partners are admin-only companies; public landings are PartnerVenues.
+// See docs/features/partners.md.
 
 const contentPageColumns = {
     pathName: varchar().notNull(),
@@ -1409,10 +1411,21 @@ export const cities = pgTable(
 export type City = typeof cities.$inferSelect;
 export type CityCreate = typeof cities.$inferInsert;
 
-export const partners = pgTable(
-    'Partners',
+export const partners = pgTable('Partners', {
+    partnerId: nanoId().primaryKey(),
+    name: varchar().notNull(),
+    createdAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp({ withTimezone: true }).defaultNow().notNull(),
+});
+
+export type Partner = typeof partners.$inferSelect;
+export type PartnerCreate = typeof partners.$inferInsert;
+
+export const partnerVenues = pgTable(
+    'PartnerVenues',
     {
-        partnerId: nanoId().primaryKey(),
+        partnerVenueId: nanoId().primaryKey(),
+        partnerId: nanoId().notNull(),
         name: varchar().notNull(),
         ...contentPageColumns,
         // Fixed first-section slot above free content sections. See
@@ -1426,7 +1439,7 @@ export const partners = pgTable(
         // empty keeps the default booking-request form link. See
         // docs/features/partners.md.
         firstSectionCtaUrl: varchar(),
-        // Optional promo shown on the public partner CTA card. Null means
+        // Optional promo shown on the public venue CTA card. Null means
         // no banner. On delete of the promo code the assignment is cleared.
         promoCodeId: nanoId(),
         // Dark scrim on hero / first-section CTA image. Admins turn off when
@@ -1436,15 +1449,21 @@ export const partners = pgTable(
         // HowItWorks alternative assets (holiday-home style). See partners.md.
         howItWorksAlternativeMedia: boolean().notNull().default(false),
         // Show travel-origin city on featured cook cards. Admins turn off when
-        // cook city is misleading for this partner. See docs/features/partners.md.
+        // cook city is misleading for this venue. See docs/features/partners.md.
         featuredCooksShowCity: boolean().notNull().default(true),
-        // Optional partner location (venue / property address). Used by
-        // `/booking-request/plan?partnerId=…` and reusable elsewhere.
-        // URL venue params override on the plan funnel. See booking-request-plan.md.
+        // Optional venue address. Used by `/booking-request/plan?venueId=…`
+        // and reusable elsewhere. URL venue params override on the plan funnel.
+        // See booking-request-plan.md.
         locationAddress: jsonb().$type<BookingRequestExactEventAddress>(),
     },
     (table) => [
-        uniqueIndex('Partners_pathName_uidx').on(table.pathName),
+        uniqueIndex('PartnerVenues_pathName_uidx').on(table.pathName),
+        foreignKey({
+            columns: [table.partnerId],
+            foreignColumns: [partners.partnerId],
+        })
+            .onUpdate('cascade')
+            .onDelete('restrict'),
         foreignKey({
             columns: [table.heroImageFileUploadId],
             foreignColumns: [fileUploads.fileUploadId],
@@ -1463,13 +1482,14 @@ export const partners = pgTable(
         })
             .onUpdate('cascade')
             .onDelete('set null'),
-        index('Partners_publishedAt_idx').on(table.publishedAt),
-        index('Partners_promoCodeId_idx').on(table.promoCodeId),
+        index('PartnerVenues_publishedAt_idx').on(table.publishedAt),
+        index('PartnerVenues_promoCodeId_idx').on(table.promoCodeId),
+        index('PartnerVenues_partnerId_idx').on(table.partnerId),
     ],
 );
 
-export type Partner = typeof partners.$inferSelect;
-export type PartnerCreate = typeof partners.$inferInsert;
+export type PartnerVenue = typeof partnerVenues.$inferSelect;
+export type PartnerVenueCreate = typeof partnerVenues.$inferInsert;
 
 export const occasions = pgTable(
     'Occasions',
@@ -1553,19 +1573,19 @@ export const cityCooks = pgTable(
 export type CityCook = typeof cityCooks.$inferSelect;
 export type CityCookCreate = typeof cityCooks.$inferInsert;
 
-// Curated ordered cooks on a partner landing page. Empty assignment → no cooks
-// section (no geo fallback). See docs/features/partners.md.
-export const partnerCooks = pgTable(
-    'PartnerCooks',
+// Curated ordered cooks on a partner venue landing page. Empty assignment → no
+// cooks section (no geo fallback). See docs/features/partners.md.
+export const partnerVenueCooks = pgTable(
+    'PartnerVenueCooks',
     {
-        partnerId: nanoId().notNull(),
+        partnerVenueId: nanoId().notNull(),
         cookId: nanoId().notNull(),
         position: integer().notNull(),
     },
     (table) => [
         foreignKey({
-            columns: [table.partnerId],
-            foreignColumns: [partners.partnerId],
+            columns: [table.partnerVenueId],
+            foreignColumns: [partnerVenues.partnerVenueId],
         })
             .onUpdate('cascade')
             .onDelete('cascade'),
@@ -1575,13 +1595,13 @@ export const partnerCooks = pgTable(
         })
             .onUpdate('cascade')
             .onDelete('cascade'),
-        uniqueIndex('PartnerCooks_pk').on(table.partnerId, table.cookId),
-        index('PartnerCooks_partnerId_idx').on(table.partnerId),
+        uniqueIndex('PartnerVenueCooks_pk').on(table.partnerVenueId, table.cookId),
+        index('PartnerVenueCooks_partnerVenueId_idx').on(table.partnerVenueId),
     ],
 );
 
-export type PartnerCook = typeof partnerCooks.$inferSelect;
-export type PartnerCookCreate = typeof partnerCooks.$inferInsert;
+export type PartnerVenueCook = typeof partnerVenueCooks.$inferSelect;
+export type PartnerVenueCookCreate = typeof partnerVenueCooks.$inferInsert;
 
 // Curated ordered cooks on an occasion landing page. Empty assignment → no
 // cooks section (no geo fallback). See docs/features/occasions.md.
@@ -1638,7 +1658,7 @@ export type BlogPostCreate = typeof blogPosts.$inferInsert;
 //
 // Admin-editable title/description for fixed marketing and chrome routes.
 // Missing rows use shared defaults (ghost). First admin write upserts.
-// Dynamic city/partner/occasion/blog detail SEO stays on those entity tables.
+// Dynamic city/partner-venue/occasion/blog detail SEO stays on those entity tables.
 // See docs/features/admin-web-pages.md.
 
 export const webPages = pgTable('WebPages', {
@@ -2232,9 +2252,9 @@ export type CookCallSlotBookingCreate = typeof cookCallSlotBookings.$inferInsert
 // (`publicCookCustomerTestimonialRatingSummary`). Ratings are integers 1–5
 // (`testimonialRatingAssert*`); `0` is rejected on every write path. Low ratings
 // (`rating <= 3`) default to `PENDING_REVIEW` instead of auto-publishing — see
-// `publicationStatusFromRating.ts`. `CityTestimonials` / `PartnerTestimonials` /
+// `publicationStatusFromRating.ts`. `CityTestimonials` / `PartnerVenueTestimonials` /
 // `OccasionTestimonials` are ordered curation junctions (same shape as
-// `CityCooks` / `PartnerCooks` / `OccasionCooks`)
+// `CityCooks` / `PartnerVenueCooks` / `OccasionCooks`)
 // pointing at either catalog via `testimonialType` + `testimonialId`. See
 // `docs/architecture/testimonials.md`.
 
@@ -2343,28 +2363,28 @@ export const cityTestimonials = pgTable(
 export type CityTestimonial = typeof cityTestimonials.$inferSelect;
 export type CityTestimonialCreate = typeof cityTestimonials.$inferInsert;
 
-export const partnerTestimonials = pgTable(
-    'PartnerTestimonials',
+export const partnerVenueTestimonials = pgTable(
+    'PartnerVenueTestimonials',
     {
-        partnerId: nanoId().notNull(),
+        partnerVenueId: nanoId().notNull(),
         testimonialType: varchar().$type<TestimonialType>().notNull(),
         testimonialId: nanoId().notNull(),
         index: integer().notNull(),
     },
     (table) => [
-        primaryKey({ columns: [table.partnerId, table.testimonialType, table.testimonialId] }),
+        primaryKey({ columns: [table.partnerVenueId, table.testimonialType, table.testimonialId] }),
         foreignKey({
-            columns: [table.partnerId],
-            foreignColumns: [partners.partnerId],
+            columns: [table.partnerVenueId],
+            foreignColumns: [partnerVenues.partnerVenueId],
         })
             .onUpdate('cascade')
             .onDelete('cascade'),
-        index('PartnerTestimonials_partnerId_idx').on(table.partnerId),
+        index('PartnerVenueTestimonials_partnerVenueId_idx').on(table.partnerVenueId),
     ],
 );
 
-export type PartnerTestimonial = typeof partnerTestimonials.$inferSelect;
-export type PartnerTestimonialCreate = typeof partnerTestimonials.$inferInsert;
+export type PartnerVenueTestimonial = typeof partnerVenueTestimonials.$inferSelect;
+export type PartnerVenueTestimonialCreate = typeof partnerVenueTestimonials.$inferInsert;
 
 export const occasionTestimonials = pgTable(
     'OccasionTestimonials',

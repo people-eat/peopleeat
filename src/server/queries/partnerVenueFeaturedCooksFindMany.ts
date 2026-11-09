@@ -1,18 +1,21 @@
 import { and, asc, eq, inArray } from 'drizzle-orm';
 
-import { cooks, partnerCooks, users } from '../db/schema';
+import { cooks, partnerVenueCooks, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSPublicCook, GqlSPublicPartner } from '../graphql/generated';
+import type { GqlSPublicCook, GqlSPublicPartnerVenue } from '../graphql/generated';
 import { publicCookListedWhere } from '../utils/publicCookFindManyCriterionWhere';
 import { publicCooksByIdFindMany } from '../utils/publicCookHydrate';
 
-/** Curated partner cooks that pass the public listing gate, in assignment order. Empty when none assigned. */
-export async function partnerFeaturedCooksFindMany(parent: GqlSPublicPartner, serverRuntime: ServerRuntime): Promise<GqlSPublicCook[]> {
+/** Curated venue cooks that pass the public listing gate, in assignment order. Empty when none assigned. */
+export async function partnerVenueFeaturedCooksFindMany(
+    parent: GqlSPublicPartnerVenue,
+    serverRuntime: ServerRuntime,
+): Promise<GqlSPublicCook[]> {
     const assigned = await serverRuntime.db
-        .select({ cookId: partnerCooks.cookId })
-        .from(partnerCooks)
-        .where(eq(partnerCooks.partnerId, parent.partnerId))
-        .orderBy(asc(partnerCooks.position));
+        .select({ cookId: partnerVenueCooks.cookId })
+        .from(partnerVenueCooks)
+        .where(eq(partnerVenueCooks.partnerVenueId, parent.partnerVenueId))
+        .orderBy(asc(partnerVenueCooks.position));
 
     if (assigned.length === 0) return [];
 

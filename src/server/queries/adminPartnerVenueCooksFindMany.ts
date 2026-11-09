@@ -1,17 +1,20 @@
 import { and, asc, eq, inArray } from 'drizzle-orm';
 
-import { cooks, partnerCooks, users } from '../db/schema';
+import { cooks, partnerVenueCooks, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
-import type { GqlSAdminFeaturedCook, GqlSAdminPartner } from '../graphql/generated';
+import type { GqlSAdminFeaturedCook, GqlSAdminPartnerVenue } from '../graphql/generated';
 import { toGqlAdminCook } from '../mappers/toGqlAdminCook';
 import { publicCookListedWhere } from '../utils/publicCookFindManyCriterionWhere';
 
-export async function adminPartnerCooksFindMany(parent: GqlSAdminPartner, serverRuntime: ServerRuntime): Promise<GqlSAdminFeaturedCook[]> {
+export async function adminPartnerVenueCooksFindMany(
+    parent: GqlSAdminPartnerVenue,
+    serverRuntime: ServerRuntime,
+): Promise<GqlSAdminFeaturedCook[]> {
     const assigned = await serverRuntime.db
-        .select({ cookId: partnerCooks.cookId, position: partnerCooks.position })
-        .from(partnerCooks)
-        .where(eq(partnerCooks.partnerId, parent.partnerId))
-        .orderBy(asc(partnerCooks.position));
+        .select({ cookId: partnerVenueCooks.cookId, position: partnerVenueCooks.position })
+        .from(partnerVenueCooks)
+        .where(eq(partnerVenueCooks.partnerVenueId, parent.partnerVenueId))
+        .orderBy(asc(partnerVenueCooks.position));
 
     if (assigned.length === 0) return [];
 

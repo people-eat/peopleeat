@@ -9,8 +9,8 @@ import {
     cooks,
     occasions,
     occasionTestimonials,
-    partners,
-    partnerTestimonials,
+    partnerVenues,
+    partnerVenueTestimonials,
     users,
 } from '../db/schema';
 import type { TestimonialPublicationStatus, TestimonialType } from '../domain/testimonial';
@@ -79,30 +79,38 @@ async function adminTestimonialPublicPagePlacementsLoad(
             customerIds.length > 0
                 ? dbOrTransaction
                       .select({
-                          testimonialId: partnerTestimonials.testimonialId,
-                          partnerId: partners.partnerId,
-                          label: partners.name,
-                          pathName: partners.pathName,
-                          index: partnerTestimonials.index,
+                          testimonialId: partnerVenueTestimonials.testimonialId,
+                          partnerVenueId: partnerVenues.partnerVenueId,
+                          label: partnerVenues.name,
+                          pathName: partnerVenues.pathName,
+                          index: partnerVenueTestimonials.index,
                       })
-                      .from(partnerTestimonials)
-                      .innerJoin(partners, eq(partners.partnerId, partnerTestimonials.partnerId))
+                      .from(partnerVenueTestimonials)
+                      .innerJoin(partnerVenues, eq(partnerVenues.partnerVenueId, partnerVenueTestimonials.partnerVenueId))
                       .where(
-                          and(eq(partnerTestimonials.testimonialType, 'CUSTOMER'), inArray(partnerTestimonials.testimonialId, customerIds)),
+                          and(
+                              eq(partnerVenueTestimonials.testimonialType, 'CUSTOMER'),
+                              inArray(partnerVenueTestimonials.testimonialId, customerIds),
+                          ),
                       )
                 : Promise.resolve([]),
             cookIds.length > 0
                 ? dbOrTransaction
                       .select({
-                          testimonialId: partnerTestimonials.testimonialId,
-                          partnerId: partners.partnerId,
-                          label: partners.name,
-                          pathName: partners.pathName,
-                          index: partnerTestimonials.index,
+                          testimonialId: partnerVenueTestimonials.testimonialId,
+                          partnerVenueId: partnerVenues.partnerVenueId,
+                          label: partnerVenues.name,
+                          pathName: partnerVenues.pathName,
+                          index: partnerVenueTestimonials.index,
                       })
-                      .from(partnerTestimonials)
-                      .innerJoin(partners, eq(partners.partnerId, partnerTestimonials.partnerId))
-                      .where(and(eq(partnerTestimonials.testimonialType, 'COOK'), inArray(partnerTestimonials.testimonialId, cookIds)))
+                      .from(partnerVenueTestimonials)
+                      .innerJoin(partnerVenues, eq(partnerVenues.partnerVenueId, partnerVenueTestimonials.partnerVenueId))
+                      .where(
+                          and(
+                              eq(partnerVenueTestimonials.testimonialType, 'COOK'),
+                              inArray(partnerVenueTestimonials.testimonialId, cookIds),
+                          ),
+                      )
                 : Promise.resolve([]),
             customerIds.length > 0
                 ? dbOrTransaction
@@ -165,8 +173,8 @@ async function adminTestimonialPublicPagePlacementsLoad(
     }
     for (const row of partnerCustomerRows) {
         push(placementKey('CUSTOMER', row.testimonialId), {
-            kind: 'PARTNER',
-            entityId: row.partnerId,
+            kind: 'PARTNER_VENUE',
+            entityId: row.partnerVenueId,
             labelDe: row.label,
             labelEn: row.label,
             pathName: row.pathName,
@@ -175,8 +183,8 @@ async function adminTestimonialPublicPagePlacementsLoad(
     }
     for (const row of partnerCookRows) {
         push(placementKey('COOK', row.testimonialId), {
-            kind: 'PARTNER',
-            entityId: row.partnerId,
+            kind: 'PARTNER_VENUE',
+            entityId: row.partnerVenueId,
             labelDe: row.label,
             labelEn: row.label,
             pathName: row.pathName,
@@ -241,7 +249,7 @@ async function adminTestimonialPublicPagePlacementsLoad(
 
     for (const [, placements] of result) {
         placements.sort((a, b) => {
-            const kindOrder = { CITY: 0, PARTNER: 1, OCCASION: 2, CHEF: 3 } as const;
+            const kindOrder = { CITY: 0, PARTNER_VENUE: 1, OCCASION: 2, CHEF: 3 } as const;
             const kindDiff = kindOrder[a.kind] - kindOrder[b.kind];
             if (kindDiff !== 0) return kindDiff;
             const indexA = a.index ?? Number.MAX_SAFE_INTEGER;

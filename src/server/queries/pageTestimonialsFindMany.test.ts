@@ -9,24 +9,23 @@ import {
     customerTestimonials,
     occasions,
     occasionTestimonials,
-    partners,
-    partnerTestimonials,
+    partnerVenueTestimonials,
 } from '../db/schema';
 import type {
     GqlSAdminCity,
     GqlSAdminOccasion,
-    GqlSAdminPartner,
+    GqlSAdminPartnerVenue,
     GqlSPublicCity,
     GqlSPublicOccasion,
-    GqlSPublicPartner,
+    GqlSPublicPartnerVenue,
 } from '../graphql/generated';
-import { commandSetup, testDb } from '../test/commandTestUtils';
+import { commandSetup, partnerVenueInsert, testDb } from '../test/commandTestUtils';
 import { adminCityTestimonialsFindMany } from './adminCityTestimonialsFindMany';
 import { adminOccasionTestimonialsFindMany } from './adminOccasionTestimonialsFindMany';
-import { adminPartnerTestimonialsFindMany } from './adminPartnerTestimonialsFindMany';
+import { adminPartnerVenueTestimonialsFindMany } from './adminPartnerVenueTestimonialsFindMany';
 import { cityTestimonialsFindMany } from './cityTestimonialsFindMany';
 import { occasionTestimonialsFindMany } from './occasionTestimonialsFindMany';
-import { partnerTestimonialsFindMany } from './partnerTestimonialsFindMany';
+import { partnerVenueTestimonialsFindMany } from './partnerVenueTestimonialsFindMany';
 
 async function seedCatalog() {
     const customer = await commandSetup.withUser({ firstName: 'Ada', lastName: 'Page' });
@@ -241,21 +240,23 @@ describe('occasionTestimonialsFindMany', () => {
     });
 });
 
-describe('adminPartnerTestimonialsFindMany', () => {
+describe('adminPartnerVenueTestimonialsFindMany', () => {
     it('returns curated rows in index order, including pending reviews and skipping missing catalog rows', async () => {
         // Arrange
         const { serverRuntime, publishedCustomerId, pendingCustomerId, publishedCookId, danglingId } = await seedCatalog();
-        const partnerId = idCreate();
-        await testDb.insert(partners).values({ partnerId, name: 'Haus', ...pageCopy(`admin-partner-${partnerId.slice(0, 8)}`) });
-        await testDb.insert(partnerTestimonials).values([
-            { partnerId, testimonialType: 'CUSTOMER', testimonialId: pendingCustomerId, index: 1 },
-            { partnerId, testimonialType: 'COOK', testimonialId: publishedCookId, index: 0 },
-            { partnerId, testimonialType: 'CUSTOMER', testimonialId: danglingId, index: 2 },
-            { partnerId, testimonialType: 'CUSTOMER', testimonialId: publishedCustomerId, index: 3 },
+        const venue = await partnerVenueInsert({ name: 'Haus', ...pageCopy(`admin-partner-${idCreate().slice(0, 8)}`) });
+        await testDb.insert(partnerVenueTestimonials).values([
+            { partnerVenueId: venue.partnerVenueId, testimonialType: 'CUSTOMER', testimonialId: pendingCustomerId, index: 1 },
+            { partnerVenueId: venue.partnerVenueId, testimonialType: 'COOK', testimonialId: publishedCookId, index: 0 },
+            { partnerVenueId: venue.partnerVenueId, testimonialType: 'CUSTOMER', testimonialId: danglingId, index: 2 },
+            { partnerVenueId: venue.partnerVenueId, testimonialType: 'CUSTOMER', testimonialId: publishedCustomerId, index: 3 },
         ]);
 
         // Act
-        const rows = await adminPartnerTestimonialsFindMany({ partnerId } as GqlSAdminPartner, serverRuntime);
+        const rows = await adminPartnerVenueTestimonialsFindMany(
+            { partnerVenueId: venue.partnerVenueId } as GqlSAdminPartnerVenue,
+            serverRuntime,
+        );
 
         // Assert
         expect(rows.map((row) => ({ index: row.index, id: idOf(row.testimonial), listed: row.isPubliclyListed }))).toEqual([
@@ -270,28 +271,30 @@ describe('adminPartnerTestimonialsFindMany', () => {
         const { serverRuntime } = await commandSetup();
 
         // Act
-        const rows = await adminPartnerTestimonialsFindMany({ partnerId: idCreate() } as GqlSAdminPartner, serverRuntime);
+        const rows = await adminPartnerVenueTestimonialsFindMany({ partnerVenueId: idCreate() } as GqlSAdminPartnerVenue, serverRuntime);
 
         // Assert
         expect(rows).toEqual([]);
     });
 });
 
-describe('partnerTestimonialsFindMany', () => {
+describe('partnerVenueTestimonialsFindMany', () => {
     it('returns published curated rows in index order and skips pending and missing rows', async () => {
         // Arrange
         const { serverRuntime, publishedCustomerId, pendingCustomerId, publishedCookId, danglingId } = await seedCatalog();
-        const partnerId = idCreate();
-        await testDb.insert(partners).values({ partnerId, name: 'Haus', ...pageCopy(`public-partner-${partnerId.slice(0, 8)}`) });
-        await testDb.insert(partnerTestimonials).values([
-            { partnerId, testimonialType: 'CUSTOMER', testimonialId: publishedCustomerId, index: 4 },
-            { partnerId, testimonialType: 'COOK', testimonialId: danglingId, index: 1 },
-            { partnerId, testimonialType: 'CUSTOMER', testimonialId: pendingCustomerId, index: 2 },
-            { partnerId, testimonialType: 'COOK', testimonialId: publishedCookId, index: 3 },
+        const venue = await partnerVenueInsert({ name: 'Haus', ...pageCopy(`public-partner-${idCreate().slice(0, 8)}`) });
+        await testDb.insert(partnerVenueTestimonials).values([
+            { partnerVenueId: venue.partnerVenueId, testimonialType: 'CUSTOMER', testimonialId: publishedCustomerId, index: 4 },
+            { partnerVenueId: venue.partnerVenueId, testimonialType: 'COOK', testimonialId: danglingId, index: 1 },
+            { partnerVenueId: venue.partnerVenueId, testimonialType: 'CUSTOMER', testimonialId: pendingCustomerId, index: 2 },
+            { partnerVenueId: venue.partnerVenueId, testimonialType: 'COOK', testimonialId: publishedCookId, index: 3 },
         ]);
 
         // Act
-        const rows = await partnerTestimonialsFindMany({ partnerId } as GqlSPublicPartner, serverRuntime);
+        const rows = await partnerVenueTestimonialsFindMany(
+            { partnerVenueId: venue.partnerVenueId } as GqlSPublicPartnerVenue,
+            serverRuntime,
+        );
 
         // Assert
         expect(rows.map((row) => ({ index: row.index, id: idOf(row.testimonial) }))).toEqual([
@@ -305,7 +308,7 @@ describe('partnerTestimonialsFindMany', () => {
         const { serverRuntime } = await commandSetup();
 
         // Act
-        const rows = await partnerTestimonialsFindMany({ partnerId: idCreate() } as GqlSPublicPartner, serverRuntime);
+        const rows = await partnerVenueTestimonialsFindMany({ partnerVenueId: idCreate() } as GqlSPublicPartnerVenue, serverRuntime);
 
         // Assert
         expect(rows).toEqual([]);

@@ -1,6 +1,6 @@
 import { inArray } from 'drizzle-orm';
 
-import type { CityTestimonial, CookTestimonial, CustomerTestimonial, OccasionTestimonial, PartnerTestimonial } from '../db/schema';
+import type { CityTestimonial, CookTestimonial, CustomerTestimonial, OccasionTestimonial, PartnerVenueTestimonial } from '../db/schema';
 import { cookTestimonials, customerTestimonials } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSFileUpload } from '../graphql/generated';
@@ -8,7 +8,7 @@ import { testimonialAuthorProfilePicturesLoad } from './testimonialAuthorProfile
 import { testimonialOfferFallbacksLoad } from './testimonialOfferFallbacksLoad';
 import type { TestimonialOfferFallbacks } from './testimonialOfferFallbacksLoad';
 
-type JunctionRow = Pick<CityTestimonial | PartnerTestimonial | OccasionTestimonial, 'testimonialType' | 'testimonialId' | 'index'>;
+type JunctionRow = Pick<CityTestimonial | PartnerVenueTestimonial | OccasionTestimonial, 'testimonialType' | 'testimonialId' | 'index'>;
 
 export type TestimonialCatalogEntry<TCustomer, TCook> = {
     index: number;
@@ -18,9 +18,9 @@ export type TestimonialCatalogEntry<TCustomer, TCook> = {
 };
 
 /**
- * Resolves ordered `CityTestimonials` / `PartnerTestimonials` /
+ * Resolves ordered `CityTestimonials` / `PartnerVenueTestimonials` /
  * `OccasionTestimonials` junction rows into the polymorphic `Testimonial` /
- * `AdminTestimonial` union — shared by the city, partner, and occasion
+ * `AdminTestimonial` union — shared by the city, partner-venue, and occasion
  * catalogs (public + admin variants). Skips entries
  * whose target row was deleted; public variants (`publishedOnly: true`) also
  * skip `PENDING_REVIEW` rows. Always stamps `isPubliclyListed` so

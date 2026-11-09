@@ -40,7 +40,7 @@ export function SessionWebPageVisitTracker() {
                 cityId: match.params?.cityId,
                 cookId: match.params?.cookId,
                 blogPostId: match.params?.blogPostId,
-                partnerId: match.params?.partnerId,
+                partnerVenueId: match.params?.partnerVenueId,
                 occasionId: match.params?.occasionId,
                 bookingRequestId: match.params?.bookingRequestId,
             },

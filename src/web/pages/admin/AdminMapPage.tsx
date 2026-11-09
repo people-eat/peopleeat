@@ -29,7 +29,7 @@ const LAYER_LABEL: Record<AdminMapLayer, { de: string; en: string }> = {
     cooks: { de: 'Köche', en: 'Cooks' },
     bookings: { de: 'Anfragen', en: 'Requests' },
     cities: { de: 'Städte', en: 'Cities' },
-    partners: { de: 'Partner', en: 'Partners' },
+    venues: { de: 'Locations', en: 'Venues' },
 };
 
 type AdminMapPageProps = {
@@ -45,9 +45,9 @@ export function AdminMapPage({ data, search }: AdminMapPageProps) {
     const cooks = mapPayload?.cooks ?? [];
     const bookingRequests = mapPayload?.bookingRequests ?? [];
     const cities = mapPayload?.cities ?? [];
-    const partners = mapPayload?.partners ?? [];
+    const partnerVenues = mapPayload?.partnerVenues ?? [];
     const cooksMissingOriginCount = mapPayload?.cooksMissingOriginCount ?? 0;
-    const partnersMissingLocationCount = mapPayload?.partnersMissingLocationCount ?? 0;
+    const partnerVenuesMissingLocationCount = mapPayload?.partnerVenuesMissingLocationCount ?? 0;
 
     const [coverageCooks, setCoverageCooks] = useState<readonly AdminMapCoverageCook[]>([]);
 
@@ -92,7 +92,7 @@ export function AdminMapPage({ data, search }: AdminMapPageProps) {
                     cooks={cooks}
                     bookingRequests={bookingRequests}
                     cities={cities}
-                    partners={partners}
+                    partnerVenues={partnerVenues}
                     layers={resolved.layers}
                     focus={resolved.focus}
                     coverageCooks={coverageCooks}
@@ -120,7 +120,7 @@ export function AdminMapPage({ data, search }: AdminMapPageProps) {
                                 cooks={cooks}
                                 bookingRequests={bookingRequests}
                                 cities={cities}
-                                partners={partners}
+                                partnerVenues={partnerVenues}
                                 onCoverageCooksChange={setCoverageCooks}
                                 onClose={() => patchSearch({ focus: null })}
                             />
@@ -147,7 +147,8 @@ export function AdminMapPage({ data, search }: AdminMapPageProps) {
                             </span>
                             <span className="mx-2 text-border">·</span>
                             <span>
-                                {{ de: 'Partner ohne Standort', en: 'Partners missing location' }[locale]}: {partnersMissingLocationCount}
+                                {{ de: 'Locations ohne Standort', en: 'Venues missing location' }[locale]}:{' '}
+                                {partnerVenuesMissingLocationCount}
                             </span>
                         </CardContent>
                     </Card>

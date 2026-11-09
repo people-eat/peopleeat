@@ -17,6 +17,11 @@ source = source.replace(
 );
 
 source = source.replace(
+    'locationAddress: z.lazy(() => GqlSUserBookingRequestExactEventAddressInputSchema().nullish()),',
+    'locationAddress: GqlSUserBookingRequestExactEventAddressInputSchema().nullish(),',
+);
+
+source = source.replace(
     'exactEventAddress: z.lazy(() => GqlSAdminBookingRequestExactEventAddressInputSchema()),',
     'exactEventAddress: GqlSAdminBookingRequestExactEventAddressInputSchema(),',
 );
@@ -97,6 +102,7 @@ for (const name of [
     'GqlSGiftCardPay',
     'GqlSCityUpsert',
     'GqlSPartnerUpsert',
+    'GqlSPartnerVenueUpsert',
     'GqlSOccasionUpsert',
     'GqlSOccasionFormatsSectionInput',
     'GqlSBlogPostUpsert',

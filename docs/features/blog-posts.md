@@ -7,8 +7,8 @@ Admins publish bilingual articles for communication and SEO; the public reads th
 Visitors browse `/blog-posts` and `/blog-posts/$pathName` (and English paths). Unpublished or future-dated posts stay hidden until
 `publishedAt` is in the past (admins can schedule go-live).
 
-Articles use the same flexible content-section stack as cities and partners — headings, media, and body blocks in both languages with
-sensible fallbacks when one locale is empty. Blog detail uses an article hero (`SectionBlogHero`): an “All articles” link, bold title, lead
+Articles use the same flexible content-section stack as cities and venues — headings, media, and body blocks in both languages with sensible
+fallbacks when one locale is empty. Blog detail uses an article hero (`SectionBlogHero`): an “All articles” link, bold title, lead
 paragraph, then a rounded featured image (not the full-bleed `SectionHero`). The route emits `BlogPosting` JSON-LD (headline, lead, hero
 image, `publishedAt`, `updatedAt`) and a breadcrumb trail. The list also hides hero thumbnails.
 
@@ -16,10 +16,10 @@ image, `publishedAt`, `updatedAt`) and a breadcrumb trail. The list also hides h
 
 ### Alternatives considered
 
-| Approach                       | Pros              | Cons                                       |
-| ------------------------------ | ----------------- | ------------------------------------------ |
-| Bilingual like cities/partners | One section model | Authors must fill EN or accept DE fallback |
-| German-only blog               | Faster authoring  | Forks the section stack again              |
+| Approach                     | Pros              | Cons                                       |
+| ---------------------------- | ----------------- | ------------------------------------------ |
+| Bilingual like cities/venues | One section model | Authors must fill EN or accept DE fallback |
+| German-only blog             | Faster authoring  | Forks the section stack again              |
 
 ### Chosen
 

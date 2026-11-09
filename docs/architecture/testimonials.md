@@ -2,27 +2,27 @@
 
 ## Context
 
-After a completed booking, customers rate cooks and cooks leave platform/guest feedback. Public chef, city, partner, and occasion pages need
+After a completed booking, customers rate cooks and cooks leave platform/guest feedback. Public chef, city, venue, and occasion pages need
 curated or offer-linked social proof. Admin must moderate low ratings before they go live.
 
 ## Decision
 
 Four PascalCase tables:
 
-| Table                  | Role                                                                 |
-| ---------------------- | -------------------------------------------------------------------- |
-| `CustomerTestimonials` | Customer → cook review; optional unique FK to `BookingRequestOffers` |
-| `CookTestimonials`     | Cook feedback (optionally offer-linked); optional `lowRatingAnswers` |
-| `CityTestimonials`     | Polymorphic ordered curation (`COOK` \| `CUSTOMER` + `index`)        |
-| `PartnerTestimonials`  | Same junction for partners                                           |
-| `OccasionTestimonials` | Same junction for occasions                                          |
+| Table                      | Role                                                                 |
+| -------------------------- | -------------------------------------------------------------------- |
+| `CustomerTestimonials`     | Customer → cook review; optional unique FK to `BookingRequestOffers` |
+| `CookTestimonials`         | Cook feedback (optionally offer-linked); optional `lowRatingAnswers` |
+| `CityTestimonials`         | Polymorphic ordered curation (`COOK` \| `CUSTOMER` + `index`)        |
+| `PartnerVenueTestimonials` | Same junction for partner venues                                     |
+| `OccasionTestimonials`     | Same junction for occasions                                          |
 
 Star ratings are integers **1–5** on every write path (`testimonialRatingAssertRequired`). `0`, null, and other out-of-range values are
 rejected (admin create and offer self-service upsert always require a rating; admin update rejects clearing to null). Publication gate:
 ratings `<= 3` → `PENDING_REVIEW`; otherwise auto-`PUBLISHED`. Admin-authored rows are always published. Images stay as `imageUrls` JSON
 string arrays (absolute `/api/file-uploads/{id}` URLs for new uploads; migrated absolute URLs remain valid).
 
-Public chef pages expose only **published customer** testimonials linked via offers, plus `PublicCookRating`. City, partner, and occasion
+Public chef pages expose only **published customer** testimonials linked via offers, plus `PublicCookRating`. City, venue, and occasion
 pages show admin-curated selections (published only) as shared `PageTestimonial`. Admin editors use shared `AdminPageTestimonial` with
 `isPubliclyListed` (same gate: `publicationStatus = PUBLISHED`) so they can warn about curated rows that would not appear publicly —
 parallel to `AdminFeaturedCook.isPubliclyListed`.

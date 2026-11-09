@@ -1,40 +1,39 @@
 import { eq, inArray } from 'drizzle-orm';
 
-import { cookTestimonials, customerTestimonials, partners, partnerTestimonials } from '../db/schema';
-import type { PartnerTestimonialCreate } from '../db/schema';
+import { cookTestimonials, customerTestimonials, partnerVenues, partnerVenueTestimonials } from '../db/schema';
+import type { PartnerVenueTestimonialCreate } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type {
     GqlSAdminMutation,
-    GqlSAdminMutationPartnerTestimonialsUpdateArgs,
+    GqlSAdminMutationPartnerVenueTestimonialsUpdateArgs,
     GqlSMutationResult,
     GqlSSession,
 } from '../graphql/generated';
 import { assertLegalAcceptanceCurrent } from '../guards/assertLegalAcceptanceCurrent';
 
-export async function adminPartnerTestimonialsUpdate(
+export async function adminPartnerVenueTestimonialsUpdate(
     { adminId }: GqlSAdminMutation,
-    { partnerId, entries }: GqlSAdminMutationPartnerTestimonialsUpdateArgs,
+    { partnerVenueId, entries }: GqlSAdminMutationPartnerVenueTestimonialsUpdateArgs,
     requestingSession: GqlSSession,
     serverRuntime: ServerRuntime,
 ): Promise<GqlSMutationResult> {
     await assertLegalAcceptanceCurrent(adminId, requestingSession, serverRuntime);
 
     try {
-        // Phase 1 — validate + build payload
-        const [partner] = await serverRuntime.db
-            .select({ partnerId: partners.partnerId })
-            .from(partners)
-            .where(eq(partners.partnerId, partnerId))
+        const [venue] = await serverRuntime.db
+            .select({ partnerVenueId: partnerVenues.partnerVenueId })
+            .from(partnerVenues)
+            .where(eq(partnerVenues.partnerVenueId, partnerVenueId))
             .limit(1);
-        if (!partner) {
-            throw new Error('adminPartnerTestimonialsUpdate: partner not found');
+        if (!venue) {
+            throw new Error('adminPartnerVenueTestimonialsUpdate: partner venue not found');
         }
 
         const seen = new Set<string>();
         for (const entry of entries) {
             const key = `${entry.testimonialType}:${entry.testimonialId}`;
             if (seen.has(key)) {
-                throw new Error('adminPartnerTestimonialsUpdate: duplicate entry');
+                throw new Error('adminPartnerVenueTestimonialsUpdate: duplicate entry');
             }
             seen.add(key);
         }
@@ -56,28 +55,27 @@ export async function adminPartnerTestimonialsUpdate(
                 : Promise.resolve([]),
         ]);
         if (existingCustomer.length !== customerIds.length || existingCook.length !== cookIds.length) {
-            throw new Error('adminPartnerTestimonialsUpdate: testimonial not found');
+            throw new Error('adminPartnerVenueTestimonialsUpdate: testimonial not found');
         }
 
         const now = new Date();
-        const rows: PartnerTestimonialCreate[] = entries.map((entry, index) => ({
-            partnerId,
+        const rows: PartnerVenueTestimonialCreate[] = entries.map((entry, index) => ({
+            partnerVenueId,
             testimonialType: entry.testimonialType,
             testimonialId: entry.testimonialId,
             index,
         }));
 
-        // Phase 2 — replace assignment in a transaction
         await serverRuntime.db.transaction(async (transaction) => {
-            await transaction.delete(partnerTestimonials).where(eq(partnerTestimonials.partnerId, partnerId));
+            await transaction.delete(partnerVenueTestimonials).where(eq(partnerVenueTestimonials.partnerVenueId, partnerVenueId));
             if (rows.length > 0) {
-                await transaction.insert(partnerTestimonials).values(rows);
+                await transaction.insert(partnerVenueTestimonials).values(rows);
             }
-            await transaction.update(partners).set({ updatedAt: now }).where(eq(partners.partnerId, partnerId));
+            await transaction.update(partnerVenues).set({ updatedAt: now }).where(eq(partnerVenues.partnerVenueId, partnerVenueId));
         });
 
         await serverRuntime.publish.adminUpdates();
-        return { success: true, referenceId: partnerId };
+        return { success: true, referenceId: partnerVenueId };
     } catch (error) {
         serverRuntime.log.error(error, requestingSession);
         throw error;

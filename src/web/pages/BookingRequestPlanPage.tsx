@@ -162,7 +162,7 @@ const CARE_ITEMS: ReadonlyArray<{
 ];
 
 type PlanSession = GqlCBookingRequestPlanPageQuery['currentSession'];
-type PlanPartner = NonNullable<GqlCBookingRequestPlanPageQuery['publicPartner']['findOne']>;
+type PlanVenue = NonNullable<GqlCBookingRequestPlanPageQuery['publicPartnerVenue']['findOne']>;
 
 function addressFromSuggestion(suggestion: GqlCLocationSuggestion): GqlCUserBookingRequestExactEventAddressInput | null {
     const structured = suggestion.structuredAddress;
@@ -180,9 +180,9 @@ function addressFromSuggestion(suggestion: GqlCLocationSuggestion): GqlCUserBook
     };
 }
 
-function partnerDefaultAddress(partner: PlanPartner | null | undefined): GqlCUserBookingRequestExactEventAddressInput | null {
-    if (!partner?.locationAddress) return null;
-    const address = partner.locationAddress;
+function venueDefaultAddress(venue: PlanVenue | null | undefined): GqlCUserBookingRequestExactEventAddressInput | null {
+    if (!venue?.locationAddress) return null;
+    const address = venue.locationAddress;
     return {
         displayText: address.displayText,
         latitude: address.latitude,
@@ -581,7 +581,7 @@ export function BookingRequestPlanPage({
     const locale = useLocale();
     const navigate = useNavigate({ from: '/{-$locale}/booking-request/plan' });
     const [session, setSession] = useState<PlanSession>(loaderData.currentSession);
-    const partner = loaderData.publicPartner.findOne ?? null;
+    const venue = loaderData.publicPartnerVenue.findOne ?? null;
     const signedIn = sessionAuthPhase(session) === 'signedIn';
     const settingEnabled = featureToggleIsActive(session.activeFeatureToggleKeys, 'BOOKING_REQUEST_SETTING');
     const [step, setStep] = useState<BookingRequestPlanStep>(() => (search.step === 'contact' ? 'contact' : 'details'));
@@ -592,8 +592,8 @@ export function BookingRequestPlanPage({
     const [authBusy, setAuthBusy] = useState(false);
     const createStarted = useRef(false);
 
-    const partnerAddress = useMemo(() => partnerDefaultAddress(partner), [partner]);
-    const [seeded] = useState(() => bookingRequestPlanValuesFromSearch(search, partnerAddress));
+    const venueAddress = useMemo(() => venueDefaultAddress(venue), [venue]);
+    const [seeded] = useState(() => bookingRequestPlanValuesFromSearch(search, venueAddress));
 
     const form = useForm({
         defaultValues: seeded,
@@ -614,8 +614,8 @@ export function BookingRequestPlanPage({
     const exactEventCountryName = values.exactEventAddress ? formatCountryName(values.exactEventAddress.country, { locale }) : '';
 
     const greetingName = search.firstName?.trim() || session.user?.firstName?.trim() || '';
-    const heroSrc = partner?.firstSectionImageUrl || partner?.heroImageUrl || HERO_FALLBACK_SRC;
-    const partnerCity = values.exactEventAddress?.city || partnerAddress?.city || '';
+    const heroSrc = venue?.firstSectionImageUrl || venue?.heroImageUrl || HERO_FALLBACK_SRC;
+    const venueCity = values.exactEventAddress?.city || venueAddress?.city || '';
 
     const debouncedLocationSearch = useDebouncedValue(values.locationSearchText, 300);
     const [{ data: suggestionsData, fetching: suggestionsFetching }] = useQuery({
@@ -629,7 +629,7 @@ export function BookingRequestPlanPage({
         const nextSearch = bookingRequestPlanSearchFromValues({
             values: nextValues,
             step: nextStep,
-            partnerId: search.partnerId,
+            venueId: search.venueId,
             firstName: search.firstName,
             minDateTime: search.minDateTime,
             maxDateTime: search.maxDateTime,
@@ -659,10 +659,10 @@ export function BookingRequestPlanPage({
     }, [debouncedDraftKey, values, step]);
 
     useEffect(() => {
-        if (partner?.promo?.redeemCode && !values.redeemCode) {
-            form.setFieldValue('redeemCode', partner.promo.redeemCode);
+        if (venue?.promo?.redeemCode && !values.redeemCode) {
+            form.setFieldValue('redeemCode', venue.promo.redeemCode);
         }
-    }, [partner?.promo?.redeemCode, form, values.redeemCode]);
+    }, [venue?.promo?.redeemCode, form, values.redeemCode]);
 
     function selectDay(day: Date) {
         const next = new Date(values.dateTime);
@@ -992,15 +992,15 @@ export function BookingRequestPlanPage({
                     </SelectContent>
                 </Select>
             </div>
-            {!partnerAddress && detailsEditorOpen ? renderLocationPicker() : null}
-            {partnerAddress && values.exactEventAddress ? (
+            {!venueAddress && detailsEditorOpen ? renderLocationPicker() : null}
+            {venueAddress && values.exactEventAddress ? (
                 <div className="grid gap-1.5 border-t border-border pt-6 text-sm">
                     <span className="font-medium">{{ de: 'Adresse', en: 'Address' }[locale]}</span>
                     <p className="text-xs text-muted-foreground">
                         {
                             {
-                                de: 'Standort des Partners. Hier findet euer Dinner statt.',
-                                en: 'Partner location. This is where your dinner takes place.',
+                                de: 'Standort der Location. Hier findet euer Dinner statt.',
+                                en: 'Venue address. This is where your dinner takes place.',
                             }[locale]
                         }
                     </p>
@@ -1078,7 +1078,7 @@ export function BookingRequestPlanPage({
                 )}
             >
                 {step === 'details' ? (
-                    <div className={cn('grid gap-6', partner ? '@xl:grid-cols-[minmax(0,1fr)_auto] @xl:items-start' : null)}>
+                    <div className={cn('grid gap-6', venue ? '@xl:grid-cols-[minmax(0,1fr)_auto] @xl:items-start' : null)}>
                         <div className="grid gap-3">
                             {greetingName ? (
                                 <p className="text-lg text-muted-foreground">
@@ -1090,10 +1090,10 @@ export function BookingRequestPlanPage({
                                 <span className="block @xl:inline">{{ de: 'Eure Experience.', en: 'Your experience.' }[locale]}</span>
                             </h1>
                             <p className="max-w-2xl text-base/relaxed text-muted-foreground">
-                                {partner
+                                {venue
                                     ? {
-                                          de: `Euer privates 3-Gänge-Dinner${partnerCity ? ` in ${partnerCity}` : ''}, als optionales Upgrade. Einkauf, Kochen und Aufräumen sind inklusive.`,
-                                          en: `Your private three-course dinner${partnerCity ? ` in ${partnerCity}` : ''} as an optional upgrade. Shopping, cooking, and cleanup included.`,
+                                          de: `Euer privates 3-Gänge-Dinner${venueCity ? ` in ${venueCity}` : ''}, als optionales Upgrade. Einkauf, Kochen und Aufräumen sind inklusive.`,
+                                          en: `Your private three-course dinner${venueCity ? ` in ${venueCity}` : ''} as an optional upgrade. Shopping, cooking, and cleanup included.`,
                                       }[locale]
                                     : {
                                           de: 'Euer privates 3-Gänge-Dinner mit Privatkoch. Einkauf, Kochen und Aufräumen sind inklusive.',
@@ -1102,12 +1102,12 @@ export function BookingRequestPlanPage({
                             </p>
                         </div>
 
-                        {partner ? (
+                        {venue ? (
                             <div className="flex w-fit max-w-full items-center gap-4 @xl:max-w-md @xl:flex-row-reverse">
-                                {partner.firstSectionImageUrl || partner.heroImageUrl ? (
+                                {venue.firstSectionImageUrl || venue.heroImageUrl ? (
                                     <AppImage
-                                        src={partner.firstSectionImageUrl || partner.heroImageUrl || HERO_FALLBACK_SRC}
-                                        alt={partner.name}
+                                        src={venue.firstSectionImageUrl || venue.heroImageUrl || HERO_FALLBACK_SRC}
+                                        alt={venue.name}
                                         className="size-18 shrink-0 rounded-xl object-cover"
                                     />
                                 ) : null}
@@ -1115,8 +1115,8 @@ export function BookingRequestPlanPage({
                                     <p className="text-sm text-muted-foreground">
                                         {{ de: 'Exklusiv für Gäste bei', en: 'Exclusive for guests at' }[locale]}
                                     </p>
-                                    <p className="truncate text-base font-medium">{partner.name}</p>
-                                    {partnerCity ? <p className="truncate text-sm text-muted-foreground">{partnerCity}</p> : null}
+                                    <p className="truncate text-base font-medium">{venue.name}</p>
+                                    {venueCity ? <p className="truncate text-sm text-muted-foreground">{venueCity}</p> : null}
                                 </div>
                             </div>
                         ) : null}
@@ -1159,7 +1159,7 @@ export function BookingRequestPlanPage({
                                                 </div>
                                                 <span className="text-sm text-muted-foreground">5.0</span>
                                             </div>
-                                            {partner && partner.testimonials.length > 0 ? (
+                                            {venue && venue.testimonials.length > 0 ? (
                                                 <Button
                                                     type="button"
                                                     variant="link"
@@ -1174,8 +1174,8 @@ export function BookingRequestPlanPage({
                                                 >
                                                     {
                                                         {
-                                                            de: `${partner.testimonials.length} Bewertungen ansehen`,
-                                                            en: `View ${partner.testimonials.length} reviews`,
+                                                            de: `${venue.testimonials.length} Bewertungen ansehen`,
+                                                            en: `View ${venue.testimonials.length} reviews`,
                                                         }[locale]
                                                     }
                                                 </Button>
@@ -1239,14 +1239,14 @@ export function BookingRequestPlanPage({
                                                 const month = new Intl.DateTimeFormat(languageTag, {
                                                     month: 'short',
                                                 }).format(day);
-                                                const partnerStayLabel = search.partnerId
+                                                const venueStayLabel = search.venueId
                                                     ? index === 0
                                                         ? { de: 'Anreise', en: 'Arrival' }[locale]
                                                         : index === selectableDays.length - 1
                                                           ? { de: 'Abreise', en: 'Departure' }[locale]
                                                           : null
                                                     : null;
-                                                const footLabel = partnerStayLabel ?? month;
+                                                const footLabel = venueStayLabel ?? month;
                                                 return (
                                                     <button
                                                         key={key}
@@ -1300,7 +1300,7 @@ export function BookingRequestPlanPage({
                                     )}
                                 </div>
 
-                                {!partnerAddress ? renderLocationPicker() : null}
+                                {!venueAddress ? renderLocationPicker() : null}
                                 {renderSettingPicker()}
 
                                 <div className="grid gap-4">
@@ -1500,11 +1500,11 @@ export function BookingRequestPlanPage({
                                     </div>
                                 </Reveal>
 
-                                {partner && partner.testimonials.length > 0 ? (
+                                {venue && venue.testimonials.length > 0 ? (
                                     <Reveal>
                                         <div id="plan-testimonials">
                                             <SectionPageTestimonials
-                                                testimonials={partner.testimonials}
+                                                testimonials={venue.testimonials}
                                                 locale={locale}
                                                 title={{ de: 'Abende, die bleiben.', en: 'Evenings that stay with you.' }[locale]}
                                                 inset={false}
@@ -1544,10 +1544,10 @@ export function BookingRequestPlanPage({
                                         }
                                     </h1>
                                     <p className="text-muted-foreground">
-                                        {partner
+                                        {venue
                                             ? {
-                                                  de: `Euer Abend${partner.name ? ` bei ${partner.name}` : ''}. Wir prüfen euren Wunschtermin und stimmen das Menü mit euch ab.`,
-                                                  en: `Your evening${partner.name ? ` at ${partner.name}` : ''}. We check your preferred date and align the menu with you.`,
+                                                  de: `Euer Abend${venue.name ? ` bei ${venue.name}` : ''}. Wir prüfen euren Wunschtermin und stimmen das Menü mit euch ab.`,
+                                                  en: `Your evening${venue.name ? ` at ${venue.name}` : ''}. We check your preferred date and align the menu with you.`,
                                               }[locale]
                                             : {
                                                   de: 'Wir prüfen euren Wunschtermin und stimmen das Menü mit euch ab.',

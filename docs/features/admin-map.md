@@ -1,6 +1,6 @@
 # Admin map
 
-Operators inspect cooks, booking-request venues, cities, and partners on a single ops map under `/admin/map`.
+Operators inspect cooks, booking-request venues, cities, and partner venues on a single ops map under `/admin/map`.
 
 ## Behavior
 
@@ -13,10 +13,11 @@ Operators inspect cooks, booking-request venues, cities, and partners on a singl
    - **Booking requests** — event-venue pins for requests **created** in the selected range. Clustered. Layer off skips the booking GraphQL
      field.
    - **Cities** — center pins (published vs draft styling). Not clustered.
-   - **Partners** — pins when `locationAddress` is set. Missing-location count off-map.
+   - **Venues** — pins when `locationAddress` is set. Partner name as subtitle. Missing-location count off-map.
 4. **Selection** — click a pin to open a side panel with summary + deep-link to the admin detail. Selecting a booking or city loads
    offer-capable cooks covering that point (`Admin.cooksInTravelRadius`) and overlays up to 25 travel-radius circles.
-5. URL search mirrors filters: `from`, `to`, optional `layers` (comma list), optional `focus` (`cook|booking|city|partner:<id>`).
+5. URL search mirrors filters: `from`, `to`, optional `layers` (comma list), optional `focus` (`cook|booking|city|venue:<id>`). Legacy
+   `partner` / `partners` still parse as venue.
 
 ## Decisions
 
@@ -42,10 +43,10 @@ hover/selection/coverage (cap 25). Booking load always date-bounded.
 
 ## Implementation
 
-- SDL: `AdminMap`, `AdminMapCookPoint`, `AdminMapBookingRequestPoint`, `AdminMapCityPoint`, `AdminMapPartnerPoint`, `AdminMapCookStatus`,
-  `Admin.map`
+- SDL: `AdminMap`, `AdminMapCookPoint`, `AdminMapBookingRequestPoint`, `AdminMapCityPoint`, `AdminMapPartnerVenuePoint`,
+  `AdminMapCookStatus`, `Admin.map`
 - Queries: `adminMapCookPointsFindMany`, `adminMapCooksMissingOriginCount`, `adminMapBookingRequestPointsFindMany`,
-  `adminMapCityPointsFindMany`, `adminMapPartnerPointsFindMany`, `adminMapPartnersMissingLocationCount`; status helper
+  `adminMapCityPointsFindMany`, `adminMapPartnerVenuePointsFindMany`, `adminMapPartnerVenuesMissingLocationCount`; status helper
   `adminMapCookStatusDerive`
 - Selection coverage reuses `adminCooksInTravelRadiusPreviewFindMany` via `Admin.cooksInTravelRadius`
 - UI: `AdminMapPage`, `AdminMapCanvas`, `AdminMapSelectionPanel`, `adminMapSearch.ts`, `adminMapGeo.ts`; route `map.tsx`; dependency

@@ -1,13 +1,13 @@
-query BookingRequestPlanPage($partnerId: ID!, $includePartner: Boolean!) {
+query BookingRequestPlanPage($venueId: ID!, $includeVenue: Boolean!) {
     currentSession {
         ...AuthSessionFields
         user {
             ...PublicHeaderUser
         }
     }
-    publicPartner {
-        findOne(partnerId: $partnerId) @include(if: $includePartner) {
-            ...PublicPartnerFields
+    publicPartnerVenue {
+        findOne(partnerVenueId: $venueId) @include(if: $includeVenue) {
+            ...PublicPartnerVenueFields
         }
     }
 }

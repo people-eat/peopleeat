@@ -17,26 +17,26 @@ After the hero, the page may show:
 3. **Featured cooks** from a curated assignment. Empty assignment hides the section (occasions are not geo pages, so there is no
    travel-radius fallback).
 
-Assigned cooks who fail the public listing gate drop off the public page but stay in admin, with the same warnings as the partner editor.
+Assigned cooks who fail the public listing gate drop off the public page but stay in admin, with the same warnings as the venue editor.
 
-Curated **testimonials** follow the same pattern as cities and partners, see [testimonials.md](./testimonials.md).
+Curated **testimonials** follow the same pattern as cities and venues, see [testimonials.md](./testimonials.md).
 
 Occasion CTAs link to the booking request form without encoding the occasion in the URL. Promo on the card is display-only; redeem codes are
 not passed as query params today.
 
 **No How it works / Known from section.** Occasion detail pages deliberately stop at hero, first-section CTA, formats, cooks, testimonials,
-and the free-form content sections. Partner pages do not ship those bands today either, but partners list them as a next step
-([partners.md](./partners.md)); occasions do not. Keep occasion pages without them unless the product decision changes.
+and the free-form content sections. Venue pages ship How it works and Known from ([partners.md](./partners.md)); occasions do not. Keep
+occasion pages without them unless the product decision changes.
 
 ## Decisions
 
 ### Alternatives considered
 
-| Approach                                    | Pros                              | Cons                                   |
-| ------------------------------------------- | --------------------------------- | -------------------------------------- |
-| Reuse `Partners` rows with a `kind` column  | One table, one editor             | Mixes two audiences in one admin list  |
-| Free-form content sections only (no CTA)    | Least code                        | Loses the occasion CTA card and promo  |
-| Dedicated `Occasions` entity mirroring them | Separate admin list and SEO scope | Duplicates the partner CQRS file shape |
+| Approach                                        | Pros                              | Cons                                   |
+| ----------------------------------------------- | --------------------------------- | -------------------------------------- |
+| Reuse `PartnerVenues` rows with a `kind` column | One table, one editor             | Mixes two audiences in one admin list  |
+| Free-form content sections only (no CTA)        | Least code                        | Loses the occasion CTA card and promo  |
+| Dedicated `Occasions` entity mirroring them     | Separate admin list and SEO scope | Duplicates the partner CQRS file shape |
 
 ### Chosen
 

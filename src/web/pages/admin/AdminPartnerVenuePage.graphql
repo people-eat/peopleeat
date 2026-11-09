@@ -1,10 +1,14 @@
-query AdminPartnerPage($partnerId: ID!) {
+query AdminPartnerVenuePage($partnerVenueId: ID!) {
     currentSession {
         user {
             admin {
                 adminId
-                partner(partnerId: $partnerId) {
-                    ...AdminPartnerFields
+                partnerVenue(partnerVenueId: $partnerVenueId) {
+                    ...AdminPartnerVenueFields
+                }
+                partners {
+                    partnerId
+                    name
                 }
                 testimonials {
                     ...AdminTestimonialCardFields
@@ -14,34 +18,43 @@ query AdminPartnerPage($partnerId: ID!) {
     }
 }
 
-mutation AdminPartnerUpsert($input: PartnerUpsert!) {
+mutation AdminPartnerVenueUpsert($input: PartnerVenueUpsert!) {
     admin {
-        partnerUpsert(input: $input) {
+        partnerVenueUpsert(input: $input) {
             success
             referenceId
         }
     }
 }
 
-mutation AdminPartnerCooksUpdate($partnerId: ID!, $cookIds: [ID!]!) {
+mutation AdminPartnerVenueCooksUpdate($partnerVenueId: ID!, $cookIds: [ID!]!) {
     admin {
-        partnerCooksUpdate(partnerId: $partnerId, cookIds: $cookIds) {
+        partnerVenueCooksUpdate(partnerVenueId: $partnerVenueId, cookIds: $cookIds) {
             success
             referenceId
         }
     }
 }
 
-mutation AdminPartnerTestimonialsUpdate($partnerId: ID!, $entries: [TestimonialJunctionEntryInput!]!) {
+mutation AdminPartnerVenueTestimonialsUpdate($partnerVenueId: ID!, $entries: [TestimonialJunctionEntryInput!]!) {
     admin {
-        partnerTestimonialsUpdate(partnerId: $partnerId, entries: $entries) {
+        partnerVenueTestimonialsUpdate(partnerVenueId: $partnerVenueId, entries: $entries) {
             success
             referenceId
         }
     }
 }
 
-query AdminPartnerPageCookSearch($criterion: AdminUserCriterion!) {
+mutation AdminPartnerVenueDelete($partnerVenueId: ID!) {
+    admin {
+        partnerVenueDelete(partnerVenueId: $partnerVenueId) {
+            success
+            referenceId
+        }
+    }
+}
+
+query AdminPartnerVenuePageCookSearch($criterion: AdminUserCriterion!) {
     currentSession {
         user {
             admin {
@@ -65,7 +78,7 @@ query AdminPartnerPageCookSearch($criterion: AdminUserCriterion!) {
     }
 }
 
-query AdminPartnerPageLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean!) {
+query AdminPartnerVenuePageLocationSuggestions($searchText: String!, $onlyFullAddresses: Boolean!) {
     currentSession {
         locationSuggestions(searchText: $searchText, onlyFullAddresses: $onlyFullAddresses) {
             displayText
@@ -86,7 +99,7 @@ query AdminPartnerPageLocationSuggestions($searchText: String!, $onlyFullAddress
     }
 }
 
-query AdminPartnerPagePromoCodes($criterion: AdminPromoCodeCriterion!) {
+query AdminPartnerVenuePagePromoCodes($criterion: AdminPromoCodeCriterion!) {
     currentSession {
         user {
             admin {
@@ -102,11 +115,11 @@ query AdminPartnerPagePromoCodes($criterion: AdminPromoCodeCriterion!) {
     }
 }
 
-subscription AdminPartnerPageUpdates($partnerId: ID!) {
+subscription AdminPartnerVenuePageUpdates($partnerVenueId: ID!) {
     adminUpdates {
         adminId
-        partner(partnerId: $partnerId) {
-            ...AdminPartnerFields
+        partnerVenue(partnerVenueId: $partnerVenueId) {
+            ...AdminPartnerVenueFields
         }
     }
 }

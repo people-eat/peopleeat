@@ -15,10 +15,9 @@ import {
     fileUploads,
     occasions,
     occasionTestimonials,
-    partners,
-    partnerTestimonials,
+    partnerVenueTestimonials,
 } from '../db/schema';
-import { adminMutationParent, commandSetup, findLogsForSession, testDb } from '../test/commandTestUtils';
+import { adminMutationParent, commandSetup, findLogsForSession, partnerVenueInsert, testDb } from '../test/commandTestUtils';
 import { adminCustomerTestimonialDelete } from './adminCustomerTestimonialDelete';
 import { adminCustomerTestimonialImageUpdate } from './adminCustomerTestimonialImageUpdate';
 import { adminCustomerTestimonialPublish } from './adminCustomerTestimonialPublish';
@@ -743,7 +742,7 @@ describe('adminCustomerTestimonialDelete', () => {
         });
         const token = idCreate().slice(0, 8);
         const cityId = idCreate();
-        const partnerId = idCreate();
+        const partnerVenueId = idCreate();
         const occasionId = idCreate();
         const page = {
             titleDe: 'Titel',
@@ -760,14 +759,14 @@ describe('adminCustomerTestimonialDelete', () => {
             pathName: `city-${token}`,
             ...page,
         });
-        await testDb.insert(partners).values({ partnerId, name: 'Partner', pathName: `partner-${token}`, ...page });
+        await partnerVenueInsert({ partnerVenueId, name: 'Partner', pathName: `partner-${token}`, ...page });
         await testDb.insert(occasions).values({ occasionId, name: 'Occasion', pathName: `occasion-${token}`, ...page });
         await testDb.insert(cityTestimonials).values([
             { cityId, testimonialType: 'CUSTOMER', testimonialId: customerTestimonialId, index: 0 },
             { cityId, testimonialType: 'COOK', testimonialId: cookTestimonialId, index: 1 },
         ]);
-        await testDb.insert(partnerTestimonials).values({
-            partnerId,
+        await testDb.insert(partnerVenueTestimonials).values({
+            partnerVenueId,
             testimonialType: 'CUSTOMER',
             testimonialId: customerTestimonialId,
             index: 0,
@@ -792,7 +791,7 @@ describe('adminCustomerTestimonialDelete', () => {
         const [customerRows, cityRows, partnerRows, occasionRows] = await Promise.all([
             testDb.select().from(customerTestimonials).where(eq(customerTestimonials.customerTestimonialId, customerTestimonialId)),
             testDb.select().from(cityTestimonials).where(eq(cityTestimonials.cityId, cityId)),
-            testDb.select().from(partnerTestimonials).where(eq(partnerTestimonials.partnerId, partnerId)),
+            testDb.select().from(partnerVenueTestimonials).where(eq(partnerVenueTestimonials.partnerVenueId, partnerVenueId)),
             testDb.select().from(occasionTestimonials).where(eq(occasionTestimonials.occasionId, occasionId)),
         ]);
         expect(customerRows).toHaveLength(0);

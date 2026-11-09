@@ -225,6 +225,13 @@
             "when": 1794228314822,
             "tag": "0031_same_dorian_gray",
             "breakpoints": true
+        },
+        {
+            "idx": 32,
+            "version": "7",
+            "when": 1794231000000,
+            "tag": "0032_partners_and_partner_venues",
+            "breakpoints": true
         }
     ]
 }

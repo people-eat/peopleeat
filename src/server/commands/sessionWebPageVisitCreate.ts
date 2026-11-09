@@ -31,7 +31,7 @@ export async function sessionWebPageVisitCreate(
             params.cookId = cook?.cookId ?? input.cookId;
         }
         if (input.blogPostId) params.blogPostId = input.blogPostId;
-        if (input.partnerId) params.partnerId = input.partnerId;
+        if (input.partnerVenueId) params.partnerVenueId = input.partnerVenueId;
         if (input.occasionId) params.occasionId = input.occasionId;
         if (input.bookingRequestId) params.bookingRequestId = input.bookingRequestId;
 

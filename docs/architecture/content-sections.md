@@ -2,16 +2,16 @@
 
 ## Context
 
-Cities, partners, occasions, and blog posts are admin-editable SEO surfaces that share the same free-form body model: an ordered list of
-typed blocks (content, image, quote, list, CTA, Q&A). peopleeat keeps **one** shared section domain and four thin entity tables — not a
-separate section stack per entity.
+Cities, venues, occasions, and blog posts are admin-editable SEO surfaces that share the same free-form body model: an ordered list of typed
+blocks (content, image, quote, list, CTA, Q&A). peopleeat keeps **one** shared section domain and four thin entity tables — not a separate
+section stack per entity.
 
 ## Decision
 
 1. **Canonical type** — `ContentSection` in [`src/shared/contentSection.ts`](../../src/shared/contentSection.ts), validated with Zod on
    write (`contentSectionsSchema`). Paired `*De` / `*En` fields; empty EN falls back to DE at render (`contentLocaleText` /
    `contentLocaleItems`).
-2. **Persistence** — jsonb `sections` column on `Cities`, `Partners`, `Occasions`, and `BlogPosts`.
+2. **Persistence** — jsonb `sections` column on `Cities`, `PartnerVenues`, `Occasions`, and `BlogPosts`.
 3. **GraphQL** — one `ContentSection` union; mappers stamp `gqlTypeName` (see [`extensions.ts`](../../src/server/graphql/extensions.ts));
    `__resolveType` returns `obj.gqlTypeName`. Write path uses flat `ContentSectionInput` + Zod narrowing.
 4. **UI** — [`ContentSectionsEditor`](../../src/web/components/ContentSectionsEditor.tsx) (admin) and
@@ -66,24 +66,24 @@ separate section stack per entity.
 
 ## Alternatives considered
 
-| Option                                                            | Why rejected                                                  |
-| ----------------------------------------------------------------- | ------------------------------------------------------------- |
-| Separate section types per entity                                 | Duplicates editors, GraphQL unions, and validation            |
-| TipTap / Lexical in v1                                            | Markdown + live preview matches legal editor and ships faster |
-| Always-live cities / `isActive` partners / `publishingDate` blogs | Asymmetric publish models; one `publishedAt` is enough        |
+| Option                                                          | Why rejected                                                  |
+| --------------------------------------------------------------- | ------------------------------------------------------------- |
+| Separate section types per entity                               | Duplicates editors, GraphQL unions, and validation            |
+| TipTap / Lexical in v1                                          | Markdown + live preview matches legal editor and ships faster |
+| Always-live cities / `isActive` venues / `publishingDate` blogs | Asymmetric publish models; one `publishedAt` is enough        |
 
 ## Consequences
 
 - Entity pages pass identity via `identityFields` and page-body extras via `extraFields` on `ContentPageEditor`.
 - Admin list views create/open entries only; destructive delete lives on the detail editor with an alert dialog.
-- Featured cooks and testimonials curation are shipped for cities/partners/occasions (see [`testimonials.md`](../features/testimonials.md));
+- Featured cooks and testimonials curation are shipped for cities/venues/occasions (see [`testimonials.md`](../features/testimonials.md));
   admin live preview receives both via `ContentPageEditor` (`featuredCooks` / `testimonials` from `contentPageTestimonialsForPreview`).
   Preview keeps the full curated set using junction `isPubliclyListed` on shared `AdminFeaturedCook` and `AdminPageTestimonial` (false when
   a cook is not publicly listable or a testimonial is still `PENDING_REVIEW`). Unlisted rows still render with a `StatusBadge` on the card
-  and a section `StatusAlert`, matching public visibility without hard-filtering. The partner and occasion cook pickers use server-side
-  search inside the choose-chefs dialog (cities filter travel-radius candidates locally). Home HowItWorks / KnownFrom / promo bands are
-  shipped on `/` (see [`landing.md`](../features/landing.md)); city detail pages also mount HowItWorks, SectionCities, and KnownFrom (plus a
-  fixed first-section CTA and stock hero/CTA image fallbacks — see [`cities.md`](../features/cities.md)). Partner detail pages mount
-  HowItWorks (CTA hidden; optional alternative media) and KnownFrom (see [`partners.md`](../features/partners.md)). Occasion pages stay
-  without them by design (see [`occasions.md`](../features/occasions.md)).
+  and a section `StatusAlert`, matching public visibility without hard-filtering. The venue and occasion cook pickers use server-side search
+  inside the choose-chefs dialog (cities filter travel-radius candidates locally). Home HowItWorks / KnownFrom / promo bands are shipped on
+  `/` (see [`landing.md`](../features/landing.md)); city detail pages also mount HowItWorks, SectionCities, and KnownFrom (plus a fixed
+  first-section CTA and stock hero/CTA image fallbacks — see [`cities.md`](../features/cities.md)). Venue detail pages mount HowItWorks (CTA
+  hidden; optional alternative media) and KnownFrom (see [`partners.md`](../features/partners.md)). Occasion pages stay without them by
+  design (see [`occasions.md`](../features/occasions.md)).
 - Public images need the widened file-upload GET rule documented in [`file-storage.md`](./file-storage.md).

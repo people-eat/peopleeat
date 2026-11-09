@@ -4,10 +4,10 @@ import { formatIsoDate } from '../../../shared';
 import { adminOverviewRangeToGraphQlVariables, parseAdminOverviewRangeSearch } from './adminOverviewRange';
 import type { AdminOverviewDateRange, AdminOverviewRangeSearch } from './adminOverviewRange';
 
-export const ADMIN_MAP_LAYERS = ['cooks', 'bookings', 'cities', 'partners'] as const;
+export const ADMIN_MAP_LAYERS = ['cooks', 'bookings', 'cities', 'venues'] as const;
 export type AdminMapLayer = (typeof ADMIN_MAP_LAYERS)[number];
 
-type AdminMapFocusKind = 'cook' | 'booking' | 'city' | 'partner';
+type AdminMapFocusKind = 'cook' | 'booking' | 'city' | 'venue';
 
 export type AdminMapFocus = {
     kind: AdminMapFocusKind;
@@ -38,16 +38,17 @@ function parseLayers(value: unknown): ReadonlySet<AdminMapLayer> {
     }
     const parts = value
         .split(',')
-        .map((part) => part.trim())
+        .map((part) => (part.trim() === 'partners' ? 'venues' : part.trim()))
         .filter((part): part is AdminMapLayer => (ADMIN_MAP_LAYERS as readonly string[]).includes(part));
     return parts.length > 0 ? new Set(parts) : new Set(ADMIN_MAP_LAYERS);
 }
 
 function parseFocus(value: unknown): AdminMapFocus | null {
     if (typeof value !== 'string') return null;
-    const match = /^(cook|booking|city|partner):([A-Za-z0-9_-]{1,40})$/.exec(value.trim());
+    const match = /^(cook|booking|city|partner|venue):([A-Za-z0-9_-]{1,40})$/.exec(value.trim());
     if (!match) return null;
-    return { kind: match[1] as AdminMapFocusKind, id: match[2]! };
+    const kind = (match[1] === 'partner' ? 'venue' : match[1]) as AdminMapFocusKind;
+    return { kind, id: match[2]! };
 }
 
 function resolveMapRange(search: AdminOverviewRangeSearch, now = new Date()): AdminOverviewDateRange {

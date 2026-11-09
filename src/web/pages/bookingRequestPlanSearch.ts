@@ -39,7 +39,7 @@ export type BookingRequestPlanSearch = {
     state?: string;
     country?: string;
     setting?: Exclude<BookingRequestSettingChoice, null>;
-    partnerId?: string;
+    venueId?: string;
     firstName?: string;
     step?: BookingRequestPlanStep;
     cuisine?: BookingRequestPlanCuisineKey;
@@ -215,7 +215,8 @@ export function parseBookingRequestPlanSearch(search: Record<string, unknown>): 
     const state = typeof search.state === 'string' && search.state.trim().length > 0 ? search.state : undefined;
     const country = typeof search.country === 'string' && search.country.trim().length > 0 ? search.country : undefined;
     const setting = bookingRequestSettingChoiceParse(search.setting);
-    const partnerId = typeof search.partnerId === 'string' && search.partnerId.trim().length > 0 ? search.partnerId.trim() : undefined;
+    const venueIdRaw = search.venueId ?? search.partnerId;
+    const venueId = typeof venueIdRaw === 'string' && venueIdRaw.trim().length > 0 ? venueIdRaw.trim() : undefined;
     const firstName = typeof search.firstName === 'string' && search.firstName.trim().length > 0 ? search.firstName.trim() : undefined;
     const step = isPlanStep(search.step) ? search.step : undefined;
     const cuisine = isCuisineKey(search.cuisine) ? search.cuisine : cuisineFromPreferences(preferences);
@@ -243,7 +244,7 @@ export function parseBookingRequestPlanSearch(search: Record<string, unknown>): 
         state,
         country,
         setting,
-        partnerId,
+        venueId,
         firstName,
         step,
         cuisine,
@@ -271,18 +272,18 @@ function planSearchAsFormVenue(search: BookingRequestPlanSearch): BookingRequest
 
 export function bookingRequestPlanResolveVenue(input: {
     search: BookingRequestPlanSearch;
-    partnerDefaultAddress?: GqlCUserBookingRequestExactEventAddressInput | null;
+    venueDefaultAddress?: GqlCUserBookingRequestExactEventAddressInput | null;
 }): GqlCUserBookingRequestExactEventAddressInput | null {
     const fromUrl = bookingRequestFormExactAddressFromSearch(planSearchAsFormVenue(input.search));
     if (fromUrl) return fromUrl;
-    return input.partnerDefaultAddress ?? null;
+    return input.venueDefaultAddress ?? null;
 }
 
 export function bookingRequestPlanValuesFromSearch(
     search: BookingRequestPlanSearch,
-    partnerDefaultAddress?: GqlCUserBookingRequestExactEventAddressInput | null,
+    venueDefaultAddress?: GqlCUserBookingRequestExactEventAddressInput | null,
 ): BookingRequestPlanValues {
-    const exactEventAddress = bookingRequestPlanResolveVenue({ search, partnerDefaultAddress });
+    const exactEventAddress = bookingRequestPlanResolveVenue({ search, venueDefaultAddress });
     const bounds = bookingRequestFormDateTimeBoundsFromSearch({
         minDateTime: search.minDateTime,
         maxDateTime: search.maxDateTime,
@@ -314,12 +315,12 @@ export function bookingRequestPlanValuesFromSearch(
 export function bookingRequestPlanSearchFromValues(input: {
     values: BookingRequestPlanValues;
     step: BookingRequestPlanStep;
-    partnerId?: string;
+    venueId?: string;
     firstName?: string;
     minDateTime?: string;
     maxDateTime?: string;
 }): BookingRequestPlanSearch {
-    const { values, step, partnerId, firstName, minDateTime, maxDateTime } = input;
+    const { values, step, venueId, firstName, minDateTime, maxDateTime } = input;
     const address = values.exactEventAddress;
     const preference = bookingRequestPlanCuisinePreference(values.cuisine, 'de');
     return {
@@ -344,7 +345,7 @@ export function bookingRequestPlanSearchFromValues(input: {
         state: address?.state || undefined,
         country: address?.country || undefined,
         setting: values.settingChoice ?? undefined,
-        partnerId,
+        venueId,
         firstName,
         step: step === 'details' ? undefined : step,
     };
@@ -371,7 +372,7 @@ export function bookingRequestPlanSearchEqual(a: BookingRequestPlanSearch, b: Bo
         a.state === b.state &&
         a.country === b.country &&
         a.setting === b.setting &&
-        a.partnerId === b.partnerId &&
+        a.venueId === b.venueId &&
         a.firstName === b.firstName &&
         a.step === b.step &&
         a.cuisine === b.cuisine &&

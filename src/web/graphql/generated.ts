@@ -102,6 +102,7 @@ export interface GqlCAdmin {
     outboundEmails: Array<GqlCAdminOutboundEmail>;
     outboundEmailsCounts: Array<Scalars['Int']['output']>;
     partner?: Maybe<GqlCAdminPartner>;
+    partnerVenue?: Maybe<GqlCAdminPartnerVenue>;
     partners: Array<GqlCAdminPartner>;
     promoCode?: Maybe<GqlCAdminPromoCode>;
     promoCodes: Array<GqlCAdminPromoCode>;
@@ -404,6 +405,10 @@ export type GqlCAdminOutboundEmailsCountsArgs = {
 
 export type GqlCAdminPartnerArgs = {
     partnerId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminPartnerVenueArgs = {
+    partnerVenueId: Scalars['ID']['input'];
 };
 
 export type GqlCAdminPromoCodeArgs = {
@@ -1088,7 +1093,7 @@ export interface GqlCAdminCookFeaturedLanding {
     titleEn: Scalars['String']['output'];
 }
 
-export type GqlCAdminCookFeaturedLandingKind = 'CITY' | 'OCCASION' | 'PARTNER';
+export type GqlCAdminCookFeaturedLandingKind = 'CITY' | 'OCCASION' | 'PARTNER_VENUE';
 
 export interface GqlCAdminCookInTravelRadiusPreview {
     __typename?: 'AdminCookInTravelRadiusPreview';
@@ -1407,8 +1412,8 @@ export interface GqlCAdminMap {
     cities: Array<GqlCAdminMapCityPoint>;
     cooks: Array<GqlCAdminMapCookPoint>;
     cooksMissingOriginCount: Scalars['Int']['output'];
-    partners: Array<GqlCAdminMapPartnerPoint>;
-    partnersMissingLocationCount: Scalars['Int']['output'];
+    partnerVenues: Array<GqlCAdminMapPartnerVenuePoint>;
+    partnerVenuesMissingLocationCount: Scalars['Int']['output'];
 }
 
 export type GqlCAdminMapBookingRequestsArgs = {
@@ -1448,12 +1453,14 @@ export interface GqlCAdminMapCookPoint {
 
 export type GqlCAdminMapCookStatus = 'HIDDEN' | 'LISTABLE' | 'PENDING';
 
-export interface GqlCAdminMapPartnerPoint {
-    __typename?: 'AdminMapPartnerPoint';
+export interface GqlCAdminMapPartnerVenuePoint {
+    __typename?: 'AdminMapPartnerVenuePoint';
     latitude: Scalars['Latitude']['output'];
     longitude: Scalars['Longitude']['output'];
     name: Scalars['String']['output'];
     partnerId: Scalars['ID']['output'];
+    partnerName: Scalars['String']['output'];
+    partnerVenueId: Scalars['ID']['output'];
     published: Scalars['Boolean']['output'];
 }
 
@@ -1524,10 +1531,12 @@ export interface GqlCAdminMutation {
     occasionUpsert: GqlCMutationResult;
     offerAddonTemplateDelete: GqlCMutationResult;
     offerAddonTemplateUpsert: GqlCMutationResult;
-    partnerCooksUpdate: GqlCMutationResult;
     partnerDelete: GqlCMutationResult;
-    partnerTestimonialsUpdate: GqlCMutationResult;
     partnerUpsert: GqlCMutationResult;
+    partnerVenueCooksUpdate: GqlCMutationResult;
+    partnerVenueDelete: GqlCMutationResult;
+    partnerVenueTestimonialsUpdate: GqlCMutationResult;
+    partnerVenueUpsert: GqlCMutationResult;
     promoCodeCreate: GqlCMutationResult;
     promoCodeUpdate: GqlCMutationResult;
     queuedJobCancel: GqlCMutationResult;
@@ -1845,22 +1854,30 @@ export type GqlCAdminMutationOfferAddonTemplateUpsertArgs = {
     input: GqlCOfferAddonTemplateUpsert;
 };
 
-export type GqlCAdminMutationPartnerCooksUpdateArgs = {
-    cookIds: Array<Scalars['ID']['input']>;
-    partnerId: Scalars['ID']['input'];
-};
-
 export type GqlCAdminMutationPartnerDeleteArgs = {
-    partnerId: Scalars['ID']['input'];
-};
-
-export type GqlCAdminMutationPartnerTestimonialsUpdateArgs = {
-    entries: Array<GqlCTestimonialJunctionEntryInput>;
     partnerId: Scalars['ID']['input'];
 };
 
 export type GqlCAdminMutationPartnerUpsertArgs = {
     input: GqlCPartnerUpsert;
+};
+
+export type GqlCAdminMutationPartnerVenueCooksUpdateArgs = {
+    cookIds: Array<Scalars['ID']['input']>;
+    partnerVenueId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationPartnerVenueDeleteArgs = {
+    partnerVenueId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationPartnerVenueTestimonialsUpdateArgs = {
+    entries: Array<GqlCTestimonialJunctionEntryInput>;
+    partnerVenueId: Scalars['ID']['input'];
+};
+
+export type GqlCAdminMutationPartnerVenueUpsertArgs = {
+    input: GqlCPartnerVenueUpsert;
 };
 
 export type GqlCAdminMutationPromoCodeCreateArgs = {
@@ -2139,6 +2156,15 @@ export interface GqlCAdminPageTestimonial {
 
 export interface GqlCAdminPartner {
     __typename?: 'AdminPartner';
+    createdAt: Scalars['DateTime']['output'];
+    name: Scalars['String']['output'];
+    partnerId: Scalars['ID']['output'];
+    updatedAt: Scalars['DateTime']['output'];
+    venues: Array<GqlCAdminPartnerVenue>;
+}
+
+export interface GqlCAdminPartnerVenue {
+    __typename?: 'AdminPartnerVenue';
     cooks: Array<GqlCAdminFeaturedCook>;
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
@@ -2160,10 +2186,12 @@ export interface GqlCAdminPartner {
     howItWorksAlternativeMedia: Scalars['Boolean']['output'];
     locationAddress?: Maybe<GqlCCookTravelOriginAddress>;
     name: Scalars['String']['output'];
+    partner: GqlCAdminPartner;
     partnerId: Scalars['ID']['output'];
+    partnerVenueId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
     previousPathNames: Array<Scalars['String']['output']>;
-    promo?: Maybe<GqlCPartnerPromo>;
+    promo?: Maybe<GqlCPartnerVenuePromo>;
     promoCodeId?: Maybe<Scalars['ID']['output']>;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     sections: Array<GqlCContentSection>;
@@ -2354,7 +2382,7 @@ export type GqlCAdminTestimonialCriterion = {
     take?: Scalars['Int']['input'];
 };
 
-export type GqlCAdminTestimonialPublicPageKind = 'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER';
+export type GqlCAdminTestimonialPublicPageKind = 'CHEF' | 'CITY' | 'OCCASION' | 'PARTNER_VENUE';
 
 export interface GqlCAdminTestimonialPublicPagePlacement {
     __typename?: 'AdminTestimonialPublicPagePlacement';
@@ -4336,10 +4364,10 @@ export type GqlCFeatureToggleKey =
     | 'COOK_WALLET_STRIPE_BALANCE'
     | 'LANDING_BOOKING_HOW_IT_WORKS'
     | 'LANDING_TESTIMONIAL_CARDS'
-    | 'PARTNER_PAGE_PARTNERS_EXPLORE'
     | 'PUBLICATION_MEALS'
     | 'PUBLICATION_MENUS'
-    | 'SIGN_IN_GOOGLE';
+    | 'SIGN_IN_GOOGLE'
+    | 'VENUE_PAGE_VENUES_EXPLORE';
 
 export interface GqlCFileUpload {
     __typename?: 'FileUpload';
@@ -4630,13 +4658,18 @@ export interface GqlCPageTestimonial {
     testimonial: GqlCTestimonial;
 }
 
-export interface GqlCPartnerPromo {
-    __typename?: 'PartnerPromo';
+export type GqlCPartnerUpsert = {
+    name: Scalars['String']['input'];
+    partnerId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export interface GqlCPartnerVenuePromo {
+    __typename?: 'PartnerVenuePromo';
     amountCents: Scalars['Int']['output'];
     redeemCode: Scalars['String']['output'];
 }
 
-export type GqlCPartnerUpsert = {
+export type GqlCPartnerVenueUpsert = {
     descriptionDe: Scalars['String']['input'];
     descriptionEn: Scalars['String']['input'];
     featuredCooksShowCity: Scalars['Boolean']['input'];
@@ -4654,7 +4687,8 @@ export type GqlCPartnerUpsert = {
     howItWorksAlternativeMedia: Scalars['Boolean']['input'];
     locationAddress?: InputMaybe<GqlCUserBookingRequestExactEventAddressInput>;
     name: Scalars['String']['input'];
-    partnerId?: InputMaybe<Scalars['ID']['input']>;
+    partnerId: Scalars['ID']['input'];
+    partnerVenueId?: InputMaybe<Scalars['ID']['input']>;
     pathName: Scalars['String']['input'];
     promoCodeId?: InputMaybe<Scalars['ID']['input']>;
     publishedAt?: InputMaybe<Scalars['DateTime']['input']>;
@@ -4919,8 +4953,8 @@ export type GqlCPublicOccasionQueryFindOneByPathNameArgs = {
     pathName: Scalars['String']['input'];
 };
 
-export interface GqlCPublicPartner {
-    __typename?: 'PublicPartner';
+export interface GqlCPublicPartnerVenue {
+    __typename?: 'PublicPartnerVenue';
     createdAt: Scalars['DateTime']['output'];
     descriptionDe: Scalars['String']['output'];
     descriptionEn: Scalars['String']['output'];
@@ -4942,10 +4976,10 @@ export interface GqlCPublicPartner {
     howItWorksAlternativeMedia: Scalars['Boolean']['output'];
     locationAddress?: Maybe<GqlCCookTravelOriginAddress>;
     name: Scalars['String']['output'];
-    partnerId: Scalars['ID']['output'];
+    partnerVenueId: Scalars['ID']['output'];
     pathName: Scalars['String']['output'];
     previousPathNames: Array<Scalars['String']['output']>;
-    promo?: Maybe<GqlCPartnerPromo>;
+    promo?: Maybe<GqlCPartnerVenuePromo>;
     publishedAt?: Maybe<Scalars['DateTime']['output']>;
     sections: Array<GqlCContentSection>;
     subHeadlineDe: Scalars['String']['output'];
@@ -4956,18 +4990,18 @@ export interface GqlCPublicPartner {
     updatedAt: Scalars['DateTime']['output'];
 }
 
-export interface GqlCPublicPartnerQuery {
-    __typename?: 'PublicPartnerQuery';
-    findMany: Array<GqlCPublicPartner>;
-    findOne?: Maybe<GqlCPublicPartner>;
-    findOneByPathName?: Maybe<GqlCPublicPartner>;
+export interface GqlCPublicPartnerVenueQuery {
+    __typename?: 'PublicPartnerVenueQuery';
+    findMany: Array<GqlCPublicPartnerVenue>;
+    findOne?: Maybe<GqlCPublicPartnerVenue>;
+    findOneByPathName?: Maybe<GqlCPublicPartnerVenue>;
 }
 
-export type GqlCPublicPartnerQueryFindOneArgs = {
-    partnerId: Scalars['ID']['input'];
+export type GqlCPublicPartnerVenueQueryFindOneArgs = {
+    partnerVenueId: Scalars['ID']['input'];
 };
 
-export type GqlCPublicPartnerQueryFindOneByPathNameArgs = {
+export type GqlCPublicPartnerVenueQueryFindOneByPathNameArgs = {
     pathName: Scalars['String']['input'];
 };
 
@@ -5004,7 +5038,7 @@ export interface GqlCQuery {
     publicCook: GqlCPublicCookQuery;
     publicLegal: GqlCPublicLegal;
     publicOccasion: GqlCPublicOccasionQuery;
-    publicPartner: GqlCPublicPartnerQuery;
+    publicPartnerVenue: GqlCPublicPartnerVenueQuery;
     publicWebPage: GqlCPublicWebPageQuery;
 }
 
@@ -5064,7 +5098,7 @@ export type GqlCSessionWebPageVisitCreateInput = {
     cityId?: InputMaybe<Scalars['ID']['input']>;
     cookId?: InputMaybe<Scalars['ID']['input']>;
     occasionId?: InputMaybe<Scalars['ID']['input']>;
-    partnerId?: InputMaybe<Scalars['ID']['input']>;
+    partnerVenueId?: InputMaybe<Scalars['ID']['input']>;
     path?: InputMaybe<Scalars['String']['input']>;
     webPageKey: GqlCWebPageKey;
 };
@@ -5772,11 +5806,11 @@ export type GqlCWebPageKey =
     | 'IMPRINT'
     | 'LANDING'
     | 'OCCASIONS'
-    | 'PARTNERS'
     | 'PRIVACY_POLICY'
     | 'PROFILE'
     | 'SIGN_IN'
-    | 'TERMS_AND_CONDITIONS';
+    | 'TERMS_AND_CONDITIONS'
+    | 'VENUES';
 
 type GqlCChatMessagePartFields_ChatMessageDataPart_Fragment = {
     __typename: 'ChatMessageDataPart';
@@ -7027,6 +7061,15 @@ export type GqlCPublicCityFieldsFragment = {
 
 export type GqlCAdminPartnerFieldsFragment = {
     partnerId: string;
+    name: string;
+    createdAt: string;
+    updatedAt: string;
+    venues: Array<{ partnerVenueId: string; pathName: string; name: string; publishedAt: string | null; updatedAt: string }>;
+};
+
+export type GqlCAdminPartnerVenueFieldsFragment = {
+    partnerVenueId: string;
+    partnerId: string;
     pathName: string;
     previousPathNames: Array<string>;
     name: string;
@@ -7055,6 +7098,7 @@ export type GqlCAdminPartnerFieldsFragment = {
     publishedAt: string | null;
     createdAt: string;
     updatedAt: string;
+    partner: { partnerId: string; name: string };
     locationAddress: {
         displayText: string;
         latitude: number;
@@ -7159,8 +7203,8 @@ export type GqlCAdminPartnerFieldsFragment = {
     }>;
 };
 
-export type GqlCPublicPartnerFieldsFragment = {
-    partnerId: string;
+export type GqlCPublicPartnerVenueFieldsFragment = {
+    partnerVenueId: string;
     pathName: string;
     previousPathNames: Array<string>;
     name: string;
@@ -8641,8 +8685,8 @@ export type GqlCBookingRequestPageQuery = {
 };
 
 export type GqlCBookingRequestPlanPageQueryVariables = Exact<{
-    partnerId: string;
-    includePartner: boolean;
+    venueId: string;
+    includeVenue: boolean;
 }>;
 
 export type GqlCBookingRequestPlanPageQuery = {
@@ -8684,9 +8728,9 @@ export type GqlCBookingRequestPlanPageQuery = {
         } | null;
         authTotpChallenge: { expiresAt: string } | null;
     };
-    publicPartner: {
+    publicPartnerVenue: {
         findOne?: {
-            partnerId: string;
+            partnerVenueId: string;
             pathName: string;
             previousPathNames: Array<string>;
             name: string;
@@ -9632,168 +9676,6 @@ export type GqlCPublicOccasionsPageQuery = {
     publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
 };
 
-export type GqlCPublicPartnerPageQueryVariables = Exact<{
-    pathName: string;
-}>;
-
-export type GqlCPublicPartnerPageQuery = {
-    currentSession: {
-        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
-        user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null;
-    };
-    publicPartner: {
-        findOneByPathName: {
-            partnerId: string;
-            pathName: string;
-            previousPathNames: Array<string>;
-            name: string;
-            titleDe: string;
-            titleEn: string;
-            descriptionDe: string;
-            descriptionEn: string;
-            headlineDe: string;
-            headlineEn: string;
-            subHeadlineDe: string;
-            subHeadlineEn: string;
-            heroImageFileUploadId: string | null;
-            heroImageUrl: string | null;
-            firstSectionHeadlineDe: string;
-            firstSectionHeadlineEn: string;
-            firstSectionBodyDe: string;
-            firstSectionBodyEn: string;
-            firstSectionImageFileUploadId: string | null;
-            firstSectionImageUrl: string | null;
-            firstSectionCtaUrl: string | null;
-            heroImageOverlay: boolean;
-            firstSectionImageOverlay: boolean;
-            howItWorksAlternativeMedia: boolean;
-            featuredCooksShowCity: boolean;
-            publishedAt: string | null;
-            createdAt: string;
-            updatedAt: string;
-            locationAddress: {
-                displayText: string;
-                latitude: number;
-                longitude: number;
-                addressLine1: string;
-                addressLine2: string;
-                city: string;
-                postCode: string;
-                state: string;
-                country: string;
-            } | null;
-            promo: { redeemCode: string; amountCents: number } | null;
-            sections: Array<
-                | {
-                      __typename: 'ContentSectionContent';
-                      sectionId: string;
-                      titleDe: string | null;
-                      titleEn: string | null;
-                      subtitleDe: string | null;
-                      subtitleEn: string | null;
-                      imageFirst: boolean | null;
-                      contentBodyDe: string;
-                      contentBodyEn: string;
-                      contentImageFileUploadId: string | null;
-                      contentImageUrl: string | null;
-                  }
-                | {
-                      __typename: 'ContentSectionCta';
-                      sectionId: string;
-                      headlineDe: string;
-                      headlineEn: string;
-                      buttonLabelDe: string;
-                      buttonLabelEn: string;
-                      href: string;
-                      ctaBodyDe: string | null;
-                      ctaBodyEn: string | null;
-                  }
-                | { __typename: 'ContentSectionImage'; sectionId: string; imageImageFileUploadId: string; imageImageUrl: string }
-                | {
-                      __typename: 'ContentSectionList';
-                      sectionId: string;
-                      titleDe: string | null;
-                      titleEn: string | null;
-                      style: Schema.GqlCContentListStyle;
-                      itemsDe: Array<string>;
-                      itemsEn: Array<string>;
-                  }
-                | {
-                      __typename: 'ContentSectionQa';
-                      sectionId: string;
-                      titleDe: string | null;
-                      titleEn: string | null;
-                      entries: Array<{ entryId: string; questionDe: string; questionEn: string; answerDe: string; answerEn: string }>;
-                  }
-                | {
-                      __typename: 'ContentSectionQuote';
-                      sectionId: string;
-                      quoteDe: string;
-                      quoteEn: string;
-                      attributionDe: string | null;
-                      attributionEn: string | null;
-                  }
-            >;
-            featuredCooks: Array<{
-                cookId: string;
-                pathName: string;
-                cuisineStyle: string | null;
-                cookingPhilosophy: string | null;
-                city: string | null;
-                rating: { averageRating: number | null; reviewCount: number };
-                user: { display: string; profilePicture: { url: string } | null };
-            }>;
-            testimonials: Array<{
-                index: number;
-                testimonial:
-                    | {
-                          __typename: 'CookTestimonial';
-                          cookTestimonialId: string;
-                          authorName: string;
-                          location: string | null;
-                          occasion: string | null;
-                          imageUrls: Array<string>;
-                          rating: number | null;
-                          publishedAt: string | null;
-                          createdAt: string;
-                          cookBody: string | null;
-                          authorProfilePicture: { url: string } | null;
-                      }
-                    | {
-                          __typename: 'CustomerTestimonial';
-                          customerTestimonialId: string;
-                          authorName: string;
-                          location: string | null;
-                          occasion: string | null;
-                          body: string;
-                          imageUrls: Array<string>;
-                          rating: number | null;
-                          publishedAt: string | null;
-                          createdAt: string;
-                          authorProfilePicture: { url: string } | null;
-                      };
-            }>;
-        } | null;
-    };
-};
-
-export type GqlCPublicPartnersPageQueryVariables = Exact<{ [key: string]: never }>;
-
-export type GqlCPublicPartnersPageQuery = {
-    currentSession: { user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null };
-    publicPartner: {
-        findMany: Array<{
-            pathName: string;
-            titleDe: string;
-            titleEn: string;
-            descriptionDe: string;
-            descriptionEn: string;
-            heroImageUrl: string | null;
-        }>;
-    };
-    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
-};
-
 export type GqlCProfilePageCookStatusFragment = {
     cookId: string;
     onboardingSteps: Array<Schema.GqlCCookOnboardingStep>;
@@ -10018,6 +9900,168 @@ export type GqlCPublicLegalDocumentsQuery = {
         privacyPolicy: { privacyPolicyId: string; bodyDe: string; changeSummaryDe: string; publishedAt: string } | null;
         termsAndConditions: { termsAndConditionsId: string; bodyDe: string; changeSummaryDe: string; publishedAt: string } | null;
         imprint: { imprintId: string; bodyDe: string; changeSummaryDe: string; publishedAt: string } | null;
+    };
+    publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
+};
+
+export type GqlCPublicVenuePageQueryVariables = Exact<{
+    pathName: string;
+}>;
+
+export type GqlCPublicVenuePageQuery = {
+    currentSession: {
+        activeFeatureToggleKeys: Array<Schema.GqlCFeatureToggleKey>;
+        user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null;
+    };
+    publicPartnerVenue: {
+        findOneByPathName: {
+            partnerVenueId: string;
+            pathName: string;
+            previousPathNames: Array<string>;
+            name: string;
+            titleDe: string;
+            titleEn: string;
+            descriptionDe: string;
+            descriptionEn: string;
+            headlineDe: string;
+            headlineEn: string;
+            subHeadlineDe: string;
+            subHeadlineEn: string;
+            heroImageFileUploadId: string | null;
+            heroImageUrl: string | null;
+            firstSectionHeadlineDe: string;
+            firstSectionHeadlineEn: string;
+            firstSectionBodyDe: string;
+            firstSectionBodyEn: string;
+            firstSectionImageFileUploadId: string | null;
+            firstSectionImageUrl: string | null;
+            firstSectionCtaUrl: string | null;
+            heroImageOverlay: boolean;
+            firstSectionImageOverlay: boolean;
+            howItWorksAlternativeMedia: boolean;
+            featuredCooksShowCity: boolean;
+            publishedAt: string | null;
+            createdAt: string;
+            updatedAt: string;
+            locationAddress: {
+                displayText: string;
+                latitude: number;
+                longitude: number;
+                addressLine1: string;
+                addressLine2: string;
+                city: string;
+                postCode: string;
+                state: string;
+                country: string;
+            } | null;
+            promo: { redeemCode: string; amountCents: number } | null;
+            sections: Array<
+                | {
+                      __typename: 'ContentSectionContent';
+                      sectionId: string;
+                      titleDe: string | null;
+                      titleEn: string | null;
+                      subtitleDe: string | null;
+                      subtitleEn: string | null;
+                      imageFirst: boolean | null;
+                      contentBodyDe: string;
+                      contentBodyEn: string;
+                      contentImageFileUploadId: string | null;
+                      contentImageUrl: string | null;
+                  }
+                | {
+                      __typename: 'ContentSectionCta';
+                      sectionId: string;
+                      headlineDe: string;
+                      headlineEn: string;
+                      buttonLabelDe: string;
+                      buttonLabelEn: string;
+                      href: string;
+                      ctaBodyDe: string | null;
+                      ctaBodyEn: string | null;
+                  }
+                | { __typename: 'ContentSectionImage'; sectionId: string; imageImageFileUploadId: string; imageImageUrl: string }
+                | {
+                      __typename: 'ContentSectionList';
+                      sectionId: string;
+                      titleDe: string | null;
+                      titleEn: string | null;
+                      style: Schema.GqlCContentListStyle;
+                      itemsDe: Array<string>;
+                      itemsEn: Array<string>;
+                  }
+                | {
+                      __typename: 'ContentSectionQa';
+                      sectionId: string;
+                      titleDe: string | null;
+                      titleEn: string | null;
+                      entries: Array<{ entryId: string; questionDe: string; questionEn: string; answerDe: string; answerEn: string }>;
+                  }
+                | {
+                      __typename: 'ContentSectionQuote';
+                      sectionId: string;
+                      quoteDe: string;
+                      quoteEn: string;
+                      attributionDe: string | null;
+                      attributionEn: string | null;
+                  }
+            >;
+            featuredCooks: Array<{
+                cookId: string;
+                pathName: string;
+                cuisineStyle: string | null;
+                cookingPhilosophy: string | null;
+                city: string | null;
+                rating: { averageRating: number | null; reviewCount: number };
+                user: { display: string; profilePicture: { url: string } | null };
+            }>;
+            testimonials: Array<{
+                index: number;
+                testimonial:
+                    | {
+                          __typename: 'CookTestimonial';
+                          cookTestimonialId: string;
+                          authorName: string;
+                          location: string | null;
+                          occasion: string | null;
+                          imageUrls: Array<string>;
+                          rating: number | null;
+                          publishedAt: string | null;
+                          createdAt: string;
+                          cookBody: string | null;
+                          authorProfilePicture: { url: string } | null;
+                      }
+                    | {
+                          __typename: 'CustomerTestimonial';
+                          customerTestimonialId: string;
+                          authorName: string;
+                          location: string | null;
+                          occasion: string | null;
+                          body: string;
+                          imageUrls: Array<string>;
+                          rating: number | null;
+                          publishedAt: string | null;
+                          createdAt: string;
+                          authorProfilePicture: { url: string } | null;
+                      };
+            }>;
+        } | null;
+    };
+};
+
+export type GqlCPublicVenuesPageQueryVariables = Exact<{ [key: string]: never }>;
+
+export type GqlCPublicVenuesPageQuery = {
+    currentSession: { user: { admin: { adminId: string } | null; cook: { cookId: string } | null } | null };
+    publicPartnerVenue: {
+        findMany: Array<{
+            pathName: string;
+            titleDe: string;
+            titleEn: string;
+            descriptionDe: string;
+            descriptionEn: string;
+            heroImageUrl: string | null;
+        }>;
     };
     publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
 };
@@ -14142,7 +14186,7 @@ export type GqlCAdminMapPageQuery = {
                 adminId: string;
                 map: {
                     cooksMissingOriginCount: number;
-                    partnersMissingLocationCount: number;
+                    partnerVenuesMissingLocationCount: number;
                     cooks: Array<{
                         cookId: string;
                         latitude: number;
@@ -14168,7 +14212,15 @@ export type GqlCAdminMapPageQuery = {
                         nameEn: string;
                         published: boolean;
                     }>;
-                    partners: Array<{ partnerId: string; latitude: number; longitude: number; name: string; published: boolean }>;
+                    partnerVenues: Array<{
+                        partnerVenueId: string;
+                        partnerId: string;
+                        partnerName: string;
+                        latitude: number;
+                        longitude: number;
+                        name: string;
+                        published: boolean;
+                    }>;
                 };
             } | null;
         } | null;
@@ -15939,16 +15991,17 @@ export type GqlCAdminPageQuery = {
     publicWebPage: { findOne: { titleDe: string; titleEn: string; descriptionDe: string; descriptionEn: string } };
 };
 
-export type GqlCAdminPartnerPageQueryVariables = Exact<{
-    partnerId: string;
+export type GqlCAdminPartnerVenuePageQueryVariables = Exact<{
+    partnerVenueId: string;
 }>;
 
-export type GqlCAdminPartnerPageQuery = {
+export type GqlCAdminPartnerVenuePageQuery = {
     currentSession: {
         user: {
             admin: {
                 adminId: string;
-                partner: {
+                partnerVenue: {
+                    partnerVenueId: string;
                     partnerId: string;
                     pathName: string;
                     previousPathNames: Array<string>;
@@ -15978,6 +16031,7 @@ export type GqlCAdminPartnerPageQuery = {
                     publishedAt: string | null;
                     createdAt: string;
                     updatedAt: string;
+                    partner: { partnerId: string; name: string };
                     locationAddress: {
                         displayText: string;
                         latitude: number;
@@ -16087,6 +16141,7 @@ export type GqlCAdminPartnerPageQuery = {
                               };
                     }>;
                 } | null;
+                partners: Array<{ partnerId: string; name: string }>;
                 testimonials: Array<
                     | {
                           __typename: 'AdminCookTestimonial';
@@ -16114,33 +16169,41 @@ export type GqlCAdminPartnerPageQuery = {
     };
 };
 
-export type GqlCAdminPartnerUpsertMutationVariables = Exact<{
-    input: Schema.GqlCPartnerUpsert;
+export type GqlCAdminPartnerVenueUpsertMutationVariables = Exact<{
+    input: Schema.GqlCPartnerVenueUpsert;
 }>;
 
-export type GqlCAdminPartnerUpsertMutation = { admin: { partnerUpsert: { success: boolean; referenceId: string | null } } };
+export type GqlCAdminPartnerVenueUpsertMutation = { admin: { partnerVenueUpsert: { success: boolean; referenceId: string | null } } };
 
-export type GqlCAdminPartnerCooksUpdateMutationVariables = Exact<{
-    partnerId: string;
+export type GqlCAdminPartnerVenueCooksUpdateMutationVariables = Exact<{
+    partnerVenueId: string;
     cookIds: Array<string> | string;
 }>;
 
-export type GqlCAdminPartnerCooksUpdateMutation = { admin: { partnerCooksUpdate: { success: boolean; referenceId: string | null } } };
+export type GqlCAdminPartnerVenueCooksUpdateMutation = {
+    admin: { partnerVenueCooksUpdate: { success: boolean; referenceId: string | null } };
+};
 
-export type GqlCAdminPartnerTestimonialsUpdateMutationVariables = Exact<{
-    partnerId: string;
+export type GqlCAdminPartnerVenueTestimonialsUpdateMutationVariables = Exact<{
+    partnerVenueId: string;
     entries: Array<Schema.GqlCTestimonialJunctionEntryInput> | Schema.GqlCTestimonialJunctionEntryInput;
 }>;
 
-export type GqlCAdminPartnerTestimonialsUpdateMutation = {
-    admin: { partnerTestimonialsUpdate: { success: boolean; referenceId: string | null } };
+export type GqlCAdminPartnerVenueTestimonialsUpdateMutation = {
+    admin: { partnerVenueTestimonialsUpdate: { success: boolean; referenceId: string | null } };
 };
 
-export type GqlCAdminPartnerPageCookSearchQueryVariables = Exact<{
+export type GqlCAdminPartnerVenueDeleteMutationVariables = Exact<{
+    partnerVenueId: string;
+}>;
+
+export type GqlCAdminPartnerVenueDeleteMutation = { admin: { partnerVenueDelete: { success: boolean; referenceId: string | null } } };
+
+export type GqlCAdminPartnerVenuePageCookSearchQueryVariables = Exact<{
     criterion: Schema.GqlCAdminUserCriterion;
 }>;
 
-export type GqlCAdminPartnerPageCookSearchQuery = {
+export type GqlCAdminPartnerVenuePageCookSearchQuery = {
     currentSession: {
         user: {
             admin: {
@@ -16162,12 +16225,12 @@ export type GqlCAdminPartnerPageCookSearchQuery = {
     };
 };
 
-export type GqlCAdminPartnerPageLocationSuggestionsQueryVariables = Exact<{
+export type GqlCAdminPartnerVenuePageLocationSuggestionsQueryVariables = Exact<{
     searchText: string;
     onlyFullAddresses: boolean;
 }>;
 
-export type GqlCAdminPartnerPageLocationSuggestionsQuery = {
+export type GqlCAdminPartnerVenuePageLocationSuggestionsQuery = {
     currentSession: {
         locationSuggestions: Array<{
             displayText: string;
@@ -16188,11 +16251,11 @@ export type GqlCAdminPartnerPageLocationSuggestionsQuery = {
     };
 };
 
-export type GqlCAdminPartnerPagePromoCodesQueryVariables = Exact<{
+export type GqlCAdminPartnerVenuePagePromoCodesQueryVariables = Exact<{
     criterion: Schema.GqlCAdminPromoCodeCriterion;
 }>;
 
-export type GqlCAdminPartnerPagePromoCodesQuery = {
+export type GqlCAdminPartnerVenuePagePromoCodesQuery = {
     currentSession: {
         user: {
             admin: {
@@ -16208,14 +16271,15 @@ export type GqlCAdminPartnerPagePromoCodesQuery = {
     };
 };
 
-export type GqlCAdminPartnerPageUpdatesSubscriptionVariables = Exact<{
-    partnerId: string;
+export type GqlCAdminPartnerVenuePageUpdatesSubscriptionVariables = Exact<{
+    partnerVenueId: string;
 }>;
 
-export type GqlCAdminPartnerPageUpdatesSubscription = {
+export type GqlCAdminPartnerVenuePageUpdatesSubscription = {
     adminUpdates: {
         adminId: string;
-        partner: {
+        partnerVenue: {
+            partnerVenueId: string;
             partnerId: string;
             pathName: string;
             previousPathNames: Array<string>;
@@ -16245,6 +16309,7 @@ export type GqlCAdminPartnerPageUpdatesSubscription = {
             publishedAt: string | null;
             createdAt: string;
             updatedAt: string;
+            partner: { partnerId: string; name: string };
             locationAddress: {
                 displayText: string;
                 latitude: number;
@@ -16360,26 +16425,39 @@ export type GqlCAdminPartnersPageQuery = {
                 adminId: string;
                 partners: Array<{
                     partnerId: string;
-                    pathName: string;
                     name: string;
-                    titleDe: string;
-                    titleEn: string;
-                    headlineDe: string;
-                    headlineEn: string;
-                    heroImageUrl: string | null;
-                    publishedAt: string | null;
+                    createdAt: string;
                     updatedAt: string;
+                    venues: Array<{
+                        partnerVenueId: string;
+                        pathName: string;
+                        name: string;
+                        publishedAt: string | null;
+                        updatedAt: string;
+                    }>;
                 }>;
             } | null;
         } | null;
     };
 };
 
+export type GqlCAdminPartnerUpsertMutationVariables = Exact<{
+    input: Schema.GqlCPartnerUpsert;
+}>;
+
+export type GqlCAdminPartnerUpsertMutation = { admin: { partnerUpsert: { success: boolean; referenceId: string | null } } };
+
 export type GqlCAdminPartnerDeleteMutationVariables = Exact<{
     partnerId: string;
 }>;
 
 export type GqlCAdminPartnerDeleteMutation = { admin: { partnerDelete: { success: boolean; referenceId: string | null } } };
+
+export type GqlCAdminPartnerVenueCreateMutationVariables = Exact<{
+    input: Schema.GqlCPartnerVenueUpsert;
+}>;
+
+export type GqlCAdminPartnerVenueCreateMutation = { admin: { partnerVenueUpsert: { success: boolean; referenceId: string | null } } };
 
 export type GqlCAdminPartnersPageUpdatesSubscriptionVariables = Exact<{ [key: string]: never }>;
 
@@ -16388,15 +16466,10 @@ export type GqlCAdminPartnersPageUpdatesSubscription = {
         adminId: string;
         partners: Array<{
             partnerId: string;
-            pathName: string;
             name: string;
-            titleDe: string;
-            titleEn: string;
-            headlineDe: string;
-            headlineEn: string;
-            heroImageUrl: string | null;
-            publishedAt: string | null;
+            createdAt: string;
             updatedAt: string;
+            venues: Array<{ partnerVenueId: string; pathName: string; name: string; publishedAt: string | null; updatedAt: string }>;
         }>;
     };
 };
@@ -25102,6 +25175,51 @@ export const AdminPartnerFieldsFragmentDoc = {
                 kind: 'SelectionSet',
                 selections: [
                     { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'venues' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'partnerVenueId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminPartnerFieldsFragment, unknown>;
+export const AdminPartnerVenueFieldsFragmentDoc = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminPartnerVenueFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminPartnerVenue' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'partnerVenueId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'partner' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'name' } },
@@ -25427,18 +25545,18 @@ export const AdminPartnerFieldsFragmentDoc = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminPartnerFieldsFragment, unknown>;
-export const PublicPartnerFieldsFragmentDoc = {
+} as unknown as DocumentNode<GqlCAdminPartnerVenueFieldsFragment, unknown>;
+export const PublicPartnerVenueFieldsFragmentDoc = {
     kind: 'Document',
     definitions: [
         {
             kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'PublicPartnerFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicPartner' } },
+            name: { kind: 'Name', value: 'PublicPartnerVenueFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicPartnerVenue' } },
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'partnerVenueId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'name' } },
@@ -25776,7 +25894,7 @@ export const PublicPartnerFieldsFragmentDoc = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCPublicPartnerFieldsFragment, unknown>;
+} as unknown as DocumentNode<GqlCPublicPartnerVenueFieldsFragment, unknown>;
 export const OccasionFormatsSectionFieldsFragmentDoc = {
     kind: 'Document',
     definitions: [
@@ -42053,12 +42171,12 @@ export const BookingRequestPlanPageDocument = {
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'venueId' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
                 },
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includePartner' } },
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'includeVenue' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'Boolean' } } },
                 },
             ],
@@ -42085,7 +42203,7 @@ export const BookingRequestPlanPageDocument = {
                     },
                     {
                         kind: 'Field',
-                        name: { kind: 'Name', value: 'publicPartner' },
+                        name: { kind: 'Name', value: 'publicPartnerVenue' },
                         selectionSet: {
                             kind: 'SelectionSet',
                             selections: [
@@ -42095,8 +42213,8 @@ export const BookingRequestPlanPageDocument = {
                                     arguments: [
                                         {
                                             kind: 'Argument',
-                                            name: { kind: 'Name', value: 'partnerId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                                            name: { kind: 'Name', value: 'partnerVenueId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'venueId' } },
                                         },
                                     ],
                                     directives: [
@@ -42107,14 +42225,14 @@ export const BookingRequestPlanPageDocument = {
                                                 {
                                                     kind: 'Argument',
                                                     name: { kind: 'Name', value: 'if' },
-                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'includePartner' } },
+                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'includeVenue' } },
                                                 },
                                             ],
                                         },
                                     ],
                                     selectionSet: {
                                         kind: 'SelectionSet',
-                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicPartnerFields' } }],
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicPartnerVenueFields' } }],
                                     },
                                 },
                             ],
@@ -42502,12 +42620,12 @@ export const BookingRequestPlanPageDocument = {
         },
         {
             kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'PublicPartnerFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicPartner' } },
+            name: { kind: 'Name', value: 'PublicPartnerVenueFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicPartnerVenue' } },
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'partnerVenueId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'name' } },
@@ -45861,539 +45979,6 @@ export const PublicOccasionsPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCPublicOccasionsPageQuery, GqlCPublicOccasionsPageQueryVariables>;
-export const PublicPartnerPageDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'query',
-            name: { kind: 'Name', value: 'PublicPartnerPage' },
-            variableDefinitions: [
-                {
-                    kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
-                },
-            ],
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'currentSession' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'user' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicHeaderUser' } }],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'publicPartner' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'findOneByPathName' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'pathName' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
-                                        },
-                                    ],
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicPartnerFields' } }],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'ContentSectionFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSection' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
-                    {
-                        kind: 'InlineFragment',
-                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionContent' } },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'subtitleDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'subtitleEn' } },
-                                { kind: 'Field', alias: { kind: 'Name', value: 'contentBodyDe' }, name: { kind: 'Name', value: 'bodyDe' } },
-                                { kind: 'Field', alias: { kind: 'Name', value: 'contentBodyEn' }, name: { kind: 'Name', value: 'bodyEn' } },
-                                {
-                                    kind: 'Field',
-                                    alias: { kind: 'Name', value: 'contentImageFileUploadId' },
-                                    name: { kind: 'Name', value: 'imageFileUploadId' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    alias: { kind: 'Name', value: 'contentImageUrl' },
-                                    name: { kind: 'Name', value: 'imageUrl' },
-                                },
-                                { kind: 'Field', name: { kind: 'Name', value: 'imageFirst' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'InlineFragment',
-                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionImage' } },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
-                                {
-                                    kind: 'Field',
-                                    alias: { kind: 'Name', value: 'imageImageFileUploadId' },
-                                    name: { kind: 'Name', value: 'imageFileUploadId' },
-                                },
-                                {
-                                    kind: 'Field',
-                                    alias: { kind: 'Name', value: 'imageImageUrl' },
-                                    name: { kind: 'Name', value: 'imageUrl' },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'InlineFragment',
-                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionQuote' } },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'quoteDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'quoteEn' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'attributionDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'attributionEn' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'InlineFragment',
-                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionList' } },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'style' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'itemsDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'itemsEn' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'InlineFragment',
-                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionCta' } },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
-                                { kind: 'Field', alias: { kind: 'Name', value: 'ctaBodyDe' }, name: { kind: 'Name', value: 'bodyDe' } },
-                                { kind: 'Field', alias: { kind: 'Name', value: 'ctaBodyEn' }, name: { kind: 'Name', value: 'bodyEn' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'buttonLabelDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'buttonLabelEn' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'href' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'InlineFragment',
-                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionQa' } },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'entries' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'entryId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'questionDe' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'questionEn' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'answerDe' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'answerEn' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'PublicCookCardFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicCook' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'rating' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'user' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'profilePicture' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'CustomerTestimonialCardFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CustomerTestimonial' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'authorProfilePicture' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
-                    },
-                    { kind: 'Field', name: { kind: 'Name', value: 'location' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'TestimonialCardFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Testimonial' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
-                    {
-                        kind: 'InlineFragment',
-                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CustomerTestimonial' } },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'CustomerTestimonialCardFields' } }],
-                        },
-                    },
-                    {
-                        kind: 'InlineFragment',
-                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTestimonial' } },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'authorProfilePicture' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
-                                    },
-                                },
-                                { kind: 'Field', name: { kind: 'Name', value: 'location' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
-                                { kind: 'Field', alias: { kind: 'Name', value: 'cookBody' }, name: { kind: 'Name', value: 'body' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'PublicHeaderUser' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'adminId' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'cook' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }] },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'PublicPartnerFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicPartner' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineDe' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineEn' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageFileUploadId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineDe' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineEn' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyDe' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyEn' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionCtaUrl' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'featuredCooksShowCity' } },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'locationAddress' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'state' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'promo' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'redeemCode' } },
-                                { kind: 'Field', name: { kind: 'Name', value: 'amountCents' } },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'sections' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ContentSectionFields' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'featuredCooks' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicCookCardFields' } }],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'testimonials' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'testimonial' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'TestimonialCardFields' } }],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
-                    { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCPublicPartnerPageQuery, GqlCPublicPartnerPageQueryVariables>;
-export const PublicPartnersPageDocument = {
-    kind: 'Document',
-    definitions: [
-        {
-            kind: 'OperationDefinition',
-            operation: 'query',
-            name: { kind: 'Name', value: 'PublicPartnersPage' },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'currentSession' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'user' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicHeaderUser' } }],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'publicPartner' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'findMany' },
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'publicWebPage' },
-                        selectionSet: {
-                            kind: 'SelectionSet',
-                            selections: [
-                                {
-                                    kind: 'Field',
-                                    name: { kind: 'Name', value: 'findOne' },
-                                    arguments: [
-                                        {
-                                            kind: 'Argument',
-                                            name: { kind: 'Name', value: 'webPageKey' },
-                                            value: { kind: 'EnumValue', value: 'PARTNERS' },
-                                        },
-                                    ],
-                                    selectionSet: {
-                                        kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
-                                        ],
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
-            },
-        },
-        {
-            kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'PublicHeaderUser' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
-            selectionSet: {
-                kind: 'SelectionSet',
-                selections: [
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'admin' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'adminId' } }] },
-                    },
-                    {
-                        kind: 'Field',
-                        name: { kind: 'Name', value: 'cook' },
-                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }] },
-                    },
-                ],
-            },
-        },
-    ],
-} as unknown as DocumentNode<GqlCPublicPartnersPageQuery, GqlCPublicPartnersPageQueryVariables>;
 export const ProfilePageDocument = {
     kind: 'Document',
     definitions: [
@@ -47096,6 +46681,539 @@ export const PublicLegalDocumentsDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCPublicLegalDocumentsQuery, GqlCPublicLegalDocumentsQueryVariables>;
+export const PublicVenuePageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'PublicVenuePage' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'String' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'activeFeatureToggleKeys' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicHeaderUser' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPartnerVenue' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'findOneByPathName' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'pathName' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'pathName' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicPartnerVenueFields' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'ContentSectionFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSection' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionContent' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'subtitleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'subtitleEn' } },
+                                { kind: 'Field', alias: { kind: 'Name', value: 'contentBodyDe' }, name: { kind: 'Name', value: 'bodyDe' } },
+                                { kind: 'Field', alias: { kind: 'Name', value: 'contentBodyEn' }, name: { kind: 'Name', value: 'bodyEn' } },
+                                {
+                                    kind: 'Field',
+                                    alias: { kind: 'Name', value: 'contentImageFileUploadId' },
+                                    name: { kind: 'Name', value: 'imageFileUploadId' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    alias: { kind: 'Name', value: 'contentImageUrl' },
+                                    name: { kind: 'Name', value: 'imageUrl' },
+                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageFirst' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionImage' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                {
+                                    kind: 'Field',
+                                    alias: { kind: 'Name', value: 'imageImageFileUploadId' },
+                                    name: { kind: 'Name', value: 'imageFileUploadId' },
+                                },
+                                {
+                                    kind: 'Field',
+                                    alias: { kind: 'Name', value: 'imageImageUrl' },
+                                    name: { kind: 'Name', value: 'imageUrl' },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionQuote' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'quoteDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'quoteEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'attributionDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'attributionEn' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionList' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'style' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'itemsDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'itemsEn' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionCta' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
+                                { kind: 'Field', alias: { kind: 'Name', value: 'ctaBodyDe' }, name: { kind: 'Name', value: 'bodyDe' } },
+                                { kind: 'Field', alias: { kind: 'Name', value: 'ctaBodyEn' }, name: { kind: 'Name', value: 'bodyEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'buttonLabelDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'buttonLabelEn' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'href' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'ContentSectionQa' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'sectionId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'entries' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'entryId' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'questionDe' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'questionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'answerDe' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'answerEn' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicCookCardFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicCook' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cuisineStyle' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'cookingPhilosophy' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'rating' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'averageRating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'reviewCount' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'user' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'display' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'profilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'CustomerTestimonialCardFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CustomerTestimonial' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'customerTestimonialId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'authorProfilePicture' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }] },
+                    },
+                    { kind: 'Field', name: { kind: 'Name', value: 'location' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'body' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'TestimonialCardFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'Testimonial' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: '__typename' } },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CustomerTestimonial' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'CustomerTestimonialCardFields' } }],
+                        },
+                    },
+                    {
+                        kind: 'InlineFragment',
+                        typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'CookTestimonial' } },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'cookTestimonialId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'authorName' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'authorProfilePicture' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'Field', name: { kind: 'Name', value: 'url' } }],
+                                    },
+                                },
+                                { kind: 'Field', name: { kind: 'Name', value: 'location' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'occasion' } },
+                                { kind: 'Field', alias: { kind: 'Name', value: 'cookBody' }, name: { kind: 'Name', value: 'body' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'imageUrls' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'rating' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicHeaderUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'adminId' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }] },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicPartnerVenueFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'PublicPartnerVenue' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'partnerVenueId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'subHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageFileUploadId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionHeadlineEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyDe' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionBodyEn' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageFileUploadId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageUrl' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionCtaUrl' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'firstSectionImageOverlay' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'howItWorksAlternativeMedia' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'featuredCooksShowCity' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'locationAddress' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'displayText' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'latitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'longitude' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine1' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'addressLine2' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'city' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'postCode' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'state' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'country' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'promo' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'redeemCode' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'amountCents' } },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'sections' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'ContentSectionFields' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'featuredCooks' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicCookCardFields' } }],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'testimonials' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'index' } },
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'testimonial' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'TestimonialCardFields' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCPublicVenuePageQuery, GqlCPublicVenuePageQueryVariables>;
+export const PublicVenuesPageDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'query',
+            name: { kind: 'Name', value: 'PublicVenuesPage' },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'currentSession' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'user' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'PublicHeaderUser' } }],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicPartnerVenue' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'findMany' },
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'publicWebPage' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'findOne' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'webPageKey' },
+                                            value: { kind: 'EnumValue', value: 'VENUES' },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionDe' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'descriptionEn' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'PublicHeaderUser' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'User' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'adminId' } }] },
+                    },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'cook' },
+                        selectionSet: { kind: 'SelectionSet', selections: [{ kind: 'Field', name: { kind: 'Name', value: 'cookId' } }] },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCPublicVenuesPageQuery, GqlCPublicVenuesPageQueryVariables>;
 export const AdminAiGenerationPageDocument = {
     kind: 'Document',
     definitions: [
@@ -60666,13 +60784,21 @@ export const AdminMapPageDocument = {
                                                                     },
                                                                     {
                                                                         kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'partners' },
+                                                                        name: { kind: 'Name', value: 'partnerVenues' },
                                                                         selectionSet: {
                                                                             kind: 'SelectionSet',
                                                                             selections: [
                                                                                 {
                                                                                     kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'partnerVenueId' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
                                                                                     name: { kind: 'Name', value: 'partnerId' },
+                                                                                },
+                                                                                {
+                                                                                    kind: 'Field',
+                                                                                    name: { kind: 'Name', value: 'partnerName' },
                                                                                 },
                                                                                 {
                                                                                     kind: 'Field',
@@ -60692,7 +60818,7 @@ export const AdminMapPageDocument = {
                                                                     },
                                                                     {
                                                                         kind: 'Field',
-                                                                        name: { kind: 'Name', value: 'partnersMissingLocationCount' },
+                                                                        name: { kind: 'Name', value: 'partnerVenuesMissingLocationCount' },
                                                                     },
                                                                 ],
                                                             },
@@ -66289,17 +66415,17 @@ export const AdminPageDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminPageQuery, GqlCAdminPageQueryVariables>;
-export const AdminPartnerPageDocument = {
+export const AdminPartnerVenuePageDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'query',
-            name: { kind: 'Name', value: 'AdminPartnerPage' },
+            name: { kind: 'Name', value: 'AdminPartnerVenuePage' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'partnerVenueId' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
                 },
             ],
@@ -66327,12 +66453,15 @@ export const AdminPartnerPageDocument = {
                                                         { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
                                                         {
                                                             kind: 'Field',
-                                                            name: { kind: 'Name', value: 'partner' },
+                                                            name: { kind: 'Name', value: 'partnerVenue' },
                                                             arguments: [
                                                                 {
                                                                     kind: 'Argument',
-                                                                    name: { kind: 'Name', value: 'partnerId' },
-                                                                    value: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                                                                    name: { kind: 'Name', value: 'partnerVenueId' },
+                                                                    value: {
+                                                                        kind: 'Variable',
+                                                                        name: { kind: 'Name', value: 'partnerVenueId' },
+                                                                    },
                                                                 },
                                                             ],
                                                             selectionSet: {
@@ -66340,8 +66469,19 @@ export const AdminPartnerPageDocument = {
                                                                 selections: [
                                                                     {
                                                                         kind: 'FragmentSpread',
-                                                                        name: { kind: 'Name', value: 'AdminPartnerFields' },
+                                                                        name: { kind: 'Name', value: 'AdminPartnerVenueFields' },
                                                                     },
+                                                                ],
+                                                            },
+                                                        },
+                                                        {
+                                                            kind: 'Field',
+                                                            name: { kind: 'Name', value: 'partners' },
+                                                            selectionSet: {
+                                                                kind: 'SelectionSet',
+                                                                selections: [
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                                                                    { kind: 'Field', name: { kind: 'Name', value: 'name' } },
                                                                 ],
                                                             },
                                                         },
@@ -66588,12 +66728,24 @@ export const AdminPartnerPageDocument = {
         },
         {
             kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'AdminPartnerFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminPartner' } },
+            name: { kind: 'Name', value: 'AdminPartnerVenueFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminPartnerVenue' } },
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'partnerVenueId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'partner' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'name' } },
@@ -66703,19 +66855,19 @@ export const AdminPartnerPageDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminPartnerPageQuery, GqlCAdminPartnerPageQueryVariables>;
-export const AdminPartnerUpsertDocument = {
+} as unknown as DocumentNode<GqlCAdminPartnerVenuePageQuery, GqlCAdminPartnerVenuePageQueryVariables>;
+export const AdminPartnerVenueUpsertDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminPartnerUpsert' },
+            name: { kind: 'Name', value: 'AdminPartnerVenueUpsert' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
                     variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
-                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'PartnerUpsert' } } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'PartnerVenueUpsert' } } },
                 },
             ],
             selectionSet: {
@@ -66729,7 +66881,7 @@ export const AdminPartnerUpsertDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'partnerUpsert' },
+                                    name: { kind: 'Name', value: 'partnerVenueUpsert' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
@@ -66752,18 +66904,18 @@ export const AdminPartnerUpsertDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminPartnerUpsertMutation, GqlCAdminPartnerUpsertMutationVariables>;
-export const AdminPartnerCooksUpdateDocument = {
+} as unknown as DocumentNode<GqlCAdminPartnerVenueUpsertMutation, GqlCAdminPartnerVenueUpsertMutationVariables>;
+export const AdminPartnerVenueCooksUpdateDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminPartnerCooksUpdate' },
+            name: { kind: 'Name', value: 'AdminPartnerVenueCooksUpdate' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'partnerVenueId' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
                 },
                 {
@@ -66789,12 +66941,12 @@ export const AdminPartnerCooksUpdateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'partnerCooksUpdate' },
+                                    name: { kind: 'Name', value: 'partnerVenueCooksUpdate' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
-                                            name: { kind: 'Name', value: 'partnerId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                                            name: { kind: 'Name', value: 'partnerVenueId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'partnerVenueId' } },
                                         },
                                         {
                                             kind: 'Argument',
@@ -66817,18 +66969,18 @@ export const AdminPartnerCooksUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminPartnerCooksUpdateMutation, GqlCAdminPartnerCooksUpdateMutationVariables>;
-export const AdminPartnerTestimonialsUpdateDocument = {
+} as unknown as DocumentNode<GqlCAdminPartnerVenueCooksUpdateMutation, GqlCAdminPartnerVenueCooksUpdateMutationVariables>;
+export const AdminPartnerVenueTestimonialsUpdateDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'mutation',
-            name: { kind: 'Name', value: 'AdminPartnerTestimonialsUpdate' },
+            name: { kind: 'Name', value: 'AdminPartnerVenueTestimonialsUpdate' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'partnerVenueId' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
                 },
                 {
@@ -66857,12 +67009,12 @@ export const AdminPartnerTestimonialsUpdateDocument = {
                             selections: [
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'partnerTestimonialsUpdate' },
+                                    name: { kind: 'Name', value: 'partnerVenueTestimonialsUpdate' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
-                                            name: { kind: 'Name', value: 'partnerId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                                            name: { kind: 'Name', value: 'partnerVenueId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'partnerVenueId' } },
                                         },
                                         {
                                             kind: 'Argument',
@@ -66885,14 +67037,63 @@ export const AdminPartnerTestimonialsUpdateDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminPartnerTestimonialsUpdateMutation, GqlCAdminPartnerTestimonialsUpdateMutationVariables>;
-export const AdminPartnerPageCookSearchDocument = {
+} as unknown as DocumentNode<GqlCAdminPartnerVenueTestimonialsUpdateMutation, GqlCAdminPartnerVenueTestimonialsUpdateMutationVariables>;
+export const AdminPartnerVenueDeleteDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminPartnerVenueDelete' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'partnerVenueId' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'partnerVenueDelete' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'partnerVenueId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'partnerVenueId' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminPartnerVenueDeleteMutation, GqlCAdminPartnerVenueDeleteMutationVariables>;
+export const AdminPartnerVenuePageCookSearchDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'query',
-            name: { kind: 'Name', value: 'AdminPartnerPageCookSearch' },
+            name: { kind: 'Name', value: 'AdminPartnerVenuePageCookSearch' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
@@ -66992,14 +67193,14 @@ export const AdminPartnerPageCookSearchDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminPartnerPageCookSearchQuery, GqlCAdminPartnerPageCookSearchQueryVariables>;
-export const AdminPartnerPageLocationSuggestionsDocument = {
+} as unknown as DocumentNode<GqlCAdminPartnerVenuePageCookSearchQuery, GqlCAdminPartnerVenuePageCookSearchQueryVariables>;
+export const AdminPartnerVenuePageLocationSuggestionsDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'query',
-            name: { kind: 'Name', value: 'AdminPartnerPageLocationSuggestions' },
+            name: { kind: 'Name', value: 'AdminPartnerVenuePageLocationSuggestions' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
@@ -67070,14 +67271,14 @@ export const AdminPartnerPageLocationSuggestionsDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminPartnerPageLocationSuggestionsQuery, GqlCAdminPartnerPageLocationSuggestionsQueryVariables>;
-export const AdminPartnerPagePromoCodesDocument = {
+} as unknown as DocumentNode<GqlCAdminPartnerVenuePageLocationSuggestionsQuery, GqlCAdminPartnerVenuePageLocationSuggestionsQueryVariables>;
+export const AdminPartnerVenuePagePromoCodesDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'query',
-            name: { kind: 'Name', value: 'AdminPartnerPagePromoCodes' },
+            name: { kind: 'Name', value: 'AdminPartnerVenuePagePromoCodes' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
@@ -67143,18 +67344,18 @@ export const AdminPartnerPagePromoCodesDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminPartnerPagePromoCodesQuery, GqlCAdminPartnerPagePromoCodesQueryVariables>;
-export const AdminPartnerPageUpdatesDocument = {
+} as unknown as DocumentNode<GqlCAdminPartnerVenuePagePromoCodesQuery, GqlCAdminPartnerVenuePagePromoCodesQueryVariables>;
+export const AdminPartnerVenuePageUpdatesDocument = {
     kind: 'Document',
     definitions: [
         {
             kind: 'OperationDefinition',
             operation: 'subscription',
-            name: { kind: 'Name', value: 'AdminPartnerPageUpdates' },
+            name: { kind: 'Name', value: 'AdminPartnerVenuePageUpdates' },
             variableDefinitions: [
                 {
                     kind: 'VariableDefinition',
-                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'partnerVenueId' } },
                     type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'ID' } } },
                 },
             ],
@@ -67170,17 +67371,17 @@ export const AdminPartnerPageUpdatesDocument = {
                                 { kind: 'Field', name: { kind: 'Name', value: 'adminId' } },
                                 {
                                     kind: 'Field',
-                                    name: { kind: 'Name', value: 'partner' },
+                                    name: { kind: 'Name', value: 'partnerVenue' },
                                     arguments: [
                                         {
                                             kind: 'Argument',
-                                            name: { kind: 'Name', value: 'partnerId' },
-                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'partnerId' } },
+                                            name: { kind: 'Name', value: 'partnerVenueId' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'partnerVenueId' } },
                                         },
                                     ],
                                     selectionSet: {
                                         kind: 'SelectionSet',
-                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'AdminPartnerFields' } }],
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'AdminPartnerVenueFields' } }],
                                     },
                                 },
                             ],
@@ -67407,12 +67608,24 @@ export const AdminPartnerPageUpdatesDocument = {
         },
         {
             kind: 'FragmentDefinition',
-            name: { kind: 'Name', value: 'AdminPartnerFields' },
-            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminPartner' } },
+            name: { kind: 'Name', value: 'AdminPartnerVenueFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminPartnerVenue' } },
             selectionSet: {
                 kind: 'SelectionSet',
                 selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'partnerVenueId' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'partner' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                            ],
+                        },
+                    },
                     { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'previousPathNames' } },
                     { kind: 'Field', name: { kind: 'Name', value: 'name' } },
@@ -67522,7 +67735,7 @@ export const AdminPartnerPageUpdatesDocument = {
             },
         },
     ],
-} as unknown as DocumentNode<GqlCAdminPartnerPageUpdatesSubscription, GqlCAdminPartnerPageUpdatesSubscriptionVariables>;
+} as unknown as DocumentNode<GqlCAdminPartnerVenuePageUpdatesSubscription, GqlCAdminPartnerVenuePageUpdatesSubscriptionVariables>;
 export const AdminPartnersPageDocument = {
     kind: 'Document',
     definitions: [
@@ -67558,16 +67771,10 @@ export const AdminPartnersPageDocument = {
                                                             selectionSet: {
                                                                 kind: 'SelectionSet',
                                                                 selections: [
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                                                                    { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                                                                    {
+                                                                        kind: 'FragmentSpread',
+                                                                        name: { kind: 'Name', value: 'AdminPartnerFields' },
+                                                                    },
                                                                 ],
                                                             },
                                                         },
@@ -67583,8 +67790,85 @@ export const AdminPartnersPageDocument = {
                 ],
             },
         },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminPartnerFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminPartner' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'venues' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'partnerVenueId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
     ],
 } as unknown as DocumentNode<GqlCAdminPartnersPageQuery, GqlCAdminPartnersPageQueryVariables>;
+export const AdminPartnerUpsertDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminPartnerUpsert' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'PartnerUpsert' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'partnerUpsert' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminPartnerUpsertMutation, GqlCAdminPartnerUpsertMutationVariables>;
 export const AdminPartnerDeleteDocument = {
     kind: 'Document',
     definitions: [
@@ -67634,6 +67918,55 @@ export const AdminPartnerDeleteDocument = {
         },
     ],
 } as unknown as DocumentNode<GqlCAdminPartnerDeleteMutation, GqlCAdminPartnerDeleteMutationVariables>;
+export const AdminPartnerVenueCreateDocument = {
+    kind: 'Document',
+    definitions: [
+        {
+            kind: 'OperationDefinition',
+            operation: 'mutation',
+            name: { kind: 'Name', value: 'AdminPartnerVenueCreate' },
+            variableDefinitions: [
+                {
+                    kind: 'VariableDefinition',
+                    variable: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                    type: { kind: 'NonNullType', type: { kind: 'NamedType', name: { kind: 'Name', value: 'PartnerVenueUpsert' } } },
+                },
+            ],
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'admin' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                {
+                                    kind: 'Field',
+                                    name: { kind: 'Name', value: 'partnerVenueUpsert' },
+                                    arguments: [
+                                        {
+                                            kind: 'Argument',
+                                            name: { kind: 'Name', value: 'input' },
+                                            value: { kind: 'Variable', name: { kind: 'Name', value: 'input' } },
+                                        },
+                                    ],
+                                    selectionSet: {
+                                        kind: 'SelectionSet',
+                                        selections: [
+                                            { kind: 'Field', name: { kind: 'Name', value: 'success' } },
+                                            { kind: 'Field', name: { kind: 'Name', value: 'referenceId' } },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+    ],
+} as unknown as DocumentNode<GqlCAdminPartnerVenueCreateMutation, GqlCAdminPartnerVenueCreateMutationVariables>;
 export const AdminPartnersPageUpdatesDocument = {
     kind: 'Document',
     definitions: [
@@ -67656,20 +67989,37 @@ export const AdminPartnersPageUpdatesDocument = {
                                     name: { kind: 'Name', value: 'partners' },
                                     selectionSet: {
                                         kind: 'SelectionSet',
-                                        selections: [
-                                            { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'name' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'titleDe' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'titleEn' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'headlineDe' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'headlineEn' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'heroImageUrl' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
-                                            { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
-                                        ],
+                                        selections: [{ kind: 'FragmentSpread', name: { kind: 'Name', value: 'AdminPartnerFields' } }],
                                     },
                                 },
+                            ],
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            kind: 'FragmentDefinition',
+            name: { kind: 'Name', value: 'AdminPartnerFields' },
+            typeCondition: { kind: 'NamedType', name: { kind: 'Name', value: 'AdminPartner' } },
+            selectionSet: {
+                kind: 'SelectionSet',
+                selections: [
+                    { kind: 'Field', name: { kind: 'Name', value: 'partnerId' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'createdAt' } },
+                    { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
+                    {
+                        kind: 'Field',
+                        name: { kind: 'Name', value: 'venues' },
+                        selectionSet: {
+                            kind: 'SelectionSet',
+                            selections: [
+                                { kind: 'Field', name: { kind: 'Name', value: 'partnerVenueId' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'pathName' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'name' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'publishedAt' } },
+                                { kind: 'Field', name: { kind: 'Name', value: 'updatedAt' } },
                             ],
                         },
                     },

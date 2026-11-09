@@ -13,7 +13,7 @@ export type SessionEventWebPageVisitedPayload = {
         cityId?: string;
         cookId?: string;
         blogPostId?: string;
-        partnerId?: string;
+        partnerVenueId?: string;
         occasionId?: string;
         bookingRequestId?: string;
     };

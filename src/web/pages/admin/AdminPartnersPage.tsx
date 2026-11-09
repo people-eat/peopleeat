@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
-import { HandshakeIcon, PlusIcon } from 'lucide-react';
+import { HandshakeIcon, PencilIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { createRequest, useClient, useMutation } from 'urql';
@@ -11,7 +11,12 @@ import { Badge } from '../../components/base/badge';
 import { Button } from '../../components/base/button';
 import { Input } from '../../components/base/input';
 import type { GqlCAdminPartnersPageQuery } from '../../graphql/generated';
-import { AdminPartnersPageUpdatesDocument, AdminPartnerUpsertDocument } from '../../graphql/generated';
+import {
+    AdminPartnerDeleteDocument,
+    AdminPartnersPageUpdatesDocument,
+    AdminPartnerUpsertDocument,
+    AdminPartnerVenueCreateDocument,
+} from '../../graphql/generated';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { useLocale } from '../../hooks/useLocale';
 import { useTimeZone } from '../../hooks/useTimeZone';
@@ -19,9 +24,35 @@ import { AdminOverviewListCardLink } from './AdminOverviewListCard';
 
 export const adminPartnersPageTitle = { de: 'Partner', en: 'Partners' } as const;
 export const adminPartnersPageDescription = {
-    de: 'Partnerseiten verwalten.',
-    en: 'Manage partner landing pages.',
+    de: 'Partnerunternehmen und ihre Locations verwalten.',
+    en: 'Manage partner companies and their venues.',
 } as const;
+
+function draftVenueInput(partnerId: string) {
+    return {
+        partnerId,
+        pathName: `venue-${Date.now()}`,
+        name: 'Neue Location',
+        titleDe: 'Location mit peopleeat',
+        titleEn: '',
+        descriptionDe: 'Beschreibung',
+        descriptionEn: '',
+        headlineDe: 'Gemeinsam genießen',
+        headlineEn: '',
+        subHeadlineDe: 'Privates Dinner vor Ort',
+        subHeadlineEn: '',
+        firstSectionHeadlineDe: '',
+        firstSectionHeadlineEn: '',
+        firstSectionBodyDe: '',
+        firstSectionBodyEn: '',
+        heroImageOverlay: true,
+        firstSectionImageOverlay: true,
+        howItWorksAlternativeMedia: false,
+        featuredCooksShowCity: true,
+        sections: [],
+        publishedAt: null,
+    };
+}
 
 export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }) {
     const locale = useLocale();
@@ -30,10 +61,14 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
     const client = useClient();
     const seed = data.currentSession.user?.admin ?? null;
     const [admin, setAdmin] = useState(seed);
-    const [, upsert] = useMutation(AdminPartnerUpsertDocument);
+    const [, upsertPartner] = useMutation(AdminPartnerUpsertDocument);
+    const [, deletePartner] = useMutation(AdminPartnerDeleteDocument);
+    const [, createVenue] = useMutation(AdminPartnerVenueCreateDocument);
     const [busy, setBusy] = useState(false);
     const [draftQ, setDraftQ] = useState('');
     const debouncedQ = useDebouncedValue(draftQ, 300);
+    const [renamingPartnerId, setRenamingPartnerId] = useState<string | null>(null);
+    const [renameDraft, setRenameDraft] = useState('');
 
     useEffect(() => {
         if (!seed) return;
@@ -53,44 +88,78 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
         ? partners.filter(
               (partner) =>
                   partner.name.toLowerCase().includes(q) ||
-                  partner.pathName.toLowerCase().includes(q) ||
-                  partner.titleDe.toLowerCase().includes(q) ||
-                  partner.titleEn.toLowerCase().includes(q),
+                  partner.venues.some((venue) => venue.name.toLowerCase().includes(q) || venue.pathName.toLowerCase().includes(q)),
           )
         : partners;
 
-    async function createPartner() {
+    async function createPartnerWithVenue() {
         setBusy(true);
         try {
-            const result = await upsert({
-                input: {
-                    pathName: `partner-${Date.now()}`,
-                    name: 'Neuer Partner',
-                    titleDe: 'Partner mit peopleeat',
-                    titleEn: '',
-                    descriptionDe: 'Beschreibung',
-                    descriptionEn: '',
-                    headlineDe: 'Gemeinsam genießen',
-                    headlineEn: '',
-                    subHeadlineDe: 'Exklusive Kooperation',
-                    subHeadlineEn: '',
-                    firstSectionHeadlineDe: '',
-                    firstSectionHeadlineEn: '',
-                    firstSectionBodyDe: '',
-                    firstSectionBodyEn: '',
-                    heroImageOverlay: true,
-                    firstSectionImageOverlay: true,
-                    howItWorksAlternativeMedia: false,
-                    featuredCooksShowCity: true,
-                    sections: [],
-                    publishedAt: null,
-                },
+            const partnerResult = await upsertPartner({ input: { name: 'Neuer Partner' } });
+            const partnerId = partnerResult.data?.admin.partnerUpsert.referenceId;
+            if (!partnerId || partnerResult.error) throw new Error('create partner failed');
+            const venueResult = await createVenue({ input: draftVenueInput(partnerId) });
+            const partnerVenueId = venueResult.data?.admin.partnerVenueUpsert.referenceId;
+            if (!partnerVenueId || venueResult.error) throw new Error('create venue failed');
+            await navigate({
+                to: '/{-$locale}/admin/partner-venues/$partnerVenueId',
+                params: { partnerVenueId },
             });
-            const id = result.data?.admin.partnerUpsert.referenceId;
-            if (!id || result.error) throw new Error('create failed');
-            await navigate({ to: '/{-$locale}/admin/partners/$partnerId', params: { partnerId: id } });
         } catch {
             toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function addVenue(partnerId: string) {
+        setBusy(true);
+        try {
+            const venueResult = await createVenue({ input: draftVenueInput(partnerId) });
+            const partnerVenueId = venueResult.data?.admin.partnerVenueUpsert.referenceId;
+            if (!partnerVenueId || venueResult.error) throw new Error('create venue failed');
+            await navigate({
+                to: '/{-$locale}/admin/partner-venues/$partnerVenueId',
+                params: { partnerVenueId },
+            });
+        } catch {
+            toast.error({ de: 'Anlegen fehlgeschlagen.', en: 'Could not create.' }[locale]);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function savePartnerName(partnerId: string, name: string) {
+        const trimmed = name.trim();
+        if (!trimmed) {
+            toast.error({ de: 'Name darf nicht leer sein.', en: 'Name must not be empty.' }[locale]);
+            return;
+        }
+        setBusy(true);
+        try {
+            const result = await upsertPartner({ input: { partnerId, name: trimmed } });
+            if (result.error || !result.data?.admin.partnerUpsert.success) throw new Error('rename failed');
+            setRenamingPartnerId(null);
+        } catch {
+            toast.error({ de: 'Umbenennen fehlgeschlagen.', en: 'Could not rename.' }[locale]);
+        } finally {
+            setBusy(false);
+        }
+    }
+
+    async function removePartner(partnerId: string) {
+        if (!window.confirm({ de: 'Partner wirklich löschen?', en: 'Delete this partner?' }[locale])) return;
+        setBusy(true);
+        try {
+            const result = await deletePartner({ partnerId });
+            if (result.error || !result.data?.admin.partnerDelete.success) throw new Error('delete failed');
+        } catch {
+            toast.error(
+                {
+                    de: 'Löschen fehlgeschlagen. Partner mit Locations können nicht gelöscht werden.',
+                    en: 'Could not delete. Partners with venues cannot be deleted.',
+                }[locale],
+            );
         } finally {
             setBusy(false);
         }
@@ -107,7 +176,7 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                         </h1>
                         <p className="text-muted-foreground">{adminPartnersPageDescription[locale]}</p>
                     </div>
-                    <Button type="button" disabled={busy} onClick={() => void createPartner()}>
+                    <Button type="button" disabled={busy} onClick={() => void createPartnerWithVenue()}>
                         <PlusIcon className="size-4" />
                         {{ de: 'Neuer Partner', en: 'New partner' }[locale]}
                     </Button>
@@ -116,8 +185,8 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                     type="search"
                     value={draftQ}
                     onChange={(event) => setDraftQ(event.target.value)}
-                    placeholder={{ de: 'Name oder Pfad suchen…', en: 'Search name or path…' }[locale]}
-                    aria-label={{ de: 'Partner suchen', en: 'Search partners' }[locale]}
+                    placeholder={{ de: 'Partner, Location oder Pfad suchen…', en: 'Search partner, venue, or path…' }[locale]}
+                    aria-label={{ de: 'Partner und Locations suchen', en: 'Search partners and venues' }[locale]}
                     className="max-w-sm"
                 />
                 {partners.length === 0 ? (
@@ -125,25 +194,89 @@ export function AdminPartnersPage({ data }: { data: GqlCAdminPartnersPageQuery }
                 ) : filteredPartners.length === 0 ? (
                     <p className="text-muted-foreground">{{ de: 'Keine Treffer.', en: 'No matches.' }[locale]}</p>
                 ) : (
-                    <ul className="grid gap-2">
+                    <ul className="grid gap-6">
                         {filteredPartners.map((partner) => (
-                            <li key={partner.partnerId}>
-                                <AdminOverviewListCardLink
-                                    to="/{-$locale}/admin/partners/$partnerId"
-                                    params={{ partnerId: partner.partnerId }}
-                                    title={
-                                        <>
-                                            {partner.name}
-                                            <Badge variant="outline">
-                                                {partner.publishedAt
-                                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
-                                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
-                                            </Badge>
-                                        </>
-                                    }
-                                    description={`/${partner.pathName}`}
-                                    meta={formatDate(new Date(partner.updatedAt), { locale, timeZone })}
-                                />
+                            <li key={partner.partnerId} className="grid gap-3">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {renamingPartnerId === partner.partnerId ? (
+                                        <Input
+                                            value={renameDraft}
+                                            onChange={(event) => setRenameDraft(event.target.value)}
+                                            onBlur={() => void savePartnerName(partner.partnerId, renameDraft)}
+                                            onKeyDown={(event) => {
+                                                if (event.key === 'Enter') {
+                                                    event.preventDefault();
+                                                    void savePartnerName(partner.partnerId, renameDraft);
+                                                }
+                                                if (event.key === 'Escape') setRenamingPartnerId(null);
+                                            }}
+                                            autoFocus
+                                            className="max-w-xs"
+                                            aria-label={{ de: 'Partnername', en: 'Partner name' }[locale]}
+                                        />
+                                    ) : (
+                                        <h2 className="font-serif text-2xl text-foreground">{partner.name}</h2>
+                                    )}
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        disabled={busy}
+                                        aria-label={{ de: 'Partner umbenennen', en: 'Rename partner' }[locale]}
+                                        onClick={() => {
+                                            setRenamingPartnerId(partner.partnerId);
+                                            setRenameDraft(partner.name);
+                                        }}
+                                    >
+                                        <PencilIcon className="size-4" />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        disabled={busy || partner.venues.length > 0}
+                                        aria-label={{ de: 'Partner löschen', en: 'Delete partner' }[locale]}
+                                        onClick={() => void removePartner(partner.partnerId)}
+                                    >
+                                        <Trash2Icon className="size-4" />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={busy}
+                                        onClick={() => void addVenue(partner.partnerId)}
+                                    >
+                                        <PlusIcon className="size-4" />
+                                        {{ de: 'Venue hinzufügen', en: 'Add venue' }[locale]}
+                                    </Button>
+                                </div>
+                                {partner.venues.length === 0 ? (
+                                    <p className="text-muted-foreground">{{ de: 'Noch keine Locations.', en: 'No venues yet.' }[locale]}</p>
+                                ) : (
+                                    <ul className="grid gap-2">
+                                        {partner.venues.map((venue) => (
+                                            <li key={venue.partnerVenueId}>
+                                                <AdminOverviewListCardLink
+                                                    to="/{-$locale}/admin/partner-venues/$partnerVenueId"
+                                                    params={{ partnerVenueId: venue.partnerVenueId }}
+                                                    title={
+                                                        <>
+                                                            {venue.name}
+                                                            <Badge variant="outline">
+                                                                {venue.publishedAt
+                                                                    ? { de: 'Veröffentlicht', en: 'Published' }[locale]
+                                                                    : { de: 'Entwurf', en: 'Draft' }[locale]}
+                                                            </Badge>
+                                                        </>
+                                                    }
+                                                    description={`/${venue.pathName}`}
+                                                    meta={formatDate(new Date(venue.updatedAt), { locale, timeZone })}
+                                                />
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </li>
                         ))}
                     </ul>

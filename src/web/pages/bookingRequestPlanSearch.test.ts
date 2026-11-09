@@ -12,9 +12,9 @@ import {
 } from './bookingRequestPlanSearch';
 
 describe('parseBookingRequestPlanSearch', () => {
-    it('parses partnerId, firstName, cuisine, and guest aliases', () => {
+    it('parses venueId, firstName, cuisine, and guest aliases', () => {
         const parsed = parseBookingRequestPlanSearch({
-            partnerId: 'partner_abc1234567890',
+            venueId: 'partner_abc1234567890',
             firstName: ' Sophia ',
             adultCount: '4',
             discountedCount: '2',
@@ -23,7 +23,7 @@ describe('parseBookingRequestPlanSearch', () => {
             minDateTime: '2027-06-12T00:00:00.000Z',
             maxDateTime: '2027-06-17T23:59:59.000Z',
         });
-        expect(parsed.partnerId).toBe('partner_abc1234567890');
+        expect(parsed.venueId).toBe('partner_abc1234567890');
         expect(parsed.firstName).toBe('Sophia');
         expect(parsed.adults).toBe(4);
         expect(parsed.children).toBe(2);
@@ -31,6 +31,11 @@ describe('parseBookingRequestPlanSearch', () => {
         expect(parsed.step).toBe('contact');
         expect(parsed.minDateTime).toBeDefined();
         expect(parsed.maxDateTime).toBeDefined();
+    });
+
+    it('maps legacy partnerId onto venueId', () => {
+        const parsed = parseBookingRequestPlanSearch({ partnerId: 'legacy_venue' });
+        expect(parsed.venueId).toBe('legacy_venue');
     });
 
     it('infers cuisine from preferences when cuisine param is missing', () => {
@@ -60,20 +65,20 @@ describe('bookingRequestPlanResolveVenue', () => {
             city: 'Frankfurt am Main',
             addressLine1: 'Kronstraße 30',
         });
-        const resolved = bookingRequestPlanResolveVenue({ search, partnerDefaultAddress: partnerAddress });
+        const resolved = bookingRequestPlanResolveVenue({ search, venueDefaultAddress: partnerAddress });
         expect(resolved?.displayText).toBe('Kronstraße 30, Frankfurt');
         expect(resolved?.city).toBe('Frankfurt am Main');
     });
 
     it('falls back to partner default when URL has no venue', () => {
         const search = parseBookingRequestPlanSearch({ partnerId: 'x' });
-        const resolved = bookingRequestPlanResolveVenue({ search, partnerDefaultAddress: partnerAddress });
+        const resolved = bookingRequestPlanResolveVenue({ search, venueDefaultAddress: partnerAddress });
         expect(resolved).toEqual(partnerAddress);
     });
 
     it('returns null when neither URL nor partner provides a venue', () => {
         const search = parseBookingRequestPlanSearch({});
-        expect(bookingRequestPlanResolveVenue({ search, partnerDefaultAddress: null })).toBeNull();
+        expect(bookingRequestPlanResolveVenue({ search, venueDefaultAddress: null })).toBeNull();
     });
 });
 
@@ -85,7 +90,7 @@ describe('bookingRequestPlanValuesFromSearch / searchFromValues', () => {
             cuisine: 'regional',
             priceClass: 'HIGH',
             firstName: 'Sophia',
-            partnerId: 'partner1',
+            venueId: 'partner1',
         });
         const values = bookingRequestPlanValuesFromSearch(search);
         expect(values.adultCount).toBe(3);
@@ -97,7 +102,7 @@ describe('bookingRequestPlanValuesFromSearch / searchFromValues', () => {
         const next = bookingRequestPlanSearchFromValues({
             values,
             step: 'contact',
-            partnerId: search.partnerId,
+            venueId: search.venueId,
             firstName: search.firstName,
             minDateTime: search.minDateTime,
             maxDateTime: search.maxDateTime,
@@ -106,7 +111,7 @@ describe('bookingRequestPlanValuesFromSearch / searchFromValues', () => {
         expect(next.cuisine).toBe('regional');
         expect(next.priceClass).toBe('HIGH');
         expect(next.firstName).toBe('Sophia');
-        expect(next.partnerId).toBe('partner1');
+        expect(next.venueId).toBe('partner1');
         expect(bookingRequestPlanSearchEqual(next, { ...next })).toBe(true);
     });
 

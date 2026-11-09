@@ -9,7 +9,7 @@ import type {
     GqlCAdminMapBookingRequestPoint,
     GqlCAdminMapCityPoint,
     GqlCAdminMapCookPoint,
-    GqlCAdminMapPartnerPoint,
+    GqlCAdminMapPartnerVenuePoint,
 } from '../../graphql/generated';
 import type { AdminMapFeatureCollection } from './adminMapGeo';
 import { adminMapCirclePolygon, adminMapEmptyFeatureCollection } from './adminMapGeo';
@@ -36,7 +36,7 @@ type AdminMapCanvasProps = {
     cooks: readonly GqlCAdminMapCookPoint[];
     bookingRequests: readonly GqlCAdminMapBookingRequestPoint[];
     cities: readonly GqlCAdminMapCityPoint[];
-    partners: readonly GqlCAdminMapPartnerPoint[];
+    partnerVenues: readonly GqlCAdminMapPartnerVenuePoint[];
     layers: ReadonlySet<AdminMapLayer>;
     focus: AdminMapFocus | null;
     coverageCooks: readonly AdminMapCoverageCook[];
@@ -93,18 +93,18 @@ function cityFeatures(cities: readonly GqlCAdminMapCityPoint[]): AdminMapFeature
     };
 }
 
-function partnerFeatures(partners: readonly GqlCAdminMapPartnerPoint[]): AdminMapFeatureCollection {
+function venueFeatures(partnerVenues: readonly GqlCAdminMapPartnerVenuePoint[]): AdminMapFeatureCollection {
     return {
         type: 'FeatureCollection',
-        features: partners.map((partner) => ({
+        features: partnerVenues.map((venue) => ({
             type: 'Feature' as const,
             properties: {
-                layer: 'partner',
-                entityId: partner.partnerId,
-                published: partner.published,
-                name: partner.name,
+                layer: 'venue',
+                entityId: venue.partnerVenueId,
+                published: venue.published,
+                name: venue.name,
             },
-            geometry: { type: 'Point' as const, coordinates: [partner.longitude, partner.latitude] as [number, number] },
+            geometry: { type: 'Point' as const, coordinates: [venue.longitude, venue.latitude] as [number, number] },
         })),
     };
 }
@@ -282,7 +282,7 @@ export function AdminMapCanvas({
     cooks,
     bookingRequests,
     cities,
-    partners,
+    partnerVenues,
     layers,
     focus,
     coverageCooks,
@@ -291,8 +291,8 @@ export function AdminMapCanvas({
     const containerRef = useRef<HTMLDivElement | null>(null);
     const mapRef = useRef<MapLibreMap | null>(null);
     const hoverCookIdRef = useRef<string | null>(null);
-    const propsRef = useRef({ cooks, bookingRequests, cities, partners, layers, focus, coverageCooks, onFocusChange });
-    propsRef.current = { cooks, bookingRequests, cities, partners, layers, focus, coverageCooks, onFocusChange };
+    const propsRef = useRef({ cooks, bookingRequests, cities, partnerVenues, layers, focus, coverageCooks, onFocusChange });
+    propsRef.current = { cooks, bookingRequests, cities, partnerVenues, layers, focus, coverageCooks, onFocusChange };
 
     useEffect(() => {
         if (!containerRef.current || mapRef.current) return;
@@ -318,8 +318,8 @@ export function AdminMapCanvas({
             setSourceData(map, 'cities', current.layers.has('cities') ? cityFeatures(current.cities) : adminMapEmptyFeatureCollection());
             setSourceData(
                 map,
-                'partners',
-                current.layers.has('partners') ? partnerFeatures(current.partners) : adminMapEmptyFeatureCollection(),
+                'venues',
+                current.layers.has('venues') ? venueFeatures(current.partnerVenues) : adminMapEmptyFeatureCollection(),
             );
             setSourceData(
                 map,
@@ -334,7 +334,7 @@ export function AdminMapCanvas({
             setLayerVisibility(map, ['cooks-clusters', 'cooks-cluster-count', 'cooks-points'], current.layers.has('cooks'));
             setLayerVisibility(map, ['bookings-clusters', 'bookings-cluster-count', 'bookings-points'], current.layers.has('bookings'));
             setLayerVisibility(map, ['cities-points'], current.layers.has('cities'));
-            setLayerVisibility(map, ['partners-points'], current.layers.has('partners'));
+            setLayerVisibility(map, ['venues-points'], current.layers.has('venues'));
         }
 
         function syncRadiusOnly() {
@@ -355,7 +355,7 @@ export function AdminMapCanvas({
             ensureClusteredPointLayers(map, 'cooks', COOK_COLOR_EXPR, 7);
             ensureClusteredPointLayers(map, 'bookings', '#2563eb', 6);
             ensureSimplePointLayers(map, 'cities', ['case', ['get', 'published'], '#7c3aed', '#a78bfa'] as ExpressionSpecification);
-            ensureSimplePointLayers(map, 'partners', ['case', ['get', 'published'], '#0d9488', '#5eead4'] as ExpressionSpecification);
+            ensureSimplePointLayers(map, 'venues', ['case', ['get', 'published'], '#0d9488', '#5eead4'] as ExpressionSpecification);
             ensureRadiusLayers(map);
             syncData();
         });
@@ -366,7 +366,7 @@ export function AdminMapCanvas({
             if (layer === 'cook') return { kind: 'cook', id: properties.entityId };
             if (layer === 'booking') return { kind: 'booking', id: properties.entityId };
             if (layer === 'city') return { kind: 'city', id: properties.entityId };
-            if (layer === 'partner') return { kind: 'partner', id: properties.entityId };
+            if (layer === 'venue') return { kind: 'venue', id: properties.entityId };
             return null;
         }
 
@@ -391,7 +391,7 @@ export function AdminMapCanvas({
             }
 
             const pointHits = map.queryRenderedFeatures(event.point, {
-                layers: ['cooks-points', 'bookings-points', 'cities-points', 'partners-points'].filter((id) => map.getLayer(id)),
+                layers: ['cooks-points', 'bookings-points', 'cities-points', 'venues-points'].filter((id) => map.getLayer(id)),
             });
             const next = focusFromFeature((pointHits[0]?.properties as MapFeatureProperties) ?? null);
             propsRef.current.onFocusChange(next);
@@ -409,7 +409,7 @@ export function AdminMapCanvas({
             syncRadiusOnly();
         });
 
-        for (const layerId of ['bookings-points', 'cities-points', 'partners-points', 'cooks-clusters', 'bookings-clusters']) {
+        for (const layerId of ['bookings-points', 'cities-points', 'venues-points', 'cooks-clusters', 'bookings-clusters']) {
             map.on('mouseenter', layerId, () => {
                 map.getCanvas().style.cursor = 'pointer';
             });
@@ -431,7 +431,7 @@ export function AdminMapCanvas({
         setSourceData(map, 'cooks', layers.has('cooks') ? cookFeatures(cooks) : adminMapEmptyFeatureCollection());
         setSourceData(map, 'bookings', layers.has('bookings') ? bookingFeatures(bookingRequests) : adminMapEmptyFeatureCollection());
         setSourceData(map, 'cities', layers.has('cities') ? cityFeatures(cities) : adminMapEmptyFeatureCollection());
-        setSourceData(map, 'partners', layers.has('partners') ? partnerFeatures(partners) : adminMapEmptyFeatureCollection());
+        setSourceData(map, 'venues', layers.has('venues') ? venueFeatures(partnerVenues) : adminMapEmptyFeatureCollection());
         setSourceData(
             map,
             'radius',
@@ -445,8 +445,8 @@ export function AdminMapCanvas({
         setLayerVisibility(map, ['cooks-clusters', 'cooks-cluster-count', 'cooks-points'], layers.has('cooks'));
         setLayerVisibility(map, ['bookings-clusters', 'bookings-cluster-count', 'bookings-points'], layers.has('bookings'));
         setLayerVisibility(map, ['cities-points'], layers.has('cities'));
-        setLayerVisibility(map, ['partners-points'], layers.has('partners'));
-    }, [cooks, bookingRequests, cities, partners, layers, focus, coverageCooks]);
+        setLayerVisibility(map, ['venues-points'], layers.has('venues'));
+    }, [cooks, bookingRequests, cities, partnerVenues, layers, focus, coverageCooks]);
 
     useEffect(() => {
         const map = mapRef.current;
@@ -462,15 +462,15 @@ export function AdminMapCanvas({
         } else if (focus.kind === 'city') {
             const city = cities.find((row) => row.cityId === focus.id);
             if (city) coordinates = [city.longitude, city.latitude];
-        } else if (focus.kind === 'partner') {
-            const partner = partners.find((row) => row.partnerId === focus.id);
-            if (partner) coordinates = [partner.longitude, partner.latitude];
+        } else if (focus.kind === 'venue') {
+            const venue = partnerVenues.find((row) => row.partnerVenueId === focus.id);
+            if (venue) coordinates = [venue.longitude, venue.latitude];
         }
 
         if (coordinates) {
             map.easeTo({ center: coordinates, zoom: Math.max(map.getZoom(), 9) });
         }
-    }, [focus, cooks, bookingRequests, cities, partners]);
+    }, [focus, cooks, bookingRequests, cities, partnerVenues]);
 
     return <div ref={containerRef} className="absolute inset-0 size-full" />;
 }

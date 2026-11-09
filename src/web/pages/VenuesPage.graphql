@@ -1,10 +1,10 @@
-query PublicPartnersPage {
+query PublicVenuesPage {
     currentSession {
         user {
             ...PublicHeaderUser
         }
     }
-    publicPartner {
+    publicPartnerVenue {
         findMany {
             pathName
             titleDe
@@ -15,7 +15,7 @@ query PublicPartnersPage {
         }
     }
     publicWebPage {
-        findOne(webPageKey: PARTNERS) {
+        findOne(webPageKey: VENUES) {
             titleDe
             titleEn
             descriptionDe

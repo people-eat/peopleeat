@@ -53,7 +53,7 @@ docs/
 │   ├── chat.md                   # Thin index only — not a third chat product
 │   ├── booking.md                # Thin index — marketplace booking journey + slice links
 │   ├── booking-request-create.md # Form, publication, customer request surfaces
-│   ├── booking-request-plan.md   # Alternative 2-step plan funnel (partner deep-link)
+│   ├── booking-request-plan.md   # Alternative 2-step plan funnel (venue deep-link)
 │   ├── booking-offers.md         # Cook pool, offer create, dual accept, negotiation
 │   ├── booking-offer-addons.md   # Offer extras: templates, cook library, guest picker
 │   ├── ai-menu-evaluation.md     # AI menu ranking + inventory recommendation on pool open
@@ -83,7 +83,7 @@ docs/
 │   ├── admin-users.md
 │   ├── admin-sessions.md
 │   ├── admin-analytics.md        # Booking funnel Sankey + visit buckets
-│   ├── admin-map.md              # Ops map (cooks / bookings / cities / partners)
+│   ├── admin-map.md              # Ops map (cooks / bookings / cities / venues)
 │   ├── admin-logs.md
 │   ├── admin-database-slow-statements.md # pg_stat_statements top-N via Admin GraphQL
 │   ├── admin-outbound-emails.md

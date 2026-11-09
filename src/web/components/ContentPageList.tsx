@@ -7,7 +7,7 @@ import { AppImage } from './AppImage';
 
 const CONTENT_PAGE_DETAIL_ROUTES = {
     '/cities': '/{-$locale}/cities/$pathName',
-    '/partners': '/{-$locale}/partners/$pathName',
+    '/venues': '/{-$locale}/venues/$pathName',
     '/occasions': '/{-$locale}/occasions/$pathName',
     '/blog-posts': '/{-$locale}/blog-posts/$pathName',
 } as const;
@@ -30,7 +30,7 @@ export function ContentPageList({
 }: {
     items: ContentPageListItem[];
     locale: Locale;
-    basePath: '/cities' | '/partners' | '/occasions' | '/blog-posts';
+    basePath: '/cities' | '/venues' | '/occasions' | '/blog-posts';
     emptyLabel: string;
     showHeroImage?: boolean;
 }) {

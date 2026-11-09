@@ -35,14 +35,16 @@ query AdminMapPage($range: DateTimeRange!, $includeBookings: Boolean!) {
                         nameEn
                         published
                     }
-                    partners {
+                    partnerVenues {
+                        partnerVenueId
                         partnerId
+                        partnerName
                         latitude
                         longitude
                         name
                         published
                     }
-                    partnersMissingLocationCount
+                    partnerVenuesMissingLocationCount
                 }
             }
         }

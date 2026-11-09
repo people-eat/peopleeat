@@ -14,7 +14,7 @@ Visitors see sections in order (generous vertical spacing between blocks):
    desktop landscape recordings. Hidden unless `LANDING_BOOKING_HOW_IT_WORKS` is on (missing DB row = off; see
    [admin-feature-toggles.md](./admin-feature-toggles.md))
 5. **How it works** — four lifestyle steps for the evening itself and WhatsApp CTA (reusable section; can hide CTA and use alternative media
-   on partner pages)
+   on venue pages)
 6. **Shared experiences** — full-bleed quote over lifestyle photography
 7. **Customer testimonials** — static marketing quotes (not database-driven). Dual-column vertical marquee unless
    `LANDING_TESTIMONIAL_CARDS` is on, which renders the same quotes as the shared public review card (detail dialog included; the marquee
@@ -69,7 +69,7 @@ Marquee pauses under `prefers-reduced-motion`.
 | Route / SEO   | `src/routes/{-$locale}/index.tsx` — `seoMeta` via `publicWebPage` + FAQ JSON-LD                                                                                                                                                                                        |
 | Sections      | `SectionHero`, `SectionExperienceSelection`, `SectionComparison`, `SectionBookingHowItWorks`, `SectionHowItWorks`, `SectionSharedExperiences`, `SectionCustomerTestimonials`, `SectionKnownFrom`, `SectionQuestionsAndAnswers`, `SectionSupport`, `SectionCities`      |
 | Shared media  | `AutoplayVideo.tsx`, `usePrefersReducedMotion.ts`                                                                                                                                                                                                                      |
-| Assets        | `public/home/*` (incl. HowItWorks `*.alternative.*` for partner pages, booking loops/film under `public/home/booking-how-it-works/` + `…/mobile/`), `public/shared/known-from-section/`, hero `public/assets/dinner.mp4`                                               |
+| Assets        | `public/home/*` (incl. HowItWorks `*.alternative.*` for venue pages, booking loops/film under `public/home/booking-how-it-works/` + `…/mobile/`), `public/shared/known-from-section/`, hero `public/assets/dinner.mp4`                                                 |
 | Booking media | Masters, edit timeline, voiceover, and capture notes in `media/how-to-book/` (`desktop/` and `mobile/`, see their READMEs). Shipped copies: desktop at `public/home/booking-how-it-works/`, mobile at `…/mobile/`. `SectionBookingHowItWorks` swaps via `useIsMobile`. |
 | Feature gates | `LANDING_BOOKING_HOW_IT_WORKS` and `LANDING_TESTIMONIAL_CARDS` via `Session.activeFeatureToggleKeys` on `HomePage`                                                                                                                                                     |
 | Motion CSS    | `src/styles.css` — `animate-testimonial-scroll` / `-delayed`                                                                                                                                                                                                           |

@@ -9,11 +9,11 @@ peopleeat is a private-chef booking marketplace that connects hosts with cooks w
 1. **Customers** describe an occasion (date, place, party size, preferences) as a booking request.
 2. **Cooks** browse open requests in their travel area and submit **offers** (price; optional menus from the menu builder).
 3. Customers compare offers, negotiate in chat, accept one offer jointly with the cook, pay, and attend the event.
-4. After the event, both sides can leave reviews; admins curate standout quotes on city, partner, occasion, and chef surfaces.
+4. After the event, both sides can leave reviews; admins curate standout quotes on city, venue, occasion, and chef surfaces.
 
 **What is live today**
 
-- Public marketing and content: home, about us, chef recruitment, cities, partners, occasions, blog, public chef directory, legal pages,
+- Public marketing and content: home, about us, chef recruitment, cities, venues, occasions, blog, public chef directory, legal pages,
   gift-card purchase.
 - Identity and profiles: passwordless log-on, account settings, cook vs customer profile shells, meals, menus, chef profile, call
   availability, wallet.
@@ -21,7 +21,7 @@ peopleeat is a private-chef booking marketplace that connects hosts with cooks w
   and cook payout, discovery calls, and admin booking operations — see [booking.md](./booking.md) and
   [admin-booking-requests.md](./admin-booking-requests.md).
 - Gift cards and admin promo catalog.
-- Testimonials tied to completed paid offers; public display on chefs, cities, partners, and occasions.
+- Testimonials tied to completed paid offers; public display on chefs, cities, venues, and occasions.
 
 **Not yet**
 
@@ -69,7 +69,7 @@ Ship a stable brand, auth, and content foundation first; deliver booking and mar
   `px-4 @lg:px-6` (list indexes, free-form section bodies, blog article hero, curated testimonials).
 - Deploy topology: `.github/workflows/pipeline.yml`, `docs/infrastructure.md`
 - Public route stubs (SEO + sitemap; page bodies still placeholders): `/gift-card` (purchase live), `/booking-request`, `/chef-sign-up`,
-  `/imprint`, `/terms-and-conditions`, `/privacy-policy`. Content pages live: `/cities`, `/partners`, `/occasions`, `/blog-posts` (+
+  `/imprint`, `/terms-and-conditions`, `/privacy-policy`. Content pages live: `/cities`, `/venues`, `/occasions`, `/blog-posts` (+
   `$pathName` details), `/chefs` (+ `$pathName` detail — see [public-chefs.md](./public-chefs.md)), `/about-us`, `/how-to-become-a-chef`.
   See [cities.md](./cities.md), [partners.md](./partners.md), [occasions.md](./occasions.md), [blog-posts.md](./blog-posts.md),
   [about-us.md](./about-us.md), [how-to-become-a-chef.md](./how-to-become-a-chef.md). Transactional stubs with `noindex`:

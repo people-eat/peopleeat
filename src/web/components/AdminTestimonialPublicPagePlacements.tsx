@@ -7,7 +7,7 @@ import { cn } from '../utils/cn';
 import { Badge } from './base/badge';
 
 export type AdminTestimonialPublicPagePlacement = {
-    kind: 'CITY' | 'PARTNER' | 'OCCASION' | 'CHEF' | string;
+    kind: 'CITY' | 'PARTNER_VENUE' | 'OCCASION' | 'CHEF' | string;
     entityId: string;
     labelDe: string;
     labelEn: string;
@@ -18,7 +18,7 @@ export type AdminTestimonialPublicPagePlacement = {
 function kindLabel(kind: string, locale: 'de' | 'en'): string {
     return ({
         CITY: { de: 'Stadt', en: 'City' },
-        PARTNER: { de: 'Partner', en: 'Partner' },
+        PARTNER_VENUE: { de: 'Location', en: 'Venue' },
         OCCASION: { de: 'Anlass', en: 'Occasion' },
         CHEF: { de: 'Kochprofil', en: 'Chef profile' },
     }[kind] ?? { de: kind, en: kind })[locale];
@@ -32,8 +32,8 @@ function placementAdminRoute(placement: AdminTestimonialPublicPagePlacement): { 
     switch (placement.kind) {
         case 'CITY':
             return { to: '/{-$locale}/admin/cities/$cityId', params: { cityId: placement.entityId } };
-        case 'PARTNER':
-            return { to: '/{-$locale}/admin/partners/$partnerId', params: { partnerId: placement.entityId } };
+        case 'PARTNER_VENUE':
+            return { to: '/{-$locale}/admin/partner-venues/$partnerVenueId', params: { partnerVenueId: placement.entityId } };
         case 'OCCASION':
             return { to: '/{-$locale}/admin/occasions/$occasionId', params: { occasionId: placement.entityId } };
         case 'CHEF':

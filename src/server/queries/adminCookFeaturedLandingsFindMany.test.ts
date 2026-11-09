@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { idCreate } from '../../shared/idCreate';
-import { cities, cityCooks, cooks, occasionCooks, occasions, partnerCooks, partners } from '../db/schema';
-import { commandSetup, testDb } from '../test/commandTestUtils';
+import { cities, cityCooks, cooks, occasionCooks, occasions, partnerVenueCooks } from '../db/schema';
+import { commandSetup, partnerVenueInsert, testDb } from '../test/commandTestUtils';
 import { adminCookFeaturedLandingsFindMany } from './adminCookFeaturedLandingsFindMany';
 
 describe('adminCookFeaturedLandingsFindMany', () => {
@@ -11,7 +11,6 @@ describe('adminCookFeaturedLandingsFindMany', () => {
         const { serverRuntime, user } = await commandSetup.withUser({ firstName: 'Featured', lastName: 'Cook' });
         await testDb.insert(cooks).values({ cookId: user.userId });
         const cityId = idCreate();
-        const partnerId = idCreate();
         const occasionId = idCreate();
         const token = idCreate().slice(0, 8);
         await testDb.insert(cities).values({
@@ -26,15 +25,10 @@ describe('adminCookFeaturedLandingsFindMany', () => {
             subHeadlineDe: 'Sub',
             sections: [],
         });
-        await testDb.insert(partners).values({
-            partnerId,
+        const venue = await partnerVenueInsert({
             pathName: `partner-${token}`,
             name: `Partner ${token}`,
             titleDe: `Titel Partner ${token}`,
-            descriptionDe: 'Beschreibung',
-            headlineDe: 'Headline',
-            subHeadlineDe: 'Sub',
-            sections: [],
         });
         await testDb.insert(occasions).values({
             occasionId,
@@ -47,7 +41,7 @@ describe('adminCookFeaturedLandingsFindMany', () => {
             sections: [],
         });
         await testDb.insert(cityCooks).values({ cityId, cookId: user.userId, position: 0 });
-        await testDb.insert(partnerCooks).values({ partnerId, cookId: user.userId, position: 0 });
+        await testDb.insert(partnerVenueCooks).values({ partnerVenueId: venue.partnerVenueId, cookId: user.userId, position: 0 });
         await testDb.insert(occasionCooks).values({ occasionId, cookId: user.userId, position: 0 });
 
         // Act
@@ -57,7 +51,7 @@ describe('adminCookFeaturedLandingsFindMany', () => {
         expect(rows).toEqual(
             expect.arrayContaining([
                 expect.objectContaining({ kind: 'CITY', id: cityId, pathName: `city-${token}` }),
-                expect.objectContaining({ kind: 'PARTNER', id: partnerId, pathName: `partner-${token}` }),
+                expect.objectContaining({ kind: 'PARTNER_VENUE', id: venue.partnerVenueId, pathName: `partner-${token}` }),
                 expect.objectContaining({ kind: 'OCCASION', id: occasionId, pathName: `occasion-${token}` }),
             ]),
         );

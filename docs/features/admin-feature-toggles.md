@@ -33,7 +33,7 @@ Keys today:
 - Menu publication
 - Landing booking how-it-works section (muted loops + 60s film on `/` and `/en/`)
 - Landing testimonial cards (shared review card on `/` and `/en/` instead of the scrolling quote marquee)
-- Partner page partners-explore CTA (“Entdecke mehr unserer Partner” on `/partners/$pathName`)
+- Venue page venues-explore CTA (“Weitere Locations” on `/venues/$pathName`)
 
 Calls, scheduling, WhatsApp recipient language, and WhatsApp webhook signature validation stay always on and are not toggles.
 
@@ -157,9 +157,9 @@ Wired today:
 - **Landing testimonial cards** (`LANDING_TESTIMONIAL_CARDS`) — home testimonials use the shared public review card when on; missing row
   stays off and the scrolling marketing marquee stays. Quotes stay the fixed marketing copy. Public home reads
   `Session.activeFeatureToggleKeys` (global + signed-in override). See [landing.md](./landing.md)
-- **Partner page partners explore** (`PARTNER_PAGE_PARTNERS_EXPLORE`) — shows `SectionPartnersExplore` on public partner detail pages when
-  on; missing row stays off. Public partner page reads `Session.activeFeatureToggleKeys` (global + signed-in override). Admin partner
-  preview keeps the section for ops. See [partners.md](./partners.md)
+- **Venue page venues explore** (`VENUE_PAGE_VENUES_EXPLORE`) — shows `SectionVenuesExplore` on public venue detail pages when on; missing
+  row stays off. Public venue page reads `Session.activeFeatureToggleKeys` (global + signed-in override). Admin venue preview keeps the
+  section for ops. See [partners.md](./partners.md)
 - **Sign-in: Google** (`SIGN_IN_GOOGLE`) — shows Continue with Google on identity gates; start and callback reject when the effective toggle
   is off (anonymous uses the global row; after Google identity resolve, a per-user override can still deny). Missing row stays off. Confirm
   the Google consent screen (test users or verified People scopes) before enabling in an environment with real users. See

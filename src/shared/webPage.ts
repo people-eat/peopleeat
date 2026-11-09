@@ -5,7 +5,7 @@
 export const webPageKeys = [
     'LANDING',
     'CITIES',
-    'PARTNERS',
+    'VENUES',
     'OCCASIONS',
     'CHEFS',
     'BLOG_POSTS',
@@ -47,11 +47,11 @@ export const webPageDefaults: Record<WebPageKey, WebPageSeoDefaults> = {
         descriptionDe: 'Finde Privatköche in deiner Stadt.',
         descriptionEn: 'Find private chefs in your city.',
     },
-    PARTNERS: {
-        titleDe: 'Partner',
-        titleEn: 'Partners',
-        descriptionDe: 'Marken und Kooperationen mit peopleeat.',
-        descriptionEn: 'Brands and collaborations with peopleeat.',
+    VENUES: {
+        titleDe: 'Locations',
+        titleEn: 'Venues',
+        descriptionDe: 'Locations, in denen ihr einen Privatkoch buchen könnt.',
+        descriptionEn: 'Venues where you can book a private chef.',
     },
     OCCASIONS: {
         titleDe: 'Anlässe',

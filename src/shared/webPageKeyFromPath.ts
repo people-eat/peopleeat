@@ -6,7 +6,7 @@ export type WebPageVisitMatch = {
         cityId?: string;
         cookId?: string;
         blogPostId?: string;
-        partnerId?: string;
+        partnerVenueId?: string;
         occasionId?: string;
         bookingRequestId?: string;
     };
@@ -25,7 +25,7 @@ export function webPageKeyFromPath(pathWithoutLocale: string): WebPageVisitMatch
 
     if (path === '/' || path === '') return { webPageKey: 'LANDING' };
     if (path === '/cities') return { webPageKey: 'CITIES' };
-    if (path === '/partners') return { webPageKey: 'PARTNERS' };
+    if (path === '/venues' || path === '/partners') return { webPageKey: 'VENUES' };
     if (path === '/occasions') return { webPageKey: 'OCCASIONS' };
     if (path === '/chefs') return { webPageKey: 'CHEFS' };
     if (path === '/blog-posts') return { webPageKey: 'BLOG_POSTS' };
@@ -48,7 +48,7 @@ export function webPageKeyFromPath(pathWithoutLocale: string): WebPageVisitMatch
     if (chefsMatch?.[1]) return { webPageKey: 'CHEFS', params: { cookId: chefsMatch[1] } };
 
     if (/^\/cities\/[^/]+$/.test(path)) return { webPageKey: 'CITIES' };
-    if (/^\/partners\/[^/]+$/.test(path)) return { webPageKey: 'PARTNERS' };
+    if (/^\/venues\/[^/]+$/.test(path) || /^\/partners\/[^/]+$/.test(path)) return { webPageKey: 'VENUES' };
     if (/^\/occasions\/[^/]+$/.test(path)) return { webPageKey: 'OCCASIONS' };
     if (/^\/blog-posts\/[^/]+$/.test(path)) return { webPageKey: 'BLOG_POSTS' };
 

@@ -15,7 +15,7 @@ import type { SectionOccasionFormatsModel } from '../sections/SectionOccasionFor
 import { SectionOccasionFormats } from '../sections/SectionOccasionFormats';
 import { SectionPageTestimonials } from '../sections/SectionPageTestimonials';
 import type { SectionPageTestimonial } from '../sections/SectionPageTestimonials';
-import { SectionPartnersExplore } from '../sections/SectionPartnersExplore';
+import { SectionVenuesExplore } from '../sections/SectionVenuesExplore';
 import type { ContentPageIndexLink } from './contentPageIndexLink';
 import { ContentSectionsRenderer } from './ContentSectionsRenderer';
 import { Footer } from './Footer';
@@ -63,15 +63,15 @@ export type ContentPageViewModel = {
     formatsSectionForceShow?: boolean;
     /** City / partner detail chrome after testimonials (also on the landing page). */
     howItWorks?: boolean;
-    /** Hide HowItWorks WhatsApp CTA (partner pages). */
+    /** Hide HowItWorks WhatsApp CTA (venue pages). */
     howItWorksHideCta?: boolean;
-    /** Partner HowItWorks alternative assets. */
+    /** Venue HowItWorks alternative assets. */
     howItWorksAlternativeMedia?: boolean;
     /** City list below dynamic sections. Hidden when empty / omitted. */
     cities?: ReadonlyArray<SectionCitiesCity>;
-    /** Partner detail CTA to `/partners` (exploration path). */
-    partnersExplore?: boolean;
-    /** Press logos after the cities list (city detail + landing + partners). */
+    /** Venue detail CTA to `/venues` (exploration path). */
+    venuesExplore?: boolean;
+    /** Press logos after the cities list (city detail + landing + venues). */
     knownFrom?: boolean;
     /** Back link above the hero. Omitted on admin preview and pages that already have their own. */
     indexLink?: ContentPageIndexLink;
@@ -174,9 +174,9 @@ export function ContentPageView({
                         <SectionCities cities={page.cities} />
                     </div>
                 ) : null}
-                {page.partnersExplore ? (
-                    <div data-content-preview-anchor="partners-explore">
-                        <SectionPartnersExplore />
+                {page.venuesExplore ? (
+                    <div data-content-preview-anchor="venues-explore">
+                        <SectionVenuesExplore />
                     </div>
                 ) : null}
                 {page.knownFrom ? (

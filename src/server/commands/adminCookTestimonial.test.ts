@@ -15,10 +15,9 @@ import {
     fileUploads,
     occasions,
     occasionTestimonials,
-    partners,
-    partnerTestimonials,
+    partnerVenueTestimonials,
 } from '../db/schema';
-import { adminMutationParent, commandSetup, findLogsForSession, testDb } from '../test/commandTestUtils';
+import { adminMutationParent, commandSetup, findLogsForSession, partnerVenueInsert, testDb } from '../test/commandTestUtils';
 import { adminCookTestimonialDelete } from './adminCookTestimonialDelete';
 import { adminCookTestimonialImageUpdate } from './adminCookTestimonialImageUpdate';
 import { adminCookTestimonialPublish } from './adminCookTestimonialPublish';
@@ -736,7 +735,7 @@ describe('adminCookTestimonialDelete', () => {
         });
         const token = idCreate().slice(0, 8);
         const cityId = idCreate();
-        const partnerId = idCreate();
+        const partnerVenueId = idCreate();
         const occasionId = idCreate();
         const page = {
             pathName: `cook-delete-${token}`,
@@ -749,14 +748,14 @@ describe('adminCookTestimonialDelete', () => {
         await testDb
             .insert(cities)
             .values({ cityId, nameDe: 'Berlin', latitude: 52.52, longitude: 13.405, ...page, pathName: `city-${token}` });
-        await testDb.insert(partners).values({ partnerId, name: 'Partner', ...page, pathName: `partner-${token}` });
+        await partnerVenueInsert({ partnerVenueId, name: 'Partner', ...page, pathName: `partner-${token}` });
         await testDb.insert(occasions).values({ occasionId, name: 'Occasion', ...page, pathName: `occasion-${token}` });
         await testDb.insert(cityTestimonials).values([
             { cityId, testimonialType: 'COOK', testimonialId: cookTestimonialId, index: 0 },
             { cityId, testimonialType: 'CUSTOMER', testimonialId: customerTestimonialId, index: 1 },
         ]);
-        await testDb.insert(partnerTestimonials).values({
-            partnerId,
+        await testDb.insert(partnerVenueTestimonials).values({
+            partnerVenueId,
             testimonialType: 'COOK',
             testimonialId: cookTestimonialId,
             index: 0,
@@ -781,7 +780,7 @@ describe('adminCookTestimonialDelete', () => {
         const [cookRows, cityRows, partnerRows, occasionRows] = await Promise.all([
             testDb.select().from(cookTestimonials).where(eq(cookTestimonials.cookTestimonialId, cookTestimonialId)),
             testDb.select().from(cityTestimonials).where(eq(cityTestimonials.cityId, cityId)),
-            testDb.select().from(partnerTestimonials).where(eq(partnerTestimonials.partnerId, partnerId)),
+            testDb.select().from(partnerVenueTestimonials).where(eq(partnerVenueTestimonials.partnerVenueId, partnerVenueId)),
             testDb.select().from(occasionTestimonials).where(eq(occasionTestimonials.occasionId, occasionId)),
         ]);
         expect(cookRows).toHaveLength(0);

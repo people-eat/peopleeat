@@ -278,6 +278,25 @@ fragment PublicCityFields on PublicCity {
 
 fragment AdminPartnerFields on AdminPartner {
     partnerId
+    name
+    createdAt
+    updatedAt
+    venues {
+        partnerVenueId
+        pathName
+        name
+        publishedAt
+        updatedAt
+    }
+}
+
+fragment AdminPartnerVenueFields on AdminPartnerVenue {
+    partnerVenueId
+    partnerId
+    partner {
+        partnerId
+        name
+    }
     pathName
     previousPathNames
     name
@@ -340,8 +359,8 @@ fragment AdminPartnerFields on AdminPartner {
     updatedAt
 }
 
-fragment PublicPartnerFields on PublicPartner {
-    partnerId
+fragment PublicPartnerVenueFields on PublicPartnerVenue {
+    partnerVenueId
     pathName
     previousPathNames
     name

@@ -83,8 +83,8 @@ self-serve delete — see [account.md](./account.md).
 Stripe account + Dashboard link, call scheduling + weekly windows, About logo, tags, biography/summary (with generating hint), default offer
 note (`null` / empty / custom text), other public profiles for review (website, Instagram, Google, Take a Chef, and named platforms; always
 visible to admins, not gated by `COOK_PRESENCE_LINKS`), public URL (`/chefs/<pathName>` with copy and previous slugs), public chef link when
-approved + visible, featured city/partner/occasion landings, and created/last-modified timestamps; then a **Finances** block with live
-Stripe requirements checklist + Connect available/pending balance and recent balance transactions (same data as the cook wallet page when
+approved + visible, featured city/venue/occasion landings, and created/last-modified timestamps; then a **Finances** block with live Stripe
+requirements checklist + Connect available/pending balance and recent balance transactions (same data as the cook wallet page when
 `COOK_WALLET_STRIPE_BALANCE` is on — admin always loads it, not gated by that toggle; fetched only on this tab). Confirm-gated
 approve/revoke and public-visibility actions sit at the bottom. Legacy price/participant columns stay on `AdminCook` / `CookUpdate` but are
 not shown here (unused in product matching). **Edit** in the pinned footer opens `/admin/users/<userId>/cook-profile/edit`, where admins
@@ -135,7 +135,7 @@ detail with URL tabs; manual create with optional admin and cook payloads.
   `Admin.sessionEventsCounts` with pinned `AdminListPaginationBar`; `AdminUserGeneralSection`, `AdminUserSignInSection`,
   `AdminUserCookProfileSection`, `AdminUserCookProfileEditPage`; booking-requests / pool / offers tabs reuse `AdminBookingRequestListCard` /
   `AdminBookingRequestOfferCard`; testimonials tab reuses `AdminTestimonialListCard`; calls tab uses a compact `callTraffic` list
-- `AdminCook` field resolvers: `logo`, `rating`, `callAvailabilityRules`, `featuredOn` (city/partner/occasion reverse index),
+- `AdminCook` field resolvers: `logo`, `rating`, `callAvailabilityRules`, `featuredOn` (city/venue/occasion reverse index),
   `stripeAccountDetails` / `stripeWallet` (live Stripe; admin loaders, not cook ownership / balance toggle)
 - `Admin.customerTestimonials` / `cookTestimonials` accept optional criterion (`cookIds`, skip/take); omit criterion = full catalog
 - `AdminBookingRequestCriterion.cookIds` + `notifiedOnly` filter via `BookingRequestCooks`

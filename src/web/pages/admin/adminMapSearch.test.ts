@@ -5,7 +5,7 @@ import { adminMapPageVariables, adminMapSearchForUrl, adminMapSearchResolve, par
 describe('adminMapSearch', () => {
     it('defaults to all layers and a 90-day range', () => {
         const resolved = adminMapSearchResolve({}, new Date('2026-11-03T12:00:00.000Z'));
-        expect([...resolved.layers].sort()).toEqual(['bookings', 'cities', 'cooks', 'partners']);
+        expect([...resolved.layers].sort()).toEqual(['bookings', 'cities', 'cooks', 'venues']);
         expect(resolved.range).toEqual({ from: '2026-08-06', to: '2026-11-03' });
         expect(resolved.focus).toBeNull();
     });

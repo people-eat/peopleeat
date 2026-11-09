@@ -19,7 +19,7 @@ import {
     meals,
     occasions,
     outboundEmailAttachments,
-    partners,
+    partnerVenues,
     supportRequestMessageAttachments,
     supportRequestMessages,
     supportRequests,
@@ -64,25 +64,25 @@ export async function fileUploadReferencedByPublishedContent(db: Database, fileU
         .limit(1);
     if (cityHit) return true;
 
-    const [partnerHit] = await db
-        .select({ partnerId: partners.partnerId })
-        .from(partners)
+    const [partnerVenueHit] = await db
+        .select({ partnerVenueId: partnerVenues.partnerVenueId })
+        .from(partnerVenues)
         .where(
             and(
-                isNotNull(partners.publishedAt),
-                lte(partners.publishedAt, now),
+                isNotNull(partnerVenues.publishedAt),
+                lte(partnerVenues.publishedAt, now),
                 or(
-                    eq(partners.heroImageFileUploadId, fileUploadId),
-                    eq(partners.firstSectionImageFileUploadId, fileUploadId),
+                    eq(partnerVenues.heroImageFileUploadId, fileUploadId),
+                    eq(partnerVenues.firstSectionImageFileUploadId, fileUploadId),
                     sql`exists (
-                        select 1 from jsonb_array_elements(${partners.sections}) as s
+                        select 1 from jsonb_array_elements(${partnerVenues.sections}) as s
                         where s->>'imageFileUploadId' = ${fileUploadId}
                     )`,
                 ),
             ),
         )
         .limit(1);
-    if (partnerHit) return true;
+    if (partnerVenueHit) return true;
 
     const [occasionHit] = await db
         .select({ occasionId: occasions.occasionId })
@@ -146,21 +146,21 @@ export async function fileUploadReferencedByAnyContent(db: Database, fileUploadI
         .limit(1);
     if (cityHit) return true;
 
-    const [partnerHit] = await db
-        .select({ partnerId: partners.partnerId })
-        .from(partners)
+    const [partnerVenueHit] = await db
+        .select({ partnerVenueId: partnerVenues.partnerVenueId })
+        .from(partnerVenues)
         .where(
             or(
-                eq(partners.heroImageFileUploadId, fileUploadId),
-                eq(partners.firstSectionImageFileUploadId, fileUploadId),
+                eq(partnerVenues.heroImageFileUploadId, fileUploadId),
+                eq(partnerVenues.firstSectionImageFileUploadId, fileUploadId),
                 sql`exists (
-                    select 1 from jsonb_array_elements(${partners.sections}) as s
+                    select 1 from jsonb_array_elements(${partnerVenues.sections}) as s
                     where s->>'imageFileUploadId' = ${fileUploadId}
                 )`,
             ),
         )
         .limit(1);
-    if (partnerHit) return true;
+    if (partnerVenueHit) return true;
 
     const [occasionHit] = await db
         .select({ occasionId: occasions.occasionId })

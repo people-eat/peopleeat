@@ -7,9 +7,9 @@ import { vi } from 'vitest';
 import { z } from 'zod';
 
 import { idCreate } from '../../shared/idCreate';
-import type { Log, User, UserCreate } from '../db/schema';
+import type { Log, PartnerVenue, PartnerVenueCreate, User, UserCreate } from '../db/schema';
 import * as schema from '../db/schema';
-import { adminLegalPrivacyPolicies, logs, sessions, users } from '../db/schema';
+import { adminLegalPrivacyPolicies, logs, partners, partnerVenues, sessions, users } from '../db/schema';
 import type { ServerRuntime } from '../domain/ServerRuntime';
 import type { GqlSAdminMutation, GqlSCookMutation, GqlSSession, GqlSUserMutation } from '../graphql/generated';
 import type { Klaviyo } from '../klaviyo/Klaviyo';
@@ -369,4 +369,33 @@ export const commandSetup: {
 export async function findLogsForSession(sessionId: string): Promise<Log[]> {
     await testLogger.drain();
     return testDb.select().from(logs).where(eq(logs.sessionId, sessionId));
+}
+
+export async function partnerOrgInsert(name = 'Partner'): Promise<string> {
+    const partnerId = idCreate();
+    await testDb.insert(partners).values({ partnerId, name });
+    return partnerId;
+}
+
+export async function partnerVenueInsert(overrides: Partial<PartnerVenueCreate> & { partnerName?: string } = {}): Promise<PartnerVenue> {
+    const { partnerName, partnerId: partnerIdOverride, partnerVenueId: partnerVenueIdOverride, ...venueOverrides } = overrides;
+    const partnerId = partnerIdOverride ?? (await partnerOrgInsert(partnerName ?? venueOverrides.name ?? 'Partner'));
+    const partnerVenueId = partnerVenueIdOverride ?? idCreate();
+    const [row] = await testDb
+        .insert(partnerVenues)
+        .values({
+            pathName: `venue-${partnerVenueId.slice(0, 8).toLowerCase()}`,
+            name: 'Venue',
+            titleDe: 'Titel',
+            descriptionDe: 'Beschreibung',
+            headlineDe: 'Headline',
+            subHeadlineDe: 'Sub',
+            sections: [],
+            ...venueOverrides,
+            partnerVenueId,
+            partnerId,
+        })
+        .returning();
+    if (!row) throw new Error('partnerVenueInsert: insert returned no rows');
+    return row;
 }

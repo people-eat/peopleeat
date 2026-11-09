@@ -1,18 +1,19 @@
 # Booking request plan (2-step)
 
-Public alternative create funnel: event details → auth / contact → real booking request. Designed for partner deep-links and works without a
-partner.
+Public alternative create funnel: event details → auth / contact → real booking request. Designed for venue deep-links and works without a
+venue.
 
 ## Behavior
 
-1. Visitor opens `/booking-request/plan` (optional query: `partnerId`, `firstName`, `minDateTime` / `maxDateTime`, guests, venue, cuisine).
-2. **Step 1 (details)** — title / subtitle and partner block sit above the details + sticky-summary grid. Greeting when `firstName` (or
-   signed-in first name) is present. Title splits onto two lines below `@xl` (“Euer Abend.” / “Eure Experience.”); partner block (no card
+1. Visitor opens `/booking-request/plan` (optional query: `venueId` or legacy `partnerId`, `firstName`, `minDateTime` / `maxDateTime`,
+   guests, cuisine).
+2. **Step 1 (details)** — title / subtitle and venue block sit above the details + sticky-summary grid. Greeting when `firstName` (or
+   signed-in first name) is present. Title splits onto two lines below `@xl` (“Euer Abend.” / “Eure Experience.”); venue block (no card
    chrome, not a link) sits beside the title from `@xl` (image right, text right-aligned); below `@xl` it stays left-aligned with image left
    and text left-aligned. Hero card comes first: it stacks image over content, then from `@3xl` sits side by side (image left, copy right;
    image zooms slightly on hover); it does not show a per-person price. Date section follows (“Wählt euren Dinner Abend” / “Choose your
    dinner evening”) with smaller gray month + year on the right (or `month A - month B year` when the chip window spans two months). Date
-   chips (larger square cards: short weekday with trailing dot, day number, short month; with `partnerId`, first/last foot labels become
+   chips (larger square cards: short weekday with trailing dot, day number, short month; with `venueId`, first/last foot labels become
    Anreise/Abreise instead of the month) use `grid-cols-3` → `@md:grid-cols-4` → `@2xl:grid-cols-6`, with a little more space between
    weekday, day, and foot label, only when both `minDateTime` and `maxDateTime` are set and the window has at most 14 days; otherwise the
    calendar DatePicker (with optional min/max). Price class sits above cuisine as the same three cards as the booking-request form (“Wählt
@@ -24,19 +25,18 @@ partner.
    2-column grid on mobile and 4 columns from `@xl`; selected state is border + shadow (`border-primary shadow-md`), not a filled primary
    background. Cuisine options and date chips use the same pointer / hover / pressed / focus-visible interaction pattern as
    `SelectableChip`. Default price class is MEDIUM / Signature, still editable in the details editor (no fake cart total). Five-star row
-   (cook-card style) and, when partner testimonials exist, “X Bewertungen ansehen” scrolls to that section; per-cuisine sample-menu dialog
+   (cook-card style) and, when venue testimonials exist, “X Bewertungen ansehen” scrolls to that section; per-cuisine sample-menu dialog
    (title + courses keyed to the selected preference; each cuisine option also has “Beispielmenü”); edit guests / start time / cuisine /
-   price class via bottom Sheet on mobile and Dialog on desktop (scrim locks + blurs the page); partner venue address is omitted from the
-   sticky summary and shown as static copy in that editor with a partner-location hint. Without a partner location, the address Combobox
-   stays on the page and in that editor so the venue can be chosen or changed. When `BOOKING_REQUEST_SETTING` is on and an address exists
-   (Combobox or locked partner venue), the same Outdoor / Indoor cards as the multi-step form appear, with Later as a skip underneath until
-   the picker is ~42rem wide, then Outdoor / Later / Indoor in one row. Sticky summary sidebar only from `@5xl` (`@5xl:sticky @5xl:top-20`
-   on the column wrapper so it tracks while scrolling; single-column + bottom bar below that, so the sidebar does not crowd mid widths).
-   Mobile bottom bar shows guest count (“Teilnehmer” / “guests”) plus the selected price class title (no date; that lives in the date
-   chips), with a borderless edit affordance and primary Next CTA. Foretaste section is a horizontal carousel (5 reel cards, captions at
-   top, prev/next at top right on all widths). Care section (“Ihr genießt…”) stays stacked below `@xl`, three equal cards from `@xl`.
-   Partner testimonials reuse curated partner assignments via `SectionPageTestimonials` with `columns={2}` (sidebar width) and per-card
-   detail dialogs.
+   price class via bottom Sheet on mobile and Dialog on desktop (scrim locks + blurs the page); venue address is omitted from the sticky
+   summary and shown as static copy in that editor with a venue-address hint. Without a venue address, the address Combobox stays on the
+   page and in that editor so the location can be chosen or changed. When `BOOKING_REQUEST_SETTING` is on and an address exists (Combobox or
+   locked venue), the same Outdoor / Indoor cards as the multi-step form appear, with Later as a skip underneath until the picker is ~42rem
+   wide, then Outdoor / Later / Indoor in one row. Sticky summary sidebar only from `@5xl` (`@5xl:sticky @5xl:top-20` on the column wrapper
+   so it tracks while scrolling; single-column + bottom bar below that, so the sidebar does not crowd mid widths). Mobile bottom bar shows
+   guest count (“Teilnehmer” / “guests”) plus the selected price class title (no date; that lives in the date chips), with a borderless edit
+   affordance and primary Next CTA. Foretaste section is a horizontal carousel (5 reel cards, captions at top, prev/next at top right on all
+   widths). Care section (“Ihr genießt…”) stays stacked below `@xl`, three equal cards from `@xl`. Venue testimonials reuse curated venue
+   assignments via `SectionPageTestimonials` with `columns={2}` (sidebar width) and per-card detail dialogs.
 3. **Step 2 (contact)** — centered `max-w-md` column (no sticky summary), matching the classic form auth width. Required wishes / allergies
    message first, then `AuthIdentityGate` (OTP / passkey / profile; `firstName` seeded from query when registering; register heading
    omitted, submit labeled “Buchungsanfrage senden” / “Send booking request”; `onReady` creates once message is filled and latest
@@ -45,7 +45,7 @@ partner.
    default names as the multi-step form (Erwachsener 1 / Adult 1, Kind 1 / Child 1).
 4. Cooks are redirected to `/profile` (same as the multi-step form). Page is `noindex`.
 
-Non-partner visitors use the same route. Venue resolution order: URL venue params → partner `locationAddress` → empty (Combobox).
+Visitors without a venue id use the same route. Venue resolution order: URL venue params → venue `locationAddress` → empty (Combobox).
 
 ## Decisions
 
@@ -53,20 +53,20 @@ Non-partner visitors use the same route. Venue resolution order: URL venue param
 | ---------------------------------------------- | ------------------------------------------------------- |
 | New route beside `/booking-request/form`       | **Chosen** — does not replace the wizard                |
 | Soft “ab” price-class guidance, no grand total | **Chosen** — default MEDIUM; editable in details editor |
-| Partner optional `locationAddress` jsonb       | **Chosen** — URL params override; reusable later        |
+| Venue optional `locationAddress` jsonb         | **Chosen** — URL params override; reusable later        |
 | AuthIdentityGate before create                 | **Chosen** — same create mutation as the form           |
 | Share sheet / wine pairing                     | Deferred                                                |
 
 ## Next steps
 
-- Partner CTA defaults may point at `/booking-request/plan?partnerId=…` instead of the multi-step form.
+- Venue CTA defaults may point at `/booking-request/plan?venueId=…` instead of the multi-step form.
 - Optional funnel session events for plan steps (mirror form instrumentation).
 
 ## Implementation
 
 - Route: `src/routes/{-$locale}/booking-request_.plan.tsx`
 - Page / search: `BookingRequestPlanPage.tsx`, `bookingRequestPlanSearch.ts` (+ tests)
-- GraphQL: `BookingRequestPlanPage.graphql` (`publicPartner.findOne`, create mutation, location suggestions)
-- Partner: `Partners.locationAddress`; `PublicPartnerQuery.findOne`; admin venue Combobox on `AdminPartnerPage`
+- GraphQL: `BookingRequestPlanPage.graphql` (`publicPartnerVenue.findOne`, create mutation, location suggestions)
+- Venue: `PartnerVenues.locationAddress`; `PublicPartnerVenueQuery.findOne`; admin Standort Combobox on `AdminPartnerVenuePage`
 - Auth: optional `profileInitialValues` on `AuthIdentityGate`
 - Related: [booking-request-create.md](./booking-request-create.md), [partners.md](./partners.md)

@@ -53,9 +53,9 @@ const adminFeatureToggleLabels: Record<FeatureToggleKey, Record<Locale, string>>
         de: 'Startseite: Bewertungskarten',
         en: 'Landing: testimonial cards',
     },
-    PARTNER_PAGE_PARTNERS_EXPLORE: {
-        de: 'Partnerseite: Entdecke mehr unserer Partner',
-        en: 'Partner page: discover more partners',
+    VENUE_PAGE_VENUES_EXPLORE: {
+        de: 'Locationseite: Weitere Locations',
+        en: 'Venue page: more venues',
     },
     SIGN_IN_GOOGLE: { de: 'Anmeldung: Google', en: 'Sign-in: Google' },
 };
@@ -157,9 +157,9 @@ const adminFeatureToggleDescriptions: Record<FeatureToggleKey, Record<Locale, st
         de: 'Zeigt auf der Startseite die gemeinsamen Bewertungskarten statt der laufenden Zitat-Spalten. Die Texte bleiben die festen Marketing-Zitate.',
         en: 'Shows the shared review cards on the home page instead of the scrolling quote columns. The quotes stay the fixed marketing copy.',
     },
-    PARTNER_PAGE_PARTNERS_EXPLORE: {
-        de: 'Zeigt den CTA „Entdecke mehr unserer Partner“ auf öffentlichen Partnerseiten (/partners/…).',
-        en: 'Shows the “Discover more of our partners” CTA on public partner pages (/partners/…).',
+    VENUE_PAGE_VENUES_EXPLORE: {
+        de: 'Zeigt den CTA „Weitere Locations“ auf öffentlichen Locationseiten (/venues/…).',
+        en: 'Shows the “More venues” CTA on public venue pages (/venues/…).',
     },
     SIGN_IN_GOOGLE: {
         de: 'Zeigt „Mit Google anmelden“ an den Anmeldemasken. Vor dem Einschalten in Produktion den Google-Consent-Screen prüfen (Testnutzer oder verifizierte People-Scopes).',

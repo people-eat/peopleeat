@@ -62,11 +62,11 @@ Public listing requires cook visibility and admin approval and an active user ac
 payout fields never appear — only city from travel origin, falling back to import-preserved `legacyCityName` when the exact origin city is
 empty.
 
-**City, partner, and occasion pages**
+**City, venue, and occasion pages**
 
 Featured-cook grids reuse the same `PublicCookCard` via `SectionFeaturedCooks`. City pages use curated cooks or travel-radius fallback from
-the city center — [cities.md](./cities.md). Partner pages use curated cooks only — [partners.md](./partners.md). Occasion pages do the same
-— [occasions.md](./occasions.md).
+the city center — [cities.md](./cities.md). Venue pages use curated cooks only — [partners.md](./partners.md). Occasion pages do the same —
+[occasions.md](./occasions.md).
 
 ## Decisions
 

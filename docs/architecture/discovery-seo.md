@@ -77,12 +77,12 @@ For each page `seoMeta()` emits one `<link rel="canonical">` and one `<link rel=
 
 ## Fixed chrome routes (DB-backed document title / description)
 
-Fixed public and chrome routes (home, cities list, partners list, occasions list, chefs, blog list, about, gift card, how-to-become-a-chef,
+Fixed public and chrome routes (home, cities list, venues list, occasions list, chefs, blog list, about, gift card, how-to-become-a-chef,
 booking-request variants, chef sign-up, imprint / terms / privacy, sign-in, profile layout, admin layout) load **document title and meta
 description** from `Query.publicWebPage.findOne(webPageKey)` in the route loader. `head()` uses `contentLocaleText(…De, …En, locale)`.
 Visible H1 / in-page marketing copy stays on module consts in `src/web/pages/` — only `<title>` + meta description switch to the DB (with
 defaults from `src/shared/webPage.ts` when no row exists). Keys live in `WebPageKey`; admin edits under `/admin/web-pages`. Keep
-`noindex: true` where it was already set. Parameterized content pages (city / partner / occasion / blog post by path) keep entity-owned SEO,
+`noindex: true` where it was already set. Parameterized content pages (city / venue / occasion / blog post by path) keep entity-owned SEO,
 not `publicWebPage`.
 
 Wire by extending the page's loader GraphQL document (or adding a colocated `.graphql` + `routeLoaderGraphqlClient` when none exists), then:
@@ -150,7 +150,7 @@ indexed, generate a per-row sitemap from the database in a separate route (e.g. 
 `sitemap-chefs[.]xml.ts`) and list that child in the `/sitemap.xml` **index**. Until that exists, parameterized pages still get correct
 `<head>` tags via their own `head:` callback; they just don't appear in the sitemap.
 
-Live per-row sitemaps today: `/sitemap-cities.xml`, `/sitemap-partners.xml`, `/sitemap-occasions.xml`, `/sitemap-blog-posts.xml`,
+Live per-row sitemaps today: `/sitemap-cities.xml`, `/sitemap-venues.xml`, `/sitemap-occasions.xml`, `/sitemap-blog-posts.xml`,
 `/sitemap-chefs.xml` (listed public cooks at `/chefs/<pathName>`). Static / chrome paths live in `/sitemap-pages.xml`. The root
 `/sitemap.xml` is a sitemap index pointing at those children. `/llms.txt` chef bullets use the same path names.
 

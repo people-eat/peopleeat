@@ -1,13 +1,13 @@
-query PublicPartnerPage($pathName: String!) {
+query PublicVenuePage($pathName: String!) {
     currentSession {
         activeFeatureToggleKeys
         user {
             ...PublicHeaderUser
         }
     }
-    publicPartner {
+    publicPartnerVenue {
         findOneByPathName(pathName: $pathName) {
-            ...PublicPartnerFields
+            ...PublicPartnerVenueFields
         }
     }
 }

@@ -32,7 +32,7 @@ const COMPANY_LINKS = [
 const DISCOVER_LINKS = [
     { to: '/{-$locale}/booking-request/form' as const, label: { de: 'Buchungsanfrage', en: 'Booking request' } },
     { to: '/{-$locale}/cities' as const, label: { de: 'Städte', en: 'Cities' } },
-    { to: '/{-$locale}/partners' as const, label: { de: 'Partner', en: 'Partners' } },
+    { to: '/{-$locale}/venues' as const, label: { de: 'Locations', en: 'Venues' } },
     { to: '/{-$locale}/occasions' as const, label: { de: 'Anlässe', en: 'Occasions' } },
     { to: '/{-$locale}/chefs' as const, label: { de: 'Köche entdecken', en: 'Discover chefs' } },
 ] as const;
